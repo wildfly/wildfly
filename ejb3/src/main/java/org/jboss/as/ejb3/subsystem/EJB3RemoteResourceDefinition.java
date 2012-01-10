@@ -56,12 +56,27 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
+    private static final SimpleAttributeDefinition CLIENT_MAPPINGS_CACHE_REF =
+            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.CLIENT_MAPPINGS_CACHE_REF, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .build();
+
+    private static final SimpleAttributeDefinition CLIENT_MAPPINGS_CACHE_CONTAINER_REF =
+            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.CLIENT_MAPPINGS_CACHE_CONTAINER_REF, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .build();
+
+
     private static final Map<String, AttributeDefinition> ATTRIBUTES;
 
     static {
         Map<String, AttributeDefinition> map = new LinkedHashMap<String, AttributeDefinition>();
         map.put(CONNECTOR_REF.getName(), CONNECTOR_REF);
         map.put(THREAD_POOL_NAME.getName(), THREAD_POOL_NAME);
+        map.put(CLIENT_MAPPINGS_CACHE_CONTAINER_REF.getName() ,CLIENT_MAPPINGS_CACHE_CONTAINER_REF);
+        map.put(CLIENT_MAPPINGS_CACHE_REF.getName(), CLIENT_MAPPINGS_CACHE_REF);
 
         ATTRIBUTES = Collections.unmodifiableMap(map);
     }

@@ -21,12 +21,16 @@
  */
 package org.jboss.as.ejb3.remote;
 
+import org.infinispan.Cache;
 import org.jboss.as.clustering.GroupMembershipNotifierRegistry;
 import org.jboss.as.clustering.registry.Registry;
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.remote.protocol.versionone.VersionOneProtocolChannelReceiver;
 import org.jboss.as.network.ClientMapping;
+import org.jboss.as.network.SocketBinding;
+import org.jboss.as.remoting.AbstractStreamServerService;
+import org.jboss.as.remoting.InjectedSocketBindingStreamServerService;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.ejb.client.remoting.PackedInteger;
 import org.jboss.logging.Logger;
@@ -34,7 +38,6 @@ import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -53,7 +56,10 @@ import org.xnio.OptionMap;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
@@ -67,14 +73,17 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
     private static final String EJB_CHANNEL_NAME = "jboss.ejb";
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "connector");
+    public static final ServiceName EJB_REMOTE_CONNECTOR_CLIENT_MAPPINGS_REGISTRY_SERVICE = ServiceName.JBOSS.append("ejb").append("remoting").append("connector").append("client-mappings-registry-service");
 
     private final InjectedValue<Endpoint> endpointValue = new InjectedValue<Endpoint>();
     private final InjectedValue<ExecutorService> executorService = new InjectedValue<ExecutorService>();
     private final InjectedValue<DeploymentRepository> deploymentRepositoryInjectedValue = new InjectedValue<DeploymentRepository>();
     private final InjectedValue<EJBRemoteTransactionsRepository> ejbRemoteTransactionsRepositoryInjectedValue = new InjectedValue<EJBRemoteTransactionsRepository>();
     private final InjectedValue<GroupMembershipNotifierRegistry> clusterRegistry = new InjectedValue<GroupMembershipNotifierRegistry>();
-    private final InjectedValue<Registry> clientMappingRegistryService = new InjectedValue<Registry>();
-    private final String nodeName;
+    private final InjectedValue<Registry> clientMappingsRegistryService = new InjectedValue<Registry>();
+    private final InjectedValue<ServerEnvironment> serverEnvironment = new InjectedValue<ServerEnvironment>();
+    private final InjectedValue<AbstractStreamServerService> remotingServer = new InjectedValue<AbstractStreamServerService>();
+    private final InjectedValue<Cache> clientMappingsBackingCache = new InjectedValue<Cache>();
 
     private volatile Registration registration;
     private final byte serverProtocolVersion;
@@ -83,13 +92,16 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
     public EJBRemoteConnectorService(final byte serverProtocolVersion, final String[] supportedMarshallingStrategies) {
         this.serverProtocolVersion = serverProtocolVersion;
         this.supportedMarshallingStrategies = supportedMarshallingStrategies;
-        this.nodeName = SecurityActions.getSystemProperty(ServerEnvironment.NODE_NAME);
     }
 
     @Override
     public void start(StartContext context) throws StartException {
-        final ServiceContainer serviceContainer = context.getController().getServiceContainer();
-        final OpenListener channelOpenListener = new ChannelOpenListener(serviceContainer);
+        // populate the client-mapping cache which will be used for getting the client-mapping(s)
+        // of each node's EJB remoting connector's socketbining
+        this.populateClientMappingsCache();
+
+        // Register a EJB channel open listener
+        final OpenListener channelOpenListener = new ChannelOpenListener();
         try {
             registration = endpointValue.getValue().registerService(EJB_CHANNEL_NAME, channelOpenListener, OptionMap.EMPTY);
         } catch (ServiceRegistrationException e) {
@@ -129,10 +141,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
     private class ChannelOpenListener implements OpenListener {
 
-        private final ServiceContainer serviceContainer;
-
-        ChannelOpenListener(final ServiceContainer serviceContainer) {
-            this.serviceContainer = serviceContainer;
+        ChannelOpenListener() {
         }
 
         @Override
@@ -155,7 +164,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
             }
 
             // receive messages from the client
-            channel.receiveMessage(new ClientVersionMessageReceiver(this.serviceContainer));
+            channel.receiveMessage(new ClientVersionMessageReceiver());
         }
 
         @Override
@@ -165,10 +174,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
     private class ClientVersionMessageReceiver implements Channel.Receiver {
 
-        private final ServiceContainer serviceContainer;
-
-        ClientVersionMessageReceiver(final ServiceContainer serviceContainer) {
-            this.serviceContainer = serviceContainer;
+        ClientVersionMessageReceiver() {
         }
 
         @Override
@@ -210,9 +216,11 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
                         // enroll VersionOneProtocolChannelReceiver for handling subsequent messages on this channel
                         final DeploymentRepository deploymentRepository = EJBRemoteConnectorService.this.deploymentRepositoryInjectedValue.getValue();
                         final GroupMembershipNotifierRegistry groupMembershipNotifierRegistry = EJBRemoteConnectorService.this.clusterRegistry.getValue();
+                        // the registry will be available when the clustering subsytem is present, so get the value optionally
+                        final Registry<String, List<ClientMapping>> clientMappingRegistry = EJBRemoteConnectorService.this.clientMappingsRegistryService.getOptionalValue();
                         final VersionOneProtocolChannelReceiver receiver = new VersionOneProtocolChannelReceiver(channel, deploymentRepository,
                                 EJBRemoteConnectorService.this.ejbRemoteTransactionsRepositoryInjectedValue.getValue(), groupMembershipNotifierRegistry,
-                                EJBRemoteConnectorService.this.getClientMappings(), marshallerFactory, executorService.getValue());
+                                clientMappingRegistry, marshallerFactory, executorService.getValue());
                         // trigger the receiving
                         receiver.startReceiving();
                         break;
@@ -249,8 +257,20 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
         return this.clusterRegistry;
     }
 
-    public Injector<Registry> getClientMappingRegistryServiceInjector() {
-        return this.clientMappingRegistryService;
+    public Injector<Registry> getClientMappingsRegistryServiceInjector() {
+        return this.clientMappingsRegistryService;
+    }
+
+    public Injector<AbstractStreamServerService> getRemotingServerInjector() {
+        return this.remotingServer;
+    }
+
+    public Injector<ServerEnvironment> getServerEnvironmentInjector() {
+        return this.serverEnvironment;
+    }
+
+    public Injector<Cache> getClientMappingsBackingCacheInjector() {
+        return this.clientMappingsBackingCache;
     }
 
     private boolean isSupportedMarshallingStrategy(final String strategy) {
@@ -265,10 +285,38 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
         return marshallerFactory;
     }
 
-    private List<ClientMapping> getClientMappings() {
-        final Registry<String, List<ClientMapping>> clientMappingsPerNode = this.clientMappingRegistryService.getValue();
-        // get the client mappings for this node
-        final List<ClientMapping> clientMappings = clientMappingsPerNode.getEntries().get(nodeName);
-        return clientMappings;
+    private void populateClientMappingsCache() {
+        final Cache<String, List<ClientMapping>> clientMappingsCache = this.clientMappingsBackingCache.getOptionalValue();
+        if (clientMappingsCache == null) {
+            // nothing to do, just return
+            return;
+        }
+        final AbstractStreamServerService streamService = this.remotingServer.getValue();
+        // we don't deal with a remoting server which isn't backed by a socketbinding
+        if (!(streamService instanceof InjectedSocketBindingStreamServerService)) {
+            return;
+        }
+        final SocketBinding socketBinding = ((InjectedSocketBindingStreamServerService) streamService).getSocketBinding();
+        List<ClientMapping> clientMappings = socketBinding.getClientMappings();
+        final String nodeName = this.serverEnvironment.getValue().getNodeName();
+        if (clientMappings == null || clientMappings.isEmpty()) {
+            // TODO: We use the textual form of IP address as the destination address for now.
+            // This needs to be configurable (i.e. send either host name or the IP address). But
+            // since this is a corner case (i.e. absence of any client-mappings for a socket binding),
+            // this should be OK for now
+            final String destinationAddress = socketBinding.getAddress().getHostAddress();
+            final InetAddress clientNetworkAddress;
+            try {
+                clientNetworkAddress = InetAddress.getByName("::");
+            } catch (UnknownHostException e) {
+                throw new RuntimeException(e);
+            }
+            final ClientMapping defaultClientMapping = new ClientMapping(clientNetworkAddress, 0, destinationAddress, socketBinding.getAbsolutePort());
+            // add to cache
+            clientMappingsCache.put(nodeName, Collections.singletonList(defaultClientMapping));
+        } else {
+            // add the client-mappings of the EJB remoting connector on this node, to the cache
+            clientMappingsCache.put(nodeName, clientMappings);
+        }
     }
 }

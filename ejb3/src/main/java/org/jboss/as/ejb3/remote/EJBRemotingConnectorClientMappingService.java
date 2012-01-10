@@ -44,7 +44,7 @@ import java.util.List;
  */
 public class EJBRemotingConnectorClientMappingService implements Service<EJBRemotingConnectorClientMappingService> {
 
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb").append("remoting").append("client-mapping-registry-service");
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb").append("remoting").append("connector").append("client-mapping-entry-provider-service");
 
     private final InjectedValue<ServerEnvironment> environment = new InjectedValue<ServerEnvironment>();
     private final InjectedValue<AbstractStreamServerService> remotingServer = new InjectedValue<AbstractStreamServerService>();
@@ -69,6 +69,10 @@ public class EJBRemotingConnectorClientMappingService implements Service<EJBRemo
 
     public Injector<AbstractStreamServerService> getRemotingServerInjector() {
         return this.remotingServer;
+    }
+
+    public Injector<ServerEnvironment> getServerEnvironmentInjector() {
+        return this.environment;
     }
 
     List<ClientMapping> getClientMappings() {

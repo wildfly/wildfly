@@ -24,11 +24,14 @@ package org.jboss.as.ejb3.remote.protocol.versionone;
 
 import org.jboss.as.clustering.ClusterNode;
 import org.jboss.as.clustering.GroupMembershipNotifier;
+import org.jboss.as.clustering.registry.Registry;
+import org.jboss.as.network.ClientMapping;
 import org.jboss.ejb.client.remoting.PackedInteger;
 
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A {@link ClusterTopologyWriter} is responsible for writing out cluster topology related EJB remoting protocol
@@ -50,13 +53,15 @@ class ClusterTopologyWriter {
      * @param clusters The clusters whose topology will be written to the <code>output</code>
      * @throws IOException
      */
-    void writeCompleteClusterTopology(final DataOutput output, final GroupMembershipNotifier... clusters) throws IOException {
+    void writeCompleteClusterTopology(final DataOutput output, final GroupMembershipNotifier[] clusters,
+                                      final Registry<String, List<ClientMapping>> clientMappingsRegistry) throws IOException {
         if (output == null) {
             throw new IllegalArgumentException("Cannot write to null dataoutput");
         }
         if (clusters == null || clusters.length == 0) {
             return;
         }
+        final Map<String, List<ClientMapping>> clientMappings = clientMappingsRegistry.getEntries();
         // write the header
         output.write(HEADER_COMPLETE_CLUSTER_TOPOLOGY);
         // write the cluster count
@@ -65,20 +70,8 @@ class ClusterTopologyWriter {
         for (final GroupMembershipNotifier cluster : clusters) {
             // write the cluster name
             output.writeUTF(cluster.getGroupName());
-            // write the member node count
-            final int memberCount = cluster.getClusterNodes().size();
-            PackedInteger.writePackedInteger(output, memberCount);
-            // write out the member info for each member
-            for (final ClusterNode clusterMember : cluster.getClusterNodes()) {
-                // write the node name
-                output.writeUTF(clusterMember.getName());
-                // TODO: This should be configurable. Right now we just write out the textual form
-                // of the IP address, but the configuration should allow sending back a hostname or an
-                // IP address
-                output.writeUTF(clusterMember.getIpAddress().getHostAddress());
-                // TODO: We need a way to figure out EJB remoting port of a cluster member
-                PackedInteger.writePackedInteger(output, 4447);
-            }
+            // write out the information of each cluster node
+            this.writeClusterNodes(output, cluster.getGroupName(), cluster.getClusterNodes(), clientMappings);
         }
 
     }
@@ -91,7 +84,7 @@ class ClusterTopologyWriter {
      * @param clusters The clusters which have been removed
      * @throws IOException
      */
-    void writeClusterRemoved(final DataOutput output, final GroupMembershipNotifier... clusters) throws IOException {
+    void writeClusterRemoved(final DataOutput output, final GroupMembershipNotifier[] clusters) throws IOException {
         if (output == null) {
             throw new IllegalArgumentException("Cannot write to null dataoutput");
         }
@@ -109,7 +102,8 @@ class ClusterTopologyWriter {
 
     }
 
-    void writeNewNodesAdded(final DataOutput output, final String clusterName, final List<ClusterNode> newNodes) throws IOException {
+    void writeNewNodesAdded(final DataOutput output, final String clusterName, final List<ClusterNode> newNodes,
+                            final Registry<String, List<ClientMapping>> clientMappings) throws IOException {
         if (output == null) {
             throw new IllegalArgumentException("Cannot write to null dataoutput");
         }
@@ -122,20 +116,8 @@ class ClusterTopologyWriter {
         PackedInteger.writePackedInteger(output, 1);
         // write the cluster name
         output.writeUTF(clusterName);
-        // write the new nodes added count
-        final int newNodesCount = newNodes.size();
-        PackedInteger.writePackedInteger(output, newNodesCount);
-        // write out the member info for each new member
-        for (final ClusterNode clusterMember : newNodes) {
-            // write the node name
-            output.writeUTF(clusterMember.getName());
-            // TODO: This should be configurable. Right now we just write out the textual form
-            // of the IP address, but the configuration should allow sending back a hostname or an
-            // IP address
-            output.writeUTF(clusterMember.getIpAddress().getHostAddress());
-            // TODO: We need a way to figure out EJB remoting port of a cluster member
-            PackedInteger.writePackedInteger(output, 4447);
-        }
+        // write out the cluster node(s) information
+        this.writeClusterNodes(output, clusterName, newNodes, clientMappings.getEntries());
     }
 
     void writeNodesRemoved(final DataOutput output, final String clusterName, final List<ClusterNode> removedNodes) throws IOException {
@@ -158,6 +140,37 @@ class ClusterTopologyWriter {
         for (final ClusterNode clusterMember : removedNodes) {
             // write the node name
             output.writeUTF(clusterMember.getName());
+        }
+    }
+
+    private void writeClusterNodes(final DataOutput output, final String clusterName, final List<ClusterNode> clusterNodes, final Map<String, List<ClientMapping>> clientMappings) throws IOException {
+        // write the member node count
+        final int memberCount = clusterNodes.size();
+        PackedInteger.writePackedInteger(output, memberCount);
+        // write out the member info for each member
+        for (final ClusterNode clusterMember : clusterNodes) {
+            // write the node name
+            final String nodeName = clusterMember.getName();
+            output.writeUTF(nodeName);
+            // write the client-mapping count
+            final List<ClientMapping> clientMappingsForNode = clientMappings.get(nodeName);
+            if (clientMappingsForNode == null || clientMappingsForNode.isEmpty()) {
+                throw new IllegalStateException("No client-mapping entries found for node " + nodeName + " in cluster " + clusterName);
+            }
+            PackedInteger.writePackedInteger(output, clientMappingsForNode.size());
+
+            // for each client-mapping write out the mapping info
+            for (final ClientMapping clientMapping : clientMappingsForNode) {
+                // client source network address
+                final byte[] clientNetworkAddress = clientMapping.getSourceNetworkAddress().getAddress();
+                output.write(clientNetworkAddress);
+                // client netmask
+                output.writeByte(clientMapping.getSourceNetworkMaskBits());
+                // destination address
+                output.writeUTF(clientMapping.getDestinationAddress());
+                // destination port
+                output.writeShort(clientMapping.getDestinationPort());
+            }
         }
     }
 }

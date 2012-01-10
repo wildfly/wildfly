@@ -27,6 +27,7 @@ import org.jboss.as.clustering.ClusterNode;
 import org.jboss.as.clustering.GroupMembershipListener;
 import org.jboss.as.clustering.GroupMembershipNotifier;
 import org.jboss.as.clustering.GroupMembershipNotifierRegistry;
+import org.jboss.as.clustering.registry.Registry;
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.DeploymentRepositoryListener;
@@ -73,18 +74,18 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
     private final MarshallerFactory marshallerFactory;
     private final ExecutorService executorService;
     private final GroupMembershipNotifierRegistry groupMembershipNotifierRegistry;
-    private final List<ClientMapping> clientMappings;
+    private final Registry<String, List<ClientMapping>> clientMappingRegistry;
 
     public VersionOneProtocolChannelReceiver(final Channel channel, final DeploymentRepository deploymentRepository,
                                              final EJBRemoteTransactionsRepository transactionsRepository, final GroupMembershipNotifierRegistry groupMembershipNotifierRegistry,
-                                             final List<ClientMapping> clientMappings, final MarshallerFactory marshallerFactory, final ExecutorService executorService) {
+                                             final Registry<String, List<ClientMapping>> clientMappingRegistry, final MarshallerFactory marshallerFactory, final ExecutorService executorService) {
         this.marshallerFactory = marshallerFactory;
         this.channel = channel;
         this.executorService = executorService;
         this.deploymentRepository = deploymentRepository;
         this.transactionsRepository = transactionsRepository;
         this.groupMembershipNotifierRegistry = groupMembershipNotifierRegistry;
-        this.clientMappings = clientMappings;
+        this.clientMappingRegistry = clientMappingRegistry;
     }
 
     public void startReceiving() {
@@ -279,7 +280,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         final ClusterTopologyWriter clusterTopologyWriter = new ClusterTopologyWriter();
         try {
             logger.debug("Writing out cluster formation message for " + clusters.length + " clusters, to channel " + this.channel);
-            clusterTopologyWriter.writeCompleteClusterTopology(outputStream, clusters);
+            clusterTopologyWriter.writeCompleteClusterTopology(outputStream, clusters, this.clientMappingRegistry);
         } finally {
             outputStream.close();
         }
@@ -296,7 +297,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         final ClusterTopologyWriter clusterTopologyWriter = new ClusterTopologyWriter();
         try {
             logger.debug("Cluster " + cluster.getGroupName() + " removed, writing cluster removal message to channel " + this.channel);
-            clusterTopologyWriter.writeClusterRemoved(outputStream, cluster);
+            clusterTopologyWriter.writeClusterRemoved(outputStream, new GroupMembershipNotifier[]{cluster});
         } finally {
             outputStream.close();
         }
@@ -385,7 +386,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             final ClusterTopologyWriter clusterTopologyWriter = new ClusterTopologyWriter();
             try {
                 logger.debug(addedNodes.size() + " nodes added to cluster " + clusterName + ", writing a protocol message to channel " + this.channelReceiver.channel);
-                clusterTopologyWriter.writeNewNodesAdded(outputStream, clusterName, addedNodes);
+                clusterTopologyWriter.writeNewNodesAdded(outputStream, clusterName, addedNodes, VersionOneProtocolChannelReceiver.this.clientMappingRegistry);
             } finally {
                 outputStream.close();
             }
