@@ -38,9 +38,14 @@
         <module name="javax.resource.api"/>
         <module name="javax.rmi.api"/>
         <module name="org.hibernate"/>
+        <!-- We use the inifinspan cache to pass around a clustered view of the client-mappings of
+            EJB remoting connector's socketbinding -->
+        <module name="org.infinispan"/>
         <module name="org.jacorb"/>
         <module name="org.jboss.as.clustering.api"/>
         <module name="org.jboss.as.clustering.ejb3.infinispan" services="import" optional="true"/>
+        <module name="org.jboss.as.clustering.infinispan"/>
+        <module name="org.jboss.as.clustering.registry"/>
         <module name="org.jboss.as.controller"/>
         <!-- So we can access its integration API -->
         <module name="org.jboss.as.connector"/>

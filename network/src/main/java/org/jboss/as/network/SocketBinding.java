@@ -257,6 +257,19 @@ public final class SocketBinding {
         return clientMappings;
     }
 
+    /**
+     * Unlike the {@link #getPort()} method, this method takes into account the port offset, if the port
+     * is <i>not</i> a fixed port and returns the absolute port number which is the sum of the port offset
+     * and the (relative) port
+     * @return
+     */
+    public int getAbsolutePort() {
+        if (this.isFixedPort) {
+            return port;
+        }
+        return this.port + this.socketBindings.getPortOffset();
+    }
+
     void checkNotBound() {
         if(isBound()) {
             throw MESSAGES.cannotChangeWhileBound();
