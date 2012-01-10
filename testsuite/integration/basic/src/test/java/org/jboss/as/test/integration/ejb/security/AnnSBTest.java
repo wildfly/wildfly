@@ -22,19 +22,17 @@
 
 package org.jboss.as.test.integration.ejb.security;
 
-import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.as.test.integration.ejb.security.authorization.AnnOnlyCheckSFSBForInjection;
 import org.jboss.as.test.integration.ejb.security.authorization.AnnOnlyCheckSLSBForInjection;
 import org.jboss.as.test.integration.ejb.security.authorization.ParentAnnOnlyCheck;
 import org.jboss.as.test.integration.ejb.security.authorization.SimpleAuthorizationRemote;
-import org.jboss.as.test.integration.ejb.security.authorization.SingleMethodsAnnOnlyCheckSFSB;
+import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Ignore;
-import org.junit.Test;
 
 import javax.ejb.EJBAccessException;
 import javax.naming.Context;
