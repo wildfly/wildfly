@@ -27,6 +27,7 @@
         <extension module="org.jboss.as.clustering.infinispan"/>
         <extension module="org.jboss.as.clustering.jgroups"/>
         <extension module="org.jboss.as.cmp"/>
+        <extension module="org.jboss.as.configadmin"/>
         <extension module="org.jboss.as.connector"/>
         <extension module="org.jboss.as.jmx"/>
         <extension module="org.jboss.as.jpa"/>
@@ -450,6 +451,11 @@
                 </scheduled-thread-pool>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:cmp:1.0"/>
+            <subsystem xmlns="urn:jboss:domain:configadmin:1.0">
+                <configuration pid="org.apache.felix.webconsole.internal.servlet.OsgiManager">
+                    <property name="manager.root" value="jboss-osgi"/>
+                </configuration>
+            </subsystem>
             <subsystem xmlns="urn:jboss:domain:ee:1.0"/>
             <subsystem xmlns="urn:jboss:domain:ejb3:1.2" >
 
@@ -745,7 +751,7 @@
           <subsystem xmlns="urn:jboss:domain:modcluster:1.0">
              <mod-cluster-config advertise-socket="mod_cluster" />
           </subsystem>
-            <subsystem xmlns="urn:jboss:domain:osgi:1.1" activation="lazy">
+            <subsystem xmlns="urn:jboss:domain:osgi:1.2" activation="lazy">
                 <properties>
                     <!-- Specifies the beginning start level of the framework -->
                     <property name="org.osgi.framework.startlevel.beginning">1</property>
