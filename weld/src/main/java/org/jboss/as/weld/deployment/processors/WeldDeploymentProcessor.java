@@ -21,6 +21,17 @@
  */
 package org.jboss.as.weld.deployment.processors;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.enterprise.inject.spi.Extension;
+import javax.transaction.TransactionManager;
+import javax.transaction.UserTransaction;
+import javax.validation.ValidatorFactory;
+
 import org.jboss.as.ee.beanvalidation.BeanValidationAttachments;
 import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -42,6 +53,7 @@ import org.jboss.as.txn.service.TransactionManagerService;
 import org.jboss.as.txn.service.UserTransactionService;
 import org.jboss.as.weld.WeldContainer;
 import org.jboss.as.weld.WeldDeploymentMarker;
+import org.jboss.as.weld.WeldLogger;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.as.weld.deployment.BeanDeploymentModule;
 import org.jboss.as.weld.deployment.WeldAttachments;
@@ -55,7 +67,6 @@ import org.jboss.as.weld.services.bootstrap.WeldResourceInjectionServices;
 import org.jboss.as.weld.services.bootstrap.WeldSecurityServices;
 import org.jboss.as.weld.services.bootstrap.WeldTransactionServices;
 import org.jboss.as.weld.services.bootstrap.WeldValidationServices;
-import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceBuilder;
@@ -69,24 +80,12 @@ import org.jboss.weld.injection.spi.EjbInjectionServices;
 import org.jboss.weld.injection.spi.JpaInjectionServices;
 import org.jboss.weld.validation.spi.ValidationServices;
 
-import javax.enterprise.inject.spi.Extension;
-import javax.transaction.TransactionManager;
-import javax.transaction.UserTransaction;
-import javax.validation.ValidatorFactory;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 /**
  * Deployment processor that installs the weld services and all other required services
  *
  * @author Stuart Douglas
  */
 public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
-
-    private static final Logger log = Logger.getLogger("org.jboss.weld");
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -110,7 +109,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
             return;
         }
 
-        log.info("Starting Services for CDI deployment: " + phaseContext.getDeploymentUnit().getName());
+        WeldLogger.DEPLOYMENT_LOGGER.startingServicesForCDIDeployment(phaseContext.getDeploymentUnit().getName());
 
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
@@ -196,7 +195,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         final JpaInjectionServices rootJpaInjectionServices = new WeldJpaInjectionServices(deploymentUnit, deploymentUnit.getServiceRegistry());
         weldContainer.addWeldService(JpaInjectionServices.class, rootJpaInjectionServices);
 
-        final WeldService weldService = new WeldService(weldContainer);
+        final WeldService weldService = new WeldService(weldContainer, deploymentUnit.getName());
         // add the weld service
         final ServiceBuilder<WeldContainer> weldServiceBuilder = serviceTarget.addService(weldServiceName, weldService);
 

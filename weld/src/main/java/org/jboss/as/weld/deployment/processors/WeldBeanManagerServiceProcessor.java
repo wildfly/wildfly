@@ -21,14 +21,18 @@
  */
 package org.jboss.as.weld.deployment.processors;
 
+import java.util.Set;
+
+import javax.enterprise.inject.spi.BeanManager;
+
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.naming.ServiceBasedNamingStore;
-import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -37,18 +41,15 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.weld.WeldContainer;
 import org.jboss.as.weld.WeldDeploymentMarker;
+import org.jboss.as.weld.WeldLogger;
 import org.jboss.as.weld.arquillian.WeldContextSetup;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.services.BeanManagerService;
 import org.jboss.as.weld.services.WeldService;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
-
-import javax.enterprise.inject.spi.BeanManager;
-import java.util.Set;
 
 /**
  * {@link DeploymentUnitProcessor} that binds the bean manager to JNDI
@@ -56,8 +57,6 @@ import java.util.Set;
  * @author Stuart Douglas
  */
 public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor {
-
-    private static final Logger logger = Logger.getLogger("org.jboss.as.weld");
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -80,7 +79,7 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
             rootBda = topLevelDeployment.getAttachment(WeldAttachments.DEPLOYMENT_ROOT_BEAN_DEPLOYMENT_ARCHIVE);
         }
         if (rootBda == null) {
-            logger.errorf("Could not find BeanManager for deployment %d", deploymentUnit.getName());
+            WeldLogger.ROOT_LOGGER.couldNotFindBeanManagerForDeployment(deploymentUnit.getName());
             return;
         }
 

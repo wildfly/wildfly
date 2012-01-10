@@ -21,18 +21,17 @@
  */
 package org.jboss.as.weld.injection;
 
-import org.jboss.weld.manager.BeanManagerImpl;
+import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.List;
 
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.InjectionPoint;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+
+import org.jboss.as.weld.WeldMessages;
+import org.jboss.weld.manager.BeanManagerImpl;
 
 /**
  * tracks initalizer methods
@@ -71,10 +70,8 @@ final class InjectableMethod {
                 params[i++] = value;
             }
             method.invoke(instance,params);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException("Failed to perform CDI injection of initializer method: " + method + " on " + instance.getClass(), e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException("Failed to perform CDI injection of field: " + method + " on " + instance.getClass(), e);
+        } catch (Exception e) {
+            throw WeldMessages.MESSAGES.couldNotInjectMethod(method, instance.getClass(), e);
         }
     }
 }

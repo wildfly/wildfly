@@ -22,16 +22,10 @@
 package org.jboss.as.weld.services;
 
 import org.jboss.as.weld.WeldContainer;
-
-import org.jboss.as.weld.services.bootstrap.WeldJpaInjectionServices;
-
-import org.jboss.as.weld.services.bootstrap.WeldEjbInjectionServices;
-import org.jboss.as.weld.services.bootstrap.WeldEjbServices;
-
+import org.jboss.as.weld.WeldLogger;
 import org.jboss.as.weld.services.bootstrap.WeldResourceInjectionServices;
 import org.jboss.as.weld.services.bootstrap.WeldSecurityServices;
 import org.jboss.as.weld.services.bootstrap.WeldTransactionServices;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -39,12 +33,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
-
-import org.jboss.weld.injection.spi.JpaInjectionServices;
-
-import org.jboss.weld.ejb.spi.EjbServices;
-import org.jboss.weld.injection.spi.EjbInjectionServices;
-
 import org.jboss.weld.injection.spi.ResourceInjectionServices;
 import org.jboss.weld.security.spi.SecurityServices;
 import org.jboss.weld.transaction.spi.TransactionServices;
@@ -59,29 +47,28 @@ import org.jboss.weld.transaction.spi.TransactionServices;
  */
 public class WeldService implements Service<WeldContainer> {
 
-    private static final Logger log = Logger.getLogger("org.jboss.weld");
-
     public static final ServiceName SERVICE_NAME = ServiceName.of("WeldService");
 
     private final WeldContainer weldContainer;
+    private final String deploymentName;
 
     private final InjectedValue<WeldResourceInjectionServices> resourceInjectionServices = new InjectedValue<WeldResourceInjectionServices>();
     private final InjectedValue<WeldSecurityServices> securityServices = new InjectedValue<WeldSecurityServices>();
     private final InjectedValue<WeldTransactionServices> weldTransactionServices = new InjectedValue<WeldTransactionServices>();
 
-    public WeldService(WeldContainer weldContainer) {
+    public WeldService(WeldContainer weldContainer, final String deploymentName) {
         this.weldContainer = weldContainer;
+        this.deploymentName = deploymentName;
     }
 
     @Override
     public void start(StartContext context) throws StartException {
         try {
-            log.info("Starting weld service");
+            WeldLogger.DEPLOYMENT_LOGGER.startingWeldService(deploymentName);
             // set up injected services
             weldContainer.addWeldService(SecurityServices.class, securityServices.getValue());
             weldContainer.addWeldService(TransactionServices.class, weldTransactionServices.getValue());
 
-            // TODO: this is a complete hack. We will need one instance of each service per bean deployment archive
             for (BeanDeploymentArchive bda : weldContainer.getBeanDeploymentArchives()) {
                 bda.getServices().add(ResourceInjectionServices.class, resourceInjectionServices.getValue());
             }
@@ -99,7 +86,7 @@ public class WeldService implements Service<WeldContainer> {
 
     @Override
     public void stop(StopContext context) {
-        log.info("Stopping weld service");
+        WeldLogger.DEPLOYMENT_LOGGER.stoppingWeldService(deploymentName);
         weldContainer.stop();
     }
 

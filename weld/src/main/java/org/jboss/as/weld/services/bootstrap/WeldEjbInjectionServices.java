@@ -35,6 +35,7 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.as.weld.WeldMessages;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.vfs.VirtualFile;
@@ -58,16 +59,16 @@ public class WeldEjbInjectionServices implements EjbInjectionServices {
 
     public WeldEjbInjectionServices(ServiceRegistry serviceRegistry, EEModuleDescription moduleDescription, final EEApplicationDescription applicationDescription, final VirtualFile deploymentRoot) {
         if (serviceRegistry == null) {
-            throw new IllegalArgumentException("serviceRegistry cannot be null");
+            throw WeldMessages.MESSAGES.parameterCannotBeNull("serviceRegistry");
         }
         if (moduleDescription == null) {
-            throw new IllegalArgumentException("moduleDescription cannot be null");
+            throw WeldMessages.MESSAGES.parameterCannotBeNull("moduleDescription");
         }
         if (applicationDescription == null) {
-            throw new IllegalArgumentException("applicationDescription cannot be null");
+            throw WeldMessages.MESSAGES.parameterCannotBeNull("applicationDescription");
         }
         if (deploymentRoot == null) {
-            throw new IllegalArgumentException("deploymentRoot cannot be null");
+            throw WeldMessages.MESSAGES.parameterCannotBeNull("deploymentRoot");
         }
 
         this.serviceRegistry = serviceRegistry;
@@ -81,10 +82,10 @@ public class WeldEjbInjectionServices implements EjbInjectionServices {
         //TODO: some of this stuff should be cached
         EJB ejb = injectionPoint.getAnnotated().getAnnotation(EJB.class);
         if (ejb == null) {
-            throw new RuntimeException("@Ejb annotation not found on " + injectionPoint.getMember());
+            throw WeldMessages.MESSAGES.annotationNotFound(EJB.class, injectionPoint.getMember());
         }
         if (injectionPoint.getMember() instanceof Method && ((Method) injectionPoint.getMember()).getParameterTypes().length != 1) {
-            throw new IllegalArgumentException("Injection point represents a method which doesn't follow JavaBean conventions (must have exactly one parameter) " + injectionPoint);
+            throw WeldMessages.MESSAGES.injectionPointNotAJavabean((Method) injectionPoint.getMember());
         }
         if (!ejb.lookup().equals("")) {
             final ContextNames.BindInfo ejbBindInfo = ContextNames.bindInfoFor(moduleDescription.getApplicationName(), moduleDescription.getModuleName(), moduleDescription.getModuleName(), ejb.lookup());
@@ -107,9 +108,9 @@ public class WeldEjbInjectionServices implements EjbInjectionServices {
                 }
             }
             if (viewService.isEmpty()) {
-                throw new RuntimeException("Could not resolve @Ejb reference " + ejb);
+                throw WeldMessages.MESSAGES.ejbNotResolved(ejb, injectionPoint.getMember());
             } else if (viewService.size() > 1) {
-                throw new RuntimeException("More than 1 ejb found for @Ejb reference " + ejb);
+                throw WeldMessages.MESSAGES.moreThanOneEjbResolved(ejb, injectionPoint.getMember(), viewService);
             }
             final ViewDescription viewDescription = viewService.iterator().next();
             final ServiceController<?> controller = serviceRegistry.getRequiredService(viewDescription.getServiceName());
@@ -133,7 +134,7 @@ public class WeldEjbInjectionServices implements EjbInjectionServices {
         } else if (type instanceof ParameterizedType) {
             return getType(((ParameterizedType) type).getRawType());
         } else {
-            throw new RuntimeException("Could not determine bean class from injection point type of " + type);
+            throw WeldMessages.MESSAGES.couldNotDetermineUnderlyingType(type);
         }
     }
 }

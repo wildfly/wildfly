@@ -68,7 +68,7 @@ public class WeldTransactionServices implements TransactionServices, Service<Wel
                     status == Status.STATUS_PREPARING ||
                     status == Status.STATUS_ROLLING_BACK;
         } catch (SystemException e) {
-            throw new RuntimeException("SystemException while getting transaction status", e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -82,11 +82,11 @@ public class WeldTransactionServices implements TransactionServices, Service<Wel
         try {
             injectedTransactionManager.getValue().getTransaction().registerSynchronization(synchronizedObserver);
         } catch (IllegalStateException e) {
-            throw new RuntimeException("IllegalStateException while registering Synchronization", e);
+            throw new RuntimeException(e);
         } catch (RollbackException e) {
-            throw new RuntimeException("RollbackException while registering Synchronization", e);
+            throw new RuntimeException(e);
         } catch (SystemException e) {
-            throw new RuntimeException("SystemException while registering Synchronization", e);
+            throw new RuntimeException(e);
         }
     }
 

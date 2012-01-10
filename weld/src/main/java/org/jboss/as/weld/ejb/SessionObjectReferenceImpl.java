@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.as.weld.WeldMessages;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.weld.ejb.api.SessionObjectReference;
@@ -41,8 +42,10 @@ import org.jboss.weld.ejb.api.SessionObjectReference;
 public class SessionObjectReferenceImpl implements SessionObjectReference {
 
     private final Map<String, ServiceName> viewServices;
+    private final String ejbName;
 
     public SessionObjectReferenceImpl(EjbDescriptorImpl<?> descriptor) {
+        ejbName = descriptor.getEjbName();
         final Map<String, ServiceName> viewServices = new HashMap<String, ServiceName>();
         for (Map.Entry<Class<?>, ServiceName> entry : descriptor.getViewServices().entrySet()) {
             final Class<?> viewClass = entry.getKey();
@@ -92,7 +95,7 @@ public class SessionObjectReferenceImpl implements SessionObjectReference {
                 throw new RuntimeException(e);
             }
         } else {
-            throw new IllegalArgumentException("View of type " + businessInterfaceType + " not found on bean ");
+            throw WeldMessages.MESSAGES.viewNotFoundOnEJB(businessInterfaceType.getName(), ejbName);
         }
     }
 

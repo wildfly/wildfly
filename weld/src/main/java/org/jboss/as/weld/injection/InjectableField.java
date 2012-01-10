@@ -21,13 +21,15 @@
  */
 package org.jboss.as.weld.injection;
 
-import org.jboss.weld.manager.BeanManagerImpl;
-
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.Bean;
 import java.lang.reflect.Field;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+
+import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.spi.Bean;
+
+import org.jboss.as.weld.WeldMessages;
+import org.jboss.weld.manager.BeanManagerImpl;
 
 /**
  * tracks fields to be injected
@@ -62,7 +64,7 @@ final class InjectableField {
             final Object value = beanManager.getReference(injectionPoint, bean, ctx);
             field.set(instance, value);
         } catch (IllegalAccessException e) {
-            throw new RuntimeException("Failed to perform CDI injection of field: " + field + " on " + instance.getClass(), e);
+            throw WeldMessages.MESSAGES.couldNotInjectField(field, instance.getClass(), e);
         }
     }
 }
