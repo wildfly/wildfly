@@ -156,10 +156,6 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.jboss.osgi.logging</groupId>
-      <artifactId>jboss-osgi-logging</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.jboss.osgi.deployment</groupId>
       <artifactId>jbosgi-deployment</artifactId>
       <exclusions>
@@ -170,20 +166,12 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.jboss.osgi.http</groupId>
-      <artifactId>jbosgi-http</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.osgi</groupId>
       <artifactId>org.osgi.core</artifactId>
     </dependency>
     <dependency>
       <groupId>org.osgi</groupId>
       <artifactId>org.osgi.compendium</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.osgi.jmx</groupId>
-      <artifactId>jboss-osgi-jmx</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jboss.osgi.framework</groupId>
