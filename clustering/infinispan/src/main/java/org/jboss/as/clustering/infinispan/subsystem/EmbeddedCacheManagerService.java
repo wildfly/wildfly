@@ -30,7 +30,6 @@ import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalJmxStatisticsConfigurationBuilder;
 import org.infinispan.configuration.global.ShutdownHookBehavior;
 import org.infinispan.configuration.global.TransportConfigurationBuilder;
-import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStarted;
@@ -120,7 +119,10 @@ public class EmbeddedCacheManagerService implements Service<EmbeddedCacheManager
     public void start(StartContext context) throws StartException {
 
         GlobalConfigurationBuilder globalBuilder = new GlobalConfigurationBuilder();
-        globalBuilder.shutdown().hookBehavior(ShutdownHookBehavior.DONT_REGISTER).transport().strictPeerToPeer(false);
+        globalBuilder
+            .shutdown().hookBehavior(ShutdownHookBehavior.DONT_REGISTER)
+            .transport().strictPeerToPeer(false)
+        ;
 
         // set up transport only if transport is required by some cache in the cache manager
         TransportConfiguration transport = this.dependencies.getTransportConfiguration();
@@ -180,14 +182,17 @@ public class EmbeddedCacheManagerService implements Service<EmbeddedCacheManager
 
         MBeanServer server = this.dependencies.getMBeanServer();
         if (server != null) {
-            jmxBuilder.enable().mBeanServerLookup(new MBeanServerProvider(server)).jmxDomain(SERVICE_NAME.getCanonicalName());
+            jmxBuilder.enable()
+                .mBeanServerLookup(new MBeanServerProvider(server))
+                .jmxDomain(SERVICE_NAME.getCanonicalName())
+                .allowDuplicateDomains(true)
+            ;
         } else {
             jmxBuilder.disable();
         }
 
         // create the cache manager
-        EmbeddedCacheManager manager = new DefaultCacheManager(globalBuilder.build(), false);
-        this.container = new DefaultEmbeddedCacheManager(manager, this.defaultCache);
+        this.container = new DefaultEmbeddedCacheManager(globalBuilder.build(), this.defaultCache);
         this.container.addListener(this);
         this.container.start();
         log.debugf("%s cache container started", this.name);
@@ -207,11 +212,11 @@ public class EmbeddedCacheManagerService implements Service<EmbeddedCacheManager
 
     @CacheStarted
     public void cacheStarted(CacheStartedEvent event) {
-        InfinispanLogger.ROOT_LOGGER.cacheStarted(event.getCacheName(), event.getCacheManager().getCacheManagerConfiguration().globalJmxStatistics().cacheManagerName());
+        InfinispanLogger.ROOT_LOGGER.cacheStarted(event.getCacheName(), new DefaultEmbeddedCacheManager(event.getCacheManager(), null).getCacheManagerConfiguration().globalJmxStatistics().cacheManagerName());
     }
 
     @CacheStopped
     public void cacheStopped(CacheStoppedEvent event) {
-        InfinispanLogger.ROOT_LOGGER.cacheStopped(event.getCacheName(), event.getCacheManager().getCacheManagerConfiguration().globalJmxStatistics().cacheManagerName());
+        InfinispanLogger.ROOT_LOGGER.cacheStopped(event.getCacheName(), new DefaultEmbeddedCacheManager(event.getCacheManager(), null).getCacheManagerConfiguration().globalJmxStatistics().cacheManagerName());
     }
 }
