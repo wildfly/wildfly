@@ -46,7 +46,6 @@ public abstract class AbstractAdvancedCache<K, V> extends AbstractDelegatingAdva
 
     @Override
     public AdvancedCache<K, V> with(ClassLoader classLoader) {
-        // Add a low risk flag before attaching classloader - workaround for ISPN-1644
-        return this.wrap(this.cache.withFlags(Flag.SKIP_CACHE_STATUS_CHECK).with(classLoader));
+        return this.wrap(this.cache.with(classLoader));
     }
 }

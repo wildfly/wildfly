@@ -133,7 +133,7 @@
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.1.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
         <version.org.hibernate.validator>4.2.0.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.2.7.Final</version.org.hornetq>
-        <version.org.infinispan>5.1.0.CR2</version.org.infinispan>
+        <version.org.infinispan>5.1.0.CR3</version.org.infinispan>
         <version.org.javassist>3.15.0-GA</version.org.javassist>
         <version.org.jdom>1.1.2</version.org.jdom>
         <version.org.jboss.arquillian.core>1.0.0.CR7</version.org.jboss.arquillian.core>
@@ -223,7 +223,7 @@
         <version.org.jboss.xnio>3.0.0.GA</version.org.jboss.xnio>
         <version.org.jboss.xnio.xnio-api>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-nio>
-        <version.org.jgroups>3.0.1.Final</version.org.jgroups>
+        <version.org.jgroups>3.0.2.Final</version.org.jgroups>
         <version.org.mockito>1.8.5</version.org.mockito>
         <version.org.picketbox>4.0.6.Beta2</version.org.picketbox>
         <version.org.picketbox.picketbox-commons>1.0.0.CR1</version.org.picketbox.picketbox-commons>

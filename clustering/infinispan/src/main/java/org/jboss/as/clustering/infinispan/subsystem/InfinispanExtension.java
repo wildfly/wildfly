@@ -123,7 +123,7 @@ public class InfinispanExtension implements Extension {
     public void initializeParsers(ExtensionParsingContext context) {
         for (Namespace namespace: Namespace.values()) {
             if (namespace != Namespace.UNKNOWN) {
-                context.setSubsystemXmlMapping(namespace.getUri(), namespace.getReader());
+                context.setSubsystemXmlMapping(SUBSYSTEM_NAME, namespace.getUri(), namespace.getReader());
             }
         }
     }

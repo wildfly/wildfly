@@ -79,7 +79,7 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
         @SuppressWarnings("unchecked")
         AdvancedCache<SessionKeyImpl, Map<Object, Object>> sessionCache = this.sessionCache.getValue().getAdvancedCache().with(this.getClass().getClassLoader());
         if (!sessionCache.getCacheConfiguration().invocationBatching().enabled()) {
-            throw new ClusteringNotSupportedException(MESSAGES.failedToConfigureWebApp(sessionCache.getCacheManager().getGlobalConfiguration().getCacheManagerName(), sessionCache.getName()));
+            throw new ClusteringNotSupportedException(MESSAGES.failedToConfigureWebApp(sessionCache.getCacheManager().getCacheManagerConfiguration().globalJmxStatistics().cacheManagerName(), sessionCache.getName()));
         }
         @SuppressWarnings("unchecked")
         Cache<Address, String> jvmRouteCache = this.sessionCache.getValue();
@@ -122,6 +122,10 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
     @SuppressWarnings("rawtypes")
     public Injector<Cache> getJvmRouteCacheInjector() {
         return this.jvmRouteCache;
+    }
+
+    public Injector<SharedLocalYieldingClusterLockManager> getLockManagerInjector() {
+        return this.lockManager;
     }
 
     public void setSessionAttributeMarshallerFactory(SessionAttributeMarshallerFactory marshallerFactory) {

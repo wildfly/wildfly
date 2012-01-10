@@ -40,7 +40,6 @@ import org.infinispan.Cache;
 import org.infinispan.commands.VisitableCommand;
 import org.infinispan.config.ConfigurationException;
 import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.interceptors.base.CommandInterceptor;
 import org.infinispan.manager.AbstractDelegatingEmbeddedCacheManager;
@@ -92,11 +91,9 @@ public class DefaultEmbeddedCacheManager extends AbstractDelegatingEmbeddedCache
      * {@inheritDoc}
      * @see org.infinispan.manager.EmbeddedCacheManager#defineConfiguration(String, org.infinispan.configuration.cache.Configuration)
      */
-    @SuppressWarnings("deprecation")
     @Override
     public Configuration defineConfiguration(String cacheName, Configuration configuration) {
-        this.cm.defineConfiguration(this.getCacheName(cacheName), new LegacyConfigurationAdapter().adapt(configuration));
-        return configuration;
+        return this.cm.defineConfiguration(this.getCacheName(cacheName), configuration);
     }
 
     /**
@@ -203,7 +200,7 @@ public class DefaultEmbeddedCacheManager extends AbstractDelegatingEmbeddedCache
      */
     @Override
     public String toString() {
-        return this.cm.getGlobalConfiguration().getCacheManagerName();
+        return this.cm.getCacheManagerConfiguration().globalJmxStatistics().cacheManagerName();
     }
 
     class DelegatingCache<K, V> extends AbstractAdvancedCache<K, V> {
@@ -213,14 +210,6 @@ public class DefaultEmbeddedCacheManager extends AbstractDelegatingEmbeddedCache
 
         DelegatingCache(Cache<K, V> cache) {
             this(cache.getAdvancedCache());
-        }
-
-        /**
-         * Workaround for ISPN-1682
-         */
-        @Override
-        public Configuration getCacheConfiguration() {
-            return new LegacyConfigurationAdapter().adapt(this.getConfiguration());
         }
 
         @Override
