@@ -69,7 +69,7 @@ class RemoteOutboundConnectionAdd extends AbstractOutboundConnectionAddHandler {
                     // skip
                     continue;
                 }
-                addOperation.get(CommonAttributes.CONNECTION_CREATION_OPTIONS).set(entry.getKey(), entry.getValue());
+                addOperation.get(CommonAttributes.CONNECTION_CREATION_OPTIONS).add(entry.getKey(), entry.getValue());
             }
         }
 

@@ -2,8 +2,18 @@
     <connector name="test-connector" socket-binding="test"/>
 
     <outbound-connections>
-        <remote-outbound-connection name="remote-conn1" outbound-socket-binding-ref="dummy-outbound-socket"/>
-        <local-outbound-connection name="local-conn1" outbound-socket-binding-ref="other-outbound-socket"/>
+        <remote-outbound-connection name="remote-conn1" outbound-socket-binding-ref="dummy-outbound-socket">
+        	<connection-creation-options>
+        	    <option name="SASL_POLICY_NOANONYMOUS" value="false"/>
+				<option name="SSL_ENABLED" value="false"/>
+        	</connection-creation-options>
+        </remote-outbound-connection>
+        <local-outbound-connection name="local-conn1" outbound-socket-binding-ref="other-outbound-socket">
+        	<connection-creation-options>
+        	    <option name="SASL_POLICY_NOANONYMOUS" value="false"/>
+				<option name="SSL_ENABLED" value="false"/>
+        	</connection-creation-options>
+        </local-outbound-connection>
     </outbound-connections>
 </subsystem>
 
