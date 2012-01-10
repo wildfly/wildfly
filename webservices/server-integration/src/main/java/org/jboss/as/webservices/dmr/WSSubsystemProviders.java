@@ -164,11 +164,11 @@ final class WSSubsystemProviders {
 
             subsystem.get(ATTRIBUTES, MODIFY_WSDL_ADDRESS, DESCRIPTION).set(bundle.getString("modify.wsdl.address"));
             subsystem.get(ATTRIBUTES, MODIFY_WSDL_ADDRESS, TYPE).set(ModelType.BOOLEAN);
-            subsystem.get(ATTRIBUTES, MODIFY_WSDL_ADDRESS, REQUIRED).set(true);
+            subsystem.get(ATTRIBUTES, MODIFY_WSDL_ADDRESS, REQUIRED).set(false);
 
             subsystem.get(ATTRIBUTES, WSDL_HOST, DESCRIPTION).set(bundle.getString("wsdl.host"));
             subsystem.get(ATTRIBUTES, WSDL_HOST, TYPE).set(ModelType.STRING);
-            subsystem.get(ATTRIBUTES, WSDL_HOST, REQUIRED).set(true);
+            subsystem.get(ATTRIBUTES, WSDL_HOST, REQUIRED).set(false);
 
             subsystem.get(ATTRIBUTES, WSDL_PORT, DESCRIPTION).set(bundle.getString("wsdl.port"));
             subsystem.get(ATTRIBUTES, WSDL_PORT, TYPE).set(ModelType.INT);
@@ -484,11 +484,11 @@ final class WSSubsystemProviders {
 
             op.get(REQUEST_PROPERTIES, MODIFY_WSDL_ADDRESS, DESCRIPTION).set(bundle.getString("modify.wsdl.address"));
             op.get(REQUEST_PROPERTIES, MODIFY_WSDL_ADDRESS, TYPE).set(ModelType.BOOLEAN);
-            op.get(REQUEST_PROPERTIES, MODIFY_WSDL_ADDRESS, REQUIRED).set(true);
+            op.get(REQUEST_PROPERTIES, MODIFY_WSDL_ADDRESS, REQUIRED).set(false);
 
             op.get(REQUEST_PROPERTIES, WSDL_HOST, DESCRIPTION).set(bundle.getString("wsdl.host"));
             op.get(REQUEST_PROPERTIES, WSDL_HOST, TYPE).set(ModelType.STRING);
-            op.get(REQUEST_PROPERTIES, WSDL_HOST, REQUIRED).set(true);
+            op.get(REQUEST_PROPERTIES, WSDL_HOST, REQUIRED).set(false);
 
             op.get(REQUEST_PROPERTIES, WSDL_PORT, DESCRIPTION).set(bundle.getString("wsdl.port"));
             op.get(REQUEST_PROPERTIES, WSDL_PORT, TYPE).set(ModelType.INT);
