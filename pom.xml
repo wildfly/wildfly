@@ -5827,6 +5827,7 @@
                 <module>cli</module>
                 <module>clustering</module>
                 <module>cmp</module>
+                <module>configadmin</module>
                 <module>connector</module>
                 <module>demos</module>
                 <module>deployment-scanner</module>
