@@ -62,6 +62,6 @@ rem # Sample JPDA settings for shared memory debugging
 rem set "JAVA_OPTS=%JAVA_OPTS% -Xrunjdwp:transport=dt_shmem,address=jboss,server=y,suspend=n"
 
 rem # Use JBoss Modules lockless mode
-rem #JAVA_OPTS="$JAVA_OPTS -Djboss.modules.lockless=true"
+rem #JAVA_OPTS="%JAVA_OPTS% -Djboss.modules.lockless=true"
 
 :JAVA_OPTS_SET
