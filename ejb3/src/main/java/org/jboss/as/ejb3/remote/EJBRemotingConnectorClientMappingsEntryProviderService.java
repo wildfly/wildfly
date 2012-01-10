@@ -30,6 +30,8 @@ import org.jboss.as.remoting.InjectedSocketBindingStreamServerService;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -42,24 +44,38 @@ import java.util.List;
 /**
  * @author Jaikiran Pai
  */
-public class EJBRemotingConnectorClientMappingService implements Service<EJBRemotingConnectorClientMappingService> {
+public class EJBRemotingConnectorClientMappingsEntryProviderService implements Service<EJBRemotingConnectorClientMappingsEntryProviderService> {
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb").append("remoting").append("connector").append("client-mapping-entry-provider-service");
 
+    private final ServiceName remotingConnectorServiceName;
     private final InjectedValue<ServerEnvironment> environment = new InjectedValue<ServerEnvironment>();
-    private final InjectedValue<AbstractStreamServerService> remotingServer = new InjectedValue<AbstractStreamServerService>();
+    private volatile InjectedSocketBindingStreamServerService remotingServer;
     private final Registry.RegistryEntryProvider<String, List<ClientMapping>> registryEntryProvider = new ClientMappingEntryProvider();
+
+    public EJBRemotingConnectorClientMappingsEntryProviderService(final ServiceName remotingConnectorServiceName) {
+        this.remotingConnectorServiceName = remotingConnectorServiceName;
+    }
 
     @Override
     public void start(StartContext context) throws StartException {
+        // get the remoting server (which allows remoting connector to connect to it) service
+        final ServiceContainer serviceContainer = context.getController().getServiceContainer();
+        final ServiceController streamServerServiceController = serviceContainer.getRequiredService(this.remotingConnectorServiceName);
+        final AbstractStreamServerService streamServerService = (AbstractStreamServerService) streamServerServiceController.getService();
+        // we can only work off a remoting connector which is backed by a socketbinding
+        if (streamServerService instanceof InjectedSocketBindingStreamServerService) {
+            this.remotingServer = (InjectedSocketBindingStreamServerService) streamServerService;
+        }
     }
 
     @Override
     public void stop(StopContext context) {
+        this.remotingServer = null;
     }
 
     @Override
-    public EJBRemotingConnectorClientMappingService getValue() throws IllegalStateException, IllegalArgumentException {
+    public EJBRemotingConnectorClientMappingsEntryProviderService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
 
@@ -67,20 +83,15 @@ public class EJBRemotingConnectorClientMappingService implements Service<EJBRemo
         return this.registryEntryProvider;
     }
 
-    public Injector<AbstractStreamServerService> getRemotingServerInjector() {
-        return this.remotingServer;
-    }
-
     public Injector<ServerEnvironment> getServerEnvironmentInjector() {
         return this.environment;
     }
 
     List<ClientMapping> getClientMappings() {
-        final AbstractStreamServerService streamServerService = this.remotingServer.getValue();
-        if (!(streamServerService instanceof InjectedSocketBindingStreamServerService)) {
+        if (this.remotingServer == null) {
             return Collections.emptyList();
         }
-        final SocketBinding socketBinding = ((InjectedSocketBindingStreamServerService) streamServerService).getSocketBinding();
+        final SocketBinding socketBinding = this.remotingServer.getSocketBinding();
         return socketBinding.getClientMappings();
     }
 
@@ -92,12 +103,12 @@ public class EJBRemotingConnectorClientMappingService implements Service<EJBRemo
 
         @Override
         public String getKey() {
-            return EJBRemotingConnectorClientMappingService.this.getNodeName();
+            return EJBRemotingConnectorClientMappingsEntryProviderService.this.getNodeName();
         }
 
         @Override
         public List<ClientMapping> getValue() {
-            return EJBRemotingConnectorClientMappingService.this.getClientMappings();
+            return EJBRemotingConnectorClientMappingsEntryProviderService.this.getClientMappings();
         }
     }
 }

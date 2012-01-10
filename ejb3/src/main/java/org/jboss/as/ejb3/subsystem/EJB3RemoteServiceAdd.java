@@ -34,9 +34,8 @@ import org.jboss.as.ejb3.cache.impl.backing.clustering.GroupMembershipNotifierRe
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
-import org.jboss.as.ejb3.remote.EJBRemotingConnectorClientMappingService;
+import org.jboss.as.ejb3.remote.EJBRemotingConnectorClientMappingsEntryProviderService;
 import org.jboss.as.network.ClientMapping;
-import org.jboss.as.remoting.AbstractStreamServerService;
 import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
@@ -126,9 +125,9 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
         // Install the client-mapping service for the remoting connector
-        final EJBRemotingConnectorClientMappingService clientMappingEntryProviderService = new EJBRemotingConnectorClientMappingService();
-        final ServiceBuilder clientMappingEntryProviderServiceBuilder = serviceTarget.addService(EJBRemotingConnectorClientMappingService.SERVICE_NAME, clientMappingEntryProviderService)
-                .addDependency(remotingServerServiceName, AbstractStreamServerService.class, clientMappingEntryProviderService.getRemotingServerInjector())
+        final EJBRemotingConnectorClientMappingsEntryProviderService clientMappingEntryProviderService = new EJBRemotingConnectorClientMappingsEntryProviderService(remotingServerServiceName);
+        final ServiceBuilder clientMappingEntryProviderServiceBuilder = serviceTarget.addService(EJBRemotingConnectorClientMappingsEntryProviderService.SERVICE_NAME, clientMappingEntryProviderService)
+                .addDependency(remotingServerServiceName)
                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, clientMappingEntryProviderService.getServerEnvironmentInjector());
         if (verificationHandler != null) {
             clientMappingEntryProviderServiceBuilder.addListener(verificationHandler);
@@ -157,12 +156,12 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
 
         // Install the EJB remoting connector service which will listen for client connections on the remoting channel
         // TODO: Externalize (expose via management API if needed) the version and the marshalling strategy
-        final EJBRemoteConnectorService ejbRemoteConnectorService = new EJBRemoteConnectorService((byte) 0x01, new String[]{"river"});
+        final EJBRemoteConnectorService ejbRemoteConnectorService = new EJBRemoteConnectorService((byte) 0x01, new String[]{"river"}, remotingServerServiceName);
         final ServiceBuilder<EJBRemoteConnectorService> ejbRemoteConnectorServiceBuilder = serviceTarget.addService(EJBRemoteConnectorService.SERVICE_NAME, ejbRemoteConnectorService);
         // add dependency on the Remoting subsytem endpoint
         ejbRemoteConnectorServiceBuilder.addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, ejbRemoteConnectorService.getEndpointInjector());
         // add dependency on the remoting server (which allows remoting connector to connect to it)
-        ejbRemoteConnectorServiceBuilder.addDependency(remotingServerServiceName, AbstractStreamServerService.class, ejbRemoteConnectorService.getRemotingServerInjector());
+        ejbRemoteConnectorServiceBuilder.addDependency(remotingServerServiceName);
         // add rest of the dependencies
         ejbRemoteConnectorServiceBuilder.addDependency(EJB3ThreadPoolAdd.BASE_SERVICE_NAME.append(threadPoolName), ExecutorService.class, ejbRemoteConnectorService.getExecutorService())
                 .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, ejbRemoteConnectorService.getDeploymentRepositoryInjector())
