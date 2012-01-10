@@ -325,7 +325,14 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
 
                         if (pu.getProperties().containsKey(JNDI_PROPERTY)) {
                             String jndiName = pu.getProperties().get(JNDI_PROPERTY).toString();
-                            final ContextNames.BindInfo bindingInfo = ContextNames.bindInfoFor(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), jndiName);
+                            final ContextNames.BindInfo bindingInfo;
+                            if (jndiName.startsWith("java:")) {
+                                bindingInfo =  ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, jndiName);
+                            }
+                            else {
+                                bindingInfo = ContextNames.bindInfoFor(jndiName);
+                            }
+                            JPA_LOGGER.tracef("binding the entity manager factory to jndi name '%s'", bindingInfo.getAbsoluteJndiName());
                             final BinderService binderService = new BinderService(bindingInfo.getBindName());
                             serviceTarget.addService(bindingInfo.getBinderServiceName(), binderService)
                                 .addDependency(bindingInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
