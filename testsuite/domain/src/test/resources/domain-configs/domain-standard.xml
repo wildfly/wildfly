@@ -451,11 +451,7 @@
                 </scheduled-thread-pool>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:cmp:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:configadmin:1.0">
-                <configuration pid="org.apache.felix.webconsole.internal.servlet.OsgiManager">
-                    <property name="manager.root" value="jboss-osgi"/>
-                </configuration>
-            </subsystem>
+            <subsystem xmlns="urn:jboss:domain:configadmin:1.0"/>
             <subsystem xmlns="urn:jboss:domain:ee:1.0"/>
             <subsystem xmlns="urn:jboss:domain:ejb3:1.2" >
 
