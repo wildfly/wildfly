@@ -38,6 +38,8 @@ import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -82,22 +84,32 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
     private final InjectedValue<GroupMembershipNotifierRegistry> clusterRegistry = new InjectedValue<GroupMembershipNotifierRegistry>();
     private final InjectedValue<Registry> clientMappingsRegistryService = new InjectedValue<Registry>();
     private final InjectedValue<ServerEnvironment> serverEnvironment = new InjectedValue<ServerEnvironment>();
-    private final InjectedValue<AbstractStreamServerService> remotingServer = new InjectedValue<AbstractStreamServerService>();
     private final InjectedValue<Cache> clientMappingsBackingCache = new InjectedValue<Cache>();
-
+    private final ServiceName remotingConnectorServiceName;
     private volatile Registration registration;
+    private volatile InjectedSocketBindingStreamServerService remotingServer;
     private final byte serverProtocolVersion;
     private final String[] supportedMarshallingStrategies;
 
-    public EJBRemoteConnectorService(final byte serverProtocolVersion, final String[] supportedMarshallingStrategies) {
+    public EJBRemoteConnectorService(final byte serverProtocolVersion, final String[] supportedMarshallingStrategies, final ServiceName remotingConnectorServiceName) {
         this.serverProtocolVersion = serverProtocolVersion;
         this.supportedMarshallingStrategies = supportedMarshallingStrategies;
+        this.remotingConnectorServiceName = remotingConnectorServiceName;
     }
 
     @Override
     public void start(StartContext context) throws StartException {
+        // get the remoting server (which allows remoting connector to connect to it) service
+        final ServiceContainer serviceContainer = context.getController().getServiceContainer();
+        final ServiceController streamServerServiceController = serviceContainer.getRequiredService(this.remotingConnectorServiceName);
+        final AbstractStreamServerService streamServerService = (AbstractStreamServerService) streamServerServiceController.getService();
+        // we can only work off a remoting connector which is backed by a socketbinding
+        if (streamServerService instanceof InjectedSocketBindingStreamServerService) {
+            this.remotingServer = (InjectedSocketBindingStreamServerService) streamServerService;
+        }
+
         // populate the client-mapping cache which will be used for getting the client-mapping(s)
-        // of each node's EJB remoting connector's socketbining
+        // of each node's EJB remoting connector's socketbinding
         this.populateClientMappingsCache();
 
         // Register a EJB channel open listener
@@ -111,6 +123,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
     @Override
     public void stop(StopContext context) {
+        this.remotingServer = null;
         registration.close();
     }
 
@@ -261,10 +274,6 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
         return this.clientMappingsRegistryService;
     }
 
-    public Injector<AbstractStreamServerService> getRemotingServerInjector() {
-        return this.remotingServer;
-    }
-
     public Injector<ServerEnvironment> getServerEnvironmentInjector() {
         return this.serverEnvironment;
     }
@@ -288,15 +297,16 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
     private void populateClientMappingsCache() {
         final Cache<String, List<ClientMapping>> clientMappingsCache = this.clientMappingsBackingCache.getOptionalValue();
         if (clientMappingsCache == null) {
-            // nothing to do, just return
+            // the cache into which we were planning to add the client mapping isn't available (valid case),
+            // so just return
             return;
         }
-        final AbstractStreamServerService streamService = this.remotingServer.getValue();
-        // we don't deal with a remoting server which isn't backed by a socketbinding
-        if (!(streamService instanceof InjectedSocketBindingStreamServerService)) {
+        // without the remoting server for the connector, we can't get hold off the socket binding and ultimately
+        // the client mappings. So we just return without populating the cache
+        if (this.remotingServer == null) {
             return;
         }
-        final SocketBinding socketBinding = ((InjectedSocketBindingStreamServerService) streamService).getSocketBinding();
+        final SocketBinding socketBinding = this.remotingServer.getSocketBinding();
         List<ClientMapping> clientMappings = socketBinding.getClientMappings();
         final String nodeName = this.serverEnvironment.getValue().getNodeName();
         if (clientMappings == null || clientMappings.isEmpty()) {
