@@ -77,7 +77,7 @@ public class ManagedDMRContentResource implements Resource.ResourceEntry {
     public synchronized void writeModel(ModelNode newModel) {
 
         if (parent == null) {
-            throw new IllegalStateException("null parent");
+            throw ManagedDMRContentMessages.MESSAGES.nullParent();
         }
 
         ModelNode content = newModel.get(ModelDescriptionConstants.CONTENT);

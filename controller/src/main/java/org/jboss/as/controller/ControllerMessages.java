@@ -2269,7 +2269,7 @@ public interface ControllerMessages {
      *
      * @param value the name of the required parameter
      * @param paramName the name of the required parameter
-     * @param minLength the minimum value
+     * @param maxLength the minimum value
      * @param operation the operation as a string. May be empty
      */
     @Message(id = 14828, value = "The value '%s' passed in for '%s' is longer than the maximum length '%s'. %s")
@@ -2300,7 +2300,7 @@ public interface ControllerMessages {
      * Creates a string for use in an IllegalArgumentException or a warning message indicating that
      * a parameter is undefined in the operation description.
      *
-     * @param paramName the name of the parameter
+     * @param name the name of the parameter
      * @param address the address of the operation
      * @param description the operation description
      */

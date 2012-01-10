@@ -141,7 +141,7 @@ public class RuntimeMXBeanAttributeHandler extends AbstractPlatformMBeanAttribut
         } else if (PlatformMBeanConstants.RUNTIME_READ_ATTRIBUTES.contains(name)
                 || PlatformMBeanConstants.RUNTIME_METRICS.contains(name)) {
             // Bug
-            throw new IllegalStateException(String.format("Read support for attribute %s was not properly implemented", name));
+            throw PlatformMBeanMessages.MESSAGES.badReadAttributeImpl10(name);
         }
 
     }

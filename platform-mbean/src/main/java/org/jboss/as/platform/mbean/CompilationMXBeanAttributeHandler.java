@@ -22,8 +22,6 @@
 
 package org.jboss.as.platform.mbean;
 
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
 import java.lang.management.ManagementFactory;
 
 import org.jboss.as.controller.OperationContext;
@@ -78,7 +76,7 @@ public class CompilationMXBeanAttributeHandler extends AbstractPlatformMBeanAttr
         } else if (PlatformMBeanConstants.COMPILATION_READ_ATTRIBUTES.contains(attributeName)
                     || PlatformMBeanConstants.COMPILATION_METRICS.contains(attributeName)) {
             // Bug
-            throw new IllegalStateException(String.format("Read support for attribute %s was not properly implemented", attributeName));
+            throw PlatformMBeanMessages.MESSAGES.badReadAttributeImpl3(attributeName);
         }
     }
 

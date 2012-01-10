@@ -24,13 +24,13 @@ package org.jboss.as.platform.mbean;
 
 import static org.jboss.as.platform.mbean.PlatformMBeanUtil.escapeMBeanName;
 
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
 
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;

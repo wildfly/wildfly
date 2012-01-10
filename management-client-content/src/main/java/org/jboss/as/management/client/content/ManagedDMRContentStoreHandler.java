@@ -62,10 +62,10 @@ public class ManagedDMRContentStoreHandler implements OperationStepHandler, Desc
         final byte[] oldHash = ManagedDMRContentResourceDefinition.HASH.validateOperation(operation).asBytes();
         final byte[] currentHash = resource.getModel().get(ManagedDMRContentResourceDefinition.HASH.getName()).asBytes();
         if (!Arrays.equals(oldHash, currentHash)) {
-            throw new OperationFailedException(String.format("Invalid hash '%s' for content at address %s; current hash " +
-                    "is '%s' -- perhaps the content has been updated by another caller?",
+            throw ManagedDMRContentMessages.MESSAGES.invalidHash(
+                    HashUtil.bytesToHexString(oldHash),
                     PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)),
-                    HashUtil.bytesToHexString(oldHash), HashUtil.bytesToHexString(currentHash)));
+                    HashUtil.bytesToHexString(currentHash));
         }
         ModelNode model = new ModelNode();
         contentAttribute.validateAndSet(operation, model);

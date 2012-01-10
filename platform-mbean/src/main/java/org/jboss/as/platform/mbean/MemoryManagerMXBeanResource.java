@@ -24,7 +24,6 @@ package org.jboss.as.platform.mbean;
 
 import static org.jboss.as.platform.mbean.PlatformMBeanUtil.escapeMBeanName;
 
-import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryManagerMXBean;
 import java.util.Collections;

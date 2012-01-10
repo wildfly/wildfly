@@ -22,13 +22,11 @@
 
 package org.jboss.as.platform.mbean;
 
-import javax.management.InstanceNotFoundException;
-import javax.management.JMException;
-import javax.management.JMRuntimeException;
-import javax.management.MBeanException;
-import javax.management.ReflectionException;
 import java.lang.management.ManagementFactory;
 import java.util.Locale;
+
+import javax.management.JMException;
+import javax.management.JMRuntimeException;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;

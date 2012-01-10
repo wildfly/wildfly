@@ -58,7 +58,7 @@ public class ThreadMXBeanThreadInfoHandler implements OperationStepHandler, Desc
         ThreadMXBean mbean = ManagementFactory.getThreadMXBean();
         try {
             long id = operation.require(PlatformMBeanConstants.ID).asLong();
-            ThreadInfo info = null;
+            ThreadInfo info;
             if (operation.hasDefined(PlatformMBeanConstants.MAX_DEPTH)) {
                 info = mbean.getThreadInfo(id, operation.require(PlatformMBeanConstants.MAX_DEPTH).asInt());
             } else {

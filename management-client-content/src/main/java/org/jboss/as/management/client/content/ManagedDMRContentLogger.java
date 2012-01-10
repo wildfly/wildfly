@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,36 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.platform.mbean;
+package org.jboss.as.management.client.content;
 
-import java.util.Collections;
-import java.util.Set;
-
-import org.jboss.as.controller.PathElement;
+import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Logger;
+import org.jboss.logging.MessageLogger;
 
 /**
- * Resource impl for leaf platform mbean resources.
+ * This module is using message IDs in the range 12200-12299. This file is using the subset 12200-12249 for
+ * logger messages. See http://community.jboss.org/docs/DOC-16810 for the full list of currently reserved
+ * JBAS message id blocks.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-class LeafPlatformMBeanResource extends AbstractPlatformMBeanResource {
+@MessageLogger(projectCode = "JBAS")
+public interface ManagedDMRContentLogger extends BasicLogger {
 
-    public LeafPlatformMBeanResource(PathElement pathElement) {
-        super(pathElement);
-    }
-
-    @Override
-    ResourceEntry getChildEntry(String name) {
-        return null;
-    }
-
-    @Override
-    Set<String> getChildrenNames() {
-        return Collections.emptySet();
-    }
-
-    @Override
-    public Set<String> getChildTypes() {
-        return Collections.emptySet();
-    }
+    /**
+     * A logger with the category of the package.
+     */
+    ManagedDMRContentLogger ROOT_LOGGER = Logger.getMessageLogger(ManagedDMRContentLogger.class, ManagedDMRContentLogger.class.getPackage().getName());
 }
