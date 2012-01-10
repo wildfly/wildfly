@@ -29,6 +29,7 @@ import org.jboss.dmr.Property;
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
 public class ManagementModelNode extends DefaultMutableTreeNode {
+    public static final String ATTR_VALUE_SEPERATOR = " => ";
 
     private CommandExecutor executor;
     private boolean isLeaf = false;
@@ -57,7 +58,7 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
                         add(new ManagementModelNode(label, false));
                     }
                 } else {
-                    add(new ManagementModelNode(prop.getName() + " => " + prop.getValue().asString(), true));
+                    add(new ManagementModelNode(prop.getName() + ATTR_VALUE_SEPERATOR + prop.getValue().asString(), true));
                 }
             }
         } catch (Exception e) {
