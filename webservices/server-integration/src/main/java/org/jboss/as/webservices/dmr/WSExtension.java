@@ -27,13 +27,19 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.controller.registry.OperationEntry.EntryType.PRIVATE;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONFIG;
+import static org.jboss.as.webservices.dmr.Constants.MODIFY_WSDL_ADDRESS;
+import static org.jboss.as.webservices.dmr.Constants.WSDL_HOST;
+import static org.jboss.as.webservices.dmr.Constants.WSDL_PORT;
+import static org.jboss.as.webservices.dmr.Constants.WSDL_SECURE_PORT;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
@@ -60,6 +66,11 @@ public final class WSExtension implements Extension {
         registration.registerOperationHandler(ADD, WSSubsystemAdd.INSTANCE, WSSubsystemProviders.SUBSYSTEM_ADD, false);
         registration.registerOperationHandler(DESCRIBE, WSSubsystemDescribe.INSTANCE, WSSubsystemProviders.SUBSYSTEM_DESCRIBE, false, PRIVATE);
         registration.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, WSSubsystemProviders.SUBSYSTEM_REMOVE, false);
+        // ws subystem attributes
+        registration.registerReadWriteAttribute(WSDL_HOST, null, new ReloadRequiredWriteAttributeHandler(), Storage.CONFIGURATION);
+        registration.registerReadWriteAttribute(WSDL_PORT, null, new ReloadRequiredWriteAttributeHandler(), Storage.CONFIGURATION);
+        registration.registerReadWriteAttribute(WSDL_SECURE_PORT, null, new ReloadRequiredWriteAttributeHandler(), Storage.CONFIGURATION);
+        registration.registerReadWriteAttribute(MODIFY_WSDL_ADDRESS, null, new ReloadRequiredWriteAttributeHandler(), Storage.CONFIGURATION);
         // ws endpoint configuration
         final ManagementResourceRegistration epConfigs = registration.registerSubModel(PathElement.pathElement(ENDPOINT_CONFIG), WSSubsystemProviders.ENDPOINTCONFIG_DESCRIPTION);
         epConfigs.registerOperationHandler(ADD, EndpointConfigAdd.INSTANCE, WSSubsystemProviders.ENDPOINTCONFIG_ADD_DESCRIPTION, false);

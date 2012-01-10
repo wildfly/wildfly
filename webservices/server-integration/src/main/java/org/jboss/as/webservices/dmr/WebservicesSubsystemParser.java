@@ -47,8 +47,12 @@ final class WebservicesSubsystemParser implements XMLStreamConstants, XMLElement
         writer.writeNamespace("javaee", Namespace.JAVAEE.getUriString());
         writer.writeNamespace("jaxwsconfig", Namespace.JAXWSCONFIG.getUriString());
         ModelNode node = context.getModelNode();
-        writeElement(writer, Element.MODIFY_WSDL_ADDRESS, node.require(MODIFY_WSDL_ADDRESS));
-        writeElement(writer, Element.WSDL_HOST, node.require(WSDL_HOST));
+        if (has(node, MODIFY_WSDL_ADDRESS)) {
+            writeElement(writer, Element.MODIFY_WSDL_ADDRESS, node.require(MODIFY_WSDL_ADDRESS));
+        }
+        if (has(node, WSDL_HOST)) {
+            writeElement(writer, Element.WSDL_HOST, node.require(WSDL_HOST));
+        }
         if (has(node, WSDL_SECURE_PORT)) {
             writeElement(writer, Element.WSDL_SECURE_PORT, node.require(WSDL_SECURE_PORT));
         }
