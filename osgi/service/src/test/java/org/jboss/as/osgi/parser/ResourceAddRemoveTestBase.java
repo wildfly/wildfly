@@ -40,11 +40,11 @@ import org.mockito.stubbing.Answer;
 /**
  * @author David Bosschaert
  */
-public class ResourceAddRemoveTestBase {
+class ResourceAddRemoveTestBase {
 
     private final AtomicReference<ModelNode> operationHolder = new AtomicReference<ModelNode>();
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({ "unchecked" })
     protected OperationContext mockOperationContext(SubsystemState stateService, final List<OperationStepHandler> addedSteps,
                                                     final ResultAction stepResult) {
         ServiceRegistry serviceRegistry = Mockito.mock(ServiceRegistry.class);
