@@ -70,27 +70,30 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
      * @return The DMR path for this node.
      */
     public String addressPath() {
-        Object[] path;
         if (isLeaf) {
             ManagementModelNode parent = (ManagementModelNode)getParent();
-            path = parent.getUserObjectPath();
-        } else {
-            path = getUserObjectPath();
+            return parent.addressPath();
         }
 
-        StringBuilder builder = new StringBuilder();
+        Object[] path = getUserObjectPath();
+        StringBuilder builder = new StringBuilder("/"); // start with root
         for (Object pathElement : path) {
             String pathElementStr = pathElement.toString();
+            if (pathElementStr.equals("/")) continue; // don't want to escape root
 
-            // Colon & forward slash mess up parser.  Make them literal.
-            if (!pathElementStr.equals("/")) {
-                pathElementStr = pathElementStr.replace(":", "\\:");
-                pathElementStr = pathElementStr.replace("/", "\\/");
-            }
-            builder.append(pathElementStr);
+            String leftSide = pathElementStr.substring(0, pathElementStr.indexOf('=') + 1);
+            String rightSide = pathElementStr.substring(pathElementStr.indexOf('=') + 1);
 
-            if (!pathElementStr.equals("/")) builder.append("/");
+            // Colon, forward slash, & equals mess up parser.  Make them literal.
+            rightSide = rightSide.replace(":", "\\:");
+            rightSide = rightSide.replace("/", "\\/");
+            rightSide = rightSide.replace("=", "\\=");
+
+            builder.append(leftSide);
+            builder.append(rightSide);
+            builder.append("/");
         }
+
         return builder.toString();
     }
 

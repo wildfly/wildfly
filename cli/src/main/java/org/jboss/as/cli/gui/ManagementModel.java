@@ -111,6 +111,16 @@ public class ManagementModel extends JPanel {
         @Override
         public void mouseReleased(MouseEvent e) {
             if (!e.isPopupTrigger()) return;
+            showPopup(e);
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+            if (!e.isPopupTrigger()) return;
+            showPopup(e);
+        }
+
+        private void showPopup(MouseEvent e) {
             int selRow = tree.getRowForLocation(e.getX(), e.getY());
             if (selRow == -1) return;
 
