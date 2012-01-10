@@ -106,13 +106,13 @@ public final class PortComponentLinkService implements Service<WebAppController>
         return builder;
     }
 
-    public static ServiceController<WebAppController> install(final ServiceTarget serviceTarget, final ServiceListener<Object>... listeners) {
-        return install(serviceTarget, DEFAULT_HOST_NAME, listeners);
+    public static ServiceController<WebAppController> install(final ServiceTarget serviceTarget, final ServiceListener<Object> listener) {
+        return install(serviceTarget, DEFAULT_HOST_NAME, listener);
     }
 
-    public static ServiceController<WebAppController> install(final ServiceTarget serviceTarget, final String hostName, final ServiceListener<Object>... listeners) {
+    public static ServiceController<WebAppController> install(final ServiceTarget serviceTarget, final String hostName, final ServiceListener<Object> listener) {
         ServiceBuilder<WebAppController> builder = createServiceBuilder(serviceTarget, hostName);
-        builder.addListener(listeners);
+        builder.addListener(listener);
         builder.setInitialMode(Mode.ON_DEMAND);
         return builder.install();
     }
