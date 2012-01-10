@@ -187,7 +187,7 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
         this.trace("Acquiring %slock on %s", newLock ? "new " : "", lockKey);
 
         try {
-            LockResult result = this.lockManager.lock(lockKey, this.cache.getConfiguration().getLockAcquisitionTimeout(), newLock);
+            LockResult result = this.lockManager.lock(lockKey, this.cache.getCacheConfiguration().locking().lockAcquisitionTimeout(), newLock);
             this.trace("Lock acquired (%s) on %s", result, lockKey);
             return result;
         } catch (TimeoutException e) {

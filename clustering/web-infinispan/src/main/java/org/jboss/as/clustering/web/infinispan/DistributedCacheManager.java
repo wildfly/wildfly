@@ -432,7 +432,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData,
 
         EmbeddedCacheManager container = (EmbeddedCacheManager) this.sessionCache.getCacheManager();
 
-        LockResult result = results.get(this.lockManager.lock(this.keyFactory.createKey(sessionId).toString(), container.getGlobalConfiguration().getDistributedSyncTimeout(), newLock));
+        LockResult result = results.get(this.lockManager.lock(this.keyFactory.createKey(sessionId).toString(), container.getCacheManagerConfiguration().transport().distributedSyncTimeout(), newLock));
 
         ROOT_LOGGER.tracef("acquireSessionOwnership(%s, %s) = %s", sessionId, newLock, result);
 

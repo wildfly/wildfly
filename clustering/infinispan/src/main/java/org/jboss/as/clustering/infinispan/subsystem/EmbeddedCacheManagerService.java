@@ -154,7 +154,7 @@ public class EmbeddedCacheManagerService implements Service<EmbeddedCacheManager
                 ExecutorProvider.initTransportExecutor(globalBuilder, executor);
             }
         } else {
-            transportBuilder.clearTransport();
+            transportBuilder.transport(null);
         }
 
         Executor listenerExecutor = this.dependencies.getListenerExecutor();
@@ -207,11 +207,11 @@ public class EmbeddedCacheManagerService implements Service<EmbeddedCacheManager
 
     @CacheStarted
     public void cacheStarted(CacheStartedEvent event) {
-        InfinispanLogger.ROOT_LOGGER.cacheStarted(event.getCacheName(), event.getCacheManager().getGlobalConfiguration().getCacheManagerName());
+        InfinispanLogger.ROOT_LOGGER.cacheStarted(event.getCacheName(), event.getCacheManager().getCacheManagerConfiguration().globalJmxStatistics().cacheManagerName());
     }
 
     @CacheStopped
     public void cacheStopped(CacheStoppedEvent event) {
-        InfinispanLogger.ROOT_LOGGER.cacheStopped(event.getCacheName(), event.getCacheManager().getGlobalConfiguration().getCacheManagerName());
+        InfinispanLogger.ROOT_LOGGER.cacheStopped(event.getCacheName(), event.getCacheManager().getCacheManagerConfiguration().globalJmxStatistics().cacheManagerName());
     }
 }
