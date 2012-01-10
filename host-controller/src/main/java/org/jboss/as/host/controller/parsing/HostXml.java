@@ -1131,7 +1131,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
             if (server.hasDefined(SOCKET_BINDING_GROUP) || server.hasDefined(SOCKET_BINDING_PORT_OFFSET)) {
                 writer.writeStartElement(Element.SOCKET_BINDINGS.getLocalName());
                 if (server.hasDefined(SOCKET_BINDING_GROUP)) {
-                    writeAttribute(writer, Attribute.REF, server.get(SOCKET_BINDING_GROUP).asString());
+                    writeAttribute(writer, Attribute.SOCKET_BINDING_GROUP, server.get(SOCKET_BINDING_GROUP).asString());
                 }
                 if (server.hasDefined(SOCKET_BINDING_PORT_OFFSET)) {
                     writeAttribute(writer, Attribute.PORT_OFFSET, server.get(SOCKET_BINDING_PORT_OFFSET).asString());
