@@ -5764,6 +5764,24 @@
                 <groupId>org.picketlink</groupId>
                 <artifactId>picketlink-core</artifactId>
                 <version>${version.org.picketlink}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.picketlink</groupId>
+                <artifactId>picketlink-fed</artifactId>
+                <version>${version.org.picketlink}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.picketlink</groupId>
+                <artifactId>picketlink-openid</artifactId>
+                <version>${version.org.picketlink}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.picketlink</groupId>
+                <artifactId>picketlink-bindings</artifactId>
+                <version>${version.org.picketlink}</version>
                 <exclusions>
                   <exclusion>
                     <groupId>commons-logging</groupId>

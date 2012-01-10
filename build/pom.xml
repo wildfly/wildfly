@@ -169,6 +169,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.picketlink</groupId>
+            <artifactId>picketlink-openid</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.projectodd.stilts</groupId>
             <artifactId>stilts-stomplet-server-bundle</artifactId>
         </dependency>
