@@ -26,14 +26,12 @@ import static org.jboss.as.platform.mbean.PlatformMBeanUtil.escapeMBeanName;
 
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryManagerMXBean;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.Resource;
 
 /**
  * Resource impl for the {@link GarbageCollectorMXBean}.

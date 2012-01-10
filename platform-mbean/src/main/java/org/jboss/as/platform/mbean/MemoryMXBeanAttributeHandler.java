@@ -66,7 +66,7 @@ public class MemoryMXBeanAttributeHandler extends AbstractPlatformMBeanAttribute
         } else if (PlatformMBeanConstants.MEMORY_METRICS.contains(name)
                 || PlatformMBeanConstants.MEMORY_READ_WRITE_ATTRIBUTES.contains(name)) {
             // Bug
-            throw new IllegalStateException(String.format("Read support for attribute %s was not properly implemented", name));
+            throw PlatformMBeanMessages.MESSAGES.badReadAttributeImpl6(name);
         } else {
             // Shouldn't happen; the global handler should reject
             throw unknownAttribute(operation);
@@ -82,7 +82,7 @@ public class MemoryMXBeanAttributeHandler extends AbstractPlatformMBeanAttribute
             ManagementFactory.getMemoryMXBean().setVerbose(operation.require(ModelDescriptionConstants.VALUE).asBoolean());
         } else if (PlatformMBeanConstants.MEMORY_READ_WRITE_ATTRIBUTES.contains(name)) {
             // Bug
-            throw new IllegalStateException(String.format("Write support for attribute %s was not properly implemented", name));
+            throw PlatformMBeanMessages.MESSAGES.badWriteAttributeImpl2(name);
         } else {
             // Shouldn't happen; the global handler should reject
             throw unknownAttribute(operation);

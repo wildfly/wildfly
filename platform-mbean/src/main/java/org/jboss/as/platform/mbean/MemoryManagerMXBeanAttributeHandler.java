@@ -63,7 +63,7 @@ public class MemoryManagerMXBeanAttributeHandler extends AbstractPlatformMBeanAt
         }
 
         if (memoryManagerMXBean == null) {
-            throw new OperationFailedException(new ModelNode().set(String.format("No MemoryManagerMXBean with name %s currently exists", mmName)));
+            throw PlatformMBeanMessages.MESSAGES.unknownMemoryManager(mmName);
         }
 
         if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.equals(name)) {
@@ -81,7 +81,7 @@ public class MemoryManagerMXBeanAttributeHandler extends AbstractPlatformMBeanAt
             }
         } else if (PlatformMBeanConstants.MEMORY_MANAGER_READ_ATTRIBUTES.contains(name)) {
             // Bug
-            throw new IllegalStateException(String.format("Read support for attribute %s was not properly implemented", name));
+            throw PlatformMBeanMessages.MESSAGES.badReadAttributeImpl5(name);
         } else {
             // Shouldn't happen; the global handler should reject
             throw unknownAttribute(operation);

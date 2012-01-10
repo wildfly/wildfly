@@ -22,8 +22,6 @@
 
 package org.jboss.as.platform.mbean;
 
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
 import java.lang.management.ManagementFactory;
 
 import org.jboss.as.controller.OperationContext;
@@ -66,7 +64,7 @@ public class ClassLoadingMXBeanAttributeHandler extends AbstractPlatformMBeanAtt
         } else if (PlatformMBeanConstants.CLASSLOADING_METRICS.contains(name)
                 || PlatformMBeanConstants.CLASSLOADING_READ_WRITE_ATTRIBUTES.contains(name)) {
             // Bug
-            throw new IllegalStateException(String.format("Read support for attribute %s was not properly implemented", name));
+            throw PlatformMBeanMessages.MESSAGES.badReadAttributeImpl2(name);
         } else {
             // Shouldn't happen; the global handler should reject
             throw unknownAttribute(operation);
@@ -82,7 +80,7 @@ public class ClassLoadingMXBeanAttributeHandler extends AbstractPlatformMBeanAtt
             ManagementFactory.getClassLoadingMXBean().setVerbose(operation.require(ModelDescriptionConstants.VALUE).asBoolean());
         } else if (PlatformMBeanConstants.CLASSLOADING_READ_WRITE_ATTRIBUTES.contains(name)) {
             // Bug
-            throw new IllegalStateException(String.format("Write support for attribute %s was not properly implemented", name));
+            throw PlatformMBeanMessages.MESSAGES.badWriteAttributeImpl1(name);
         } else {
             // Shouldn't happen; the global handler should reject
             throw unknownAttribute(operation);

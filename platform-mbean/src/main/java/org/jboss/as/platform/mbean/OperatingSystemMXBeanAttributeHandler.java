@@ -105,7 +105,7 @@ public class OperatingSystemMXBeanAttributeHandler extends AbstractPlatformMBean
         } else if (PlatformMBeanConstants.OPERATING_SYSTEM_READ_ATTRIBUTES.contains(name)
                     || PlatformMBeanConstants.OPERATING_SYSTEM_METRICS.contains(name)) {
             // Bug
-            throw new IllegalStateException(String.format("Read support for attribute %s was not properly implemented", name));
+            throw PlatformMBeanMessages.MESSAGES.badReadAttributeImpl8(name);
         }
     }
 }

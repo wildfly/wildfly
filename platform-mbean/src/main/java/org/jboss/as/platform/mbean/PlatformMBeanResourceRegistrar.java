@@ -33,13 +33,10 @@ import static org.jboss.as.platform.mbean.PlatformMBeanConstants.DUMP_ALL_THREAD
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.FIND_DEADLOCKED_THREADS;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.FIND_MONITOR_DEADLOCKED_THREADS;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.GARBAGE_COLLECTOR_PATH;
-import static org.jboss.as.platform.mbean.PlatformMBeanConstants.GET_LOGGER_LEVEL;
-import static org.jboss.as.platform.mbean.PlatformMBeanConstants.GET_PARENT_LOGGER_NAME;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.GET_THREAD_CPU_TIME;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.GET_THREAD_INFO;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.GET_THREAD_INFOS;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.GET_THREAD_USER_TIME;
-import static org.jboss.as.platform.mbean.PlatformMBeanConstants.LOGGING_PATH;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.MEMORY_MANAGER_PATH;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.MEMORY_PATH;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.MEMORY_POOL_PATH;
@@ -47,7 +44,6 @@ import static org.jboss.as.platform.mbean.PlatformMBeanConstants.OPERATING_SYSTE
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.RESET_PEAK_THREAD_COUNT;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.RESET_PEAK_USAGE;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.RUNTIME_PATH;
-import static org.jboss.as.platform.mbean.PlatformMBeanConstants.SET_LOGGER_LEVEL;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.THREADING_PATH;
 
 import java.lang.management.ManagementFactory;

@@ -25,7 +25,6 @@ package org.jboss.as.platform.mbean;
 import static org.jboss.as.platform.mbean.PlatformMBeanUtil.escapeMBeanName;
 
 import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryManagerMXBean;
 import java.lang.management.MemoryPoolMXBean;
 import java.util.Collections;
 import java.util.HashSet;

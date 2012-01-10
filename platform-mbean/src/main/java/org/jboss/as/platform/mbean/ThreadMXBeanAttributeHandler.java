@@ -23,14 +23,10 @@
 package org.jboss.as.platform.mbean;
 
 import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryPoolMXBean;
-import java.util.Map;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.client.helpers.standalone.ServerUpdateActionResult;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.validation.LongRangeValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -90,7 +86,7 @@ public class ThreadMXBeanAttributeHandler extends AbstractPlatformMBeanAttribute
                 ManagementFactory.getThreadMXBean().setThreadCpuTimeEnabled(operation.require(ModelDescriptionConstants.VALUE).asBoolean());
             } else if (PlatformMBeanConstants.THREADING_READ_WRITE_ATTRIBUTES.contains(name)) {
                 // Bug
-                throw new IllegalStateException(String.format("Write support for attribute %s was not properly implemented", name));
+                throw PlatformMBeanMessages.MESSAGES.badWriteAttributeImpl4(name);
             } else {
                 // Shouldn't happen; the global handler should reject
                 throw unknownAttribute(operation);
@@ -162,7 +158,7 @@ public class ThreadMXBeanAttributeHandler extends AbstractPlatformMBeanAttribute
                 || PlatformMBeanConstants.THREADING_READ_WRITE_ATTRIBUTES.contains(name)
                 || PlatformMBeanConstants.THREADING_METRICS.contains(name)) {
             // Bug
-            throw new IllegalStateException(String.format("Read support for attribute %s was not properly implemented", name));
+            throw PlatformMBeanMessages.MESSAGES.badReadAttributeImpl11(name);
         }
 
     }
