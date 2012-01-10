@@ -25,6 +25,9 @@ import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandLineCompleter;
+import org.jboss.as.cli.Util;
+import org.jboss.as.cli.operation.ParsedCommandLine;
+import org.jboss.as.cli.operation.ParsedOperationRequestHeader;
 
 /**
  *
@@ -39,6 +42,23 @@ public class RolloutPlanCompleter implements CommandLineCompleter {
      */
     @Override
     public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
+        final ParsedCommandLine parsedCmd = ctx.getParsedCommandLine();
+        final List<ParsedOperationRequestHeader> headers = parsedCmd.getHeaders();
+        if(headers.isEmpty()) {
+            candidates.addAll(Util.getServerGroups(ctx.getModelControllerClient()));
+            return buffer.length();
+        }
+        final ParsedOperationRequestHeader lastHeader = headers.get(headers.size() - 1);
+        if(!(lastHeader instanceof ParsedRolloutPlanHeader)) {
+            throw new IllegalStateException("Expected " + ParsedRolloutPlanHeader.class + " but got " + lastHeader);
+        }
+        final ParsedRolloutPlanHeader rollout = (ParsedRolloutPlanHeader) lastHeader;
+
+        final RolloutPlanGroup lastGroup = rollout.getLastGroup();
+        if(lastGroup == null) {
+            return -1;
+        }
+
         return -1;
     }
 

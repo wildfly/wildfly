@@ -37,7 +37,7 @@ public class RolloutPlanRequestHeader implements OperationRequestHeader {
      */
     @Override
     public String getName() {
-        return "rollout-plan";
+        return "rollout";
     }
 
     /* (non-Javadoc)
