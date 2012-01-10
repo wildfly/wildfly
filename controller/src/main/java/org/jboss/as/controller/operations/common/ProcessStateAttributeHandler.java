@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.jboss.as.server.operations;
+package org.jboss.as.controller.operations.common;
 
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.OperationContext;
@@ -14,11 +14,11 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ServerStateAttributeHandler implements OperationStepHandler {
+public class ProcessStateAttributeHandler implements OperationStepHandler {
 
     private final ControlledProcessState processState;
 
-    public ServerStateAttributeHandler(final ControlledProcessState processState) {
+    public ProcessStateAttributeHandler(final ControlledProcessState processState) {
         this.processState = processState;
     }
 

@@ -66,6 +66,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
+import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.PROCESS_STATE;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -142,6 +143,12 @@ public class HostRootDescription {
         root.get(ATTRIBUTES, MANAGEMENT_MINOR_VERSION, REQUIRED).set(true);
         root.get(ATTRIBUTES, MANAGEMENT_MINOR_VERSION, NILLABLE).set(false);
         root.get(ATTRIBUTES, MANAGEMENT_MINOR_VERSION, MIN).set(1);
+
+        root.get(ATTRIBUTES, PROCESS_STATE, DESCRIPTION).set(bundle.getString("host.state"));
+        root.get(ATTRIBUTES, PROCESS_STATE, TYPE).set(ModelType.STRING);
+        root.get(ATTRIBUTES, PROCESS_STATE, REQUIRED).set(true);
+        root.get(ATTRIBUTES, PROCESS_STATE, NILLABLE).set(false);
+        root.get(ATTRIBUTES, PROCESS_STATE, MIN_LENGTH).set(1);
 
         root.get(ATTRIBUTES, DOMAIN_CONTROLLER, DESCRIPTION).set(bundle.getString("host.domain-controller"));
         root.get(ATTRIBUTES, DOMAIN_CONTROLLER, TYPE).set(ModelType.OBJECT);
