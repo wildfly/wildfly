@@ -41,18 +41,18 @@ public class BasicOpsTestCase {
         CLIWrapper cli = new CLIWrapper(false);
 
         // wait for cli welcome message
-        String line = cli.readLine(10000);
+        String line = cli.readLine(WAIT_TIMEOUT);
         
         while(! line.contains("You are disconnected")) {
-            line = cli.readLine(10000);
+            line = cli.readLine(WAIT_TIMEOUT);
         }
         
         cli.sendLine("connect", false);
-        line = cli.readLine(5000);
+        line = cli.readLine(WAIT_TIMEOUT);
 
         assertTrue("Check we are disconnected:" + line, line.indexOf("disconnected") >= 0);
         cli.sendLine("version", false);
-        line = cli.readLine(5000);
+        line = cli.readLine(WAIT_TIMEOUT);
         assertTrue("Connect failed:" + line, line.indexOf("[domain@") >= 0);
         cli.quit();
 
@@ -63,18 +63,18 @@ public class BasicOpsTestCase {
         CLIWrapper cli = new CLIWrapper(false);
 
         // wait for cli welcome message
-        String line = cli.readLine(10000);
+        String line = cli.readLine(WAIT_TIMEOUT);
         
         while(! line.contains("You are disconnected")) {
-            line = cli.readLine(10000);
+            line = cli.readLine(WAIT_TIMEOUT);
         }
         
         cli.sendLine("connect", false);
-        line = cli.readLine(5000);
+        line = cli.readLine(WAIT_TIMEOUT);
 
         assertTrue("Check we are disconnected:" + line, line.indexOf("disconnected") >= 0);
         cli.sendLine("version", false);
-        line = cli.readLine(5000);
+        line = cli.readLine(WAIT_TIMEOUT);
         assertTrue("Connect failed:" + line, line.indexOf("[domain@") >= 0);
 
         // check hosts

@@ -30,6 +30,7 @@ import org.jboss.as.test.integration.domain.management.cli.DataSourceTestCase;
 import org.jboss.as.test.integration.domain.management.cli.DeployAllServerGroupsTestCase;
 import org.jboss.as.test.integration.domain.management.cli.DeploySingleServerGroupTestCase;
 import org.jboss.as.test.integration.domain.management.cli.JmsTestCase;
+import org.jboss.as.test.integration.domain.management.cli.MultipleRedeploySingleServerGroupTest;
 import org.jboss.as.test.integration.domain.management.cli.RolloutPlanTestCase;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -50,7 +51,6 @@ import org.junit.runners.Suite;
     DataSourceTestCase.class,
     RolloutPlanTestCase.class
 })
-@Ignore("AS7-3262")
 public class CLITestSuite {
 
     private static DomainTestSupport domainSupport;
@@ -60,7 +60,8 @@ public class CLITestSuite {
     public static final Map<String, String []> serverGroups = new HashMap<String, String[]>();
     public static final Map<String, Integer> portOffsets = new HashMap<String, Integer>();
     public static final Map<String, String []> serverProfiles = new HashMap<String, String[]>();
-
+    public static final Map<String, Boolean> serverStatus = new HashMap<String, Boolean>();
+      
     @BeforeClass
     public static void initSuite() throws Exception {
         domainSupport = new DomainTestSupport(CLITestSuite.class.getSimpleName(),
@@ -86,6 +87,13 @@ public class CLITestSuite {
         portOffsets.put("main-four", 450);
         portOffsets.put("other-two", 550);
 
+        serverStatus.put("main-one", true);
+        serverStatus.put("main-two", false);
+        serverStatus.put("main-three", true);
+        serverStatus.put("main-four", false);
+        serverStatus.put("other-one", false);
+        serverStatus.put("other-two", true);
+        
     }
 
     @AfterClass

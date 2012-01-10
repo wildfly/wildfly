@@ -56,6 +56,7 @@ public class CLIWrapper implements Runnable {
     private BufferedReader outputReader;
     private BufferedReader errorReader;
     private BlockingQueue<String> outputQueue = new LinkedBlockingQueue<String>();
+    private boolean running = false;
 
     /**
      * Creates new CLI wrapper.
@@ -74,7 +75,19 @@ public class CLIWrapper implements Runnable {
      * @throws Exception
      */
     public CLIWrapper(boolean connect) throws Exception {
-        init();
+        this(connect, null);
+    }
+
+    /**
+     * Creates new CLI wrapper. If the connect parameter is set to true the CLI will connect to the server using
+     * <code>connect</code> command.
+     *
+     * @param connect indicates if the CLI should connect to server automatically.
+     * @param cliArgs specifies additional CLI command line arguments
+     * @throws Exception
+     */
+    public CLIWrapper(boolean connect, String[] cliArgs) throws Exception {
+        init(cliArgs);
         if (!connect) {
             return;
         }
@@ -100,20 +113,20 @@ public class CLIWrapper implements Runnable {
             throw new CLIException("Connect failed. Line received: " + line);
         }
     }
-
+    
     /**
      * Sends command line to CLI.
      *
      * @param line specifies the command line.
-     * @param waitForEcho if set to true reads the echo response form the CLI.
+     * @param readEcho if set to true reads the echo response form the CLI.
      * @throws Exception
      */
-    public void sendLine(String line, boolean waitForEcho) throws Exception {
+    public void sendLine(String line, boolean readEcho) throws Exception {
         System.out.println("[CLI-inp] " + line);
         writer.println(line);
         writer.flush();
 
-        if (!waitForEcho) {
+        if (!readEcho) {
             return;
         }
 
@@ -142,6 +155,14 @@ public class CLIWrapper implements Runnable {
         sendLine(line, true);
     }
 
+    public void waitForPrompt(long timeout) throws Exception {
+        sendLine("", false);
+        String line = readLine(timeout);
+        if (! ((line.indexOf("[standalone@") >= 0) || (line.indexOf("[domain@") >= 0)) ) {
+            throw new CLIException("Wait for prompt failed." + line);
+        }
+    }
+    
     /**
      * Non blocking read from CLI output.
      *
@@ -303,7 +324,7 @@ public class CLIWrapper implements Runnable {
     public synchronized void quit() throws Exception {
         sendLine("quit", false);
         long timeout = System.currentTimeMillis() + 10000;
-        while ( ((outputReader != null) || (errorReader != null)) && (System.currentTimeMillis() < timeout) ) {
+        while ( running && (System.currentTimeMillis() < timeout) ) {
             try {
                 wait(1000);
             } catch (InterruptedException ie) {
@@ -312,15 +333,35 @@ public class CLIWrapper implements Runnable {
         if ((outputReader != null) || (errorReader != null))
             throw new CLIException ("CLI did not quit properly.");
     }
+    
+    /**
+     * Returns CLI status.
+     *
+     * @return true if and only if the CLI has finished.
+     */
+    public boolean hasQuit() {
+        return !running;
+    }
 
-    private void init() throws Exception {
-        System.out.println("CLI command:" + getCliCommand());
+    private void init(String[] cliArgs) throws Exception {
+        
+        StringBuilder cmd = new StringBuilder(getCliCommand());
+        if (cliArgs != null)
+            for (String arg : cliArgs) {
+                cmd.append(" ");
+                cmd.append(arg);
+            }
+        String cmdString = cmd.toString();
+        
+        System.out.println("CLI command:" + cmdString);
 
-        cliProcess = Runtime.getRuntime().exec(getCliCommand());
+        cliProcess = Runtime.getRuntime().exec(cmdString);
         writer = new PrintWriter(cliProcess.getOutputStream());
         outputReader = new BufferedReader(new InputStreamReader(cliProcess.getInputStream()));
         errorReader = new BufferedReader(new InputStreamReader(cliProcess.getErrorStream()));
 
+        running = true;
+        
         Thread readOutputThread = new Thread(this, outThreadHame);
         readOutputThread.start();
         Thread readErrorThread = new Thread(this, errThreadHame);
@@ -376,6 +417,7 @@ public class CLIWrapper implements Runnable {
                 } else {
                     errorReader = null;
                 }
+                running = ((outputReader != null) || (errorReader != null));
                 notifyAll();
             }
         }
