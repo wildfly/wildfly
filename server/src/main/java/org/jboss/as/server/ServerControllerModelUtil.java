@@ -193,6 +193,9 @@ public class ServerControllerModelUtil {
                                       final boolean parallelBoot) {
         // Build up the core model registry
         root.registerReadWriteAttribute(NAME, null, new StringLengthValidatingHandler(1), AttributeAccess.Storage.CONFIGURATION);
+        if (serverEnvironment != null && serverEnvironment.getLaunchType() == ServerEnvironment.LaunchType.DOMAIN) {
+            root.registerReadWriteAttribute(PROFILE_NAME, null, new StringLengthValidatingHandler(1), AttributeAccess.Storage.CONFIGURATION);
+        }
 
         // Global operations
         root.registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);

@@ -37,6 +37,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
@@ -183,6 +184,7 @@ class ModelCombiner implements ManagedServerBootConfiguration {
 
         addNamespaces(updates);
         addServerName(updates);
+        addProfileName(updates);
         addSchemaLocations(updates);
         addExtensions(updates);
         addPaths(updates);
@@ -296,6 +298,10 @@ class ModelCombiner implements ManagedServerBootConfiguration {
 
     private void addServerName(List<ModelNode> updates) {
         updates.add(Util.getWriteAttributeOperation(EMPTY, NAME, serverName));
+    }
+
+    private void addProfileName(List<ModelNode> updates) {
+        updates.add(Util.getWriteAttributeOperation(EMPTY, PROFILE_NAME, profileName));
     }
 
     private void addSchemaLocations(List<ModelNode> updates) {

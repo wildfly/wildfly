@@ -33,6 +33,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PAT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROXIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
@@ -149,6 +150,9 @@ public class ManagementReadsTestCase {
         ModelNode response = domainClient.execute(serverOp);
         validateResponse(response);
         // TODO make some more assertions about result content
+        ModelNode result = response.get(RESULT);
+        Assert.assertTrue(result.isDefined());
+        Assert.assertTrue(result.hasDefined(PROFILE_NAME));
 
         address.setEmptyList();
         address.add(HOST, "slave");
@@ -156,6 +160,9 @@ public class ManagementReadsTestCase {
         response = domainClient.execute(serverOp);
         validateResponse(response);
         // TODO make some more assertions about result content
+        result = response.get(RESULT);
+        Assert.assertTrue(result.isDefined());
+        Assert.assertTrue(result.hasDefined(PROFILE_NAME));
     }
 
     @Test
