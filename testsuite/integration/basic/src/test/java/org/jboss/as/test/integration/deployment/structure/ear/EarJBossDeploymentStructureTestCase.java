@@ -110,5 +110,16 @@ public class EarJBossDeploymentStructureTestCase {
     {
        String result = ejb.query("java:module/ModuleName");
        assertEquals("ejb", result);
+       result = ejb.getResourceModuleName();
+       assertEquals("ejb", result);
+    }
+    
+    @Test
+    public void testAppName() throws Exception
+    {
+       String result = ejb.query("java:app/AppName");
+       assertEquals("deployment-structure", result);
+       result = ejb.getResourceAppName();
+       assertEquals("deployment-structure", result);
     }
 }
