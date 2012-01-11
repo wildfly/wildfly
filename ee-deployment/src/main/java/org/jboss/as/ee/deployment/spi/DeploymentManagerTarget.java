@@ -21,23 +21,14 @@
  */
 package org.jboss.as.ee.deployment.spi;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-
-import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Future;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.helpers.standalone.DeploymentAction;
+import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
+import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentActionResult;
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
+import org.jboss.dmr.ModelNode;
 
 import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.TargetModuleID;
@@ -49,16 +40,24 @@ import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.RealmCallback;
 import javax.security.sasl.RealmChoiceCallback;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Future;
 
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.helpers.standalone.DeploymentAction;
-import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
-import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentActionResult;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
-import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.ee.deployment.spi.DeploymentLogger.ROOT_LOGGER;
 
 /**
  * A Target that deploys using the {@link ServerDeploymentManager}.
@@ -70,9 +69,6 @@ import org.jboss.logging.Logger;
  */
 final class DeploymentManagerTarget extends JBossTarget {
 
-    // provide logging
-    static final Logger log = Logger.getLogger(DeploymentManagerTarget.class);
-
     static final String DESCRIPTION = "ServerDeploymentManager target";
 
     private final Map<TargetModuleID, String> runtimeNames = new HashMap<TargetModuleID, String>();
@@ -82,7 +78,7 @@ final class DeploymentManagerTarget extends JBossTarget {
     private final URI deployURI;
 
     public DeploymentManagerTarget(URI deployURI, String username, String password) {
-        log.debug("new DeploymentManagerTarget: " + deployURI);
+        ROOT_LOGGER.debugf("new DeploymentManagerTarget: %s", deployURI);
         try {
             URIParser parser = new URIParser(deployURI);
             String serverHost = parser.getParameter("serverHost");
@@ -113,14 +109,14 @@ final class DeploymentManagerTarget extends JBossTarget {
 
     @Override
     public void deploy(TargetModuleID targetModuleID) throws Exception {
-        log.infof("Begin deploy: %s", targetModuleID);
+        ROOT_LOGGER.beginDeploy(targetModuleID);
         DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
         builder = builder.add(targetModuleID.getModuleID(), new URL(targetModuleID.getModuleID())).andDeploy();
         DeploymentPlan plan = builder.build();
         DeploymentAction deployAction = builder.getLastAction();
         String runtimeName = executeDeploymentPlan(plan, deployAction);
         runtimeNames.put(targetModuleID, runtimeName);
-        log.infof("End deploy: %s", targetModuleID);
+        ROOT_LOGGER.endDeploy(targetModuleID);
     }
 
     @Override
@@ -177,7 +173,7 @@ final class DeploymentManagerTarget extends JBossTarget {
                     moduleType = ModuleType.EJB;
                 }
                 if (moduleType == null) {
-                    log.warnf("Cannot determine module type of: %s", node);
+                    ROOT_LOGGER.cannotDetermineModuleType(node);
                     continue;
                 }
                 if (filterType == null || filterType.equals(moduleType)) {

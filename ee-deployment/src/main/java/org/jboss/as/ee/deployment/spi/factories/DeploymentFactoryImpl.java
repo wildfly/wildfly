@@ -21,18 +21,17 @@
  */
 package org.jboss.as.ee.deployment.spi.factories;
 
-import java.net.URI;
-import java.net.URISyntaxException;
+import org.jboss.as.ee.deployment.spi.DeploymentManagerImpl;
 
 import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
-
-import org.jboss.as.ee.deployment.spi.DeploymentManagerImpl;
-import org.jboss.logging.Logger;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import static org.jboss.as.ee.deployment.spi.DeploymentManagerImpl.DEPLOYER_URI;
+import static org.jboss.as.ee.deployment.spi.DeploymentLogger.ROOT_LOGGER;
 
 /**
  * The DeploymentFactory interface is a deployment driver for a J2EE plaform product.
@@ -53,9 +52,6 @@ import static org.jboss.as.ee.deployment.spi.DeploymentManagerImpl.DEPLOYER_URI;
  *
  */
 public class DeploymentFactoryImpl implements DeploymentFactory {
-
-    // deployment logging
-    private static final Logger log = Logger.getLogger(DeploymentFactoryImpl.class);
 
     // The name of the JBoss DeploymentFactory
     private static String DISPLAY_NAME;
@@ -92,7 +88,7 @@ public class DeploymentFactoryImpl implements DeploymentFactory {
      */
     public boolean handlesURI(String uri) {
         boolean handlesURI = uri.startsWith(DEPLOYER_URI);
-        log.debug("handlesURI [" + uri + "]: " + handlesURI);
+        ROOT_LOGGER.debugf("handlesURI [%s]: %s", uri, handlesURI);
         return handlesURI;
     }
 
@@ -107,7 +103,7 @@ public class DeploymentFactoryImpl implements DeploymentFactory {
      *
      */
     public DeploymentManager getDeploymentManager(String uri, String userName, String password) throws DeploymentManagerCreationException {
-        log.debug("getDeploymentManager (uri=" + uri + ")");
+        ROOT_LOGGER.debugf("getDeploymentManager (uri=%s)", uri);
         try {
             URI deployURI = parseURI(uri);
             return new DeploymentManagerImpl(deployURI, true, userName, password);
@@ -127,7 +123,7 @@ public class DeploymentFactoryImpl implements DeploymentFactory {
      *
      */
     public DeploymentManager getDisconnectedDeploymentManager(String uri) throws DeploymentManagerCreationException {
-        log.debug("getDisconnectedDeploymentManager (uri=" + uri + ")");
+        ROOT_LOGGER.debugf("getDisconnectedDeploymentManager (uri=%s)", uri);
         try {
             URI deployURI = parseURI(uri);
             return new DeploymentManagerImpl(deployURI, false);

@@ -22,7 +22,13 @@
 
 package org.jboss.as.ee.deployment.spi;
 
+import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
+import org.jboss.logging.Messages;
+
+import javax.enterprise.deploy.shared.CommandType;
+import javax.enterprise.deploy.spi.Target;
+import javax.enterprise.deploy.spi.TargetModuleID;
 
 /**
  * Date: 05.11.2011
@@ -30,5 +36,25 @@ import org.jboss.logging.MessageBundle;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @MessageBundle(projectCode = "JBAS")
-public interface EeDeploymentMessages {
+public interface DeploymentMessages {
+
+    DeploymentMessages MESSAGES = Messages.getBundle(DeploymentMessages.class);
+
+    @Message(id = 16150, value = "Cannot find deployment file: %s")
+    String cannotFindDeploymentFile(String filename);
+
+    @Message(id = 16151, value = "Deployment validation failed")
+    String deploymentValidationFailed();
+
+    @Message(id = 16152, value = "Cannot obtain meta data")
+    String cannotObtainMetaData();
+
+    @Message(id = 16153, value = "Operation %s failed on target: %s")
+    String operationFailedOnTarget(CommandType cmdType, Target target);
+
+    @Message(id = 16154, value = "Operation %s started")
+    String operationStarted(CommandType cmdType);
+
+    @Message(id = 16155, value = "Operation %s completed")
+    String operationCompleted(CommandType cmdType);
 }
