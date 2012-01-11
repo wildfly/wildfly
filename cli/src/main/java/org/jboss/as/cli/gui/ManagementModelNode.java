@@ -66,9 +66,7 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
             List<String> childrenTypes = getChildrenTypes(addressPath);
             for (ModelNode node : result.asList()) {
                 Property prop = node.asProperty();
-                //ModelType valueType = prop.getValue().getType();
-//                if (valueType == ModelType.OBJECT) {
-                if (childrenTypes.contains(prop.getName())) {
+                if (childrenTypes.contains(prop.getName())) { // resource node
                     if (prop.getValue().isDefined()) {
                         for (ModelNode innerNode : prop.getValue().asList()) {
                             UserObject usrObj = new UserObject(prop.getName(), innerNode.asProperty().getName(), false);
@@ -78,7 +76,7 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
                         UserObject usrObj = new UserObject(prop.getName(), prop.getValue().asString(), false);
                         add(new ManagementModelNode(usrObj));
                     }
-                } else {
+                } else { // attribute node
                     UserObject usrObj = new UserObject(prop.getName(), prop.getValue().asString(), true);
                     add(new ManagementModelNode(usrObj));
                 }

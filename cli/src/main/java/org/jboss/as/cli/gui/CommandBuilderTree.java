@@ -32,6 +32,8 @@ import org.jboss.dmr.ModelNode;
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
 public class CommandBuilderTree extends JTree {
+    private ManagementModelNode currentNode = null;
+    private String currentDescription = null;
 
     public CommandBuilderTree(TreeModel model) {
         super(model);
@@ -39,24 +41,39 @@ public class CommandBuilderTree extends JTree {
     }
 
     @Override
-    public String getToolTipText(MouseEvent me) {
-        if (getRowForLocation(me.getX(), me.getY()) == -1) return null;
+    public synchronized String getToolTipText(MouseEvent me) {
+        if (getRowForLocation(me.getX(), me.getY()) == -1) {
+            currentNode = null;
+            currentDescription = null;
+            return null;
+        }
 
         TreePath treePath = getPathForLocation(me.getX(), me.getY());
         ManagementModelNode node = (ManagementModelNode)treePath.getLastPathComponent();
 
+        // don't read description again when mouse is moved within the same node
+        if (node == currentNode) return currentDescription;
+
+        currentNode = node;
+        currentDescription = null;
+
         try {
             ModelNode readResource = GuiMain.getExecutor().doCommand(node.addressPath() + ":read-resource-description");
-            if (!node.isLeaf()) return readResource.get("result", "description").asString();
-
-            UserObject usrObj = (UserObject)node.getUserObject();
-            ModelNode description = readResource.get("result", "attributes", usrObj.getName(), "description");
-            if (description.isDefined()) return description.asString();
+            if (!node.isLeaf()) {
+                currentDescription = readResource.get("result", "description").asString();
+            } else {
+                UserObject usrObj = (UserObject)node.getUserObject();
+                ModelNode description = readResource.get("result", "attributes", usrObj.getName(), "description");
+                if (description.isDefined()) {
+                    currentDescription = description.asString();
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
 
-        return null;
+        return currentDescription;
     }
 
 }
