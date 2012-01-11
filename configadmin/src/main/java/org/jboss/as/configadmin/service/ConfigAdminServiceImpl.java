@@ -103,7 +103,7 @@ public class ConfigAdminServiceImpl implements ConfigAdminService {
             try {
                 controllerClient.execute(op);
             } catch (IOException ex) {
-                ROOT_LOGGER.errorf(ex, "Cannot remove configuration for pid: %s", pid);
+                ROOT_LOGGER.cannotRemoveConfiguration(ex, pid);
             }
         }
         ModelNode entries = new ModelNode();
@@ -120,10 +120,10 @@ public class ConfigAdminServiceImpl implements ConfigAdminService {
             if (ModelDescriptionConstants.SUCCESS.equals(outcome.asString())) {
                 executor.execute(new ConfigurationModifiedService(pid, newconfig));
             } else {
-                ROOT_LOGGER.errorf("Cannot add configuration for pid: %s -> %s", pid, node);
+                ROOT_LOGGER.cannotAddConfiguration(pid, node);
             }
         } catch (IOException ex) {
-            ROOT_LOGGER.errorf(ex, "Cannot add configuration for pid: %s", pid);
+            ROOT_LOGGER.cannotAddConfiguration(ex, pid);
         }
         return oldconfig;
     }
@@ -141,10 +141,10 @@ public class ConfigAdminServiceImpl implements ConfigAdminService {
                 if (ModelDescriptionConstants.SUCCESS.equals(outcome.asString())) {
                     executor.execute(new ConfigurationModifiedService(pid, oldconfig));
                 } else {
-                    ROOT_LOGGER.errorf("Cannot remove configuration for pid: %s -> %s", pid, node);
+                    ROOT_LOGGER.cannotRemoveConfiguration(pid, node);
                 }
             } catch (IOException ex) {
-                ROOT_LOGGER.errorf(ex, "Cannot remove configuration for pid: %s", pid);
+                ROOT_LOGGER.cannotRemoveConfiguration(ex, pid);
             }
         }
         return oldconfig;
