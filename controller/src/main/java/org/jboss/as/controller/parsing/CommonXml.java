@@ -2003,8 +2003,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             writer.writeAttribute(Attribute.CODE.getLocalName(), code);
         }
 
-        if (vault.hasDefined(VAULT_OPTION)) {
-            ModelNode properties = vault.get(VAULT_OPTION);
+        if (vault.hasDefined(VAULT_OPTIONS)) {
+            ModelNode properties = vault.get(VAULT_OPTIONS);
             for (Property prop : properties.asPropertyList()) {
                 writer.writeEmptyElement(Element.VAULT_OPTION.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), prop.getName());
