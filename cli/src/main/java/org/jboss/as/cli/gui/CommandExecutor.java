@@ -45,7 +45,7 @@ public class CommandExecutor {
     }
 
     public synchronized ModelNode doCommand(String command) throws CommandFormatException, IOException {
-        System.out.println("command=" + command);
+//        System.out.println("command=" + command);
         parsedCmd.rootNode(0);
         parser.parse(command, parsedCmd);
         ModelNode request = parsedCmd.toOperationRequest(cmdCtx);
