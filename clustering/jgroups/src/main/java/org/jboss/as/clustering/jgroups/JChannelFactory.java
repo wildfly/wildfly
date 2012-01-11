@@ -77,7 +77,7 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
             this.init(transport);
         }
 
-        channel.setName(configuration.getEnvironment().getNodeName() + "/" + id);
+        channel.setName(configuration.getEnvironment().getNodeName()); // + "/" + id);
 
         TransportConfiguration transportConfiguration = this.configuration.getTransport();
         if(transportConfiguration.hasTopology()) {
