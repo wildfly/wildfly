@@ -184,6 +184,7 @@ public class FrameworkBootstrapService implements Service<Void> {
             buffer.append("javax.inject.api,");
             buffer.append("org.apache.commons.logging,");
             buffer.append("org.apache.log4j,");
+            buffer.append("org.jboss.as.configadmin,");
             buffer.append("org.jboss.as.osgi,");
             buffer.append("org.jboss.logging,");
             buffer.append("org.jboss.modules,");
@@ -202,6 +203,7 @@ public class FrameworkBootstrapService implements Service<Void> {
             sysPackages.add("javax.inject,");
             sysPackages.add("org.apache.commons.logging;version=1.1.1");
             sysPackages.add("org.apache.log4j;version=1.2");
+            sysPackages.add("org.jboss.as.configadmin.service;version=7.0");
             sysPackages.add("org.jboss.as.osgi.service;version=7.0");
             sysPackages.add("org.jboss.logging;version=3.0.0");
             sysPackages.add("org.jboss.osgi.deployment.interceptor;version=1.0");
