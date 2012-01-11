@@ -65,9 +65,6 @@ public class MailSessionService implements Service<Session> {
         if (config.getSmtpServer() != null) {
             props.setProperty("mail.transport.protocol", "smtp");
             setServerProps(props, config.getSmtpServer(), "smtp");
-            if (config.getSmtpServer().isSslEnabled()) {
-                props.setProperty("mail.smtp.starttls.enable", "true");
-            }
         }
         if (config.getImapServer() != null) {
             setServerProps(props, config.getImapServer(), "imap");
@@ -89,6 +86,7 @@ public class MailSessionService implements Service<Session> {
         props.setProperty(getPortKey(protocol), String.valueOf(socketAddress.getPort()));
         if (server.isSslEnabled()) {
             props.setProperty(getPropKey(protocol, "ssl.enable"), "true");
+            props.setProperty(getPropKey(protocol, "starttls.enable"), "true");
         }
         if (server.getCredentials() != null) {
             props.setProperty(getPropKey(protocol, "auth"), "true");

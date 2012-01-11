@@ -176,7 +176,7 @@ public class MailSessionAdd extends AbstractAddStepHandler {
     }
 
     private static Credentials readCredentials(final OperationContext operationContext, final ModelNode model) throws OperationFailedException {
-        if (model.has(USER_NAME)) {
+        if (model.get(USER_NAME).isDefined()){
             String un = model.get(USER_NAME).asString();
             String pw = operationContext.resolveExpressions((model.get(PASSWORD))).asString();
             return new Credentials(un, pw);
