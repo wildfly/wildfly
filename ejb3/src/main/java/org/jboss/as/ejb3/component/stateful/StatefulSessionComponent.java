@@ -21,6 +21,20 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+
+import javax.ejb.AccessTimeout;
+import javax.ejb.EJBLocalObject;
+import javax.ejb.EJBObject;
+import javax.ejb.TimerService;
+
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
@@ -36,11 +50,7 @@ import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.server.CurrentServiceContainer;
-import org.jboss.as.server.ServerEnvironment;
-import org.jboss.ejb.client.Affinity;
-import org.jboss.ejb.client.ClusterAffinity;
 import org.jboss.ejb.client.EJBClient;
-import org.jboss.ejb.client.NodeAffinity;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.StatefulEJBLocator;
 import org.jboss.invocation.Interceptor;
@@ -50,19 +60,6 @@ import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.StopContext;
-
-import javax.ejb.AccessTimeout;
-import javax.ejb.EJBLocalObject;
-import javax.ejb.EJBObject;
-import javax.ejb.TimerService;
-import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static org.jboss.as.ejb3.EjbMessages.*;
 
 /**
  * Stateful Session Bean
@@ -241,6 +238,7 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
         final StatefulSessionComponentInstance instance = (StatefulSessionComponentInstance) basicComponentInstance;
         final Map<Object, Object> serializableInterceptors = new HashMap<Object, Object>();
         for (final Object key : serialiableInterceptorContextKeys) {
+            @SuppressWarnings("unchecked")
             final AtomicReference<ManagedReference> data = (AtomicReference<ManagedReference>) context.getContextData().get(key);
             if (data != null) {
                 serializableInterceptors.put(key, data.get().getInstance());

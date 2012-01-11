@@ -30,6 +30,7 @@ import org.jboss.as.ejb3.cache.Cache;
 import org.jboss.as.ejb3.cache.Cacheable;
 import org.jboss.as.ejb3.cache.spi.BackingCache;
 import org.jboss.as.ejb3.cache.spi.BackingCacheEntry;
+import org.jboss.ejb.client.Affinity;
 
 /**
  * @author Paul Ferraro
@@ -99,5 +100,20 @@ public abstract class AbstractCache<K extends Serializable, V extends Cacheable<
     @Override
     public void stop() {
         this.backingCache.stop();
+    }
+
+    @Override
+    public Affinity getStrictAffinity() {
+        return this.backingCache.getStrictAffinity();
+    }
+
+    @Override
+    public Affinity getWeakAffinity(K key) {
+        return this.backingCache.getWeakAffinity(key);
+    }
+
+    @Override
+    public boolean hasAffinity(K key) {
+        return this.backingCache.hasAffinity(key);
     }
 }

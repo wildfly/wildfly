@@ -41,6 +41,9 @@ import org.jboss.as.ejb3.cache.spi.BackingCacheLifecycleListener.LifecycleState;
 import org.jboss.as.ejb3.cache.spi.impl.AbstractBackingCache;
 import org.jboss.as.ejb3.cache.spi.impl.RemoveTask;
 import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.ejb.client.Affinity;
+import org.jboss.ejb.client.NodeAffinity;
 
 /**
  * Simple {@link BackingCache} that doesn't handle passivation (although it does handle expiration). Pure in-VM memory cache.
@@ -57,18 +60,36 @@ public class NonPassivatingBackingCacheImpl<K extends Serializable, V extends Ca
     private volatile ScheduledExecutorService executor;
     private final ThreadFactory threadFactory;
     private final Map<K, Future<?>> expirationFutures = new ConcurrentHashMap<K, Future<?>>();
+    private final ServerEnvironment environment;
 
-    public NonPassivatingBackingCacheImpl(StatefulObjectFactory<V> factory, ThreadFactory threadFactory, StatefulTimeoutInfo timeout) {
+    public NonPassivatingBackingCacheImpl(StatefulObjectFactory<V> factory, ThreadFactory threadFactory, StatefulTimeoutInfo timeout, ServerEnvironment environment) {
         this.factory = factory;
         this.timeout = timeout;
         this.threadFactory = threadFactory;
+        this.environment = environment;
     }
 
-    public NonPassivatingBackingCacheImpl(StatefulObjectFactory<V> factory, ScheduledExecutorService executor, StatefulTimeoutInfo timeout) {
+    public NonPassivatingBackingCacheImpl(StatefulObjectFactory<V> factory, ScheduledExecutorService executor, StatefulTimeoutInfo timeout, ServerEnvironment environment) {
         this.factory = factory;
         this.timeout = timeout;
         this.executor = executor;
         this.threadFactory = null;
+        this.environment = environment;
+    }
+
+    @Override
+    public Affinity getStrictAffinity() {
+        return new NodeAffinity(this.environment.getNodeName());
+    }
+
+    @Override
+    public Affinity getWeakAffinity(K key) {
+        return Affinity.NONE;
+    }
+
+    @Override
+    public boolean hasAffinity(K key) {
+        return true;
     }
 
     @Override

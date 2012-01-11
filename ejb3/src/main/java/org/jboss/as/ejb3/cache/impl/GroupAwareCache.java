@@ -28,19 +28,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.ejb3.EjbLogger;
-import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.cache.Cacheable;
-import org.jboss.as.ejb3.cache.impl.backing.clustering.ClusteredBackingCacheEntryStoreConfig;
-import org.jboss.as.ejb3.cache.impl.backing.clustering.ClusteredBackingCacheEntryStoreSource;
-import org.jboss.as.ejb3.cache.spi.BackingCacheEntryStoreSource;
 import org.jboss.as.ejb3.cache.spi.GroupAwareBackingCache;
 import org.jboss.as.ejb3.cache.spi.SerializationGroup;
 import org.jboss.as.ejb3.cache.spi.SerializationGroupMember;
 import org.jboss.as.ejb3.cache.spi.impl.GroupCreationContext;
-import org.jboss.as.server.ServerEnvironment;
-import org.jboss.ejb.client.Affinity;
-import org.jboss.ejb.client.ClusterAffinity;
-import org.jboss.ejb.client.NodeAffinity;
 
 /**
  * @author Paul Ferraro
@@ -50,18 +42,15 @@ public class GroupAwareCache<K extends Serializable, V extends Cacheable<K>, G e
 
     private final GroupAwareBackingCache<K, V, G, M> groupedCache;
     private final boolean strictGroups;
-    private final BackingCacheEntryStoreSource<K, V, G> backingCacheEntryStoreSource;
 
     /**
      * @param backingCacheEntryStoreSource The backing cache entry store source from which this cache was created
      * @param strictGroups
      */
-    public GroupAwareCache(final BackingCacheEntryStoreSource<K, V, G> backingCacheEntryStoreSource, final GroupAwareBackingCache<K, V, G, M> groupedCache,
-                           boolean strictGroups) {
+    public GroupAwareCache(final GroupAwareBackingCache<K, V, G, M> groupedCache, boolean strictGroups) {
         super(groupedCache, strictGroups);
         this.groupedCache = groupedCache;
         this.strictGroups = strictGroups;
-        this.backingCacheEntryStoreSource = backingCacheEntryStoreSource;
     }
 
     @Override
@@ -110,20 +99,5 @@ public class GroupAwareCache<K extends Serializable, V extends Cacheable<K>, G e
                 GroupCreationContext.clearGroupCreationContext();
             }
         }
-    }
-
-    @Override
-    public Affinity getStrictAffinity() {
-        if (this.backingCacheEntryStoreSource instanceof ClusteredBackingCacheEntryStoreSource) {
-            return new ClusterAffinity(((ClusteredBackingCacheEntryStoreSource) this.backingCacheEntryStoreSource).getBackingCache());
-        }
-        final String nodeName = SecurityActions.getSystemProperty(ServerEnvironment.NODE_NAME);
-        return new NodeAffinity(nodeName);
-    }
-
-    @Override
-    public Affinity getWeakAffinity() {
-        // TODO: Needs implementation
-        return Affinity.NONE;
     }
 }

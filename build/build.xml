@@ -669,7 +669,7 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-clustering-jgroups"/>
         </module-def>
 
-        <module-def name="org.jboss.as.clustering.service">
+        <module-def name="org.jboss.as.clustering.registry">
             <maven-resource group="org.jboss.as" artifact="jboss-as-clustering-registry"/>
         </module-def>
 

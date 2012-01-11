@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.registry;
 
-
 import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.Collections;
@@ -30,9 +29,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
+import org.infinispan.distribution.DistributionManager;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
@@ -55,7 +56,6 @@ import org.jboss.msc.value.InjectedValue;
 
 /**
  * @author Paul Ferraro
- *
  */
 @org.infinispan.notifications.Listener(sync = false)
 public class RegistryService<K, V> implements Service<Registry<K, V>>, Registry<K, V> {
@@ -63,12 +63,11 @@ public class RegistryService<K, V> implements Service<Registry<K, V>>, Registry<
     @SuppressWarnings("rawtypes")
     private final InjectedValue<Cache> cacheRef = new InjectedValue<Cache>();
     private final RegistryEntryProvider<K, V> provider;
-    private final Listener<K, V> listener;
+    private final Set<Listener<K, V>> listeners = new CopyOnWriteArraySet<Listener<K, V>>();
     private volatile Cache<Address, Map.Entry<K, V>> cache;
 
-    public RegistryService(RegistryEntryProvider<K, V> provider, Listener<K, V> listener) {
+    public RegistryService(RegistryEntryProvider<K, V> provider) {
         this.provider = provider;
-        this.listener = listener;
     }
 
     public ServiceBuilder<Registry<K, V>> build(ServiceTarget target, ServiceName serviceName, ServiceName cacheServiceName) {
@@ -80,8 +79,23 @@ public class RegistryService<K, V> implements Service<Registry<K, V>>, Registry<
      * @see org.jboss.msc.value.Value#getValue()
      */
     @Override
-    public Registry<K, V> getValue() throws IllegalStateException, IllegalArgumentException {
+    public Registry<K, V> getValue() {
         return this;
+    }
+
+    @Override
+    public String getName() {
+        return this.cache.getCacheManager().getClusterName();
+    }
+
+    @Override
+    public void addListener(Listener<K, V> listener) {
+        this.listeners.add(listener);
+    }
+
+    @Override
+    public void removeListener(Listener<K, V> listener) {
+        this.listeners.remove(listener);
     }
 
     /**
@@ -95,6 +109,25 @@ public class RegistryService<K, V> implements Service<Registry<K, V>>, Registry<
             map.put(entry.getKey(), entry.getValue());
         }
         return Collections.unmodifiableMap(map);
+    }
+
+    @Override
+    public Map<K, V> locate(Object key) {
+        DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
+        if (dist == null) {
+            return Collections.emptyMap();
+        }
+        Map<K, V> map = new HashMap<K, V>();
+        for (Address address: dist.locate(key)) {
+            Map.Entry<K, V> entry = this.cache.get(address);
+            map.put(entry.getKey(), entry.getValue());
+        }
+        return Collections.unmodifiableMap(map);
+    }
+
+    @Override
+    public Map.Entry<K, V> getLocalEntry() {
+        return this.cache.get(this.cache.getCacheManager().getAddress());
     }
 
     /**
@@ -140,6 +173,7 @@ public class RegistryService<K, V> implements Service<Registry<K, V>>, Registry<
             }
         };
         this.invoke(operation);
+        this.cache = null;
     }
 
     @ViewChanged
@@ -169,29 +203,35 @@ public class RegistryService<K, V> implements Service<Registry<K, V>>, Registry<
         };
 
         Set<K> removed = this.invoke(operation);
-        if (!removed.isEmpty() && (this.listener != null)) {
-            listener.removedEntries(removed);
+        if (!removed.isEmpty()) {
+            for (Listener<K, V> listener: this.listeners) {
+                listener.removedEntries(removed);
+            }
         }
     }
 
     @CacheEntryCreated
     public void created(CacheEntryCreatedEvent<Address, Map.Entry<K, V>> event) {
         if (event.isPre() || event.isOriginLocal()) return;
-        if (this.listener != null) {
+        if (!this.listeners.isEmpty()) {
             Map.Entry<K, V> entry = event.getCache().get(event.getKey());
             if (entry != null) {
-                this.listener.addedEntries(Collections.singletonMap(entry.getKey(), entry.getValue()));
+                for (Listener<K, V> listener: this.listeners) {
+                    listener.addedEntries(Collections.singletonMap(entry.getKey(), entry.getValue()));
+                }
             }
         }
     }
 
     @CacheEntryModified
-    public void created(CacheEntryModifiedEvent<Address, Map.Entry<K, V>> event) {
+    public void modified(CacheEntryModifiedEvent<Address, Map.Entry<K, V>> event) {
         if (event.isPre() || event.isOriginLocal()) return;
-        if (this.listener != null) {
+        if (!this.listeners.isEmpty()) {
             Map.Entry<K, V> entry = event.getCache().get(event.getKey());
             if (entry != null) {
-                this.listener.updatedEntries(Collections.singletonMap(entry.getKey(), entry.getValue()));
+                for (Listener<K, V> listener: this.listeners) {
+                    listener.updatedEntries(Collections.singletonMap(entry.getKey(), entry.getValue()));
+                }
             }
         }
     }
@@ -200,10 +240,10 @@ public class RegistryService<K, V> implements Service<Registry<K, V>>, Registry<
     public void removed(CacheEntryRemovedEvent<Address, Map.Entry<K, V>> event) {
         // Need to run prior to removal, so the cache entry is available
         if (!event.isPre() || event.isOriginLocal()) return;
-        if (this.listener != null) {
-            Map.Entry<K, V> entry = event.getValue();
-            if (entry != null) {
-                this.listener.removedEntries(Collections.singleton(entry.getKey()));
+        Map.Entry<K, V> entry = event.getValue();
+        if (entry != null) {
+            for (Listener<K, V> listener: this.listeners) {
+                listener.removedEntries(Collections.singleton(entry.getKey()));
             }
         }
     }
