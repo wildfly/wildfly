@@ -18,6 +18,8 @@
  */
 package org.jboss.as.cli.gui;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -56,13 +58,24 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
         removeAllChildren();
 
         try {
-            ModelNode result = executor.doCommand(addressPath() + ":read-resource");
-            for (ModelNode node : result.get("result").asList()) {
+            String addressPath = addressPath();
+            ModelNode response = executor.doCommand(addressPath + ":read-resource");
+            ModelNode result = response.get("result");
+            if (!result.isDefined()) return;
+
+            List<String> childrenTypes = getChildrenTypes(addressPath);
+            for (ModelNode node : result.asList()) {
                 Property prop = node.asProperty();
-                ModelType valueType = prop.getValue().getType();
-                if (valueType == ModelType.OBJECT) {
-                    for (ModelNode innerNode : prop.getValue().asList()) {
-                        UserObject usrObj = new UserObject(prop.getName(), innerNode.asProperty().getName(), false);
+                //ModelType valueType = prop.getValue().getType();
+//                if (valueType == ModelType.OBJECT) {
+                if (childrenTypes.contains(prop.getName())) {
+                    if (prop.getValue().isDefined()) {
+                        for (ModelNode innerNode : prop.getValue().asList()) {
+                            UserObject usrObj = new UserObject(prop.getName(), innerNode.asProperty().getName(), false);
+                            add(new ManagementModelNode(usrObj));
+                        }
+                    } else {
+                        UserObject usrObj = new UserObject(prop.getName(), prop.getValue().asString(), false);
                         add(new ManagementModelNode(usrObj));
                     }
                 } else {
@@ -73,6 +86,15 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private List<String> getChildrenTypes(String addressPath) throws Exception {
+        List<String> childrenTypes = new ArrayList<String>();
+        ModelNode readChildrenTypes = executor.doCommand(addressPath + ":read-children-types");
+        for (ModelNode type : readChildrenTypes.get("result").asList()) {
+            childrenTypes.add(type.asString());
+        }
+        return childrenTypes;
     }
 
     /**
