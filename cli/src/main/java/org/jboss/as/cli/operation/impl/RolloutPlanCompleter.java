@@ -54,12 +54,76 @@ public class RolloutPlanCompleter implements CommandLineCompleter {
         }
         final ParsedRolloutPlanHeader rollout = (ParsedRolloutPlanHeader) lastHeader;
 
-        final RolloutPlanGroup lastGroup = rollout.getLastGroup();
+        final SingleRolloutPlanGroup lastGroup = rollout.getLastGroup();
         if(lastGroup == null) {
             return -1;
         }
 
-        return -1;
+        if(lastGroup.endsOnPropertyListEnd()) {
+            return buffer.length();
+        }
+
+        if(lastGroup.endsOnPropertyListStart()) {
+            candidates.add(Util.MAX_FAILED_SERVERS);
+            candidates.add(Util.MAX_FAILURE_PERCENTAGE);
+            candidates.add(Util.ROLLING_TO_SERVERS);
+            return buffer.length();
+        }
+
+        if(lastGroup.hasProperties()) {
+            final String propValue = lastGroup.getLastPropertyValue();
+            if(propValue != null) {
+                if(Util.TRUE.startsWith(propValue)) {
+                    candidates.add(Util.TRUE);
+                } else if(Util.FALSE.startsWith(propValue)) {
+                    candidates.add(Util.FALSE);
+                }
+            } else if(lastGroup.endsOnPropertyValueSeparator()) {
+                candidates.add(Util.FALSE);
+                candidates.add(Util.TRUE);
+                return buffer.length();
+            } else if(lastGroup.endsOnPropertySeparator()) {
+                if(!lastGroup.hasProperty(Util.MAX_FAILED_SERVERS)) {
+                    candidates.add(Util.MAX_FAILED_SERVERS);
+                }
+                if(!lastGroup.hasProperty(Util.MAX_FAILURE_PERCENTAGE)) {
+                    candidates.add(Util.MAX_FAILURE_PERCENTAGE);
+                }
+                if(!lastGroup.hasProperty(Util.ROLLING_TO_SERVERS)) {
+                    candidates.add(Util.ROLLING_TO_SERVERS);
+                }
+                return lastGroup.getLastSeparatorIndex() + 1;
+            } else {
+                final String propName = lastGroup.getLastPropertyName();
+                if(Util.MAX_FAILED_SERVERS.startsWith(propName)) {
+                    candidates.add(Util.MAX_FAILED_SERVERS);
+                }
+                if(Util.MAX_FAILURE_PERCENTAGE.startsWith(propName)) {
+                    candidates.add(Util.MAX_FAILURE_PERCENTAGE);
+                } else if(Util.ROLLING_TO_SERVERS.startsWith(propName)) {
+                    candidates.add(Util.ROLLING_TO_SERVERS);
+                }
+            }
+            return lastGroup.getLastChunkIndex();
+        }
+
+        int result = lastGroup.getLastChunkIndex();
+
+        final String groupName = lastGroup.getGroupName();
+        final List<String> serverGroups = Util.getServerGroups(ctx.getModelControllerClient());
+        for(String group : serverGroups) {
+            if(group.startsWith(groupName)) {
+                candidates.add(group);
+            }
+        }
+        if(candidates.size() == 1) {
+            final String group = candidates.get(0);
+            candidates.set(0, group + '(');
+            candidates.add(group + ',');
+            candidates.add(group + '^');
+        }
+
+        return result;
     }
 
 }
