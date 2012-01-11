@@ -24,7 +24,9 @@ package org.jboss.as.ejb3.deployment.processors.dd;
 import javax.interceptor.InvocationContext;
 
 import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.component.InterceptorEnvironment;
 import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -138,6 +140,11 @@ public class InterceptorClassDeploymentDescriptorProcessor implements Deployment
                         eeModuleDescription.addInterceptorMethodOverride(postActivate.getClassName(), builder.build());
                     }
                 }
+            }
+
+            if(interceptor.getJndiEnvironmentRefsGroup() != null) {
+                final DeploymentDescriptorEnvironment environment = new DeploymentDescriptorEnvironment("java:comp/env", interceptor.getJndiEnvironmentRefsGroup());
+                eeModuleDescription.addInterceptorEnvironment(interceptor.getInterceptorClass(), new InterceptorEnvironment(environment));
             }
         }
 

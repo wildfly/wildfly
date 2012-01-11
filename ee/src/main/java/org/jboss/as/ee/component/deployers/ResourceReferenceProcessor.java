@@ -33,11 +33,11 @@ import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.component.EEApplicationClasses;
-import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.EnvEntryInjectionSource;
 import org.jboss.as.ee.component.FixedInjectionSource;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.LookupInjectionSource;
+import org.jboss.as.ee.component.ResourceInjectionTarget;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReference;
@@ -66,16 +66,16 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
 
 
     @Override
-    protected List<BindingConfiguration> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, EEModuleDescription moduleDescription, ComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
+    protected List<BindingConfiguration> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, ResourceInjectionTarget resourceInjectionTarget, final ComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
         List<BindingConfiguration> bindings = new ArrayList<BindingConfiguration>();
-        bindings.addAll(getEnvironmentEntries(environment, classLoader, deploymentReflectionIndex, moduleDescription, componentDescription, applicationClasses));
-        bindings.addAll(getResourceEnvRefEntries(deploymentUnit, environment, classLoader, deploymentReflectionIndex, moduleDescription, componentDescription, applicationClasses));
-        bindings.addAll(getResourceRefEntries(deploymentUnit, environment, classLoader, deploymentReflectionIndex, moduleDescription, componentDescription, applicationClasses));
-        bindings.addAll(getMessageDestinationRefs(environment, classLoader, deploymentReflectionIndex, moduleDescription, componentDescription, applicationClasses, deploymentUnit));
+        bindings.addAll(getEnvironmentEntries(environment, classLoader, deploymentReflectionIndex, resourceInjectionTarget));
+        bindings.addAll(getResourceEnvRefEntries(deploymentUnit, environment, classLoader, deploymentReflectionIndex, resourceInjectionTarget));
+        bindings.addAll(getResourceRefEntries(deploymentUnit, environment, classLoader, deploymentReflectionIndex, resourceInjectionTarget));
+        bindings.addAll(getMessageDestinationRefs(environment, classLoader, deploymentReflectionIndex, resourceInjectionTarget, deploymentUnit));
         return bindings;
     }
 
-    private List<BindingConfiguration> getResourceEnvRefEntries(final DeploymentUnit deploymentUnit, final DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, ComponentDescription componentDescription, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
+    private List<BindingConfiguration> getResourceEnvRefEntries(final DeploymentUnit deploymentUnit, final DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, ResourceInjectionTarget resourceInjectionTarget) throws DeploymentUnitProcessingException {
         List<BindingConfiguration> bindings = new ArrayList<BindingConfiguration>();
         final ResourceEnvironmentReferencesMetaData resourceEnvRefs = environment.getEnvironment().getResourceEnvironmentReferences();
         final EEResourceReferenceProcessorRegistry registry = deploymentUnit.getAttachment(Attachments.RESOURCE_REFERENCE_PROCESSOR_REGISTRY);
@@ -101,7 +101,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
             // our injection (source) comes from the local (ENC) lookup, no matter what.
             LookupInjectionSource injectionSource = new LookupInjectionSource(name);
 
-            classType = processInjectionTargets(moduleDescription, componentDescription, applicationClasses, injectionSource, classLoader, deploymentReflectionIndex, resourceEnvRef, classType);
+            classType = processInjectionTargets(resourceInjectionTarget, injectionSource, classLoader, deploymentReflectionIndex, resourceEnvRef, classType);
             final BindingConfiguration bindingConfiguration;
             if (!isEmpty(resourceEnvRef.getLookupName())) {
                 bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(resourceEnvRef.getLookupName()));
@@ -135,7 +135,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
         return bindings;
     }
 
-    private List<BindingConfiguration> getResourceRefEntries(final DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, ComponentDescription componentDescription, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
+    private List<BindingConfiguration> getResourceRefEntries(final DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, ResourceInjectionTarget resourceInjectionTarget) throws DeploymentUnitProcessingException {
         List<BindingConfiguration> bindings = new ArrayList<BindingConfiguration>();
 
         final EEResourceReferenceProcessorRegistry registry = deploymentUnit.getAttachment(Attachments.RESOURCE_REFERENCE_PROCESSOR_REGISTRY);
@@ -162,7 +162,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
 
             // our injection (source) comes from the local (ENC) lookup, no matter what.
             LookupInjectionSource injectionSource = new LookupInjectionSource(name);
-            classType = processInjectionTargets(moduleDescription, componentDescription, applicationClasses, injectionSource, classLoader, deploymentReflectionIndex, resourceRef, classType);
+            classType = processInjectionTargets(resourceInjectionTarget, injectionSource, classLoader, deploymentReflectionIndex, resourceRef, classType);
             final BindingConfiguration bindingConfiguration;
             if (!isEmpty(resourceRef.getLookupName())) {
                 bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(resourceRef.getLookupName()));
@@ -227,7 +227,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
         return bindings;
     }
 
-    private List<BindingConfiguration> getEnvironmentEntries(final DeploymentDescriptorEnvironment environment, final ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, ComponentDescription componentDescription, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
+    private List<BindingConfiguration> getEnvironmentEntries(final DeploymentDescriptorEnvironment environment, final ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, ResourceInjectionTarget resourceInjectionTarget) throws DeploymentUnitProcessingException {
         final List<BindingConfiguration> bindings = new ArrayList<BindingConfiguration>();
         final EnvironmentEntriesMetaData envEntries = environment.getEnvironment().getEnvironmentEntries();
         if (envEntries == null) {
@@ -262,14 +262,14 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
 
             // our injection (source) comes from the local (ENC) lookup, no matter what.
             LookupInjectionSource injectionSource = new LookupInjectionSource(name);
-            classType = processInjectionTargets(moduleDescription, componentDescription, applicationClasses, injectionSource, classLoader, deploymentReflectionIndex, envEntry, classType);
+            classType = processInjectionTargets(resourceInjectionTarget, injectionSource, classLoader, deploymentReflectionIndex, envEntry, classType);
             if (classType == null) {
                 throw MESSAGES.cannotDetermineType("<env-entry>", name, "<env-entry-type>");
             }
 
 
             final String type = classType.getName();
-            BindingConfiguration bindingConfiguration = null;
+            final BindingConfiguration bindingConfiguration;
             if (!isEmpty(lookup)) {
                 bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(lookup));
             } else if (type.equals(String.class.getName())) {
@@ -312,7 +312,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
     /**
      * TODO: should this be part of the messaging subsystem
      */
-    private List<BindingConfiguration> getMessageDestinationRefs(final DeploymentDescriptorEnvironment environment, final ClassLoader classLoader, final DeploymentReflectionIndex deploymentReflectionIndex, final EEModuleDescription moduleDescription, final ComponentDescription componentDescription, final EEApplicationClasses applicationClasses, final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
+    private List<BindingConfiguration> getMessageDestinationRefs(final DeploymentDescriptorEnvironment environment, final ClassLoader classLoader, final DeploymentReflectionIndex deploymentReflectionIndex, final ResourceInjectionTarget resourceInjectionTarget, final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
         final List<BindingConfiguration> bindings = new ArrayList<BindingConfiguration>();
         final MessageDestinationReferencesMetaData messageDestinationReferences = environment.getEnvironment().getMessageDestinationReferences();
         if (messageDestinationReferences == null) {
@@ -336,7 +336,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
             // our injection (source) comes from the local (ENC) lookup, no matter what.
             final LookupInjectionSource injectionSource = new LookupInjectionSource(name);
 
-            classType = processInjectionTargets(moduleDescription, componentDescription, applicationClasses, injectionSource, classLoader, deploymentReflectionIndex, messageRef, classType);
+            classType = processInjectionTargets(resourceInjectionTarget, injectionSource, classLoader, deploymentReflectionIndex, messageRef, classType);
             final BindingConfiguration bindingConfiguration;
             if (!isEmpty(messageRef.getLookupName())) {
                 bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(messageRef.getLookupName()));

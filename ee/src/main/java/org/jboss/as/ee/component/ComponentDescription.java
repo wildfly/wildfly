@@ -79,7 +79,7 @@ import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class ComponentDescription {
+public class ComponentDescription implements ResourceInjectionTarget {
 
     private static final DefaultComponentConfigurator FIRST_CONFIGURATOR = new DefaultComponentConfigurator();
     private static final AtomicInteger PROXY_ID = new AtomicInteger(0);
@@ -631,6 +631,15 @@ public class ComponentDescription {
                     interceptorClass = classIndex.classIndex(interceptorClassName);
                 } catch (ClassNotFoundException e) {
                     throw MESSAGES.cannotLoadInterceptor(e, interceptorClassName);
+                }
+
+                final InterceptorEnvironment interceptorEnvironment = moduleDescription.getInterceptorEnvironment().get(interceptorClassName);
+                if (interceptorEnvironment != null) {
+                    //if the interceptor has environment config we merge it into the components environment
+                    description.getBindingConfigurations().addAll(interceptorEnvironment.getBindingConfigurations());
+                    for (final ResourceInjectionConfiguration injection : interceptorEnvironment.getResourceInjections()) {
+                        description.addResourceInjection(injection);
+                    }
                 }
 
 

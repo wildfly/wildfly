@@ -22,13 +22,16 @@
 
 package org.jboss.as.ee.datasource;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.component.EEApplicationClasses;
-import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.component.ResourceInjectionTarget;
 import org.jboss.as.ee.component.deployers.AbstractDeploymentDescriptorBindingsProcessor;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -37,10 +40,7 @@ import org.jboss.metadata.javaee.spec.DataSourceMetaData;
 import org.jboss.metadata.javaee.spec.DataSourcesMetaData;
 import org.jboss.metadata.javaee.spec.PropertyMetaData;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * Deployment processor responsible for processing data-source deployment descriptor elements
@@ -52,7 +52,7 @@ public class DataSourceDefinitionDeploymentDescriptorParser extends AbstractDepl
     private static final String[] EMPTY_STRING_ARRAY = {};
 
     @Override
-    protected List<BindingConfiguration> processDescriptorEntries(final DeploymentUnit deploymentUnit, final DeploymentDescriptorEnvironment environment, final EEModuleDescription moduleDescription, final ComponentDescription componentDescription, final ClassLoader classLoader, final DeploymentReflectionIndex deploymentReflectionIndex, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
+    protected List<BindingConfiguration> processDescriptorEntries(final DeploymentUnit deploymentUnit, final DeploymentDescriptorEnvironment environment, final ResourceInjectionTarget resourceInjectionTarget, final ComponentDescription componentDescription, final ClassLoader classLoader, final DeploymentReflectionIndex deploymentReflectionIndex, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
         DataSourcesMetaData dataSources = environment.getEnvironment().getDataSources();
         if(dataSources != null) {
             List<BindingConfiguration> ret = new ArrayList<BindingConfiguration>(dataSources.size());

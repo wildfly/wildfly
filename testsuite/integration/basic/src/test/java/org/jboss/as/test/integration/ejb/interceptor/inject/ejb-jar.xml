@@ -27,7 +27,7 @@
 				<ejb-link>MySession2Bean</ejb-link>
 				<injection-target>
 					<injection-target-class>org.jboss.as.test.integration.ejb.interceptor.inject.XMLInterceptor</injection-target-class>
-					<injection-target-name>setSession2Method</injection-target-name>
+					<injection-target-name>session2Method</injection-target-name>
 				</injection-target>
 			</ejb-local-ref>
 			<resource-ref>
@@ -49,7 +49,7 @@
 				<mapped-name>java:jboss/datasources/ExampleDS</mapped-name>
 				<injection-target>
 					<injection-target-class>org.jboss.as.test.integration.ejb.interceptor.inject.XMLInterceptor</injection-target-class>
-					<injection-target-name>setDsMethod</injection-target-name>
+					<injection-target-name>dsMethod</injection-target-name>
 				</injection-target>
 			</resource-ref>
 		</interceptor>
@@ -88,4 +88,4 @@
 			</interceptor-order>
 		</interceptor-binding>
 	</assembly-descriptor>
-</ejb-jar>      
+</ejb-jar>
