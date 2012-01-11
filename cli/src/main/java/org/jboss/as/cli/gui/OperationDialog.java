@@ -50,14 +50,12 @@ public class OperationDialog extends JDialog {
 
     private ManagementModelNode node;
     private String opName;
-    private String addressPath;
     private List<RequestProp> props;
 
-    public OperationDialog(ManagementModelNode node, String opName, String addressPath, String strDescription, ModelNode requestProperties) {
+    public OperationDialog(ManagementModelNode node, String opName, String strDescription, ModelNode requestProperties) {
         super(GuiMain.getFrame(), opName, true);
         this.node = node;
         this.opName = opName;
-        this.addressPath = addressPath;
         setProps(requestProperties);
 
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -92,6 +90,11 @@ public class OperationDialog extends JDialog {
 
     private void setProps(ModelNode requestProperties) {
         props = new ArrayList<RequestProp>();
+        if (opName.equals("add")) {
+            UserObject usrObj = (UserObject)node.getUserObject();
+            props.add(new RequestProp("/" + usrObj.getName() + "=<name>/", "Resource name for the new " + usrObj.getName(), true));
+        }
+
         for (Property prop : requestProperties.asPropertyList()) {
             props.add(new RequestProp(prop.getName(), prop.getValue()));
         }
@@ -128,8 +131,19 @@ public class OperationDialog extends JDialog {
      */
     private class SetOperationActionListener implements ActionListener {
         public void actionPerformed(ActionEvent ae) {
+
+            String addressPath = OperationDialog.this.node.addressPath();
+            if (OperationDialog.this.opName.equals("add")) {
+                UserObject usrObj = (UserObject)OperationDialog.this.node.getUserObject();
+                ManagementModelNode parent = (ManagementModelNode)OperationDialog.this.node.getParent();
+                String value = OperationDialog.this.props.get(0).getValueAsString();
+                value = ManagementModelNode.escapeAddressElement(value);
+                addressPath = parent.addressPath() + usrObj.getName() + "=" + value + "/";
+                OperationDialog.this.props.remove(0);
+            }
+
             StringBuilder command = new StringBuilder();
-            command.append(OperationDialog.this.addressPath);
+            command.append(addressPath);
             command.append(":");
             command.append(OperationDialog.this.opName);
             addRequestProps(command, OperationDialog.this.props);
@@ -177,6 +191,20 @@ public class OperationDialog extends JDialog {
 
         JComponent inputComponent;
         JComponent valueComponent;
+
+        /**
+         * Constructor used for manually constructed property.
+         * @param name Property name
+         * @param description Description for tool tip text.
+         * @param required Is this a required property?
+         */
+        public RequestProp(String name, String description, boolean required) {
+            this.name = name;
+            this.description = description;
+            this.type = ModelType.STRING;
+            this.required = required;
+            setInputComponent();
+        }
 
         public RequestProp(String name, ModelNode props) {
             this.name = name;

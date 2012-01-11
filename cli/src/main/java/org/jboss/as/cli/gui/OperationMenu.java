@@ -56,11 +56,13 @@ public class OperationMenu extends JPopupMenu {
         String addressPath = node.addressPath();
         try {
             ModelNode  opNames = executor.doCommand(addressPath + ":read-operation-names");
+            if (opNames.get("outcome").asString().equals("failed")) return;
+
             for (ModelNode name : opNames.get("result").asList()) {
                 String strName = name.asString();
                 if (node.isLeaf() && !strName.equals("write-attribute")) continue;
                 ModelNode opDescription = getResourceDescription(addressPath, strName);
-                add(new OperationAction(node, strName, addressPath, opDescription));
+                add(new OperationAction(node, strName, opDescription));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -89,11 +91,11 @@ public class OperationMenu extends JPopupMenu {
         private ModelNode opDescription;
         private String strDescription; // help text
 
-        public OperationAction(ManagementModelNode node, String opName, String addressPath, ModelNode opDescription) {
+        public OperationAction(ManagementModelNode node, String opName, ModelNode opDescription) {
             super(opName);
             this.node = node;
             this.opName = opName;
-            this.addressPath = addressPath;
+            this.addressPath = node.addressPath();
             this.opDescription = opDescription;
 
             if (opDescription != null) {
@@ -110,7 +112,7 @@ public class OperationMenu extends JPopupMenu {
                 return;
             }
 
-            OperationDialog dialog = new OperationDialog(node, opName, addressPath, strDescription, requestProperties);
+            OperationDialog dialog = new OperationDialog(node, opName, strDescription, requestProperties);
             dialog.setLocationRelativeTo(GuiMain.getFrame());
             dialog.setVisible(true);
         }
