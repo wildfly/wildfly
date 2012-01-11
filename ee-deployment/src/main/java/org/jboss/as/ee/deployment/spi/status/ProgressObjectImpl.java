@@ -110,7 +110,7 @@ public class ProgressObjectImpl implements ProgressObject {
      * @throws javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException when cancel is not supported
      */
     public void cancel() throws OperationUnsupportedException {
-        throw new OperationUnsupportedException("cancel not supported");
+        throw new OperationUnsupportedException("cancel");
     }
 
     /**
@@ -128,7 +128,7 @@ public class ProgressObjectImpl implements ProgressObject {
      * @throws javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException when stop is not supported
      */
     public void stop() throws OperationUnsupportedException {
-        throw new OperationUnsupportedException("stop not supported");
+        throw new OperationUnsupportedException("stop");
     }
 
     /**

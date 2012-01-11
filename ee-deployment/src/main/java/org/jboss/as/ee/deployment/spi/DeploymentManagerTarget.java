@@ -58,6 +58,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.ee.deployment.spi.DeploymentLogger.ROOT_LOGGER;
+import static org.jboss.as.ee.deployment.spi.DeploymentMessages.MESSAGES;
 
 /**
  * A Target that deploys using the {@link ServerDeploymentManager}.
@@ -93,7 +94,7 @@ final class DeploymentManagerTarget extends JBossTarget {
             this.deploymentManager = ServerDeploymentManager.Factory.create(modelControllerClient);
             this.deployURI = deployURI;
         } catch (UnknownHostException ex) {
-            throw new IllegalArgumentException("Cannot connect to management target: " + deployURI, ex);
+            throw new IllegalArgumentException(MESSAGES.cannotConnectToManagementTarget(deployURI), ex);
         }
     }
 
@@ -156,7 +157,7 @@ final class DeploymentManagerTarget extends JBossTarget {
             operation.get(CHILD_TYPE).set(DEPLOYMENT);
             ModelNode result = modelControllerClient.execute(operation);
             if (FAILED.equals(result.get(OUTCOME).asString()))
-                throw new IllegalStateException("Management request failed: " + result);
+                throw new IllegalStateException(MESSAGES.managementRequestFailed(result));
 
             List<ModelNode> nodeList = result.get(RESULT).asList();
             for (ModelNode node : nodeList) {

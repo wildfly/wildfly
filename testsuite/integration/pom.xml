@@ -15,7 +15,7 @@
     <packaging>pom</packaging>
     <version>7.1.0.Final-SNAPSHOT</version>
 
-    <name>JBoss Application Server Test Suite: Integration Aggregator</name>
+    <name>JBoss Application Server Test Suite: Integration</name>
 
     <properties>
         <!-- Current module's directory. Will automatically pick up sub-module's basedir. -->

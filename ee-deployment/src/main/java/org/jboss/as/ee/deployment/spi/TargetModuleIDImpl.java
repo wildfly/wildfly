@@ -28,6 +28,8 @@ import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 
+import static org.jboss.as.ee.deployment.spi.DeploymentMessages.MESSAGES;
+
 /**
  * A TargetModuleID interface represents a unique identifier for a deployed application module. A deployable application module
  * can be an EAR, JAR, WAR or RAR file. A TargetModuleID can represent a root module or a child module. A root module
@@ -50,11 +52,11 @@ final class TargetModuleIDImpl implements JBossTargetModuleID {
 
     TargetModuleIDImpl(JBossTarget target, String moduleID, TargetModuleID parentModuleID, ModuleType moduleType) {
         if (target == null)
-            throw new IllegalArgumentException("Null target");
+            throw new IllegalArgumentException(MESSAGES.nullArgument("target"));
         if (moduleID == null)
-            throw new IllegalArgumentException("Null moduleID");
+            throw new IllegalArgumentException(MESSAGES.nullArgument("moduleID"));
         if (moduleType == null)
-            throw new IllegalArgumentException("Null moduleType");
+            throw new IllegalArgumentException(MESSAGES.nullArgument("moduleType"));
         this.target = target;
         this.moduleID = moduleID;
         this.parentModuleID = parentModuleID;

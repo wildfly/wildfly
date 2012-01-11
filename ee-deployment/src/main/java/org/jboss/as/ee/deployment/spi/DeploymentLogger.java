@@ -75,4 +75,8 @@ public interface DeploymentLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 16105, value = "Deployment does not exist: %s")
     void deploymentDoesNotExist(File deployment);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 16106, value = "Cannot save deployment plan entry: %s")
+    void cannotSaveDeploymentPlanEntry(@Cause Throwable cause, String entry);
 }
