@@ -23,6 +23,7 @@ public class IIOPTransactionalStatefulBean implements SessionSynchronization {
     private Boolean commitSuceeded;
     private boolean beforeCompletion = false;
     private Object transactionKey = null;
+    private boolean rollbackOnlyBeforeCompletion = false;
 
     @Resource
     private UserTransaction userTransaction;
@@ -50,6 +51,11 @@ public class IIOPTransactionalStatefulBean implements SessionSynchronization {
         transactionKey = null;
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public void setRollbackOnlyBeforeCompletion(boolean rollbackOnlyBeforeCompletion) throws RemoteException {
+        this.rollbackOnlyBeforeCompletion = rollbackOnlyBeforeCompletion;
+    }
+
     @TransactionAttribute(TransactionAttributeType.MANDATORY)
     public void sameTransaction(boolean first) throws RemoteException {
         if (first) {
@@ -61,6 +67,15 @@ public class IIOPTransactionalStatefulBean implements SessionSynchronization {
         }
     }
 
+    @TransactionAttribute(TransactionAttributeType.MANDATORY)
+    public void rollbackOnly() throws RemoteException {
+        try {
+            userTransaction.setRollbackOnly();
+        } catch (SystemException e) {
+            throw new RemoteException("SystemException during setRollbackOnly", e);
+        }
+    }
+
     @Override
     public void afterBegin() throws EJBException, RemoteException {
 
@@ -69,6 +84,14 @@ public class IIOPTransactionalStatefulBean implements SessionSynchronization {
     @Override
     public void beforeCompletion() throws EJBException, RemoteException {
         beforeCompletion = true;
+
+        if (rollbackOnlyBeforeCompletion) {
+            try {
+                userTransaction.setRollbackOnly();
+            } catch (SystemException e) {
+                throw new RemoteException("SystemException during setRollbackOnly", e);
+            }
+        }
     }
 
     @Override

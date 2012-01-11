@@ -19,4 +19,8 @@ public interface IIOPTransactionalStatefulRemote extends EJBObject {
 
     public void sameTransaction(boolean first) throws RemoteException;
 
+    void rollbackOnly() throws RemoteException;
+
+    public void setRollbackOnlyBeforeCompletion(boolean rollbackOnlyInBeforeCompletion) throws RemoteException;
+
 }

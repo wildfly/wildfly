@@ -80,6 +80,22 @@ public class TransactionIIOPInvocationTestCase {
 
     @Test
     @OperateOnDeployment("client")
+    public void testRollbackOnly() throws IOException, NamingException, NotSupportedException, SystemException {
+        final InitialContext context = new InitialContext();
+        final ClientEjb ejb = (ClientEjb) context.lookup("java:module/" + ClientEjb.class.getSimpleName());
+        ejb.testRollbackOnly();
+    }
+
+    @Test
+    @OperateOnDeployment("client")
+    public void testRollbackOnlyBeforeCompletion() throws IOException, NamingException, NotSupportedException, SystemException, HeuristicMixedException, HeuristicRollbackException {
+        final InitialContext context = new InitialContext();
+        final ClientEjb ejb = (ClientEjb) context.lookup("java:module/" + ClientEjb.class.getSimpleName());
+        ejb.testRollbackOnlyBeforeCompletion();
+    }
+
+    @Test
+    @OperateOnDeployment("client")
     public void testSameTransactionEachCall() throws IOException, NamingException, NotSupportedException, SystemException {
         final InitialContext context = new InitialContext();
         final ClientEjb ejb = (ClientEjb) context.lookup("java:module/" + ClientEjb.class.getSimpleName());
