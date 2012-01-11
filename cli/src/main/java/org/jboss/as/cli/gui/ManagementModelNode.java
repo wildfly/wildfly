@@ -125,6 +125,13 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
         return this.isLeaf;
     }
 
+    public static String escapeAddressElement(String element) {
+        element = element.replace(":", "\\:");
+        element = element.replace("/", "\\/");
+        element = element.replace("=", "\\=");
+        return element;
+    }
+
     /**
      * Encapsulates name/value pair.  Also encapsulates escaping of the value.
      */
@@ -154,11 +161,7 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
         }
 
         public String getEscapedValue() {
-            String escapedVal = this.value;
-            escapedVal = escapedVal.replace(":", "\\:");
-            escapedVal = escapedVal.replace("/", "\\/");
-            escapedVal = escapedVal.replace("=", "\\=");
-            return escapedVal;
+            return ManagementModelNode.escapeAddressElement(this.value);
         }
 
         public boolean isLeaf() {
