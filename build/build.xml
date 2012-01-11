@@ -1233,8 +1233,8 @@
             <maven-resource group="org.picketlink" artifact="picketlink-fed-model"/>
         </module-def>
 
-        <module-def name="org.picketlink.openid">
-            <maven-resource group="org.picketlink" artifact="picketlink-openid"/>
+        <module-def name="org.picketlink.social">
+            <maven-resource group="org.picketlink" artifact="picketlink-consolidated-social"/>
         </module-def>
 
         <module-def name="org.slf4j.jcl-over-slf4j">

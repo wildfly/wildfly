@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<module xmlns="urn:jboss:module:1.0" name="org.picketlink.openid">
+<module xmlns="urn:jboss:module:1.0" name="org.picketlink.social">
   <resources>
     <!-- Insert resources here -->
   </resources>

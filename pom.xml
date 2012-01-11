@@ -248,6 +248,7 @@
         <version.org.openid4java>0.9.5</version.org.openid4java>
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
         <version.org.picketlink>2.1.1.Final</version.org.picketlink>
+        <version.org.picketlink.consolidated.social>2.0.0.Beta1</version.org.picketlink.consolidated.social>
         <version.org.powermock>1.4.11</version.org.powermock>
         <version.org.openid4java>0.9.5</version.org.openid4java>
         <version.org.projectodd.stilts>0.1.26</version.org.projectodd.stilts>
@@ -5774,8 +5775,8 @@
 
             <dependency>
                 <groupId>org.picketlink</groupId>
-                <artifactId>picketlink-openid</artifactId>
-                <version>${version.org.picketlink}</version>
+                <artifactId>picketlink-consolidated-social</artifactId>
+                <version>${version.org.picketlink.consolidated.social}</version>
             </dependency>
 
             <dependency>
