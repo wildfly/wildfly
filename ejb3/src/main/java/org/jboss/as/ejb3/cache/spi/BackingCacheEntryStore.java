@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.cache.spi;
 
 import java.io.Serializable;
 
+import org.jboss.as.ejb3.cache.AffinitySupport;
 import org.jboss.as.ejb3.cache.Cacheable;
 import org.jboss.as.ejb3.cache.Identifiable;
 import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
@@ -39,7 +40,7 @@ import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
  * @author Paul Ferraro
  */
 public interface BackingCacheEntryStore<K extends Serializable, V extends Cacheable<K>, E extends BackingCacheEntry<K, V>>
-    extends GroupCompatibilityChecker {
+    extends GroupCompatibilityChecker, AffinitySupport<K> {
     /**
      * Put a new entry into the store. This operation should only be performed once per entry.
      *

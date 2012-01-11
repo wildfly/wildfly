@@ -49,6 +49,7 @@ import org.jboss.as.ejb3.cache.spi.impl.AbstractBackingCache;
 import org.jboss.as.ejb3.cache.spi.impl.PassivateTask;
 import org.jboss.as.ejb3.cache.spi.impl.RemoveTask;
 import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
+import org.jboss.ejb.client.Affinity;
 import org.jboss.logging.Logger;
 
 /**
@@ -92,6 +93,21 @@ public class PassivatingBackingCacheImpl<K extends Serializable, V extends Cache
     @Override
     public boolean isClustered() {
         return store.isClustered();
+    }
+
+    @Override
+    public Affinity getStrictAffinity() {
+        return this.store.getStrictAffinity();
+    }
+
+    @Override
+    public Affinity getWeakAffinity(K key) {
+        return this.store.getWeakAffinity(key);
+    }
+
+    @Override
+    public boolean hasAffinity(K key) {
+        return this.store.hasAffinity(key);
     }
 
     @Override

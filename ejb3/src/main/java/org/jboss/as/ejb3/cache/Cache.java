@@ -21,8 +21,6 @@
  */
 package org.jboss.as.ejb3.cache;
 
-import org.jboss.ejb.client.Affinity;
-
 import java.io.Serializable;
 
 /**
@@ -32,7 +30,7 @@ import java.io.Serializable;
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
  * @version $Revision: $
  */
-public interface Cache<K extends Serializable, V extends Identifiable<K>> extends Removable<K> {
+public interface Cache<K extends Serializable, V extends Identifiable<K>> extends Removable<K>, AffinitySupport<K> {
     /**
      * Creates and caches a new instance of <code>T</code>.
      *
@@ -62,18 +60,6 @@ public interface Cache<K extends Serializable, V extends Identifiable<K>> extend
      * @param obj the object
      */
     void release(V obj);
-
-    /**
-     * Returns the strict affinity associated with the entries of this cache
-     */
-    Affinity getStrictAffinity();
-
-    /**
-     * Returns the weak affinity associated with the entries of this cache
-     * @return
-     */
-    Affinity getWeakAffinity();
-
 
     /**
      * Start the cache.

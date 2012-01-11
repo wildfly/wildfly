@@ -36,6 +36,7 @@ import org.jboss.as.ejb3.cache.spi.ReplicationPassivationManager;
 import org.jboss.as.ejb3.cache.spi.SerializationGroup;
 import org.jboss.as.ejb3.cache.spi.SerializationGroupMember;
 import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
+import org.jboss.ejb.client.Affinity;
 import org.jboss.logging.Logger;
 import org.jboss.marshalling.MarshallingConfiguration;
 
@@ -73,6 +74,21 @@ public class SerializationGroupMemberContainer<K extends Serializable, V extends
 
     public void setBackingCacheEntryStore(BackingCacheEntryStore<K, V, SerializationGroupMember<K, V, G>> store) {
         this.store = store;
+    }
+
+    @Override
+    public Affinity getStrictAffinity() {
+        return this.store.getStrictAffinity();
+    }
+
+    @Override
+    public Affinity getWeakAffinity(K key) {
+        return this.store.getWeakAffinity(key);
+    }
+
+    @Override
+    public boolean hasAffinity(K key) {
+        return this.store.hasAffinity(key);
     }
 
     @Override

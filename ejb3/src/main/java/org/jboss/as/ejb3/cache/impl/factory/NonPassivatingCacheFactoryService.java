@@ -28,18 +28,30 @@ import java.util.Set;
 import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.as.ejb3.cache.CacheFactoryService;
 import org.jboss.as.ejb3.cache.Cacheable;
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.ServerEnvironmentService;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * @author Paul Ferraro
  */
 public class NonPassivatingCacheFactoryService<K extends Serializable, V extends Cacheable<K>> extends CacheFactoryService<K, V> {
 
+    private final InjectedValue<ServerEnvironment> environment = new InjectedValue<ServerEnvironment>();
+
     public NonPassivatingCacheFactoryService(String name, Set<String> aliases) {
         super(name, aliases);
     }
 
     @Override
+    public ServiceBuilder<CacheFactory<K, V>> build(ServiceTarget target) {
+        return super.build(target).addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, this.environment);
+    }
+
+    @Override
     protected CacheFactory<K, V> createCacheFactory() {
-        return new NonPassivatingCacheFactory<K, V>();
+        return new NonPassivatingCacheFactory<K, V>(this.environment.getValue());
     }
 }

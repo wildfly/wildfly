@@ -32,6 +32,7 @@ import org.jboss.as.ejb3.cache.spi.GroupAwareBackingCache;
 import org.jboss.as.ejb3.cache.spi.PassivatingBackingCache;
 import org.jboss.as.ejb3.cache.spi.SerializationGroup;
 import org.jboss.as.ejb3.cache.spi.SerializationGroupMember;
+import org.jboss.ejb.client.Affinity;
 
 /**
  * Group-aware version of {@link PassivatingBackingCacheImpl}.
@@ -74,6 +75,16 @@ public class GroupAwareBackingCacheImpl<K extends Serializable, V extends Cachea
         this.groupCache = groupCache;
         this.memberContainer = memberContainer;
         this.memberContainer.setBackingCache(this);
+    }
+
+    @Override
+    public boolean hasAffinity(K key) {
+        return this.memberContainer.hasAffinity(key);
+    }
+
+    @Override
+    public Affinity getWeakAffinity(K key) {
+        return this.memberContainer.getWeakAffinity(key);
     }
 
     @Override

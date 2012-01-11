@@ -26,6 +26,7 @@ import java.io.Serializable;
 
 import javax.ejb.NoSuchEJBException;
 
+import org.jboss.as.ejb3.cache.AffinitySupport;
 import org.jboss.as.ejb3.cache.Cache;
 import org.jboss.as.ejb3.cache.Cacheable;
 import org.jboss.as.ejb3.cache.Removable;
@@ -50,7 +51,7 @@ import org.jboss.as.ejb3.cache.Removable;
  * @author Brian Stansberry
  * @author Paul Ferraro
  */
-public interface BackingCache<K extends Serializable, V extends Cacheable<K>, E extends BackingCacheEntry<K, V>> extends Removable<K> {
+public interface BackingCache<K extends Serializable, V extends Cacheable<K>, E extends BackingCacheEntry<K, V>> extends Removable<K>, AffinitySupport<K> {
     /**
      * Creates and caches a new instance of <code>C</code>, wrapped by a new <code>T</code>. The new <code>T</code> *is*
      * returned, but is not regarded as being "in use". Callers *must not* attempt to use the underlying <code>C</code> without

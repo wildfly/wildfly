@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,39 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.registry;
+package org.jboss.as.ejb3.cache;
 
-import java.util.Map;
-import java.util.Set;
+import org.jboss.ejb.client.Affinity;
 
 /**
- * Clustered registry abstraction.
- * @author Paul Ferraro
+ * @author paul
+ *
  */
-public interface Registry<K, V> {
+public interface AffinitySupport<K> {
 
-    interface Listener<K, V> {
-        void addedEntries(Map<K, V> added);
+    /**
+     * Returns the strict affinity associated with the entries of this cache
+     */
+    Affinity getStrictAffinity();
 
-        void updatedEntries(Map<K, V> updated);
+    /**
+     * Returns the weak affinity associated with the specified entry of this cache
+     */
+    Affinity getWeakAffinity(K key);
 
-        void removedEntries(Set<K> removed);
-    }
-
-    interface RegistryEntryProvider<K, V> {
-        K getKey();
-        V getValue();
-    }
-
-    void addListener(Listener<K, V> listener);
-
-    void removeListener(Listener<K, V> listener);
-
-    Map<K, V> getEntries();
-
-    Map<K, V> locate(Object key);
-
-    Map.Entry<K, V> getLocalEntry();
-
-    String getName();
+    /**
+     * Indicates whether the cache has an affinity for the specified key.
+     * @param key a candidate key
+     * @return true if this cache likes this key, false otherwise
+     */
+    boolean hasAffinity(K key);
 }

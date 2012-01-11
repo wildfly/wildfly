@@ -38,6 +38,9 @@ import org.jboss.as.ejb3.cache.spi.PersistentObjectStore;
 import org.jboss.as.ejb3.cache.spi.impl.AbstractBackingCacheEntryStore;
 import org.jboss.as.ejb3.cache.spi.impl.CacheableTimestamp;
 import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.ejb.client.Affinity;
+import org.jboss.ejb.client.NodeAffinity;
 
 /**
  * A {@link BackingCacheEntryStore} that stores in a simple <code>Map</code> and delegates to a provided
@@ -50,14 +53,30 @@ public class SimpleBackingCacheEntryStore<K extends Serializable, V extends Cach
     private final PersistentObjectStore<K, E> store;
     private final Map<K, E> cache = new ConcurrentHashMap<K, E>();
     private final SortedSet<CacheableTimestamp<K>> entries = new ConcurrentSkipListSet<CacheableTimestamp<K>>();
+    private final ServerEnvironment environment;
 
     /**
      * Create a new SimpleIntegratedObjectStore.
      */
-    public SimpleBackingCacheEntryStore(PersistentObjectStore<K, E> store, StatefulTimeoutInfo timeout, BackingCacheEntryStoreConfig config) {
+    public SimpleBackingCacheEntryStore(PersistentObjectStore<K, E> store, ServerEnvironment environment, StatefulTimeoutInfo timeout, BackingCacheEntryStoreConfig config) {
         super(timeout, config);
-
         this.store = store;
+        this.environment = environment;
+    }
+
+    @Override
+    public Affinity getStrictAffinity() {
+        return new NodeAffinity(this.environment.getNodeName());
+    }
+
+    @Override
+    public Affinity getWeakAffinity(K key) {
+        return Affinity.NONE;
+    }
+
+    @Override
+    public boolean hasAffinity(K key) {
+        return true;
     }
 
     @Override
