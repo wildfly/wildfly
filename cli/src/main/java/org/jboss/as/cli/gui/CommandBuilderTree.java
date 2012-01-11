@@ -22,6 +22,7 @@ import java.awt.event.MouseEvent;
 import javax.swing.JTree;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
+import org.jboss.as.cli.gui.ManagementModelNode.UserObject;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -48,9 +49,8 @@ public class CommandBuilderTree extends JTree {
             ModelNode readResource = GuiMain.getExecutor().doCommand(node.addressPath() + ":read-resource-description");
             if (!node.isLeaf()) return readResource.get("result", "description").asString();
 
-            String attrName = node.getUserObject().toString();
-            attrName = attrName.substring(0, attrName.indexOf(ManagementModelNode.ATTR_VALUE_SEPERATOR));
-            ModelNode description = readResource.get("result", "attributes", attrName, "description");
+            UserObject usrObj = (UserObject)node.getUserObject();
+            ModelNode description = readResource.get("result", "attributes", usrObj.getName(), "description");
             if (description.isDefined()) return description.asString();
         } catch (Exception e) {
             e.printStackTrace();

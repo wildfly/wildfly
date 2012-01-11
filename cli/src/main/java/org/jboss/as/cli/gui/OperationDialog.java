@@ -36,6 +36,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.text.JTextComponent;
+import org.jboss.as.cli.gui.ManagementModelNode.UserObject;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -255,19 +256,16 @@ public class OperationDialog extends JDialog {
             if (!OperationDialog.this.node.isLeaf()) return;
             if (!OperationDialog.this.opName.equals("write-attribute")) return;
 
-            String nodeName = OperationDialog.this.node.getUserObject().toString();
-            String seperator = ManagementModelNode.ATTR_VALUE_SEPERATOR;
-            String leftSide = nodeName.substring(0, nodeName.indexOf(seperator));
-            String rightSide = nodeName.substring(nodeName.indexOf(seperator) + seperator.length());
+            UserObject usrObj = (UserObject)OperationDialog.this.node.getUserObject();
 
             if (this.name.equals("name")) {
-                ((JTextField)valueComponent).setText(leftSide);
+                ((JTextField)valueComponent).setText(usrObj.getName());
                 return;
             }
 
-            if (rightSide.equals("undefined")) return;
+            if (usrObj.getValue().equals("undefined")) return;
 
-            if (this.name.equals("value")) ((JTextField)valueComponent).setText(rightSide);
+            if (this.name.equals("value")) ((JTextField)valueComponent).setText(usrObj.getValue());
         }
 
     }

@@ -53,7 +53,7 @@ public class ManagementModel extends JPanel {
     }
 
     private JTree makeTree() {
-        ManagementModelNode root = new ManagementModelNode("/", false);
+        ManagementModelNode root = new ManagementModelNode();
         root.explore();
         JTree tree = new CommandBuilderTree(new DefaultTreeModel(root));
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);

@@ -29,15 +29,23 @@ import org.jboss.dmr.Property;
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
 public class ManagementModelNode extends DefaultMutableTreeNode {
-    public static final String ATTR_VALUE_SEPERATOR = " => ";
 
     private CommandExecutor executor;
     private boolean isLeaf = false;
 
-    public ManagementModelNode(String label, boolean isLeaf) {
+    /**
+     * Constructor for root node only.
+     */
+    public ManagementModelNode() {
         this.executor = GuiMain.getExecutor();
-        this.isLeaf = isLeaf;
-        setUserObject(label);
+        this.isLeaf = false;
+        setUserObject("/");
+    }
+
+    private ManagementModelNode(UserObject userObject) {
+        this.executor = GuiMain.getExecutor();
+        this.isLeaf = userObject.isLeaf;
+        setUserObject(userObject);
     }
 
     /**
@@ -54,11 +62,12 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
                 ModelType valueType = prop.getValue().getType();
                 if (valueType == ModelType.OBJECT) {
                     for (ModelNode innerNode : prop.getValue().asList()) {
-                        String label = prop.getName() + "=" + innerNode.asProperty().getName();
-                        add(new ManagementModelNode(label, false));
+                        UserObject usrObj = new UserObject(prop.getName(), innerNode.asProperty().getName(), false);
+                        add(new ManagementModelNode(usrObj));
                     }
                 } else {
-                    add(new ManagementModelNode(prop.getName() + ATTR_VALUE_SEPERATOR + prop.getValue().asString(), true));
+                    UserObject usrObj = new UserObject(prop.getName(), prop.getValue().asString(), true);
+                    add(new ManagementModelNode(usrObj));
                 }
             }
         } catch (Exception e) {
@@ -76,22 +85,15 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
             return parent.addressPath();
         }
 
-        Object[] path = getUserObjectPath();
         StringBuilder builder = new StringBuilder("/"); // start with root
-        for (Object pathElement : path) {
+        for (Object pathElement : getUserObjectPath()) {
             String pathElementStr = pathElement.toString();
             if (pathElementStr.equals("/")) continue; // don't want to escape root
 
-            String leftSide = pathElementStr.substring(0, pathElementStr.indexOf('=') + 1);
-            String rightSide = pathElementStr.substring(pathElementStr.indexOf('=') + 1);
-
-            // Colon, forward slash, & equals mess up parser.  Make them literal.
-            rightSide = rightSide.replace(":", "\\:");
-            rightSide = rightSide.replace("/", "\\/");
-            rightSide = rightSide.replace("=", "\\=");
-
-            builder.append(leftSide);
-            builder.append(rightSide);
+            UserObject userObj = (UserObject)pathElement;
+            builder.append(userObj.getName());
+            builder.append("=");
+            builder.append(userObj.getEscapedValue());
             builder.append("/");
         }
 
@@ -101,6 +103,52 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
     @Override
     public boolean isLeaf() {
         return this.isLeaf;
+    }
+
+    /**
+     * Encapsulates name/value pair.  Also encapsulates escaping of the value.
+     */
+    class UserObject {
+        private String name;
+        private String value;
+        private boolean isLeaf;
+        private String seperator;
+
+        public UserObject(String name, String value, boolean isLeaf) {
+            this.name = name;
+            this.value = value;
+            this.isLeaf = isLeaf;
+            if (isLeaf) {
+                this.seperator = " => ";
+            } else {
+                this.seperator = "=";
+            }
+        }
+
+        public String getName() {
+            return this.name;
+        }
+
+        public String getValue() {
+            return this.value;
+        }
+
+        public String getEscapedValue() {
+            String escapedVal = this.value;
+            escapedVal = escapedVal.replace(":", "\\:");
+            escapedVal = escapedVal.replace("/", "\\/");
+            escapedVal = escapedVal.replace("=", "\\=");
+            return escapedVal;
+        }
+
+        public boolean isLeaf() {
+            return this.isLeaf;
+        }
+
+        @Override
+        public String toString() {
+            return this.name + this.seperator + this.value;
+        }
     }
 
 }
