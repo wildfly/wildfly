@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE jboss-web
+    PUBLIC "-//JBoss//DTD Web Application 2.4//EN"
+    "http://www.jboss.org/j2ee/dtd/jboss-web_4_0.dtd">
+<jboss-web>
+    <!-- Specify the security domain for authentication/authorization and require that the domain's cache be flushed when the session invalidates. -->
+    <security-domain flushOnSessionInvalidation="true">
+       java:/jaas/jbossweb-form-auth
+    </security-domain>
+</jboss-web>
