@@ -22,6 +22,7 @@
 
 package org.jboss.as.jpa.container;
 
+import static org.jboss.as.jpa.JpaLogger.ROOT_LOGGER;
 import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
 import java.io.IOException;
@@ -290,10 +291,11 @@ public class SFSBXPCMap {
 
         SFSBXPCMap sfsbxpcMap = SFSBXPCMap.getXpcMap(deploymentBagKeyName);
         List<SFSBContextHandle> sfsbList = sfsbxpcMap.getSFSBList(extendedEntityManager);
-
+        ROOT_LOGGER.tracef("starting serializing of %d SFSBXPCMap entries", sfsbList.size());
         out.writeInt(sfsbList.size());  // write the count of SFSBContextHandle that reference extendedEntityManager
         for (SFSBContextHandle sfsbContextHandle : sfsbList) {
             out.writeObject(sfsbContextHandle.getSerializable());
+            ROOT_LOGGER.tracef("serialized SFSBXPCMap entry %s", sfsbContextHandle.getSerializable().toString());
         }
 
         if (isPassivating) {
@@ -337,12 +339,13 @@ public class SFSBXPCMap {
 
         SFSBXPCMap sfsbxpcMap = SFSBXPCMap.getXpcMap(deploymentBagKeyName);
         int sfsbContextHandleCount = in.readInt();
-
+        ROOT_LOGGER.tracef("starting deserializing of %d SFSBXPCMap entries", sfsbContextHandleCount);
         ArrayList sfsbList = new ArrayList<SFSBContextHandle>();
 
         for (int looper = 0; looper < sfsbContextHandleCount; looper++) {
             try {
                 Serializable sfsbContextHandleId = (Serializable) in.readObject();
+                ROOT_LOGGER.tracef("deserialized SFSBXPCMap entry %s", sfsbContextHandleId.toString());
                 SFSBContextHandleImpl sfsbContextHandle = new SFSBContextHandleImpl(sfsbContextHandleId);
                 sfsbList.add(sfsbContextHandle);
 

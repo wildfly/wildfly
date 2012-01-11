@@ -22,6 +22,7 @@
 
 package org.jboss.as.jpa.container;
 
+import static org.jboss.as.jpa.JpaLogger.ROOT_LOGGER;
 import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
 import java.io.IOException;
@@ -199,17 +200,23 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
 
 
     private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+        ROOT_LOGGER.tracef("starting serializing extended persistence context for PU '%s', deploymentKey '%s'", puScopedName, deploymentBagKeyName);
+
         // write all non-transient fields
         out.defaultWriteObject();
 
         SFSBXPCMap.delegateWriteObject(out, this, deploymentBagKeyName);
+
+        ROOT_LOGGER.tracef("finished serializing extended persistence context for PU '%s', deploymentKey '%s'", puScopedName, deploymentBagKeyName);
     }
 
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
-
+        ROOT_LOGGER.tracef("starting deserialization of extended persistence context");
         // read all non-transient fields
         in.defaultReadObject();
         SFSBXPCMap.delegateReadObject(in, this, deploymentBagKeyName);
+
+        ROOT_LOGGER.tracef("finished deserialization of extended persistence context for PU '%s', deploymentKey '%s'", puScopedName, deploymentBagKeyName);
     }
 
 
