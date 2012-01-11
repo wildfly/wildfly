@@ -44,4 +44,12 @@ public interface TransportConfiguration extends ProtocolConfiguration {
     ScheduledExecutorService getTimerExecutor();
 
     ThreadFactory getThreadFactory();
+
+    String getMachineId();
+
+    String getRackId();
+
+    String getSiteId();
+
+    boolean hasTopology();
 }

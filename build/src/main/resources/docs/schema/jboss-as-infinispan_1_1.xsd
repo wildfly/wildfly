@@ -176,21 +176,6 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="site" type="xs:string">
-            <xs:annotation>
-                <xs:documentation>Identifies the site where this node runs.</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="rack" type="xs:string">
-            <xs:annotation>
-                <xs:documentation>Identifies the rack where this node runs.</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="machine" type="xs:string">
-            <xs:annotation>
-                <xs:documentation>Identifies the machine where this node runs.</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="cache" abstract="true">

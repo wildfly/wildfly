@@ -39,8 +39,8 @@ public enum Namespace {
     // must be first
     UNKNOWN(0, 0, null, null),
 
-    INFINISPAN_1_0(1, 0, InfinispanSubsystemParser_1_0.getInstance(), InfinispanSubsystemParser_1_0.getInstance()),
-    INFINISPAN_1_1(1, 1, InfinispanSubsystemParser_1_0.getInstance(), InfinispanSubsystemParser_1_0.getInstance());
+    INFINISPAN_1_0(1, 0, InfinispanSubsystemParser_1_0.getInstance(), null),
+    INFINISPAN_1_1(1, 1, InfinispanSubsystemParser_1_1.getInstance(), InfinispanSubsystemParser_1_1.getInstance());
 
     private static final String BASE_URN = "urn:jboss:domain:infinispan:";
 

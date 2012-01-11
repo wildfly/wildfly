@@ -19,28 +19,36 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.clustering.jgroups.subsystem;
+package org.jboss.as.clustering.jgroups;
+
+import org.jgroups.Address;
+import org.jgroups.Channel;
+import org.jgroups.stack.AddressGenerator;
+import org.jgroups.util.TopologyUUID;
 
 /**
- * Constants used for model keys.
- * @author Paul Ferraro
+ * An AddressGenerator which generates TopologyUUID addresses with specified site, rack and machine ids.
+ *
+ * @author Tristan Tarrant
+ *
  */
-class ModelKeys {
-    static final String DEFAULT_EXECUTOR = "default-executor";
-    static final String DEFAULT_STACK = "default-stack";
-    static final String DIAGNOSTICS_SOCKET_BINDING = "diagnostics-socket-binding";
-    static final String MACHINE = "machine";
-    static final String NAME = "name";
-    static final String OOB_EXECUTOR = "oob-executor";
-    static final String PROPERTY = "property";
-    static final String PROTOCOL = "protocol";
-    static final String RACK = "rack";
-    static final String SHARED = "shared";
-    static final String SITE = "site";
-    static final String SOCKET_BINDING = "socket-binding";
-    static final String STACK = "stack";
-    static final String THREAD_FACTORY = "thread-factory";
-    static final String TIMER_EXECUTOR = "timer-executor";
-    static final String TRANSPORT = "transport";
-    static final String TYPE = "type";
+public class TopologyAddressGenerator implements AddressGenerator {
+
+    private final Channel channel;
+    private final String machineId;
+    private final String rackId;
+    private final String siteId;
+
+    public TopologyAddressGenerator(Channel channel, String siteId, String rackId, String machineId) {
+        this.channel = channel;
+        this.siteId = siteId;
+        this.rackId = rackId;
+        this.machineId = machineId;
+    }
+
+    @Override
+    public Address generateAddress() {
+        return TopologyUUID.randomUUID(channel.getName(), siteId, rackId, machineId);
+    }
+
 }

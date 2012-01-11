@@ -166,15 +166,6 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
             if (transport.hasDefined(ModelKeys.LOCK_TIMEOUT)) {
                 transportConfig.setLockTimeout(transport.get(ModelKeys.LOCK_TIMEOUT).asLong());
             }
-            if (transport.hasDefined(ModelKeys.SITE)) {
-                transportConfig.setSite(transport.get(ModelKeys.SITE).asString());
-            }
-            if (transport.hasDefined(ModelKeys.RACK)) {
-                transportConfig.setRack(transport.get(ModelKeys.RACK).asString());
-            }
-            if (transport.hasDefined(ModelKeys.MACHINE)) {
-                transportConfig.setMachine(transport.get(ModelKeys.MACHINE).asString());
-            }
             addExecutorDependency(containerBuilder, transport, ModelKeys.EXECUTOR, transportConfig.getExecutorInjector());
         }
 
@@ -271,24 +262,9 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         private final InjectedValue<Executor> executor = new InjectedValue<Executor>();
 
         private Long lockTimeout;
-        private String site;
-        private String rack;
-        private String machine;
 
         void setLockTimeout(long lockTimeout) {
             this.lockTimeout = lockTimeout;
-        }
-
-        void setSite(String site) {
-            this.site = site;
-        }
-
-        void setRack(String rack) {
-            this.rack = rack;
-        }
-
-        void setMachine(String machine) {
-            this.machine = machine;
         }
 
         Injector<Channel> getChannelInjector() {
@@ -314,19 +290,5 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
             return this.lockTimeout;
         }
 
-        @Override
-        public String getSite() {
-            return this.site;
-        }
-
-        @Override
-        public String getRack() {
-            return this.rack;
-        }
-
-        @Override
-        public String getMachine() {
-            return this.machine;
-        }
     }
 }

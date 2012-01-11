@@ -88,10 +88,12 @@ public class ProtocolStackAdd extends AbstractAddStepHandler implements Descript
         return JGroupsDescriptions.getProtocolStackAddDescription(locale);
     }
 
+    @Override
     protected void populateModel(ModelNode operation, ModelNode model) {
         populate(operation, model);
     }
 
+    @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
@@ -107,6 +109,15 @@ public class ProtocolStackAdd extends AbstractAddStepHandler implements Descript
                 ;
         if (transport.hasDefined(ModelKeys.SHARED)) {
             transportConfig.setShared(transport.get(ModelKeys.SHARED).asBoolean());
+        }
+        if (transport.hasDefined(ModelKeys.MACHINE)) {
+            transportConfig.setMachineId(transport.get(ModelKeys.MACHINE).asString());
+        }
+        if (transport.hasDefined(ModelKeys.RACK)) {
+            transportConfig.setRackId(transport.get(ModelKeys.RACK).asString());
+        }
+        if (transport.hasDefined(ModelKeys.SITE)) {
+            transportConfig.setSiteId(transport.get(ModelKeys.SITE).asString());
         }
         build(builder, transport, transportConfig);
         addSocketBindingDependency(builder, transport, ModelKeys.DIAGNOSTICS_SOCKET_BINDING, transportConfig.getDiagnosticsSocketBindingInjector());
@@ -150,6 +161,7 @@ public class ProtocolStackAdd extends AbstractAddStepHandler implements Descript
         }
     }
 
+    @Override
     protected boolean requiresRuntimeVerification() {
         return false;
     }
@@ -218,6 +230,9 @@ public class ProtocolStackAdd extends AbstractAddStepHandler implements Descript
         private final InjectedValue<ScheduledExecutorService> timerExecutor = new InjectedValue<ScheduledExecutorService>();
         private final InjectedValue<ThreadFactory> threadFactory = new InjectedValue<ThreadFactory>();
         private boolean shared = true;
+        private String machineId;
+        private String rackId;
+        private String siteId;
 
         Transport(String name) {
             super(name);
@@ -250,6 +265,39 @@ public class ProtocolStackAdd extends AbstractAddStepHandler implements Descript
         @Override
         public boolean isShared() {
             return this.shared;
+        }
+
+
+        @Override
+        public String getMachineId() {
+            return machineId;
+        }
+
+        public void setMachineId(String machineId) {
+            this.machineId = machineId;
+        }
+
+        @Override
+        public String getRackId() {
+            return rackId;
+        }
+
+        public void setRackId(String rackId) {
+            this.rackId = rackId;
+        }
+
+        @Override
+        public String getSiteId() {
+            return siteId;
+        }
+
+        public void setSiteId(String siteId) {
+            this.siteId = siteId;
+        }
+
+        @Override
+        public boolean hasTopology() {
+            return (machineId!=null || rackId!=null || siteId!=null);
         }
 
         @Override
