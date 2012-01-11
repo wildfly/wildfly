@@ -23,6 +23,7 @@ package org.jboss.as.test.integration.domain.suites;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import org.jboss.as.test.integration.domain.DomainTestSupport;
 import org.jboss.as.test.integration.domain.management.cli.BasicOpsTestCase;
 import org.jboss.as.test.integration.domain.management.cli.DataSourceTestCase;
@@ -32,6 +33,7 @@ import org.jboss.as.test.integration.domain.management.cli.JmsTestCase;
 import org.jboss.as.test.integration.domain.management.cli.RolloutPlanTestCase;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -42,52 +44,53 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses ({
     BasicOpsTestCase.class,
-    DeployAllServerGroupsTestCase.class, 
-    DeploySingleServerGroupTestCase.class, 
+    DeployAllServerGroupsTestCase.class,
+    DeploySingleServerGroupTestCase.class,
     JmsTestCase.class,
     DataSourceTestCase.class,
     RolloutPlanTestCase.class
 })
+@Ignore("AS7-3262")
 public class CLITestSuite {
-    
+
     private static DomainTestSupport domainSupport;
-  
+
     public static final Map<String, String []> hostServers = new HashMap<String, String[]>();
     public static final Map<String, String> hostAddresses = new HashMap<String, String>();
     public static final Map<String, String []> serverGroups = new HashMap<String, String[]>();
     public static final Map<String, Integer> portOffsets = new HashMap<String, Integer>();
     public static final Map<String, String []> serverProfiles = new HashMap<String, String[]>();
-      
+
     @BeforeClass
     public static void initSuite() throws Exception {
-        domainSupport = new DomainTestSupport(CLITestSuite.class.getSimpleName(), 
+        domainSupport = new DomainTestSupport(CLITestSuite.class.getSimpleName(),
                 "domain-configs/domain-standard.xml", "host-configs/host-master.xml", "host-configs/host-slave.xml");
         domainSupport.start();
 
         hostServers.put("master", new String[] {"main-one", "main-two", "other-one"});
         hostServers.put("slave", new String[] {"main-three", "main-four", "other-two"});
-        
+
         hostAddresses.put("master", domainSupport.masterAddress);
         hostAddresses.put("slave", domainSupport.slaveAddress);
-        
+
         serverGroups.put("main-server-group", new String[] {"main-one", "main-two", "main-three", "main-four"});
         serverGroups.put("other-server-group", new String[] {"other-one", "other-two"});
-        
+
         serverProfiles.put("default", new String[] {"main-server-group"});
         serverProfiles.put("ha", new String[] {"other-server-group"});
-        
+
         portOffsets.put("main-one", 0);
         portOffsets.put("main-two", 150);
         portOffsets.put("other-one", 250);
         portOffsets.put("main-three", 350);
         portOffsets.put("main-four", 450);
         portOffsets.put("other-two", 550);
-        
+
     }
-    
+
     @AfterClass
     public static void tearDownSuite() {
         domainSupport.stop();
     }
-    
+
 }
