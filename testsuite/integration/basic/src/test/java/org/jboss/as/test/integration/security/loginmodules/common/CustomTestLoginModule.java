@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.security.loginmodules;
+package org.jboss.as.test.integration.security.loginmodules.common;
 
 import java.io.IOException;
 import java.security.Principal;

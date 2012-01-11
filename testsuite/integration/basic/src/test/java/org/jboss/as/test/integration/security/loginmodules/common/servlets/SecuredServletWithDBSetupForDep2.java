@@ -19,18 +19,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.security.loginmodules.database;
+package org.jboss.as.test.integration.security.loginmodules.common.servlets;
 
 import javax.annotation.sql.DataSourceDefinition;
-import javax.servlet.ServletException;
 import javax.servlet.annotation.HttpConstraint;
 import javax.servlet.annotation.ServletSecurity;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.Writer;
 
 /**
  * @author Jan Lanik
@@ -38,21 +32,13 @@ import java.io.Writer;
  * Servlet class to be used in DatabaseLoginModule test cases
  */
 @DataSourceDefinition(
-        name = "java:jboss/datasources/LoginDS",
-        user = "sa",
-        password = "sa",
-        className = "org.h2.jdbcx.JdbcDataSource",
-        url = "jdbc:h2:tcp://localhost/mem:test"
+   name = "java:jboss/datasources/LoginDSdep2",
+   user = "sa",
+   password = "sa",
+   className = "org.h2.jdbcx.JdbcDataSource",
+   url = "jdbc:h2:tcp://localhost/mem:test2"
 )
 @WebServlet(name = "SecuredServlet", urlPatterns = { "/secured/" }, loadOnStartup = 1)
 @ServletSecurity(@HttpConstraint(rolesAllowed = { "gooduser" }))
-public class SecuredServletWithDBSetup extends HttpServlet {
-
-    private static final long serialVersionUID = 1L;
-
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        Writer writer = resp.getWriter();
-        writer.write("GOOD");
-    }
+public class SecuredServletWithDBSetupForDep2 extends AbstractLoginModuleTestServlet {
 }

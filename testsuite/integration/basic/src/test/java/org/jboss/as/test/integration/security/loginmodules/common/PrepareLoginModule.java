@@ -19,37 +19,40 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.test.integration.security.loginmodules.common;
 
-import org.jboss.as.test.integration.security.loginmodules.common.UnsecuredEJB;
-
-import java.io.IOException;
-import java.io.Writer;
-
-import javax.ejb.EJB;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.security.auth.Subject;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.login.LoginException;
+import javax.security.auth.spi.LoginModule;
+import java.util.Map;
 
 /**
- * A simple servlet that just writes back a string
- *
- * @author jlanik
+ * @author <a href="mailto:jlanik@redhat.com">Jan Lanik</a>.
  */
-@WebServlet(name = "UnsecuredServlet", urlPatterns = {"/unsecured/"}, loadOnStartup = 1)
-//@ServletSecurity(@HttpConstraint(rolesAllowed = { "gooduser" }))
-public class UnsecuredServlet extends HttpServlet {
+public class PrepareLoginModule implements LoginModule {
+   private Map sharedState;
 
-   private static final long serialVersionUID = 1L;
+   public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options) {
+      this.sharedState = sharedState;
+   }
 
-   @EJB
-   private UnsecuredEJB unsecuredEJB;
+   public boolean login() throws LoginException {
+      sharedState.put("javax.security.auth.login.name", "anil");
+      sharedState.put("javax.security.auth.login.password", "anil");
+      return true;
+   }
 
-   @Override
-   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-      Writer writer = resp.getWriter();
-      writer.write(unsecuredEJB.getUser());
+   public boolean commit() throws LoginException {
+      return false;
+   }
+
+   public boolean abort() throws LoginException {
+      return false;
+   }
+
+   public boolean logout() throws LoginException {
+      return true;
    }
 }
