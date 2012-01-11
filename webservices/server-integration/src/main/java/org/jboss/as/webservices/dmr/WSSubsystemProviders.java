@@ -134,6 +134,42 @@ final class WSSubsystemProviders {
         }
     };
 
+    static final DescriptionProvider ENDPOINTCONFIG_PROPERTY_DESCRIPTION = new DescriptionProvider() {
+        public ModelNode getModelDescription(final Locale locale) {
+            return Descriptions.getEndpointConfigPropertyDescription(locale);
+        }
+    };
+
+    static final DescriptionProvider ENDPOINTCONFIG_FEATURE_DESCRIPTION = new DescriptionProvider() {
+        public ModelNode getModelDescription(final Locale locale) {
+            return Descriptions.getEndpointConfigFeatureDescription(locale);
+        }
+    };
+
+    static final DescriptionProvider ENDPOINTCONFIG_PREHANDLER_CHAIN_DESCRIPTION = new DescriptionProvider() {
+        public ModelNode getModelDescription(final Locale locale) {
+            return Descriptions.getEndpointConfigPreHandlerChainDescription(locale);
+        }
+    };
+
+    static final DescriptionProvider ENDPOINTCONFIG_POSTHANDLER_CHAIN_DESCRIPTION = new DescriptionProvider() {
+        public ModelNode getModelDescription(final Locale locale) {
+            return Descriptions.getEndpointConfigPostHandlerChainDescription(locale);
+        }
+    };
+
+    static final DescriptionProvider ENDPOINTCONFIG_PREHANDLER_DESCRIPTION = new DescriptionProvider() {
+        public ModelNode getModelDescription(final Locale locale) {
+            return Descriptions.getEndpointConfigPreHandlerDescription(locale);
+        }
+    };
+
+    static final DescriptionProvider ENDPOINTCONFIG_POSTHANDLER_DESCRIPTION = new DescriptionProvider() {
+        public ModelNode getModelDescription(final Locale locale) {
+            return Descriptions.getEndpointConfigPostHandlerDescription(locale);
+        }
+    };
+
     static final DescriptionProvider ENDPOINTCONFIG_ADD_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
             return Descriptions.getEndpointConfigAddDescription(locale);
@@ -304,6 +340,48 @@ final class WSSubsystemProviders {
             node.get(ATTRIBUTES, FAULT_COUNT, TYPE).set(ModelType.INT);
             node.get(ATTRIBUTES, FAULT_COUNT, REQUIRED).set(false);
 
+            return node;
+        }
+
+        static ModelNode getEndpointConfigPropertyDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode node = new ModelNode();
+            node.get(DESCRIPTION).set(bundle.getString("endpoint.config.property"));
+            return node;
+        }
+
+        static ModelNode getEndpointConfigFeatureDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode node = new ModelNode();
+            node.get(DESCRIPTION).set(bundle.getString("endpoint.config.feature"));
+            return node;
+        }
+
+        static ModelNode getEndpointConfigPreHandlerChainDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode node = new ModelNode();
+            node.get(DESCRIPTION).set(bundle.getString("endpoint.config.prehandler.chain"));
+            return node;
+        }
+
+        static ModelNode getEndpointConfigPostHandlerChainDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode node = new ModelNode();
+            node.get(DESCRIPTION).set(bundle.getString("endpoint.config.posthandler.chain"));
+            return node;
+        }
+
+        static ModelNode getEndpointConfigPreHandlerDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode node = new ModelNode();
+            node.get(DESCRIPTION).set(bundle.getString("endpoint.config.prehandler"));
+            return node;
+        }
+
+        static ModelNode getEndpointConfigPostHandlerDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode node = new ModelNode();
+            node.get(DESCRIPTION).set(bundle.getString("endpoint.config.posthandler"));
             return node;
         }
 
