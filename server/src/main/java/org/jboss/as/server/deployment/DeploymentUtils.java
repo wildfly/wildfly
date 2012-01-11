@@ -79,10 +79,13 @@ public final class DeploymentUtils {
     }
 
     public static List<byte[]> getDeploymentHash(Resource deployment) {
+        return getDeploymentHash(deployment.getModel());
+    }
+
+    public static List<byte[]> getDeploymentHash(ModelNode deployment){
         List<byte[]> hashes = new ArrayList<byte[]>();
-        final ModelNode model = deployment.getModel();
-        if (model.hasDefined(CONTENT)) {
-            for (ModelNode contentElement : model.get(CONTENT).asList()) {
+        if (deployment.hasDefined(CONTENT)) {
+            for (ModelNode contentElement : deployment.get(CONTENT).asList()) {
                 if (contentElement.hasDefined(HASH)) {
                     final byte[] hash = contentElement.get(HASH).asBytes();
                     hashes.add(hash);

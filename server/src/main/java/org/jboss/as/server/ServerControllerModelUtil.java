@@ -71,10 +71,10 @@ import org.jboss.as.controller.operations.common.InterfaceLegacyCriteriaReadHand
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.NamespaceRemoveHandler;
 import org.jboss.as.controller.operations.common.ProcessReloadHandler;
+import org.jboss.as.controller.operations.common.ProcessStateAttributeHandler;
 import org.jboss.as.controller.operations.common.ResolveExpressionHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationRemoveHandler;
-import org.jboss.as.controller.operations.common.ProcessStateAttributeHandler;
 import org.jboss.as.controller.operations.common.SnapshotDeleteHandler;
 import org.jboss.as.controller.operations.common.SnapshotListHandler;
 import org.jboss.as.controller.operations.common.SnapshotTakeHandler;
