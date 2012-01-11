@@ -23,6 +23,7 @@
 package org.jboss.as.configadmin;
 
 import org.jboss.as.configadmin.service.ConfigAdminListener;
+import org.jboss.dmr.ModelNode;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
@@ -34,32 +35,41 @@ import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 
 /**
- * Date: 27.06.2011
+ /**
+ * This module is using message IDs in the range 16200-16299.
+ * This file is using the subset 16200-16249 for logger messages.
+ * See http://http://community.jboss.org/wiki/LoggingIds for the full list of
+ * currently reserved JBAS message id blocks.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @author Thomas.Diesler@jboss.com
  */
 @MessageLogger(projectCode = "JBAS")
 public interface ConfigAdminLogger extends BasicLogger {
-    /**
-     * The root logger with a category of the package.
-     */
+
     ConfigAdminLogger ROOT_LOGGER = Logger.getMessageLogger(ConfigAdminLogger.class, ConfigAdminLogger.class.getPackage().getName());
 
-    /**
-     * Logs an informational message indicating the ConfigAdmin subsystem is being activated.
-     */
     @LogMessage(level = INFO)
-    @Message(id = 11910, value = "Activating ConfigAdmin Subsystem")
+    @Message(id = 16200, value = "Activating ConfigAdmin Subsystem")
     void activatingSubsystem();
 
-    /**
-     * Logs an error message indicating an error in the configuration listener.
-     *
-     * @param cause    the cause of the error.
-     * @param listener the configuration listener.
-     */
     @LogMessage(level = ERROR)
-    @Message(id = 11914, value = "Error in configuration listener: %s")
+    @Message(id = 16201, value = "Error in configuration listener: %s")
     void configurationListenerError(@Cause Throwable cause, ConfigAdminListener listener);
 
+    @LogMessage(level = ERROR)
+    @Message(id = 16202, value = "Cannot add configuration for pid: %s")
+    void cannotAddConfiguration(@Cause Throwable cause, String pid);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 16203, value = "Cannot add configuration for pid: %s -> %s")
+    void cannotAddConfiguration(String pid, ModelNode node);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 16204, value = "Cannot remove configuration for pid: %s")
+    void cannotRemoveConfiguration(@Cause Throwable cause, String pid);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 16205, value = "Cannot remove configuration for pid: %s -> %s")
+    void cannotRemoveConfiguration(String pid, ModelNode node);
 }

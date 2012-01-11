@@ -134,8 +134,6 @@ class ConfigAdminParser implements Namespace10, XMLStreamConstants, XMLElementRe
                             switch (attribute) {
                                 case NAME: {
                                     name = attrValue;
-                                    // if (configuration.has(name))
-                                    // throw new XMLStreamException(MESSAGES.propertyAlreadyExists(name), reader.getLocation());
                                     break;
                                 }
                                 case VALUE: {
