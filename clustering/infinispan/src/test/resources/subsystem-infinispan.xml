@@ -5,7 +5,7 @@
     <cache-container name="maximal" default-cache="local" eviction-executor="infinispan-eviction" jndi-name="java:global/infinispan/maximal" listener-executor="infinispan-listener" replication-queue-executor="infinispan-repl-queue">
         <alias>alias1</alias>
         <alias>alias2</alias>
-        <transport executor="transport-executor" lock-timeout="120000" machine="machine1" rack="rack1" site="site1" stack="tcp"/>
+        <transport executor="transport-executor" lock-timeout="120000" stack="tcp"/>
         <local-cache name="local" batching="true" indexing="LOCAL" start="EAGER">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="NONE" striping="true"/>
             <transaction mode="FULL_XA" stop-timeout="60000"/>

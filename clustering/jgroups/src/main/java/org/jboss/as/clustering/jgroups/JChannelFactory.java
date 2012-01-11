@@ -79,6 +79,11 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
 
         channel.setName(configuration.getEnvironment().getNodeName() + "/" + id);
 
+        TransportConfiguration transportConfiguration = this.configuration.getTransport();
+        if(transportConfiguration.hasTopology()) {
+            channel.setAddressGenerator(new TopologyAddressGenerator(channel, transportConfiguration.getSiteId(), transportConfiguration.getRackId(), transportConfiguration.getMachineId()));
+        }
+
         MBeanServer server = this.configuration.getMBeanServer();
         if (server != null) {
             try {

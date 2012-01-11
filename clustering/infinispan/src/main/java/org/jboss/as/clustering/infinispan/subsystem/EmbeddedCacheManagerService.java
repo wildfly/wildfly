@@ -50,6 +50,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.Value;
 import org.jgroups.Channel;
+import org.jgroups.util.TopologyUUID;
 
 /**
  * @author Paul Ferraro
@@ -74,9 +75,6 @@ public class EmbeddedCacheManagerService implements Service<EmbeddedCacheManager
 
     interface TransportConfiguration {
         Long getLockTimeout();
-        String getSite();
-        String getRack();
-        String getMachine();
 
         Value<Channel> getChannel();
         Executor getExecutor();
@@ -135,17 +133,23 @@ public class EmbeddedCacheManagerService implements Service<EmbeddedCacheManager
             ChannelProvider.init(transportBuilder, transport.getChannel());
             Long timeout = transport.getLockTimeout();
             transportBuilder.distributedSyncTimeout((timeout != null) ? timeout.longValue() : 60000);
-            String site = transport.getSite();
-            if (site != null) {
-                transportBuilder.siteId(site);
-            }
-            String rack = transport.getRack();
-            if (rack != null) {
-                transportBuilder.rackId(rack);
-            }
-            String machine = transport.getMachine();
-            if (machine != null) {
-                transportBuilder.machineId(machine);
+
+            // Topology is retrieved from the channel
+            Channel channel = transport.getChannel().getValue();
+            if(channel.getAddress() instanceof TopologyUUID) {
+                TopologyUUID topologyAddress = (TopologyUUID)channel.getAddress();
+                String site = topologyAddress.getSiteId();
+                if (site != null) {
+                    transportBuilder.siteId(site);
+                }
+                String rack = topologyAddress.getRackId();
+                if (rack != null) {
+                    transportBuilder.rackId(rack);
+                }
+                String machine = topologyAddress.getMachineId();
+                if (machine != null) {
+                    transportBuilder.machineId(machine);
+                }
             }
             transportBuilder.clusterName(this.name);
 
