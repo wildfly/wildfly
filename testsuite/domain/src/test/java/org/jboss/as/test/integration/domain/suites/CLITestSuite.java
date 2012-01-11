@@ -30,7 +30,6 @@ import org.jboss.as.test.integration.domain.management.cli.DataSourceTestCase;
 import org.jboss.as.test.integration.domain.management.cli.DeployAllServerGroupsTestCase;
 import org.jboss.as.test.integration.domain.management.cli.DeploySingleServerGroupTestCase;
 import org.jboss.as.test.integration.domain.management.cli.JmsTestCase;
-import org.jboss.as.test.integration.domain.management.cli.MultipleRedeploySingleServerGroupTest;
 import org.jboss.as.test.integration.domain.management.cli.RolloutPlanTestCase;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
