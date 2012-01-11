@@ -21,18 +21,18 @@
  */
 package org.jboss.as.jdr;
 
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.dmr.ModelNode;
-import org.python.core.PyObject;
-import org.python.util.PythonInterpreter;
+import static org.jboss.as.jdr.JdrLogger.ROOT_LOGGER;
+import static org.jboss.as.jdr.JdrMessages.MESSAGES;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Date;
 
-import static org.jboss.as.jdr.JdrLogger.ROOT_LOGGER;
-import static org.jboss.as.jdr.JdrMessages.MESSAGES;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.dmr.ModelNode;
+import org.python.util.PythonInterpreter;
 
 /**
  * Wraps up the access to the jython interpreter to encapsulate its use
@@ -76,7 +76,7 @@ public class SosInterpreter {
         String locationDir = getReportLocationDir();
 
         ROOT_LOGGER.debug("locationDir = " + locationDir);
-        ROOT_LOGGER.debug("homeDir = " + SosInterpreter.cleanPath(homeDir));
+        ROOT_LOGGER.debug("homeDir = " + homeDir);
 
         String pathToReport = "";
         PythonInterpreter interpreter = new PythonInterpreter();
@@ -125,7 +125,7 @@ public class SosInterpreter {
      * @return location for the archive
      */
     public String getReportLocationDir() {
-        return SosInterpreter.cleanPath(reportLocationDir);
+        return cleanPath(reportLocationDir);
     }
 
     public void setControllerClient(ModelControllerClient controllerClient) {
@@ -143,7 +143,7 @@ public class SosInterpreter {
         if (jbossHomeDir == null) {
             jbossHomeDir = System.getenv("JBOSS_HOME");
         }
-        return SosInterpreter.cleanPath(jbossHomeDir);
+        return cleanPath(jbossHomeDir);
     }
 
 
@@ -169,18 +169,26 @@ public class SosInterpreter {
         return path.split(":", 2)[1].split("!")[0];
     }
 
+    /**
+     * Decodes a UTF-8 directory path obtained via a URL and "fixes" '\' characters
+     * for proper quoting. This is to fix up windows paths. If an the path's encoding
+     * is unsupported, a warning will be issued and separator replacement will proceed.
+     * 
+     * @param path to be decoded
+     * @return "cleaned" path
+     */
     public static String cleanPath(String path) {
         try {
             path = URLDecoder.decode(path, "utf-8");
-        } catch (Exception e) {
-            ROOT_LOGGER.debug(e);
+        } catch (UnsupportedEncodingException e) {
+            ROOT_LOGGER.urlDecodeExceptionEncountered(e);
         }
         return path.replace("\\", "\\\\");
     }
 
     private String getPythonScriptLocation() {
         URL pyURL = this.getClass().getClassLoader().getResource("sos");
-        String decodedPath = SosInterpreter.cleanPath(pyURL.getPath());
-        return SosInterpreter.getPath(decodedPath);
+        String decodedPath = cleanPath(pyURL.getPath());
+        return getPath(decodedPath);
     }
 }

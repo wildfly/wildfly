@@ -72,4 +72,11 @@ interface JdrLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id=14503, value="JDR python interpreter encountered an exception.")
     void pythonExceptionEncountered(@Cause Throwable cause);
+    
+    /**
+     * The sosreport python library threw an exception
+     */
+    @LogMessage(level = WARN)
+    @Message(id=14504, value="Unable to decode a url while creating JDR report.")
+    void urlDecodeExceptionEncountered(@Cause Throwable cause);
 }

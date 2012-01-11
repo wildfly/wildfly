@@ -59,7 +59,7 @@ public class SosInterpreterTestCase {
     }
 
     @Test
-    public void testWindowsEncodedPath() {
+    public void testWindowsEncodedPath() throws Exception {
         String path = "file:C:%5Cjboss%5Cas%5Cfoo";
         assertEquals("file:C:\\\\jboss\\\\as\\\\foo", SosInterpreter.cleanPath(path));
     }
