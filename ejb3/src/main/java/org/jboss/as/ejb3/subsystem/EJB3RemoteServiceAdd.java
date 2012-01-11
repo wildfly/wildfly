@@ -21,10 +21,8 @@
  */
 package org.jboss.as.ejb3.subsystem;
 
-import org.infinispan.Cache;
 import org.jboss.as.clustering.GroupMembershipNotifierRegistry;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
-import org.jboss.as.clustering.registry.Registry;
 import org.jboss.as.clustering.registry.RegistryService;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -127,8 +125,8 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         // Install the client-mapping service for the remoting connector
         final EJBRemotingConnectorClientMappingsEntryProviderService clientMappingEntryProviderService = new EJBRemotingConnectorClientMappingsEntryProviderService(remotingServerServiceName);
         final ServiceBuilder clientMappingEntryProviderServiceBuilder = serviceTarget.addService(EJBRemotingConnectorClientMappingsEntryProviderService.SERVICE_NAME, clientMappingEntryProviderService)
-                .addDependency(remotingServerServiceName)
-                .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, clientMappingEntryProviderService.getServerEnvironmentInjector());
+                .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, clientMappingEntryProviderService.getServerEnvironmentInjector())
+                .addDependency(remotingServerServiceName);
         if (verificationHandler != null) {
             clientMappingEntryProviderServiceBuilder.addListener(verificationHandler);
         }
@@ -177,7 +175,7 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
                         // .addDependency(ServiceBuilder.DependencyType.OPTIONAL, EJBRemoteConnectorService.EJB_REMOTE_CONNECTOR_CLIENT_MAPPINGS_REGISTRY_SERVICE, Registry.class, ejbRemoteConnectorService.getClientMappingsRegistryServiceInjector())
                         // optional dependency on the backing cache of the client-mapping registry (available only in the presence of clustering
                         // subsystem)
-                .addDependency(ServiceBuilder.DependencyType.OPTIONAL, clientMappingCacheServiceName, Cache.class, ejbRemoteConnectorService.getClientMappingsBackingCacheInjector())
+                        //.addDependency(ServiceBuilder.DependencyType.OPTIONAL, clientMappingCacheServiceName, Cache.class, ejbRemoteConnectorService.getClientMappingsBackingCacheInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE);
         if (verificationHandler != null) {
             ejbRemoteConnectorServiceBuilder.addListener(verificationHandler);
