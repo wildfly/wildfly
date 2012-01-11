@@ -52,6 +52,7 @@
         <module name="org.jboss.as.ee"/>
         <module name="org.jboss.as.jacorb"/>
         <module name="org.jboss.as.naming"/>
+        <module name="org.jboss.as.network"/>
         <module name="org.jboss.as.remoting"/>
         <module name="org.jboss.as.security"/>
         <module name="org.jboss.as.server"/>
