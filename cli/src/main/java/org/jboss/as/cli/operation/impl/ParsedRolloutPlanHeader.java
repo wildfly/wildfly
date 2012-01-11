@@ -45,7 +45,7 @@ public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
     private List<RolloutPlanGroup> groups;
     private Map<String,String> props;
 
-    private RolloutPlanGroup lastGroup;
+    private SingleRolloutPlanGroup lastGroup;
 
     public ParsedRolloutPlanHeader() {
         this(null);
@@ -92,7 +92,7 @@ public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
             groups = new ArrayList<RolloutPlanGroup>();
         }
         groups.add(group);
-        this.lastGroup = group;
+        this.lastGroup = (SingleRolloutPlanGroup) group;
     }
 
     public void addConcurrentGroup(RolloutPlanGroup group) {
@@ -115,7 +115,7 @@ public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
             concurrent.addGroup(group);
             groups.set(lastIndex, concurrent);
         }
-        this.lastGroup = group;
+        this.lastGroup = (SingleRolloutPlanGroup) group;
     }
 
     // TODO perhaps add a list of allowed properties and their values
@@ -168,7 +168,7 @@ public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
         }
     }
 
-    public RolloutPlanGroup getLastGroup() {
+    public SingleRolloutPlanGroup getLastGroup() {
         return lastGroup;
     }
 

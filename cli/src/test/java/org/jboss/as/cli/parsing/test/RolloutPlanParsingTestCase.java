@@ -33,6 +33,7 @@ import org.jboss.as.cli.operation.ParsedOperationRequestHeader;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
 import org.jboss.as.cli.operation.impl.ParsedRolloutPlanHeader;
+import org.jboss.as.cli.operation.impl.SingleRolloutPlanGroup;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 
@@ -251,6 +252,228 @@ public class RolloutPlanParsingTestCase extends TestCase {
         final ModelNode headersNode = new ModelNode();
         header.addTo(ctx, headersNode);
         assertEquals(node, headersNode);
+    }
+
+    @Test
+    public void testEndsOnGroupPropertiesStart() throws Exception {
+
+        parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout groupA(");
+
+        assertTrue(handler.hasAddress());
+        assertTrue(handler.hasOperationName());
+        assertFalse(handler.hasProperties());
+        assertFalse(handler.endsOnAddressOperationNameSeparator());
+        assertFalse(handler.endsOnPropertyListStart());
+        assertFalse(handler.endsOnPropertySeparator());
+        assertFalse(handler.endsOnPropertyValueSeparator());
+        assertFalse(handler.endsOnNodeSeparator());
+        assertFalse(handler.endsOnNodeTypeNameSeparator());
+        assertFalse(handler.endsOnSeparator());
+        assertFalse(handler.endsOnHeaderListStart());
+        assertFalse(handler.isRequestComplete());
+
+        assertTrue(handler.hasHeaders());
+
+        final List<ParsedOperationRequestHeader> headers = handler.getHeaders();
+        assertEquals(1, headers.size());
+        final ParsedOperationRequestHeader header = headers.get(0);
+        assertTrue(header instanceof ParsedRolloutPlanHeader);
+        ParsedRolloutPlanHeader rollout = (ParsedRolloutPlanHeader) header;
+        final SingleRolloutPlanGroup group = rollout.getLastGroup();
+        assertNotNull(group);
+
+        assertEquals("groupA", group.getGroupName());
+        assertTrue(group.endsOnPropertyListStart());
+        assertFalse(group.endsOnPropertyListEnd());
+        assertFalse(group.hasProperties());
+    }
+
+    @Test
+    public void testEndsOnGroupPropertiesEnd() throws Exception {
+
+        parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout groupA()");
+
+        assertTrue(handler.hasAddress());
+        assertTrue(handler.hasOperationName());
+        assertFalse(handler.hasProperties());
+        assertFalse(handler.endsOnAddressOperationNameSeparator());
+        assertFalse(handler.endsOnPropertyListStart());
+        assertFalse(handler.endsOnPropertySeparator());
+        assertFalse(handler.endsOnPropertyValueSeparator());
+        assertFalse(handler.endsOnNodeSeparator());
+        assertFalse(handler.endsOnNodeTypeNameSeparator());
+        assertFalse(handler.endsOnSeparator());
+        assertFalse(handler.endsOnHeaderListStart());
+        assertFalse(handler.isRequestComplete());
+
+        assertTrue(handler.hasHeaders());
+
+        final List<ParsedOperationRequestHeader> headers = handler.getHeaders();
+        assertEquals(1, headers.size());
+        final ParsedOperationRequestHeader header = headers.get(0);
+        assertTrue(header instanceof ParsedRolloutPlanHeader);
+        ParsedRolloutPlanHeader rollout = (ParsedRolloutPlanHeader) header;
+        final SingleRolloutPlanGroup group = rollout.getLastGroup();
+        assertNotNull(group);
+
+        assertEquals("groupA", group.getGroupName());
+        assertFalse(group.endsOnPropertyListStart());
+        assertTrue(group.endsOnPropertyListEnd());
+        assertFalse(group.hasProperties());
+    }
+
+    @Test
+    public void testEndsOnGroupPropertyName() throws Exception {
+
+        parse(":do{ rollout groupA( prop");
+
+        assertFalse(handler.hasAddress());
+        assertTrue(handler.hasOperationName());
+        assertFalse(handler.hasProperties());
+        assertFalse(handler.endsOnAddressOperationNameSeparator());
+        assertFalse(handler.endsOnPropertyListStart());
+        assertFalse(handler.endsOnPropertySeparator());
+        assertFalse(handler.endsOnPropertyValueSeparator());
+        assertFalse(handler.endsOnNodeSeparator());
+        assertFalse(handler.endsOnNodeTypeNameSeparator());
+        assertFalse(handler.endsOnSeparator());
+        assertFalse(handler.endsOnHeaderListStart());
+        assertFalse(handler.isRequestComplete());
+
+        assertTrue(handler.hasHeaders());
+
+        final List<ParsedOperationRequestHeader> headers = handler.getHeaders();
+        assertEquals(1, headers.size());
+        final ParsedOperationRequestHeader header = headers.get(0);
+        assertTrue(header instanceof ParsedRolloutPlanHeader);
+        ParsedRolloutPlanHeader rollout = (ParsedRolloutPlanHeader) header;
+        final SingleRolloutPlanGroup group = rollout.getLastGroup();
+        assertNotNull(group);
+
+        assertEquals("groupA", group.getGroupName());
+        assertFalse(group.endsOnPropertyListStart());
+        assertFalse(group.endsOnPropertyListEnd());
+        assertTrue(group.hasProperties());
+        assertFalse(group.endsOnPropertyValueSeparator());
+        assertEquals("prop", group.getLastPropertyName());
+        assertNull(group.getLastPropertyValue());
+        assertEquals(21, group.getLastChunkIndex());
+    }
+
+    @Test
+    public void testEndsOnGroupPropertyNameValueSeparator() throws Exception {
+
+        parse(":do{ rollout groupA( prop =");
+
+        assertFalse(handler.hasAddress());
+        assertTrue(handler.hasOperationName());
+        assertFalse(handler.hasProperties());
+        assertFalse(handler.endsOnAddressOperationNameSeparator());
+        assertFalse(handler.endsOnPropertyListStart());
+        assertFalse(handler.endsOnPropertySeparator());
+        assertFalse(handler.endsOnPropertyValueSeparator());
+        assertFalse(handler.endsOnNodeSeparator());
+        assertFalse(handler.endsOnNodeTypeNameSeparator());
+        assertFalse(handler.endsOnSeparator());
+        assertFalse(handler.endsOnHeaderListStart());
+        assertFalse(handler.isRequestComplete());
+
+        assertTrue(handler.hasHeaders());
+
+        final List<ParsedOperationRequestHeader> headers = handler.getHeaders();
+        assertEquals(1, headers.size());
+        final ParsedOperationRequestHeader header = headers.get(0);
+        assertTrue(header instanceof ParsedRolloutPlanHeader);
+        ParsedRolloutPlanHeader rollout = (ParsedRolloutPlanHeader) header;
+        final SingleRolloutPlanGroup group = rollout.getLastGroup();
+        assertNotNull(group);
+
+        assertEquals("groupA", group.getGroupName());
+        assertFalse(group.endsOnPropertyListStart());
+        assertFalse(group.endsOnPropertyListEnd());
+        assertTrue(group.hasProperties());
+        assertTrue(group.endsOnPropertyValueSeparator());
+        assertEquals("prop", group.getLastPropertyName());
+        assertNull(group.getLastPropertyValue());
+        assertEquals(26, group.getLastSeparatorIndex());
+    }
+
+    @Test
+    public void testEndsOnGroupPropertyValue() throws Exception {
+
+        parse(":do{ rollout groupA( prop = v");
+
+        assertFalse(handler.hasAddress());
+        assertTrue(handler.hasOperationName());
+        assertFalse(handler.hasProperties());
+        assertFalse(handler.endsOnAddressOperationNameSeparator());
+        assertFalse(handler.endsOnPropertyListStart());
+        assertFalse(handler.endsOnPropertySeparator());
+        assertFalse(handler.endsOnPropertyValueSeparator());
+        assertFalse(handler.endsOnNodeSeparator());
+        assertFalse(handler.endsOnNodeTypeNameSeparator());
+        assertFalse(handler.endsOnSeparator());
+        assertFalse(handler.endsOnHeaderListStart());
+        assertFalse(handler.isRequestComplete());
+
+        assertTrue(handler.hasHeaders());
+
+        final List<ParsedOperationRequestHeader> headers = handler.getHeaders();
+        assertEquals(1, headers.size());
+        final ParsedOperationRequestHeader header = headers.get(0);
+        assertTrue(header instanceof ParsedRolloutPlanHeader);
+        ParsedRolloutPlanHeader rollout = (ParsedRolloutPlanHeader) header;
+        final SingleRolloutPlanGroup group = rollout.getLastGroup();
+        assertNotNull(group);
+
+        assertEquals("groupA", group.getGroupName());
+        assertFalse(group.endsOnPropertyListStart());
+        assertFalse(group.endsOnPropertyListEnd());
+        assertTrue(group.hasProperties());
+        assertFalse(group.endsOnPropertyValueSeparator());
+        assertEquals("prop", group.getLastPropertyName());
+        assertEquals("v", group.getLastPropertyValue());
+        assertEquals(28, group.getLastChunkIndex());
+    }
+
+    @Test
+    public void testEndsOnGroupPropertySeparator() throws Exception {
+
+        parse(":do{ rollout groupA( prop = v,");
+
+        assertFalse(handler.hasAddress());
+        assertTrue(handler.hasOperationName());
+        assertFalse(handler.hasProperties());
+        assertFalse(handler.endsOnAddressOperationNameSeparator());
+        assertFalse(handler.endsOnPropertyListStart());
+        assertFalse(handler.endsOnPropertySeparator());
+        assertFalse(handler.endsOnPropertyValueSeparator());
+        assertFalse(handler.endsOnNodeSeparator());
+        assertFalse(handler.endsOnNodeTypeNameSeparator());
+        assertFalse(handler.endsOnSeparator());
+        assertFalse(handler.endsOnHeaderListStart());
+        assertFalse(handler.isRequestComplete());
+
+        assertTrue(handler.hasHeaders());
+
+        final List<ParsedOperationRequestHeader> headers = handler.getHeaders();
+        assertEquals(1, headers.size());
+        final ParsedOperationRequestHeader header = headers.get(0);
+        assertTrue(header instanceof ParsedRolloutPlanHeader);
+        ParsedRolloutPlanHeader rollout = (ParsedRolloutPlanHeader) header;
+        final SingleRolloutPlanGroup group = rollout.getLastGroup();
+        assertNotNull(group);
+
+        assertEquals("groupA", group.getGroupName());
+        assertFalse(group.endsOnPropertyListStart());
+        assertFalse(group.endsOnPropertyListEnd());
+        assertTrue(group.hasProperties());
+        assertFalse(group.endsOnPropertyValueSeparator());
+        assertNull(group.getLastPropertyName());
+        assertNull(group.getLastPropertyValue());
+
+        assertTrue(group.endsOnPropertySeparator());
+        assertEquals(29, group.getLastSeparatorIndex());
     }
 
     @Test
