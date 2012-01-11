@@ -1,6 +1,7 @@
 package org.jboss.as.mail.extension;
 
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -18,7 +19,7 @@ public class MailSessionDefinition extends SimpleResourceDefinition {
     private MailSessionDefinition() {
         super(PathElement.pathElement(MailSubsystemModel.MAIL_SESSION),
                 MailExtension.getResourceDescriptionResolver(MailSubsystemModel.MAIL_SESSION),
-                MailSessionAdd.INSTANCE, MailSessionRemove.INSTANCE);
+                MailSessionAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     protected static final SimpleAttributeDefinition JNDI_NAME =

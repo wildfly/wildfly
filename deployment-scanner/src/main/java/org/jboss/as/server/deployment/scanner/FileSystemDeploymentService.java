@@ -196,7 +196,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
             if (sub.startsWith(File.separator)) {
                 sub = sub.length() == 1 ? "" : sub.substring(1);
             }
-            this.relativePath = sub.length() > 0 ? sub + "/" : sub;
+            this.relativePath = sub.length() > 0 ? sub + File.separator : sub;
         } else {
             relativePath = null;
         }

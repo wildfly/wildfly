@@ -29,7 +29,11 @@
 
     <dependencies>
         <module name="javax.api"/>
-        <module name="javax.mail.api"/>
+        <module name="javax.mail.api">
+            <imports>
+                <include path="META-INF"/>
+            </imports>
+        </module>
         <module name="org.jboss.as.network"/>
         <module name="org.jboss.as.naming"/>
         <module name="org.jboss.staxmapper"/>
