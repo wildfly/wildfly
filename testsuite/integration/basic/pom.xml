@@ -42,7 +42,7 @@
 
     <profiles>
 
-                                
+
         <profile>
             <id>basic.integration.tests.profile</id>
             <activation>
@@ -101,6 +101,7 @@
                                         <include>org/jboss/as/test/integration/ejb/remote/entity/cmp/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/ejb/management/deployments/EjbJarInEarRuntimeResourcesTestCase.java</include>
                                         <include>org/jboss/as/test/integration/ejb/management/deployments/EjbJarRuntimeResourcesTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/transaction/bmt/lazyenlist</include>
                                         <include>org/jboss/as/test/integration/messaging/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/management/cli/HelpTestCase.java</include>
                                         <include>org/jboss/as/test/integration/management/cli/JmsTestCase.java</include>
@@ -124,7 +125,7 @@
                                     <!--<reportNameSuffix>tests-basic-integration-default</reportNameSuffix>-->
                                 </configuration>
                             </execution>
-                            
+
                             <execution>
                                 <id>basic-integration-default-web.surefire</id>
                                 <phase>test</phase>
@@ -142,6 +143,7 @@
                                         <exclude>org/jboss/as/test/integration/ejb/remote/entity/cmp/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/management/deployments/EjbJarInEarRuntimeResourcesTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/management/deployments/EjbJarRuntimeResourcesTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/transaction/bmt/lazyenlist</exclude>
                                         <exclude>org/jboss/as/test/integration/messaging/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/management/cli/HelpTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/management/cli/JmsTestCase.java</exclude>
@@ -164,8 +166,8 @@
                                     <!--<reportNameSuffix>tests-basic-integration-default</reportNameSuffix>-->
                                 </configuration>
                             </execution>
-                            
-                            
+
+
                             <!-- The second run tests rely on restoring timer services setup in the first run of tests. -->
                             <execution>
                                 <id>basic-integration-2nd.surefire</id>
@@ -191,7 +193,7 @@
                 </plugins>
             </build>
         </profile>
-        
+
         <!-- With -DnoWebProfile, the all tests will run with standalone-full.xml. -->
         <!-- This changes the FULL exec so that it includes all tests. -->
         <profile>
