@@ -11,6 +11,9 @@ Usage: jboss-admin.sh/jboss-admin.bat [--help] [--version] [--controller=host:po
                         the arguments. The default controller host is localhost and the port is 9999.
  --connect (-c)       - instructs the CLI to connect to the controller on start-up (to avoid issuing
                         a separate connect command later).
+ --gui                - GUI built on top of the CLI, the only difference is that it brings up a GUI 
+                        instead of a command line. You have to at least pass the --connect parameter 
+                        to connect from the command line when you start jboss-admin.
  --file               - specifies a path to a file which contains commands and operations (one per line)
                         that should be executed (in a non-interactive mode). The CLI will terminate the
                         session immediately after the last command has been executed or if some command
