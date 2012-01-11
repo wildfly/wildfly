@@ -33,9 +33,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
-import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.persistence.AbstractConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
@@ -81,8 +81,9 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         properties.setProperty(ServerEnvironment.SERVER_NAME, serverName);
         String home = SecurityActions.getSystemProperty("jboss.home.dir");
         properties.setProperty(ServerEnvironment.HOME_DIR, home);
-        properties.setProperty(ServerEnvironment.SERVER_DEPLOY_DIR, SecurityActions.getSystemProperty("jboss.domain.deployment.dir"));
-        properties.setProperty(ServerEnvironment.SERVER_BASE_DIR, SecurityActions.getSystemProperty("jboss.domain.servers.dir") + File.separatorChar + serverName);
+        String serverBaseDir = SecurityActions.getSystemProperty("jboss.domain.servers.dir") + File.separatorChar + serverName;
+        properties.setProperty(ServerEnvironment.SERVER_BASE_DIR, serverBaseDir);
+        properties.setProperty(ServerEnvironment.SERVER_DEPLOY_DIR, serverBaseDir + File.separatorChar + "content");
         properties.setProperty(ServerEnvironment.CONTROLLER_TEMP_DIR, SecurityActions.getSystemProperty("jboss.domain.temp.dir"));
 
         ProductConfig productConfig = new ProductConfig(Module.getBootModuleLoader(), home);
