@@ -81,7 +81,7 @@
         <version.commons-cli>1.2</version.commons-cli>
         <version.commons-codec>1.4</version.commons-codec>
         <version.commons-collections>3.2.1</version.commons-collections>
-        <version.commons-io>1.4</version.commons-io>
+        <version.commons-io>2.1</version.commons-io>
         <version.commons-lang>2.4</version.commons-lang>
         <version.commons-pool>1.5.6</version.commons-pool>
         <version.com.google.guava>10.0.1</version.com.google.guava>
