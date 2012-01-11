@@ -38,6 +38,8 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.List;
 
@@ -49,9 +51,9 @@ public class EJBRemotingConnectorClientMappingsEntryProviderService implements S
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb").append("remoting").append("connector").append("client-mapping-entry-provider-service");
 
     private final ServiceName remotingConnectorServiceName;
-    private final InjectedValue<ServerEnvironment> environment = new InjectedValue<ServerEnvironment>();
     private volatile InjectedSocketBindingStreamServerService remotingServer;
     private final Registry.RegistryEntryProvider<String, List<ClientMapping>> registryEntryProvider = new ClientMappingEntryProvider();
+    private final InjectedValue<ServerEnvironment> serverEnvironment = new InjectedValue<ServerEnvironment>();
 
     public EJBRemotingConnectorClientMappingsEntryProviderService(final ServiceName remotingConnectorServiceName) {
         this.remotingConnectorServiceName = remotingConnectorServiceName;
@@ -84,7 +86,7 @@ public class EJBRemotingConnectorClientMappingsEntryProviderService implements S
     }
 
     public Injector<ServerEnvironment> getServerEnvironmentInjector() {
-        return this.environment;
+        return this.serverEnvironment;
     }
 
     List<ClientMapping> getClientMappings() {
@@ -92,18 +94,34 @@ public class EJBRemotingConnectorClientMappingsEntryProviderService implements S
             return Collections.emptyList();
         }
         final SocketBinding socketBinding = this.remotingServer.getSocketBinding();
-        return socketBinding.getClientMappings();
+        final List<ClientMapping> clientMappings = socketBinding.getClientMappings();
+        if (clientMappings != null && !clientMappings.isEmpty()) {
+            return clientMappings;
+        }
+        // TODO: We use the textual form of IP address as the destination address for now.
+        // This needs to be configurable (i.e. send either host name or the IP address). But
+        // since this is a corner case (i.e. absence of any client-mappings for a socket binding),
+        // this should be OK for now
+        final String destinationAddress = socketBinding.getAddress().getHostAddress();
+        final InetAddress clientNetworkAddress;
+        try {
+            clientNetworkAddress = InetAddress.getByName("::");
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
+        final ClientMapping defaultClientMapping = new ClientMapping(clientNetworkAddress, 0, destinationAddress, socketBinding.getAbsolutePort());
+        return Collections.singletonList(defaultClientMapping);
     }
 
     String getNodeName() {
-        return this.environment.getValue().getNodeName();
+        return this.serverEnvironment.getValue().getNodeName();
     }
 
     private class ClientMappingEntryProvider implements Registry.RegistryEntryProvider<String, List<ClientMapping>> {
 
         @Override
         public String getKey() {
-            return EJBRemotingConnectorClientMappingsEntryProviderService.this.getNodeName();
+            return getNodeName();
         }
 
         @Override

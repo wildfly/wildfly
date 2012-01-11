@@ -21,14 +21,12 @@
  */
 package org.jboss.as.ejb3.remote;
 
-import org.infinispan.Cache;
 import org.jboss.as.clustering.GroupMembershipNotifierRegistry;
 import org.jboss.as.clustering.registry.Registry;
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.remote.protocol.versionone.VersionOneProtocolChannelReceiver;
 import org.jboss.as.network.ClientMapping;
-import org.jboss.as.network.SocketBinding;
 import org.jboss.as.remoting.AbstractStreamServerService;
 import org.jboss.as.remoting.InjectedSocketBindingStreamServerService;
 import org.jboss.as.server.ServerEnvironment;
@@ -59,9 +57,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
@@ -84,7 +80,6 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
     private final InjectedValue<GroupMembershipNotifierRegistry> clusterRegistry = new InjectedValue<GroupMembershipNotifierRegistry>();
     private final InjectedValue<Registry> clientMappingsRegistryService = new InjectedValue<Registry>();
     private final InjectedValue<ServerEnvironment> serverEnvironment = new InjectedValue<ServerEnvironment>();
-    private final InjectedValue<Cache> clientMappingsBackingCache = new InjectedValue<Cache>();
     private final ServiceName remotingConnectorServiceName;
     private volatile Registration registration;
     private volatile InjectedSocketBindingStreamServerService remotingServer;
@@ -107,10 +102,6 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
         if (streamServerService instanceof InjectedSocketBindingStreamServerService) {
             this.remotingServer = (InjectedSocketBindingStreamServerService) streamServerService;
         }
-
-        // populate the client-mapping cache which will be used for getting the client-mapping(s)
-        // of each node's EJB remoting connector's socketbinding
-        this.populateClientMappingsCache();
 
         // Register a EJB channel open listener
         final OpenListener channelOpenListener = new ChannelOpenListener(serviceContainer);
@@ -235,6 +226,12 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
                         // enroll VersionOneProtocolChannelReceiver for handling subsequent messages on this channel
                         final DeploymentRepository deploymentRepository = EJBRemoteConnectorService.this.deploymentRepositoryInjectedValue.getValue();
                         final GroupMembershipNotifierRegistry groupMembershipNotifierRegistry = EJBRemoteConnectorService.this.clusterRegistry.getValue();
+                        // populate the client-mapping cache which will be used for getting the client-mapping(s)
+                        // of each node's EJB remoting connector's socketbinding. The population the cache is done lazily
+                        // to handle the case where the cache service isn't started until the EJBs accessing that cache are
+                        // deployed. The populate method is smart enough to populate the cache only once even if invoked multiple
+                        // times
+                        //EJBRemoteConnectorService.this.populateClientMappingsCache(serviceContainer);
                         // the registry will be available when the clustering subsytem is present, so get the value optionally
                         final Registry<String, List<ClientMapping>> clientMappingRegistry = EJBRemoteConnectorService.this.getClientMappingsRegistry(this.serviceContainer);
                         final VersionOneProtocolChannelReceiver receiver = new VersionOneProtocolChannelReceiver(channel, deploymentRepository,
@@ -284,10 +281,6 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
         return this.serverEnvironment;
     }
 
-    public Injector<Cache> getClientMappingsBackingCacheInjector() {
-        return this.clientMappingsBackingCache;
-    }
-
     private boolean isSupportedMarshallingStrategy(final String strategy) {
         return Arrays.asList(this.supportedMarshallingStrategies).contains(strategy);
     }
@@ -298,42 +291,6 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
             throw new RuntimeException("Could not find a marshaller factory for " + marshallerStrategy + " marshalling strategy");
         }
         return marshallerFactory;
-    }
-
-    private void populateClientMappingsCache() {
-        final Cache<String, List<ClientMapping>> clientMappingsCache = this.clientMappingsBackingCache.getOptionalValue();
-        if (clientMappingsCache == null) {
-            // the cache into which we were planning to add the client mapping isn't available (valid case),
-            // so just return
-            return;
-        }
-        // without the remoting server for the connector, we can't get hold off the socket binding and ultimately
-        // the client mappings. So we just return without populating the cache
-        if (this.remotingServer == null) {
-            return;
-        }
-        final SocketBinding socketBinding = this.remotingServer.getSocketBinding();
-        List<ClientMapping> clientMappings = socketBinding.getClientMappings();
-        final String nodeName = this.serverEnvironment.getValue().getNodeName();
-        if (clientMappings == null || clientMappings.isEmpty()) {
-            // TODO: We use the textual form of IP address as the destination address for now.
-            // This needs to be configurable (i.e. send either host name or the IP address). But
-            // since this is a corner case (i.e. absence of any client-mappings for a socket binding),
-            // this should be OK for now
-            final String destinationAddress = socketBinding.getAddress().getHostAddress();
-            final InetAddress clientNetworkAddress;
-            try {
-                clientNetworkAddress = InetAddress.getByName("::");
-            } catch (UnknownHostException e) {
-                throw new RuntimeException(e);
-            }
-            final ClientMapping defaultClientMapping = new ClientMapping(clientNetworkAddress, 0, destinationAddress, socketBinding.getAbsolutePort());
-            // add to cache
-            clientMappingsCache.put(nodeName, Collections.singletonList(defaultClientMapping));
-        } else {
-            // add the client-mappings of the EJB remoting connector on this node, to the cache
-            clientMappingsCache.put(nodeName, clientMappings);
-        }
     }
 
     private Registry<String, List<ClientMapping>> getClientMappingsRegistry(final ServiceContainer serviceContainer) {
