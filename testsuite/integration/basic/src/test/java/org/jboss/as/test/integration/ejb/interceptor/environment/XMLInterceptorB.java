@@ -35,7 +35,7 @@ public class XMLInterceptorB {
 
     public Object intercept(InvocationContext ctx) throws Exception {
         log.info("Calling XMLInterceptorB...");
-        session2.doit();
+        session2.doitSession();
         log.info("Calling XMLInterceptorB - after doit");
         return false;
     }

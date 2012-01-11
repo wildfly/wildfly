@@ -21,17 +21,12 @@
  */
 package org.jboss.as.ee.component.deployers;
 
-import static org.jboss.as.ee.utils.InjectionUtils.getInjectionTarget;
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-import static org.jboss.as.server.deployment.Attachments.OSGI_MANIFEST;
-
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.List;
-
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.ee.component.Attachments;
@@ -43,8 +38,10 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.FieldInjectionTarget;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.InjectionTarget;
+import org.jboss.as.ee.component.InterceptorEnvironment;
 import org.jboss.as.ee.component.MethodInjectionTarget;
 import org.jboss.as.ee.component.ResourceInjectionConfiguration;
+import org.jboss.as.ee.component.ResourceInjectionTarget;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -53,6 +50,10 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.javaee.spec.ResourceInjectionMetaData;
 import org.jboss.metadata.javaee.spec.ResourceInjectionTargetMetaData;
 import org.jboss.modules.Module;
+
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+import static org.jboss.as.ee.utils.InjectionUtils.getInjectionTarget;
+import static org.jboss.as.server.deployment.Attachments.OSGI_MANIFEST;
 
 /**
  * Class that provides common functionality required by processors that process environment information from deployment descriptors.
@@ -101,13 +102,18 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
         }
         for (final ComponentDescription componentDescription : description.getComponentDescriptions()) {
             if (componentDescription.getDeploymentDescriptorEnvironment() != null) {
-                final List<BindingConfiguration> bindings = processDescriptorEntries(deploymentUnit, componentDescription.getDeploymentDescriptorEnvironment(), description, componentDescription, module.getClassLoader(), deploymentReflectionIndex, applicationClasses);
+                final List<BindingConfiguration> bindings = processDescriptorEntries(deploymentUnit, componentDescription.getDeploymentDescriptorEnvironment(), componentDescription, componentDescription, module.getClassLoader(), deploymentReflectionIndex, applicationClasses);
                 componentDescription.getBindingConfigurations().addAll(bindings);
             }
         }
+
+        for(final InterceptorEnvironment interceptorEnv : description.getInterceptorEnvironment().values()) {
+            final List<BindingConfiguration> bindings = processDescriptorEntries(deploymentUnit, interceptorEnv.getDeploymentDescriptorEnvironment(), interceptorEnv, null, module.getClassLoader(), deploymentReflectionIndex, applicationClasses);
+            interceptorEnv.getBindingConfigurations().addAll(bindings);
+        }
     }
 
-    protected abstract List<BindingConfiguration> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, EEModuleDescription moduleDescription, ComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException;
+    protected abstract List<BindingConfiguration> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, ResourceInjectionTarget resourceInjectionTarget, final ComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException;
 
     @Override
     public void undeploy(DeploymentUnit context) {
@@ -116,7 +122,7 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
     /**
      * Processes the injection targets of a resource binding
      *
-     * @param applicationClasses
+     *
      * @param injectionSource           The injection source for the injection target
      * @param classLoader               The module class loader
      * @param deploymentReflectionIndex The deployment reflection index
@@ -126,7 +132,7 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
      * @throws DeploymentUnitProcessingException
      *          If the injection points could not be resolved
      */
-    protected Class<?> processInjectionTargets(final EEModuleDescription moduleDescription, final ComponentDescription componentDescription, final EEApplicationClasses applicationClasses, InjectionSource injectionSource, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, ResourceInjectionMetaData entry, Class<?> classType) throws DeploymentUnitProcessingException {
+    protected Class<?> processInjectionTargets(final ResourceInjectionTarget resourceInjectionTarget, InjectionSource injectionSource, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, ResourceInjectionMetaData entry, Class<?> classType) throws DeploymentUnitProcessingException {
         if (entry.getInjectionTargets() != null) {
             for (ResourceInjectionTargetMetaData injectionTarget : entry.getInjectionTargets()) {
                 final String injectionTargetClassName = injectionTarget.getInjectionTargetClass();
@@ -160,12 +166,7 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
                         new MethodInjectionTarget(injectionTargetClassName, memberName, classType.getName());
 
                 final ResourceInjectionConfiguration injectionConfiguration = new ResourceInjectionConfiguration(injectionTargetDescription, injectionSource);
-
-                if (componentDescription == null) {
-                    moduleDescription.addResourceInjection(injectionConfiguration);
-                } else {
-                    componentDescription.addResourceInjection(injectionConfiguration);
-                }
+                resourceInjectionTarget.addResourceInjection(injectionConfiguration);
             }
         }
         return classType;

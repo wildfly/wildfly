@@ -37,7 +37,7 @@ import static org.jboss.as.ee.EeMessages.MESSAGES;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class EEModuleDescription {
+public final class EEModuleDescription implements ResourceInjectionTarget {
     private final String applicationName;
     private volatile String moduleName;
     private final String earApplicationName;
@@ -47,6 +47,11 @@ public final class EEModuleDescription {
     private final Map<String, List<ComponentDescription>> componentsByClassName = new HashMap<String, List<ComponentDescription>>();
     private final Map<String, EEModuleClassDescription> classDescriptions = new HashMap<String, EEModuleClassDescription>();
     private final Map<String, InterceptorClassDescription> interceptorClassOverrides = new HashMap<String, InterceptorClassDescription>();
+
+    /**
+     * Additional interceptor environment that was defined in the deployment descriptor <interceptors/> element.
+     */
+    private final Map<String, InterceptorEnvironment> interceptorEnvironment = new HashMap<String, InterceptorEnvironment>();
 
     /**
      * A map of message destinations names to their resolved JNDI name
@@ -236,7 +241,6 @@ public final class EEModuleDescription {
         return bindingConfigurations;
     }
 
-
     public void addResourceInjection(final ResourceInjectionConfiguration injection) {
         String className = injection.getTarget().getClassName();
         Map<InjectionTarget, ResourceInjectionConfiguration> map = resourceInjections.get(className);
@@ -261,5 +265,13 @@ public final class EEModuleDescription {
 
     public Map<String, String> getMessageDestinations() {
         return Collections.unmodifiableMap(messageDestinations);
+    }
+
+    public void addInterceptorEnvironment(final String interceptorClassName, final InterceptorEnvironment env) {
+        interceptorEnvironment.put(interceptorClassName, env);
+    }
+
+    public Map<String, InterceptorEnvironment> getInterceptorEnvironment() {
+        return interceptorEnvironment;
     }
 }

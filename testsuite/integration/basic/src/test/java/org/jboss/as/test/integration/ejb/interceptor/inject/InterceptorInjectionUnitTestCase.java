@@ -34,13 +34,12 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
  * Migration test from EJB Testsuite (interceptors, 2061) to AS7 [JIRA JBQA-5483].
- * 
+ *
  * Interceptor injection test.
  * Bill Burke, Ondrej Chaloupka
  */
@@ -48,12 +47,12 @@ import org.junit.runner.RunWith;
 public class InterceptorInjectionUnitTestCase
 {
     private static final Logger log = Logger.getLogger(InterceptorInjectionUnitTestCase.class);
-    
+
     @ArquillianResource
     InitialContext ctx;
-    
+
     @Deployment
-    public static Archive<?> deployment()  {       
+    public static Archive<?> deployment()  {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "interceptor-inject-test.jar")
                 .addPackage(InterceptorInjectionUnitTestCase.class.getPackage())
                 .addAsManifestResource(InterceptorInjectionUnitTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml")
@@ -64,23 +63,21 @@ public class InterceptorInjectionUnitTestCase
    static boolean deployed = false;
    static int test = 0;
 
-   @Ignore("AS7-2776")
    @Test
    public void testInterceptAndInjection() throws Exception
    {
-      MySessionRemote test = (MySessionRemote) ctx.lookup("java:module/" + MySessionBean.class.getSimpleName());      
+      MySessionRemote test = (MySessionRemote) ctx.lookup("java:module/" + MySessionBean.class.getSimpleName());
       ArrayList list = test.doit();
       Assert.assertEquals("MyBaseInterceptor", list.get(0));
       Assert.assertEquals("MyInterceptor", list.get(1));
    }
-   
+
    /**
     * Tests that the {@link SimpleStatelessBean} and its interceptor class {@link SimpleInterceptor}
-    * have all the expected fields/methods injected 
-    * 
+    * have all the expected fields/methods injected
+    *
     * @throws Exception
     */
-   @Ignore("AS7-2776")
    @Test
    public void testInjection() throws Exception
    {
