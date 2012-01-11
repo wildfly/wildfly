@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE ejb-jar PUBLIC
+      "-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 2.0//EN"
+      "http://java.sun.com/dtd/ejb-jar_2_0.dtd">
+
+<ejb-jar>
+	<display-name>EntityBean</display-name>
+	<enterprise-beans>
+		<entity>
+			<description>Test of EntityBean for lifecycle callbacks</description>
+			<ejb-name>EntityBeanCallerPrincipal</ejb-name>
+			<home>org.jboss.as.test.integration.ejb.security.callerprincipal.EntityBeanHome</home>
+			<remote>org.jboss.as.test.integration.ejb.security.callerprincipal.EntityBean</remote>
+			<ejb-class>org.jboss.as.test.integration.ejb.security.callerprincipal.EntityBeanBean</ejb-class>
+			<persistence-type>Container</persistence-type>
+			<prim-key-class>java.lang.String</prim-key-class>
+			<reentrant>False</reentrant>
+			<!-- <abstract-schema-name>simple</abstract-schema-name> -->
+			<cmp-field>
+				<field-name>id</field-name>
+			</cmp-field>
+			<primkey-field>id</primkey-field>
+		</entity>
+	</enterprise-beans>
+
+	<assembly-descriptor>
+		<container-transaction>
+			<method>
+				<ejb-name>EntityBeanCallerPrincipal</ejb-name>
+				<method-name>*</method-name>
+			</method>
+			<trans-attribute>Required</trans-attribute>
+		</container-transaction>
+	</assembly-descriptor>
+</ejb-jar>
