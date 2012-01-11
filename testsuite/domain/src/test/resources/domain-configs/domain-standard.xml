@@ -260,7 +260,9 @@
                 </core-environment>
                 <coordinator-environment default-timeout="300"/>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:remoting:1.0"/>
+            <subsystem xmlns="urn:jboss:domain:remoting:1.1">
+                <connector name="remoting-connector" socket-binding="remoting"/>
+            </subsystem>
             <subsystem xmlns="urn:jboss:domain:jdr:1.0"/>
             <subsystem xmlns="urn:jboss:domain:jmx:1.0">
                  <jmx-connector registry-binding="jmx-connector-registry" server-binding="jmx-connector-server" />
@@ -599,7 +601,9 @@
                 </core-environment>
                 <coordinator-environment default-timeout="300"/>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:remoting:1.0"/>
+            <subsystem xmlns="urn:jboss:domain:remoting:1.1">
+                <connector name="remoting-connector" socket-binding="remoting"/>
+            </subsystem>
             <subsystem xmlns="urn:jboss:domain:jdr:1.0"/>
             <subsystem xmlns="urn:jboss:domain:jmx:1.0">
                  <jmx-connector registry-binding="jmx-connector-registry" server-binding="jmx-connector-server" />
