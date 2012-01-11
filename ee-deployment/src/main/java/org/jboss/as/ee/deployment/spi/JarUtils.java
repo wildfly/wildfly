@@ -31,7 +31,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
 
-import org.jboss.logging.Logger;
+import static org.jboss.as.ee.deployment.spi.DeploymentLogger.ROOT_LOGGER;
 
 /**
  * A collection of jar utilities
@@ -41,14 +41,11 @@ import org.jboss.logging.Logger;
  */
 public final class JarUtils {
 
-    // deployment logging
-    private static final Logger log = Logger.getLogger(JarUtils.class);
-
     /**
      * Add jar contents to the deployment archive under the given prefix
      */
     public static String[] addJar(JarOutputStream outputStream, String prefix, File jar) throws IOException {
-        log.trace("addJar: " + jar);
+        ROOT_LOGGER.tracef("addJar: %s", jar);
         ArrayList tmp = new ArrayList();
         FileInputStream fis = new FileInputStream(jar);
         JarInputStream jis = new JarInputStream(fis);
@@ -71,7 +68,7 @@ public final class JarUtils {
      * Add a jar entry to the deployment archive
      */
     public static void addJarEntry(JarOutputStream outputStream, String entryName, InputStream inputStream) throws IOException {
-        log.trace("addJarEntry: " + entryName);
+        ROOT_LOGGER.tracef("addJarEntry: %s", entryName);
         outputStream.putNextEntry(new JarEntry(entryName));
         copyStream(outputStream, inputStream);
     }

@@ -35,6 +35,7 @@ import javax.enterprise.deploy.spi.DeploymentConfiguration;
 import javax.enterprise.deploy.spi.exceptions.BeanNotFoundException;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 
+import org.jboss.as.ee.deployment.spi.DeploymentLogger;
 import org.jboss.as.ee.deployment.spi.DeploymentMetaData;
 import org.jboss.as.ee.deployment.spi.JarUtils;
 import org.jboss.as.ee.deployment.spi.beans.JBossConfigBeanProxy;
@@ -82,15 +83,14 @@ public class WarConfiguration implements DeploymentConfiguration {
     public void removeDConfigBean(DConfigBeanRoot bean) throws BeanNotFoundException {
         String key = bean.getDDBean().getRoot().getFilename();
         if (configBeans.containsKey(key)) {
-            System.out.println("its here... not anymore");
             configBeans.remove(key);
         } else {
-            throw new BeanNotFoundException("BNF");
+            throw new BeanNotFoundException(bean.getDDBean().getXpath());
         }
     }
 
     public void save(OutputStream stream) throws ConfigurationException {
-        JarOutputStream jos = null;
+        JarOutputStream jos;
 
         // Setup deployment plan meta data with propriatary descriptor (jboss-web.xml)
         DeploymentMetaData metaData = new DeploymentMetaData("WRONG.war");
@@ -109,13 +109,13 @@ public class WarConfiguration implements DeploymentConfiguration {
             JBossConfigBeanProxy val = (JBossConfigBeanProxy) configBeans.get(key);
             val.save(jos, metaData);
         }
+        String metaStr = metaData.toXMLString();
         try {
-            String metaStr = metaData.toXMLString();
             JarUtils.addJarEntry(jos, DeploymentMetaData.ENTRY_NAME, new ByteArrayInputStream(metaStr.getBytes()));
             jos.flush();
             jos.close();
         } catch (Exception e) {
-            System.out.println("config IO exception error: " + e.getMessage());
+            DeploymentLogger.ROOT_LOGGER.cannotSaveDeploymentPlanEntry(e, metaStr);
         }
     }
 

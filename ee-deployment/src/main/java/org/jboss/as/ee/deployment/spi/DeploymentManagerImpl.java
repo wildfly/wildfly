@@ -21,6 +21,29 @@
  */
 package org.jboss.as.ee.deployment.spi;
 
+import org.dom4j.Document;
+import org.dom4j.io.SAXReader;
+import org.jboss.as.ee.deployment.spi.configurations.WarConfiguration;
+import org.jboss.as.ee.deployment.spi.status.DeploymentStatusImpl;
+import org.jboss.as.ee.deployment.spi.status.ProgressObjectImpl;
+import org.jboss.util.NotImplementedException;
+import org.jboss.util.xml.JBossEntityResolver;
+
+import javax.enterprise.deploy.model.DeployableObject;
+import javax.enterprise.deploy.shared.ActionType;
+import javax.enterprise.deploy.shared.CommandType;
+import javax.enterprise.deploy.shared.DConfigBeanVersionType;
+import javax.enterprise.deploy.shared.ModuleType;
+import javax.enterprise.deploy.shared.StateType;
+import javax.enterprise.deploy.spi.DeploymentConfiguration;
+import javax.enterprise.deploy.spi.DeploymentManager;
+import javax.enterprise.deploy.spi.Target;
+import javax.enterprise.deploy.spi.TargetModuleID;
+import javax.enterprise.deploy.spi.exceptions.DConfigBeanVersionUnsupportedException;
+import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
+import javax.enterprise.deploy.spi.exceptions.TargetException;
+import javax.enterprise.deploy.spi.status.DeploymentStatus;
+import javax.enterprise.deploy.spi.status.ProgressObject;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -43,30 +66,8 @@ import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
-import javax.enterprise.deploy.model.DeployableObject;
-import javax.enterprise.deploy.shared.ActionType;
-import javax.enterprise.deploy.shared.CommandType;
-import javax.enterprise.deploy.shared.DConfigBeanVersionType;
-import javax.enterprise.deploy.shared.ModuleType;
-import javax.enterprise.deploy.shared.StateType;
-import javax.enterprise.deploy.spi.DeploymentConfiguration;
-import javax.enterprise.deploy.spi.DeploymentManager;
-import javax.enterprise.deploy.spi.Target;
-import javax.enterprise.deploy.spi.TargetModuleID;
-import javax.enterprise.deploy.spi.exceptions.DConfigBeanVersionUnsupportedException;
-import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
-import javax.enterprise.deploy.spi.exceptions.TargetException;
-import javax.enterprise.deploy.spi.status.DeploymentStatus;
-import javax.enterprise.deploy.spi.status.ProgressObject;
-
-import org.dom4j.Document;
-import org.dom4j.io.SAXReader;
-import org.jboss.as.ee.deployment.spi.configurations.WarConfiguration;
-import org.jboss.as.ee.deployment.spi.status.DeploymentStatusImpl;
-import org.jboss.as.ee.deployment.spi.status.ProgressObjectImpl;
-import org.jboss.logging.Logger;
-import org.jboss.util.NotImplementedException;
-import org.jboss.util.xml.JBossEntityResolver;
+import static org.jboss.as.ee.deployment.spi.DeploymentLogger.ROOT_LOGGER;
+import static org.jboss.as.ee.deployment.spi.DeploymentMessages.MESSAGES;
 
 /**
  * The DeploymentManager object provides the core set of functions a J2EE platform must provide for J2EE application deployment.
@@ -74,13 +75,12 @@ import org.jboss.util.xml.JBossEntityResolver;
  * information.
  *
  * @author Thomas.Diesler@jboss.com
- *
  */
 public class DeploymentManagerImpl implements DeploymentManager {
-    // deployment logging
-    private static final Logger log = Logger.getLogger(DeploymentManagerImpl.class);
 
-    /** The URI deployment factory recoginzes: http://org.jboss.as.ee.deployment/jsr88 */
+    /**
+     * The URI deployment factory recoginzes: http://org.jboss.as.ee.deployment/jsr88
+     */
     public static final String DEPLOYER_URI = "http://org.jboss.as.ee.deployment/jsr88";
 
     // available deployment targets
@@ -125,30 +125,30 @@ public class DeploymentManagerImpl implements DeploymentManager {
     /**
      * Get the available targets. This is determined by parsing the deployURI and looking at the targetType query parameter if
      * the URI is not opaque. Supported targetTypes are:
-     *
-     *  as7 = AS7 Server Management Target
+     * <p/>
+     * as7 = AS7 Server Management Target
      *
      * @return the available targets
      * @throws IllegalStateException when the manager is disconnected
      */
     public Target[] getTargets() {
         if (isConnected == false)
-            throw new IllegalStateException("DeploymentManager is not connected");
+            throw new IllegalStateException(MESSAGES.deploymentManagerNotConnected());
 
         if (targets == null) {
             if (deployURI.isOpaque()) {
-                throw new NotImplementedException("Opaque deployment URI not implemented");
+                throw new UnsupportedOperationException(MESSAGES.opaqueDeploymentUriNotImplemented());
                 // log.debug("Opaque URI seen, defaulting to LocalhostTarget");
                 // targets = new Target[] { new LocalhostTarget() };
             } else {
-                log.debug("Non-Opaque URI seen, checking query for targetType");
+                ROOT_LOGGER.debugf("Non-Opaque URI seen, checking query for targetType");
 
                 URIParser parser = new URIParser(deployURI);
                 String targetType = parser.getParameter("targetType");
                 if ("as7".equals(targetType)) {
-                    targets = new Target[] { new DeploymentManagerTarget(deployURI, username, password) };
+                    targets = new Target[]{new DeploymentManagerTarget(deployURI, username, password)};
                 } else {
-                    throw new IllegalArgumentException("Invalid targetType in URI: " + deployURI);
+                    throw new IllegalArgumentException(MESSAGES.invalidTargetType(deployURI));
                 }
             }
         }
@@ -159,22 +159,23 @@ public class DeploymentManagerImpl implements DeploymentManager {
      * Get the running modules
      *
      * @param moduleType the module type
-     * @param targets the targets
+     * @param targets    the targets
      * @return the target modules
-     * @throws javax.enterprise.deploy.spi.exceptions.TargetException an invalid target
+     * @throws javax.enterprise.deploy.spi.exceptions.TargetException
+     *                               an invalid target
      * @throws IllegalStateException when the manager is disconnected
      */
     public TargetModuleID[] getRunningModules(ModuleType moduleType, Target[] targets) throws TargetException {
         if (isConnected == false)
-            throw new IllegalStateException("DeploymentManager is not connected");
+            throw new IllegalStateException(MESSAGES.deploymentManagerNotConnected());
 
-        log.debug("getRunningModules [type=" + moduleType + ",targets=" + Arrays.asList(targets) + "]");
+        ROOT_LOGGER.debugf("getRunningModules [type=%s,targets=%s]", moduleType, Arrays.asList(targets));
 
         // get running modules
         Set<JBossTargetModuleID> moduleSet = new HashSet<JBossTargetModuleID>();
         TargetModuleID[] availableModules = getAvailableModules(moduleType, targets);
         if (availableModules == null) {
-            log.debug("No modules available");
+            ROOT_LOGGER.debugf("No modules available");
             return null;
         }
 
@@ -184,7 +185,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
                 moduleSet.add(moduleID);
             }
         }
-        log.debug("Found [" + moduleSet.size() + "] running modules");
+        ROOT_LOGGER.debugf("Found [%d] running modules", moduleSet.size());
 
         // convert set to array
         TargetModuleID[] idarr = new TargetModuleID[moduleSet.size()];
@@ -196,22 +197,23 @@ public class DeploymentManagerImpl implements DeploymentManager {
      * Get the non running modules
      *
      * @param moduleType the module type
-     * @param targets the targets
+     * @param targets    the targets
      * @return the target modules
-     * @throws javax.enterprise.deploy.spi.exceptions.TargetException an invalid target
+     * @throws javax.enterprise.deploy.spi.exceptions.TargetException
+     *                               an invalid target
      * @throws IllegalStateException when the manager is disconnected
      */
     public TargetModuleID[] getNonRunningModules(ModuleType moduleType, Target[] targets) throws TargetException {
         if (isConnected == false)
-            throw new IllegalStateException("DeploymentManager is not connected");
+            throw new IllegalStateException(MESSAGES.deploymentManagerNotConnected());
 
-        log.debug("getNonRunningModules [type=" + moduleType + ",targets=" + Arrays.asList(targets) + "]");
+        ROOT_LOGGER.debugf("getNonRunningModules [type=%s,targets=%s]", moduleType, Arrays.asList(targets));
 
         // get non running modules
         Set<JBossTargetModuleID> moduleSet = new HashSet<JBossTargetModuleID>();
         TargetModuleID[] availableModules = getAvailableModules(moduleType, targets);
         if (availableModules == null) {
-            log.debug("No modules available");
+            ROOT_LOGGER.debugf("No modules available");
             return null;
         }
 
@@ -221,7 +223,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
                 moduleSet.add(moduleID);
             }
         }
-        log.debug("Found [" + moduleSet.size() + "] non running modules");
+        ROOT_LOGGER.debugf("Found [%d] non running modules", moduleSet.size());
 
         // convert set to array
         TargetModuleID[] idarr = new TargetModuleID[moduleSet.size()];
@@ -233,16 +235,17 @@ public class DeploymentManagerImpl implements DeploymentManager {
      * Retrieve the list of all J2EE application modules running or not running on the identified targets.
      *
      * @param moduleType the module type
-     * @param targets the targets
+     * @param targets    the targets
      * @return the target modules
-     * @throws javax.enterprise.deploy.spi.exceptions.TargetException an invalid target
+     * @throws javax.enterprise.deploy.spi.exceptions.TargetException
+     *                               an invalid target
      * @throws IllegalStateException when the manager is disconnected
      */
     public TargetModuleID[] getAvailableModules(ModuleType moduleType, Target[] targets) throws TargetException {
         if (isConnected == false)
-            throw new IllegalStateException("DeploymentManager is not connected");
+            throw new IllegalStateException(MESSAGES.deploymentManagerNotConnected());
 
-        log.debug("getAvailableModules [type=" + moduleType + ",targets=" + Arrays.asList(targets) + "]");
+        ROOT_LOGGER.debugf("getAvailableModules [type=%s,targets=%s]", moduleType, Arrays.asList(targets));
 
         // get non running modules
         List<TargetModuleID> targetModules = new ArrayList<TargetModuleID>();
@@ -251,7 +254,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
             TargetModuleID[] tmids = target.getAvailableModules(moduleType);
             targetModules.addAll(Arrays.asList(tmids));
         }
-        log.debug("Found [" + targetModules.size() + "] available modules");
+        ROOT_LOGGER.debugf("Found [%d] available modules", targetModules.size());
 
         // convert set to array
         if (targetModules.size() > 0) {
@@ -269,31 +272,32 @@ public class DeploymentManagerImpl implements DeploymentManager {
      *
      * @param obj the deployable component
      * @return the configuration
-     * @throws javax.enterprise.deploy.spi.exceptions.InvalidModuleException when the module does not exist or is not supported
+     * @throws javax.enterprise.deploy.spi.exceptions.InvalidModuleException
+     *          when the module does not exist or is not supported
      */
     public DeploymentConfiguration createConfiguration(DeployableObject obj) throws InvalidModuleException {
         if (obj == null)
-            throw new IllegalArgumentException("Null DeployableObject");
+            throw new IllegalArgumentException(MESSAGES.nullArgument("deployableObject"));
 
         // do some stuff to figure out what kind of config to return.
         if (obj.getType().equals(ModuleType.WAR))
             return new WarConfiguration(obj);
 
-        throw new InvalidModuleException("CreateConfiguration: Module type not supported: " + obj.getType());
+        throw new InvalidModuleException(MESSAGES.moduleTypeNotSupported(obj.getType()));
     }
 
     /**
      * Validates the configuration, generates all container specific classes and moves the archive to the targets
      *
-     * @param targets the targets
-     * @param moduleArchive the module archive
+     * @param targets        the targets
+     * @param moduleArchive  the module archive
      * @param deploymentPlan the runtime configuration
      * @return the progress object
      * @throws IllegalStateException when the manager is disconnected
      */
     public ProgressObject distribute(Target[] targets, File moduleArchive, File deploymentPlan) {
         if (isConnected == false)
-            throw new IllegalStateException("DeploymentManager is not connected");
+            throw new IllegalStateException(MESSAGES.deploymentManagerNotConnected());
 
         InputStream isModuleArchive = null;
         InputStream isDeploymentPlan = null;
@@ -302,9 +306,9 @@ public class DeploymentManagerImpl implements DeploymentManager {
             isDeploymentPlan = new FileInputStream(deploymentPlan);
             return distribute(targets, isModuleArchive, isDeploymentPlan);
         } catch (FileNotFoundException e) {
-            String message = "Cannot find deployment file" + e.getMessage();
-            log.error(message, e);
+            String message = MESSAGES.cannotFindDeploymentFile(e.getMessage());
             DeploymentStatus status = new DeploymentStatusImpl(StateType.FAILED, CommandType.DISTRIBUTE, ActionType.EXECUTE, message);
+            ROOT_LOGGER.errorf(message);
             return new ProgressObjectImpl(status, null);
         }
     }
@@ -312,8 +316,8 @@ public class DeploymentManagerImpl implements DeploymentManager {
     /**
      * Validates the configuration, generates all container specific classes and moves the archive to the targets
      *
-     * @param targets the targets
-     * @param moduleArchive the module archive
+     * @param targets        the targets
+     * @param moduleArchive  the module archive
      * @param deploymentPlan the runtime configuration
      * @return the progress object
      * @throws IllegalStateException when the manager is disconnected
@@ -326,8 +330,8 @@ public class DeploymentManagerImpl implements DeploymentManager {
      * The distribute method performs three tasks; it validates the deployment configuration data, generates all container
      * specific classes and interfaces, and moves the fully baked archive to the designated deployment targets.
      *
-     * @param targets the targets
-     * @param moduleArchive the module archive
+     * @param targets        the targets
+     * @param moduleArchive  the module archive
      * @param deploymentPlan the runtime configuration
      * @return the progress object
      * @throws IllegalStateException when the manager is disconnected
@@ -338,7 +342,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
 
     private ProgressObject doDistribute(Target[] targets, ModuleType type, InputStream moduleArchive, InputStream deploymentPlan) throws IllegalStateException {
         if (isConnected == false)
-            throw new IllegalStateException("DeploymentManager is not connected");
+            throw new IllegalStateException(MESSAGES.deploymentManagerNotConnected());
 
         TargetModuleID[] targetModuleIDs = new TargetModuleID[targets.length];
         try {
@@ -366,9 +370,9 @@ public class DeploymentManagerImpl implements DeploymentManager {
                     file.delete();
             }
         } catch (IOException e) {
-            String message = "Exception during deployment validation";
-            log.error(message, e);
+            String message = MESSAGES.deploymentValidationFailed();
             DeploymentStatus status = new DeploymentStatusImpl(StateType.FAILED, CommandType.DISTRIBUTE, ActionType.EXECUTE, message);
+            ROOT_LOGGER.errorf(e, message);
             return new ProgressObjectImpl(status, targetModuleIDs);
         }
 
@@ -388,7 +392,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
     private void initDeploymentMetaData() throws IOException {
         File metaTmpFile = mapDeploymentPlan.get(DeploymentMetaData.ENTRY_NAME);
         if (metaTmpFile == null)
-            throw new IOException("Deployment plan does not contain an entry: " + DeploymentMetaData.ENTRY_NAME);
+            throw new IOException(MESSAGES.deployementPlanDoesNotContainEntry(DeploymentMetaData.ENTRY_NAME));
 
         try {
             SAXReader reader = new SAXReader();
@@ -396,9 +400,9 @@ public class DeploymentManagerImpl implements DeploymentManager {
 
             Document metaDoc = reader.read(metaTmpFile);
             metaData = new DeploymentMetaData(metaDoc);
-            log.debug(DeploymentMetaData.ENTRY_NAME + "\n" + metaData.toXMLString());
+            ROOT_LOGGER.debugf(DeploymentMetaData.ENTRY_NAME + "\n" + metaData.toXMLString());
         } catch (Exception e) {
-            log.error("Cannot obtain meta data: " + e);
+            ROOT_LOGGER.errorf(e, MESSAGES.cannotObtainMetaData());
         }
     }
 
@@ -407,12 +411,12 @@ public class DeploymentManagerImpl implements DeploymentManager {
      */
     private TargetModuleInfo createDeployment(InputStream moduleArchive, String moduleName) throws IOException {
         File tmpFile = File.createTempFile("jboss_deployment_", ".zip");
-        log.debug("temporary deployment file: " + tmpFile);
+        ROOT_LOGGER.debugf("temporary deployment file: %s", tmpFile);
 
         JarInputStream jis = new JarInputStream(moduleArchive);
 
         // make sure we don't loose the manifest when creating a new JarOutputStream
-        JarOutputStream jos = null;
+        JarOutputStream jos;
         FileOutputStream fos = new FileOutputStream(tmpFile);
         Manifest manifest = jis.getManifest();
         if (manifest != null)
@@ -441,7 +445,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
                     if (mapDeploymentPlan.get("!/" + entryName) == null)
                         JarUtils.addJarEntry(jos, entryName, jis);
                     else
-                        log.debug("Skip entry found in deployment plan: " + entryName);
+                        ROOT_LOGGER.debugf("Skip entry found in deployment plan: %s", entryName);
                 }
             }
             entry = jis.getNextJarEntry();
@@ -455,7 +459,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
             else if (moduleName.endsWith(ModuleType.RAR.getModuleExtension()))
                 moduleType = ModuleType.RAR;
             else
-                throw new RuntimeException("cannot obtain module type for " + moduleName);
+                throw new RuntimeException(MESSAGES.cannotObtainModuleType(moduleName));
         }
 
         moduleInfo.setModuleType(moduleType);
@@ -467,7 +471,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
         String deploymentName = tmpFile.getParent() + File.separator + metaData.getDeploymentName();
         File deployment = new File(deploymentName);
         if (deployment.exists() && deployment.delete() == false)
-            throw new IOException("Cannot delete existing deployment: " + deployment);
+            throw new IOException(MESSAGES.cannotDeleteExistingDeployment(deployment));
 
         tmpFile.renameTo(deployment);
         moduleInfo.setModuleID(deployment.toURI().toURL());
@@ -499,17 +503,16 @@ public class DeploymentManagerImpl implements DeploymentManager {
 
     public ProgressObject redeploy(TargetModuleID[] targetModuleIDs, File file, File file1) throws UnsupportedOperationException, IllegalStateException {
         if (isConnected == false)
-            throw new IllegalStateException("DeploymentManager is not connected");
+            throw new IllegalStateException(MESSAGES.deploymentManagerNotConnected());
 
-        throw new UnsupportedOperationException("redeploy");
+        throw new UnsupportedOperationException();
     }
 
-    public ProgressObject redeploy(TargetModuleID[] targetModuleIDs, InputStream inputStream, InputStream inputStream1) throws UnsupportedOperationException,
-            IllegalStateException {
+    public ProgressObject redeploy(TargetModuleID[] targetModuleIDs, InputStream inputStream, InputStream inputStream1) throws UnsupportedOperationException, IllegalStateException {
         if (isConnected == false)
-            throw new IllegalStateException("DeploymentManager is not connected");
+            throw new IllegalStateException(MESSAGES.deploymentManagerNotConnected());
 
-        throw new UnsupportedOperationException("redeploy");
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -521,9 +524,9 @@ public class DeploymentManagerImpl implements DeploymentManager {
      */
     public ProgressObject start(TargetModuleID[] targetModuleIDs) {
         if (isConnected == false)
-            throw new IllegalStateException("DeploymentManager is not connected");
+            throw new IllegalStateException(MESSAGES.deploymentManagerNotConnected());
 
-        log.debug("start " + Arrays.asList(targetModuleIDs));
+        ROOT_LOGGER.debugf("start %s", Arrays.asList(targetModuleIDs));
 
         // start the deployment process
         DeploymentStatus status = new DeploymentStatusImpl(StateType.RUNNING, CommandType.START, ActionType.EXECUTE, null);
@@ -544,9 +547,9 @@ public class DeploymentManagerImpl implements DeploymentManager {
      */
     public ProgressObject stop(TargetModuleID[] targetModuleIDs) {
         if (isConnected == false)
-            throw new IllegalStateException("DeploymentManager is not connected");
+            throw new IllegalStateException(MESSAGES.deploymentManagerNotConnected());
 
-        log.debug("stop " + Arrays.asList(targetModuleIDs));
+        ROOT_LOGGER.debugf("stop %s", Arrays.asList(targetModuleIDs));
 
         DeploymentStatus status = new DeploymentStatusImpl(StateType.RUNNING, CommandType.STOP, ActionType.EXECUTE, null);
         ProgressObject progress = new ProgressObjectImpl(status, targetModuleIDs);
@@ -566,9 +569,9 @@ public class DeploymentManagerImpl implements DeploymentManager {
      */
     public ProgressObject undeploy(TargetModuleID[] targetModuleIDs) {
         if (isConnected == false)
-            throw new IllegalStateException("DeploymentManager is not connected");
+            throw new IllegalStateException(MESSAGES.deploymentManagerNotConnected());
 
-        log.debug("undeploy " + Arrays.asList(targetModuleIDs));
+        ROOT_LOGGER.debugf("undeploy %s", Arrays.asList(targetModuleIDs));
 
         // start the deployment process
         DeploymentStatus status = new DeploymentStatusImpl(StateType.RUNNING, CommandType.UNDEPLOY, ActionType.EXECUTE, null);
@@ -594,14 +597,14 @@ public class DeploymentManagerImpl implements DeploymentManager {
      *
      * @param moduleIDList the list of modules
      * @return the progress object
-     * @throws IllegalStateException when the manager is disconnected
+     * @throws IllegalStateException         when the manager is disconnected
      * @throws UnsupportedOperationException when redeploy is not supported
      */
     public ProgressObject redeploy(TargetModuleID[] moduleIDList) {
         if (isConnected == false)
-            throw new IllegalStateException("DeploymentManager is not connected");
+            throw new IllegalStateException(MESSAGES.deploymentManagerNotConnected());
 
-        throw new UnsupportedOperationException("redeploy");
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -636,7 +639,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
      * Currently we only support the default locale
      */
     public void setLocale(Locale locale) {
-        throw new UnsupportedOperationException("setLocale");
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -652,7 +655,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
      * @return the supported locales
      */
     public Locale[] getSupportedLocales() {
-        return new Locale[] { Locale.getDefault() };
+        return new Locale[]{Locale.getDefault()};
     }
 
     /**
@@ -665,7 +668,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
     }
 
     public void setDConfigBeanVersion(DConfigBeanVersionType dConfigBeanVersionType) throws DConfigBeanVersionUnsupportedException {
-        throw new UnsupportedOperationException("setDConfigBeanVersion");
+        throw new UnsupportedOperationException();
     }
 
     public boolean isDConfigBeanVersionSupported(DConfigBeanVersionType dConfigBeanVersionType) {
@@ -689,7 +692,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
      * @throws UnsupportedOperationException when the version is not supported
      */
     public void setDConfigBeanVersionType(DConfigBeanVersionType version) {
-        throw new UnsupportedOperationException("setDConfigBeanVersionType");
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -722,7 +725,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
             if (mapDeploymentPlan.get(entryName + "!/" + subEntryName) == null)
                 JarUtils.addJarEntry(jos, subEntryName, jisModule);
             else
-                log.debug("Skip entry found in deployment plan: " + subEntryName);
+                ROOT_LOGGER.debugf("Skip entry found in deployment plan: %s", subEntryName);
 
             entry = jisModule.getNextJarEntry();
         }
@@ -752,7 +755,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
             String key = it.next();
             if (key.startsWith(moduleKey)) {
                 String dpName = key.substring(moduleKey.length());
-                log.debug("found deployment plan entry: " + dpName);
+                ROOT_LOGGER.debugf("found deployment plan entry: %s", dpName);
 
                 File dpFile = mapDeploymentPlan.get(key);
                 FileInputStream dpin = new FileInputStream(dpFile);
@@ -777,7 +780,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
             JarEntry entry = jarDeploymentPlan.getNextJarEntry();
             while (entry != null) {
                 String entryName = entry.getName();
-                log.debug("unpack deployment plan entry: " + entryName);
+                ROOT_LOGGER.debugf("unpack deployment plan entry: %s", entryName);
 
                 File tempFile = getTempFile(entryName);
                 dpMap.put(entryName, tempFile);

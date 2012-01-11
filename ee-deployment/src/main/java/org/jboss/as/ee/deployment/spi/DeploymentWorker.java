@@ -21,19 +21,18 @@
  */
 package org.jboss.as.ee.deployment.spi;
 
-import java.io.File;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.net.MalformedURLException;
-import java.net.URL;
+import org.jboss.as.ee.deployment.spi.status.ProgressObjectImpl;
 
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 
-import org.jboss.as.ee.deployment.spi.status.ProgressObjectImpl;
-import org.jboss.logging.Logger;
+import static org.jboss.as.ee.deployment.spi.DeploymentLogger.ROOT_LOGGER;
+import static org.jboss.as.ee.deployment.spi.DeploymentMessages.MESSAGES;
 
 /**
  * A thread that deployes the given deployment on all targets contained in the progress object. It sends events to the progress
@@ -42,8 +41,6 @@ import org.jboss.logging.Logger;
  * @author Thomas.Diesler@jboss.com
  */
 final class DeploymentWorker extends Thread {
-    // deployment logging
-    private static final Logger log = Logger.getLogger(DeploymentWorker.class);
 
     private ProgressObjectImpl progress;
 
@@ -55,14 +52,14 @@ final class DeploymentWorker extends Thread {
      * Deploy the module on each given target
      */
     public void run() {
-        log.trace("Begin run");
+        ROOT_LOGGER.tracef("Begin run");
         CommandType cmdType = progress.getDeploymentStatus().getCommand();
         TargetModuleID[] modules = progress.getResultTargetModuleIDs();
         for (int i = 0; i < modules.length; i++) {
             TargetModuleID moduleid = modules[i];
             JBossTarget target = (JBossTarget) moduleid.getTarget();
             try {
-                progress.sendProgressEvent(StateType.RUNNING, "Operation " + cmdType + " started", moduleid);
+                progress.sendProgressEvent(StateType.RUNNING, MESSAGES.operationStarted(cmdType), moduleid);
                 if (cmdType == CommandType.DISTRIBUTE) {
                     target.deploy(moduleid);
                     deleteDeployment(moduleid);
@@ -74,31 +71,25 @@ final class DeploymentWorker extends Thread {
                     target.undeploy(moduleid);
                     deleteDeployment(moduleid);
                 }
-                progress.sendProgressEvent(StateType.COMPLETED, "Operation " + cmdType + " completed", moduleid);
+                progress.sendProgressEvent(StateType.COMPLETED,  MESSAGES.operationCompleted(cmdType), moduleid);
             } catch (Exception e) {
-                String message = "Operation " + cmdType + " failed on target " + target;
-                StringWriter sw = new StringWriter();
-                PrintWriter pw = new PrintWriter(sw);
-                pw.println(message);
-                e.printStackTrace(pw);
-                pw.close();
-                message = sw.toString();
+                String message = MESSAGES.operationFailedOnTarget(cmdType, target);
                 progress.sendProgressEvent(StateType.FAILED, message, moduleid);
-                log.error(message, e);
+                ROOT_LOGGER.errorf(e, message);
             }
         }
-        log.trace("End run");
+        ROOT_LOGGER.tracef("End run");
     }
 
     private void deleteDeployment(TargetModuleID moduleid) throws MalformedURLException {
         File deployment = new File(new URL(moduleid.getModuleID()).getPath());
         if (deployment.exists()) {
             if (!deployment.delete()) {
-                log.warn("Cannot delete deployment file " + deployment + ", will be deleted on exit");
+                ROOT_LOGGER.cannotDeleteDeploymentFile(deployment);
                 deployment.deleteOnExit();
             }
         } else {
-            log.error("Deployment does not exist: " + deployment);
+            ROOT_LOGGER.deploymentDoesNotExist(deployment);
         }
     }
 }

@@ -21,18 +21,19 @@
  */
 package org.jboss.as.ee.deployment.spi;
 
+import org.dom4j.Document;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.XMLWriter;
+
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.dom4j.Document;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
-import org.dom4j.io.OutputFormat;
-import org.dom4j.io.XMLWriter;
-import org.jboss.logging.Logger;
+import static org.jboss.as.ee.deployment.spi.DeploymentLogger.ROOT_LOGGER;
 
 /**
  * MetaData to the JBoss deployment plan.
@@ -41,9 +42,6 @@ import org.jboss.logging.Logger;
  * @since 09-Apr-2004
  */
 public final class DeploymentMetaData {
-
-    // provide logging
-    static Logger log = Logger.getLogger(DeploymentMetaData.class);
 
     /** The entry name in the deployment plan archive */
     public static final String ENTRY_NAME = "deployment-plan.xml";
@@ -119,8 +117,8 @@ public final class DeploymentMetaData {
             metaWriter.write(getDocument());
             metaWriter.close();
             return strWriter.toString();
-        } catch (IOException e) {
-            log.error("Cannot get XML string", e);
+        } catch (IOException ex) {
+            ROOT_LOGGER.cannotTransformDeploymentPlanToXML(ex);
             return null;
         }
     }

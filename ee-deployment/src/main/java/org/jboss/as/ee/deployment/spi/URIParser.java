@@ -23,6 +23,8 @@ package org.jboss.as.ee.deployment.spi;
 
 import java.net.URI;
 
+import static org.jboss.as.ee.deployment.spi.DeploymentMessages.MESSAGES;
+
 /**
  * Utility class for URI parsing.
  *
@@ -36,7 +38,7 @@ final class URIParser {
     URIParser(URI uri) {
         this.uri = uri;
         if (uri == null)
-            throw new IllegalArgumentException("Null uri");
+            throw new IllegalArgumentException(MESSAGES.nullArgument("uri"));
     }
 
     String getParameter(String key) {

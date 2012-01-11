@@ -17,7 +17,7 @@
     <artifactId>jboss-as-testsuite-integration-smoke</artifactId>
     <version>7.1.0.Final-SNAPSHOT</version>
 
-    <name>JBoss AS Test Suite: Integration - Smoke</name>
+    <name>JBoss Application Server Test Suite: Integration - Smoke</name>
     
     <properties>
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
