@@ -1,0 +1,4 @@
+<!-- Add the ExtendedFormAuthenticator to get access to the exception -->
+<Context cookies="true" crossContext="true">
+    <Valve className="org.jboss.web.tomcat.security.ExtendedFormAuthenticator" includePassword="true" />
+</Context>

@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<!DOCTYPE web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+                         "http://java.sun.com/dtd/web-app_2_3.dtd">
+<web-app>
+ <description>Error Pages Testing</description>
+ <servlet>
+  <servlet-name>ErrorPagesServlet</servlet-name>
+  <servlet-class>org.jboss.as.test.integration.web.customerrors.ContextForwardServlet</servlet-class>
+  <init-param>
+   <param-name>forwardContext</param-name>
+   <param-value>/custom-errors</param-value>
+   <description>The context containing the error pages</description>
+  </init-param>
+ </servlet>
+ <servlet>
+  <servlet-name>ErrorGeneratorServlet</servlet-name>
+  <servlet-class>org.jboss.as.test.integration.web.customerrors.ErrorGeneratorServlet</servlet-class>
+ </servlet>
+ <servlet-mapping>
+  <servlet-name>ErrorPagesServlet</servlet-name>
+  <url-pattern>/ErrorPagesServlet/*</url-pattern>
+ </servlet-mapping>
+ <servlet-mapping>
+  <servlet-name>ErrorGeneratorServlet</servlet-name>
+  <url-pattern>/ErrorGeneratorServlet/*</url-pattern>
+ </servlet-mapping>
+ <!-- Add the custom error page mapping -->
+ <error-page>
+  <error-code>403</error-code>
+  <location>/ErrorPagesServlet/403.jsp</location>
+ </error-page>
+ <error-page>
+  <error-code>404</error-code>
+  <location>/ErrorPagesServlet/404.jsp</location>
+ </error-page>
+ <error-page>
+  <error-code>500</error-code>
+  <location>/ErrorPagesServlet/500.jsp</location>
+ </error-page>
+ <error-page>
+  <exception-type>java.lang.Throwable</exception-type>
+  <location>/ErrorPagesServlet/500.jsp</location>
+ </error-page>
+</web-app>
