@@ -46,16 +46,9 @@ public class EJBRemotingConnectorClientMappingService implements Service<EJBRemo
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb").append("remoting").append("client-mapping-registry-service");
 
+    private final InjectedValue<ServerEnvironment> environment = new InjectedValue<ServerEnvironment>();
     private final InjectedValue<AbstractStreamServerService> remotingServer = new InjectedValue<AbstractStreamServerService>();
-    private final Registry.RegistryEntryProvider<String, List<ClientMapping>> registryEntryProvider;
-    private final String nodeName;
-
-    public EJBRemotingConnectorClientMappingService() {
-        this.nodeName = SecurityActions.getSystemProperty(ServerEnvironment.NODE_NAME);
-
-        this.registryEntryProvider = new ClientMappingEntryProvider(this.nodeName);
-    }
-
+    private final Registry.RegistryEntryProvider<String, List<ClientMapping>> registryEntryProvider = new ClientMappingEntryProvider();
 
     @Override
     public void start(StartContext context) throws StartException {
@@ -78,7 +71,7 @@ public class EJBRemotingConnectorClientMappingService implements Service<EJBRemo
         return this.remotingServer;
     }
 
-    private List<ClientMapping> getClientMappings() {
+    List<ClientMapping> getClientMappings() {
         final AbstractStreamServerService streamServerService = this.remotingServer.getValue();
         if (!(streamServerService instanceof InjectedSocketBindingStreamServerService)) {
             return Collections.emptyList();
@@ -87,17 +80,15 @@ public class EJBRemotingConnectorClientMappingService implements Service<EJBRemo
         return socketBinding.getClientMappings();
     }
 
+    String getNodeName() {
+        return this.environment.getValue().getNodeName();
+    }
+
     private class ClientMappingEntryProvider implements Registry.RegistryEntryProvider<String, List<ClientMapping>> {
-
-        private final String nodeName;
-
-        ClientMappingEntryProvider(final String nodeName) {
-            this.nodeName = nodeName;
-        }
 
         @Override
         public String getKey() {
-            return this.nodeName;
+            return EJBRemotingConnectorClientMappingService.this.getNodeName();
         }
 
         @Override
@@ -105,5 +96,4 @@ public class EJBRemotingConnectorClientMappingService implements Service<EJBRemo
             return EJBRemotingConnectorClientMappingService.this.getClientMappings();
         }
     }
-
 }

@@ -134,7 +134,7 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
 
         // Install the clustered registry service backed by the client-mapping registry entry provider
         final RegistryService<String, List<ClientMapping>> clientMappingRegistryService = new RegistryService<String, List<ClientMapping>>(clientMappingEntryProviderService.getRegistryEntryProvider());
-        final ServiceName clientMappingRegistryServiceName = ServiceName.JBOSS.of("ejb").append("remoting").append("cluster-registry-service");
+        final ServiceName clientMappingRegistryServiceName = ServiceName.JBOSS.append("ejb").append("remoting").append("cluster-registry-service");
         // Form the client-mapping cache's ServiceName
         final ServiceName clientMappingCacheContainerServiceName = EmbeddedCacheManagerService.getServiceName(clientMappingCacheContainerRef);
         final ServiceName clientMappingCacheServiceName = clientMappingCacheContainerServiceName.append(clientMappingCacheRef);
