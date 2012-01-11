@@ -22,11 +22,6 @@
 
 package org.jboss.as.clustering.ejb3.cache.backing.infinispan;
 
-import java.io.File;
-import java.io.Serializable;
-import java.util.AbstractMap;
-import java.util.Properties;
-
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.AbstractLoaderConfiguration;
 import org.infinispan.configuration.cache.AbstractLoaderConfigurationBuilder;
@@ -39,8 +34,8 @@ import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.util.TypedProperties;
-import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.jboss.as.clustering.CoreGroupCommunicationServiceService;
+import org.jboss.as.clustering.GroupMembershipNotifierRegistry;
 import org.jboss.as.clustering.HashableMarshalledValueFactory;
 import org.jboss.as.clustering.MarshalledValue;
 import org.jboss.as.clustering.MarshalledValueFactory;
@@ -56,6 +51,7 @@ import org.jboss.as.ejb3.cache.Cacheable;
 import org.jboss.as.ejb3.cache.PassivationManager;
 import org.jboss.as.ejb3.cache.impl.backing.clustering.ClusteredBackingCacheEntryStoreConfig;
 import org.jboss.as.ejb3.cache.impl.backing.clustering.ClusteredBackingCacheEntryStoreSource;
+import org.jboss.as.ejb3.cache.impl.backing.clustering.GroupMembershipNotifierRegistryService;
 import org.jboss.as.ejb3.cache.spi.BackingCacheEntryStore;
 import org.jboss.as.ejb3.cache.spi.BackingCacheEntryStoreSource;
 import org.jboss.as.ejb3.cache.spi.SerializationGroup;
@@ -70,6 +66,11 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
+
+import java.io.File;
+import java.io.Serializable;
+import java.util.AbstractMap;
+import java.util.Properties;
 
 /**
  * {@link BackingCacheEntryStoreSource} that provides instances of {@link InfinispanBackingCacheEntryStore}.
@@ -103,8 +104,12 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
         }
         String container = serviceName.getParent().getSimpleName();
         // install the GroupCommunicationService
-        new CoreGroupCommunicationServiceService(SCOPE_ID).build(target, container).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        final CoreGroupCommunicationServiceService groupCommunicationService = new CoreGroupCommunicationServiceService(SCOPE_ID);
+        groupCommunicationService.build(target, container).setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .addDependency(ServiceBuilder.DependencyType.OPTIONAL, GroupMembershipNotifierRegistryService.SERVICE_NAME, GroupMembershipNotifierRegistry.class, groupCommunicationService.getGroupMembershipNotifierRegistryInjector())
+                .install();
         new SharedLocalYieldingClusterLockManagerService(container).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        builder.addDependency(serviceName, Cache.class, this.groupCache);
         builder.addDependency(SharedLocalYieldingClusterLockManagerService.getServiceName(container), SharedLocalYieldingClusterLockManager.class, this.lockManager);
         builder.addDependency(EJBRemoteConnectorService.EJB_REMOTE_CONNECTOR_CLIENT_MAPPINGS_REGISTRY_SERVICE, Registry.class, this.registry);
     }
@@ -144,10 +149,10 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
                 .shared(groupCacheConfiguration.loaders().shared())
         ;
         // Our cache needs a unique passivation location
-        for (AbstractLoaderConfiguration loader: groupCacheConfiguration.loaders().cacheLoaders()) {
+        for (AbstractLoaderConfiguration loader : groupCacheConfiguration.loaders().cacheLoaders()) {
             this.addCacheLoader(builder.loaders(), loader, beanName)
-                .async().read(loader.async())
-                .singletonStore().read(loader.singletonStore())
+                    .async().read(loader.async())
+                    .singletonStore().read(loader.singletonStore())
             ;
         }
         groupCache.getCacheManager().defineConfiguration(beanName, builder.build());
@@ -177,13 +182,13 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
             return loadersBuilder.addCacheLoader()
                     .read(loader)
                     .withProperties(properties)
-            ;
+                    ;
         } else if (config instanceof FileCacheStoreConfiguration) {
             FileCacheStoreConfiguration store = (FileCacheStoreConfiguration) config;
             return loadersBuilder.addFileCacheStore()
                     .read(store)
                     .location(this.createBeanLocation(store.location(), beanName))
-            ;
+                    ;
         }
         throw new IllegalStateException(String.format("Unsupported cache loader: %s", config.getClass().getName()));
     }
