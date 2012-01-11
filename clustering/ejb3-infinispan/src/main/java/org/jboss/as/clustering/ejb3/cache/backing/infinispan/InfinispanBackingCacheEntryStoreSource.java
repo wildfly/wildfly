@@ -24,7 +24,6 @@ package org.jboss.as.clustering.ejb3.cache.backing.infinispan;
 
 import java.io.File;
 import java.io.Serializable;
-import java.net.InetAddress;
 import java.util.AbstractMap;
 import java.util.Properties;
 
@@ -42,7 +41,6 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.util.TypedProperties;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.jboss.as.clustering.CoreGroupCommunicationServiceService;
-import org.jboss.as.clustering.GroupMembershipNotifierRegistry;
 import org.jboss.as.clustering.HashableMarshalledValueFactory;
 import org.jboss.as.clustering.MarshalledValue;
 import org.jboss.as.clustering.MarshalledValueFactory;
@@ -50,25 +48,20 @@ import org.jboss.as.clustering.MarshallingContext;
 import org.jboss.as.clustering.SimpleMarshalledValueFactory;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.as.clustering.infinispan.invoker.RetryingCacheInvoker;
-import org.jboss.as.clustering.infinispan.subsystem.CacheService;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
 import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager;
 import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManagerService;
 import org.jboss.as.clustering.registry.Registry;
-import org.jboss.as.clustering.registry.RegistryService;
 import org.jboss.as.ejb3.cache.Cacheable;
 import org.jboss.as.ejb3.cache.PassivationManager;
 import org.jboss.as.ejb3.cache.impl.backing.clustering.ClusteredBackingCacheEntryStoreConfig;
 import org.jboss.as.ejb3.cache.impl.backing.clustering.ClusteredBackingCacheEntryStoreSource;
-import org.jboss.as.ejb3.cache.impl.backing.clustering.GroupMembershipNotifierRegistryService;
 import org.jboss.as.ejb3.cache.spi.BackingCacheEntryStore;
 import org.jboss.as.ejb3.cache.spi.BackingCacheEntryStoreSource;
 import org.jboss.as.ejb3.cache.spi.SerializationGroup;
 import org.jboss.as.ejb3.cache.spi.SerializationGroupMember;
 import org.jboss.as.ejb3.cache.spi.impl.AbstractBackingCacheEntryStoreSource;
 import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
-import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.msc.service.ServiceBuilder;
@@ -76,16 +69,13 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
-import org.jgroups.Channel;
-import org.jgroups.Event;
-import org.jgroups.stack.IpAddress;
 
 /**
  * {@link BackingCacheEntryStoreSource} that provides instances of {@link InfinispanBackingCacheEntryStore}.
  *
  * @author Brian Stansberry
  */
-public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V extends Cacheable<K>, G extends Serializable> extends AbstractBackingCacheEntryStoreSource<K, V, G> implements ClusteredBackingCacheEntryStoreSource<K, V, G>, Registry.RegistryEntryProvider<String, InetAddress> {
+public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V extends Cacheable<K>, G extends Serializable> extends AbstractBackingCacheEntryStoreSource<K, V, G> implements ClusteredBackingCacheEntryStoreSource<K, V, G> {
     public static final short SCOPE_ID = 223;
 
     private String cacheName = DEFAULT_BACKING_CACHE;
@@ -99,7 +89,6 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
     private final InjectedValue<SharedLocalYieldingClusterLockManager> lockManager = new InjectedValue<SharedLocalYieldingClusterLockManager>();
     @SuppressWarnings("rawtypes")
     private final InjectedValue<Registry> registry = new InjectedValue<Registry>();
-    private final InjectedValue<ServerEnvironment> environment = new InjectedValue<ServerEnvironment>();
 
     @Override
     public void addDependencies(ServiceTarget target, ServiceBuilder<?> builder) {
@@ -113,19 +102,10 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
         }
         String container = serviceName.getParent().getSimpleName();
         // install the GroupCommunicationService
-        final CoreGroupCommunicationServiceService groupCommunicationService = new CoreGroupCommunicationServiceService(SCOPE_ID);
-        groupCommunicationService.build(target, container).setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .addDependency(ServiceBuilder.DependencyType.OPTIONAL, GroupMembershipNotifierRegistryService.SERVICE_NAME, GroupMembershipNotifierRegistry.class, groupCommunicationService.getGroupMembershipNotifierRegistryInjector())
-                .install();
+        new CoreGroupCommunicationServiceService(SCOPE_ID).build(target, container).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
         new SharedLocalYieldingClusterLockManagerService(container).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
-        ServiceName registryServiceName = ServiceName.JBOSS.append("ejb", container, "registry");
-        new RegistryService<String, InetAddress>(this).build(target, registryServiceName, CacheService.getServiceName(container, "registry"))
-                .addDependency(serviceName, Cache.class, this.groupCache)
-                .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, this.environment)
-                .install()
-        ;
         builder.addDependency(SharedLocalYieldingClusterLockManagerService.getServiceName(container), SharedLocalYieldingClusterLockManager.class, this.lockManager);
-        builder.addDependency(registryServiceName, Registry.class, this.registry);
+        builder.addDependency(ServiceName.JBOSS.append("ejb").append("remoting").append("cluster-registry-service"), Registry.class, this.registry);
     }
 
     @Override
@@ -183,20 +163,6 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
         @SuppressWarnings("unchecked")
         Registry<String, ?> registry = this.registry.getValue();
         return new InfinispanBackingCacheEntryStore<K, V, E, MarshallingContext>(cache, this.invoker, this.passivateEventsOnReplicate ? passivationManager : null, timeout, this, true, keyFactory, valueFactory, context, this.lockManager.getValue(), lockKeyFactory, registry);
-    }
-
-    @Override
-    public String getKey() {
-        return this.environment.getValue().getNodeName();
-    }
-
-    @Override
-    public InetAddress getValue() {
-        EmbeddedCacheManager container = this.groupCache.getValue().getCacheManager();
-        org.jgroups.Address address = ((org.infinispan.remoting.transport.jgroups.JGroupsAddress) container.getAddress()).getJGroupsAddress();
-        Channel channel = ((JGroupsTransport) container.getTransport()).getChannel();
-        IpAddress physicalAddress = (IpAddress) channel.down(new Event(Event.GET_PHYSICAL_ADDRESS, address));
-        return physicalAddress.getIpAddress();
     }
 
     private AbstractLoaderConfigurationBuilder<?> addCacheLoader(LoadersConfigurationBuilder loadersBuilder, AbstractLoaderConfiguration config, String beanName) {
