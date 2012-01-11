@@ -56,7 +56,7 @@ rem # This is necessary to inject Byteman rules into AS7 deployments
 set "JAVA_OPTS=%JAVA_OPTS% -Djboss.modules.system.pkgs=org.jboss.byteman"
 
 rem # Use JBoss Modules lockless mode
-rem #JAVA_OPTS="%JAVA_OPTS% -Djboss.modules.lockless=true"
+rem set "JAVA_OPTS=%JAVA_OPTS% -Djboss.modules.lockless=true"
 
 rem The ProcessController process uses its own set of java options
 set "PROCESS_CONTROLLER_JAVA_OPTS=%JAVA_OPTS%"
