@@ -21,6 +21,7 @@
 */
 package org.jboss.as.network;
 
+import java.io.Serializable;
 import java.net.InetAddress;
 
 /**
@@ -30,7 +31,7 @@ import java.net.InetAddress;
  *
  * @author Jason T. Greene
  */
-public class ClientMapping {
+public class ClientMapping implements Serializable {
     private final InetAddress sourceNetworkAddress;
     private final byte sourceNetworkMaskBits;
     private final String destinationAddress;
