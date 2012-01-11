@@ -113,7 +113,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
         this.populateClientMappingsCache();
 
         // Register a EJB channel open listener
-        final OpenListener channelOpenListener = new ChannelOpenListener();
+        final OpenListener channelOpenListener = new ChannelOpenListener(serviceContainer);
         try {
             registration = endpointValue.getValue().registerService(EJB_CHANNEL_NAME, channelOpenListener, OptionMap.EMPTY);
         } catch (ServiceRegistrationException e) {
@@ -154,7 +154,10 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
     private class ChannelOpenListener implements OpenListener {
 
-        ChannelOpenListener() {
+        private final ServiceContainer serviceContainer;
+
+        ChannelOpenListener(final ServiceContainer serviceContainer) {
+            this.serviceContainer = serviceContainer;
         }
 
         @Override
@@ -177,7 +180,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
             }
 
             // receive messages from the client
-            channel.receiveMessage(new ClientVersionMessageReceiver());
+            channel.receiveMessage(new ClientVersionMessageReceiver(this.serviceContainer));
         }
 
         @Override
@@ -187,7 +190,10 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
     private class ClientVersionMessageReceiver implements Channel.Receiver {
 
-        ClientVersionMessageReceiver() {
+        private final ServiceContainer serviceContainer;
+
+        ClientVersionMessageReceiver(final ServiceContainer serviceContainer) {
+            this.serviceContainer = serviceContainer;
         }
 
         @Override
@@ -230,7 +236,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
                         final DeploymentRepository deploymentRepository = EJBRemoteConnectorService.this.deploymentRepositoryInjectedValue.getValue();
                         final GroupMembershipNotifierRegistry groupMembershipNotifierRegistry = EJBRemoteConnectorService.this.clusterRegistry.getValue();
                         // the registry will be available when the clustering subsytem is present, so get the value optionally
-                        final Registry<String, List<ClientMapping>> clientMappingRegistry = EJBRemoteConnectorService.this.clientMappingsRegistryService.getOptionalValue();
+                        final Registry<String, List<ClientMapping>> clientMappingRegistry = EJBRemoteConnectorService.this.getClientMappingsRegistry(this.serviceContainer);
                         final VersionOneProtocolChannelReceiver receiver = new VersionOneProtocolChannelReceiver(channel, deploymentRepository,
                                 EJBRemoteConnectorService.this.ejbRemoteTransactionsRepositoryInjectedValue.getValue(), groupMembershipNotifierRegistry,
                                 clientMappingRegistry, marshallerFactory, executorService.getValue());
@@ -328,5 +334,21 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
             // add the client-mappings of the EJB remoting connector on this node, to the cache
             clientMappingsCache.put(nodeName, clientMappings);
         }
+    }
+
+    private Registry<String, List<ClientMapping>> getClientMappingsRegistry(final ServiceContainer serviceContainer) {
+        final Registry<String, List<ClientMapping>> registry = this.clientMappingsRegistryService.getOptionalValue();
+        if (registry != null) {
+            return registry;
+        }
+        // TODO: The rest of this method is a hack. We do a lookup of the registry service (in case it's not
+        // injected) because, for now, due to a possible bug in MSC, we have disabled injecting the Registry service into
+        // this class. So let's at runtime see if that option service is installed and if installed, use it
+        final ServiceController<Registry<String, List<ClientMapping>>> serviceController = (ServiceController<Registry<String, List<ClientMapping>>>) serviceContainer.getService(EJB_REMOTE_CONNECTOR_CLIENT_MAPPINGS_REGISTRY_SERVICE);
+        if (serviceController == null) {
+            return null;
+        }
+        return serviceController.getValue();
+
     }
 }
