@@ -19,15 +19,26 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.security.loginmodules.usersroles;
+package org.jboss.as.test.integration.security.loginmodules.common.servlets;
+
+import javax.annotation.sql.DataSourceDefinition;
+import javax.servlet.annotation.HttpConstraint;
+import javax.servlet.annotation.ServletSecurity;
+import javax.servlet.annotation.WebServlet;
 
 /**
  * @author Jan Lanik
- * common functionality for UserRolesLoginModules tests which uses secured login
  *
+ * Servlet class to be used in DatabaseLoginModule test cases
  */
-public abstract class AbstractSecuredUsersRolesLoginModuleTest extends AbstractUsersRolesLoginModuleTest {
-
-   protected final String URL = "http://localhost:8080/" + getContextPath() + "/secured/";
-
+@DataSourceDefinition(
+   name = "java:jboss/datasources/LoginDSdep1",
+   user = "sa",
+   password = "sa",
+   className = "org.h2.jdbcx.JdbcDataSource",
+   url = "jdbc:h2:tcp://localhost/mem:test1"
+)
+@WebServlet(name = "SecuredServlet", urlPatterns = { "/secured/" }, loadOnStartup = 1)
+@ServletSecurity(@HttpConstraint(rolesAllowed = { "gooduser" }))
+public class SecuredServletWithDBSetupForDep1 extends AbstractLoginModuleTestServlet {
 }

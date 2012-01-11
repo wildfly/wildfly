@@ -21,21 +21,56 @@
  */
 package org.jboss.as.test.integration.security.loginmodules.common;
 
+import junit.framework.Assert;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.StatusLine;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.cookie.Cookie;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.protocol.HTTP;
+import org.apache.http.util.EntityUtils;
+import org.h2.tools.Server;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.dmr.ModelNode;
 import org.jboss.util.Base64;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.URL;
 import java.security.MessageDigest;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import static junit.framework.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
 
 /**
  * @author Jan Lanik
- *
- * Common utilities for login modules tests.
+ *         <p/>
+ *         Common utilities for login modules tests.
  */
 public class Utils {
 
@@ -66,32 +101,271 @@ public class Utils {
    }
 
 
-   public static String toHex(byte[] bytes)
-    {
-       StringBuffer sb = new StringBuffer(bytes.length * 2);
-       for (int i = 0; i < bytes.length; i++)
-       {
-          byte b = bytes[i];
-          // top 4 bits
-          char c = (char)((b >> 4) & 0xf);
-          if(c > 9)
-             c = (char)((c - 10) + 'a');
-          else
-             c = (char)(c + '0');
-          sb.append(c);
-          // bottom 4 bits
-          c = (char)(b & 0xf);
-          if (c > 9)
-             c = (char)((c - 10) + 'a');
-          else
-             c = (char)(c + '0');
-          sb.append(c);
-       }
-       return sb.toString();
-    }
+   public static String toHex(byte[] bytes) {
+      StringBuffer sb = new StringBuffer(bytes.length * 2);
+      for (int i = 0; i < bytes.length; i++) {
+         byte b = bytes[i];
+         // top 4 bits
+         char c = (char) ((b >> 4) & 0xf);
+         if (c > 9)
+            c = (char) ((c - 10) + 'a');
+         else
+            c = (char) (c + '0');
+         sb.append(c);
+         // bottom 4 bits
+         c = (char) (b & 0xf);
+         if (c > 9)
+            c = (char) ((c - 10) + 'a');
+         else
+            c = (char) (c + '0');
+         sb.append(c);
+      }
+      return sb.toString();
+   }
 
    public static URL getResource(String name) {
       ClassLoader tccl = Thread.currentThread().getContextClassLoader();
       return tccl.getResource(name);
+   }
+
+
+   public static synchronized void logToFile(String what, String where) {
+      try {
+         File file = new File(where);
+         if (!file.exists()) {
+            file.createNewFile();
+         }
+         OutputStream os = new FileOutputStream(file, true);
+         Writer writer = new OutputStreamWriter(os);
+         writer.write(what);
+         if (!what.endsWith("\n")) {
+            writer.write("\n");
+         }
+         writer.close();
+         os.close();
+
+      } catch (IOException ex) {
+         throw new RuntimeException(ex);
+      }
+   }
+
+   // TODO: remove
+   public static void quicklog(String message) {
+      logToFile(message, "/tmp/as7demo/log");
+   }
+
+   // TODO: remove
+   public static void stop() {
+      long delay = 1000000;
+      long time = System.currentTimeMillis();
+      while (System.currentTimeMillis() < time + delay) {
+         try {
+            Thread.sleep(time + delay - System.currentTimeMillis());
+         } catch (InterruptedException ex) {
+            continue;
+         }
+      }
+   }
+
+   public static void applyUpdates(final List<ModelNode> updates, final ModelControllerClient client) throws Exception {
+      for (ModelNode update : updates) {
+         applyUpdate(update, client);
+      }
+   }
+
+   public static void applyUpdate(ModelNode update, final ModelControllerClient client) throws Exception {
+      ModelNode result = client.execute(new OperationBuilder(update).build());
+      if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
+         if (result.hasDefined("result")) {
+            //System.out.println(result.get("result"));
+         }
+      } else if (result.hasDefined("failure-description")) {
+         throw new RuntimeException(result.get("failure-description").toString());
+      } else {
+         throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
+      }
+   }
+
+   public static void removeSecurityDomain(final ModelControllerClient client, final String domainName) throws Exception {
+      final List<ModelNode> updates = new ArrayList<ModelNode>();
+      ModelNode op = new ModelNode();
+      op.get(OP).set(REMOVE);
+      op.get(OP_ADDR).add(SUBSYSTEM, "security");
+      op.get(OP_ADDR).add(SECURITY_DOMAIN, domainName);
+      updates.add(op);
+
+      applyUpdates(updates, client);
+   }
+
+   public static String getContent(HttpResponse response) throws IOException {
+      InputStreamReader reader = new InputStreamReader(response.getEntity().getContent());
+      StringBuilder content = new StringBuilder();
+      int c;
+      while (-1 != (c = reader.read())) {
+         content.append((char) c);
+      }
+      reader.close();
+      return content.toString();
+   }
+
+   public static HttpResponse authAndGetResponse(String URL, String user, String pass) throws Exception {
+      DefaultHttpClient httpclient = new DefaultHttpClient();
+      HttpResponse response;
+      HttpGet httpget = new HttpGet(URL);
+
+      response = httpclient.execute(httpget);
+
+      HttpEntity entity = response.getEntity();
+      if (entity != null)
+         EntityUtils.consume(entity);
+
+      // We should get the Login Page
+      StatusLine statusLine = response.getStatusLine();
+      System.out.println("Login form get: " + statusLine);
+      assertEquals(200, statusLine.getStatusCode());
+
+      System.out.println("Initial set of cookies:");
+      List<Cookie> cookies = httpclient.getCookieStore().getCookies();
+      if (cookies.isEmpty()) {
+         System.out.println("None");
+      } else {
+         for (int i = 0; i < cookies.size(); i++) {
+            System.out.println("- " + cookies.get(i).toString());
+         }
+      }
+
+      // We should now login with the user name and password
+      HttpPost httpost = new HttpPost(URL + "/j_security_check");
+
+      List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+      nvps.add(new BasicNameValuePair("j_username", user));
+      nvps.add(new BasicNameValuePair("j_password", pass));
+
+      httpost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
+
+      response = httpclient.execute(httpost);
+
+
+      int statusCode = response.getStatusLine().getStatusCode();
+
+      assertTrue((302 == statusCode) || (200 == statusCode));
+      // Post authentication - if succesfull, we have a 302 and have to redirect
+      if (302 == statusCode) {
+         entity = response.getEntity();
+         if (entity != null) {
+            EntityUtils.consume(entity);
+         }
+         Header locationHeader = response.getFirstHeader("Location");
+         String location = locationHeader.getValue();
+         HttpGet httpGet = new HttpGet(location);
+         response = httpclient.execute(httpGet);
+      }
+
+      return response;
+   }
+
+   public static void makeCall(String URL, String user, String pass, int expectedStatusCode) throws Exception {
+      DefaultHttpClient httpclient = new DefaultHttpClient();
+      try {
+         HttpGet httpget = new HttpGet(URL);
+
+         HttpResponse response = httpclient.execute(httpget);
+
+         HttpEntity entity = response.getEntity();
+         if (entity != null)
+            EntityUtils.consume(entity);
+
+         // We should get the Login Page
+         StatusLine statusLine = response.getStatusLine();
+         System.out.println("Login form get: " + statusLine);
+         assertEquals(200, statusLine.getStatusCode());
+
+         System.out.println("Initial set of cookies:");
+         List<Cookie> cookies = httpclient.getCookieStore().getCookies();
+         if (cookies.isEmpty()) {
+            System.out.println("None");
+         } else {
+            for (int i = 0; i < cookies.size(); i++) {
+               System.out.println("- " + cookies.get(i).toString());
+            }
+         }
+
+         // We should now login with the user name and password
+         HttpPost httpost = new HttpPost(URL + "/j_security_check");
+
+         List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+         nvps.add(new BasicNameValuePair("j_username", user));
+         nvps.add(new BasicNameValuePair("j_password", pass));
+
+         httpost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
+
+         response = httpclient.execute(httpost);
+         entity = response.getEntity();
+         if (entity != null)
+            EntityUtils.consume(entity);
+
+         statusLine = response.getStatusLine();
+
+         // Post authentication - we have a 302
+         assertEquals(302, statusLine.getStatusCode());
+         Header locationHeader = response.getFirstHeader("Location");
+         String location = locationHeader.getValue();
+
+         HttpGet httpGet = new HttpGet(location);
+         response = httpclient.execute(httpGet);
+
+         entity = response.getEntity();
+         if (entity != null)
+            EntityUtils.consume(entity);
+
+         System.out.println("Post logon cookies:");
+         cookies = httpclient.getCookieStore().getCookies();
+         if (cookies.isEmpty()) {
+            System.out.println("None");
+         } else {
+            for (int i = 0; i < cookies.size(); i++) {
+               System.out.println("- " + cookies.get(i).toString());
+            }
+         }
+
+         // Either the authentication passed or failed based on the expected status code
+         statusLine = response.getStatusLine();
+         assertEquals(expectedStatusCode, statusLine.getStatusCode());
+      } finally {
+         // When HttpClient instance is no longer needed,
+         // shut down the connection manager to ensure
+         // immediate deallocation of all system resources
+         httpclient.getConnectionManager().shutdown();
+      }
+   }
+
+
+   public static void setPropertiesFile(Map<String, String> props, URL propFile) {
+      File userPropsFile = new File(propFile.getFile());
+      try {
+         Writer writer = new FileWriter(userPropsFile);
+         for (Map.Entry<String, String> entry : props.entrySet()) {
+            writer.write(entry.getKey() + "=" + entry.getValue() + "\n");
+         }
+         writer.close();
+      } catch (IOException e) {
+         throw new RuntimeException(e);
+      }
+
+   }
+
+   public static File createTempPropFile(Map<String, String> props) {
+      try {
+         File propsFile = File.createTempFile("props", ".properties");
+         propsFile.deleteOnExit();
+         Writer writer = new FileWriter(propsFile);
+         for (Map.Entry<String, String> entry : props.entrySet()) {
+            writer.write(entry.getKey() + "=" + entry.getValue() + "\n");
+         }
+         writer.close();
+         return propsFile;
+      } catch (IOException e) {
+         throw new RuntimeException("Temporary file could not be created or writen to!", e);
+      }
    }
 }

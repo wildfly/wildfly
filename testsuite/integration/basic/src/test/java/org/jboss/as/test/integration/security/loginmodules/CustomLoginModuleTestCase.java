@@ -62,9 +62,11 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.security.Constants;
+import org.jboss.as.test.integration.security.loginmodules.common.CustomTestLoginModule;
 import org.jboss.as.test.integration.web.security.SecuredServlet;
 import org.jboss.as.test.integration.web.security.WebSecurityPasswordBasedBase;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
@@ -123,6 +125,7 @@ public class CustomLoginModuleTestCase {
         URL webxml = tccl.getResource("web-secure.war/web.xml");
         WebArchive war = create("custom-login-module.war", SecuredServlet.class, webxml);
         WebSecurityPasswordBasedBase.printWar(war);
+        Logger.getLogger(CustomLoginModuleTestCase.class).debug(war.toString(true));
         return war;
     }
 
