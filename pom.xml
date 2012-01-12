@@ -107,8 +107,7 @@
         <version.net.sourceforge.cssparser>0.9.5</version.net.sourceforge.cssparser>
         <version.net.sourceforge.htmlunit>2.8</version.net.sourceforge.htmlunit>
         <version.net.sourceforge.nekohtml>1.9.14</version.net.sourceforge.nekohtml>
-        <version.org.apache.ant>1.7.1</version.org.apache.ant>
-        <version.org.apache.ant.bsf>1.8.2</version.org.apache.ant.bsf>
+        <version.org.apache.ant>1.8.2</version.org.apache.ant>
         <version.org.apache.cxf>2.4.4</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>2.4.0</version.org.apache.cxf.xjcplugins>
         <version.org.apache.felix.configadmin>1.2.8</version.org.apache.felix.configadmin>
