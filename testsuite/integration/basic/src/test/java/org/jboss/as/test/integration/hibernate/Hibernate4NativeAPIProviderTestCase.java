@@ -86,7 +86,7 @@ public class Hibernate4NativeAPIProviderTestCase {
 
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, ARCHIVE_NAME + ".ear");
         // add required jars as manifest dependencies
-        ear.addAsManifestResource(new StringAsset("Dependencies: org.javassist export,org.hibernate \n"), "MANIFEST.MF");
+        ear.addAsManifestResource(new StringAsset("Dependencies: org.hibernate \n"), "MANIFEST.MF");
 
         JavaArchive lib = ShrinkWrap.create(JavaArchive.class, "beans.jar");
         lib.addClasses(SFSBHibernateSessionFactory.class);
