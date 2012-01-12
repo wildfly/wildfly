@@ -99,7 +99,6 @@ public class FormAuthUnitTestCase {
 
         WebArchive war = ShrinkWrap.create(WebArchive.class, "form-auth.war");
         war.setWebXML(tccl.getResource(resourcesLocation + "web.xml"));
-        war.addAsWebInfResource(tccl.getResource(resourcesLocation + "context.xml"), "context.xml");
         war.addAsWebInfResource(tccl.getResource(resourcesLocation + "jboss-web.xml"), "jboss-web.xml");
 
         war.addAsWebResource(tccl.getResource(resourcesLocation + "users.properties"), "/WEB-INF/classes/users.properties");
@@ -129,10 +128,7 @@ public class FormAuthUnitTestCase {
         }
     }
 
-    private static void createSecurityDomains(ModelControllerClient client) throws Exception {
-        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-        String resourcesLocation = "org/jboss/as/test/integration/web/formauth/resources/";
-        
+    private static void createSecurityDomains(ModelControllerClient client) throws Exception {        
         final List<ModelNode> updates = new ArrayList<ModelNode>();
 
         ModelNode op = new ModelNode();
