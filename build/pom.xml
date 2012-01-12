@@ -69,7 +69,7 @@
                     <dependency>
                         <groupId>org.apache.ant</groupId>
                         <artifactId>ant-apache-bsf</artifactId>
-                        <version>${version.org.apache.ant.bsf}</version>
+                        <version>${version.org.apache.ant}</version>
                     </dependency>
                     <dependency>
                         <groupId>rhino</groupId>
