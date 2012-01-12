@@ -158,7 +158,6 @@
             <groupId>org.jboss.msc</groupId>
             <artifactId>jboss-msc</artifactId>
         </dependency>
-
     </dependencies>
 
     <profiles>
@@ -1146,6 +1145,11 @@
                 <dependency>
                     <groupId>org.jboss.remoting3</groupId>
                     <artifactId>remoting-jmx</artifactId>
+                </dependency>
+
+                <dependency>                
+                    <groupId>org.jboss</groupId>
+                    <artifactId>jboss-remote-naming</artifactId>
                 </dependency>
 
                 <dependency>

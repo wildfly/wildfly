@@ -67,6 +67,11 @@ public class ContextNames {
     public static final ServiceName MODULE_CONTEXT_SERVICE_NAME = JAVA_CONTEXT_SERVICE_NAME.append("module");
 
     /**
+     * ServiceName for java:jboss/exported namespace
+     */
+    public static final ServiceName EXPORTED_CONTEXT_SERVICE_NAME = JBOSS_CONTEXT_SERVICE_NAME.append("exported");
+
+    /**
      * Get the base service name of a component's JNDI namespace.
      *
      * @param app    the application name (must not be {@code null})

@@ -172,6 +172,7 @@
         <version.org.jboss.osgi.resolver>1.0.10</version.org.jboss.osgi.resolver>
         <version.org.jboss.osgi.spi>1.0.28</version.org.jboss.osgi.spi>
         <version.org.jboss.osgi.vfs>1.0.6</version.org.jboss.osgi.vfs>
+        <version.org.jboss.remote-naming>1.0.0.Beta3</version.org.jboss.remote-naming>
         <version.org.jboss.remoting3>3.2.0.CR9</version.org.jboss.remoting3>
         <version.org.jboss.remoting3.remoting-jmx>1.0.0.Beta1</version.org.jboss.remoting3.remoting-jmx>
         <version.org.jboss.resteasy>2.3.1.GA</version.org.jboss.resteasy>
@@ -3212,6 +3213,12 @@
                 <groupId>org.jboss</groupId>
                 <artifactId>jboss-iiop-client</artifactId>
                 <version>${version.org.jboss.iiop-client}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss</groupId>
+                <artifactId>jboss-remote-naming</artifactId>
+                <version>${version.org.jboss.remote-naming}</version>
             </dependency>
 
             <dependency>
