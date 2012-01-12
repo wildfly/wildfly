@@ -50,10 +50,10 @@ import org.hibernate.service.ServiceRegistryBuilder;
  */
 @Stateful
 @TransactionManagement(TransactionManagementType.BEAN)
-public class SFSBHibernateSessionFactory {
+public class SFSBHibernateEnversSessionFactory {
 
     private static SessionFactory sessionFactory;
-    private static Configuration configuration;
+    // private static Configuration configuration;
     private static ServiceRegistryBuilder builder;
     private static ServiceRegistry serviceRegistry;
     private static Session session;
@@ -72,8 +72,6 @@ public class SFSBHibernateSessionFactory {
                     "true");
             configuration.setProperty(Environment.HBM2DDL_AUTO, "create-drop");
             configuration.setProperty(Environment.DATASOURCE, "java:jboss/datasources/ExampleDS");
-            configuration.setProperty("org.hibernate.envers.audit_strategy",
-                    "org.hibernate.envers.strategy.DefaultAuditStrategy");
             // fetch the properties
             Properties properties = new Properties();
             properties.putAll(configuration.getProperties());
@@ -96,10 +94,10 @@ public class SFSBHibernateSessionFactory {
     }
 
     // create student
-    public Student createStudent(String firstName, String lastName, String address, int id) {
+    public StudentAudited createStudent(String firstName, String lastName, String address, int id) {
 
         // setupConfig();
-        Student student = new Student();
+        StudentAudited student = new StudentAudited();
         student.setStudentId(id);
         student.setAddress(address);
         student.setFirstName(firstName);
@@ -123,14 +121,14 @@ public class SFSBHibernateSessionFactory {
     }
 
     // update student
-    public Student updateStudent(String address, int id) {
+    public StudentAudited updateStudent(String address, int id) {
 
-        Student student;
+        StudentAudited student;
 
         try {
             Session session = sessionFactory.openSession();
             Transaction trans = session.beginTransaction();
-            student = (Student) session.load(Student.class, id);
+            student = (StudentAudited) session.load(StudentAudited.class, id);
             student.setAddress(address);
             session.save(student);
             session.flush();
@@ -149,10 +147,10 @@ public class SFSBHibernateSessionFactory {
     }
 
     // fetch Audited entity from Audit tables
-    public Student retrieveOldStudentVersion(int id) {
+    public StudentAudited retrieveOldStudentVersion(int id) {
         AuditReader reader = AuditReaderFactory.get(sessionFactory.openSession());
-        Student student_rev = reader.find(Student.class, id, 1);
-        List<Number> revlist = reader.getRevisions(Student.class, id);
+        StudentAudited student_rev = reader.find(StudentAudited.class, id, 1);
+        List<Number> revlist = reader.getRevisions(StudentAudited.class, id);
         // this is for checking revision size hence not removing this S.o.p
         System.out.println("Size of revisionList:--" + revlist.size());
         return student_rev;

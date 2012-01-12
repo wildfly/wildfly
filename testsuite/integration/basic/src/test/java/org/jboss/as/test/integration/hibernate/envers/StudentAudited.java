@@ -30,7 +30,7 @@ import org.hibernate.envers.Audited;
  * @author Madhumita Sadhukhan
  */
 @Audited
-public class Student {
+public class StudentAudited {
     // unique student id
     private int studentId;
     // first name of the student
@@ -43,7 +43,7 @@ public class Student {
     /**
      * Default constructor
      */
-    public Student() {
+    public StudentAudited() {
     }
 
     /**
@@ -53,7 +53,7 @@ public class Student {
      * @param lastName last name.
      * @param address address.
      */
-    public Student(String firstName, String lastName, String address) {
+    public StudentAudited(String firstName, String lastName, String address) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.address = address;
