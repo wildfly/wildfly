@@ -106,11 +106,6 @@
 
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-configadmin</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-jmx</artifactId>
         </dependency>
 
@@ -746,6 +741,11 @@
                 <dependency>
                    <groupId>org.jboss.as</groupId>
                    <artifactId>jboss-as-cmp</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-configadmin</artifactId>
                 </dependency>
 
                 <dependency>
