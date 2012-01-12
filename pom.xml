@@ -394,6 +394,7 @@
                                             <exclude>javassist:javassist</exclude>
                                             <exclude>javax.persistence:persistence-api</exclude>
                                             <exclude>javax.servlet:servlet-api</exclude>
+                                            <exclude>javax.transaction:jta</exclude>
                                             <exclude>javax.xml:jaxrpc-api</exclude>
                                             <exclude>javax.xml.soap:saaj-api</exclude>
                                             <exclude>javax.xml.stream:stax-api</exclude>
@@ -5670,6 +5671,12 @@
                 <groupId>org.projectodd.stilts</groupId>
                 <artifactId>stilts-stomplet-server-core</artifactId>
                 <version>${version.org.projectodd.stilts}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.transaction</groupId>
+                        <artifactId>jta</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
