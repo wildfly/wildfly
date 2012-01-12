@@ -89,17 +89,15 @@ public final class RemoteDeployer implements Deployer {
     private static final String JBWS_DEPLOYER_AUTH_PWD = "jbossws.deployer.authentication.password";
     private final Map<URL, String> url2Id = new HashMap<URL, String>();
     private final InetAddress address = InetAddress.getByName("127.0.0.1");
-
-    private CallbackHandler callbackHandler;
-    private ServerDeploymentManager deploymentManager;
+    private final CallbackHandler callbackHandler = getCallbackHandler();
+    private final ServerDeploymentManager deploymentManager;
 
     public RemoteDeployer() throws IOException {
-        callbackHandler = getCallbackHandler();
         deploymentManager = ServerDeploymentManager.Factory.create(address, PORT, callbackHandler);
     }
 
     @Override
-    public void deploy(URL archiveURL) throws Exception {
+    public void deploy(final URL archiveURL) throws Exception {
         final DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan().add(archiveURL).andDeploy();
         final DeploymentPlan plan = builder.build();
         final DeploymentAction deployAction = builder.getLastAction();
@@ -127,8 +125,7 @@ public final class RemoteDeployer implements Deployer {
             final ServerDeploymentPlanResult planResult = deploymentManager.execute(plan).get();
 
             if (deployAction != null) {
-                final ServerDeploymentActionResult actionResult = planResult
-                .getDeploymentActionResult(deployAction.getId());
+                final ServerDeploymentActionResult actionResult = planResult.getDeploymentActionResult(deployAction.getId());
                 if (actionResult != null) {
                     final Exception deploymentException = (Exception) actionResult.getDeploymentException();
                     if (deploymentException != null)
@@ -142,19 +139,16 @@ public final class RemoteDeployer implements Deployer {
     }
 
     public String getServerVersion() throws Exception {
-        final ModelControllerClient client = ModelControllerClient.Factory.create(address, PORT, callbackHandler);
-
         final ModelNode request = new ModelNode();
         request.get(OP).set(READ_ATTRIBUTE_OPERATION);
         request.get(OP_ADDR).setEmptyList();
         request.get(NAME).set(RELEASE_VERSION);
 
-        final ModelNode response = applyUpdate(request, client);
+        final ModelNode response = applyUpdate(request, getModelControllerClient());
         return response.get(RESULT).asString();
     }
 
     public void addSecurityDomain(String name, Map<String, String> authenticationOptions) throws Exception {
-        final ModelControllerClient client = ModelControllerClient.Factory.create(address, PORT, callbackHandler);
         final List<ModelNode> updates = new ArrayList<ModelNode>();
 
         ModelNode op = new ModelNode();
@@ -182,19 +176,21 @@ public final class RemoteDeployer implements Deployer {
             }
         }
 
-        applyUpdates(updates, client);
+        applyUpdates(updates, getModelControllerClient());
     }
 
     public void removeSecurityDomain(String name) throws Exception {
-        final ModelControllerClient client = ModelControllerClient.Factory.create(address, PORT, callbackHandler);
         final ModelNode op = new ModelNode();
         op.get(OP).set(REMOVE);
         op.get(OP_ADDR).add(SUBSYSTEM, "security");
         op.get(OP_ADDR).add(SECURITY_DOMAIN, name);
-        // Don't rollback when the AS detects the war needs the module
         op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
 
-        applyUpdate(op, client);
+        applyUpdate(op, getModelControllerClient());
+    }
+
+    private ModelControllerClient getModelControllerClient() {
+        return ModelControllerClient.Factory.create(address, PORT, callbackHandler);
     }
 
     private static void applyUpdates(final List<ModelNode> updates, final ModelControllerClient client) throws Exception {
@@ -261,4 +257,5 @@ public final class RemoteDeployer implements Deployer {
         };
         return AccessController.doPrivileged(action);
     }
+
 }
