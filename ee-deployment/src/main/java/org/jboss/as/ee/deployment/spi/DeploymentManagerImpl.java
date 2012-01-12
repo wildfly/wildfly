@@ -468,10 +468,16 @@ public class DeploymentManagerImpl implements DeploymentManager {
         jos.close();
 
         // rename the deployment
+        int retry = 0;
         String deploymentName = tmpFile.getParent() + File.separator + metaData.getDeploymentName();
         File deployment = new File(deploymentName);
-        if (deployment.exists() && deployment.delete() == false)
-            throw new IOException(MESSAGES.cannotDeleteExistingDeployment(deployment));
+        while (deployment.exists() && deployment.delete() == false) {
+            // on winos the file may not have been delete
+            // throw new IOException(MESSAGES.cannotDeleteExistingDeployment(deployment));
+            String prefix = (++retry < 10 ? "retry0" + retry : "retry" + retry);
+            deploymentName = tmpFile.getParent() + File.separator + prefix + "_" + metaData.getDeploymentName();
+            deployment = new File(deploymentName);
+        }
 
         tmpFile.renameTo(deployment);
         moduleInfo.setModuleID(deployment.toURI().toURL());
