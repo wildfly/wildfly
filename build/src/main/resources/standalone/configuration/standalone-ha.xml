@@ -108,7 +108,7 @@
                 </drivers>
             </datasources>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:deployment-scanner:1.0">
+        <subsystem xmlns="urn:jboss:domain:deployment-scanner:1.1">
             <deployment-scanner scan-interval="5000" relative-to="jboss.server.base.dir" path="deployments"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:ee:1.0"/>

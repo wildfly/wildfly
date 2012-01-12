@@ -22,26 +22,6 @@
 
 package org.jboss.as.server.deployment.scanner;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.server.deployment.scanner.DeploymentScannerLogger.ROOT_LOGGER;
-import static org.jboss.as.server.deployment.scanner.DeploymentScannerMessages.MESSAGES;
-
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileFilter;
@@ -82,6 +62,26 @@ import org.jboss.as.server.deployment.scanner.api.DeploymentScanner;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.server.deployment.scanner.DeploymentScannerLogger.ROOT_LOGGER;
+import static org.jboss.as.server.deployment.scanner.DeploymentScannerMessages.MESSAGES;
+
 /**
  * Service that monitors the filesystem for deployment content and if found deploys it.
  *
@@ -103,11 +103,15 @@ class FileSystemDeploymentService implements DeploymentScanner {
     static final String WEB_INF = "WEB-INF";
     static final String META_INF = "META-INF";
 
-    /** Max period an incomplete auto-deploy file can have no change in content */
+    /**
+     * Max period an incomplete auto-deploy file can have no change in content
+     */
     static final long MAX_NO_PROGRESS = 60000;
 
-    /** Default timeout for deployments to execute in seconds */
-    static final long DEFAULT_DEPLOYMENT_TIMEOUT = 60;
+    /**
+     * Default timeout for deployments to execute in seconds
+     */
+    static final long DEFAULT_DEPLOYMENT_TIMEOUT = 600;
 
     private File deploymentDir;
     private long scanInterval = 0;
@@ -133,6 +137,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
     private FileFilter filter = new ExtensibleFilter();
     private volatile boolean autoDeployZip;
     private volatile boolean autoDeployExploded;
+    private volatile boolean autoDeployXml;
     private volatile long maxNoProgress = MAX_NO_PROGRESS;
 
     private volatile long deploymentTimeout = DEFAULT_DEPLOYMENT_TIMEOUT;
@@ -155,8 +160,8 @@ class FileSystemDeploymentService implements DeploymentScanner {
     private final DeploymentScanRunnable scanRunnable = new DeploymentScanRunnable();
 
     FileSystemDeploymentService(final String relativeTo, final File deploymentDir, final File relativeToDir,
-            final ModelControllerClient controllerClient, final ScheduledExecutorService scheduledExecutor,
-            final ServerDeploymentRepository deploymentRepository, final ContentRepository contentRepository)
+                                final ModelControllerClient controllerClient, final ScheduledExecutorService scheduledExecutor,
+                                final ServerDeploymentRepository deploymentRepository, final ContentRepository contentRepository)
             throws OperationFailedException {
         if (contentRepository == null) {
             throw MESSAGES.nullVar("contentRepository");
@@ -227,6 +232,16 @@ class FileSystemDeploymentService implements DeploymentScanner {
     }
 
     @Override
+    public void setAutoDeployXMLContent(final boolean autoDeployXML) {
+        this.autoDeployXml = autoDeployXML;
+    }
+
+    @Override
+    public boolean isAutoDeployXMLContent() {
+        return autoDeployXml;
+    }
+
+    @Override
     public boolean isEnabled() {
         return scanEnabled;
     }
@@ -274,7 +289,9 @@ class FileSystemDeploymentService implements DeploymentScanner {
         safeClose(controllerClient);
     }
 
-    /** Hook solely for unit test to control how long deployments with no progress can exist without failing */
+    /**
+     * Hook solely for unit test to control how long deployments with no progress can exist without failing
+     */
     void setMaxNoProgress(long max) {
         this.maxNoProgress = max;
     }
@@ -464,7 +481,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
     /**
      * Scan the given directory for content changes.
      *
-     * @param directory the directory to scan
+     * @param directory   the directory to scan
      * @param scanContext context of the scan
      */
     private void scanDirectory(final File directory, final String relativePath, final ScanContext scanContext) {
@@ -517,10 +534,10 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 }
                 long timestamp = getDeploymentTimestamp(deploymentFile);
                 final String path = relativeTo == null ? deploymentFile.getAbsolutePath() : relativePath + deploymentName; // TODO:
-                                                                                                                           // sub-directories
-                                                                                                                           // in
-                                                                                                                           // the
-                                                                                                                           // deploymentDir
+                // sub-directories
+                // in
+                // the
+                // deploymentDir
                 final boolean archive = deploymentFile.isFile();
                 addContentAddingTask(path, archive, deploymentName, deploymentFile, timestamp, scanContext);
             } else if (fileName.endsWith(FAILED_DEPLOY)) {
@@ -534,14 +551,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 if (autoDeployable) {
                     if (!isAutoDeployDisabled(child)) {
                         long timestamp = getDeploymentTimestamp(child);
-                        final File failedMarker = new File(directory, fileName + FAILED_DEPLOY);
-                        if (failedMarker.exists() && timestamp <= failedMarker.lastModified()) {
-                            continue;
-                        }
-                        final File undeployedMarker = new File(directory, fileName + UNDEPLOYED);
-                        if (undeployedMarker.exists() && timestamp <= undeployedMarker.lastModified()) {
-                            continue;
-                        }
+                        if (isFailedOrUndeployed(directory, fileName, timestamp)) continue;
 
                         DeploymentMarker marker = deployed.get(fileName);
                         if (marker == null || marker.lastModified != timestamp) {
@@ -553,13 +563,38 @@ class FileSystemDeploymentService implements DeploymentScanner {
                                 } else {
                                     //we need to make sure that the file was not deleted while
                                     //the scanner was running
-                                    if(child.exists()) {
+                                    if (child.exists()) {
                                         scanContext.incompleteFiles.put(child, new IncompleteDeploymentStatus(child, timestamp));
                                     }
                                 }
                             } catch (NonScannableZipException e) {
                                 // Track for possible logging in scan()
                                 scanContext.nonscannable.put(child, new NonScannableStatus(e, timestamp));
+                            }
+                        }
+                    }
+                } else if (!deployed.containsKey(fileName) && !new File(fileName + DO_DEPLOY).exists()
+                        && !new File(fileName + FAILED_DEPLOY).exists()) {
+                    // Track for possible INFO logging of the need for a marker
+                    scanContext.nonDeployable.add(fileName);
+                }
+            } else if (isXmlFile(fileName)) {
+                if (autoDeployXml) {
+                    if (!isAutoDeployDisabled(child)) {
+                        long timestamp = getDeploymentTimestamp(child);
+                        if (isFailedOrUndeployed(directory, fileName, timestamp)) continue;
+
+                        DeploymentMarker marker = deployed.get(fileName);
+                        if (marker == null || marker.lastModified != timestamp) {
+                            if (isXmlComplete(child)) {
+                                final String path = relativeTo == null ? child.getAbsolutePath() : relativePath + fileName;
+                                addContentAddingTask(path, true, fileName, child, timestamp, scanContext);
+                            } else {
+                                //we need to make sure that the file was not deleted while
+                                //the scanner was running
+                                if (child.exists()) {
+                                    scanContext.incompleteFiles.put(child, new IncompleteDeploymentStatus(child, timestamp));
+                                }
                             }
                         }
                     }
@@ -591,8 +626,29 @@ class FileSystemDeploymentService implements DeploymentScanner {
         }
     }
 
+    private boolean isXmlComplete(final File xmlFile)  {
+        try {
+            return XmlCompletionScanner.isCompleteDocument(xmlFile);
+        } catch (Exception e) {
+            ROOT_LOGGER.failedCheckingXMLFile(e, xmlFile.getPath());
+            return false;
+        }
+    }
+
+    private boolean isFailedOrUndeployed(final File directory, final String fileName, final long timestamp) {
+        final File failedMarker = new File(directory, fileName + FAILED_DEPLOY);
+        if (failedMarker.exists() && timestamp <= failedMarker.lastModified()) {
+            return true;
+        }
+        final File undeployedMarker = new File(directory, fileName + UNDEPLOYED);
+        if (undeployedMarker.exists() && timestamp <= undeployedMarker.lastModified()) {
+            return true;
+        }
+        return false;
+    }
+
     private long addContentAddingTask(final String path, final boolean archive, final String deploymentName,
-            final File deploymentFile, final long timestamp, final ScanContext scanContext) {
+                                      final File deploymentFile, final long timestamp, final ScanContext scanContext) {
         if (scanContext.registeredDeployments.contains(deploymentName)) {
             scanContext.scannerTasks.add(new ReplaceTask(path, archive, deploymentName, deploymentFile, timestamp));
         } else {
@@ -647,6 +703,10 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
     private boolean isEEArchive(String fileName) {
         return ARCHIVE_PATTERN.matcher(fileName).matches();
+    }
+
+    private boolean isXmlFile(String fileName) {
+        return fileName.endsWith(".xml");
     }
 
     private void removeExtraneousMarker(File child, final String fileName) {
@@ -936,7 +996,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
         protected final long doDeployTimestamp;
 
         protected ContentAddingTask(final String path, final boolean archive, final String deploymentName,
-                final File deploymentFile, long markerTimestamp) {
+                                    final File deploymentFile, long markerTimestamp) {
             super(deploymentName, deploymentFile.getParentFile(), DEPLOYING);
             this.path = path;
             this.archive = archive;
@@ -982,7 +1042,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
     private final class DeployTask extends ContentAddingTask {
         private DeployTask(final String path, final boolean archive, final String deploymentName, final File deploymentFile,
-                long markerTimestamp) {
+                           long markerTimestamp) {
             super(path, archive, deploymentName, deploymentFile, markerTimestamp);
         }
 
@@ -1009,7 +1069,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
     private final class ReplaceTask extends ContentAddingTask {
         private ReplaceTask(final String path, final boolean archive, String deploymentName, File deploymentFile,
-                long markerTimestamp) {
+                            long markerTimestamp) {
             super(path, archive, deploymentName, deploymentFile, markerTimestamp);
         }
 
@@ -1121,25 +1181,45 @@ class FileSystemDeploymentService implements DeploymentScanner {
     }
 
     private class ScanContext {
-        /** Existing deployments */
+        /**
+         * Existing deployments
+         */
         private final Set<String> registeredDeployments = getDeploymentNames();
-        /** Tasks generated by the scan */
+        /**
+         * Tasks generated by the scan
+         */
         private final List<ScannerTask> scannerTasks = new ArrayList<ScannerTask>();
-        /** Files to undeploy at the end of the scan */
+        /**
+         * Files to undeploy at the end of the scan
+         */
         private final Set<String> toRemove = new HashSet<String>(deployed.keySet());
-        /** Marker files with no corresponding content */
+        /**
+         * Marker files with no corresponding content
+         */
         private final HashSet<String> ignoredMissingDeployments = new HashSet<String>();
-        /** Partially copied files detected by the scan */
+        /**
+         * Partially copied files detected by the scan
+         */
         private Map<File, IncompleteDeploymentStatus> incompleteFiles = new HashMap<File, IncompleteDeploymentStatus>();
-        /** Non-auto-deployable files detected by the scan without an appropriate marker */
+        /**
+         * Non-auto-deployable files detected by the scan without an appropriate marker
+         */
         private final HashSet<String> nonDeployable = new HashSet<String>();
-        /** WEB-INF and META-INF dirs not enclosed by a deployment */
+        /**
+         * WEB-INF and META-INF dirs not enclosed by a deployment
+         */
         private final HashSet<String> illegalDir = new HashSet<String>();
-        /** Exploded deployment content removed without first removing the .deployed marker */
+        /**
+         * Exploded deployment content removed without first removing the .deployed marker
+         */
         private final HashSet<String> prematureExplodedDeletions = new HashSet<String>();
-        /** Auto-deployable files detected by the scan where ZipScanner threw a NonScannableZipException */
+        /**
+         * Auto-deployable files detected by the scan where ZipScanner threw a NonScannableZipException
+         */
         private final Map<File, NonScannableStatus> nonscannable = new HashMap<File, NonScannableStatus>();
-        /** Timestamp when the scan started */
+        /**
+         * Timestamp when the scan started
+         */
         private final long scanStartTime = System.currentTimeMillis();
     }
 
@@ -1164,7 +1244,9 @@ class FileSystemDeploymentService implements DeploymentScanner {
         }
     }
 
-    /** Possible overall scan behaviors following return from handling auto-deploy failures */
+    /**
+     * Possible overall scan behaviors following return from handling auto-deploy failures
+     */
     private enum ScanStatus {
         ABORT, RETRY, PROCEED
     }

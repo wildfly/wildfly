@@ -3,28 +3,6 @@
  */
 package org.jboss.as.server.deployment.scanner;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FULL_REPLACE_DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLED_BACK;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEPLOY;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -54,6 +32,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
+import org.jboss.as.server.deployment.repository.api.MountType;
 import org.jboss.as.server.deployment.repository.api.ServerDeploymentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -65,6 +44,28 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FULL_REPLACE_DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLED_BACK;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEPLOY;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Unit tests of {@link FileSystemDeploymentService}.
@@ -142,6 +143,55 @@ public class FileSystemDeploymentServiceUnitTestCase {
         assertTrue(war.exists());
         assertFalse(dodeploy.exists());
         assertTrue(deployed.exists());
+    }
+
+    @Test
+    public void testBasicXmlDeploy() throws Exception {
+        File xml = createXmlFile("foo.xml", "<rootElement/>");
+        File dodeploy = createFile("foo.xml" + FileSystemDeploymentService.DO_DEPLOY);
+        File deployed = new File(tmpDir, "foo.xml" + FileSystemDeploymentService.DEPLOYED);
+        TesteeSet ts = createTestee();
+//        ts.controller.addGetDeploymentNamesResponse();
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+        // Since AS7-431 the content is no longer managed
+        //assertEquals(1, ts.repo.content.size());
+        assertTrue(xml.exists());
+        assertFalse(dodeploy.exists());
+        assertTrue(deployed.exists());
+    }
+
+    @Test
+    public void testAutoXmlDeploy() throws Exception {
+        File xml = createXmlFile("foo.xml", "<rootElement/>");
+        File deployed = new File(tmpDir, "foo.xml" + FileSystemDeploymentService.DEPLOYED);
+        TesteeSet ts = createTestee();
+//        ts.controller.addGetDeploymentNamesResponse();
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.setAutoDeployXMLContent(true);
+        ts.testee.scan();
+        // Since AS7-431 the content is no longer managed
+        //assertEquals(1, ts.repo.content.size());
+        assertTrue(xml.exists());
+        assertTrue(deployed.exists());
+    }
+
+
+    /**
+     * Tests that an incomplete XML deployment does not
+     * auto-deploy.
+     */
+    @Test
+    public void testIncompleteXmlDeployment() throws Exception {
+        File xml = createXmlFile("foo.xml", "<rootElement><incomplete>");
+        File deployed = new File(tmpDir, "foo.xml" + FileSystemDeploymentService.DEPLOYED);
+        TesteeSet ts = createTestee();
+//        ts.controller.addGetDeploymentNamesResponse();
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.setAutoDeployXMLContent(true);
+        ts.testee.scan();
+        assertTrue(xml.exists());
+        assertFalse(deployed.exists());
     }
 
     @Test
@@ -1375,6 +1425,23 @@ public class FileSystemDeploymentServiceUnitTestCase {
         return f;
     }
 
+    private File createXmlFile(String fileName, String contents) throws IOException {
+        tmpDir.mkdirs();
+
+        File f = new File(tmpDir, fileName);
+        FileOutputStream fos = new FileOutputStream(f);
+        try {
+            PrintWriter writer = new PrintWriter(fos);
+            writer.write(contents);
+            writer.close();
+        }
+        finally {
+            fos.close();
+        }
+        assertTrue(f.exists());
+        return f;
+    }
+
     private File createDirectory(String name, String... children) throws IOException {
         return createDirectory(tmpDir, name, children);
     }
@@ -1432,7 +1499,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
 
         /** {@inheritDoc} */
         @Override
-        public Closeable mountDeploymentContent(VirtualFile contents, VirtualFile mountPoint, boolean mountExploded) throws IOException {
+        public Closeable mountDeploymentContent(VirtualFile contents, VirtualFile mountPoint, MountType mountExploded) throws IOException {
             return new Closeable() {
                 @Override
                 public void close() throws IOException {

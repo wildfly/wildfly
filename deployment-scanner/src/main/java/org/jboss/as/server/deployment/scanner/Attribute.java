@@ -39,6 +39,7 @@ enum Attribute {
     SCAN_INTERVAL(CommonAttributes.SCAN_INTERVAL),
     AUTO_DEPLOY_ZIPPED(CommonAttributes.AUTO_DEPLOY_ZIPPED),
     AUTO_DEPLOY_EXPLODED(CommonAttributes.AUTO_DEPLOY_EXPLODED),
+    AUTO_DEPLOY_XML(CommonAttributes.AUTO_DEPLOY_XML),
     DEPLOYMENT_TIMEOUT(CommonAttributes.DEPLOYMENT_TIMEOUT),
     ;
 

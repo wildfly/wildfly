@@ -22,6 +22,7 @@
 
 package org.jboss.as.server.deployment.repository.impl;
 
+import org.jboss.as.server.deployment.repository.api.MountType;
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
@@ -99,4 +100,7 @@ interface DeploymentRepositoryMessages {
      */
     @Message(id = 14925, value = "%s is null")
     IllegalArgumentException nullVar(String name);
+
+    @Message(id = 14926, value = "Unknown mount type %s")
+    IllegalArgumentException unknownMountType(MountType mountType);
 }

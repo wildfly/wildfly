@@ -22,11 +22,11 @@
 
 package org.jboss.as.server.deployment.repository.api;
 
-import org.jboss.msc.service.ServiceName;
-import org.jboss.vfs.VirtualFile;
-
 import java.io.Closeable;
 import java.io.IOException;
+
+import org.jboss.msc.service.ServiceName;
+import org.jboss.vfs.VirtualFile;
 
 /**
  * A server-level repository for deployment content.
@@ -48,10 +48,10 @@ public interface ServerDeploymentRepository {
      *
      * @param deploymentContents the deployment contents. Cannot be <code>null</code>
      * @param mountPoint VFS location where the content should be mounted. Cannot be <code>null</code>
-     * @param mountExpanded
+     * @param mountType The type of mount to perform
      * @return {@link java.io.Closeable} that can be used to close the mount
      *
      * @throws IOException
      */
-    Closeable mountDeploymentContent(VirtualFile deploymentContents, VirtualFile mountPoint, boolean mountExpanded) throws IOException;
+    Closeable mountDeploymentContent(VirtualFile deploymentContents, VirtualFile mountPoint, MountType mountType) throws IOException;
 }

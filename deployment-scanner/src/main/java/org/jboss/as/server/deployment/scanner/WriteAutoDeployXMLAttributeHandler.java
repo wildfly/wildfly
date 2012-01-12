@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,21 +22,29 @@
 
 package org.jboss.as.server.deployment.scanner;
 
+import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.server.deployment.scanner.api.DeploymentScanner;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+
 /**
- * @author Emanuel Muckenhuber
+ * Toggle the 'auto-deploy-xml' attribute on a {@code DeploymentScanner}.
+ *
+ * @author Stuart Douglas
  */
-interface CommonAttributes {
+class WriteAutoDeployXMLAttributeHandler extends AbstractWriteAttributeHandler {
 
-    String AUTO_DEPLOY_ZIPPED = "auto-deploy-zipped";
-    String AUTO_DEPLOY_EXPLODED = "auto-deploy-exploded";
-    String AUTO_DEPLOY_XML = "auto-deploy-xml";
-    String DEPLOYMENT_SCANNER = "deployment-scanner";
-    String DEPLOYMENT_TIMEOUT = "deployment-timeout";
-    String NAME = "name";
-    String PATH = "path";
-    String RELATIVE_TO = "relative-to";
-    String SCANNER = "scanner";
-    String SCAN_ENABLED = "scan-enabled";
-    String SCAN_INTERVAL = "scan-interval";
+    static final WriteAutoDeployXMLAttributeHandler INSTANCE = new WriteAutoDeployXMLAttributeHandler();
 
+    private WriteAutoDeployXMLAttributeHandler() {
+        super(new ModelTypeValidator(ModelType.BOOLEAN, false, true), new ModelTypeValidator(ModelType.BOOLEAN, false, false));
+    }
+
+    @Override
+    protected void updateScanner(final DeploymentScanner scanner, final ModelNode newValue) {
+
+        boolean enable = newValue.resolve().asBoolean();
+
+        scanner.setAutoDeployXMLContent(enable);
+    }
 }

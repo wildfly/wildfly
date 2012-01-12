@@ -63,6 +63,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
     private boolean enabled;
     private boolean autoDeployZipped;
     private boolean autoDeployExploded;
+    private boolean autoDeployXml;
     private Long deploymentTimeout;
     private final String relativeTo;
 
@@ -97,10 +98,10 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
      */
     public static ServiceController<?> addService(final ServiceTarget serviceTarget, final String name, final String relativeTo, final String path,
                                   final Integer scanInterval, TimeUnit unit, final Boolean autoDeployZip,
-                                  final Boolean autoDeployExploded, final Boolean scanEnabled, final Long deploymentTimeout,
+                                  final Boolean autoDeployExploded, final Boolean autoDeployXml, final Boolean scanEnabled, final Long deploymentTimeout,
                                   final List<ServiceController<?>> newControllers,
                                   final ServiceListener<Object>... listeners) {
-        final DeploymentScannerService service = new DeploymentScannerService(relativeTo, scanInterval, unit, autoDeployZip, autoDeployExploded, scanEnabled, deploymentTimeout);
+        final DeploymentScannerService service = new DeploymentScannerService(relativeTo, scanInterval, unit, autoDeployZip, autoDeployExploded, autoDeployXml, scanEnabled, deploymentTimeout);
         final ServiceName serviceName = getServiceName(name);
         final ServiceName pathService = serviceName.append("path");
         final ServiceName relativePathService = relativeTo != null ? RelativePathService.pathNameOf(relativeTo) : null;
@@ -132,12 +133,13 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
     }
 
     DeploymentScannerService(final String relativeTo, final Integer interval, final TimeUnit unit, final Boolean autoDeployZipped,
-                             final Boolean autoDeployExploded, final Boolean enabled, final Long deploymentTimeout) {
+                             final Boolean autoDeployExploded, final Boolean autoDeployXml, final Boolean enabled, final Long deploymentTimeout) {
         this.relativeTo = relativeTo;
         this.interval = interval == null ? DEFAULT_INTERVAL : interval.longValue();
         this.unit = unit;
         this.autoDeployZipped = autoDeployZipped == null ? true : autoDeployZipped.booleanValue();
         this.autoDeployExploded = autoDeployExploded == null ? false : autoDeployExploded.booleanValue();
+        this.autoDeployXml = autoDeployXml == null ? true : autoDeployXml.booleanValue();
         this.enabled = enabled == null ? true : enabled.booleanValue();
         this.deploymentTimeout = deploymentTimeout;
     }
@@ -156,6 +158,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
             scanner.setScanInterval(unit.toMillis(interval));
             scanner.setAutoDeployExplodedContent(autoDeployExploded);
             scanner.setAutoDeployZippedContent(autoDeployZipped);
+            scanner.setAutoDeployXMLContent(autoDeployXml);
             if (deploymentTimeout != null) {
                 scanner.setDeploymentTimeout(deploymentTimeout);
             }

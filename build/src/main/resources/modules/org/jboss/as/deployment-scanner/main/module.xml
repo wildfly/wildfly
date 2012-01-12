@@ -29,6 +29,7 @@
     </resources>
 
     <dependencies>
+        <module name="javax.api" />
         <module name="org.jboss.vfs"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.modules"/>

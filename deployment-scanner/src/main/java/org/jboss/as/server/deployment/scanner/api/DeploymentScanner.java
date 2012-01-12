@@ -98,7 +98,25 @@ public interface DeploymentScanner {
      *
      * param autoDeployZip true if auto-deployment of exploded content is enabled
      */
-    void setAutoDeployExplodedContent(boolean autoDeployExploded) ;
+    void setAutoDeployExplodedContent(boolean autoDeployExploded);
+
+    /**
+     * Gets whether the scanner will attempt to deploy XML content based solely
+     * on detecting a change in the content; i.e. without requiring a
+     * marker file to trigger the deployment.
+     *
+     * @return true if auto-deployment of XML content is enabled
+     */
+    boolean isAutoDeployXMLContent();
+
+    /**
+     * Sets whether the scanner will attempt to deploy XML content based solely
+     * on detecting a change in the content; i.e. without requiring a
+     * marker file to trigger the deployment.
+     *
+     * param autoDeployXML true if auto-deployment of XML content is enabled
+     */
+    void setAutoDeployXMLContent(boolean autoDeployXML);
 
     /**
      * Set the timeout used for deployments.

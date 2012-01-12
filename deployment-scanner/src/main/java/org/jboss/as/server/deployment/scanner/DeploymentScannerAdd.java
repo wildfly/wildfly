@@ -25,16 +25,18 @@ package org.jboss.as.server.deployment.scanner;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * Operation adding a new {@link DeploymentScannerService}.
@@ -61,6 +63,7 @@ class DeploymentScannerAdd extends AbstractAddStepHandler implements Description
         final String relativeTo = operation.hasDefined(CommonAttributes.RELATIVE_TO) ? operation.get(CommonAttributes.RELATIVE_TO).asString() : null;
         final Boolean autoDeployZip = operation.hasDefined(CommonAttributes.AUTO_DEPLOY_ZIPPED) ? operation.get(CommonAttributes.AUTO_DEPLOY_ZIPPED).asBoolean() : true;
         final Boolean autoDeployExp = operation.hasDefined(CommonAttributes.AUTO_DEPLOY_EXPLODED) ? operation.get(CommonAttributes.AUTO_DEPLOY_EXPLODED).asBoolean() : false;
+        final Boolean autoDeployXml = operation.hasDefined(CommonAttributes.AUTO_DEPLOY_XML) ? operation.get(CommonAttributes.AUTO_DEPLOY_XML).asBoolean() : true;
         final Long deploymentTimeout = operation.hasDefined(CommonAttributes.DEPLOYMENT_TIMEOUT) ? operation.get(CommonAttributes.DEPLOYMENT_TIMEOUT).asLong() : 60L;
 
         model.get(CommonAttributes.NAME).set(name);
@@ -69,6 +72,7 @@ class DeploymentScannerAdd extends AbstractAddStepHandler implements Description
         if (interval != null) model.get(CommonAttributes.SCAN_INTERVAL).set(interval);
         if (autoDeployZip != null) model.get(CommonAttributes.AUTO_DEPLOY_ZIPPED).set(autoDeployZip);
         if (autoDeployExp != null) model.get(CommonAttributes.AUTO_DEPLOY_EXPLODED).set(autoDeployExp);
+        if (autoDeployXml != null) model.get(CommonAttributes.AUTO_DEPLOY_XML).set(autoDeployXml);
         if (relativeTo != null) model.get(CommonAttributes.RELATIVE_TO).set(relativeTo);
         if (deploymentTimeout != null) model.get(CommonAttributes.DEPLOYMENT_TIMEOUT).set(deploymentTimeout);
 
@@ -83,11 +87,12 @@ class DeploymentScannerAdd extends AbstractAddStepHandler implements Description
         final String relativeTo = operation.hasDefined(CommonAttributes.RELATIVE_TO) ? operation.get(CommonAttributes.RELATIVE_TO).asString() : null;
         final Boolean autoDeployZip = operation.hasDefined(CommonAttributes.AUTO_DEPLOY_ZIPPED) ? operation.get(CommonAttributes.AUTO_DEPLOY_ZIPPED).asBoolean() : true;
         final Boolean autoDeployExp = operation.hasDefined(CommonAttributes.AUTO_DEPLOY_EXPLODED) ? operation.get(CommonAttributes.AUTO_DEPLOY_EXPLODED).asBoolean() : false;
+        final Boolean autoDeployXml = operation.hasDefined(CommonAttributes.AUTO_DEPLOY_XML) ? operation.get(CommonAttributes.AUTO_DEPLOY_XML).asBoolean() : true;
         final Long deploymentTimeout = operation.hasDefined(CommonAttributes.DEPLOYMENT_TIMEOUT) ? operation.get(CommonAttributes.DEPLOYMENT_TIMEOUT).asLong() : 60L;
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
         DeploymentScannerService.addService(serviceTarget, name, relativeTo, path, interval, TimeUnit.MILLISECONDS,
-                autoDeployZip, autoDeployExp, enabled, deploymentTimeout, newControllers, verificationHandler);
+                autoDeployZip, autoDeployExp, autoDeployXml, enabled, deploymentTimeout, newControllers, verificationHandler);
     }
 
     @Override

@@ -22,6 +22,12 @@
 
 package org.jboss.as.server.deployment.repository.impl;
 
+import java.io.Closeable;
+import java.io.IOException;
+import java.security.AccessController;
+import java.util.concurrent.Executors;
+
+import org.jboss.as.server.deployment.repository.api.MountType;
 import org.jboss.as.server.deployment.repository.api.ServerDeploymentRepository;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceTarget;
@@ -32,11 +38,6 @@ import org.jboss.threads.JBossThreadFactory;
 import org.jboss.vfs.TempFileProvider;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
-
-import java.io.Closeable;
-import java.io.IOException;
-import java.security.AccessController;
-import java.util.concurrent.Executors;
 
 import static org.jboss.as.server.deployment.repository.impl.DeploymentRepositoryLogger.ROOT_LOGGER;
 import static org.jboss.as.server.deployment.repository.impl.DeploymentRepositoryMessages.MESSAGES;
@@ -65,14 +66,19 @@ public class ServerDeploymentRepositoryImpl implements ServerDeploymentRepositor
     }
 
     @Override
-    public Closeable mountDeploymentContent(final VirtualFile contents, VirtualFile mountPoint, boolean mountExpanded) throws IOException {
+    public Closeable mountDeploymentContent(final VirtualFile contents, VirtualFile mountPoint, MountType type) throws IOException {
         // according to the javadoc contents can not be null
         if (contents == null)
             throw MESSAGES.nullVar("contents");
-        if(mountExpanded) {
-            return VFS.mountZipExpanded(contents, mountPoint, tempFileProvider);
-        } else {
-            return VFS.mountZip(contents, mountPoint, tempFileProvider);
+        switch (type) {
+            case ZIP:
+                return VFS.mountZip(contents, mountPoint, tempFileProvider);
+            case EXPANDED:
+                return VFS.mountZipExpanded(contents, mountPoint, tempFileProvider);
+            case REAL:
+                return VFS.mountReal(contents.getPhysicalFile(), mountPoint);
+            default:
+                throw DeploymentRepositoryMessages.MESSAGES.unknownMountType(type);
         }
     }
 
