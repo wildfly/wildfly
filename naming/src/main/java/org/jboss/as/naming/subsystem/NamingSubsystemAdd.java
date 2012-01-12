@@ -22,6 +22,7 @@
 
 package org.jboss.as.naming.subsystem;
 
+import java.util.concurrent.Executors;
 import static org.jboss.as.naming.NamingLogger.ROOT_LOGGER;
 
 import java.util.List;
@@ -44,14 +45,17 @@ import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
 import org.jboss.as.naming.deployment.JndiNamingDependencySetupProcessor;
 import org.jboss.as.naming.management.JndiViewExtensionRegistry;
+import org.jboss.as.naming.remote.RemoteNamingServerService;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.naming.service.NamingStoreService;
+import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.remoting3.Endpoint;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -100,9 +104,9 @@ public class NamingSubsystemAdd extends AbstractBoottimeAddStepHandler {
         NamespaceContextSelector.setDefault(new NamespaceContextSelector() {
             public Context getContext(String identifier) {
                 final NamingStore namingStore;
-                if(identifier.equals("global")){
+                if (identifier.equals("global")) {
                     namingStore = globalNamingStore;
-                } else if(identifier.equals("jboss")) {
+                } else if (identifier.equals("jboss")) {
                     namingStore = jbossNamingStore;
                 } else {
                     namingStore = null;
@@ -127,12 +131,31 @@ public class NamingSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         newControllers.add(target.addService(JndiViewExtensionRegistry.SERVICE_NAME, new JndiViewExtensionRegistry()).install());
 
+        // Setup remote naming
+        final ServiceBasedNamingStore remoteExposedNamingStore = new WritableServiceBasedNamingStore(context.getServiceRegistry(false), ContextNames.EXPORTED_CONTEXT_SERVICE_NAME);
+        newControllers.add(target.addService(ContextNames.EXPORTED_CONTEXT_SERVICE_NAME, new NamingStoreService(remoteExposedNamingStore))
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .addListener(verificationHandler)
+                .install());
+
+        final RemoteNamingServerService remoteNamingServerService = new RemoteNamingServerService();
+        newControllers.add(
+            target.addService(RemoteNamingServerService.SERVICE_NAME, remoteNamingServerService)
+                .addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, remoteNamingServerService.getEndpointInjector())
+                .addDependency(ContextNames.EXPORTED_CONTEXT_SERVICE_NAME, NamingStore.class, remoteNamingServerService.getNamingStoreInjector())
+                .addInjection(remoteNamingServerService.getExecutorServiceInjector(), Executors.newFixedThreadPool(10))
+                .addListener(verificationHandler)
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install()
+        );
+
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JNDI_DEPENDENCY_SETUP, new JndiNamingDependencySetupProcessor());
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JNDI_DEPENDENCIES, new JndiNamingDependencyProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
+
 
     }
 }

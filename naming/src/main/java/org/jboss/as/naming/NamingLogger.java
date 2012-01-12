@@ -22,15 +22,19 @@
 
 package org.jboss.as.naming;
 
+import java.io.IOException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
+import static org.jboss.logging.Logger.Level.ERROR;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
+import org.jboss.naming.remote.server.RemoteNamingServerLogger;
+import org.jboss.remoting3.Channel;
 
 /**
  * Date: 17.06.2011
@@ -67,4 +71,37 @@ public interface NamingLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 11802, value = "Starting Naming Service")
     void startingService();
+
+    @LogMessage(level = ERROR)
+    @Message(id = 11803, value = "Unable to send header, closing channel")
+    void failedToSendHeader(@Cause IOException exception);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 11804, value = "Error determining version selected by client.")
+    void failedToDetermineClientVersion(@Cause IOException exception);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 11805, value = "Closing channel %s due to an error")
+    void closingChannel(Channel channel, @Cause Throwable t);
+
+    @LogMessage(level = INFO)
+    @Message(id = 11806, value = "Channel end notification received, closing channel %s")
+    void closingChannelOnChannelEnd(Channel channel);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 11807, value = "Unexpected internal error")
+    void unnexpectedError(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 11808, value = "Null correlationId so error not sent to client")
+    void nullCorrelationId(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 11809, value = "Failed to send exception response to client")
+    void failedToSendExceptionResponse(@Cause IOException ioe);
+
+
+    @LogMessage(level = ERROR)
+    @Message(id = 11810, value = "Unexpected parameter type - excpected: %d  received: %d")
+    void unexpectedParameterType(byte expected, byte actual);
 }
