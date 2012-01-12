@@ -126,7 +126,10 @@ public class SecurityContextAssociationValve extends ValveBase {
                         principal = (JBossGenericPrincipal) session.getPrincipal();
                     }
                     if (principal == null) {
-                        principal = (JBossGenericPrincipal) request.getSessionInternal(false).getNote(Constants.FORM_PRINCIPAL_NOTE);
+                        Session sessionInternal = request.getSessionInternal(false);
+                        if (sessionInternal != null) {
+                           principal = (JBossGenericPrincipal) sessionInternal.getNote(Constants.FORM_PRINCIPAL_NOTE);
+                        }
                     }
                 } else {
                     // Use the request principal as the caller identity
@@ -142,7 +145,8 @@ public class SecurityContextAssociationValve extends ValveBase {
                     }
                 }
             } catch (Throwable e) {
-                log.debugf("Failed to determine servlet", e);
+                //TODO:decide whether to log this as info or warn 
+                log.debug("Failed to determine servlet", e);
             }
             // set JACC contextID
             PolicyContext.setContextID(deploymentUnit.getName());
