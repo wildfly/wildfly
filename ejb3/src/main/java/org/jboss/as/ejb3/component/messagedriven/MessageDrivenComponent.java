@@ -34,6 +34,7 @@ import javax.transaction.TransactionManager;
 
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.pool.PoolConfig;
 import org.jboss.as.ejb3.component.pool.PooledComponent;
 import org.jboss.as.ejb3.inflow.JBossMessageEndpointFactory;
@@ -167,5 +168,10 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
         resourceAdapter.endpointDeactivation(endpointFactory, activationSpec);
 
         super.stop(stopContext);
+    }
+
+    @Override
+    public AllowedMethodsInformation getAllowedMethodsInformation() {
+        return MessageDrivenAllowedMethodsInformation.INSTANCE;
     }
 }

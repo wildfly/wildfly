@@ -19,6 +19,10 @@ public class CmpAllowedMethodsInformation extends AllowedMethodsInformation {
         super.setup(denied);
         add(denied, InvocationType.ENTITY_EJB_CREATE, MethodType.TIMER_SERVICE_METHOD);
         add(denied, InvocationType.ENTITY_EJB_CREATE, MethodType.GET_PRIMARY_KEY);
+        add(denied, InvocationType.ENTITY_EJB_ACTIVATE, MethodType.GET_CALLER_PRINCIPLE);
+        add(denied, InvocationType.ENTITY_EJB_ACTIVATE, MethodType.IS_CALLER_IN_ROLE);
+        add(denied, InvocationType.ENTITY_EJB_PASSIVATE, MethodType.GET_CALLER_PRINCIPLE);
+        add(denied, InvocationType.ENTITY_EJB_PASSIVATE, MethodType.IS_CALLER_IN_ROLE);
     }
 
 }

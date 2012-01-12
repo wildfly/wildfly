@@ -21,6 +21,10 @@ public class EntityBeanAllowedMethodsInformation extends AllowedMethodsInformati
         add(denied, InvocationType.FINDER_METHOD, MethodType.TIMER_SERVICE_METHOD);
         add(denied, InvocationType.FINDER_METHOD, MethodType.GET_PRIMARY_KEY);
         add(denied, InvocationType.FINDER_METHOD, MethodType.GET_TIMER_SERVICE);
+        add(denied, InvocationType.ENTITY_EJB_ACTIVATE, MethodType.GET_CALLER_PRINCIPLE);
+        add(denied, InvocationType.ENTITY_EJB_ACTIVATE, MethodType.IS_CALLER_IN_ROLE);
+        add(denied, InvocationType.ENTITY_EJB_PASSIVATE, MethodType.GET_CALLER_PRINCIPLE);
+        add(denied, InvocationType.ENTITY_EJB_PASSIVATE, MethodType.IS_CALLER_IN_ROLE);
     }
 
 }

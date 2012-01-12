@@ -19,6 +19,9 @@ public enum InvocationType {
     FINDER_METHOD("entity bean finder method"),
     HOME_METHOD("entity bean home method"),
     ENTITY_EJB_CREATE("entity bean ejbCreate method"),
+    ENTITY_EJB_ACTIVATE("entity bean ejbActivate method"),
+    ENTITY_EJB_PASSIVATE("entity bean ejbPassivate method"),
+    ENTITY_EJB_EJB_LOAD("entity bean ejbLoad method"),
 
     ;
 

@@ -125,8 +125,10 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
             final EntityBeanComponent component = getComponent();
             final Method ejbActivateMethod = component.getEjbActivateMethod();
             context.setMethod(ejbActivateMethod);
+            context.putPrivateData(InvocationType.class, InvocationType.ENTITY_EJB_ACTIVATE);
             ejbActivate.processInvocation(context);
             final InterceptorContext loadContext = prepareInterceptorContext();
+            context.putPrivateData(InvocationType.class, InvocationType.ENTITY_EJB_EJB_LOAD);
             loadContext.setMethod(component.getEjbLoadMethod());
             ejbLoad.processInvocation(loadContext);
         } catch (RemoteException e) {
@@ -173,6 +175,7 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
                 final InterceptorContext context = prepareInterceptorContext();
                 final EntityBeanComponent component = getComponent();
                 context.setMethod(component.getEjbPassivateMethod());
+                context.putPrivateData(InvocationType.class, InvocationType.ENTITY_EJB_PASSIVATE);
                 ejbPassivate.processInvocation(context);
             }
         } catch (RemoteException e) {
