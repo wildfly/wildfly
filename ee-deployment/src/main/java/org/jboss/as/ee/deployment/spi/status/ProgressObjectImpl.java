@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.jboss.as.ee.deployment.spi.DeploymentLogger.ROOT_LOGGER;
+import static org.jboss.as.ee.deployment.spi.DeploymentMessages.MESSAGES;
 
 /**
  * The ProgressObject interface tracks and reports the progress of the deployment activities, distribute, start, stop, undeploy.
@@ -45,12 +46,20 @@ public class ProgressObjectImpl implements ProgressObject {
     // list of ProgressListener objects
     private List listeners = new ArrayList();
 
-    private DeploymentStatusImpl deploymentStatus;
-    private TargetModuleID[] targetModules;
+    private final DeploymentStatusImpl deploymentStatus;
+    private final TargetModuleID[] targetModules;
+    private final List<String> moduleIDs = new ArrayList<String>();
 
     public ProgressObjectImpl(DeploymentStatus deploymentStatus, TargetModuleID[] targetModules) {
+        if (deploymentStatus == null)
+            throw new IllegalArgumentException(MESSAGES.nullArgument("deploymentStatus"));
+        if (targetModules == null)
+            throw new IllegalArgumentException(MESSAGES.nullArgument("targetModules"));
         this.deploymentStatus = (DeploymentStatusImpl) deploymentStatus;
         this.targetModules = targetModules;
+        for(TargetModuleID modid : targetModules) {
+            moduleIDs.add(modid.getModuleID());
+        }
     }
 
     /**
@@ -147,5 +156,10 @@ public class ProgressObjectImpl implements ProgressObject {
      */
     public void removeProgressListener(ProgressListener listener) {
         listeners.remove(listener);
+    }
+
+    @Override
+    public String toString() {
+        return "ProgressObject[status=" + deploymentStatus + ",modules=" + moduleIDs + "]";
     }
 }
