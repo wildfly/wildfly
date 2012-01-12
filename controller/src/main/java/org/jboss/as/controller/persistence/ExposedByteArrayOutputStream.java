@@ -33,7 +33,7 @@ import java.io.ByteArrayOutputStream;
 class ExposedByteArrayOutputStream extends ByteArrayOutputStream {
 
     ExposedByteArrayOutputStream(int size) {
-        super.size();
+        super(size);
     }
 
     ByteArrayInputStream getInputStream() {
