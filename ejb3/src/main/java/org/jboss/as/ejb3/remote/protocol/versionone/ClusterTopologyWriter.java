@@ -30,6 +30,8 @@ import org.jboss.ejb.client.remoting.PackedInteger;
 
 import java.io.DataOutput;
 import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.util.List;
 import java.util.Map;
 
@@ -162,8 +164,15 @@ class ClusterTopologyWriter {
             // for each client-mapping write out the mapping info
             for (final ClientMapping clientMapping : clientMappingsForNode) {
                 // client source network address
-                final byte[] clientNetworkAddress = clientMapping.getSourceNetworkAddress().getAddress();
-                output.write(clientNetworkAddress);
+                InetAddress clientNetworkAddress = clientMapping.getSourceNetworkAddress();
+                // if it's a Inet4Address (which implies 4 bytes), then pass along a (16 byte) IPv6
+                // representation (@see javadoc of Inet6Address) of the form ::w.x.y.z
+                if (clientNetworkAddress instanceof Inet4Address) {
+                    final String ipv4MappedAddress = "::" + clientNetworkAddress.getHostAddress();
+                    clientNetworkAddress = InetAddress.getByName(ipv4MappedAddress);
+                }
+                final byte[] clientNetworkAddressBytes = clientNetworkAddress.getAddress();
+                output.write(clientNetworkAddressBytes);
                 // client netmask
                 output.writeByte(clientMapping.getSourceNetworkMaskBits());
                 // destination address
