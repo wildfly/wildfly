@@ -26,14 +26,12 @@ package org.jboss.as.test.integration.ejb.security.callerprincipal;
 import java.security.Principal;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
+import javax.ejb.ActivationConfigProperty;
 import javax.ejb.EJBException;
 import javax.ejb.MessageDriven;
 import javax.ejb.MessageDrivenBean;
 import javax.ejb.MessageDrivenContext;
-
-import javax.ejb.ActivationConfigProperty;
 import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -46,8 +44,8 @@ import javax.jms.QueueSender;
 import javax.jms.QueueSession;
 import javax.naming.NamingException;
 
-import org.jboss.ejb3.annotation.SecurityDomain;
 import org.jboss.ejb3.annotation.ResourceAdapter;
+import org.jboss.ejb3.annotation.SecurityDomain;
 import org.jboss.logging.Logger;
 
 @MessageDriven(activationConfig = {
@@ -58,92 +56,82 @@ import org.jboss.logging.Logger;
 @ResourceAdapter(value = "hornetq-ra.rar") // based on documentation to as 7
 public class MDBLifecycleCallback implements MessageDrivenBean, MessageListener {
     private static final long serialVersionUID = 1L;
-    private static final Logger log = Logger.getLogger(MDBLifecycleCallback.class); 
-    
-    @Resource(mappedName="java:/ConnectionFactory")
+    private static final Logger log = Logger.getLogger(MDBLifecycleCallback.class);
+
+    @Resource(mappedName = "java:/ConnectionFactory")
     private QueueConnectionFactory qFactory;
-    
+
     private MessageDrivenContext msgContext;
-    
+
     private ITestResultsSingleton getSingleton() throws NamingException {
         return (ITestResultsSingleton) msgContext.lookup("java:global/single/" + TestResultsSingleton.class.getSimpleName());
     }
-    
+
     @PostConstruct
     public void init() throws Exception {
         ITestResultsSingleton results = this.getSingleton();
         log.info(MDBLifecycleCallback.class.getSimpleName() + " @PostConstruct called");
-        
+
         Principal princ = null;
         try {
             princ = msgContext.getCallerPrincipal();
         } catch (IllegalStateException e) {
-            results.setMdb("postconstruct", "OK");
+            results.setMdb("postconstruct", "OKstart");
             return;
         }
         results.setMdb("postconstruct", "Method getCallerPrincipal was called from @PostConstruct with result: " + princ);
     }
-    
-    @PreDestroy
-    public void tearDown() throws Exception {
-        ITestResultsSingleton results = this.getSingleton();
-        log.info(MDBLifecycleCallback.class.getSimpleName() + " @PreDestroy called");
-        
-        Principal princ = null;
-        try {
-            princ = msgContext.getCallerPrincipal();
-        } catch (IllegalStateException e) {
-            results.setMdb("predestroy", "OK");
-            return;
-        }
-        results.setMdb("predestroy", "Method getCallerPrincipal was called from @PreDestroy with result: " + princ);
-    }
-      
+
+
     @Override
     public void ejbRemove() throws EJBException {
+        try {
+            ITestResultsSingleton results = this.getSingleton();
+            log.info(MDBLifecycleCallback.class.getSimpleName() + " @PreDestroy called");
+
+            Principal princ = null;
+            try {
+                princ = msgContext.getCallerPrincipal();
+            } catch (IllegalStateException e) {
+                results.setMdb("predestroy", "OKstop");
+                return;
+            }
+            results.setMdb("predestroy", "Method getCallerPrincipal was called from @PreDestroy with result: " + princ);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
-    
+
     @Resource
     @Override
     public void setMessageDrivenContext(MessageDrivenContext ctx) throws EJBException {
         this.msgContext = ctx;
-        
+
     }
-    
-    public void onMessage(Message message)
-    {
-       log.info("onMessage received msg: " + message.toString());
-       try
-       {
-          try
-          {
-             sendReply((Queue) message.getJMSReplyTo(), message.getJMSMessageID(), null);
-          }
-          catch(Exception e)
-          {
-             sendReply((Queue) message.getJMSReplyTo(), message.getJMSMessageID(), e);
-          }
-       }
-       catch(JMSException e)
-       {
-          throw new RuntimeException(e);
-       }
+
+    public void onMessage(Message message) {
+        log.info("onMessage received msg: " + message.toString());
+        try {
+            try {
+                sendReply((Queue) message.getJMSReplyTo(), message.getJMSMessageID(), null);
+            } catch (Exception e) {
+                sendReply((Queue) message.getJMSReplyTo(), message.getJMSMessageID(), e);
+            }
+        } catch (JMSException e) {
+            throw new RuntimeException(e);
+        }
     }
-    
-    private void sendReply(Queue destination, String messageID, Exception e) throws JMSException
-    {
-       QueueConnection conn = qFactory.createQueueConnection();
-       try
-       {
-          QueueSession session = conn.createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE);
-          QueueSender sender = session.createSender(destination);
-          ObjectMessage message = session.createObjectMessage(e == null ? "SUCCESS" : e);
-          message.setJMSCorrelationID(messageID);
-          sender.send(message, DeliveryMode.NON_PERSISTENT, 4, 500);
-       }
-       finally
-       {
-          conn.close();
-       }
+
+    private void sendReply(Queue destination, String messageID, Exception e) throws JMSException {
+        QueueConnection conn = qFactory.createQueueConnection();
+        try {
+            QueueSession session = conn.createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE);
+            QueueSender sender = session.createSender(destination);
+            ObjectMessage message = session.createObjectMessage(e == null ? "SUCCESS" : e);
+            message.setJMSCorrelationID(messageID);
+            sender.send(message, DeliveryMode.NON_PERSISTENT, 4, 500);
+        } finally {
+            conn.close();
+        }
     }
 }

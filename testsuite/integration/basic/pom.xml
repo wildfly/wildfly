@@ -137,6 +137,7 @@
                                         <exclude>org/jboss/as/test/integration/**/*SecondTestCase.java</exclude>
                                         <!-- Tests which need FULL config. -->
                                         <exclude>org/jboss/as/test/integration/ejb/iiop/**/*TestCase*.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/*/security/**/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/mdb/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/pool/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/entity/cmp/**/*TestCase*.java</exclude>
@@ -150,7 +151,6 @@
                                         <exclude>org/jboss/as/test/integration/ee/injection/resource/resourceref/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ee/injection/resource/enventry/EnvEntryTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ee/injection/resource/basic/*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ejb/security/runas/mdb/*TestCase.java</exclude>
                                     </excludes>
 
                                     <!-- Parameters to test cases. -->
