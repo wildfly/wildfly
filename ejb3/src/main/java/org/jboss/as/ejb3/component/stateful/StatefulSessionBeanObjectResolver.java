@@ -69,6 +69,7 @@ public class StatefulSessionBeanObjectResolver implements ObjectResolver {
         }
 
         private void readObject(java.io.ObjectInputStream input) throws IOException, ClassNotFoundException {
+            input.defaultReadObject();
             Class<?> targetClass = (Class<?>) input.readObject();
             try {
                 this.object = targetClass.newInstance();
@@ -126,6 +127,7 @@ public class StatefulSessionBeanObjectResolver implements ObjectResolver {
         }
 
         private void writeObject(java.io.ObjectOutputStream output) throws IOException {
+            output.defaultWriteObject();
             Class<?> targetClass = this.object.getClass();
             // Make sure that Class.newInstance() will succeed during readObject(...)
             if (new HasAccessibleNoArgConstructorAction(targetClass).check()) {
