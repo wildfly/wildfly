@@ -63,6 +63,7 @@ public class SFSB2LC {
 		
 		EntityManager em = emfNo2LC.createEntityManager();
 		Statistics stats = em.unwrap(Session.class).getSessionFactory().getStatistics();
+		stats.clear();
 		
 		try {
 			// check if entities are NOT cached in 2LC
@@ -93,6 +94,7 @@ public class SFSB2LC {
 		
 		EntityManager em = emf.createEntityManager();
 		Statistics stats = em.unwrap(Session.class).getSessionFactory().getStatistics();
+		stats.clear();
 		SecondLevelCacheStatistics emp2LCStats = stats.getSecondLevelCacheStatistics(CACHE_REGION_NAME+"Employee");
 			
 		try{
@@ -130,13 +132,14 @@ public class SFSB2LC {
 		
 		EntityManager em = emf.createEntityManager();
 		Statistics stats = em.unwrap(Session.class).getSessionFactory().getStatistics();
+		stats.clear();
 		SecondLevelCacheStatistics emp2LCStats = stats.getSecondLevelCacheStatistics(CACHE_REGION_NAME+"Employee");
 		
 		try{	
-			// loading entity stored in previous session, we'are expecting second hit in cache
+			// loading entity stored in previous session, we'are expecting hit in cache
 			Employee emp = getEmployee(em, 2);
 			assertNotNull("Employee returned", emp);
-			assertEquals("Expected 2 hits in cache"+generateEntityCacheStats(emp2LCStats), 2,  emp2LCStats.getHitCount());
+			assertEquals("Expected 1 hit in cache"+generateEntityCacheStats(emp2LCStats), 1,  emp2LCStats.getHitCount());
 			
 		}catch (AssertionError e) {
 			return e.getMessage();
@@ -154,6 +157,7 @@ public class SFSB2LC {
 
 		EntityManager em = emf.createEntityManager();
 		Statistics stats = em.unwrap(Session.class).getSessionFactory().getStatistics();
+		stats.clear();
 		SecondLevelCacheStatistics emp2LCStats = stats.getSecondLevelCacheStatistics(CACHE_REGION_NAME+"Employee");
 		
 		try{	
@@ -181,6 +185,7 @@ public class SFSB2LC {
 		
 		EntityManager em = emf.createEntityManager();
 		Statistics stats = em.unwrap(Session.class).getSessionFactory().getStatistics();
+		stats.clear();
 		
 		try{
 			int id = 2;
@@ -214,6 +219,7 @@ public class SFSB2LC {
 		
 		EntityManager em = emf.createEntityManager();
 		Statistics stats = em.unwrap(Session.class).getSessionFactory().getStatistics();
+		stats.clear();
 
 		try{
 			String queryString = "from Employee e where e.id > 1";
@@ -256,6 +262,7 @@ public class SFSB2LC {
 		
 		EntityManager em = emf.createEntityManager();
 		Statistics stats = em.unwrap(Session.class).getSessionFactory().getStatistics();
+		stats.clear();
 
 		try{
 			String queryString = "from Employee e where e.id > 2";
