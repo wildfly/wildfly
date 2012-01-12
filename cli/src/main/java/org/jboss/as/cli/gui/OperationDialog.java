@@ -188,7 +188,7 @@ public class OperationDialog extends JDialog {
         private ModelNode props;
         private ModelType type;
         private String description;
-        private boolean required = false;
+        private boolean isRequired = false;
         private boolean nillable = false;
         private ModelNode defaultValue = null;
 
@@ -199,14 +199,14 @@ public class OperationDialog extends JDialog {
          * Constructor used for manually constructed property.
          * @param name Property name
          * @param description Description for tool tip text.
-         * @param required Is this a required property?
+         * @param isRequired Is this a isRequired property?
          */
         public RequestProp(String name, String description, boolean required) {
             this.name = name;
             this.props = new ModelNode();
             this.description = description;
             this.type = ModelType.STRING;
-            this.required = required;
+            this.isRequired = required;
             setInputComponent();
         }
 
@@ -220,7 +220,7 @@ public class OperationDialog extends JDialog {
             }
 
             if (props.get("required").isDefined()) {
-                this.required = props.get("required").asBoolean();
+                this.isRequired = props.get("required").asBoolean();
             }
 
             if (props.get("nillable").isDefined()) {
@@ -298,7 +298,11 @@ public class OperationDialog extends JDialog {
         }
 
         private JComboBox makeJComboBox(List<ModelNode> values) {
-            Vector valueVector = new Vector(values.size());
+            Vector<String> valueVector = new Vector<String>(values.size());
+            if (!isRequired) {
+                valueVector.add("");
+            }
+
             for (ModelNode node : values) {
                 valueVector.add(node.asString());
             }
