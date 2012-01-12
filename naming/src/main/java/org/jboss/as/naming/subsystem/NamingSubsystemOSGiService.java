@@ -19,11 +19,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
-package org.jboss.as.naming;
+package org.jboss.as.naming.subsystem;
 
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.service.NamingService;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -31,39 +32,41 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
-
 /**
- * Service responsible for providing the {@link InitialContext} as OSGi service.
+ * Service Responsible for registering Naming services so that they are visible in the OSGi layer.
  *
- * @author Thomas.Diesler@jboss.com
- * @since 29-Oct-2010
+ * @author Thomas Diesler
+ * @author David Bosschaert
  */
-public class InitialContextFactoryService extends AbstractService<InitialContext> {
+public class NamingSubsystemOSGiService<T> extends AbstractService<T> {
+    private final Injector<NamingStore> injectedNamingStore = new InjectedValue<NamingStore>();
+    private final Class<? extends T> instanceClass;
 
-    // The 'jbosgi' prefix followed by the FQN of the service interface allows the OSGi layer
-    // to find the service using context.getServiceReference(InitialContext.class.getName())
-    public static final ServiceName SERVICE_NAME = ServiceName.of("jbosgi", "xservice", InitialContext.class.getName());
+    public static <T> ServiceController<T> addService(final ServiceTarget target,
+            final Class<T> registrationClass, final Class<? extends T> instanceClass,
+            final ServiceVerificationHandler verificationHandler) {
+        // The 'jbosgi' prefix followed by the FQN of the service interface allows the OSGi layer
+        // to find the service using context.getServiceReference(InitialContext.class.getName())
+        ServiceName serviceName = ServiceName.of("jbosgi", "xservice", registrationClass.getName());
 
-    private final InjectedValue<NamingStore> injectedNamingStore = new InjectedValue<NamingStore>();
+        NamingSubsystemOSGiService<T> service = new NamingSubsystemOSGiService<T>(instanceClass);
 
-    public static ServiceController<InitialContext> addService(final ServiceTarget target, final ServiceVerificationHandler verificationHandler) {
-        InitialContextFactoryService service = new InitialContextFactoryService();
-        ServiceBuilder<InitialContext> serviceBuilder = target.addService(SERVICE_NAME, service);
+        ServiceBuilder<T> serviceBuilder = target.addService(serviceName, service);
         serviceBuilder.addDependency(NamingService.SERVICE_NAME, NamingStore.class, service.injectedNamingStore);
         serviceBuilder.addListener(verificationHandler);
         return serviceBuilder.install();
     }
 
+    public NamingSubsystemOSGiService(Class<? extends T> instanceClass) {
+        this.instanceClass = instanceClass;
+    }
+
     @Override
-    public InitialContext getValue() throws IllegalStateException {
+    public T getValue() {
         try {
-            return new InitialContext();
-        } catch (NamingException ex) {
-            throw MESSAGES.cannotObtain(ex, "InitialContext");
+            return instanceClass.newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }

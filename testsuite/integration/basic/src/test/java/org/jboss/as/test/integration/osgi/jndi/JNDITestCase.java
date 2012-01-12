@@ -27,7 +27,10 @@ import static org.junit.Assert.assertNotNull;
 import java.io.InputStream;
 
 import javax.inject.Inject;
+import javax.naming.Context;
 import javax.naming.InitialContext;
+import javax.naming.spi.InitialContextFactory;
+import javax.naming.spi.InitialContextFactoryBuilder;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -45,6 +48,7 @@ import org.osgi.framework.ServiceReference;
  * A test that deployes a bundle that exercises the {@link InitialContext}
  *
  * @author thomas.diesler@jboss.com
+ * @author David Bosschaert
  * @since 05-May-2009
  */
 @RunWith(Arquillian.class)
@@ -62,6 +66,7 @@ public class JNDITestCase {
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(InitialContext.class);
+                builder.addImportPackages(InitialContextFactoryBuilder.class);
                 return builder.openStream();
             }
         });
@@ -78,6 +83,20 @@ public class JNDITestCase {
         final String value = "Bar";
         iniCtx.createSubcontext("test").bind("Foo", value);
         assertEquals(value, iniCtx.lookup("test/Foo"));
+    }
+
+    @Test
+    public void testInitialContextFactoryBuilderService() throws Exception {
+        bundle.start();
+        BundleContext context = bundle.getBundleContext();
+        ServiceReference ref = context.getServiceReference(InitialContextFactoryBuilder.class.getName());
+        InitialContextFactoryBuilder builder = (InitialContextFactoryBuilder) context.getService(ref);
+
+        InitialContextFactory factory = builder.createInitialContextFactory(null);
+        Context iniCtx = factory.getInitialContext(null);
+
+        Object lookup = iniCtx.lookup("java:jboss");
+        assertNotNull("Lookup not null", lookup);
     }
 
     private InitialContext getInitialContext(BundleContext context) {

@@ -22,13 +22,14 @@
 
 package org.jboss.as.naming;
 
-import javax.naming.Context;
-import javax.naming.NamingException;
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
+
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Hashtable;
 
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
+import javax.naming.Context;
+import javax.naming.NamingException;
 
 /**
  * Initial context factory builder which ensures the proper naming context factory is used if the environment
@@ -48,6 +49,9 @@ public class InitialContextFactoryBuilder implements javax.naming.spi.InitialCon
      * @throws NamingException If an error occurs loading the factroy class.
      */
     public javax.naming.spi.InitialContextFactory createInitialContextFactory(Hashtable<?, ?> environment) throws NamingException {
+        if (environment == null)
+            environment = new Hashtable<String, Object>();
+
         final String factoryClassName = (String)environment.get(Context.INITIAL_CONTEXT_FACTORY);
         if(factoryClassName == null || InitialContextFactory.class.getName().equals(factoryClassName)) {
             return DEFAULT_FACTORY;
