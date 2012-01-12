@@ -174,7 +174,7 @@
         <version.org.jboss.osgi.spi>1.0.28</version.org.jboss.osgi.spi>
         <version.org.jboss.osgi.vfs>1.0.6</version.org.jboss.osgi.vfs>
         <version.org.jboss.remoting3>3.2.0.CR8</version.org.jboss.remoting3>
-        <version.org.jboss.remoting3.remoting-jmx>1.0.0.Alpha1-SNAPSHOT</version.org.jboss.remoting3.remoting-jmx>
+        <version.org.jboss.remoting3.remoting-jmx>1.0.0.Beta1</version.org.jboss.remoting3.remoting-jmx>
         <version.org.jboss.resteasy>2.3.0.GA</version.org.jboss.resteasy>
         <version.org.jboss.sasl>1.0.0.Beta9</version.org.jboss.sasl>
         <version.org.jboss.seam.int>6.0.0.GA</version.org.jboss.seam.int>
