@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.controller;
+package org.jboss.as.server.file.repository.api;
 
 import java.io.File;
 
@@ -30,7 +30,7 @@ import java.io.File;
  *
  * @author John Bailey
  */
-public interface FileRepository {
+public interface HostFileRepository extends DeploymentFileRepository {
     /**
      * Get a file relative to the repository root.
      *
@@ -47,24 +47,4 @@ public interface FileRepository {
      * @return The file at that path, or null if it is not found
      */
     File getConfigurationFile(final String relativePath);
-
-    /**
-     * Get the files associated with a given deployment.
-     *
-     * @param deploymentHash the hash of the deploymentUnit
-
-     * @return the files associated with the deployment, or <code>null</code> if it is not found
-     */
-    File[] getDeploymentFiles(final byte[] deploymentHash);
-
-    /**
-     * Gets the directory under which files associated with a given deployment
-     * would be found.
-     *
-     * @param deploymentHash the hash of the deploymentUnit
-
-     * @return the directory. Will not be <code>null</code>, even if the
-     *         deployment is unknown
-     */
-    File getDeploymentRoot(byte[] deploymentHash);
 }

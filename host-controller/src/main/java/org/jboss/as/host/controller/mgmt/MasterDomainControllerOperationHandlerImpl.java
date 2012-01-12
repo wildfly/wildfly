@@ -27,11 +27,7 @@ import static org.jboss.as.process.protocol.ProtocolUtils.expectHeader;
 
 import java.io.DataInput;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.HashUtil;
@@ -40,7 +36,6 @@ import org.jboss.as.controller.ModelController.OperationTransactionControl;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.remote.ModelControllerClientOperationHandler;
 import org.jboss.as.domain.controller.DomainController;
-import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.SlaveRegistrationException;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry.ProxyCreatedCallback;
@@ -48,8 +43,8 @@ import org.jboss.as.domain.controller.operations.ReadMasterDomainModelHandler;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
-import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
+import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
 import org.jboss.as.protocol.mgmt.ManagementProtocolHeader;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
@@ -57,6 +52,8 @@ import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.as.protocol.mgmt.RequestProcessingException;
+import org.jboss.as.server.file.repository.api.HostFileRepository;
+import org.jboss.as.server.file.repository.impl.RemoteFileRequestAndHandler.RootFileReader;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
@@ -194,101 +191,29 @@ public class MasterDomainControllerOperationHandlerImpl extends ManagementChanne
             final byte rootId = input.readByte();
             expectHeader(input, DomainControllerProtocol.PARAM_FILE_PATH);
             final String filePath = input.readUTF();
-            context.executeAsync(new ManagementRequestContext.AsyncTask<Void>() {
-                @Override
-                public void execute(ManagementRequestContext<Void> context) throws Exception {
-                    final File localPath = processRequest(rootId, filePath);
-                    final FlushableDataOutput output = writeGenericResponseHeader(context);
-                    try {
-                        writeResponse(localPath, output);
-                        output.close();
-                    } finally {
-                        StreamUtils.safeClose(output);
+
+            final RootFileReader reader = new RootFileReader() {
+                public File readRootFile() throws RequestProcessingException {
+                    final HostFileRepository localFileRepository = domainController.getLocalFileRepository();
+
+                    switch (rootId) {
+                        case DomainControllerProtocol.PARAM_ROOT_ID_FILE: {
+                            return localFileRepository.getFile(filePath);
+                        }
+                        case DomainControllerProtocol.PARAM_ROOT_ID_CONFIGURATION: {
+                            return localFileRepository.getConfigurationFile(filePath);
+                        }
+                        case DomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT: {
+                            byte[] hash = HashUtil.hexStringToByteArray(filePath);
+                            return localFileRepository.getDeploymentRoot(hash);
+                        }
+                        default: {
+                            throw MESSAGES.invalidRootId(rootId);
+                        }
                     }
                 }
-            });
-        }
-
-        protected File processRequest(final byte rootId, final String filePath) throws RequestProcessingException {
-            final FileRepository localFileRepository = domainController.getLocalFileRepository();
-
-            switch (rootId) {
-                case DomainControllerProtocol.PARAM_ROOT_ID_FILE: {
-                    return localFileRepository.getFile(filePath);
-                }
-                case DomainControllerProtocol.PARAM_ROOT_ID_CONFIGURATION: {
-                    return localFileRepository.getConfigurationFile(filePath);
-                }
-                case DomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT: {
-                    byte[] hash = HashUtil.hexStringToByteArray(filePath);
-                    return localFileRepository.getDeploymentRoot(hash);
-                }
-                default: {
-                    throw MESSAGES.invalidRootId(rootId);
-                }
-            }
-        }
-
-        protected void writeResponse(final File localPath, final FlushableDataOutput output) throws IOException {
-            output.writeByte(DomainControllerProtocol.PARAM_NUM_FILES);
-            if (localPath == null || !localPath.exists()) {
-                output.writeInt(-1);
-            } else if (localPath.isFile()) {
-                output.writeInt(1);
-                writeFile(localPath, localPath, output);
-            } else {
-                final List<File> childFiles = getChildFiles(localPath);
-                output.writeInt(childFiles.size());
-                for (File child : childFiles) {
-                    writeFile(localPath, child, output);
-                }
-            }
-        }
-
-        private List<File> getChildFiles(final File base) {
-            final List<File> childFiles = new ArrayList<File>();
-            getChildFiles(base, childFiles);
-            return childFiles;
-        }
-
-        private void getChildFiles(final File base, final List<File> childFiles) {
-            for (File child : base.listFiles()) {
-                if (child.isFile()) {
-                    childFiles.add(child);
-                } else {
-                    getChildFiles(child, childFiles);
-                }
-            }
-        }
-
-        private String getRelativePath(final File parent, final File child) {
-            return child.getAbsolutePath().substring(parent.getAbsolutePath().length()+1);
-        }
-
-        private void writeFile(final File localPath, final File file, final FlushableDataOutput output) throws IOException {
-            output.writeByte(DomainControllerProtocol.FILE_START);
-            output.writeByte(DomainControllerProtocol.PARAM_FILE_PATH);
-            output.writeUTF(getRelativePath(localPath, file));
-            output.writeByte(DomainControllerProtocol.PARAM_FILE_SIZE);
-            output.writeLong(file.length());
-            InputStream inputStream = null;
-            try {
-                inputStream = new FileInputStream(file);
-                byte[] buffer = new byte[8192];
-                int len;
-                while ((len = inputStream.read(buffer)) != -1) {
-                    output.write(buffer, 0, len);
-                }
-            } finally {
-                if (inputStream != null) {
-                    try {
-                        inputStream.close();
-                    } catch (IOException ignored) {
-                    }
-                }
-            }
-            output.writeByte(DomainControllerProtocol.FILE_END);
-            output.flush();
+            };
+            DomainRemoteFileRequestAndHandler.INSTANCE.handleRequest(input, reader, context);
         }
     }
 

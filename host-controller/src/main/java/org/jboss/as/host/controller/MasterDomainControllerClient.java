@@ -5,7 +5,7 @@ package org.jboss.as.host.controller;
 
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.domain.controller.DomainController;
-import org.jboss.as.domain.controller.FileRepository;
+import org.jboss.as.server.file.repository.api.HostFileRepository;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -31,10 +31,10 @@ public interface MasterDomainControllerClient extends ModelControllerClient {
     void unregister();
 
     /**
-     * Gets a {@link FileRepository} capable of retrieving files from the
+     * Gets a {@link HostFileRepository} capable of retrieving files from the
      * master domain controller.
      *
      * @return the file repository
      */
-    FileRepository getRemoteFileRepository();
+    HostFileRepository getRemoteFileRepository();
 }

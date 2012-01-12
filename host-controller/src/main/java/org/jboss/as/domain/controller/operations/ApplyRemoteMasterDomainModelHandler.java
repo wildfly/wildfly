@@ -68,12 +68,12 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionResource;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.domain.controller.operations.coordination.DomainServerUtils;
 import org.jboss.as.management.client.content.ManagedDMRContentTypeResource;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
+import org.jboss.as.server.file.repository.api.HostFileRepository;
 import org.jboss.as.server.operations.ServerRestartRequiredHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -90,14 +90,14 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
     public static final String OPERATION_NAME = "apply-remote-domain-model";
 
     private final Set<String> appliedExensions = new HashSet<String>();
-    private final FileRepository fileRepository;
+    private final HostFileRepository fileRepository;
     private final ContentRepository contentRepository;
     private final ExtensionRegistry extensionRegistry;
 
     private final LocalHostControllerInfo localHostInfo;
 
     public ApplyRemoteMasterDomainModelHandler(final ExtensionRegistry extensionRegistry,
-                                               final FileRepository fileRepository,
+                                               final HostFileRepository fileRepository,
                                                final ContentRepository contentRepository,
                                                final LocalHostControllerInfo localHostInfo) {
         this.extensionRegistry = extensionRegistry;

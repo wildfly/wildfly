@@ -33,13 +33,13 @@ import java.util.Locale;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainModelUtil;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
 import org.jboss.as.host.controller.HostControllerConfigurationPersister;
 import org.jboss.as.host.controller.descriptions.HostRootDescription;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
+import org.jboss.as.server.file.repository.api.HostFileRepository;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -53,7 +53,7 @@ public class LocalDomainControllerAddHandler implements OperationStepHandler, De
 
     private final ManagementResourceRegistration rootRegistration;
     private final HostControllerConfigurationPersister overallConfigPersister;
-    private final FileRepository fileRepository;
+    private final HostFileRepository fileRepository;
     private final LocalHostControllerInfoImpl hostControllerInfo;
     private final ContentRepository contentRepository;
     private final DomainController domainController;
@@ -63,7 +63,7 @@ public class LocalDomainControllerAddHandler implements OperationStepHandler, De
     public static LocalDomainControllerAddHandler getInstance(final ManagementResourceRegistration rootRegistration,
                                                                  final LocalHostControllerInfoImpl hostControllerInfo,
                                                                  final HostControllerConfigurationPersister overallConfigPersister,
-                                                                 final FileRepository fileRepository,
+                                                                 final HostFileRepository fileRepository,
                                                                  final ContentRepository contentRepository,
                                                                  final DomainController domainController,
                                                                  final UnregisteredHostChannelRegistry channelRegistry,
@@ -75,7 +75,7 @@ public class LocalDomainControllerAddHandler implements OperationStepHandler, De
     protected LocalDomainControllerAddHandler(final ManagementResourceRegistration rootRegistration,
                                     final LocalHostControllerInfoImpl hostControllerInfo,
                                     final HostControllerConfigurationPersister overallConfigPersister,
-                                    final FileRepository fileRepository,
+                                    final HostFileRepository fileRepository,
                                     final ContentRepository contentRepository,
                                     final DomainController domainController,
                                     final UnregisteredHostChannelRegistry channelRegistry,
