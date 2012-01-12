@@ -19,7 +19,6 @@
 package org.jboss.as.domain.controller.operations.deployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
@@ -27,6 +26,7 @@ import static org.jboss.as.domain.controller.DomainControllerLogger.DEPLOYMENT_L
 import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -49,39 +49,29 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DeploymentRemoveHandler implements OperationStepHandler, DescriptionProvider {
+public abstract class DeploymentRemoveHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = REMOVE;
 
     private static final String DEPLOYMENT_HASHES = "DEPLOYMENT_HASHES";
 
-    private final ContentRepository contentRepository;
-
     /** Constructor for a slave Host Controller */
-    public DeploymentRemoveHandler() {
-        this(null);
+    protected DeploymentRemoveHandler() {
     }
 
-    /**
-     * Constructor for a master Host Controller
-     *
-     * @param contentRepository the master content repository. If {@code null} this handler will function as a slave hander would.
-     */
-    public DeploymentRemoveHandler(ContentRepository contentRepository) {
-        this.contentRepository = contentRepository;
+    public static DeploymentRemoveHandler createForSlave() {
+        return new SlaveDeploymentRemoveHandler();
+    }
+
+    public static DeploymentRemoveHandler createForMaster(ContentRepository contentRepository) {
+        return new MasterDeploymentRemoveHandler(contentRepository);
     }
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         checkCanRemove(context, operation);
         final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
-        List<byte[]> deploymentHashes = DeploymentUtils.getDeploymentHash(resource);
-
-        //HACK since we don't seem to be able to read the original resource containing the removed elements from from the RUNTIME stage
-        operation.get(OPERATION_HEADERS, DEPLOYMENT_HASHES).setEmptyList();
-        for (byte[] hash : deploymentHashes) {
-            operation.get(OPERATION_HEADERS, DEPLOYMENT_HASHES).add(hash);
-        }
+        final List<byte[]> deploymentHashes = DeploymentUtils.getDeploymentHash(resource);
 
         context.removeResource(PathAddress.EMPTY_ADDRESS);
 
@@ -89,13 +79,7 @@ public class DeploymentRemoveHandler implements OperationStepHandler, Descriptio
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
                 if (context.completeStep() != ResultAction.ROLLBACK) {
-                    for (ModelNode node : operation.get(OPERATION_HEADERS, DEPLOYMENT_HASHES).asList()) {
-                        try {
-                            contentRepository.removeContent(node.asBytes());
-                        } catch (Exception e) {
-                            DEPLOYMENT_LOGGER.debugf(e, "Exception occurred removing %s", node.asBytes());
-                        }
-                    }
+                    removeContent(deploymentHashes);
                 }
             }
         }, OperationContext.Stage.RUNTIME);
@@ -123,5 +107,41 @@ public class DeploymentRemoveHandler implements OperationStepHandler, Descriptio
     @Override
     public ModelNode getModelDescription(Locale locale) {
         return DomainRootDescription.getDeploymentRemoveOperation(locale);
+    }
+
+    abstract void removeContent(List<byte[]> hashes);
+
+    private static class MasterDeploymentRemoveHandler extends DeploymentRemoveHandler {
+        final ContentRepository contentRepository;
+
+        private MasterDeploymentRemoveHandler(ContentRepository contentRepository) {
+            super();
+            this.contentRepository = contentRepository;
+        }
+
+        @Override
+        void removeContent(List<byte[]> hashes) {
+            for (byte[] hash : hashes) {
+                try {
+                    if (contentRepository != null) {
+                        contentRepository.removeContent(hash);
+                    }
+                } catch (Exception e) {
+                    DEPLOYMENT_LOGGER.debugf(e, "Exception occurred removing %s", Arrays.asList(hash));
+                }
+            }
+        }
+
+    }
+
+    private static class SlaveDeploymentRemoveHandler extends DeploymentRemoveHandler {
+
+        private SlaveDeploymentRemoveHandler() {
+        }
+
+        @Override
+        void removeContent(List<byte[]> hashes) {
+        }
+
     }
 }

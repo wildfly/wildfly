@@ -328,7 +328,7 @@ public class ServerControllerModelUtil {
         ManagementResourceRegistration deployments = root.registerSubModel(PathElement.pathElement(DEPLOYMENT), ServerDescriptionProviders.DEPLOYMENT_PROVIDER);
         DeploymentAddHandler dah = new DeploymentAddHandler(contentRepository);
         deployments.registerOperationHandler(DeploymentAddHandler.OPERATION_NAME, dah, dah, false);
-        DeploymentRemoveHandler dremh = new DeploymentRemoveHandler(contentRepository, serverEnvironment != null && serverEnvironment.isStandalone());
+        DeploymentRemoveHandler dremh = new DeploymentRemoveHandler(contentRepository);
         deployments.registerOperationHandler(DeploymentRemoveHandler.OPERATION_NAME, dremh, dremh, false);
         deployments.registerOperationHandler(DeploymentDeployHandler.OPERATION_NAME, DeploymentDeployHandler.INSTANCE, DeploymentDeployHandler.INSTANCE, false);
         deployments.registerOperationHandler(DeploymentUndeployHandler.OPERATION_NAME, DeploymentUndeployHandler.INSTANCE, DeploymentUndeployHandler.INSTANCE, false);
