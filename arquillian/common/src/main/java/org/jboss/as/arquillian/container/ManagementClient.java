@@ -349,7 +349,7 @@ public class ManagementClient {
 
     private JMXServiceURL getRemoteJMXURL() {
         try {
-            return new JMXServiceURL("service:jmx:remote://" + mgmtAddress + ":" + mgmtPort);
+            return new JMXServiceURL("service:jmx:remoting-jmx://" + mgmtAddress + ":" + mgmtPort);
         } catch (Exception e) {
             throw new RuntimeException("Could not create JMXServiceURL:" + this, e);
         }

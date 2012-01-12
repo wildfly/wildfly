@@ -898,7 +898,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         String host = "localhost";
         int port = 12345;
         String urlString = System
-                .getProperty("jmx.service.url", "service:jmx:remote://" + host + ":" + port);
+                .getProperty("jmx.service.url", "service:jmx:remoting-jmx://" + host + ":" + port);
         JMXServiceURL serviceURL = new JMXServiceURL(urlString);
 
         // TODO this is horrible - for some reason after the first test the

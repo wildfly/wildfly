@@ -557,7 +557,7 @@ public class ServerInModuleDeploymentTestCase  {
     }
 
     private void testDeployments(ModelControllerClient client, DeploymentExecutor deploymentExecutor) throws Exception {
-        final MBeanServerConnection mbeanServer = JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:remote://127.0.0.1:9999")).getMBeanServerConnection();
+        final MBeanServerConnection mbeanServer = JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:remoting-jmx://127.0.0.1:9999")).getMBeanServerConnection();
         final ObjectName name = new ObjectName("jboss.test:service=testdeployments");
 
         // NOTE: Use polling until we have jmx over remoting

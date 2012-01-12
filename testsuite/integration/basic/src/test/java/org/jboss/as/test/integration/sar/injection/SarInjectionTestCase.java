@@ -64,7 +64,7 @@ public final class SarInjectionTestCase {
     public void testMBean() throws Exception {
         final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("127.0.0.1"), 9999, getCallbackHandler());
         try {
-            final MBeanServerConnection mbeanServer = JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:remote://localhost:9999")).getMBeanServerConnection();
+            final MBeanServerConnection mbeanServer = JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:remoting-jmx://localhost:9999")).getMBeanServerConnection();
             final ObjectName objectName = new ObjectName("jboss:name=POJOService");
             Assert.assertTrue(2 == (Integer) mbeanServer.getAttribute(objectName, "Count"));
             Assert.assertTrue((Boolean) mbeanServer.getAttribute(objectName, "CreateCalled"));
