@@ -516,6 +516,64 @@ public class RolloutPlanParsingTestCase extends TestCase {
     }
 
     @Test
+    public void testEndsOnGroupComma() throws Exception {
+
+        parse(":do{ rollout groupA( prop = v ),");
+
+        assertFalse(handler.hasAddress());
+        assertTrue(handler.hasOperationName());
+        assertFalse(handler.hasProperties());
+        assertFalse(handler.endsOnAddressOperationNameSeparator());
+        assertFalse(handler.endsOnPropertyListStart());
+        assertFalse(handler.endsOnPropertySeparator());
+        assertFalse(handler.endsOnPropertyValueSeparator());
+        assertFalse(handler.endsOnNodeSeparator());
+        assertFalse(handler.endsOnNodeTypeNameSeparator());
+        assertFalse(handler.endsOnSeparator());
+        assertFalse(handler.endsOnHeaderListStart());
+        assertFalse(handler.isRequestComplete());
+
+        assertTrue(handler.hasHeaders());
+
+        final List<ParsedOperationRequestHeader> headers = handler.getHeaders();
+        assertEquals(1, headers.size());
+        final ParsedOperationRequestHeader header = headers.get(0);
+        assertTrue(header instanceof ParsedRolloutPlanHeader);
+        final ParsedRolloutPlanHeader rollout = (ParsedRolloutPlanHeader) header;
+        assertTrue(rollout.endsOnGroupSeparator());
+        assertEquals(31, rollout.getLastSeparatorIndex());
+    }
+
+    @Test
+    public void testEndsOnGroupConcurrent() throws Exception {
+
+        parse(":do{ rollout groupA( prop = v ) ^");
+
+        assertFalse(handler.hasAddress());
+        assertTrue(handler.hasOperationName());
+        assertFalse(handler.hasProperties());
+        assertFalse(handler.endsOnAddressOperationNameSeparator());
+        assertFalse(handler.endsOnPropertyListStart());
+        assertFalse(handler.endsOnPropertySeparator());
+        assertFalse(handler.endsOnPropertyValueSeparator());
+        assertFalse(handler.endsOnNodeSeparator());
+        assertFalse(handler.endsOnNodeTypeNameSeparator());
+        assertFalse(handler.endsOnSeparator());
+        assertFalse(handler.endsOnHeaderListStart());
+        assertFalse(handler.isRequestComplete());
+
+        assertTrue(handler.hasHeaders());
+
+        final List<ParsedOperationRequestHeader> headers = handler.getHeaders();
+        assertEquals(1, headers.size());
+        final ParsedOperationRequestHeader header = headers.get(0);
+        assertTrue(header instanceof ParsedRolloutPlanHeader);
+        final ParsedRolloutPlanHeader rollout = (ParsedRolloutPlanHeader) header;
+        assertTrue(rollout.endsOnGroupSeparator());
+        assertEquals(32, rollout.getLastSeparatorIndex());
+    }
+
+    @Test
     public void testNonConcurrentGroups() throws Exception {
 
         parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout " +

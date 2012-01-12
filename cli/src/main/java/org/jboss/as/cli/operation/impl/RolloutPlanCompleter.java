@@ -54,6 +54,16 @@ public class RolloutPlanCompleter implements CommandLineCompleter {
         }
         final ParsedRolloutPlanHeader rollout = (ParsedRolloutPlanHeader) lastHeader;
 
+        if(rollout.endsOnGroupSeparator()) {
+            final List<String> serverGroups = Util.getServerGroups(ctx.getModelControllerClient());
+            for(String group : serverGroups) {
+                if(!rollout.containsGroup(group)) {
+                    candidates.add(group);
+                }
+            }
+            return buffer.length();
+        }
+
         final SingleRolloutPlanGroup lastGroup = rollout.getLastGroup();
         if(lastGroup == null) {
             return -1;
@@ -64,9 +74,9 @@ public class RolloutPlanCompleter implements CommandLineCompleter {
         }
 
         if(lastGroup.endsOnPropertyListStart()) {
-            candidates.add(Util.MAX_FAILED_SERVERS);
-            candidates.add(Util.MAX_FAILURE_PERCENTAGE);
-            candidates.add(Util.ROLLING_TO_SERVERS);
+            candidates.add(Util.MAX_FAILED_SERVERS + '=');
+            candidates.add(Util.MAX_FAILURE_PERCENTAGE + '=');
+            candidates.add(Util.ROLLING_TO_SERVERS + '=');
             return buffer.length();
         }
 
@@ -84,24 +94,24 @@ public class RolloutPlanCompleter implements CommandLineCompleter {
                 return buffer.length();
             } else if(lastGroup.endsOnPropertySeparator()) {
                 if(!lastGroup.hasProperty(Util.MAX_FAILED_SERVERS)) {
-                    candidates.add(Util.MAX_FAILED_SERVERS);
+                    candidates.add(Util.MAX_FAILED_SERVERS + '=');
                 }
                 if(!lastGroup.hasProperty(Util.MAX_FAILURE_PERCENTAGE)) {
-                    candidates.add(Util.MAX_FAILURE_PERCENTAGE);
+                    candidates.add(Util.MAX_FAILURE_PERCENTAGE + '=');
                 }
                 if(!lastGroup.hasProperty(Util.ROLLING_TO_SERVERS)) {
-                    candidates.add(Util.ROLLING_TO_SERVERS);
+                    candidates.add(Util.ROLLING_TO_SERVERS + '=');
                 }
                 return lastGroup.getLastSeparatorIndex() + 1;
             } else {
                 final String propName = lastGroup.getLastPropertyName();
                 if(Util.MAX_FAILED_SERVERS.startsWith(propName)) {
-                    candidates.add(Util.MAX_FAILED_SERVERS);
+                    candidates.add(Util.MAX_FAILED_SERVERS + '=');
                 }
                 if(Util.MAX_FAILURE_PERCENTAGE.startsWith(propName)) {
-                    candidates.add(Util.MAX_FAILURE_PERCENTAGE);
+                    candidates.add(Util.MAX_FAILURE_PERCENTAGE + '=');
                 } else if(Util.ROLLING_TO_SERVERS.startsWith(propName)) {
-                    candidates.add(Util.ROLLING_TO_SERVERS);
+                    candidates.add(Util.ROLLING_TO_SERVERS + '=');
                 }
             }
             return lastGroup.getLastChunkIndex();

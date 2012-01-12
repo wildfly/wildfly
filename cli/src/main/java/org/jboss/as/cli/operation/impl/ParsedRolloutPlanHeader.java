@@ -23,8 +23,10 @@ package org.jboss.as.cli.operation.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
@@ -40,12 +42,21 @@ public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
 
     private static final String HEADER_NAME = "rollout";
 
+    private static final int SEPARATOR_GROUP_SEQUENCE = 1;
+    private static final int SEPARATOR_GROUP_CONCURRENT = 2;
+
     private final String planId;
     private String planRef;
     private List<RolloutPlanGroup> groups;
     private Map<String,String> props;
 
     private SingleRolloutPlanGroup lastGroup;
+    private String lastPropertyName;
+    private String lastPropertyValue;
+    private int separator = -1;
+    private int lastSeparatorIndex = -1;
+
+    private Set<String> mentionedGroups;
 
     public ParsedRolloutPlanHeader() {
         this(null);
@@ -81,7 +92,7 @@ public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
         this.planRef = planRef;
     }
 
-    public void addGroup(RolloutPlanGroup group) {
+    public void addGroup(SingleRolloutPlanGroup group) {
         if(group == null) {
             throw new IllegalArgumentException("group is null");
         }
@@ -92,10 +103,15 @@ public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
             groups = new ArrayList<RolloutPlanGroup>();
         }
         groups.add(group);
-        this.lastGroup = (SingleRolloutPlanGroup) group;
+        this.lastGroup = group;
+        separator = -1;
+        if(mentionedGroups == null) {
+            mentionedGroups = new HashSet<String>();
+        }
+        mentionedGroups.add(group.getGroupName());
     }
 
-    public void addConcurrentGroup(RolloutPlanGroup group) {
+    public void addConcurrentGroup(SingleRolloutPlanGroup group) {
         if(group == null) {
             throw new IllegalArgumentException("group is null");
         }
@@ -115,7 +131,16 @@ public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
             concurrent.addGroup(group);
             groups.set(lastIndex, concurrent);
         }
-        this.lastGroup = (SingleRolloutPlanGroup) group;
+        this.lastGroup = group;
+        this.separator = -1;
+        if(mentionedGroups == null) {
+            mentionedGroups = new HashSet<String>();
+        }
+        mentionedGroups.add(group.getGroupName());
+    }
+
+    public boolean containsGroup(String name) {
+        return mentionedGroups == null ? false : mentionedGroups.contains(name);
     }
 
     // TODO perhaps add a list of allowed properties and their values
@@ -132,10 +157,33 @@ public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
         props.put(name, value);
 
         this.lastGroup = null;
+        this.separator = -1;
     }
 
     public String getProperty(String name) {
         return props == null ? null : props.get(name);
+    }
+
+    public boolean hasProperties() {
+        return props != null;
+    }
+
+    public void groupSequenceSeparator(int index) {
+        separator = SEPARATOR_GROUP_SEQUENCE;
+        lastSeparatorIndex = index;
+    }
+
+    public void groupConcurrentSeparator(int index) {
+        separator = SEPARATOR_GROUP_CONCURRENT;
+        lastSeparatorIndex = index;
+    }
+
+    public boolean endsOnGroupSeparator() {
+        return separator == SEPARATOR_GROUP_SEQUENCE || separator == SEPARATOR_GROUP_CONCURRENT;
+    }
+
+    public int getLastSeparatorIndex() {
+        return lastSeparatorIndex;
     }
 
     /* (non-Javadoc)
