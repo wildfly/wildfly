@@ -272,6 +272,7 @@
         <module>protocol</module>
         <module>remoting</module>
         <module>server</module>
+        <module>subsystem-test</module>
         <module>threads</module>
     </modules>
 
@@ -5877,7 +5878,6 @@
                 <module>sar</module>
                 <module>security</module>
                 <module>spec-api</module>
-                <module>subsystem-test</module>
                 <module>transactions</module>
                 <module>web</module>
                 <module>webservices</module>
