@@ -26,9 +26,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -183,6 +185,7 @@ public class OperationDialog extends JDialog {
      */
     private class RequestProp {
         private String name;
+        private ModelNode props;
         private ModelType type;
         private String description;
         private boolean required = false;
@@ -200,6 +203,7 @@ public class OperationDialog extends JDialog {
          */
         public RequestProp(String name, String description, boolean required) {
             this.name = name;
+            this.props = new ModelNode();
             this.description = description;
             this.type = ModelType.STRING;
             this.required = required;
@@ -208,6 +212,7 @@ public class OperationDialog extends JDialog {
 
         public RequestProp(String name, ModelNode props) {
             this.name = name;
+            this.props = props;
             this.type = props.get("type").asType();
 
             if (props.get("description").isDefined()) {
@@ -251,6 +256,10 @@ public class OperationDialog extends JDialog {
                 return Boolean.toString(((AbstractButton)valueComponent).isSelected());
             }
 
+            if (valueComponent instanceof JComboBox) {
+                return ((JComboBox)valueComponent).getSelectedItem().toString();
+            }
+
             return null;
         }
 
@@ -264,19 +273,36 @@ public class OperationDialog extends JDialog {
                 }
                 comp.setToolTipText(description);
                 this.valueComponent = comp;
+            } else if (props.get("allowed").isDefined()) {
+                JComboBox comboBox = makeJComboBox(props.get("allowed").asList());
+                this.valueComponent = comboBox;
+                if (defaultValue != null) comboBox.setSelectedItem(defaultValue.asString());
+                comp = makeComponentPanel();
             } else {
-                JPanel panel = new JPanel(new FlowLayout());
-                JLabel label = new JLabel(name);
-                label.setToolTipText(description);
                 JTextField textField = new JTextField(40);
                 this.valueComponent = textField;
                 if (defaultValue != null) textField.setText(defaultValue.asString());
-                panel.add(label);
-                panel.add(textField);
-                comp = panel;
+                comp = makeComponentPanel();
             }
 
             this.inputComponent = comp;
+        }
+
+        private JPanel makeComponentPanel() {
+            JPanel panel = new JPanel(new FlowLayout());
+            JLabel label = new JLabel(name);
+            label.setToolTipText(description);
+            panel.add(label);
+            panel.add(valueComponent);
+            return panel;
+        }
+
+        private JComboBox makeJComboBox(List<ModelNode> values) {
+            Vector valueVector = new Vector(values.size());
+            for (ModelNode node : values) {
+                valueVector.add(node.asString());
+            }
+            return new JComboBox(valueVector);
         }
 
         // fill in form fields for write-attribute when an attribute node is selected.
