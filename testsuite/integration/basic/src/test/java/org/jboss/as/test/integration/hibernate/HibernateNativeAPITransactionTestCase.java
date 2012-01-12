@@ -62,7 +62,7 @@ public class HibernateNativeAPITransactionTestCase {
 
     public static final String testmapping = "<?xml version=\"1.0\"?>" + "<!DOCTYPE hibernate-mapping PUBLIC "
             + "\"-//Hibernate/Hibernate Mapping DTD 3.0//EN\" " + "\"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd\">"
-            + "<hibernate-mapping package=\"org.jboss.as.test.integration.nonjpa.hibernate\">"
+            + "<hibernate-mapping package=\"org.jboss.as.test.integration.hibernate\">"
             + "<class name=\"org.jboss.as.test.integration.hibernate.Student\" table=\"STUDENT\">"
             + "<id name=\"studentId\" column=\"student_id\">" + "<generator class=\"native\"/>" + "</id>"
             + "<property name=\"firstName\" column=\"first_name\"/>" + "<property name=\"lastName\" column=\"last_name\"/>"
@@ -86,10 +86,7 @@ public class HibernateNativeAPITransactionTestCase {
 
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, ARCHIVE_NAME + ".ear");
         // add required jars as manifest dependencies
-        ear.addAsManifestResource(
-                new StringAsset(
-                        "Dependencies: javax.xml.bind.api export,org.dom4j export,org.javassist export,org.antlr export,org.apache.commons.collections export,org.jboss.jandex export,org.hibernate.envers export,org.hibernate\n"),
-                "MANIFEST.MF");
+        ear.addAsManifestResource(new StringAsset("Dependencies: org.javassist,org.hibernate\n"), "MANIFEST.MF");
 
         JavaArchive lib = ShrinkWrap.create(JavaArchive.class, "beans.jar");
         lib.addClasses(SFSBHibernateTransaction.class);

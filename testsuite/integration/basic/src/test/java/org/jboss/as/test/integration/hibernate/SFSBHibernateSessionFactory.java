@@ -22,7 +22,6 @@
 
 package org.jboss.as.test.integration.hibernate;
 
-import java.io.File;
 import java.util.Properties;
 
 import javax.ejb.Stateful;
@@ -50,7 +49,6 @@ import org.hibernate.service.ServiceRegistryBuilder;
 public class SFSBHibernateSessionFactory {
 
     private static SessionFactory sessionFactory;
-    private static Configuration configuration;
     private static ServiceRegistryBuilder builder;
     private static ServiceRegistry serviceRegistry;
 
@@ -61,16 +59,18 @@ public class SFSBHibernateSessionFactory {
         // static {
         try {
 
-            System.out.println("Current dir : " + (new File(".")).getCanonicalPath());
-
             // prepare the configuration
             Configuration configuration = new Configuration().setProperty(AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS,
                     "true");
             configuration.setProperty(Environment.HBM2DDL_AUTO, "create-drop");
             configuration.setProperty(Environment.DATASOURCE, "java:jboss/datasources/ExampleDS");
+            configuration.setProperty("hibernate.listeners.envers.autoRegister", "false");
+            // configuration.configure("hibernate.cfg.xml");
+
             // fetch the properties
             Properties properties = new Properties();
             properties.putAll(configuration.getProperties());
+
             Environment.verifyProperties(properties);
             ConfigurationHelper.resolvePlaceHolders(properties);
 
@@ -78,6 +78,7 @@ public class SFSBHibernateSessionFactory {
             final BootstrapServiceRegistryBuilder bootstrapbuilder = new BootstrapServiceRegistryBuilder();
             builder = new ServiceRegistryBuilder(bootstrapbuilder.build()).applySettings(properties);
             serviceRegistry = builder.buildServiceRegistry();
+
             // Create the SessionFactory from Configuration
             sessionFactory = configuration.configure("hibernate.cfg.xml").buildSessionFactory(serviceRegistry);
 
@@ -92,7 +93,6 @@ public class SFSBHibernateSessionFactory {
     // create student
     public Student createStudent(String firstName, String lastName, String address, int id) {
 
-        // setupConfig();
         Student student = new Student();
         student.setStudentId(id);
         student.setAddress(address);

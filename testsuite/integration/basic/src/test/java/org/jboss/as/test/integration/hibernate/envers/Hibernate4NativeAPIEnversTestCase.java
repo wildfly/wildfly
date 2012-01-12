@@ -53,25 +53,16 @@ public class Hibernate4NativeAPIEnversTestCase {
     private static final String ARCHIVE_NAME = "hibernate4native_test";
 
     public static final String hibernate_cfg = "<?xml version='1.0' encoding='utf-8'?>"
-            + "<!DOCTYPE hibernate-configuration PUBLIC "
-            + "\"//Hibernate/Hibernate Configuration DTD 3.0//EN\" "
+            + "<!DOCTYPE hibernate-configuration PUBLIC " + "\"//Hibernate/Hibernate Configuration DTD 3.0//EN\" "
             + "\"http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd\">"
-            + "<hibernate-configuration><session-factory>"
-            + "<property name=\"show_sql\">true</property>"
+            + "<hibernate-configuration><session-factory>" + "<property name=\"show_sql\">true</property>"
             + "<property name=\"current_session_context_class\">thread</property>"
-            + "<!-- Hibernate ENVERS Listener Configuration -->"
-            + "<property name=\"hibernate.ejb.event.post-insert\">org.hibernate.ejb.event.EJB3PostInsertEventListener,org.hibernate.envers.event.AuditEventListener</property>"
-            + "<property name=\"hibernate.ejb.event.post-update\">org.hibernate.ejb.event.EJB3PostUpdateEventListener,org.hibernate.envers.event.AuditEventListener</property>"
-            + "<property name=\"hibernate.ejb.event.post-delete\">org.hibernate.ejb.event.EJB3PostDeleteEventListener,org.hibernate.envers.event.AuditEventListener</property>"
-            + "<property name=\"hibernate.ejb.event.pre-collection-update\">org.hibernate.envers.event.AuditEventListener</property>"
-            + "<property name=\"hibernate.ejb.event.pre-collection-update\">org.hibernate.envers.event.AuditEventListener</property>"
-            + "<property name=\"hibernate.ejb.event.pre-collection-update\">org.hibernate.envers.event.AuditEventListener</property>"
             + "<mapping resource=\"testmapping.hbm.xml\"/>" + "</session-factory></hibernate-configuration>";
 
     public static final String testmapping = "<?xml version=\"1.0\"?>" + "<!DOCTYPE hibernate-mapping PUBLIC "
             + "\"-//Hibernate/Hibernate Mapping DTD 3.0//EN\" " + "\"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd\">"
-            + "<hibernate-mapping package=\"org.jboss.as.test.integration.nonjpa.hibernate\">"
-            + "<class name=\"org.jboss.as.test.integration.hibernate.envers.Student\" table=\"STUDENT\">"
+            + "<hibernate-mapping package=\"org.jboss.as.test.integration.hibernate\">"
+            + "<class name=\"org.jboss.as.test.integration.hibernate.envers.StudentAudited\" table=\"STUDENT\">"
             + "<id name=\"studentId\" column=\"student_id\">" + "<generator class=\"native\"/>" + "</id>"
             + "<property name=\"firstName\" column=\"first_name\"/>" + "<property name=\"lastName\" column=\"last_name\"/>"
             + "<property name=\"address\"/>"
@@ -94,17 +85,14 @@ public class Hibernate4NativeAPIEnversTestCase {
 
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, ARCHIVE_NAME + ".ear");
         // add required jars as manifest dependencies
-        ear.addAsManifestResource(
-                new StringAsset(
-                        "Dependencies: javax.xml.bind.api export,org.dom4j export,org.javassist export,org.antlr export,org.apache.commons.collections export,org.jboss.jandex export,org.hibernate.envers export,org.hibernate\n"),
-                "MANIFEST.MF");
+        ear.addAsManifestResource(new StringAsset("Dependencies: org.hibernate.envers export,org.hibernate\n"), "MANIFEST.MF");
 
         JavaArchive lib = ShrinkWrap.create(JavaArchive.class, "beans.jar");
-        lib.addClasses(SFSBHibernateSessionFactory.class);
+        lib.addClasses(SFSBHibernateEnversSessionFactory.class);
         ear.addAsModule(lib);
 
         lib = ShrinkWrap.create(JavaArchive.class, "entities.jar");
-        lib.addClasses(Student.class);
+        lib.addClasses(StudentAudited.class);
         lib.addAsResource(new StringAsset(testmapping), "testmapping.hbm.xml");
         lib.addAsResource(new StringAsset(hibernate_cfg), "hibernate.cfg.xml");
         ear.addAsLibraries(lib);
@@ -158,12 +146,13 @@ public class Hibernate4NativeAPIEnversTestCase {
 
     @Test
     public void testEnversonHibernateNativeAPI() throws Exception {
-        SFSBHibernateSessionFactory sfsb = lookup("SFSBHibernateSessionFactory", SFSBHibernateSessionFactory.class);
+        SFSBHibernateEnversSessionFactory sfsb = lookup("SFSBHibernateEnversSessionFactory",
+                SFSBHibernateEnversSessionFactory.class);
         // setup Configuration and SessionFactory
         sfsb.setupConfig();
-        Student s1 = sfsb.createStudent("MADHUMITA", "SADHUKHAN", "99 Purkynova REDHAT BRNO CZ", 1);
-        Student s2 = sfsb.updateStudent("REDHAT Brisbane,Australia", 1);
-        Student st = sfsb.retrieveOldStudentVersion(s2.getStudentId());
+        StudentAudited s1 = sfsb.createStudent("MADHUMITA", "SADHUKHAN", "99 Purkynova REDHAT BRNO CZ", 1);
+        StudentAudited s2 = sfsb.updateStudent("REDHAT Brisbane,Australia", 1);
+        StudentAudited st = sfsb.retrieveOldStudentVersion(s2.getStudentId());
         assertTrue("address read from audit tables after envers implementation is 99 Purkynova REDHAT BRNO CZ",
                 "99 Purkynova REDHAT BRNO CZ".equals(st.getAddress()));
     }

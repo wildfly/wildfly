@@ -21,7 +21,6 @@
  */
 package org.jboss.as.test.integration.hibernate;
 
-import java.io.File;
 import java.util.Properties;
 
 import javax.ejb.Stateful;
@@ -61,13 +60,13 @@ public class SFSBHibernateTransaction {
         // static {
         try {
 
-            System.out.println("Current dir : " + (new File(".")).getCanonicalPath());
-
             // prepare the configuration
             Configuration configuration = new Configuration().setProperty(AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS,
                     "true");
             configuration.setProperty(Environment.HBM2DDL_AUTO, "create-drop");
             configuration.setProperty(Environment.DATASOURCE, "java:jboss/datasources/ExampleDS");
+            configuration.setProperty("hibernate.listeners.envers.autoRegister", "false");
+
             // fetch the properties
             Properties properties = new Properties();
             properties.putAll(configuration.getProperties());
