@@ -19,6 +19,8 @@
 package org.jboss.as.cli.gui;
 
 import java.awt.event.ActionEvent;
+import java.util.Arrays;
+import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JPopupMenu;
@@ -32,7 +34,8 @@ import org.jboss.dmr.ModelNode;
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
 public class OperationMenu extends JPopupMenu {
-
+    private static final String[] genericOps = {"add", "read-operation-description", "read-resource-description", "read-operation-names"};
+    private static final List<String> genericOpList = Arrays.asList(genericOps);
     private CommandExecutor executor;
     private JTree invoker;
     private JTextField cmdText;
@@ -60,6 +63,7 @@ public class OperationMenu extends JPopupMenu {
 
             for (ModelNode name : opNames.get("result").asList()) {
                 String strName = name.asString();
+                if (node.isGeneric() && !genericOpList.contains(strName)) continue;
                 if (node.isLeaf() && !strName.equals("write-attribute")) continue;
                 ModelNode opDescription = getResourceDescription(addressPath, strName);
                 add(new OperationAction(node, strName, opDescription));

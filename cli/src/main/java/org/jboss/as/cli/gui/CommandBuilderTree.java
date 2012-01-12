@@ -59,10 +59,12 @@ public class CommandBuilderTree extends JTree {
 
         try {
             ModelNode readResource = GuiMain.getExecutor().doCommand(node.addressPath() + ":read-resource-description");
-            if (!node.isLeaf()) {
+            UserObject usrObj = (UserObject)node.getUserObject();
+            if (node.isGeneric()) {
+                currentDescription = "Used for generic operations on " + usrObj.getName() + ", such as 'add'";
+            } else if (!node.isLeaf()) {
                 currentDescription = readResource.get("result", "description").asString();
             } else {
-                UserObject usrObj = (UserObject)node.getUserObject();
                 ModelNode description = readResource.get("result", "attributes", usrObj.getName(), "description");
                 if (description.isDefined()) {
                     currentDescription = description.asString();
