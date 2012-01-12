@@ -61,7 +61,7 @@ public class SarTestCase {
     public void testMBean() throws Exception {
         ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("127.0.0.1"), 9999, getCallbackHandler());
         try {
-            MBeanServerConnection mbeanServer = JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:remote://127.0.0.1:9999")).getMBeanServerConnection();
+            MBeanServerConnection mbeanServer = JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:remoting-jmx://127.0.0.1:9999")).getMBeanServerConnection();
             ObjectName objectName = new ObjectName("jboss:name=test,type=config");
             PollingUtils.retryWithTimeout(10000, new PollingUtils.WaitForMBeanTask(mbeanServer, objectName));
             mbeanServer.getAttribute(objectName, "IntervalSeconds");

@@ -183,7 +183,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         String host = "localhost";
         int port = 12345;
         String urlString = System.getProperty("jmx.service.url",
-            "service:jmx:remote://" + host + ":" + port);
+            "service:jmx:remoting-jmx://" + host + ":" + port);
         JMXServiceURL serviceURL = new JMXServiceURL(urlString);
 
         MBeanServerConnection connection = null;

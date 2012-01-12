@@ -139,7 +139,7 @@ public class SarWithinEarTestCase {
     }
 
     private MBeanServerConnection getMBeanServerConnection() throws IOException {
-        return JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:remote://localhost:9999")).getMBeanServerConnection();
+        return JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:remoting-jmx://localhost:9999")).getMBeanServerConnection();
 
     }
 }
