@@ -72,11 +72,18 @@ interface JdrLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id=14503, value="JDR python interpreter encountered an exception.")
     void pythonExceptionEncountered(@Cause Throwable cause);
-    
+
     /**
-     * The sosreport python library threw an exception
+     * JDR was unable to decode a path URL for standarization across platforms.
      */
     @LogMessage(level = WARN)
     @Message(id=14504, value="Unable to decode a url while creating JDR report.")
     void urlDecodeExceptionEncountered(@Cause Throwable cause);
+
+    /**
+     * JDR was unable to decode a path URL for standarization across platforms.
+     */
+    @LogMessage(level = WARN)
+    @Message(id=14505, value="Plugin contrib location is not a directory.  Ignoring.")
+    void contribNotADirectory();
 }

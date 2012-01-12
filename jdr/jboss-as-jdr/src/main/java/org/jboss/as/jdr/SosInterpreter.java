@@ -71,7 +71,7 @@ public class SosInterpreter {
         }
 
         String pyLocation = getPythonScriptLocation();
-        ROOT_LOGGER.debug("Location of JDR scripts: " + pyLocation);
+        ROOT_LOGGER.debug("Location of standard JDR scripts: " + pyLocation);
 
         String locationDir = getReportLocationDir();
 
@@ -82,7 +82,7 @@ public class SosInterpreter {
         PythonInterpreter interpreter = new PythonInterpreter();
 
         try {
-            SoSReport reporter = new SoSReport(interpreter, pyLocation);
+            SoSReport reporter = new SoSReport(interpreter, pyLocation, homeDir);
             reporter.setUsername(username);
             reporter.setPassword(password);
             reporter.setHostname(host);
@@ -129,7 +129,7 @@ public class SosInterpreter {
     }
 
     public void setControllerClient(ModelControllerClient controllerClient) {
-       this.controllerClient = controllerClient;
+        this.controllerClient = controllerClient;
     }
 
     /**
@@ -173,7 +173,7 @@ public class SosInterpreter {
      * Decodes a UTF-8 directory path obtained via a URL and "fixes" '\' characters
      * for proper quoting. This is to fix up windows paths. If an the path's encoding
      * is unsupported, a warning will be issued and separator replacement will proceed.
-     * 
+     *
      * @param path to be decoded
      * @return "cleaned" path
      */
