@@ -2,5 +2,5 @@
 <!DOCTYPE jboss-web PUBLIC "-//JBoss//DTD Web Application 2.3V2//EN" "http://www.jboss.org/j2ee/dtd/jboss-web_3_2.dtd">
 <jboss-web>
     <virtual-host>context-host</virtual-host>
-    <context-root />
+    <context-root>/</context-root>
 </jboss-web>
