@@ -70,8 +70,8 @@ import java.util.concurrent.ExecutorService;
 import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.HashUtil;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.Attribute;

@@ -20,17 +20,12 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.host.controller;
+package org.jboss.as.server.file.repository.impl;
 
 import java.io.File;
-import java.lang.annotation.Target;
 
-import org.jboss.as.controller.HashUtil;
-import org.jboss.as.domain.controller.FileRepository;
+import org.jboss.as.server.file.repository.api.HostFileRepository;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -41,16 +36,15 @@ import org.jboss.msc.service.StopContext;
  *
  * @author John Bailey
  */
-public class LocalFileRepository implements FileRepository, Service<FileRepository> {
+public class LocalFileRepository extends LocalDeploymentFileRepository implements HostFileRepository, Service<HostFileRepository> {
 
     private final File repositoryRoot;
-    private final File deploymentRoot;
     private final File configurationRoot;
 
-    public LocalFileRepository(final HostControllerEnvironment environment) {
-        this.repositoryRoot = environment.getDomainBaseDir();
-        this.deploymentRoot = environment.getDomainDeploymentDir();
-        this.configurationRoot = environment.getDomainConfigurationDir();
+    public LocalFileRepository(final File repositoryRoot, final File deploymentRoot, final File configurationRoot) {
+        super(deploymentRoot);
+        this.repositoryRoot = repositoryRoot;
+        this.configurationRoot = configurationRoot;
     }
 
     /** {@inheritDoc} */
@@ -93,7 +87,7 @@ public class LocalFileRepository implements FileRepository, Service<FileReposito
     }
 
     @Override
-    public FileRepository getValue() throws IllegalStateException, IllegalArgumentException {
+    public HostFileRepository getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
 }

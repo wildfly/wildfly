@@ -20,9 +20,11 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.controller;
+package org.jboss.as.server.file.repository.impl;
 
 import java.io.File;
+
+import org.jboss.as.server.file.repository.api.HostFileRepository;
 
 
 
@@ -31,11 +33,11 @@ import java.io.File;
  *
  * @author Jason T. Greene
  */
-public class FallbackRepository implements FileRepository {
-    private final FileRepository primary;
-    private final FileRepository secondary;
+public class FallbackRepository implements HostFileRepository {
+    private final HostFileRepository primary;
+    private final HostFileRepository secondary;
 
-    public FallbackRepository(final FileRepository primary, final FileRepository secondary) {
+    public FallbackRepository(final HostFileRepository primary, final HostFileRepository secondary) {
         this.primary = primary;
         this.secondary = secondary;
     }

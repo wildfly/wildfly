@@ -73,7 +73,6 @@ import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.domain.controller.DomainContentRepository;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainModelUtil;
-import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.SlaveRegistrationException;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
@@ -96,6 +95,8 @@ import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.BootstrapListener;
 import org.jboss.as.server.RuntimeExpressionResolver;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
+import org.jboss.as.server.file.repository.api.HostFileRepository;
+import org.jboss.as.server.file.repository.impl.LocalFileRepository;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -122,7 +123,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private final HostControllerEnvironment environment;
     private final HostRunningModeControl runningModeControl;
     private final LocalHostControllerInfoImpl hostControllerInfo;
-    private final FileRepository localFileRepository;
+    private final HostFileRepository localFileRepository;
     private final RemoteFileRepository remoteFileRepository;
     private final InjectedValue<ProcessControllerConnectionService> injectedProcessControllerConnection = new InjectedValue<ProcessControllerConnectionService>();
     private final Map<String, ProxyController> hostProxies;
@@ -181,7 +182,8 @@ public class DomainModelControllerService extends AbstractControllerService impl
         this.runningModeControl = runningModeControl;
         this.processState = processState;
         this.hostControllerInfo = hostControllerInfo;
-        this.localFileRepository = new LocalFileRepository(environment);
+        this.localFileRepository = new LocalFileRepository(environment.getDomainBaseDir(), environment.getDomainDeploymentDir(), environment.getDomainConfigurationDir());
+
         this.remoteFileRepository = new RemoteFileRepository(localFileRepository);
         this.contentRepository = contentRepository;
         this.hostProxies = hostProxies;
@@ -268,12 +270,12 @@ public class DomainModelControllerService extends AbstractControllerService impl
     }
 
     @Override
-    public FileRepository getLocalFileRepository() {
+    public HostFileRepository getLocalFileRepository() {
         return localFileRepository;
     }
 
     @Override
-    public FileRepository getRemoteFileRepository() {
+    public HostFileRepository getRemoteFileRepository() {
         if (hostControllerInfo.isMasterDomainController()) {
             throw MESSAGES.cannotAccessRemoteFileRepository();
         }

@@ -26,7 +26,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.controller.FileRepository;
+import org.jboss.as.server.file.repository.api.HostFileRepository;
 import org.jboss.dmr.ModelNode;
 
 import java.util.Locale;
@@ -57,9 +57,9 @@ public class ServerGroupDeploymentAddHandler implements OperationStepHandler, De
         return op;
     }
 
-    private final FileRepository fileRepository;
+    private final HostFileRepository fileRepository;
 
-    public ServerGroupDeploymentAddHandler(final FileRepository fileRepository) {
+    public ServerGroupDeploymentAddHandler(final HostFileRepository fileRepository) {
         this.fileRepository = fileRepository;
     }
 

@@ -108,7 +108,6 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainModelUtil;
-import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
 import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
@@ -126,6 +125,7 @@ import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition
 import org.jboss.as.security.vault.RuntimeVaultReader;
 import org.jboss.as.server.ServerControllerModelUtil;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
+import org.jboss.as.server.file.repository.api.HostFileRepository;
 import org.jboss.as.server.parsing.StandaloneXml;
 import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
 import org.jboss.as.server.services.security.VaultAddHandler;
@@ -729,7 +729,7 @@ public class ParseAndMarshalModelsTestCase {
         }
     }
 
-    private static class MockFileRepository implements FileRepository {
+    private static class MockFileRepository implements HostFileRepository {
 
         private static final MockFileRepository INSTANCE = new MockFileRepository();
 
@@ -775,11 +775,11 @@ public class ParseAndMarshalModelsTestCase {
             return null;
         }
 
-        public FileRepository getLocalFileRepository() {
+        public HostFileRepository getLocalFileRepository() {
             return null;
         }
 
-        public FileRepository getRemoteFileRepository() {
+        public HostFileRepository getRemoteFileRepository() {
             return null;
         }
 
