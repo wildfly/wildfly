@@ -251,13 +251,15 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
 
     @Override
     public void groupMembershipNotifierUnregistered(final GroupMembershipNotifier groupMembershipNotifier) {
-        try {
-            logger.debug("Received cluster removal notification for cluster " + groupMembershipNotifier.getGroupName());
-            this.sendClusterRemovedMessage(groupMembershipNotifier);
-        } catch (IOException ioe) {
-            logger.warn("Could not send a cluster removal message for cluster: " + groupMembershipNotifier.getGroupName()
-                    + " to the client on channel " + channel, ioe);
-        }
+        // A group membership notifier being unregistered on a node *doesn't* mean that the entire cluster
+        // consisting of many nodes, has been removed
+//        try {
+//            logger.debug("Received cluster removal notification for cluster " + groupMembershipNotifier.getGroupName());
+//            this.sendClusterRemovedMessage(groupMembershipNotifier);
+//        } catch (IOException ioe) {
+//            logger.warn("Could not send a cluster removal message for cluster: " + groupMembershipNotifier.getGroupName()
+//                    + " to the client on channel " + channel, ioe);
+//        }
     }
 
     private void sendNewClusterFormedMessage(final Iterable<GroupMembershipNotifier> groupMembershipNotifiers) throws IOException {
