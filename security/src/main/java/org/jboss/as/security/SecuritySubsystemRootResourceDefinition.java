@@ -119,7 +119,7 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
 
         @Override
         protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-            log.info("Activating Security Subsystem");
+            SecurityLogger.ROOT_LOGGER.activatingSecuritySubsystem();
 
             final ServiceTarget target = context.getServiceTarget();
 

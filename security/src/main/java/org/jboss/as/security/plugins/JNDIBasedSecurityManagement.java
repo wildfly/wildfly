@@ -35,6 +35,7 @@ import javax.security.auth.callback.CallbackHandler;
 import org.infinispan.Cache;
 import org.infinispan.config.Configuration;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.jboss.as.security.SecurityMessages;
 import org.jboss.logging.Logger;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.AuthorizationManager;
@@ -324,7 +325,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
     private AuthenticationManager createAuthenticationManager(String securityDomain) throws Exception {
         int i = callbackHandlerClassName.lastIndexOf(":");
         if (i == -1)
-            throw new IllegalArgumentException("Missing module name for the default-callback-handler-class-name attribute");
+            throw SecurityMessages.MESSAGES.missingModuleName("default-callback-handler-class-name attribute");
         String moduleSpec = callbackHandlerClassName.substring(0, i);
         String className = callbackHandlerClassName.substring(i + 1);
         Class<?> callbackHandlerClazz = SecurityActions.getModuleClassLoader(moduleSpec).loadClass(className);
@@ -332,7 +333,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
 
         i = authenticationManagerClassName.lastIndexOf(":");
         if (i == -1)
-            throw new IllegalArgumentException("Missing module name for the authentication-manager-class-name attribute");
+            throw SecurityMessages.MESSAGES.missingModuleName("authentication-manager-class-name attribute");
         moduleSpec = authenticationManagerClassName.substring(0, i);
         className = authenticationManagerClassName.substring(i + 1);
         Class<?> clazz = SecurityActions.getModuleClassLoader(moduleSpec).loadClass(className);
@@ -350,7 +351,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
     private AuthorizationManager createAuthorizationManager(String securityDomain) throws Exception {
         int i = authorizationManagerClassName.lastIndexOf(":");
         if (i == -1)
-            throw new IllegalArgumentException("Missing module name for the authorization manager class");
+            throw SecurityMessages.MESSAGES.missingModuleName("authorization manager class");
         String moduleSpec = authorizationManagerClassName.substring(0, i);
         String className = authorizationManagerClassName.substring(i + 1);
         Class<?> clazz = SecurityActions.getModuleClassLoader(moduleSpec).loadClass(className);
@@ -368,7 +369,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
     private AuditManager createAuditManager(String securityDomain) throws Exception {
         int i = auditManagerClassName.lastIndexOf(":");
         if (i == -1)
-            throw new IllegalArgumentException("Missing module name for the audit manager class");
+            throw SecurityMessages.MESSAGES.missingModuleName("audit manager class");
         String moduleSpec = auditManagerClassName.substring(0, i);
         String className = auditManagerClassName.substring(i + 1);
         Class<?> clazz = SecurityActions.getModuleClassLoader(moduleSpec).loadClass(className);
@@ -386,7 +387,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
     private IdentityTrustManager createIdentityTrustManager(String securityDomain) throws Exception {
         int i = identityTrustManagerClassName.lastIndexOf(":");
         if (i == -1)
-            throw new IllegalArgumentException("Missing module name for the identity trust manager class");
+            throw SecurityMessages.MESSAGES.missingModuleName("identity trust manager class");
         String moduleSpec = identityTrustManagerClassName.substring(0, i);
         String className = identityTrustManagerClassName.substring(i + 1);
         Class<?> clazz = SecurityActions.getModuleClassLoader(moduleSpec).loadClass(className);
@@ -404,7 +405,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
     private MappingManager createMappingManager(String securityDomain) throws Exception {
         int i = mappingManagerClassName.lastIndexOf(":");
         if (i == -1)
-            throw new IllegalArgumentException("Missing module name for the mapping manager class");
+            throw SecurityMessages.MESSAGES.missingModuleName("mapping manager class");
         String moduleSpec = mappingManagerClassName.substring(0, i);
         String className = mappingManagerClassName.substring(i + 1);
         Class<?> clazz = SecurityActions.getModuleClassLoader(moduleSpec).loadClass(className);

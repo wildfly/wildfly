@@ -27,6 +27,7 @@ import java.security.acl.Group;
 
 import javax.security.auth.login.LoginException;
 
+import org.jboss.as.security.SecurityMessages;
 import org.jboss.logging.Logger;
 import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.security.UserPrincipal;
@@ -79,7 +80,7 @@ public class RemotingLoginModule extends AbstractServerLoginModule {
             } else {
                 // Don't know of scenarios where we would have a connection but no UserPrinicpal so
                 // completely fail the auth attempt.
-                throw new LoginException("Remoting connection found but no UserPrincipal.");
+                throw SecurityMessages.MESSAGES.remotingConnectionWithNoUserPrincipal();
             }
         }
 

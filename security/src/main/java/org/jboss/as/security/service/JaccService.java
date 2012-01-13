@@ -29,6 +29,8 @@ import javax.security.jacc.PolicyConfigurationFactory;
 import javax.security.jacc.PolicyContextException;
 
 import org.jboss.as.security.SecurityExtension;
+import org.jboss.as.security.SecurityLogger;
+import org.jboss.as.security.SecurityMessages;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -61,7 +63,7 @@ public abstract class JaccService<T> implements Service<PolicyConfiguration> {
 
     public JaccService(final String contextId, T metaData, Boolean standalone) {
         if (contextId == null)
-            throw new IllegalArgumentException("JACC Context Id passed is null");
+            throw SecurityMessages.MESSAGES.nullArgument("JACC Context Id");
         this.contextId = contextId;
         this.metaData = metaData;
         this.standalone = standalone;
@@ -104,7 +106,7 @@ public abstract class JaccService<T> implements Service<PolicyConfiguration> {
                 Policy.getPolicy().refresh();
             }
         } catch (Exception e) {
-            throw new StartException(e);
+            throw SecurityMessages.MESSAGES.unableToStartException("JaccService", e);
         }
     }
 
@@ -118,7 +120,7 @@ public abstract class JaccService<T> implements Service<PolicyConfiguration> {
                 policyConfiguration.delete();
             }
         } catch (Exception e) {
-            log.warnf("Error deleting JACC policy", e);
+            SecurityLogger.ROOT_LOGGER.errorDeletingJACCPolicy(e);
         }
         policyConfiguration = null;
     }

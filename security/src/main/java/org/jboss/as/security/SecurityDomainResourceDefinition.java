@@ -80,7 +80,7 @@ public class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
     public static ServiceName getSecurityDomainServiceName(PathAddress pathAddress) {
         PathAddress domain = Util.getParentAddressByKey(pathAddress, Constants.SECURITY_DOMAIN);
         if (domain == null)
-            throw new IllegalArgumentException("Address did not contain a security domain name");
+            throw SecurityMessages.MESSAGES.addressDidNotContainSecurityDomain();
         return SecurityDomainService.SERVICE_NAME.append(domain.getLastElement().getValue());
    }
 

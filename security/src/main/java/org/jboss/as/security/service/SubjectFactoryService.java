@@ -23,6 +23,7 @@
 package org.jboss.as.security.service;
 
 import org.jboss.as.security.SecurityExtension;
+import org.jboss.as.security.SecurityMessages;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -63,7 +64,7 @@ public class SubjectFactoryService implements Service<SubjectFactory> {
         final ISecurityManagement injectedSecurityManagement = securityManagementValue.getValue();
         int i = subjectFactoryClassName.lastIndexOf(":");
         if (i == -1)
-            throw new StartException("Missing module name for the subject-factory-class-name attribute");
+            throw SecurityMessages.MESSAGES.missingModuleName("subject-factory-class-name attribute");
         String moduleSpec = subjectFactoryClassName.substring(0, i);
         String className = subjectFactoryClassName.substring(i + 1);
         JBossSecuritySubjectFactory subjectFactory = null;
@@ -71,7 +72,7 @@ public class SubjectFactoryService implements Service<SubjectFactory> {
             Class<?> subjectFactoryClazz = SecurityActions.getModuleClassLoader(moduleSpec).loadClass(className);
             subjectFactory = (JBossSecuritySubjectFactory) subjectFactoryClazz.newInstance();
         } catch (Exception e) {
-            throw new StartException(e);
+            throw SecurityMessages.MESSAGES.unableToStartException("SubjectFactoryService", e);
         }
         subjectFactory.setSecurityManagement(injectedSecurityManagement);
         this.subjectFactory = subjectFactory;

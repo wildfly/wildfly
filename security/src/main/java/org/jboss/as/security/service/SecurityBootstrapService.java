@@ -30,6 +30,8 @@ import java.util.Set;
 import javax.security.jacc.PolicyContext;
 
 import org.jboss.as.security.SecurityExtension;
+import org.jboss.as.security.SecurityLogger;
+import org.jboss.as.security.SecurityMessages;
 import org.jboss.as.security.plugins.ModuleClassLoaderLocator;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -71,7 +73,7 @@ public class SecurityBootstrapService implements Service<Void> {
         log.debugf("Starting SecurityBootstrapService");
         try {
             //Print out the current version of PicketBox
-            log.info("Picketbox version="+org.picketbox.Version.VERSION);
+            SecurityLogger.ROOT_LOGGER.currentVersion(org.picketbox.Version.VERSION);
 
             // Get the current Policy impl
             oldPolicy = Policy.getPolicy();
@@ -89,10 +91,10 @@ public class SecurityBootstrapService implements Service<Void> {
                 try {
                     jaccPolicy = (Policy) providerClass.newInstance();
                 } catch (Exception e1) {
-                    throw new StartException(e1);
+                    throw SecurityMessages.MESSAGES.unableToStartException("SecurityBootstrapService", e1);
                 }
             } catch (Exception e) {
-                throw new StartException(e);
+                throw SecurityMessages.MESSAGES.unableToStartException("SecurityBootstrapService", e);
             }
 
             // Install the JACC policy provider
@@ -112,7 +114,7 @@ public class SecurityBootstrapService implements Service<Void> {
             //Register a module classloader locator
             ClassLoaderLocatorFactory.set(new ModuleClassLoaderLocator());
         } catch (Exception e) {
-            throw new StartException(e);
+            throw SecurityMessages.MESSAGES.unableToStartException("SecurityBootstrapService", e);
         }
     }
 

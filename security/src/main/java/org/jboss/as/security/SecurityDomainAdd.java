@@ -383,8 +383,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             AuthModuleEntry entry = new AuthModuleEntry(code, options, loginStackRef);
             if (loginStackRef != null) {
                 if (!holders.containsKey(loginStackRef)) {
-                    throw new IllegalArgumentException("auth-module references a login module stack that doesn't exist: "
-                            + loginStackRef);
+                    throw SecurityMessages.MESSAGES.loginModuleStackIllegalArgument(loginStackRef);
                 }
                 entry.setLoginModuleStackHolder(holders.get(loginStackRef));
             }
@@ -541,7 +540,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             try {
                 jsseSecurityDomain.setServiceAuthToken(value);
             } catch (Exception e) {
-                throw new IllegalArgumentException(e);
+                throw SecurityMessages.MESSAGES.runtimeException(e);
             }
         }
         if (node.hasDefined(CIPHER_SUITES)) {
@@ -582,7 +581,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             try {
                 config.setKeyStorePassword(value.asString());
             } catch (Exception e) {
-                throw new IllegalArgumentException(e);
+                throw SecurityMessages.MESSAGES.runtimeException(e);
             }
         }
         if (type != null) {
@@ -592,7 +591,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             try {
                 config.setKeyStoreURL(url.asString());
             } catch (IOException e) {
-                throw new IllegalArgumentException(e);
+                throw SecurityMessages.MESSAGES.runtimeException(e);
             }
         }
 

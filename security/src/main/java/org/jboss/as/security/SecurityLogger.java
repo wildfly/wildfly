@@ -23,7 +23,11 @@
 package org.jboss.as.security;
 
 import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Cause;
+import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
+import org.jboss.logging.Logger.Level;
+import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 
 /**
@@ -38,4 +42,27 @@ public interface SecurityLogger extends BasicLogger {
      * A logger with a category of the package name.
      */
     SecurityLogger ROOT_LOGGER = Logger.getMessageLogger(SecurityLogger.class, SecurityLogger.class.getPackage().getName());
+
+   /** Logs a message indicating the current version of the PicketBox library
+    *
+    * @param version a {@link String} representing the current version
+    */
+   @LogMessage(level = Level.INFO)
+   @Message(id = 13100, value = "Current PicketBox version=%s")
+   void currentVersion(String version);
+
+   /**
+    * Logs a message indicating that the security subsystem is being activated
+    */
+   @LogMessage(level = Level.INFO)
+   @Message(id = 13101, value = "Activating Security Subsystem")
+   void activatingSecuritySubsystem();
+
+   /**
+    * Logs a message indicating that there was an exception while trying to delete the JACC Policy
+    * @param t the underlying exception
+    */
+   @LogMessage(level = Level.WARN)
+   @Message(id = 13102, value = "Error deleting JACC Policy")
+   void errorDeletingJACCPolicy(@Cause Throwable t);
 }
