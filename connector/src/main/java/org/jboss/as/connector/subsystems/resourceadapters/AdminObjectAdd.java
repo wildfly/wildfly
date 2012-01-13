@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -45,7 +46,7 @@ import org.jboss.msc.service.ServiceTarget;
 /**
  * Adds a recovery-environment to the Transactions subsystem
  */
-public class AdminObjectAdd extends AbstractBoottimeAddStepHandler implements DescriptionProvider {
+public class AdminObjectAdd extends AbstractAddStepHandler implements DescriptionProvider {
 
     public static final AdminObjectAdd INSTANCE = new AdminObjectAdd();
 
@@ -70,9 +71,9 @@ public class AdminObjectAdd extends AbstractBoottimeAddStepHandler implements De
     }
 
     @Override
-    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode recoveryEnvModel,
-                                   ServiceVerificationHandler verificationHandler,
-                                   List<ServiceController<?>> serviceControllers) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode recoveryEnvModel,
+                                  ServiceVerificationHandler verificationHandler,
+                                  List<ServiceController<?>> serviceControllers) throws OperationFailedException {
 
         final ModelNode address = operation.require(OP_ADDR);
         PathAddress path = PathAddress.pathAddress(address);
@@ -93,7 +94,6 @@ public class AdminObjectAdd extends AbstractBoottimeAddStepHandler implements De
                 .addDependency(raServiceName, ModifiableResourceAdapter.class, service.getRaInjector())
                 .addListener(verificationHandler).install();
 
-        context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
 
     }
 

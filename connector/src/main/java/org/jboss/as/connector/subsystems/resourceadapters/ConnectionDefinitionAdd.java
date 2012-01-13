@@ -26,14 +26,17 @@ import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapter
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.CONNECTIONDEFINITIONS_NODEATTRIBUTE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -47,7 +50,7 @@ import org.jboss.msc.service.ServiceTarget;
  * Adds a recovery-environment to the Transactions subsystem
  *
  */
-public class ConnectionDefinitionAdd extends AbstractBoottimeAddStepHandler implements DescriptionProvider {
+public class ConnectionDefinitionAdd extends AbstractAddStepHandler implements DescriptionProvider {
 
     public static final ConnectionDefinitionAdd INSTANCE = new ConnectionDefinitionAdd();
 
@@ -72,7 +75,7 @@ public class ConnectionDefinitionAdd extends AbstractBoottimeAddStepHandler impl
     }
 
     @Override
-    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode recoveryEnvModel,
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode recoveryEnvModel,
                                   ServiceVerificationHandler verificationHandler,
                                   List<ServiceController<?>> serviceControllers) throws OperationFailedException {
 
@@ -94,8 +97,6 @@ public class ConnectionDefinitionAdd extends AbstractBoottimeAddStepHandler impl
             ServiceController<?> controller = serviceTarget.addService(serviceName, service).setInitialMode(ServiceController.Mode.ACTIVE)
                     .addDependency(raServiceName, ModifiableResourceAdapter.class, service.getRaInjector())
                     .addListener(verificationHandler).install();
-
-            context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
 
             serviceControllers.add(controller);
 

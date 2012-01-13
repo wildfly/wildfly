@@ -134,6 +134,13 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
         }
 
         managementRepository.getValue().getConnectors().remove(value.getDeployment().getConnector());
+        if (mdr != null && mdr.getValue() != null) {
+            try {
+                mdr.getValue().unregisterResourceAdapter(value.getDeployment().getDeploymentName());
+            } catch (Throwable t) {
+                DEPLOYMENT_CONNECTOR_LOGGER.debug("Exception during unregistering deployment", t);
+            }
+        }
         super.stop(context);
     }
 

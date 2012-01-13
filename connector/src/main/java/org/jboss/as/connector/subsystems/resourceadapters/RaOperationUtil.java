@@ -21,6 +21,7 @@
  */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
 import static org.jboss.as.connector.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
@@ -58,6 +59,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.connector.metadata.deployment.InactiveResourceAdapterDeploymentService;
+import org.jboss.as.connector.util.RaServicesFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
@@ -73,12 +77,16 @@ import org.jboss.jca.common.api.metadata.common.Extension;
 import org.jboss.jca.common.api.metadata.common.FlushStrategy;
 import org.jboss.jca.common.api.metadata.common.Recovery;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
+import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.jca.common.metadata.common.CommonPoolImpl;
 import org.jboss.jca.common.metadata.common.CommonSecurityImpl;
 import org.jboss.jca.common.metadata.common.CommonTimeOutImpl;
 import org.jboss.jca.common.metadata.common.CommonValidationImpl;
 import org.jboss.jca.common.metadata.common.CredentialImpl;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 
 public class RaOperationUtil {
 
@@ -261,4 +269,27 @@ public class RaOperationUtil {
         }
     }
 
+    public static void deactivateIfActive(OperationContext context, String raName) throws OperationFailedException {
+        final ServiceName raDeploymentServiceName = ConnectorServices.getDeploymentServiceName(raName);
+        if (raDeploymentServiceName != null)  {
+            context.removeService(raDeploymentServiceName);
+            ConnectorServices.unregisterDeployment(raName, raDeploymentServiceName);
+        }
+    }
+
+    public static void activate(OperationContext context, String raName, String rarName)  throws OperationFailedException {
+        ServiceRegistry registry = context.getServiceRegistry(true);
+        if (rarName.contains("#")) {
+            rarName = rarName.substring(0, rarName.indexOf("#"));
+        }
+        final ServiceController<?> inactiveRaController = registry.getService(ConnectorServices.INACTIVE_RESOURCE_ADAPTER_SERVICE.append(rarName));
+        if (inactiveRaController == null) {
+            throw new OperationFailedException("rar not yet deployed");
+        }
+        InactiveResourceAdapterDeploymentService.InactiveResourceAdapterDeployment inactive = (InactiveResourceAdapterDeploymentService.InactiveResourceAdapterDeployment) inactiveRaController.getValue();
+        final ServiceController<?> RaxmlController = registry.getService(ServiceName.of(ConnectorServices.RA_SERVICE, raName));
+        ResourceAdapter raxml = (ResourceAdapter) RaxmlController.getValue();
+
+        RaServicesFactory.createDeploymnetService(inactive.getRegistration(), inactive.getConnectorXmlDescriptor(), inactive.getModule(), context.getServiceTarget(), inactive.getDeployment(), inactive.getDeployment(), raxml);
+    }
 }

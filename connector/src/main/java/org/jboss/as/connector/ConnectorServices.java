@@ -43,8 +43,10 @@ public final class ConnectorServices {
     private static Map<String, Set<ServiceName>> resourceAdapterServiceNames = new HashMap<String, Set<ServiceName>>();
     private static Map<String, Set<Integer>> resourceAdapterIdentifiers = new HashMap<String, Set<Integer>>();
 
-    private static Map<String, Set<ServiceName>> deploymentServiceNames = new HashMap<String, Set<ServiceName>>();
+    private static Map<String, ServiceName> deploymentServiceNames = new HashMap<String, ServiceName>();
     private static Map<String, Set<Integer>> deploymentIdentifiers = new HashMap<String, Set<Integer>>();
+    private static Map<String, Set<Integer>> resourceIdentifiers = new HashMap<String, Set<Integer>>();
+
 
     /**
      * A map whose key corresponds to a ra name and whose value is a identifier with which the RA
@@ -75,6 +77,8 @@ public final class ConnectorServices {
     public static final ServiceName RESOURCE_ADAPTER_REGISTRY_SERVICE = ServiceName.JBOSS.append("raregistry");
 
     public static final ServiceName RESOURCE_ADAPTER_ACTIVATOR_SERVICE = ServiceName.JBOSS.append("raactivator");
+
+    public static final ServiceName INACTIVE_RESOURCE_ADAPTER_SERVICE = ServiceName.JBOSS.append("rainactive");
 
     /**
      * MDR service name *
@@ -117,6 +121,41 @@ public final class ConnectorServices {
         return value;
     }
 
+    //resource-adapter DMR resource
+
+    public static Integer getResourceIdentifier(String raName) {
+        Set<Integer> entries = resourceIdentifiers.get(raName);
+
+        if (entries == null) {
+            Integer identifier = Integer.valueOf(0);
+
+            entries = new HashSet<Integer>();
+            resourceIdentifiers.put(raName, entries);
+
+            entries.add(identifier);
+            return identifier;
+        }
+
+        Integer identifier = Integer.valueOf(0);
+        for (; ; ) {
+            if (!entries.contains(identifier)) {
+                entries.add(identifier);
+                return identifier;
+            }
+
+            identifier = Integer.valueOf(identifier.intValue() + 1);
+        }
+    }
+
+    //only for test purpose
+    public static synchronized void unregisterResourceIdentifiers(String raName) {
+            if (raName == null)
+                throw MESSAGES.undefinedVar("RaName");
+
+
+            resourceIdentifiers.remove(raName);
+        }
+
     // DEPLOYMENTS
 
     private static Integer getDeploymentIdentifier(String raName) {
@@ -150,22 +189,31 @@ public final class ConnectorServices {
         Integer identifier = getDeploymentIdentifier(raName);
         ServiceName serviceName = RESOURCE_ADAPTER_DEPLOYMENT_SERVICE_PREFIX.append(raName + "_" + identifier);
 
-        Set<ServiceName> entries = deploymentServiceNames.get(raName);
+        ServiceName entry = deploymentServiceNames.get(raName);
 
-        if (entries == null) {
-            entries = new HashSet<ServiceName>(1);
-            deploymentServiceNames.put(raName, entries);
-        }
-
-        if (entries.contains(serviceName)) {
+        /*if (entry != null ) {
             deploymentIdentifiers.get(raName).remove(identifier);
-            throw MESSAGES.serviceAlreadyRegistered(serviceName.getCanonicalName());
-        }
+            throw MESSAGES.serviceAlreadyRegistered(entry.getCanonicalName());
+        } */
 
-        entries.add(serviceName);
+        deploymentServiceNames.put(raName, serviceName);
 
         return serviceName;
     }
+
+    public static synchronized ServiceName getDeploymentServiceName(String raName) {
+            if (raName == null)
+                throw MESSAGES.undefinedVar("RaName");
+
+            ServiceName entry = deploymentServiceNames.get(raName);
+
+
+
+            return entry;
+        }
+
+
+
 
     public static synchronized void unregisterDeployment(String raName, ServiceName serviceName) {
         if (raName == null)
@@ -174,21 +222,20 @@ public final class ConnectorServices {
         if (serviceName == null)
             throw MESSAGES.undefinedVar("ServiceName");
 
-        Set<ServiceName> entries = deploymentServiceNames.get(raName);
+        ServiceName entry = deploymentServiceNames.get(raName);
 
-        if (entries != null) {
-            if (!entries.contains(serviceName))
+        if (entry != null) {
+            if (!entry.equals(serviceName))
                 throw MESSAGES.serviceIsntRegistered(serviceName.getCanonicalName());
 
             Integer identifier = Integer.valueOf(serviceName.getSimpleName().substring(serviceName.getSimpleName().lastIndexOf("_") + 1));
             deploymentIdentifiers.get(raName).remove(identifier);
 
-            entries.remove(serviceName);
-
-            if (entries.size() == 0) {
-                deploymentServiceNames.remove(raName);
+            deploymentServiceNames.remove(raName);
+            if (deploymentIdentifiers.get(raName).size() == 0) {
                 deploymentIdentifiers.remove(raName);
             }
+
         }
     }
 

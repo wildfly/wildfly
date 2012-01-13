@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -45,7 +46,7 @@ import org.jboss.msc.service.ServiceTarget;
  * Adds a recovery-environment to the Transactions subsystem
  *
  */
-public class CDConfigPropertyAdd extends AbstractBoottimeAddStepHandler implements DescriptionProvider {
+public class CDConfigPropertyAdd extends AbstractAddStepHandler implements DescriptionProvider {
 
     public static final CDConfigPropertyAdd INSTANCE = new CDConfigPropertyAdd();
 
@@ -68,7 +69,7 @@ public class CDConfigPropertyAdd extends AbstractBoottimeAddStepHandler implemen
     }
 
     @Override
-    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode recoveryEnvModel,
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode recoveryEnvModel,
                                   ServiceVerificationHandler verificationHandler,
                                   List<ServiceController<?>> serviceControllers) throws OperationFailedException {
 
@@ -89,7 +90,6 @@ public class CDConfigPropertyAdd extends AbstractBoottimeAddStepHandler implemen
                     .addDependency(cfServiceName, ModifiableConnDef.class, service.getRaInjector() )
                     .addListener(verificationHandler).install();
 
-        context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
     }
 
 }
