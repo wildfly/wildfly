@@ -71,7 +71,7 @@ public class LoginModulesAttributeDefinition extends ListAttributeDefinition {
     @Override
     protected void addValueTypeDescription(ModelNode node, ResourceBundle bundle) {
         // This method being used indicates a misuse of this class
-        throw new UnsupportedOperationException("Use the ResourceDescriptionResolver variant");
+        throw SecurityMessages.MESSAGES.unsupportedOperationExceptionUseResourceDesc();
     }
 
     @Override
@@ -104,7 +104,7 @@ public class LoginModulesAttributeDefinition extends ListAttributeDefinition {
         try {
             fieldValidator.validateParameter(name, node);
         } catch (OperationFailedException e) {
-            throw new XMLStreamException(e.getFailureDescription().toString(), reader.getLocation());
+            throw SecurityMessages.MESSAGES.xmlStreamException(e.getFailureDescription().toString(), reader.getLocation());
         }
         return node;
     }

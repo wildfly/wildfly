@@ -26,6 +26,7 @@ import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
+import org.jboss.as.security.SecurityMessages;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleIdentifier;
@@ -50,7 +51,7 @@ class SecurityActions {
                     }
                 });
             } catch (PrivilegedActionException pae) {
-                throw new ModuleLoadException(pae);
+                throw SecurityMessages.MESSAGES.moduleLoadException(pae);
             }
         } else {
             ModuleLoader loader = Module.getCallerModuleLoader();

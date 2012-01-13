@@ -37,6 +37,7 @@ import java.util.UUID;
 
 import javax.security.auth.Subject;
 
+import org.jboss.as.security.SecurityMessages;
 import org.jboss.as.security.remoting.RemotingContext;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 import org.jboss.security.AuthenticationManager;
@@ -77,7 +78,7 @@ public class SimpleSecurityManager {
             SecurityContextAssociation.setSecurityContext(securityContext);
             return securityContext;
         } catch (Exception e) {
-            throw new SecurityException(e);
+            throw SecurityMessages.MESSAGES.securityException(e);
         }
     }
 
@@ -234,7 +235,7 @@ public class SimpleSecurityManager {
             boolean authenticated = authenticate(current);
             if (authenticated == false) {
                 // TODO - Better type needed.
-                throw new SecurityException("Invalid User");
+                throw SecurityMessages.MESSAGES.invalidUserException();
             }
         }
 

@@ -54,7 +54,6 @@ import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.ISecurityManagement;
@@ -108,7 +107,6 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
         private static final String SUBJECT_FACTORY = ModuleName.PICKETBOX.getName() + ":" + ModuleName.PICKETBOX.getSlot() + ":"
                 + JBossSecuritySubjectFactory.class.getName();
 
-        private static final Logger log = Logger.getLogger("org.jboss.as.security");
         public static final OperationStepHandler INSTANCE = new NewSecuritySubsystemAdd();
 
 
@@ -119,7 +117,7 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
 
         @Override
         protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-            log.info("Activating Security Subsystem");
+            SecurityLogger.ROOT_LOGGER.activatingSecuritySubsystem();
 
             final ServiceTarget target = context.getServiceTarget();
 
