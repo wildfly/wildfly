@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<web-app version="2.5"
+   xmlns="http://java.sun.com/xml/ns/javaee"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+   http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+ 
+   <servlet>
+      <servlet-name>EJBServlet</servlet-name>
+      <servlet-class>org.jboss.as.test.integration.ejb.servlet.EJBServletEar</servlet-class>
+   </servlet>
+
+   <!-- The servlet and jsp page mappings -->
+   <servlet-mapping>
+      <servlet-name>EJBServlet</servlet-name>
+      <url-pattern>/EJBServlet</url-pattern>
+   </servlet-mapping>
+   
+   <ejb-ref>
+      <ejb-ref-name>ejb/remote/Session30</ejb-ref-name>
+      <ejb-ref-type>Session</ejb-ref-type>
+      <home>org.jboss.as.test.integration.ejb.servlet.Session30Home</home>
+      <remote>org.jboss.as.test.integration.ejb.servlet.Session30Remote</remote>
+   </ejb-ref>
+   
+   <ejb-local-ref>
+      <ejb-ref-name>ejb/local/Session30</ejb-ref-name>
+      <ejb-ref-type>Session</ejb-ref-type>
+      <local-home>org.jboss.as.test.integration.ejb.servlet.Session30LocalHome</local-home>
+      <local>org.jboss.as.test.integration.ejb.servlet.Session30Local</local>
+   </ejb-local-ref>
+
+</web-app>
+

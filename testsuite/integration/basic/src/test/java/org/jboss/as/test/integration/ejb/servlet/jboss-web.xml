@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+
+<!DOCTYPE jboss-web
+    PUBLIC "-//JBoss//DTD Web Application 2.3V2//EN"
+    "http://www.jboss.org/j2ee/dtd/jboss-web_4_0.dtd">
+
+<jboss-web>
+
+   <ejb-ref>
+      <ejb-ref-name>ejb/remote/Session30</ejb-ref-name>
+      <jndi-name>java:global/ejb3-servlet-ejbs/Session30!org.jboss.as.test.integration.ejb.servlet.Session30Home</jndi-name>
+   </ejb-ref>
+   
+   <ejb-local-ref>
+      <ejb-ref-name>ejb/local/Session30</ejb-ref-name>
+      <jndi-name>java:global/ejb3-servlet-ejbs/Session30!org.jboss.as.test.integration.ejb.servlet.Session30LocalHome</jndi-name>
+   </ejb-local-ref>
+</jboss-web>
+
