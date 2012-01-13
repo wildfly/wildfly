@@ -21,7 +21,6 @@
  */
 package org.jboss.as.test.integration.ejb.timerservice.persistence;
 
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -54,10 +53,16 @@ public class TimerServicePersistenceSecondTestCase {
      */
     @Test
     public void testTimerServiceCalled() throws NamingException {
-        InitialContext ctx = new InitialContext();
         Assert.assertTrue(SimpleTimerServiceBean.awaitTimerCall());
     }
 
+    /**
+     * The timer should not be restored, as it was cancelled
+     */
+    @Test
+    public void testTimerServiceNotCalled() throws NamingException {
+        Assert.assertFalse(CancelledTimerServiceBean.quickAwaitTimerCall());
+    }
 
 
 }

@@ -90,8 +90,6 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
     private final ConcurrentMap<String, Lock> locks = new ConcurrentHashMap<String, Lock>();
     private final ConcurrentMap<String, String> directories = new ConcurrentHashMap<String, String>();
 
-    private volatile boolean started = false;
-
     public FileTimerPersistence(final boolean createIfNotExists) {
         this.createIfNotExists = createIfNotExists;
     }
@@ -118,7 +116,6 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         if (!baseDir.isDirectory()) {
             throw MESSAGES.invalidTimerFileStoreDir(baseDir);
         }
-        started = true;
     }
 
     @Override
@@ -129,7 +126,6 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         directories.clear();
         factory = null;
         configuration = null;
-        started = false;
     }
 
     @Override
@@ -138,7 +134,16 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
     }
 
     @Override
+    public void addTimer(final TimerEntity timerEntity) {
+        persistTimer(timerEntity, true);
+    }
+
+    @Override
     public void persistTimer(final TimerEntity timerEntity) {
+        persistTimer(timerEntity, false);
+    }
+
+    private void persistTimer(final TimerEntity timerEntity, boolean newTimer) {
         final Lock lock = getLock(timerEntity.getTimedObjectId());
         try {
             final int status = transactionManager.getValue().getStatus();
@@ -147,21 +152,21 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
                 //no need to persist anyway
                 return;
             }
+
+            lock.lock();
             if (status == Status.STATUS_NO_TRANSACTION ||
                     status == Status.STATUS_UNKNOWN || isBeforeCompletion()
                     || status == Status.STATUS_COMMITTED) {
-                try {
-                    lock.lock();
-                    Map<String, TimerEntity> map = getTimers(timerEntity.getTimedObjectId());
-                    if (timerEntity.getTimerState() == TimerState.CANCELED ||
-                            timerEntity.getTimerState() == TimerState.EXPIRED) {
-                        map.remove(timerEntity.getId());
-                    } else {
-                        map.put(timerEntity.getId(), timerEntity);
-                    }
+                Map<String, TimerEntity> map = getTimers(timerEntity.getTimedObjectId());
+                if (timerEntity.getTimerState() == TimerState.CANCELED ||
+                        timerEntity.getTimerState() == TimerState.EXPIRED) {
+                    map.remove(timerEntity.getId());
                     writeFile(timerEntity);
-                } finally {
-                    lock.unlock();
+                } else if (newTimer || map.containsKey(timerEntity.getId())) {
+                    //if it is not a new timer and is not in the map then it has
+                    //been removed by another thread.
+                    map.put(timerEntity.getId(), timerEntity);
+                    writeFile(timerEntity);
                 }
             } else {
 
@@ -169,13 +174,15 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
                 Object existing = transactionSynchronizationRegistry.getValue().getResource(key);
                 //check is there is already a persist sync for this timer
                 if (existing == null) {
-                    transactionSynchronizationRegistry.getValue().registerInterposedSynchronization(new PersistTransactionSynchronization(lock, key));
+                    transactionSynchronizationRegistry.getValue().registerInterposedSynchronization(new PersistTransactionSynchronization(lock, key, newTimer));
                 }
                 //update the most recent version of the timer to be persisted
                 transactionSynchronizationRegistry.getValue().putResource(key, timerEntity);
             }
         } catch (SystemException e) {
             throw new RuntimeException(e);
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -212,7 +219,7 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
             lock.lock();
             final Map<String, TimerEntity> timers = getTimers(timedObjectId);
             final TimerEntity timer = timers.get(id);
-            if(timer == null) {
+            if (timer == null) {
                 return null;
             }
             return mostRecentEntityVersion(timer);
@@ -229,8 +236,8 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
             final Map<String, TimerEntity> timers = getTimers(timedObjectId);
 
             final List<TimerEntity> entities = new ArrayList<TimerEntity>();
-            for(Map.Entry<String, TimerEntity> entry : timers.entrySet()) {
-                if(primaryKey == null || primaryKey.equals(entry.getValue().getPrimaryKey())) {
+            for (Map.Entry<String, TimerEntity> entry : timers.entrySet()) {
+                if (primaryKey == null || primaryKey.equals(entry.getValue().getPrimaryKey())) {
                     entities.add(mostRecentEntityVersion(entry.getValue()));
                 }
             }
@@ -398,11 +405,13 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
 
         private final String transactionKey;
         private final Lock lock;
+        private final boolean newTimer;
         private volatile TimerEntity timer;
 
-        public PersistTransactionSynchronization(final Lock lock, final String transactionKey) {
+        public PersistTransactionSynchronization(final Lock lock, final String transactionKey, final boolean newTimer) {
             this.lock = lock;
             this.transactionKey = transactionKey;
+            this.newTimer = newTimer;
         }
 
         @Override
@@ -427,7 +436,10 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
                             timer.getTimerState() == TimerState.EXPIRED) {
                         map.remove(timer.getId());
                     } else {
-                        map.put(timer.getId(), timer);
+                        if (newTimer || map.containsKey(timer.getId())) {
+                            //if an existing timer is not in the map it has been cancelled by another thread
+                            map.put(timer.getId(), timer);
+                        }
                     }
                     writeFile(timer);
                 }

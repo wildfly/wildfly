@@ -101,10 +101,8 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
             ROOT_LOGGER.debug("Timer in retry mode, skipping this scheduled execution at: " + now);
             // compute the next timeout, See JIRA AS7-2995.
             this.timer.setNextTimeout(calculateNextTimeout());
-            this.timerService.persistTimer(this.timer);
-            if(this.timer.getNextExpiration() != null) {
-                this.timer.scheduleTimeout();
-            }
+            this.timerService.persistTimer(this.timer, false);
+            scheduleTimeoutIfRequired();
             return;
         }
         // If the recurring timer running longer than the interval is, we don't want to allow another
@@ -112,7 +110,7 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
         if(this.timer.getState() == TimerState.IN_TIMEOUT && !this.timer.isCalendarTimer()) {
             ROOT_LOGGER.skipOverlappingInvokeTimeout(this.timer.getId(), now);
             this.timer.setNextTimeout(this.calculateNextTimeout());
-            this.timerService.persistTimer(this.timer);
+            this.timerService.persistTimer(this.timer, false);
             return;
         }
 
@@ -127,7 +125,7 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
         this.timer.setTimerState(TimerState.IN_TIMEOUT);
 
         // persist changes
-        this.timerService.persistTimer(this.timer);
+        this.timerService.persistTimer(this.timer, false);
 
         try {
             // invoke timeout
@@ -148,8 +146,11 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
         } finally {
             this.postTimeoutProcessing();
             //if it has expired we need to persist it
-            this.timerService.persistTimer(this.timer);
+            this.timerService.persistTimer(this.timer, false);
         }
+    }
+
+    protected void scheduleTimeoutIfRequired() {
     }
 
     protected void callTimeout() throws Exception {
@@ -178,7 +179,7 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
         if (this.timer.isActive()) {
             ROOT_LOGGER.retryingTimeout(this.timer);
             this.timer.setTimerState(TimerState.RETRY_TIMEOUT);
-            this.timerService.persistTimer(this.timer);
+            this.timerService.persistTimer(this.timer, false);
 
             this.callTimeout();
         } else {
@@ -195,7 +196,7 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
             } else {
                 this.timer.setTimerState(TimerState.ACTIVE);
                 // persist changes
-                timerService.persistTimer(this.timer);
+                timerService.persistTimer(this.timer, false);
             }
         }
     }

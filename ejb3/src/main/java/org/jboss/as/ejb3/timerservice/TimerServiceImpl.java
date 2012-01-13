@@ -144,7 +144,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     /**
      * Holds the {@link java.util.concurrent.Future} of each of the timer tasks that have been scheduled
      */
-    private final Map<String, java.util.TimerTask> scheduledTimerFutures = Collections.synchronizedMap(new HashMap<String, java.util.TimerTask>());
+    private final Map<String, java.util.TimerTask> scheduledTimerFutures = new HashMap<String, java.util.TimerTask>();
 
     private TransactionManager transactionManager;
 
@@ -432,7 +432,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         this.startTimer(timer);
 
         this.addTimer(timer);
-        this.persistTimer(timer);
+        this.persistTimer(timer, true);
         // return the newly created timer
         return timer;
     }
@@ -485,7 +485,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         this.startTimer(timer);
 
         this.addTimer(timer);
-        this.persistTimer(timer);
+        this.persistTimer(timer, true);
         // return the timer
         return timer;
     }
@@ -554,7 +554,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      *
      * @param timer
      */
-    public void persistTimer(final TimerImpl timer) {
+    public void persistTimer(final TimerImpl timer, boolean newTimer) {
         if (timer == null) {
             return;
         }
@@ -579,7 +579,11 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                     ROOT_LOGGER.timerPersistenceNotEnable();
                     return;
                 }
-                timerPersistence.getValue().persistTimer(timerEntity);
+                if (newTimer) {
+                    timerPersistence.getValue().addTimer(timerEntity);
+                } else {
+                    timerPersistence.getValue().persistTimer(timerEntity);
+                }
 
             } catch (Throwable t) {
                 this.setRollbackOnly();
@@ -666,7 +670,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                     startTimer(activeTimer);
                     ROOT_LOGGER.debug("Started timer: " + activeTimer);
                 }
-                this.persistTimer(activeTimer);
+                this.persistTimer(activeTimer, true);
             } else if (!ineligibleTimerStates.contains(activeTimer.getState())) {
                 this.startTimer(activeTimer);
             }
@@ -691,7 +695,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         if (!transactionActive()) {
             timer.setTimerState(TimerState.ACTIVE);
             // create and schedule a timer task
-            timer.scheduleTimeout();
+            timer.scheduleTimeout(true);
         } else {
             registerTimerWithTx(timer);
         }
@@ -794,36 +798,43 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     /**
      * Creates and schedules a {@link TimerTask} for the next timeout of the passed <code>timer</code>
      */
-    protected void scheduleTimeout(TimerImpl timer) {
-        Date nextExpiration = timer.getNextExpiration();
-        if (nextExpiration == null) {
-            ROOT_LOGGER.nextExpirationIsNull(timer);
-            return;
-        }
-        // create the timer task
-        final Runnable timerTask = timer.getTimerTask();
-        // find out how long is it away from now
-        long delay = nextExpiration.getTime() - System.currentTimeMillis();
-        // if in past, then trigger immediately
-        if (delay < 0) {
-            delay = 0;
-        }
-        long intervalDuration = timer.getInterval();
-        final Task task = new Task(timerTask);
-        if (intervalDuration > 0) {
-            ROOT_LOGGER.debug("Scheduling timer " + timer + " at fixed rate, starting at " + delay
-                    + " milli seconds from now with repeated interval=" + intervalDuration);
-            // schedule the task
-            this.timerInjectedValue.getValue().scheduleAtFixedRate(task, delay, intervalDuration);
-            // maintain it in timerservice for future use (like cancellation)
-            this.scheduledTimerFutures.put(timer.getId(), task);
-        } else {
-            ROOT_LOGGER.debug("Scheduling a single action timer " + timer + " starting at " + delay + " milli seconds from now");
-            // schedule the task
-            this.timerInjectedValue.getValue().schedule(task, delay);
-            // maintain it in timerservice for future use (like cancellation)
-            this.scheduledTimerFutures.put(timer.getId(), task);
+    protected void scheduleTimeout(TimerImpl timer, boolean newTimer) {
+        synchronized (scheduledTimerFutures) {
+            if(!newTimer && !scheduledTimerFutures.containsKey(timer.getId())) {
+                //this timer has been cancelled by another thread. We just return
+                return;
+            }
 
+            Date nextExpiration = timer.getNextExpiration();
+            if (nextExpiration == null) {
+                ROOT_LOGGER.nextExpirationIsNull(timer);
+                return;
+            }
+            // create the timer task
+            final Runnable timerTask = timer.getTimerTask();
+            // find out how long is it away from now
+            long delay = nextExpiration.getTime() - System.currentTimeMillis();
+            // if in past, then trigger immediately
+            if (delay < 0) {
+                delay = 0;
+            }
+            long intervalDuration = timer.getInterval();
+            final Task task = new Task(timerTask);
+            if (intervalDuration > 0) {
+                ROOT_LOGGER.debug("Scheduling timer " + timer + " at fixed rate, starting at " + delay
+                        + " milli seconds from now with repeated interval=" + intervalDuration);
+                // schedule the task
+                this.timerInjectedValue.getValue().scheduleAtFixedRate(task, delay, intervalDuration);
+                // maintain it in timerservice for future use (like cancellation)
+                this.scheduledTimerFutures.put(timer.getId(), task);
+            } else {
+                ROOT_LOGGER.debug("Scheduling a single action timer " + timer + " starting at " + delay + " milli seconds from now");
+                // schedule the task
+                this.timerInjectedValue.getValue().schedule(task, delay);
+                // maintain it in timerservice for future use (like cancellation)
+                this.scheduledTimerFutures.put(timer.getId(), task);
+
+            }
         }
     }
 
@@ -833,11 +844,12 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      * @param timer
      */
     protected void cancelTimeout(final TimerImpl timer) {
-        java.util.TimerTask timerTask = this.scheduledTimerFutures.remove(timer.getId());
-        if (timerTask != null) {
-            timerTask.cancel();
+        synchronized (this.scheduledTimerFutures) {
+            java.util.TimerTask timerTask = this.scheduledTimerFutures.remove(timer.getId());
+            if (timerTask != null) {
+                timerTask.cancel();
+            }
         }
-
     }
 
     private boolean isSingletonBeanInvocation() {
@@ -877,7 +889,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
 
 
         final List<TimerEntity> persistedTimers;
-        if(primaryKey == null) {
+        if (primaryKey == null) {
             persistedTimers = timerPersistence.getValue().loadActiveTimers(timedObjectId);
         } else {
             persistedTimers = timerPersistence.getValue().loadActiveTimers(timedObjectId, primaryKey);
@@ -1094,10 +1106,10 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                 switch (timerState) {
                     case CREATED:
                         this.timer.setTimerState(TimerState.ACTIVE);
-                        this.timer.scheduleTimeout();
+                        this.timer.scheduleTimeout(true);
                         break;
                     case ACTIVE:
-                        this.timer.scheduleTimeout();
+                        this.timer.scheduleTimeout(true);
                         break;
                 }
             } else if (status == Status.STATUS_ROLLEDBACK) {
