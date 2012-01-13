@@ -1997,4 +1997,19 @@ public interface EjbMessages {
     @Message(id = 14553, value = "Cache is not clustered")
     IllegalStateException cacheIsNotClustered();
 
+    /**
+     * Creates and returns an exception indicating that the param named <code>paramName</code> cannot be null
+     *
+     * @param paramName The param name
+     * @return an {@link IllegalArgumentException} for the exception
+     */
+    @Message(id = 14554, value = "%s cannot be null")
+    IllegalArgumentException paramCannotBeNull(final String paramName);
+
+    @Message(id = 14555, value = "A GroupMembershipNotifier is already registered by the name of %s")
+    IllegalArgumentException groupMembershipNotifierAlreadyRegistered(final String groupName);
+
+    @Message(id = 14556, value = "No GroupMembershipNotifier registered by the name of %s")
+    IllegalArgumentException groupMembershipNotifierNotRegistered(final String groupName);
+
 }
