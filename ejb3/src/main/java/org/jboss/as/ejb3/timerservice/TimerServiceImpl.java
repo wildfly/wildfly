@@ -129,17 +129,22 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     /**
      * All non-persistent timers which were created by this {@link TimerService}
      */
-    private final Map<TimerHandle, TimerImpl> nonPersistentTimers = Collections.synchronizedMap(new HashMap<TimerHandle, TimerImpl>());
+    private final Map<String, TimerImpl> persistentTimers = Collections.synchronizedMap(new HashMap<String, TimerImpl>());
+
+    /**
+     * All non-persistent timers which were created by this {@link TimerService}
+     */
+    private final Map<String, TimerImpl> nonPersistentTimers = Collections.synchronizedMap(new HashMap<String, TimerImpl>());
 
     /**
      * persistent timers that have been created in the current transaction
      */
-    private final Map<TimerHandle, TimerImpl> persistentWaitingOnTxCompletionTimers = Collections.synchronizedMap(new HashMap<TimerHandle, TimerImpl>());
+    private final Map<String, TimerImpl> persistentWaitingOnTxCompletionTimers = Collections.synchronizedMap(new HashMap<String, TimerImpl>());
 
     /**
      * Holds the {@link java.util.concurrent.Future} of each of the timer tasks that have been scheduled
      */
-    private final Map<TimerHandle, java.util.TimerTask> scheduledTimerFutures = Collections.synchronizedMap(new HashMap<TimerHandle, java.util.TimerTask>());
+    private final Map<String, java.util.TimerTask> scheduledTimerFutures = Collections.synchronizedMap(new HashMap<String, java.util.TimerTask>());
 
     private TransactionManager transactionManager;
 
@@ -493,9 +498,9 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      */
     protected void addTimer(TimerImpl timer) {
         if (!timer.persistent) {
-            nonPersistentTimers.put(timer.getTimerHandle(), timer);
+            nonPersistentTimers.put(timer.getId(), timer);
         } else {
-            this.persistentWaitingOnTxCompletionTimers.put(timer.getTimerHandle(), timer);
+            this.persistentWaitingOnTxCompletionTimers.put(timer.getId(), timer);
         }
     }
 
@@ -514,15 +519,15 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      * @param handle The {@link javax.ejb.TimerHandle} for which the {@link javax.ejb.Timer} is being looked for
      */
     public TimerImpl getTimer(TimerHandle handle) {
-        TimerImpl timer = nonPersistentTimers.get(handle);
-        if (timer != null) {
-            return timer;
-        }
-        timer = this.persistentWaitingOnTxCompletionTimers.get(handle);
-        if (timer != null) {
-            return timer;
-        }
         TimerHandleImpl timerHandle = (TimerHandleImpl) handle;
+        TimerImpl timer = nonPersistentTimers.get(timerHandle.getId());
+        if (timer != null) {
+            return timer;
+        }
+        timer = this.persistentWaitingOnTxCompletionTimers.get(timerHandle.getId());
+        if (timer != null) {
+            return timer;
+        }
         return this.getPersistedTimer(timerHandle);
 
     }
@@ -556,14 +561,14 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         if (!timer.persistent) {
             switch (timer.getState()) {
                 case EXPIRED:
-                    nonPersistentTimers.remove(timer.handle);
+                    nonPersistentTimers.remove(timer.getId());
                     break;
                 case CANCELED:
                     //we only want to remove it on TX end
                     if (transactionActive()) {
-                        registerSynchronization(new NonPersistentTimerRemoveSynchronization(timer.handle));
+                        registerSynchronization(new NonPersistentTimerRemoveSynchronization(timer.getId()));
                     } else {
-                        nonPersistentTimers.remove(timer.handle);
+                        nonPersistentTimers.remove(timer.getId());
                     }
             }
         } else {
@@ -811,13 +816,13 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             // schedule the task
             this.timerInjectedValue.getValue().scheduleAtFixedRate(task, delay, intervalDuration);
             // maintain it in timerservice for future use (like cancellation)
-            this.scheduledTimerFutures.put(timer.getTimerHandle(), task);
+            this.scheduledTimerFutures.put(timer.getId(), task);
         } else {
             ROOT_LOGGER.debug("Scheduling a single action timer " + timer + " starting at " + delay + " milli seconds from now");
             // schedule the task
             this.timerInjectedValue.getValue().schedule(task, delay);
             // maintain it in timerservice for future use (like cancellation)
-            this.scheduledTimerFutures.put(timer.getTimerHandle(), task);
+            this.scheduledTimerFutures.put(timer.getId(), task);
 
         }
     }
@@ -828,8 +833,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      * @param timer
      */
     protected void cancelTimeout(final TimerImpl timer) {
-        TimerHandle handle = timer.getTimerHandle();
-        java.util.TimerTask timerTask = this.scheduledTimerFutures.remove(handle);
+        java.util.TimerTask timerTask = this.scheduledTimerFutures.remove(timer.getId());
         if (timerTask != null) {
             timerTask.cancel();
         }
@@ -1060,7 +1064,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         /**
          * The timer being managed in the transaction
          */
-        private TimerImpl timer;
+        private final TimerImpl timer;
 
         public TimerCreationTransactionSynchronization(TimerImpl timer) {
             if (timer == null) {
@@ -1080,7 +1084,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         public void afterCompletion(int status) {
             if (this.timer.persistent) {
                 synchronized (TimerServiceImpl.this.persistentWaitingOnTxCompletionTimers) {
-                    TimerServiceImpl.this.persistentWaitingOnTxCompletionTimers.remove(this.timer.getTimerHandle());
+                    TimerServiceImpl.this.persistentWaitingOnTxCompletionTimers.remove(this.timer.getId());
                 }
             }
             if (status == Status.STATUS_COMMITTED) {
@@ -1099,7 +1103,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             } else if (status == Status.STATUS_ROLLEDBACK) {
                 ROOT_LOGGER.debug("Rolling back timer creation: " + this.timer);
                 if (!timer.isPersistent()) {
-                    nonPersistentTimers.remove(timer.handle);
+                    nonPersistentTimers.remove(timer.getId());
                 }
                 TimerState timerState = this.timer.getState();
                 switch (timerState) {
@@ -1116,10 +1120,10 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
 
     private class NonPersistentTimerRemoveSynchronization implements Synchronization {
 
-        private final TimerHandle timerHandle;
+        private final String timerId;
 
-        private NonPersistentTimerRemoveSynchronization(final TimerHandle timerHandle) {
-            this.timerHandle = timerHandle;
+        private NonPersistentTimerRemoveSynchronization(final String timerId) {
+            this.timerId = timerId;
         }
 
         @Override
@@ -1130,7 +1134,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         @Override
         public void afterCompletion(final int status) {
             if (status == Status.STATUS_COMMITTED) {
-                nonPersistentTimers.remove(timerHandle);
+                nonPersistentTimers.remove(timerId);
             }
         }
     }
