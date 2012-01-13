@@ -26,6 +26,7 @@ import javax.swing.Action;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.JTree;
+import org.jboss.as.cli.gui.ManagementModelNode.UserObject;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -36,6 +37,9 @@ import org.jboss.dmr.ModelNode;
 public class OperationMenu extends JPopupMenu {
     private static final String[] genericOps = {"add", "read-operation-description", "read-resource-description", "read-operation-names"};
     private static final List<String> genericOpList = Arrays.asList(genericOps);
+    private static final String[] leafOps = {"write-attribute", "undefine-attribute"};
+    private static final List<String> leafOpList = Arrays.asList(leafOps);
+
     private CommandExecutor executor;
     private JTree invoker;
     private JTextField cmdText;
@@ -64,7 +68,7 @@ public class OperationMenu extends JPopupMenu {
             for (ModelNode name : opNames.get("result").asList()) {
                 String strName = name.asString();
                 if (node.isGeneric() && !genericOpList.contains(strName)) continue;
-                if (node.isLeaf() && !strName.equals("write-attribute")) continue;
+                if (node.isLeaf() && !leafOpList.contains(strName)) continue;
                 ModelNode opDescription = getResourceDescription(addressPath, strName);
                 add(new OperationAction(node, strName, opDescription));
             }
@@ -112,6 +116,13 @@ public class OperationMenu extends JPopupMenu {
             ModelNode requestProperties = opDescription.get("result", "request-properties");
             if ((requestProperties == null) || (!requestProperties.isDefined()) || requestProperties.asList().isEmpty()) {
                 cmdText.setText(addressPath + ":" + opName);
+                cmdText.requestFocus();
+                return;
+            }
+
+            if (node.isLeaf() && opName.equals("undefine-attribute")) {
+                UserObject usrObj = (UserObject)node.getUserObject();
+                cmdText.setText(addressPath + ":" + opName + "(name=" + usrObj.getName() + ")");
                 cmdText.requestFocus();
                 return;
             }
