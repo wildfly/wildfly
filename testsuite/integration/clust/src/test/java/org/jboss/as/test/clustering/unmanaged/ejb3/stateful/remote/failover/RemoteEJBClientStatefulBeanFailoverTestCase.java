@@ -51,6 +51,9 @@ import java.util.Hashtable;
 import java.util.Properties;
 
 /**
+ * Tests that invocations on a clustered stateful session bean from a remote EJB client, failover to
+ * other node(s) in cases like a node going down
+ *
  * @author Jaikiran Pai
  */
 @RunWith(Arquillian.class)
@@ -100,6 +103,14 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
 
     }
 
+    /**
+     * Starts 2 nodes with the clustered beans deployed on each node. Invokes a clustered SFSB a few times.
+     * Then stops a node from among the cluster (the one which received the last invocation) and continues invoking
+     * on the same SFSB. These subsequent invocations are expected to failover to the other node and also have the
+     * correct state of the SFSB.
+     *
+     * @throws Exception
+     */
     @Test
     public void testFailoverFromRemoteClientWhenOneNodeGoesDown() throws Exception {
         // Container is unmanaged, so start it ourselves
@@ -117,6 +128,7 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
         boolean container2Stopped = false;
         try {
             final RemoteCounter remoteCounter = (RemoteCounter) context.lookup(jndiName);
+            // invoke on the bean a few times
             final int NUM_TIMES = 25;
             for (int i = 0; i < NUM_TIMES; i++) {
                 final CounterResult result = remoteCounter.increment();
@@ -178,6 +190,13 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
         }
     }
 
+    /**
+     * Sets up the EJB client context to use a selector which processes and sets up EJB receivers
+     * based on this testcase specific jboss-ejb-client.properties file
+     *
+     * @return
+     * @throws IOException
+     */
     private ContextSelector<EJBClientContext> setupEJBClientContextSelector() throws IOException {
         // setup the selector
         final String clientPropertiesFile = "cluster/ejb3/stateful/failover/sfsb-failover-jboss-ejb-client.properties";
