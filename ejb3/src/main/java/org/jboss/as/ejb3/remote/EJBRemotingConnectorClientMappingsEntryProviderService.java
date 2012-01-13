@@ -46,7 +46,7 @@ import java.util.List;
 /**
  * @author Jaikiran Pai
  */
-public class EJBRemotingConnectorClientMappingsEntryProviderService implements Service<EJBRemotingConnectorClientMappingsEntryProviderService> {
+public class EJBRemotingConnectorClientMappingsEntryProviderService implements Service<Registry.RegistryEntryProvider<String, List<ClientMapping>>> {
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb").append("remoting").append("connector").append("client-mapping-entry-provider-service");
 
@@ -77,11 +77,7 @@ public class EJBRemotingConnectorClientMappingsEntryProviderService implements S
     }
 
     @Override
-    public EJBRemotingConnectorClientMappingsEntryProviderService getValue() throws IllegalStateException, IllegalArgumentException {
-        return this;
-    }
-
-    public Registry.RegistryEntryProvider<String, List<ClientMapping>> getRegistryEntryProvider() {
+    public Registry.RegistryEntryProvider<String, List<ClientMapping>> getValue() {
         return this.registryEntryProvider;
     }
 

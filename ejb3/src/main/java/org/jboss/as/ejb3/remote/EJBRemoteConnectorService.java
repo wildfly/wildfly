@@ -21,8 +21,7 @@
  */
 package org.jboss.as.ejb3.remote;
 
-import org.jboss.as.clustering.GroupMembershipNotifierRegistry;
-import org.jboss.as.clustering.registry.Registry;
+import org.jboss.as.clustering.registry.RegistryCollector;
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.remote.protocol.versionone.VersionOneProtocolChannelReceiver;
@@ -56,7 +55,6 @@ import org.xnio.OptionMap;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -71,14 +69,12 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
     private static final String EJB_CHANNEL_NAME = "jboss.ejb";
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "connector");
-    public static final ServiceName EJB_REMOTE_CONNECTOR_CLIENT_MAPPINGS_REGISTRY_SERVICE = ServiceName.JBOSS.append("ejb").append("remoting").append("connector").append("client-mappings-registry-service");
 
     private final InjectedValue<Endpoint> endpointValue = new InjectedValue<Endpoint>();
     private final InjectedValue<ExecutorService> executorService = new InjectedValue<ExecutorService>();
     private final InjectedValue<DeploymentRepository> deploymentRepositoryInjectedValue = new InjectedValue<DeploymentRepository>();
     private final InjectedValue<EJBRemoteTransactionsRepository> ejbRemoteTransactionsRepositoryInjectedValue = new InjectedValue<EJBRemoteTransactionsRepository>();
-    private final InjectedValue<GroupMembershipNotifierRegistry> clusterRegistry = new InjectedValue<GroupMembershipNotifierRegistry>();
-    private final InjectedValue<Registry> clientMappingsRegistryService = new InjectedValue<Registry>();
+    private final InjectedValue<RegistryCollector> clusterRegistryCollector = new InjectedValue<RegistryCollector>();
     private final InjectedValue<ServerEnvironment> serverEnvironment = new InjectedValue<ServerEnvironment>();
     private final ServiceName remotingConnectorServiceName;
     private volatile Registration registration;
@@ -225,7 +221,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
                         final MarshallerFactory marshallerFactory = EJBRemoteConnectorService.this.getMarshallerFactory(clientMarshallingStrategy);
                         // enroll VersionOneProtocolChannelReceiver for handling subsequent messages on this channel
                         final DeploymentRepository deploymentRepository = EJBRemoteConnectorService.this.deploymentRepositoryInjectedValue.getValue();
-                        final GroupMembershipNotifierRegistry groupMembershipNotifierRegistry = EJBRemoteConnectorService.this.clusterRegistry.getValue();
+                        final RegistryCollector<String, List<ClientMapping>> clientMappingRegistryCollector = EJBRemoteConnectorService.this.clusterRegistryCollector.getValue();
                         // populate the client-mapping cache which will be used for getting the client-mapping(s)
                         // of each node's EJB remoting connector's socketbinding. The population the cache is done lazily
                         // to handle the case where the cache service isn't started until the EJBs accessing that cache are
@@ -233,10 +229,9 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
                         // times
                         //EJBRemoteConnectorService.this.populateClientMappingsCache(serviceContainer);
                         // the registry will be available when the clustering subsytem is present, so get the value optionally
-                        final Registry<String, List<ClientMapping>> clientMappingRegistry = EJBRemoteConnectorService.this.getClientMappingsRegistry(this.serviceContainer);
                         final VersionOneProtocolChannelReceiver receiver = new VersionOneProtocolChannelReceiver(channel, deploymentRepository,
-                                EJBRemoteConnectorService.this.ejbRemoteTransactionsRepositoryInjectedValue.getValue(), groupMembershipNotifierRegistry,
-                                clientMappingRegistry, marshallerFactory, executorService.getValue());
+                                EJBRemoteConnectorService.this.ejbRemoteTransactionsRepositoryInjectedValue.getValue(), clientMappingRegistryCollector,
+                                marshallerFactory, executorService.getValue());
                         // trigger the receiving
                         receiver.startReceiving();
                         break;
@@ -269,12 +264,8 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
         return this.ejbRemoteTransactionsRepositoryInjectedValue;
     }
 
-    public Injector<GroupMembershipNotifierRegistry> getClusterRegistryInjector() {
-        return this.clusterRegistry;
-    }
-
-    public Injector<Registry> getClientMappingsRegistryServiceInjector() {
-        return this.clientMappingsRegistryService;
+    public Injector<RegistryCollector> getClusterRegistryCollectorInjector() {
+        return this.clusterRegistryCollector;
     }
 
     public Injector<ServerEnvironment> getServerEnvironmentInjector() {
@@ -291,21 +282,5 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
             throw new RuntimeException("Could not find a marshaller factory for " + marshallerStrategy + " marshalling strategy");
         }
         return marshallerFactory;
-    }
-
-    private Registry<String, List<ClientMapping>> getClientMappingsRegistry(final ServiceContainer serviceContainer) {
-        final Registry<String, List<ClientMapping>> registry = this.clientMappingsRegistryService.getOptionalValue();
-        if (registry != null) {
-            return registry;
-        }
-        // TODO: The rest of this method is a hack. We do a lookup of the registry service (in case it's not
-        // injected) because, for now, due to a possible bug in MSC, we have disabled injecting the Registry service into
-        // this class. So let's at runtime see if that option service is installed and if installed, use it
-        final ServiceController<Registry<String, List<ClientMapping>>> serviceController = (ServiceController<Registry<String, List<ClientMapping>>>) serviceContainer.getService(EJB_REMOTE_CONNECTOR_CLIENT_MAPPINGS_REGISTRY_SERVICE);
-        if (serviceController == null) {
-            return null;
-        }
-        return serviceController.getValue();
-
     }
 }

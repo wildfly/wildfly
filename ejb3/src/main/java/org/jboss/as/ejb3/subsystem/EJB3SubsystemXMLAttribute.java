@@ -32,11 +32,11 @@ public enum EJB3SubsystemXMLAttribute {
 
     ALIASES("aliases"),
 
-    BACKING_CACHE("backing-cache"),
+    BEAN_CACHE("bean-cache"),
 
+    CACHE_CONTAINER("cache-container"),
     CACHE_REF("cache-ref"),
-    CLIENT_MAPPINGS_CACHE_CONTAINER_REF("client-mappings-cache-container-ref"),
-    CLIENT_MAPPINGS_CACHE_REF("client-mappings-cache-ref"),
+    CLIENT_MAPPINGS_CACHE("client-mappings-cache"),
     CLUSTERED_CACHE_REF("clustered-cache-ref"),
     CONNECTOR_REF("connector-ref"),
     CORE_THREADS("core-threads"),

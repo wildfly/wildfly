@@ -21,7 +21,7 @@
     </caches>
     <passivation-stores>
         <file-passivation-store name="file"/>
-        <cluster-passivation-store name="cluster" backing-cache="sfsb"/>
+        <cluster-passivation-store name="cluster" cache-container="sfsb" bean-cache="repl" client-mappings-cache="client-mappings"/>
     </passivation-stores>
 
     <!-- Session bean configurations -->

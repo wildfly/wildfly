@@ -37,7 +37,6 @@ import org.jboss.msc.service.StopContext;
  * @author Paul Ferraro
  */
 public class RegistryCollectorService<K, V> implements Service<RegistryCollector<K, V>>, RegistryCollector<K, V> {
-
     private final ConcurrentMap<String, Registry<K, V>> registries = new ConcurrentHashMap<String, Registry<K, V>>();
     private final Set<Listener<K, V>> listeners = new CopyOnWriteArraySet<Listener<K, V>>();
 

@@ -324,14 +324,6 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
     private void writeRemote(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
         writer.writeAttribute(EJB3SubsystemXMLAttribute.CONNECTOR_REF.getLocalName(), model.require(EJB3SubsystemModel.CONNECTOR_REF).asString());
         writer.writeAttribute(EJB3SubsystemXMLAttribute.THREAD_POOL_NAME.getLocalName(), model.require(EJB3SubsystemModel.THREAD_POOL_NAME).asString());
-        if (model.hasDefined(EJB3SubsystemModel.CLIENT_MAPPINGS_CACHE_CONTAINER_REF)) {
-            final String clientMappingsCacheContainerRef = model.get(EJB3SubsystemModel.CLIENT_MAPPINGS_CACHE_CONTAINER_REF).asString();
-            writer.writeAttribute(EJB3SubsystemXMLAttribute.CLIENT_MAPPINGS_CACHE_CONTAINER_REF.getLocalName(), clientMappingsCacheContainerRef);
-        }
-        if (model.hasDefined(EJB3SubsystemModel.CLIENT_MAPPINGS_CACHE_REF)) {
-            final String clientMappingsCacheRef = model.get(EJB3SubsystemModel.CLIENT_MAPPINGS_CACHE_REF).asString();
-            writer.writeAttribute(EJB3SubsystemXMLAttribute.CLIENT_MAPPINGS_CACHE_REF.getLocalName(), clientMappingsCacheRef);
-        }
     }
 
     private void writeAsync(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
@@ -483,7 +475,9 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
                 PassivationStoreResourceDefinition.IDLE_TIMEOUT.marshallAsAttribute(store, writer);
                 PassivationStoreResourceDefinition.IDLE_TIMEOUT_UNIT.marshallAsAttribute(store, writer);
                 ClusterPassivationStoreResourceDefinition.MAX_SIZE.marshallAsAttribute(store, writer);
-                ClusterPassivationStoreResourceDefinition.BACKING_CACHE.marshallAsAttribute(store, writer);
+                ClusterPassivationStoreResourceDefinition.CACHE_CONTAINER.marshallAsAttribute(store, writer);
+                ClusterPassivationStoreResourceDefinition.BEAN_CACHE.marshallAsAttribute(store, writer);
+                ClusterPassivationStoreResourceDefinition.CLIENT_MAPPINGS_CACHE.marshallAsAttribute(store, writer);
                 ClusterPassivationStoreResourceDefinition.PASSIVATE_EVENTS_ON_REPLICATE.marshallAsAttribute(store, writer);
                 writer.writeEndElement();
             }
@@ -530,8 +524,6 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
         final int count = reader.getAttributeCount();
         String connectorName = null;
         String threadPoolName = null;
-        String clientMappingsCacheContainerRef = EJB3RemoteServiceAdd.DEFAULT_CLIENT_MAPPINGS_CACHE_CONTAINER_REF;
-        String clientMappingsCacheRef = EJB3RemoteServiceAdd.DEFAULT_CLIENT_MAPPINGS_CACHE_REF;
         final EnumSet<EJB3SubsystemXMLAttribute> required = EnumSet.of(EJB3SubsystemXMLAttribute.CONNECTOR_REF, EJB3SubsystemXMLAttribute.THREAD_POOL_NAME);
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
@@ -545,12 +537,6 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
                 case THREAD_POOL_NAME:
                     threadPoolName = value;
                     break;
-                case CLIENT_MAPPINGS_CACHE_CONTAINER_REF:
-                    clientMappingsCacheContainerRef = value;
-                    break;
-                case CLIENT_MAPPINGS_CACHE_REF:
-                    clientMappingsCacheRef = value;
-                    break;
                 default:
                     throw unexpectedAttribute(reader, i);
             }
@@ -559,7 +545,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
             throw missingRequired(reader, required);
         }
         requireNoContent(reader);
-        operations.add(EJB3RemoteServiceAdd.create(connectorName, threadPoolName, clientMappingsCacheContainerRef, clientMappingsCacheRef));
+        operations.add(EJB3RemoteServiceAdd.create(connectorName, threadPoolName));
     }
 
     private void parseAsync(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
@@ -959,7 +945,9 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
         Integer maxSize = null;
         Long timeout = null;
         String unit = null;
-        String backingCache = null;
+        String cacheContainer = null;
+        String beanCache = null;
+        String clientMappingsCache = null;
         Boolean passivateEventsOnReplicate = null;
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             requireNoNamespaceAttribute(reader, i);
@@ -981,8 +969,16 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
                     unit = PassivationStoreResourceDefinition.IDLE_TIMEOUT_UNIT.parse(value, reader).asString();
                     break;
                 }
-                case BACKING_CACHE: {
-                    backingCache = ClusterPassivationStoreResourceDefinition.BACKING_CACHE.parse(value, reader).asString();
+                case CACHE_CONTAINER: {
+                    cacheContainer = ClusterPassivationStoreResourceDefinition.CACHE_CONTAINER.parse(value, reader).asString();
+                    break;
+                }
+                case BEAN_CACHE: {
+                    beanCache = ClusterPassivationStoreResourceDefinition.BEAN_CACHE.parse(value, reader).asString();
+                    break;
+                }
+                case CLIENT_MAPPINGS_CACHE: {
+                    clientMappingsCache = ClusterPassivationStoreResourceDefinition.CLIENT_MAPPINGS_CACHE.parse(value, reader).asString();
                     break;
                 }
                 case PASSIVATE_EVENTS_ON_REPLICATE: {
@@ -999,7 +995,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
             throw missingRequired(reader, Collections.singleton(EJB3SubsystemXMLAttribute.NAME.getLocalName()));
         }
         // create and add the operation
-        operations.add(this.createAddClusterPassivationStoreOperation(name, maxSize, timeout, unit, backingCache, passivateEventsOnReplicate));
+        operations.add(this.createAddClusterPassivationStoreOperation(name, maxSize, timeout, unit, cacheContainer, beanCache, clientMappingsCache, passivateEventsOnReplicate));
     }
 
     private void parseTimerService(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
@@ -1259,10 +1255,16 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
         return operation;
     }
 
-    private ModelNode createAddClusterPassivationStoreOperation(String name, Integer maxSize, Long idleTimeout, String idleTimeoutUnit, String backingCache, Boolean passivateEventsOnReplicate) {
+    private ModelNode createAddClusterPassivationStoreOperation(String name, Integer maxSize, Long idleTimeout, String idleTimeoutUnit, String cacheContainer, String beanCache, String clientMappingsCache, Boolean passivateEventsOnReplicate) {
         ModelNode operation = this.createAddPassivationStoreOperation(CLUSTER_PASSIVATION_STORE, name, maxSize, idleTimeout, idleTimeoutUnit);
-        if (backingCache != null) {
-            operation.get(BACKING_CACHE).set(backingCache);
+        if (cacheContainer != null) {
+            operation.get(CACHE_CONTAINER).set(cacheContainer);
+        }
+        if (beanCache != null) {
+            operation.get(BEAN_CACHE).set(beanCache);
+        }
+        if (clientMappingsCache != null) {
+            operation.get(CLIENT_MAPPINGS_CACHE).set(clientMappingsCache);
         }
         if (passivateEventsOnReplicate != null) {
             operation.get(PASSIVATE_EVENTS_ON_REPLICATE).set(passivateEventsOnReplicate);
