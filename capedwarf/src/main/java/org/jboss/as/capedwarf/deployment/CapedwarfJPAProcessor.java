@@ -22,17 +22,16 @@
 
 package org.jboss.as.capedwarf.deployment;
 
-import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
+import org.jboss.as.jpa.processor.JpaAttachments;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 
 import java.util.List;
-import java.util.Properties;
 
 /**
- * Fix CapeDwarf JPA usage - atm we use Hibernate.
+ * Fix CapeDwarf JPA usage - ignore PU service.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
@@ -44,17 +43,7 @@ public class CapedwarfJPAProcessor extends CapedwarfPersistenceProcessor {
             final List<PersistenceUnitMetadata> pus = holder.getPersistenceUnits();
             if (pus != null && pus.isEmpty() == false) {
                 for (PersistenceUnitMetadata pumd : pus) {
-                    final String providerClassName = pumd.getPersistenceProviderClassName();
-                    final boolean isProviderUndefined = (providerClassName == null || providerClassName.length() == 0);
-                    if (isProviderUndefined || Configuration.getProviderModuleNameFromProviderClassName(providerClassName) == null) {
-                        if (isProviderUndefined == false)
-                            log.debug("Changing JPA configuration - " + providerClassName + " not yet supported.");
-
-                        pumd.setPersistenceProviderClassName(Configuration.PROVIDER_CLASS_HIBERNATE); // TODO OGM usage
-                        final Properties properties = pumd.getProperties();
-                        if (properties.contains(DIALECT_PROPERTY_KEY) == false)
-                            properties.put(DIALECT_PROPERTY_KEY, DEFAULT_DIALECT);
-                    }
+                    unit.addToAttachmentList(JpaAttachments.IGNORED_PU_SERVICES, pumd.getPersistenceUnitName());
                 }
             }
         }

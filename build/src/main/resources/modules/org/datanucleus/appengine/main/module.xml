@@ -34,5 +34,6 @@
         <module name="javax.persistence.api"/>
         <module name="javax.transaction.api"/>
         <module name="org.datanucleus"/>
+        <module name="com.google.appengine"/>
     </dependencies>
 </module>

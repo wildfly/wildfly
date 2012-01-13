@@ -92,11 +92,6 @@ public class Configuration {
     public static final String PROVIDER_CLASS_DATANUCLEUS = "org.datanucleus.api.jpa.PersistenceProviderImpl";
 
     /**
-     * DataNucleus provider for GAE
-     */
-    public static final String PROVIDER_CLASS_DATANUCLEUS_GAE = "org.datanucleus.store.appengine.jpa.DatastorePersistenceProvider";
-
-    /**
      * default provider class
      */
     public static final String PROVIDER_CLASS_DEFAULT = PROVIDER_CLASS_HIBERNATE;
@@ -151,7 +146,6 @@ public class Configuration {
         providerClassToModuleName.put(PROVIDER_CLASS_TOPLINK, PROVIDER_MODULE_TOPLINK);
         providerClassToModuleName.put(PROVIDER_CLASS_ECLIPSELINK, PROVIDER_MODULE_ECLIPSELINK);
         providerClassToModuleName.put(PROVIDER_CLASS_DATANUCLEUS, PROVIDER_MODULE_DATANUCLEUS);
-        providerClassToModuleName.put(PROVIDER_CLASS_DATANUCLEUS_GAE, PROVIDER_MODULE_DATANUCLEUS_GAE);
     }
 
     /**
