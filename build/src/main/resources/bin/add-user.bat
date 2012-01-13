@@ -1,6 +1,6 @@
 @echo off
 rem -------------------------------------------------------------------------
-rem Ass User script for Windows
+rem Add User script for Windows
 rem -------------------------------------------------------------------------
 rem
 rem A simple utility for adding new users to the properties file used 
