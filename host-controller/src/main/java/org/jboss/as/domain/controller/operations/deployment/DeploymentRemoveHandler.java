@@ -41,6 +41,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.descriptions.DomainRootDescription;
 import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
+import org.jboss.as.server.file.repository.api.DeploymentFileRepository;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -59,8 +60,8 @@ public abstract class DeploymentRemoveHandler implements OperationStepHandler, D
     protected DeploymentRemoveHandler() {
     }
 
-    public static DeploymentRemoveHandler createForSlave() {
-        return new SlaveDeploymentRemoveHandler();
+    public static DeploymentRemoveHandler createForSlave(DeploymentFileRepository fileRepository) {
+        return new SlaveDeploymentRemoveHandler(fileRepository);
     }
 
     public static DeploymentRemoveHandler createForMaster(ContentRepository contentRepository) {
@@ -115,7 +116,7 @@ public abstract class DeploymentRemoveHandler implements OperationStepHandler, D
         final ContentRepository contentRepository;
 
         private MasterDeploymentRemoveHandler(ContentRepository contentRepository) {
-            super();
+            assert contentRepository != null : "Null contentRepository";
             this.contentRepository = contentRepository;
         }
 
@@ -135,13 +136,24 @@ public abstract class DeploymentRemoveHandler implements OperationStepHandler, D
     }
 
     private static class SlaveDeploymentRemoveHandler extends DeploymentRemoveHandler {
+        final DeploymentFileRepository fileRepository;
 
-        private SlaveDeploymentRemoveHandler() {
+        private SlaveDeploymentRemoveHandler(final DeploymentFileRepository fileRepository) {
+            assert fileRepository != null : "Null fileRepository";
+            this.fileRepository = fileRepository;
         }
 
         @Override
         void removeContent(List<byte[]> hashes) {
+            for (byte[] hash : hashes) {
+                try {
+                    if (fileRepository != null) {
+                        fileRepository.deleteDeployment(hash);
+                    }
+                } catch (Exception e) {
+                    DEPLOYMENT_LOGGER.debugf(e, "Exception occurred removing %s", Arrays.asList(hash));
+                }
+            }
         }
-
     }
 }

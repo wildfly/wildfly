@@ -69,6 +69,7 @@ public class DeploymentDeployHandler implements OperationStepHandler, Descriptio
         final String runtimeName = model.require(RUNTIME_NAME).asString();
         final DeploymentHandlerUtil.ContentItem[] contents = getContents(model.require(CONTENT));
         DeploymentHandlerUtil.deploy(context, runtimeName, name, contents);
+
         context.completeStep();
     }
 }

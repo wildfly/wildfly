@@ -49,4 +49,11 @@ public interface DeploymentFileRepository {
      */
     File getDeploymentRoot(byte[] deploymentHash);
 
+    /**
+     * Deletes a deployment from the local file system
+     *
+     * @param deploymentHash the hash of the deployment unit
+     */
+    void deleteDeployment(byte[] deploymentHash);
+
 }

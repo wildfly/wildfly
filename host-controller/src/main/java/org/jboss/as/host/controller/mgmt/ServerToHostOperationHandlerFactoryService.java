@@ -22,28 +22,40 @@
 
 package org.jboss.as.host.controller.mgmt;
 
-import static org.jboss.as.process.protocol.ProtocolUtils.expectHeader;
 import static org.jboss.as.host.controller.HostControllerLogger.CONTROLLER_MANAGEMENT_LOGGER;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
+import static org.jboss.as.process.protocol.ProtocolUtils.expectHeader;
 
 import java.io.DataInput;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.concurrent.ExecutorService;
 
+import org.jboss.as.controller.HashUtil;
+import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
+import org.jboss.as.protocol.mgmt.ActiveOperation;
+import org.jboss.as.protocol.mgmt.ActiveOperation.ResultHandler;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
-import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
+import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
 import org.jboss.as.protocol.mgmt.ManagementProtocolHeader;
+import org.jboss.as.protocol.mgmt.ManagementRequestContext;
+import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.as.protocol.mgmt.ProtocolUtils;
+import org.jboss.as.protocol.mgmt.RequestProcessingException;
 import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
-import org.jboss.as.host.controller.ServerInventory;
+import org.jboss.as.server.file.repository.api.DeploymentFileRepository;
+import org.jboss.as.server.file.repository.impl.RemoteFileRequestAndHandler.RootFileReader;
 import org.jboss.as.server.mgmt.domain.DomainServerProtocol;
 import org.jboss.as.server.mgmt.domain.HostControllerServerClient;
+import org.jboss.as.server.mgmt.domain.ServerToHostRemoteFileRequestAndHandler;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -70,13 +82,15 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
 
     private final ExecutorService executorService;
     private final InjectedValue<ServerInventory> callback = new InjectedValue<ServerInventory>();
+    private final DeploymentFileRepository deploymentFileRepository;
 
-    private ServerToHostOperationHandlerFactoryService(final ExecutorService executorService) {
+    private ServerToHostOperationHandlerFactoryService(final ExecutorService executorService, final DeploymentFileRepository deploymentFileRepository) {
         this.executorService = executorService;
+        this.deploymentFileRepository = deploymentFileRepository;
     }
 
-    public static void install(final ServiceTarget serviceTarget, final ServiceName serverInventoryName, final ExecutorService executorService) {
-        final ServerToHostOperationHandlerFactoryService serverToHost = new ServerToHostOperationHandlerFactoryService(executorService);
+    public static void install(final ServiceTarget serviceTarget, final ServiceName serverInventoryName, final ExecutorService executorService, final DeploymentFileRepository deploymentFileRepository) {
+        final ServerToHostOperationHandlerFactoryService serverToHost = new ServerToHostOperationHandlerFactoryService(executorService, deploymentFileRepository);
         serviceTarget.addService(ServerToHostOperationHandlerFactoryService.SERVICE_NAME, serverToHost)
             .addDependency(serverInventoryName, ServerInventory.class, serverToHost.callback)
             .install();
@@ -110,6 +124,7 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
     private class InitialMessageHandler extends ManagementChannelReceiver {
 
         private final ExecutorService executorService;
+        private volatile ManagementMessageHandler proxyHandler;
 
         private InitialMessageHandler(ExecutorService executorService) {
             this.executorService = executorService;
@@ -141,14 +156,14 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
                         ServerToHostOperationHandlerFactoryService.this.callback.getValue().serverCommunicationRegistered(serverName, mgmtChannel, new ServerInventory.ProxyCreatedCallback() {
                             @Override
                             public void proxyOperationHandlerCreated(final ManagementMessageHandler handler) {
+
                                 channel.addCloseHandler(new CloseHandler<Channel>() {
                                     @Override
                                     public void handleClose(Channel closed, IOException exception) {
                                         handler.shutdownNow();
                                     }
                                 });
-                                final Channel.Receiver receiver = ManagementChannelReceiver.createDelegating(handler);
-                                mgmtChannel.receiveMessage(receiver);
+                                InitialMessageHandler.this.proxyHandler = handler;
                                 // Send the response once the server is fully registered
                                 safeWriteResponse(channel, header, null);
                             }
@@ -164,9 +179,46 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
 
         @Override
         protected Channel.Receiver next() {
-            return null; // next is proxyOperationHandlerCreated
+            return new ManagementChannelReceiver() {
+
+                @Override
+                public void handleMessage(final Channel channel, final DataInput input, final ManagementProtocolHeader header) throws IOException {
+                    final byte type = header.getType();
+                    if(type == ManagementProtocol.TYPE_REQUEST) {
+                        final ManagementRequestHeader request = (ManagementRequestHeader) header;
+                        final byte op = request.getOperationId();
+                        if (op == DomainServerProtocol.GET_FILE_REQUEST) {
+                            AbstractMessageHandler<ModelNode, Void> operationHandler = new AbstractMessageHandler<ModelNode, Void>(executorService) {
+                                public void handleMessage(final Channel channel, final DataInput input, final ManagementProtocolHeader header) throws IOException {
+                                    final ActiveOperation<ModelNode, Void> support = super.registerActiveOperation(((ManagementRequestHeader)header).getBatchId(), null);
+                                    super.handleMessage(channel, input, header, support, new GetFileOperation());
+                                }
+                            };
+                            operationHandler.handleMessage(channel, input, header);
+                        } else {
+                            proxyHandler.handleMessage(channel, input, header);
+                        }
+                    }
+                }
+            };
+        };
+    }
+
+    private class GetFileOperation implements ManagementRequestHandler<ModelNode, Void> {
+
+        @Override
+        public void handleRequest(DataInput input, ResultHandler<ModelNode> resultHandler, ManagementRequestContext<Void> context)
+                throws IOException {
+            final RootFileReader reader = new RootFileReader() {
+                public File readRootFile(byte rootId, String filePath) throws RequestProcessingException {
+                    byte[] hash = HashUtil.hexStringToByteArray(filePath);
+                    return deploymentFileRepository.getDeploymentRoot(hash);
+                }
+            };
+            ServerToHostRemoteFileRequestAndHandler.INSTANCE.handleRequest(input, reader, context);
         }
     }
+
 
     protected static void safeWriteResponse(final Channel channel, final ManagementProtocolHeader header, final Exception error) {
         if(header.getType() == ManagementProtocol.TYPE_REQUEST) {

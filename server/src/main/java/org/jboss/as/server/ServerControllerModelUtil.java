@@ -96,6 +96,7 @@ import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
 import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
 import org.jboss.as.platform.mbean.PlatformMBeanResourceRegistrar;
+import org.jboss.as.server.ServerEnvironment.LaunchType;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionConstants;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
 import org.jboss.as.server.controller.descriptions.ServerDescriptions;
@@ -114,6 +115,7 @@ import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.as.server.mgmt.HttpManagementResourceDefinition;
 import org.jboss.as.server.mgmt.NativeManagementResourceDefinition;
 import org.jboss.as.server.mgmt.NativeRemotingManagementResourceDefinition;
+import org.jboss.as.server.mgmt.domain.RemoteFileRepository;
 import org.jboss.as.server.operations.DumpServicesHandler;
 import org.jboss.as.server.operations.LaunchTypeHandler;
 import org.jboss.as.server.operations.ProcessTypeHandler;
@@ -189,8 +191,10 @@ public class ServerControllerModelUtil {
                                       final ControlledProcessState processState,
                                       final RunningModeControl runningModeControl,
                                       final AbstractVaultReader vaultReader,
-                                      ExtensionRegistry extensionRegistry,
-                                      final boolean parallelBoot) {
+                                      final ExtensionRegistry extensionRegistry,
+                                      final boolean parallelBoot,
+                                      final RemoteFileRepository remoteFileRepository) {
+        boolean isDomain = serverEnvironment == null ? true : serverEnvironment.getLaunchType() == LaunchType.DOMAIN;
         // Build up the core model registry
         root.registerReadWriteAttribute(NAME, null, new StringLengthValidatingHandler(1), AttributeAccess.Storage.CONFIGURATION);
         if (serverEnvironment != null && serverEnvironment.getLaunchType() == ServerEnvironment.LaunchType.DOMAIN) {
@@ -326,7 +330,8 @@ public class ServerControllerModelUtil {
 
         // Deployments
         ManagementResourceRegistration deployments = root.registerSubModel(PathElement.pathElement(DEPLOYMENT), ServerDescriptionProviders.DEPLOYMENT_PROVIDER);
-        DeploymentAddHandler dah = new DeploymentAddHandler(contentRepository);
+        DeploymentAddHandler dah = serverEnvironment == null || serverEnvironment.getLaunchType() == LaunchType.DOMAIN ?
+                DeploymentAddHandler.createForDomainServer(contentRepository, remoteFileRepository) : DeploymentAddHandler.createForStandalone(contentRepository);
         deployments.registerOperationHandler(DeploymentAddHandler.OPERATION_NAME, dah, dah, false);
         DeploymentRemoveHandler dremh = new DeploymentRemoveHandler(contentRepository);
         deployments.registerOperationHandler(DeploymentRemoveHandler.OPERATION_NAME, dremh, dremh, false);

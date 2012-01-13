@@ -22,6 +22,11 @@
 
 package org.jboss.as.server;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.services.security.VaultReaderException;
@@ -209,6 +214,15 @@ public interface ServerMessages {
     @Message(id = 15832, value = "No Module Identifier attached to deployment '%s'")
     DeploymentUnitProcessingException noModuleIdentifier(String deploymentUnitName);
 
-    @Message(id = 15833, value = "Failed to create VFSResourceLoader for root [%s]")
+    @Message(id = 15834, value = "Failed to create VFSResourceLoader for root [%s]")
     DeploymentUnitProcessingException failedToCreateVFSResourceLoader(String resourceRoot, @Cause IOException cause);
+
+    @Message(id = 15835, value = "Failed to get file from remote repository")
+    RuntimeException failedToGetFileFromRemoteRepository(@Cause Throwable cause);
+
+    @Message(id = 15836, value = "Unable to create local directory: %s")
+    IOException cannotCreateLocalDirectory(File path);
+
+    @Message(id = 15837, value = "Did not read the entire file. Missing: %d")
+    IOException didNotReadEntireFile(long missing);
 }

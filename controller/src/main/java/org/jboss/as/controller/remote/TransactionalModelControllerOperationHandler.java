@@ -22,7 +22,6 @@
 package org.jboss.as.controller.remote;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-import org.jboss.as.controller.ProxyController;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
@@ -34,6 +33,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
@@ -49,7 +49,6 @@ import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Channel;
-import org.jboss.remoting3.MessageOutputStream;
 
 /**
  * This model controller relies on the clients connecting with

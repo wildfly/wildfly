@@ -38,19 +38,40 @@ public class LocalDeploymentFileRepository implements DeploymentFileRepository {
 
     /** {@inheritDoc} */
     @Override
-    public File[] getDeploymentFiles(byte[] hash) {
-        return getDeploymentRoot(hash).listFiles();
+    public File[] getDeploymentFiles(byte[] deploymentHash) {
+        return getDeploymentRoot(deploymentHash).listFiles();
     }
 
     /** {@inheritDoc} */
     @Override
-    public File getDeploymentRoot(byte[] hash) {
-        if (hash == null || hash.length == 0) {
+    public File getDeploymentRoot(byte[] deploymentHash) {
+        if (deploymentHash == null || deploymentHash.length == 0) {
             return deploymentRoot;
         }
-        String hex = HashUtil.bytesToHexString(hash);
+        String hex = HashUtil.bytesToHexString(deploymentHash);
         File first = new File(deploymentRoot, hex.substring(0,2));
         return new File(first, hex.substring(2));
     }
 
+    @Override
+    public void deleteDeployment(byte[] deploymentHash) {
+        File deployment = getDeploymentRoot(deploymentHash);
+        if (deployment != deploymentRoot) {
+            deleteRecursively(deployment);
+            if (deployment.getParentFile().list().length == 0) {
+                deployment.getParentFile().delete();
+            }
+        }
+    }
+
+    private void deleteRecursively(File file) {
+        if (file.exists()) {
+            if (file.isDirectory()) {
+                for (String name : file.list()) {
+                    deleteRecursively(new File(file, name));
+                }
+            }
+            file.delete();
+        }
+    }
 }

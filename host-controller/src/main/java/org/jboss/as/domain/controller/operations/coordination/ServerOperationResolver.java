@@ -4,7 +4,6 @@
 package org.jboss.as.domain.controller.operations.coordination;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
@@ -31,15 +30,10 @@ import static org.jboss.as.domain.controller.operations.coordination.DomainServe
 import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getServersForGroup;
 import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getServersForType;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -54,12 +48,9 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.domain.controller.operations.ResolveExpressionOnDomainHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentFullReplaceHandler;
-import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.vfs.VirtualFile;
-import org.xnio.IoUtils;
 
 /**
  * Logic for creating a server-level operation that realizes the effect
@@ -343,9 +334,7 @@ public class ServerOperationResolver {
                     if (!serverOp.hasDefined(RUNTIME_NAME)) {
                         serverOp.get(RUNTIME_NAME).set(domainDeployment.get(RUNTIME_NAME));
                     }
-                    //TODO Would be nicer to provide this as an input stream
-                    byte[] deploymentBytes = getDeploymentBytes(domainDeployment);
-                    serverOp.get(CONTENT).add(BYTES, deploymentBytes);
+                    serverOp.get(CONTENT).set(domainDeployment.require(CONTENT));
                 }
                 PathAddress serverAddress = address.subAddress(1);
                 serverOp.get(OP_ADDR).set(serverAddress.toModelNode());
@@ -356,6 +345,7 @@ public class ServerOperationResolver {
                 result = getServerSystemPropertyOperations(operation, address, Level.SERVER_GROUP, domain, affectedGroup, host);
             }
         } else if (REPLACE_DEPLOYMENT.equals(operation.require(OP).asString())) {
+            //TODO Might need to handle all the deployment ops here
             String groupName = address.getElement(0).getValue();
             Set<ServerIdentity> servers = getServersForGroup(groupName, host, localHostName, serverProxies);
             ModelNode serverOp = operation.clone();
@@ -371,35 +361,6 @@ public class ServerOperationResolver {
             result = Collections.emptyMap();
         }
         return result;
-    }
-
-    private byte[] getDeploymentBytes(ModelNode domainDeployment) {
-        List<byte[]> list = DeploymentUtils.getDeploymentHash(domainDeployment);
-        if (list.size() != 1) {
-            MESSAGES.expectedOnlyOneDeployment(list.size());
-        }
-
-        VirtualFile file = contentRepository.getContent(list.get(0));
-        if (file == null) {
-            throw MESSAGES.deploymentHashNotFoundInRepository(Arrays.toString(list.get(0)));
-        }
-        ByteArrayOutputStream out;
-        try {
-            out = new ByteArrayOutputStream();
-            InputStream in = file.openStream();
-            try {
-                int i = in.read();
-                while (i != -1) {
-                    out.write(i);
-                    i = in.read();
-                }
-            } finally {
-                IoUtils.safeClose(in);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return out.toByteArray();
     }
 
     private Map<Set<ServerIdentity>, ModelNode> resolveDomainRootOperation(ModelNode operation, ModelNode domain, ModelNode host) {

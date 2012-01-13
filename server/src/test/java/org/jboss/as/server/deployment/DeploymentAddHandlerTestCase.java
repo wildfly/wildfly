@@ -22,8 +22,8 @@
 package org.jboss.as.server.deployment;
 
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
@@ -52,7 +52,7 @@ public class DeploymentAddHandlerTestCase {
     @Test
     public void testContent() throws OperationFailedException {
         final ContentRepository contentRepository = null;
-        final DeploymentAddHandler handler = new DeploymentAddHandler(contentRepository);
+        final DeploymentAddHandler handler = DeploymentAddHandler.createForStandalone(contentRepository);
         final OperationContext context = Mockito.mock(OperationContext.class);
         Mockito.when(context.getResult()).thenReturn(new ModelNode());
         Mockito.when(context.readModelForUpdate(PathAddress.EMPTY_ADDRESS)).thenReturn(new ModelNode());
@@ -71,7 +71,7 @@ public class DeploymentAddHandlerTestCase {
     @Test (expected = OperationFailedException.class)
     public void testTooMuchContent() throws OperationFailedException {
         final ContentRepository contentRepository = null;
-        final DeploymentAddHandler handler = new DeploymentAddHandler(contentRepository);
+        final DeploymentAddHandler handler = DeploymentAddHandler.createForStandalone(contentRepository);
         final OperationContext context = Mockito.mock(OperationContext.class);
         final ModelNode operation = new ModelNode();
         //operation.get("address").setEmptyList().get(0).get("deployment").set("test.war");
@@ -85,7 +85,7 @@ public class DeploymentAddHandlerTestCase {
     @Test
     public void testValidator() throws OperationFailedException {
         final ContentRepository contentRepository = null;
-        final DeploymentAddHandler handler = new DeploymentAddHandler(contentRepository);
+        final DeploymentAddHandler handler = DeploymentAddHandler.createForStandalone(contentRepository);
         final OperationContext context = Mockito.mock(OperationContext.class);
         final ModelNode operation = new ModelNode();
         operation.get("content").get(0).get("archive").set("wrong");

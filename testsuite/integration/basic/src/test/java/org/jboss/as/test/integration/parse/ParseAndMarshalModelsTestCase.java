@@ -67,13 +67,13 @@ import javax.xml.namespace.QName;
 
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.BootContext;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ExpressionResolver;
-import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -87,6 +87,7 @@ import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.InterfaceAddHandler;
 import org.jboss.as.controller.operations.common.InterfaceCriteriaWriteHandler;
 import org.jboss.as.controller.operations.common.JVMHandlers;
@@ -487,7 +488,7 @@ public class ParseAndMarshalModelsTestCase {
         final ModelController controller = createController(ProcessType.STANDALONE_SERVER, model, new Setup() {
             public void setup(Resource resource, ManagementResourceRegistration rootRegistration) {
                 ServerControllerModelUtil.updateCoreModel(model, null);
-                ServerControllerModelUtil.initOperations(rootRegistration, null, persister, null, null, null, null, extensionRegistry, false);
+                ServerControllerModelUtil.initOperations(rootRegistration, null, persister, null, null, null, null, extensionRegistry, false, null);
             }
         });
 
@@ -834,6 +835,10 @@ public class ParseAndMarshalModelsTestCase {
         @Override
         public File getDeploymentRoot(byte[] deploymentHash) {
             return null;
+        }
+
+        @Override
+        public void deleteDeployment(byte[] deploymentHash) {
         }
     }
 
