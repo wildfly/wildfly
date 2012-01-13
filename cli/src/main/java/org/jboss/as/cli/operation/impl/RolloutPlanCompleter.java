@@ -54,6 +54,14 @@ public class RolloutPlanCompleter implements CommandLineCompleter {
         }
         final ParsedRolloutPlanHeader rollout = (ParsedRolloutPlanHeader) lastHeader;
 
+        if(rollout.hasProperties()) {
+            final String lastName = rollout.getLastPropertyName();
+            if(Util.ROLLBACK_ACROSS_GROUPS.startsWith(lastName)) {
+                candidates.add(Util.ROLLBACK_ACROSS_GROUPS + '}');
+            }
+            return rollout.getLastChunkIndex();
+        }
+
         if(rollout.endsOnGroupSeparator()) {
             final List<String> serverGroups = Util.getServerGroups(ctx.getModelControllerClient());
             for(String group : serverGroups) {
@@ -70,6 +78,12 @@ public class RolloutPlanCompleter implements CommandLineCompleter {
         }
 
         if(lastGroup.endsOnPropertyListEnd()) {
+            candidates.add("^");
+            candidates.add(",");
+            if(Character.isWhitespace(buffer.charAt(buffer.length() - 1))) {
+                // header properties
+                candidates.add(Util.ROLLBACK_ACROSS_GROUPS);
+            }
             return buffer.length();
         }
 
@@ -115,6 +129,15 @@ public class RolloutPlanCompleter implements CommandLineCompleter {
                 }
             }
             return lastGroup.getLastChunkIndex();
+        }
+
+        if(Character.isWhitespace(buffer.charAt(buffer.length() - 1))) {
+            candidates.add("(");
+            candidates.add("^");
+            candidates.add(",");
+            // header propersties
+            candidates.add(Util.ROLLBACK_ACROSS_GROUPS);
+            return buffer.length();
         }
 
         int result = lastGroup.getLastChunkIndex();

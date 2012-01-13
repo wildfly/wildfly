@@ -44,6 +44,9 @@ public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
 
     private static final int SEPARATOR_GROUP_SEQUENCE = 1;
     private static final int SEPARATOR_GROUP_CONCURRENT = 2;
+    private static final int SEPARATOR_PROPERTY = 3;
+    private static final int SEPARATOR_PROPERTY_LIST_START = 4;
+    private static final int SEPARATOR_PROPERTY_LIST_END = 5;
 
     private final String planId;
     private String planRef;
@@ -53,6 +56,7 @@ public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
     private SingleRolloutPlanGroup lastGroup;
     private String lastPropertyName;
     private String lastPropertyValue;
+    private int lastChunkIndex;
     private int separator = -1;
     private int lastSeparatorIndex = -1;
 
@@ -144,7 +148,7 @@ public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
     }
 
     // TODO perhaps add a list of allowed properties and their values
-    public void addProperty(String name, String value) {
+    public void addProperty(String name, String value, int valueIndex) {
         if(name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Invalid property name: " + name);
         }
@@ -158,6 +162,24 @@ public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
 
         this.lastGroup = null;
         this.separator = -1;
+        this.lastPropertyName = name;
+        this.lastPropertyValue = value;
+        this.lastChunkIndex = valueIndex;
+    }
+
+    public void addProperty(String name, int index) {
+        if(name == null || name.isEmpty()) {
+            throw new IllegalArgumentException("Invalid property name: " + name);
+        }
+        if(props == null) {
+            props = new HashMap<String,String>();
+        }
+        props.put(name, Util.TRUE);
+
+        this.lastGroup = null;
+        this.separator = -1;
+        this.lastPropertyName = name;
+        this.lastChunkIndex = index;
     }
 
     public String getProperty(String name) {
@@ -178,12 +200,53 @@ public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
         lastSeparatorIndex = index;
     }
 
+    public void propertySeparator(int index) {
+        separator = SEPARATOR_PROPERTY;
+        lastSeparatorIndex = index;
+    }
+
     public boolean endsOnGroupSeparator() {
         return separator == SEPARATOR_GROUP_SEQUENCE || separator == SEPARATOR_GROUP_CONCURRENT;
     }
 
+    public boolean endsOnPropertySeparator() {
+        return separator == SEPARATOR_PROPERTY;
+    }
+
+    public boolean endsOnPropertyListStart() {
+        return separator == SEPARATOR_PROPERTY_LIST_START;
+    }
+
+    public boolean endsOnPropertyListEnd() {
+        return separator == SEPARATOR_PROPERTY_LIST_END;
+    }
+
     public int getLastSeparatorIndex() {
         return lastSeparatorIndex;
+    }
+
+    public int getLastChunkIndex() {
+        return lastChunkIndex;
+    }
+
+    public String getLastPropertyName() {
+        return lastPropertyName;
+    }
+
+    public String getLastPropertyValue() {
+        return lastPropertyValue;
+    }
+
+    public void propertyListStart(int index) {
+        this.lastSeparatorIndex = index;
+        separator = SEPARATOR_PROPERTY_LIST_START;
+    }
+
+    public void propertyListEnd(int index) {
+        this.lastSeparatorIndex = index;
+        separator = SEPARATOR_PROPERTY_LIST_END;
+        this.lastPropertyName = null;
+        this.lastPropertyValue = null;
     }
 
     /* (non-Javadoc)

@@ -85,7 +85,7 @@ public class RolloutPlanParsingTestCase extends TestCase {
         assertFalse(handler.endsOnNodeTypeNameSeparator());
         assertFalse(handler.endsOnSeparator());
         assertFalse(handler.endsOnHeaderListStart());
-        assertFalse(handler.isRequestComplete());
+        assertTrue(handler.isRequestComplete());
         assertFalse(handler.hasHeaders());
     }
 
@@ -105,7 +105,7 @@ public class RolloutPlanParsingTestCase extends TestCase {
         assertFalse(handler.endsOnNodeTypeNameSeparator());
         assertFalse(handler.endsOnSeparator());
         assertFalse(handler.endsOnHeaderListStart());
-        assertFalse(handler.isRequestComplete());
+        assertTrue(handler.isRequestComplete());
         assertTrue(handler.hasHeaders());
 
         final List<ParsedOperationRequestHeader> headers = handler.getHeaders();
@@ -137,7 +137,7 @@ public class RolloutPlanParsingTestCase extends TestCase {
         assertFalse(handler.endsOnNodeTypeNameSeparator());
         assertFalse(handler.endsOnSeparator());
         assertFalse(handler.endsOnHeaderListStart());
-        assertFalse(handler.isRequestComplete());
+        assertTrue(handler.isRequestComplete());
         assertTrue(handler.hasHeaders());
 
         final List<ParsedOperationRequestHeader> headers = handler.getHeaders();
@@ -235,7 +235,7 @@ public class RolloutPlanParsingTestCase extends TestCase {
         assertFalse(handler.endsOnNodeTypeNameSeparator());
         assertFalse(handler.endsOnSeparator());
         assertFalse(handler.endsOnHeaderListStart());
-        assertFalse(handler.isRequestComplete());
+        assertTrue(handler.isRequestComplete());
         assertTrue(handler.hasHeaders());
 
         final List<ParsedOperationRequestHeader> headers = handler.getHeaders();
@@ -260,6 +260,39 @@ public class RolloutPlanParsingTestCase extends TestCase {
         parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout groupA(");
 
         assertTrue(handler.hasAddress());
+        assertTrue(handler.hasOperationName());
+        assertFalse(handler.hasProperties());
+        assertFalse(handler.endsOnAddressOperationNameSeparator());
+        assertFalse(handler.endsOnPropertyListStart());
+        assertFalse(handler.endsOnPropertySeparator());
+        assertFalse(handler.endsOnPropertyValueSeparator());
+        assertFalse(handler.endsOnNodeSeparator());
+        assertFalse(handler.endsOnNodeTypeNameSeparator());
+        assertFalse(handler.endsOnSeparator());
+        assertFalse(handler.endsOnHeaderListStart());
+        assertFalse(handler.isRequestComplete());
+
+        assertTrue(handler.hasHeaders());
+
+        final List<ParsedOperationRequestHeader> headers = handler.getHeaders();
+        assertEquals(1, headers.size());
+        final ParsedOperationRequestHeader header = headers.get(0);
+        assertTrue(header instanceof ParsedRolloutPlanHeader);
+        ParsedRolloutPlanHeader rollout = (ParsedRolloutPlanHeader) header;
+        final SingleRolloutPlanGroup group = rollout.getLastGroup();
+        assertNotNull(group);
+
+        assertEquals("groupA", group.getGroupName());
+        assertTrue(group.endsOnPropertyListStart());
+        assertFalse(group.endsOnPropertyListEnd());
+        assertFalse(group.hasProperties());
+    }
+
+    public void testSpaceBeforeGroupPropertiesStart() throws Exception {
+
+        parse(":do{ rollout groupA (");
+
+        assertFalse(handler.hasAddress());
         assertTrue(handler.hasOperationName());
         assertFalse(handler.hasProperties());
         assertFalse(handler.endsOnAddressOperationNameSeparator());
@@ -742,6 +775,36 @@ public class RolloutPlanParsingTestCase extends TestCase {
     }
 
     @Test
+    public void testEndsOnHeaderListEnd() throws Exception {
+
+        parse(":do{ rollout groupA }");
+
+        assertFalse(handler.hasAddress());
+        assertTrue(handler.hasOperationName());
+        assertFalse(handler.hasProperties());
+        assertFalse(handler.endsOnAddressOperationNameSeparator());
+        assertFalse(handler.endsOnPropertyListStart());
+        assertFalse(handler.endsOnPropertySeparator());
+        assertFalse(handler.endsOnPropertyValueSeparator());
+        assertFalse(handler.endsOnNodeSeparator());
+        assertFalse(handler.endsOnNodeTypeNameSeparator());
+        assertFalse(handler.endsOnSeparator());
+        assertFalse(handler.endsOnHeaderListStart());
+        assertTrue(handler.isRequestComplete());
+
+        assertTrue(handler.hasHeaders());
+
+        final List<ParsedOperationRequestHeader> headers = handler.getHeaders();
+        assertEquals(1, headers.size());
+        final ParsedOperationRequestHeader header = headers.get(0);
+        assertTrue(header instanceof ParsedRolloutPlanHeader);
+
+        final ParsedRolloutPlanHeader rollout = (ParsedRolloutPlanHeader) header;
+        assertFalse(rollout.hasProperties());
+//        assertTrue(rollout.endsOnPropertyListStart());
+    }
+
+    @Test
     public void testMix() throws Exception {
 
         parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout " +
@@ -821,7 +884,7 @@ public class RolloutPlanParsingTestCase extends TestCase {
         assertFalse(handler.endsOnNodeTypeNameSeparator());
         assertFalse(handler.endsOnSeparator());
         assertFalse(handler.endsOnHeaderListStart());
-        assertFalse(handler.isRequestComplete());
+        assertTrue(handler.isRequestComplete());
 
         assertTrue(handler.hasHeaders());
 
@@ -910,7 +973,7 @@ public class RolloutPlanParsingTestCase extends TestCase {
         assertFalse(handler.endsOnNodeTypeNameSeparator());
         assertFalse(handler.endsOnSeparator());
         assertFalse(handler.endsOnHeaderListStart());
-        assertFalse(handler.isRequestComplete());
+        assertTrue(handler.isRequestComplete());
         assertTrue(handler.hasHeaders());
 
         final List<ParsedOperationRequestHeader> headers = handler.getHeaders();
