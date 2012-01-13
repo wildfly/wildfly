@@ -708,6 +708,36 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>javax.jdo</groupId>
+                    <artifactId>jdo-api</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.datanucleus</groupId>
+                    <artifactId>datanucleus-core</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.datanucleus</groupId>
+                    <artifactId>datanucleus-api-jdo</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.datanucleus</groupId>
+                    <artifactId>datanucleus-api-jpa</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>com.google.appengine.orm</groupId>
+                    <artifactId>datanucleus-appengine</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.datanucleus</groupId>
+                    <artifactId>datanucleus-cache</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.hibernate</groupId>
                     <artifactId>hibernate-core</artifactId>
                 </dependency>

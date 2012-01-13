@@ -95,6 +95,7 @@
         <version.javax.enterprise>1.0-SP4</version.javax.enterprise>
         <version.javax.faces>1.2_15-jbossorg-2</version.javax.faces>
         <version.javax.inject.javax.inject>1</version.javax.inject.javax.inject>
+        <version.javax.jdo.api>3.0</version.javax.jdo.api>
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
         <version.javax.mail>1.4.4</version.javax.mail>
         <version.javax.validation>1.0.0.GA</version.javax.validation>
@@ -134,6 +135,9 @@
         <version.org.codehaus.plexus.plexus-utils>2.0.4</version.org.codehaus.plexus.plexus-utils>
         <version.org.codehaus.woodstox.stax2-api>3.1.1</version.org.codehaus.woodstox.stax2-api>
         <version.org.codehaus.woodstox.woodstox-core-asl>4.1.1</version.org.codehaus.woodstox.woodstox-core-asl>
+        <version.org.datanucleus>3.0.4</version.org.datanucleus>
+        <version.org.datanucleus.appengine>2.0.0-RC2</version.org.datanucleus.appengine>
+        <version.org.datanucleus.cache>3.1.0</version.org.datanucleus.cache>
         <version.org.hibernate>4.1.2.Final</version.org.hibernate>
         <version.org.hibernate.commons.annotations>4.0.1.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.1.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
@@ -3105,6 +3109,42 @@
                         <artifactId>stax-api</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.jdo</groupId>
+                <artifactId>jdo-api</artifactId>
+                <version>${version.javax.jdo.api}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.datanucleus</groupId>
+                <artifactId>datanucleus-core</artifactId>
+                <version>${version.org.datanucleus}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.datanucleus</groupId>
+                <artifactId>datanucleus-api-jdo</artifactId>
+                <version>${version.org.datanucleus}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.datanucleus</groupId>
+                <artifactId>datanucleus-api-jpa</artifactId>
+                <version>${version.org.datanucleus}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.appengine.orm</groupId>
+                <artifactId>datanucleus-appengine</artifactId>
+                <version>${version.org.datanucleus.appengine}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.datanucleus</groupId>
+                <artifactId>datanucleus-cache</artifactId>
+                <version>${version.org.datanucleus.cache}</version>
             </dependency>
 
             <dependency>

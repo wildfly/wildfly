@@ -395,6 +395,10 @@
             <maven-resource group="org.jboss.spec.javax.interceptor" artifact="jboss-interceptors-api_1.1_spec"/>
         </module-def>
 
+        <module-def name="javax.jdo.api">
+            <maven-resource group="javax.jdo" artifact="jdo-api"/>
+        </module-def>
+
         <module-def name="javax.jms.api">
             <maven-resource group="org.jboss.spec.javax.jms" artifact="jboss-jms-api_1.1_spec"/>
         </module-def>
@@ -655,6 +659,17 @@
 
         <module-def name="org.codehaus.jettison">
             <maven-resource group="org.codehaus.jettison" artifact="jettison" />
+        </module-def>
+
+        <module-def name="org.datanucleus">
+            <maven-resource group="org.datanucleus" artifact="datanucleus-core" />
+            <maven-resource group="org.datanucleus" artifact="datanucleus-api-jdo" />
+            <maven-resource group="org.datanucleus" artifact="datanucleus-api-jpa" />
+            <maven-resource group="org.datanucleus" artifact="datanucleus-cache" />
+        </module-def>
+
+        <module-def name="org.datanucleus.appengine">
+            <maven-resource group="com.google.appengine.orm" artifact="datanucleus-appengine" />
         </module-def>
 
         <module-def name="org.hibernate">
