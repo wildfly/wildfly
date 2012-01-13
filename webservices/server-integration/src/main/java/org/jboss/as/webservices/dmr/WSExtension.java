@@ -25,13 +25,36 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.registry.OperationEntry.EntryType.PRIVATE;
+import static org.jboss.as.controller.registry.AttributeAccess.Storage.CONFIGURATION;
+import static org.jboss.as.webservices.dmr.Constants.CONFIG_NAME;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONFIG;
+import static org.jboss.as.webservices.dmr.Constants.FEATURE;
+import static org.jboss.as.webservices.dmr.Constants.FEATURE_NAME;
+import static org.jboss.as.webservices.dmr.Constants.HANDLER;
+import static org.jboss.as.webservices.dmr.Constants.HANDLER_CHAIN;
+import static org.jboss.as.webservices.dmr.Constants.HANDLER_NAME;
+import static org.jboss.as.webservices.dmr.Constants.HANDLER_CLASS;
+import static org.jboss.as.webservices.dmr.Constants.MODIFY_WSDL_ADDRESS;
+import static org.jboss.as.webservices.dmr.Constants.PRE_HANDLER_CHAINS;
+import static org.jboss.as.webservices.dmr.Constants.PROPERTY;
+import static org.jboss.as.webservices.dmr.Constants.PROPERTY_NAME;
+import static org.jboss.as.webservices.dmr.Constants.PROPERTY_VALUE;
+import static org.jboss.as.webservices.dmr.Constants.POST_HANDLER_CHAINS;
+import static org.jboss.as.webservices.dmr.Constants.PROTOCOL_BINDING;
+import static org.jboss.as.webservices.dmr.Constants.PORT_NAME_PATTERN;
+import static org.jboss.as.webservices.dmr.Constants.SERVICE_NAME_PATTERN;
+import static org.jboss.as.webservices.dmr.Constants.WSDL_HOST;
+import static org.jboss.as.webservices.dmr.Constants.WSDL_PORT;
+import static org.jboss.as.webservices.dmr.Constants.WSDL_SECURE_PORT;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -47,6 +70,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 public final class WSExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "webservices";
+    private static final OperationStepHandler RELOAD_REQUIRED_HANDLER = new ReloadRequiredWriteAttributeHandler();
 
     @Override
     public void initialize(final ExtensionContext context) {
@@ -60,10 +84,40 @@ public final class WSExtension implements Extension {
         registration.registerOperationHandler(ADD, WSSubsystemAdd.INSTANCE, WSSubsystemProviders.SUBSYSTEM_ADD, false);
         registration.registerOperationHandler(DESCRIBE, WSSubsystemDescribe.INSTANCE, WSSubsystemProviders.SUBSYSTEM_DESCRIBE, false, PRIVATE);
         registration.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, WSSubsystemProviders.SUBSYSTEM_REMOVE, false);
+        // ws subystem attributes
+        registration.registerReadWriteAttribute(WSDL_HOST, null, RELOAD_REQUIRED_HANDLER, CONFIGURATION);
+        registration.registerReadWriteAttribute(WSDL_PORT, null, RELOAD_REQUIRED_HANDLER, CONFIGURATION);
+        registration.registerReadWriteAttribute(WSDL_SECURE_PORT, null, RELOAD_REQUIRED_HANDLER, CONFIGURATION);
+        registration.registerReadWriteAttribute(MODIFY_WSDL_ADDRESS, null, RELOAD_REQUIRED_HANDLER, CONFIGURATION);
         // ws endpoint configuration
         final ManagementResourceRegistration epConfigs = registration.registerSubModel(PathElement.pathElement(ENDPOINT_CONFIG), WSSubsystemProviders.ENDPOINTCONFIG_DESCRIPTION);
         epConfigs.registerOperationHandler(ADD, EndpointConfigAdd.INSTANCE, WSSubsystemProviders.ENDPOINTCONFIG_ADD_DESCRIPTION, false);
         epConfigs.registerOperationHandler(REMOVE, EndpointConfigRemove.INSTANCE, WSSubsystemProviders.ENDPOINTCONFIG_REMOVE_DESCRIPTION, false);
+        // ws endpoint configuration attributes
+        epConfigs.registerReadWriteAttribute(CONFIG_NAME, null, RELOAD_REQUIRED_HANDLER, CONFIGURATION);
+        // ws endpoint properties
+        final ManagementResourceRegistration property = epConfigs.registerSubModel(PathElement.pathElement(PROPERTY), WSSubsystemProviders.ENDPOINTCONFIG_PROPERTY_DESCRIPTION);
+        property.registerReadWriteAttribute(PROPERTY_NAME, null, RELOAD_REQUIRED_HANDLER, CONFIGURATION);
+        property.registerReadWriteAttribute(PROPERTY_VALUE, null, RELOAD_REQUIRED_HANDLER, CONFIGURATION);
+        // ws endpoint features
+        final ManagementResourceRegistration feature = epConfigs.registerSubModel(PathElement.pathElement(FEATURE), WSSubsystemProviders.ENDPOINTCONFIG_FEATURE_DESCRIPTION);
+        feature.registerReadWriteAttribute(FEATURE_NAME, null, RELOAD_REQUIRED_HANDLER, CONFIGURATION);
+        // ws endpoint pre handlers attributes
+        final ManagementResourceRegistration preHandlerChain = epConfigs.registerSubModel(PathElement.pathElement(PRE_HANDLER_CHAINS, HANDLER_CHAIN), WSSubsystemProviders.ENDPOINTCONFIG_PREHANDLER_CHAIN_DESCRIPTION);
+        preHandlerChain.registerReadWriteAttribute(PROTOCOL_BINDING, null, RELOAD_REQUIRED_HANDLER, CONFIGURATION);
+        preHandlerChain.registerReadWriteAttribute(PORT_NAME_PATTERN, null, RELOAD_REQUIRED_HANDLER, CONFIGURATION);
+        preHandlerChain.registerReadWriteAttribute(SERVICE_NAME_PATTERN, null, RELOAD_REQUIRED_HANDLER, CONFIGURATION);
+        final ManagementResourceRegistration preHandler = preHandlerChain.registerSubModel(PathElement.pathElement(HANDLER), WSSubsystemProviders.ENDPOINTCONFIG_PREHANDLER_DESCRIPTION);
+        preHandler.registerReadWriteAttribute(HANDLER_NAME, null, RELOAD_REQUIRED_HANDLER, CONFIGURATION);
+        preHandler.registerReadWriteAttribute(HANDLER_CLASS, null, RELOAD_REQUIRED_HANDLER, CONFIGURATION);
+        // ws endpoint post handlers attributes
+        final ManagementResourceRegistration postHandlerChain = epConfigs.registerSubModel(PathElement.pathElement(POST_HANDLER_CHAINS, HANDLER_CHAIN), WSSubsystemProviders.ENDPOINTCONFIG_POSTHANDLER_CHAIN_DESCRIPTION);
+        postHandlerChain.registerReadWriteAttribute(PROTOCOL_BINDING, null, RELOAD_REQUIRED_HANDLER, CONFIGURATION);
+        postHandlerChain.registerReadWriteAttribute(PORT_NAME_PATTERN, null, RELOAD_REQUIRED_HANDLER, CONFIGURATION);
+        postHandlerChain.registerReadWriteAttribute(SERVICE_NAME_PATTERN, null, RELOAD_REQUIRED_HANDLER, CONFIGURATION);
+        final ManagementResourceRegistration postHandler = postHandlerChain.registerSubModel(PathElement.pathElement(HANDLER), WSSubsystemProviders.ENDPOINTCONFIG_POSTHANDLER_DESCRIPTION);
+        postHandler.registerReadWriteAttribute(HANDLER_NAME, null, RELOAD_REQUIRED_HANDLER, CONFIGURATION);
+        postHandler.registerReadWriteAttribute(HANDLER_CLASS, null, RELOAD_REQUIRED_HANDLER, CONFIGURATION);
 
         if (registerRuntimeOnly) {
             final ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(WSSubsystemProviders.DEPLOYMENT_DESCRIPTION);
