@@ -56,8 +56,9 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
     private static final int SEPARATOR_OPERATION_ARGUMENTS = 4;
     private static final int SEPARATOR_ARG_NAME_VALUE = 5;
     private static final int SEPARATOR_ARG = 6;
-    private static final int SEPARATOR_HEADERS_START = 7;
-    private static final int SEPARATOR_HEADER = 8;
+    private static final int SEPARATOR_ARG_LIST_END = 7;
+    private static final int SEPARATOR_HEADERS_START = 8;
+    private static final int SEPARATOR_HEADER = 9;
 
     private static final DefaultOperationRequestAddress EMPTY_ADDRESS = new DefaultOperationRequestAddress();
 
@@ -168,6 +169,11 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
     @Override
     public boolean endsOnPropertyListStart() {
         return separator == SEPARATOR_OPERATION_ARGUMENTS;
+    }
+
+    @Override
+    public boolean endsOnPropertyListEnd() {
+        return separator == SEPARATOR_ARG_LIST_END;
     }
 
     @Override
@@ -364,8 +370,7 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
 
     @Override
     public void propertyListEnd(int index) {
-        separator = SEPARATOR_NONE;
-        operationComplete = true;
+        separator = SEPARATOR_ARG_LIST_END;
         this.lastSeparatorIndex = index;
         this.lastPropName = null;
         this.lastPropValue = null;
@@ -384,6 +389,7 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
         this.lastSeparatorIndex = index;
         //this.lastPropName = null;
         //this.lastPropValue = null;
+        operationComplete = true;
     }
 
     public void headerSeparator(int index) {

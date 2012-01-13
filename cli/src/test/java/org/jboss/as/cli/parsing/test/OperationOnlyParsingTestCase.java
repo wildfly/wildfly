@@ -98,7 +98,7 @@ public class OperationOnlyParsingTestCase extends BaseStateParserTest {
         assertFalse(handler.endsOnPropertyValueSeparator());
         assertFalse(handler.endsOnNodeSeparator());
         assertFalse(handler.endsOnNodeTypeNameSeparator());
-        assertTrue(handler.isRequestComplete());
+        assertFalse(handler.isRequestComplete());
 
         assertEquals("read-resource", handler.getOperationName());
     }
@@ -268,7 +268,7 @@ public class OperationOnlyParsingTestCase extends BaseStateParserTest {
         assertFalse(handler.endsOnPropertyValueSeparator());
         assertFalse(handler.endsOnNodeSeparator());
         assertFalse(handler.endsOnNodeTypeNameSeparator());
-        assertTrue(handler.isRequestComplete());
+        assertFalse(handler.isRequestComplete()); // there are headers
 
         assertEquals("read-resource", handler.getOperationName());
 

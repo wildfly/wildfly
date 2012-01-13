@@ -76,9 +76,11 @@ public class RolloutPlanHeaderCallbackHandler implements ParsingStateCallbackHan
             }
         } else if(ServerGroupSeparatorState.ID.equals(id)) {
             header.groupSequenceSeparator(ctx.getLocation());
-        } else if(group != null) {
-            if(PropertyListState.ID.equals(id)) {
+        } else if(PropertyListState.ID.equals(id)) {
+            if(group != null) {
                 group.propertyListStart(ctx.getLocation());
+            } else {
+                header.propertyListStart(ctx.getLocation());
             }
         }
         buffer.setLength(0);
@@ -101,7 +103,7 @@ public class RolloutPlanHeaderCallbackHandler implements ParsingStateCallbackHan
                 if("id".equals(name)) {
                     header.setPlanRef(value);
                 } else {
-                    header.addProperty(name, value);
+                    header.addProperty(name, value, lastChunkIndex);
                 }
             } else {
                 group.addProperty(name, value, lastChunkIndex);
@@ -114,7 +116,7 @@ public class RolloutPlanHeaderCallbackHandler implements ParsingStateCallbackHan
                 if(group != null) {
                     group.addProperty(buffer.toString().trim(), lastChunkIndex);
                 } else {
-                    header.addProperty(buffer.toString().trim(), "true");
+                    header.addProperty(buffer.toString().trim(), lastChunkIndex);
                 }
                 buffer.setLength(0);
             } else {
@@ -135,9 +137,11 @@ public class RolloutPlanHeaderCallbackHandler implements ParsingStateCallbackHan
                 header.addGroup(group);
             }
             group = null;
-        } else if(group != null && !ctx.isEndOfContent()) {
-            if(PropertyListState.ID.equals(id)) {
+        } else if(!ctx.isEndOfContent() && PropertyListState.ID.equals(id)) {
+            if(group != null) {
                 group.propertyListEnd(ctx.getLocation());
+            } else {
+                header.propertyListEnd(ctx.getLocation());
             }
         }
     }

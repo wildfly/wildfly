@@ -77,6 +77,29 @@ public class OperationOutputRedirectionParsingTestCase extends BaseStateParserTe
         assertFalse(handler.endsOnPropertyValueSeparator());
         assertFalse(handler.endsOnNodeSeparator());
         assertFalse(handler.endsOnNodeTypeNameSeparator());
+        assertFalse(handler.hasHeaders());
+        assertFalse(handler.isRequestComplete());
+
+        assertEquals("read-resource", handler.getOperationName());
+        assertEquals("cli.log", handler.getOutputTarget());
+    }
+
+    @Test
+    public void testOperationWithHeaders() throws Exception {
+        DefaultCallbackHandler handler = new DefaultCallbackHandler();
+
+        parseOperation(":  read-resource (recursive=true) {header_name=header_value} > cli.log", handler);
+
+        assertFalse(handler.hasAddress());
+        assertTrue(handler.hasOperationName());
+        assertTrue(handler.hasProperties());
+        assertFalse(handler.endsOnAddressOperationNameSeparator());
+        assertFalse(handler.endsOnPropertyListStart());
+        assertFalse(handler.endsOnPropertySeparator());
+        assertFalse(handler.endsOnPropertyValueSeparator());
+        assertFalse(handler.endsOnNodeSeparator());
+        assertFalse(handler.endsOnNodeTypeNameSeparator());
+        assertTrue(handler.hasHeaders());
         assertTrue(handler.isRequestComplete());
 
         assertEquals("read-resource", handler.getOperationName());
