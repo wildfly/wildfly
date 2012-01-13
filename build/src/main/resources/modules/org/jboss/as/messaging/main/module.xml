@@ -47,5 +47,6 @@
         <module name="org.jboss.as.connector" />
         <module name="org.jboss.as.security"/>
         <module name="org.picketbox"/>
+        <module name="org.jboss.jboss-transaction-spi"/>
     </dependencies>
 </module>

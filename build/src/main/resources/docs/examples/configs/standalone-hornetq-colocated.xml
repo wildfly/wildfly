@@ -205,12 +205,12 @@
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:messaging:1.1">
             <hornetq-server>
-                <!-- disable messaging persistence -->
-                <persistence-enabled>false</persistence-enabled>
-                <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
+   		       <clustered>true</clustered>
+                <shared-store>true</shared-store>
+                <persistence-enabled>true</persistence-enabled>
                 <journal-file-size>102400</journal-file-size>
                 <journal-min-files>2</journal-min-files>
-                <journal-type>NIO</journal-type>
+                <journal-type>ASYNCIO</journal-type>
 
                 <connectors>
                     <netty-connector name="netty" socket-binding="messaging"/>
@@ -228,6 +228,31 @@
                     </netty-acceptor>
                     <in-vm-acceptor name="in-vm" server-id="0"/>
                 </acceptors>
+
+               <broadcast-groups>
+                  <broadcast-group name="bg-group1">
+                     <group-address>231.7.7.7</group-address>
+                     <group-port>9876</group-port>
+                     <broadcast-period>5000</broadcast-period>
+                     <connector-ref>netty</connector-ref>
+                  </broadcast-group>
+               </broadcast-groups>
+
+               <discovery-groups>
+                  <discovery-group name="dg-group1">
+                     <group-address>231.7.7.7</group-address>
+                     <group-port>9876</group-port>
+                     <refresh-timeout>10000</refresh-timeout>
+                  </discovery-group>
+               </discovery-groups>
+
+               <cluster-connections>
+                  <cluster-connection name="my-cluster">
+                     <address>jms</address>
+                     <connector-ref>netty</connector-ref>
+                     <discovery-group-ref discovery-group-name="dg-group1"/>
+                  </cluster-connection>
+               </cluster-connections>
 
                 <security-settings>
                     <security-setting match="#">
@@ -289,15 +314,48 @@
                 </jms-destinations>
             </hornetq-server>
             <hornetq-server name="backup-server">
+   		       <clustered>true</clustered>
                 <backup>true</backup>
                 <shared-store>true</shared-store>
+                <persistence-enabled>true</persistence-enabled>
+                <journal-file-size>102400</journal-file-size>
+                <journal-min-files>2</journal-min-files>
+                <journal-type>ASYNCIO</journal-type>
                 <journal-directory path="messagingjournal2"/>
                 <bindings-directory path="messagingbindings2"/>
                 <paging-directory path="messagingpaging2"/>
                 <large-messages-directory path="messaginglargemessages2"/>
+                <connectors>
+                    <netty-connector name="netty" socket-binding="messaging-backup"/>
+                    <in-vm-connector name="in-vm" server-id="0"/>
+                </connectors>
                 <acceptors>
                     <netty-acceptor name="netty" socket-binding="messaging-backup"/>
                 </acceptors>
+	        <broadcast-groups>
+		      <broadcast-group name="bg-group1">
+			 <group-address>231.7.7.7</group-address>
+			 <group-port>9876</group-port>
+			 <broadcast-period>5000</broadcast-period>
+			 <connector-ref>netty</connector-ref>
+		      </broadcast-group>
+		   </broadcast-groups>
+
+		   <discovery-groups>
+		      <discovery-group name="dg-group1">
+			 <group-address>231.7.7.7</group-address>
+			 <group-port>9876</group-port>
+			 <refresh-timeout>10000</refresh-timeout>
+		      </discovery-group>
+		   </discovery-groups>
+		   
+		   <cluster-connections>
+		      <cluster-connection name="my-cluster">
+			 <address>jms</address>	 
+			 <connector-ref>netty</connector-ref>
+			      <discovery-group-ref discovery-group-name="dg-group1"/>
+		      </cluster-connection>
+		   </cluster-connections>
             </hornetq-server>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:naming:1.1"/>
