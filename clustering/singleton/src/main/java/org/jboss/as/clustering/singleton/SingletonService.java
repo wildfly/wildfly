@@ -144,7 +144,7 @@ public class SingletonService<T extends Serializable> implements Service<T>, Ser
 
         if (nodes.isEmpty()) return null;
 
-        return (this.electionPolicy == null) || (nodes.size() == 1) ? nodes.get(0) : this.electionPolicy.elect(nodes);
+        return (this.electionPolicy == null) ? nodes.get(0) : this.electionPolicy.elect(nodes);
     }
 
     private void startNewMaster() {
