@@ -1792,6 +1792,28 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 }
 
                 writer.writeEndElement();
+
+                attr = binding.get(CLIENT_MAPPINGS);
+                if (attr.isDefined()) {
+                    for (ModelNode mapping : attr.asList()) {
+                        writer.writeEmptyElement(Element.CLIENT_MAPPING.getLocalName());
+
+                        attr = binding.get(SOURCE_NETWORK);
+                        if (attr.isDefined()) {
+                            writeAttribute(writer, Attribute.SOURCE_NETWORK, attr.asString());
+                        }
+
+                        attr = binding.get(DESTINATION_ADDRESS);
+                        if (attr.isDefined()) {
+                            writeAttribute(writer, Attribute.DESTINATION_ADDRESS, attr.asString());
+                        }
+
+                        attr = binding.get(DESTINATION_PORT);
+                        if (attr.isDefined()) {
+                            writeAttribute(writer, Attribute.DESTINATION_PORT, attr.asString());
+                        }
+                    }
+                }
             }
         }
         // outbound-socket-binding (for local destination)
