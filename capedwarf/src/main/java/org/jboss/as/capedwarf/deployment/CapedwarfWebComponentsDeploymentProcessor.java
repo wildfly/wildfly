@@ -166,8 +166,8 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
 
     private ResourceReferenceMetaData createInfinispanRef() {
         ResourceReferenceMetaData ref = new ResourceReferenceMetaData();
-        ref.setResourceRefName("infinispan/capedwarf");
-        ref.setJndiName("java:jboss/infinispan/capedwarf");
+        ref.setResourceRefName("infinispan/container/capedwarf");
+        ref.setJndiName("java:jboss/infinispan/container/capedwarf");
         ref.setType("org.infinispan.manager.EmbeddedCacheManager");
         return ref;
     }
