@@ -21,13 +21,8 @@
  */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
-import java.util.List;
-import java.util.Map;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
 import org.jboss.as.connector.pool.PoolOperations;
+import org.jboss.as.connector.subsystems.datasources.DisableRequiredWriteAttributeHandler;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathElement;
@@ -53,6 +48,11 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import java.util.List;
+import java.util.Map;
 
 import static org.jboss.as.connector.ConnectorLogger.SUBSYSTEM_RA_LOGGER;
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION;
@@ -103,6 +103,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapter
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.ADMIN_OBJECT_DESC;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.CONFIG_PROPERTIES_DESC;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.CONNECTION_DEFINITION_DESC;
+import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.ACTIVATE_RA_DESC;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.FLUSH_ALL_CONNECTION_DESC;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.FLUSH_IDLE_CONNECTION_DESC;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.REMOVE_ADMIN_OBJECT_DESC;
@@ -134,7 +135,7 @@ public class ResourceAdaptersExtension implements Extension {
         // Register the remoting subsystem
         final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
 
-        ReloadRequiredWriteAttributeHandler reloadRequiredWriteAttributeHandler = new ReloadRequiredWriteAttributeHandler();
+        ReloadRequiredWriteAttributeHandler disabledRequiredWriteAttributeHandler = new  ReloadRequiredWriteAttributeHandler();
 
 
         registration.registerXMLElementWriter(ResourceAdapterSubsystemParser.INSTANCE);
@@ -149,9 +150,11 @@ public class ResourceAdaptersExtension implements Extension {
                 RESOURCEADAPTER_DESC);
         resourceadapter.registerOperationHandler(ADD, RaAdd.INSTANCE, ADD_RESOURCEADAPTER_DESC, false);
         resourceadapter.registerOperationHandler(REMOVE, RaRemove.INSTANCE, REMOVE_RESOURCEADAPTER_DESC, false);
+        resourceadapter.registerOperationHandler("activate", RaActivate.INSTANCE, ACTIVATE_RA_DESC, false);
+
         for (final String attribute : ResourceAdaptersSubsystemProviders.RESOURCEADAPTER_ATTRIBUTE) {
             resourceadapter.registerReadWriteAttribute(attribute, null,
-                    reloadRequiredWriteAttributeHandler, Storage.CONFIGURATION);
+                    disabledRequiredWriteAttributeHandler, Storage.CONFIGURATION);
         }
 
         final ManagementResourceRegistration configAdapter = resourceadapter.registerSubModel(PathElement.pathElement(CONFIG_PROPERTIES.getName()), CONFIG_PROPERTIES_DESC);
@@ -167,7 +170,7 @@ public class ResourceAdaptersExtension implements Extension {
         configCF.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, REMOVE_CONFIG_PROPERTIES_DESC, false);
         for (final SimpleAttributeDefinition attribute : ResourceAdaptersSubsystemProviders.CONNECTIONDEFINITIONS_NODEATTRIBUTE) {
             connectionDefinition.registerReadWriteAttribute(attribute.getName(), null,
-                    reloadRequiredWriteAttributeHandler, Storage.CONFIGURATION);
+                    disabledRequiredWriteAttributeHandler, Storage.CONFIGURATION);
         }
 
         final ManagementResourceRegistration adminObject = resourceadapter.registerSubModel(PathElement.pathElement(ADMIN_OBJECTS_NAME), ADMIN_OBJECT_DESC);
@@ -179,7 +182,7 @@ public class ResourceAdaptersExtension implements Extension {
         configAO.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, REMOVE_CONFIG_PROPERTIES_DESC, false);
         for (final SimpleAttributeDefinition attribute : ResourceAdaptersSubsystemProviders.ADMIN_OBJECTS_NODEATTRIBUTE) {
             adminObject.registerReadWriteAttribute(attribute.getName(), null,
-                    reloadRequiredWriteAttributeHandler, Storage.CONFIGURATION);
+                    disabledRequiredWriteAttributeHandler, Storage.CONFIGURATION);
         }
 
         if (context.isRuntimeOnlyRegistrationValid()) {
@@ -226,8 +229,17 @@ public class ResourceAdaptersExtension implements Extension {
 
         private void writeRaElement(XMLExtendedStreamWriter streamWriter, ModelNode ra) throws XMLStreamException {
             streamWriter.writeStartElement(ResourceAdapters.Tag.RESOURCE_ADAPTER.getLocalName());
+            if (ra.hasDefined(ARCHIVE.getName())) {
+                streamWriter.writeStartElement(ARCHIVE.getXmlName());
+                String archive = ra.get(ARCHIVE.getName()).asString();
+                if (archive.contains("#")) {
+                    streamWriter.writeCharacters(archive.substring(0, archive.indexOf("#")));
+                } else {
+                    streamWriter.writeCharacters(archive);
+                }
 
-            ARCHIVE.marshallAsElement(ra, streamWriter);
+                streamWriter.writeEndElement();
+            }
             BOOTSTRAPCONTEXT.marshallAsElement(ra, streamWriter);
 
             if (ra.hasDefined(BEANVALIDATIONGROUPS.getName())) {

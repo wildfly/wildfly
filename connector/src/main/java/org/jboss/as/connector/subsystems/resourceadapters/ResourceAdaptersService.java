@@ -67,11 +67,12 @@ public final class ResourceAdaptersService implements Service<ResourceAdaptersSe
 
         /**
          * Get the resourceAdapters.
+         *
          * @return the resourceAdapters.
          */
         @Override
         public List<ResourceAdapter> getResourceAdapters() {
-            return Collections.unmodifiableList(resourceAdapters);
+            return (List<ResourceAdapter>) Collections.unmodifiableList(resourceAdapters);
         }
 
         public boolean addResourceAdapter(ResourceAdapter ra) {

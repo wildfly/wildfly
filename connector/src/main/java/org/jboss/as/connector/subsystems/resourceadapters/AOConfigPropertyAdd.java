@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -46,7 +47,7 @@ import org.jboss.msc.service.ServiceTarget;
  * Adds a recovery-environment to the Transactions subsystem
  *
  */
-public class AOConfigPropertyAdd extends AbstractBoottimeAddStepHandler implements DescriptionProvider {
+public class AOConfigPropertyAdd extends AbstractAddStepHandler implements DescriptionProvider {
 
     public static final AOConfigPropertyAdd INSTANCE = new AOConfigPropertyAdd();
 
@@ -69,7 +70,7 @@ public class AOConfigPropertyAdd extends AbstractBoottimeAddStepHandler implemen
     }
 
     @Override
-    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode recoveryEnvModel,
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode recoveryEnvModel,
                                   ServiceVerificationHandler verificationHandler,
                                   List<ServiceController<?>> serviceControllers) throws OperationFailedException {
 
@@ -90,7 +91,6 @@ public class AOConfigPropertyAdd extends AbstractBoottimeAddStepHandler implemen
                     .addDependency(aoServiceName, ModifiableAdminObject.class, service.getAOInjector() )
                     .addListener(verificationHandler).install();
 
-        context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
     }
 
 }

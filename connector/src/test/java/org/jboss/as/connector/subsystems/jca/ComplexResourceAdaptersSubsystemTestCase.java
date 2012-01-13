@@ -30,6 +30,7 @@ import java.util.Properties;
 
 import junit.framework.Assert;
 
+import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension;
 import org.jboss.as.controller.OperationContext.Type;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
@@ -67,6 +68,7 @@ public class ComplexResourceAdaptersSubsystemTestCase extends AbstractSubsystemT
         }, xml);
 
         ModelNode model = services.readWholeModel();
+        ConnectorServices.unregisterResourceIdentifiers("some.rar");
 
         // Check model..
         Properties params=raCommonProperties();
@@ -74,7 +76,7 @@ public class ComplexResourceAdaptersSubsystemTestCase extends AbstractSubsystemT
         checkModelParams(raCommonModel,params);
         Assert.assertEquals(raCommonModel.asString(),"A",raCommonModel.get("config-properties","Property","value").asString());
         Assert.assertEquals(raCommonModel.get("beanvalidationgroups").asString(),raCommonModel.get("beanvalidationgroups").asString(), "[\"Class0\",\"Class00\"]");
-        
+
         params=raAdminProperties();
         ModelNode raAdminModel=raCommonModel.get("admin-objects", "Pool2");
         checkModelParams(raAdminModel,params);
@@ -89,7 +91,6 @@ public class ComplexResourceAdaptersSubsystemTestCase extends AbstractSubsystemT
         //Marshal the xml to see that it is the same as before
         String marshalled = services.getPersistedSubsystemXml();
         Assert.assertEquals(normalizeXML(xml), normalizeXML(marshalled));
-
         services = super.installInController(new AdditionalInitialization() {
 
             @Override

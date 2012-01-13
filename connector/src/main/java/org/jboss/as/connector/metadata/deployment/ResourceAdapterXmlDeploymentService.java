@@ -116,9 +116,10 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
             ServiceName raServiceName = ConnectorServices.registerResourceAdapter(raName);
 
             context.getChildTarget()
-                .addService(raServiceName,
-                            new ResourceAdapterService(raName, raServiceName, value.getDeployment().getResourceAdapter())).setInitialMode(ServiceController.Mode.ACTIVE)
-               .install();
+                    .addService(raServiceName,
+                            new ResourceAdapterService(raName, raServiceName, value.getDeployment().getResourceAdapter()))
+                    .addDependency(deploymentServiceName)
+                    .setInitialMode(ServiceController.Mode.ACTIVE).install();
         } catch (Exception e) {
             throw new StartException(e);
         }

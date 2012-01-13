@@ -41,6 +41,7 @@ import java.util.Map;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.util.ParserException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.CommonBundle;
@@ -149,6 +150,12 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                 case END_ELEMENT: {
                     if (ResourceAdapters.Tag.forName(reader.getLocalName()) == ResourceAdapters.Tag.RESOURCE_ADAPTER) {
                         if (archiveName != null) {
+
+                            Integer identifier = ConnectorServices.getResourceIdentifier(archiveName);
+                            if (identifier != null && identifier != 0) {
+                                archiveName = archiveName + "#" + identifier;
+                            }
+
                             raAddress.add(RESOURCEADAPTER_NAME, archiveName);
 
                             raAddress.protect();
