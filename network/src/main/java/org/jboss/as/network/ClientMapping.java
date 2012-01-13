@@ -34,7 +34,7 @@ public class ClientMapping {
     private final InetAddress sourceNetworkAddress;
     private final byte sourceNetworkMaskBits;
     private final String destinationAddress;
-    private final int destinationPort;
+    private volatile int destinationPort = -1;
 
 
     /**
@@ -89,12 +89,16 @@ public class ClientMapping {
     }
 
     /**
-     * The destination port that the client should connect to. If the vale is -1 the effect server side port, which
-     * includes accounting for offsets should be passed to the client.
+     * The destination port that the client should connect to. -1 is returned if not yet known
      *
-     * @return the port to connect to, or -1 if the server side port should be used.
+     * @return the port or -1 if not yet known
      */
     public int getDestinationPort() {
         return destinationPort;
+    }
+
+    void updatePortIfUnknown(int port) {
+        if (port == -1)
+            this.destinationPort = port;
     }
 }

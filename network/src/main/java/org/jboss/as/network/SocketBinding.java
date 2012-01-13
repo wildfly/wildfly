@@ -64,7 +64,15 @@ public final class SocketBinding {
         this.multicastPort = multicastPort;
         this.socketBindings = socketBindings;
         this.networkInterface = networkInterface;
-        this.clientMappings = clientMappings == null ? Collections.<ClientMapping>emptyList() : clientMappings;
+        this.clientMappings = clientMappings == null ? Collections.<ClientMapping>emptyList() : fixupMappings(clientMappings);
+    }
+
+    private List<ClientMapping> fixupMappings(List<ClientMapping> clientMappings) {
+        for (ClientMapping mapping : clientMappings) {
+            mapping.updatePortIfUnknown(calculatePort());
+        }
+
+        return clientMappings;
     }
 
     /**
@@ -103,16 +111,21 @@ public final class SocketBinding {
         return socketBindings;
     }
 
+    private int calculatePort() {
+        int port = this.port;
+        if (port > 0 && isFixedPort == false) {
+            port += socketBindings.getPortOffset();
+        }
+        return port;
+    }
+
     /**
      * Get the socket address.
      *
      * @return the socket address
      */
     public InetSocketAddress getSocketAddress() {
-        int port = this.port;
-        if (port > 0 && isFixedPort == false) {
-            port += socketBindings.getPortOffset();
-        }
+        int port = calculatePort();
         return new InetSocketAddress(getAddress(), port);
     }
 
