@@ -66,6 +66,7 @@ public abstract class RemoteFileRequestAndHandler {
 
     public void handleResponse(DataInput input, File localPath, BasicLogger log, ActiveOperation.ResultHandler<File> resultHandler, ManagementRequestContext<Void> context)
             throws IOException, CannotCreateLocalDirectoryException, DidNotReadEntireFileException{
+        System.out.println("---Local path for writing " + localPath);
         expectHeader(input, protocol.paramNumFiles());
         int numFiles = input.readInt();
         log.debugf("Received %d files for %s", numFiles, localPath);
@@ -86,6 +87,7 @@ public abstract class RemoteFileRequestAndHandler {
                     final String path = input.readUTF();
                     expectHeader(input, protocol.paramFileSize());
                     final long length = input.readLong();
+                    System.out.println("---Received file with path " + path);
                     log.debugf("Received file [%s] of length %d", path, length);
                     final File file = new File(localPath, path);
                     if (!file.getParentFile().exists() && !file.getParentFile().mkdirs()) {
@@ -94,6 +96,7 @@ public abstract class RemoteFileRequestAndHandler {
                     long totalRead = 0;
                     OutputStream fileOut = null;
                     try {
+                        System.out.println("--- Writing local file " + file);
                         fileOut = new BufferedOutputStream(new FileOutputStream(file));
                         final byte[] buffer = new byte[8192];
                         while (totalRead < length) {
@@ -116,13 +119,19 @@ public abstract class RemoteFileRequestAndHandler {
             }
         }
         resultHandler.done(localPath);
+        System.out.println("---- get file done");
     }
 
     public void handleRequest(final DataInput input, final RootFileReader reader, final ManagementRequestContext<Void> context) throws IOException {
+        expectHeader(input, protocol.paramRootId());
+        final byte rootId = input.readByte();
+        expectHeader(input, protocol.paramFilePath());
+        final String filePath = input.readUTF();
+
         context.executeAsync(new ManagementRequestContext.AsyncTask<Void>() {
             @Override
             public void execute(ManagementRequestContext<Void> context) throws Exception {
-                final File localPath = reader.readRootFile();
+                final File localPath = reader.readRootFile(rootId, filePath);
                 //final FlushableDataOutput output = writeGenericResponseHeader(context);
                 FlushableDataOutput output = context.writeMessage(ManagementResponseHeader.create(context.getRequestHeader()));
                 try {
@@ -138,6 +147,7 @@ public abstract class RemoteFileRequestAndHandler {
     private void writeResponse(final File localPath, final FlushableDataOutput output) throws IOException {
         output.writeByte(protocol.paramNumFiles());
         if (localPath == null || !localPath.exists()) {
+            System.out.println("--- File does not exist");
             output.writeInt(-1);
         } else if (localPath.isFile()) {
             output.writeInt(1);
@@ -172,6 +182,8 @@ public abstract class RemoteFileRequestAndHandler {
     }
 
     private void writeFile(final File localPath, final File file, final FlushableDataOutput output) throws IOException {
+        System.out.println("--- Writing file " + localPath + ":" + file);
+
         output.writeByte(protocol.fileStart());
         output.writeByte(protocol.paramFilePath());
         output.writeUTF(getRelativePath(localPath, file));
@@ -213,7 +225,7 @@ public abstract class RemoteFileRequestAndHandler {
      * Reads the root file being got
      */
     public interface RootFileReader {
-        File readRootFile() throws RequestProcessingException;
+        File readRootFile(byte rootId, String filePath) throws RequestProcessingException;
     }
 
     /**

@@ -22,15 +22,6 @@
 
 package org.jboss.as.protocol.mgmt;
 
-import org.jboss.as.protocol.ProtocolLogger;
-import org.jboss.as.protocol.ProtocolMessages;
-import org.jboss.as.protocol.StreamUtils;
-import org.jboss.remoting3.Channel;
-import org.jboss.remoting3.CloseHandler;
-import org.jboss.remoting3.MessageOutputStream;
-import org.jboss.threads.AsyncFuture;
-import org.xnio.Cancellable;
-
 import java.io.DataInput;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -41,6 +32,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.jboss.as.protocol.ProtocolLogger;
+import org.jboss.as.protocol.ProtocolMessages;
+import org.jboss.as.protocol.StreamUtils;
+import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.CloseHandler;
+import org.jboss.remoting3.MessageOutputStream;
+import org.jboss.threads.AsyncFuture;
+import org.xnio.Cancellable;
 
 /**
  * Utility class for request/response handling
@@ -230,6 +230,7 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
     protected void handleMessage(final Channel channel, final DataInput message, final ManagementProtocolHeader header,
                                  final ActiveOperation<T, A> support, final ManagementRequestHandler<T, A> handler) {
         assert support != null;
+
         final ActiveOperation.ResultHandler<T> resultHandler = support.getResultHandler();
         try {
             handler.handleRequest(message, resultHandler, new ManagementRequestContext<A>() {

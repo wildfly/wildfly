@@ -23,6 +23,7 @@
 package org.jboss.as.server.mgmt.domain;
 
 import java.io.DataInput;
+import java.io.File;
 import java.io.IOException;
 import java.security.AccessController;
 import java.util.concurrent.ExecutorService;
@@ -34,13 +35,18 @@ import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
 import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
+import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
 import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
+import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.file.repository.impl.RemoteFileRequestAndHandler.CannotCreateLocalDirectoryException;
+import org.jboss.as.server.file.repository.impl.RemoteFileRequestAndHandler.DidNotReadEntireFileException;
+import org.jboss.as.server.mgmt.domain.RemoteFileRepository.RemoteFileRepositoryExecutor;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -67,13 +73,14 @@ public class HostControllerServerClient implements Service<HostControllerServerC
 
     private final InjectedValue<Channel> hcChannel = new InjectedValue<Channel>();
     private final InjectedValue<ModelController> controller = new InjectedValue<ModelController>();
+    private final InjectedValue<RemoteFileRepository> remoteFileRepositoryValue = new InjectedValue<RemoteFileRepository>();
 
     private final String serverName;
     private final String serverProcessName;
     private final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("host-controller-connection-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
     private final ExecutorService executor = Executors.newCachedThreadPool(threadFactory);
-
-    private volatile ManagementMessageHandler handler;
+    private volatile HostControllerServerHandler registerHandler;
+    //private volatile AbstractMessageHandler<File, Void> getFileHandler;
 
     public HostControllerServerClient(final String serverName, final String serverProcessName) {
         this.serverName = serverName;
@@ -97,13 +104,15 @@ public class HostControllerServerClient implements Service<HostControllerServerC
         } catch (Exception e) {
             throw ServerMessages.MESSAGES.failedToConnectToHC(e);
         }
-        this.handler = handler;
+        this.registerHandler = handler;
+        remoteFileRepositoryValue.getValue().setRemoteFileRepositoryExecutor(new RemoteFileRepositoryExecutorImpl());
+
         channel.receiveMessage(ManagementChannelReceiver.createDelegating(handler));
     }
 
     /** {@inheritDoc} */
     public synchronized void stop(StopContext context) {
-        final ManagementMessageHandler handler = this.handler;
+        final ManagementMessageHandler handler = this.registerHandler;
         if(handler != null) {
             handler.shutdown();
             try {
@@ -139,6 +148,10 @@ public class HostControllerServerClient implements Service<HostControllerServerC
         return controller;
     }
 
+    public Injector<RemoteFileRepository> getRemoteFileRepositoryInjector() {
+        return remoteFileRepositoryValue;
+    }
+
     private class HostControllerServerHandler extends TransactionalModelControllerOperationHandler {
 
         private HostControllerServerHandler(final ModelController controller, final ExecutorService executorService) {
@@ -165,6 +178,10 @@ public class HostControllerServerClient implements Service<HostControllerServerC
             return super.executeRequest(request, channel, support);
         }
 
+        protected AsyncFuture executeGetFileRequest(final Channel channel, final ManagementRequest request){
+            final ActiveOperation support = super.registerActiveOperation(null);
+            return super.executeRequest(request, channel, support);
+        }
     }
 
     private class ServerRegisterRequest extends AbstractManagementRequest<Void, Void> {
@@ -183,6 +200,60 @@ public class HostControllerServerClient implements Service<HostControllerServerC
         @Override
         public void handleRequest(DataInput input, ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<Void> voidManagementRequestContext) throws IOException {
             resultHandler.done(null);
+        }
+
+    }
+
+    private class GetFileRequest extends AbstractManagementRequest<File, Void> {
+        private final String hash;
+        private final File localDeploymentFolder;
+
+        private GetFileRequest(final String hash, final File localDeploymentFolder) {
+            this.hash = hash;
+            this.localDeploymentFolder = localDeploymentFolder;
+        }
+
+        @Override
+        public byte getOperationType() {
+            return DomainServerProtocol.GET_FILE_REQUEST;
+        }
+
+        @Override
+        protected void sendRequest(ActiveOperation.ResultHandler<File> resultHandler, ManagementRequestContext<Void> context, FlushableDataOutput output) throws IOException {
+            //The root id does not matter here
+            ServerToHostRemoteFileRequestAndHandler.INSTANCE.sendRequest(output, (byte)0, hash);
+        }
+
+        @Override
+        public void handleRequest(DataInput input, ActiveOperation.ResultHandler<File> resultHandler, ManagementRequestContext<Void> context) throws IOException {
+            boolean error;
+            try {
+                File first = new File(localDeploymentFolder, hash.substring(0,2));
+                File localPath = new File(first, hash.substring(2));
+                ServerToHostRemoteFileRequestAndHandler.INSTANCE.handleResponse(input, localPath, ServerLogger.ROOT_LOGGER, resultHandler, context);
+                resultHandler.done(null);
+            } catch (CannotCreateLocalDirectoryException e) {
+                resultHandler.failed(ServerMessages.MESSAGES.cannotCreateLocalDirectory(e.getDir()));
+            } catch (DidNotReadEntireFileException e) {
+                resultHandler.failed(ServerMessages.MESSAGES.didNotReadEntireFile(e.getMissing()));
+            }
+        }
+    }
+
+    private class RemoteFileRepositoryExecutorImpl implements RemoteFileRepositoryExecutor {
+        public File getFile(final String relativePath, final byte repoId, final File localDeploymentFolder) {
+            try {
+                return (File)registerHandler.executeGetFileRequest(hcChannel.getValue(), new GetFileRequest(relativePath, localDeploymentFolder)).get();
+            } catch (Exception e) {
+                throw ServerMessages.MESSAGES.failedToGetFileFromRemoteRepository(e);
+            }
+        }
+    }
+
+    private static class GetFileOperationHandler extends AbstractMessageHandler<File, Void>{
+
+        protected GetFileOperationHandler(ExecutorService executorService) {
+            super(executorService);
         }
 
     }

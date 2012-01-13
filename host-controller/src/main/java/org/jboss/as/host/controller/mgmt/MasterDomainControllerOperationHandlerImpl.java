@@ -187,13 +187,8 @@ public class MasterDomainControllerOperationHandlerImpl extends ManagementChanne
 
         @Override
         void handleRequest(String hostId, DataInput input, ManagementRequestContext<Void> context) throws IOException {
-            expectHeader(input, DomainControllerProtocol.PARAM_ROOT_ID);
-            final byte rootId = input.readByte();
-            expectHeader(input, DomainControllerProtocol.PARAM_FILE_PATH);
-            final String filePath = input.readUTF();
-
             final RootFileReader reader = new RootFileReader() {
-                public File readRootFile() throws RequestProcessingException {
+                public File readRootFile(byte rootId, String filePath) throws RequestProcessingException {
                     final HostFileRepository localFileRepository = domainController.getLocalFileRepository();
 
                     switch (rootId) {

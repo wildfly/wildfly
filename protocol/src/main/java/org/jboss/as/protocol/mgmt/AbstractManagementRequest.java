@@ -22,13 +22,11 @@
 
 package org.jboss.as.protocol.mgmt;
 
-import org.jboss.as.protocol.StreamUtils;
-import org.jboss.remoting3.Channel;
-import org.jboss.remoting3.MessageOutputStream;
-
-import java.io.DataInput;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
+
+import org.jboss.as.protocol.StreamUtils;
+import org.jboss.remoting3.Channel;
 
 /**
  * utility class for creating management requests.

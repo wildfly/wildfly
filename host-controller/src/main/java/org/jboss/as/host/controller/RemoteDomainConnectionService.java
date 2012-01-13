@@ -521,6 +521,11 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         private void setRemoteFileRepositoryExecutor(RemoteFileRepositoryExecutor remoteFileRepositoryExecutor) {
             this.remoteFileRepositoryExecutor = remoteFileRepositoryExecutor;
         }
+
+        @Override
+        public void deleteDeployment(byte[] deploymentHash) {
+            //NOOP
+        }
     }
 
     private static interface RemoteFileRepositoryExecutor {
@@ -549,6 +554,8 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     }
 
     private static class HostAlreadyExistsException extends RuntimeException {
+
+        private static final long serialVersionUID = 1L;
 
         public HostAlreadyExistsException(String msg) {
             super(msg);

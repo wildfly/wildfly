@@ -22,6 +22,13 @@
 
 package org.jboss.as.server;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.List;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.services.security.VaultReaderException;
@@ -36,15 +43,9 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 import org.jboss.vfs.VirtualFile;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.List;
-
 /**
  * This module is using message IDs in the range 15700-15999.
- * This file is using the subset 15800-10949 for server logger messages.
+ * This file is using the subset 15800-15849 for server non-logger messages.
  * See http://community.jboss.org/docs/DOC-16810 for the full list of
  * currently reserved JBAS message id blocks.
  *
@@ -54,10 +55,99 @@ import java.util.List;
 @MessageBundle(projectCode = "JBAS")
 public interface ServerMessages {
 
+    // Messages for standalone.sh help text
+
     /**
      * The messages
      */
     ServerMessages MESSAGES = Messages.getBundle(ServerMessages.class);
+    /**
+     * Instructions for the usage of standalone.sh.
+     *
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Usage: ./standalone.sh [args...]%nwhere args include:")
+    String argUsage();
+
+    /**
+     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#DOMAIN_CONFIG} and {@link
+     * org.jboss.as.process.CommandLineArgument#SHORT_DOMAIN_CONFIG} command line arguments.
+     *
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Name of the server configuration file to use (default is \"standalone.xml\")")
+    String argServerConfig();
+
+    /**
+     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#SHORT_HELP} or {@link
+     * org.jboss.as.process.CommandLineArgument#HELP} command line argument.
+     *
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Display this message and exit")
+    String argHelp();
+
+    /**
+     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#SHORT_PROPERTIES} or {@link
+     * org.jboss.as.process.CommandLineArgument#PROPERTIES} command line argument.
+     *
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Load system properties from the given url")
+    String argProperties();
+
+    /**
+     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#SYSTEM_PROPERTY} command line argument.
+     *
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Set a system property")
+    String argSystem();
+
+    /**
+     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#SHORT_VERSION}, {@link
+     * org.jboss.as.process.CommandLineArgument#LEGACY_SHORT_VERSION} or {@link org.jboss.as.process.CommandLineArgument#VERSION}
+     * command line argument.
+     *
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Print version and exit")
+    String argVersion();
+
+    /**
+     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#PUBLIC_BIND_ADDRESS} or {@link
+     * org.jboss.as.process.CommandLineArgument#LEGACY_PUBLIC_BIND_ADDRESS} command line argument.
+     *
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Set system property jboss.bind.address to the given value")
+    String argPublicBindAddress();
+
+    /**
+     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#INTERFACE_BIND_ADDRESS} command line
+     * argument.
+     *
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Set system property jboss.bind.address.<interface> to the given value")
+    String argInterfaceBindAddress();
+
+    /**
+     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#DEFAULT_MULTICAST_ADDRESS} command line
+     * argument.
+     *
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Set system property jboss.default.multicast.address to the given value")
+    String argDefaultMulticastAddress();
+
+    /**
+     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#ADMIN_ONLY} command line argument.
+     *
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Set the server's running type to ADMIN_ONLY causing it to open administrative interfaces and accept management requests but not start other runtime services or accept end user requests.")
+    String argAdminOnly();
 
     /**
      * Creates an error message indicating a value was expected for the given command line option.
@@ -209,88 +299,17 @@ public interface ServerMessages {
     @Message(id = 15832, value = "No Module Identifier attached to deployment '%s'")
     DeploymentUnitProcessingException noModuleIdentifier(String deploymentUnitName);
 
-    @Message(id = 15833, value = "Failed to create VFSResourceLoader for root [%s]")
+    @Message(id = 15834, value = "Failed to create VFSResourceLoader for root [%s]")
     DeploymentUnitProcessingException failedToCreateVFSResourceLoader(String resourceRoot, @Cause IOException cause);
 
-    /**
-     * Instructions for the usage of standalone.sh.
-     *
-     * @return the message.
-     */
-    @Message(id = Message.NONE, value = "Usage: ./standalone.sh [args...]%nwhere args include:")
-    String argUsage();
+    @Message(id = 15835, value = "Failed to get file from remote repository")
+    RuntimeException failedToGetFileFromRemoteRepository(@Cause Throwable cause);
 
-    /**
-     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#DOMAIN_CONFIG} and {@link
-     * org.jboss.as.process.CommandLineArgument#SHORT_DOMAIN_CONFIG} command line arguments.
-     *
-     * @return the message.
-     */
-    @Message(id = Message.NONE, value = "Name of the server configuration file to use (default is \"standalone.xml\")")
-    String argServerConfig();
+    @Message(id = 15836, value = "Unable to create local directory: %s")
+    IOException cannotCreateLocalDirectory(File path);
 
-    /**
-     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#SHORT_HELP} or {@link
-     * org.jboss.as.process.CommandLineArgument#HELP} command line argument.
-     *
-     * @return the message.
-     */
-    @Message(id = Message.NONE, value = "Display this message and exit")
-    String argHelp();
-
-    /**
-     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#SHORT_PROPERTIES} or {@link
-     * org.jboss.as.process.CommandLineArgument#PROPERTIES} command line argument.
-     *
-     * @return the message.
-     */
-    @Message(id = Message.NONE, value = "Load system properties from the given url")
-    String argProperties();
-
-    /**
-     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#SYSTEM_PROPERTY} command line argument.
-     *
-     * @return the message.
-     */
-    @Message(id = Message.NONE, value = "Set a system property")
-    String argSystem();
-
-    /**
-     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#SHORT_VERSION}, {@link
-     * org.jboss.as.process.CommandLineArgument#LEGACY_SHORT_VERSION} or {@link org.jboss.as.process.CommandLineArgument#VERSION}
-     * command line argument.
-     *
-     * @return the message.
-     */
-    @Message(id = Message.NONE, value = "Print version and exit")
-    String argVersion();
-
-    /**
-     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#PUBLIC_BIND_ADDRESS} or {@link
-     * org.jboss.as.process.CommandLineArgument#LEGACY_PUBLIC_BIND_ADDRESS} command line argument.
-     *
-     * @return the message.
-     */
-    @Message(id = Message.NONE, value = "Set system property jboss.bind.address to the given value")
-    String argPublicBindAddress();
-
-    /**
-     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#INTERFACE_BIND_ADDRESS} command line
-     * argument.
-     *
-     * @return the message.
-     */
-    @Message(id = Message.NONE, value = "Set system property jboss.bind.address.<interface> to the given value")
-    String argInterfaceBindAddress();
-
-    /**
-     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#DEFAULT_MULTICAST_ADDRESS} command line
-     * argument.
-     *
-     * @return the message.
-     */
-    @Message(id = Message.NONE, value = "Set system property jboss.default.multicast.address to the given value")
-    String argDefaultMulticastAddress();
+    @Message(id = 15837, value = "Did not read the entire file. Missing: %d")
+    IOException didNotReadEntireFile(long missing);
 
     /**
      * Instructions for the {@link org.jboss.as.process.CommandLineArgument#INTERFACE_BIND_ADDRESS} command line
@@ -300,14 +319,7 @@ public interface ServerMessages {
      *
      * @return the message.
      */
-    @Message(id = 18534, value = "No value was provided for argument %s%n")
+    @Message(id = 15838, value = "No value was provided for argument %s%n")
     String noArgValue(String argument);
 
-    /**
-     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#ADMIN_ONLY} command line argument.
-     *
-     * @return the message.
-     */
-    @Message(id = Message.NONE, value = "Set the server's running type to ADMIN_ONLY causing it to open administrative interfaces and accept management requests but not start other runtime services or accept end user requests.")
-    String argAdminOnly();
 }

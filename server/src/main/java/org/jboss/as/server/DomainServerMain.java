@@ -40,6 +40,7 @@ import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.mgmt.domain.HostControllerConnectionService;
 import org.jboss.as.server.mgmt.domain.HostControllerServerClient;
+import org.jboss.as.server.mgmt.domain.RemoteFileRepository;
 import org.jboss.logmanager.Level;
 import org.jboss.logmanager.handlers.ConsoleHandler;
 import org.jboss.logmanager.log4j.BridgeRepositorySelector;
@@ -206,6 +207,7 @@ public final class DomainServerMain {
         serviceTarget.addService(HostControllerServerClient.SERVICE_NAME, client)
             .addDependency(HostControllerConnectionService.SERVICE_NAME, Channel.class, client.getHcChannelInjector())
             .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, client.getServerControllerInjector())
+            .addDependency(RemoteFileRepository.SERVICE_NAME, RemoteFileRepository.class, client.getRemoteFileRepositoryInjector())
             .setInitialMode(ServiceController.Mode.ACTIVE)
             .install();
     }
