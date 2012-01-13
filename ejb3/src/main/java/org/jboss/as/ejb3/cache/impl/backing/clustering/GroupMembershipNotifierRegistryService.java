@@ -22,19 +22,20 @@
 
 package org.jboss.as.ejb3.cache.impl.backing.clustering;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.jboss.as.clustering.GroupMembershipNotifier;
 import org.jboss.as.clustering.GroupMembershipNotifierRegistry;
+import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Jaikiran Pai
@@ -49,12 +50,10 @@ public class GroupMembershipNotifierRegistryService implements GroupMembershipNo
     @Override
     public void registerGroupMembershipNotifier(GroupMembershipNotifier groupMembershipNotifier) throws IllegalArgumentException {
         if (groupMembershipNotifier == null) {
-            // TODO: Move to i18n log messages
-            throw new IllegalArgumentException("GroupMemberShipNotifier cannot be null");
+            throw EjbMessages.MESSAGES.paramCannotBeNull("groupMembershipNotifier");
         }
         if (this.groupMembershipNotifiers.containsKey(groupMembershipNotifier.getGroupName())) {
-            // TODO: Move to EjbLogMessages
-            throw new IllegalArgumentException("A GroupMembershipNotifier is already registered by the name of " + groupMembershipNotifier.getGroupName());
+            throw EjbMessages.MESSAGES.groupMembershipNotifierAlreadyRegistered(groupMembershipNotifier.getGroupName());
         }
         this.groupMembershipNotifiers.put(groupMembershipNotifier.getGroupName(), groupMembershipNotifier);
 
@@ -70,22 +69,20 @@ public class GroupMembershipNotifierRegistryService implements GroupMembershipNo
 
     @Override
     public GroupMembershipNotifier getGroupMembershipNotifier(String groupName) {
-        if (groupName == null) {
-            // TODO: move to EjbLogMessages
-            throw new IllegalArgumentException("Group name cannot be null");
+        if (groupName == null || groupName.trim().isEmpty()) {
+            throw EjbMessages.MESSAGES.stringParamCannotBeNullOrEmpty("groupName");
         }
         return this.groupMembershipNotifiers.get(groupName);
     }
 
     @Override
     public void unregisterGroupMembershipNotifier(String groupName) throws IllegalArgumentException {
-        if (groupName == null) {
-            // TODO: move to EjbLogMessages
-            throw new IllegalArgumentException("Group name cannot be null");
+        if (groupName == null || groupName.trim().isEmpty()) {
+            throw EjbMessages.MESSAGES.stringParamCannotBeNullOrEmpty("groupName");
         }
         final GroupMembershipNotifier groupMembershipNotifier = this.groupMembershipNotifiers.remove(groupName);
         if (groupMembershipNotifier == null) {
-            throw new IllegalArgumentException("No GroupMembershipNotifier registered by the name of " + groupName);
+            throw EjbMessages.MESSAGES.groupMembershipNotifierNotRegistered(groupName);
         }
         // notify the listeners
         for (final Listener listener : this.registryListeners) {
