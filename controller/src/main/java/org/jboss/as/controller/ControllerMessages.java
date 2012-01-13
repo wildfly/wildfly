@@ -2353,4 +2353,16 @@ public interface ControllerMessages {
      */
     @Message(id = 14835, value = "The '%s' attribute of the '%s' parameter can not be converted to an integer in the description of the operation at %s: %s")
     String invalidDescriptionMinMaxLengthForParameterHasWrongType(String minOrMaxLength, String paramName, PathAddress address, ModelNode description);
+
+    /**
+     * Creates an exception indicating the {@code value} for the {@code name} must be a valid port number.
+     *
+     * @param name     the name for the value that must be a port number.
+     * @param value    the invalid value.
+     * @param location the location of the error.
+     *
+     * @return a {@link XMLStreamException} for the error.
+     */
+    @Message(id = 14836, value = "Illegal '%s' value %s -- must be a valid port number")
+    XMLStreamException invalidPort(String name, String value, @Param Location location);
 }

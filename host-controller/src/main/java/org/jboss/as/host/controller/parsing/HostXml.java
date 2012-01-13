@@ -83,6 +83,7 @@ import org.jboss.as.domain.management.parsing.ManagementXml;
 import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
 import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -738,7 +739,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
             final List<ModelNode> list) throws XMLStreamException {
         // Handle attributes
         String host = null;
-        Integer port = null;
+        ModelNode port = null;
         String securityRealm = null;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -753,9 +754,16 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
                         break;
                     }
                     case PORT: {
-                        port = Integer.valueOf(value);
-                        if (port.intValue() < 1) {
-                            throw MESSAGES.invalidValueGreaterThan(attribute.getLocalName(), port, 0, reader.getLocation());
+                        port = parsePossibleExpression(value);
+                        if(port.getType() != ModelType.EXPRESSION) {
+                            try {
+                                Integer portNo = Integer.valueOf(value);
+                                if (portNo.intValue() < 1) {
+                                    throw MESSAGES.invalidPort(attribute.getLocalName(), value, reader.getLocation());
+                                }
+                            }catch(NumberFormatException e) {
+                                throw MESSAGES.invalidPort(attribute.getLocalName(), value, reader.getLocation());
+                            }
                         }
                         break;
                     }
