@@ -60,8 +60,6 @@
     <xs:complexType name="remoteType">
         <xs:attribute name="connector-ref" type="xs:string" use="required"/>
         <xs:attribute name="thread-pool-name" type="xs:token" use="required"/>
-        <xs:attribute name="client-mappings-cache-container-ref" type="xs:string" use="optional" default="sfsb"/>
-        <xs:attribute name="client-mappings-cache-ref" type="xs:string" use="optional" default="ejb-remote-connector-client-mappings"/>
     </xs:complexType>
 
     <xs:complexType name="asyncType">
@@ -170,7 +168,9 @@
         <xs:attributeGroup ref="passivation-common"/>
         <xs:attribute name="max-size" type="xs:positiveInteger" default="10000"/>
         <xs:attribute name="passivate-events-on-replicate" type="xs:boolean" default="true"/>
-        <xs:attribute name="backing-cache" type="xs:string" default="sfsb"/>
+        <xs:attribute name="cache-container" type="xs:string" default="ejb"/>
+        <xs:attribute name="bean-cache" type="xs:string"/>
+        <xs:attribute name="client-mappings-cache" type="xs:string" default="remote-connector-client-mappings"/>
     </xs:complexType>
 
     <xs:simpleType name="aliases">

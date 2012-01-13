@@ -22,8 +22,6 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
-import org.jboss.as.clustering.ClusterNode;
-import org.jboss.as.clustering.GroupMembershipNotifier;
 import org.jboss.as.clustering.registry.Registry;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.ejb.client.remoting.PackedInteger;
@@ -32,8 +30,10 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A {@link ClusterTopologyWriter} is responsible for writing out cluster topology related EJB remoting protocol
@@ -55,25 +55,23 @@ class ClusterTopologyWriter {
      * @param clusters The clusters whose topology will be written to the <code>output</code>
      * @throws IOException
      */
-    void writeCompleteClusterTopology(final DataOutput output, final GroupMembershipNotifier[] clusters,
-                                      final Registry<String, List<ClientMapping>> clientMappingsRegistry) throws IOException {
+    void writeCompleteClusterTopology(final DataOutput output, final Collection<Registry<String, List<ClientMapping>>> clientMappingsRegistries) throws IOException {
         if (output == null) {
             throw new IllegalArgumentException("Cannot write to null dataoutput");
         }
-        if (clusters == null || clusters.length == 0) {
+        if (clientMappingsRegistries == null || clientMappingsRegistries.isEmpty()) {
             return;
         }
-        final Map<String, List<ClientMapping>> clientMappings = clientMappingsRegistry.getEntries();
         // write the header
         output.write(HEADER_COMPLETE_CLUSTER_TOPOLOGY);
         // write the cluster count
-        PackedInteger.writePackedInteger(output, clusters.length);
+        PackedInteger.writePackedInteger(output, clientMappingsRegistries.size());
         // write out each of the cluster's topology
-        for (final GroupMembershipNotifier cluster : clusters) {
+        for (final Registry<String, List<ClientMapping>> registry : clientMappingsRegistries) {
             // write the cluster name
-            output.writeUTF(cluster.getGroupName());
+            output.writeUTF(registry.getName());
             // write out the information of each cluster node
-            this.writeClusterNodes(output, cluster.getGroupName(), cluster.getClusterNodes(), clientMappings);
+            this.writeClusterNodes(output, registry.getName(), registry.getEntries());
         }
 
     }
@@ -86,30 +84,29 @@ class ClusterTopologyWriter {
      * @param clusters The clusters which have been removed
      * @throws IOException
      */
-    void writeClusterRemoved(final DataOutput output, final GroupMembershipNotifier[] clusters) throws IOException {
+    void writeClusterRemoved(final DataOutput output, final Collection<Registry<String, List<ClientMapping>>> registries) throws IOException {
         if (output == null) {
             throw new IllegalArgumentException("Cannot write to null dataoutput");
         }
-        if (clusters == null || clusters.length == 0) {
+        if (registries == null || registries.isEmpty()) {
             return;
         }
         // write the header
         output.write(HEADER_CLUSTER_REMOVED);
         // write the cluster count
-        PackedInteger.writePackedInteger(output, clusters.length);
+        PackedInteger.writePackedInteger(output, registries.size());
         // write out the cluster name for each of the removed cluster
-        for (final GroupMembershipNotifier cluster : clusters) {
-            output.writeUTF(cluster.getGroupName());
+        for (final Registry<String, List<ClientMapping>> registry : registries) {
+            output.writeUTF(registry.getName());
         }
-
     }
 
-    void writeNewNodesAdded(final DataOutput output, final String clusterName, final List<ClusterNode> newNodes,
-                            final Registry<String, List<ClientMapping>> clientMappings) throws IOException {
+    void writeNewNodesAdded(final DataOutput output, final String clusterName,
+                            final Map<String, List<ClientMapping>> clientMappings) throws IOException {
         if (output == null) {
             throw new IllegalArgumentException("Cannot write to null dataoutput");
         }
-        if (newNodes == null || newNodes.isEmpty()) {
+        if (clientMappings.isEmpty()) {
             return;
         }
         // write the header
@@ -119,10 +116,10 @@ class ClusterTopologyWriter {
         // write the cluster name
         output.writeUTF(clusterName);
         // write out the cluster node(s) information
-        this.writeClusterNodes(output, clusterName, newNodes, clientMappings.getEntries());
+        this.writeClusterNodes(output, clusterName, clientMappings);
     }
 
-    void writeNodesRemoved(final DataOutput output, final String clusterName, final List<ClusterNode> removedNodes) throws IOException {
+    void writeNodesRemoved(final DataOutput output, final String clusterName, final Set<String> removedNodes) throws IOException {
         if (output == null) {
             throw new IllegalArgumentException("Cannot write to null dataoutput");
         }
@@ -139,23 +136,23 @@ class ClusterTopologyWriter {
         final int removedNodesCount = removedNodes.size();
         PackedInteger.writePackedInteger(output, removedNodesCount);
         // write out the member info for each removed member
-        for (final ClusterNode clusterMember : removedNodes) {
+        for (final String node : removedNodes) {
             // write the node name
-            output.writeUTF(clusterMember.getName());
+            output.writeUTF(node);
         }
     }
 
-    private void writeClusterNodes(final DataOutput output, final String clusterName, final List<ClusterNode> clusterNodes, final Map<String, List<ClientMapping>> clientMappings) throws IOException {
+    private void writeClusterNodes(final DataOutput output, final String clusterName, final Map<String, List<ClientMapping>> clientMappings) throws IOException {
         // write the member node count
-        final int memberCount = clusterNodes.size();
+        final int memberCount = clientMappings.size();
         PackedInteger.writePackedInteger(output, memberCount);
         // write out the member info for each member
-        for (final ClusterNode clusterMember : clusterNodes) {
+        for (final Map.Entry<String, List<ClientMapping>> entry : clientMappings.entrySet()) {
             // write the node name
-            final String nodeName = clusterMember.getName();
+            final String nodeName = entry.getKey();
             output.writeUTF(nodeName);
             // write the client-mapping count
-            final List<ClientMapping> clientMappingsForNode = clientMappings.get(nodeName);
+            final List<ClientMapping> clientMappingsForNode = entry.getValue();
             if (clientMappingsForNode == null || clientMappingsForNode.isEmpty()) {
                 throw new IllegalStateException("No client-mapping entries found for node " + nodeName + " in cluster " + clusterName);
             }

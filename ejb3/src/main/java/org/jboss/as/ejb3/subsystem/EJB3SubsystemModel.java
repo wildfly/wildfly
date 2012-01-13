@@ -35,8 +35,6 @@ public interface EJB3SubsystemModel {
     String ASYNC = "async";
     String IIOP = "iiop";
 
-    String CLIENT_MAPPINGS_CACHE_CONTAINER_REF = "client-mappings-cache-container-ref";
-    String CLIENT_MAPPINGS_CACHE_REF = "client-mappings-cache-ref";
     String CONNECTOR_REF = "connector-ref";
 
     String DEFAULT_MDB_INSTANCE_POOL = "default-mdb-instance-pool";
@@ -81,7 +79,9 @@ public interface EJB3SubsystemModel {
     String SUBDIRECTORY_COUNT = "subdirectory-count";
 
     String CLUSTER_PASSIVATION_STORE = "cluster-passivation-store";
-    String BACKING_CACHE = "backing-cache";
+    String BEAN_CACHE = "bean-cache";
+    String CACHE_CONTAINER = "cache-container";
+    String CLIENT_MAPPINGS_CACHE = "client-mappings-cache";
     String PASSIVATE_EVENTS_ON_REPLICATE = "passivate-events-on-replicate";
 
     PathElement REMOTE_SERVICE_PATH = PathElement.pathElement(SERVICE, REMOTE);

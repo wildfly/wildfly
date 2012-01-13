@@ -31,11 +31,9 @@ import org.infinispan.configuration.cache.FileCacheStoreConfiguration;
 import org.infinispan.configuration.cache.LoaderConfiguration;
 import org.infinispan.configuration.cache.LoadersConfigurationBuilder;
 import org.infinispan.eviction.EvictionStrategy;
-import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.util.TypedProperties;
 import org.jboss.as.clustering.CoreGroupCommunicationServiceService;
-import org.jboss.as.clustering.GroupMembershipNotifierRegistry;
 import org.jboss.as.clustering.HashableMarshalledValueFactory;
 import org.jboss.as.clustering.MarshalledValue;
 import org.jboss.as.clustering.MarshalledValueFactory;
@@ -43,22 +41,23 @@ import org.jboss.as.clustering.MarshallingContext;
 import org.jboss.as.clustering.SimpleMarshalledValueFactory;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.as.clustering.infinispan.invoker.RetryingCacheInvoker;
-import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
+import org.jboss.as.clustering.infinispan.subsystem.CacheService;
 import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager;
 import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManagerService;
 import org.jboss.as.clustering.registry.Registry;
+import org.jboss.as.clustering.registry.RegistryService;
 import org.jboss.as.ejb3.cache.Cacheable;
 import org.jboss.as.ejb3.cache.PassivationManager;
 import org.jboss.as.ejb3.cache.impl.backing.clustering.ClusteredBackingCacheEntryStoreConfig;
 import org.jboss.as.ejb3.cache.impl.backing.clustering.ClusteredBackingCacheEntryStoreSource;
-import org.jboss.as.ejb3.cache.impl.backing.clustering.GroupMembershipNotifierRegistryService;
+import org.jboss.as.ejb3.cache.impl.backing.clustering.ClusteredBackingCacheEntryStoreSourceService;
 import org.jboss.as.ejb3.cache.spi.BackingCacheEntryStore;
 import org.jboss.as.ejb3.cache.spi.BackingCacheEntryStoreSource;
 import org.jboss.as.ejb3.cache.spi.SerializationGroup;
 import org.jboss.as.ejb3.cache.spi.SerializationGroupMember;
 import org.jboss.as.ejb3.cache.spi.impl.AbstractBackingCacheEntryStoreSource;
 import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
-import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
+import org.jboss.as.ejb3.remote.EJBRemotingConnectorClientMappingsEntryProviderService;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.msc.service.ServiceBuilder;
@@ -66,6 +65,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Value;
 
 import java.io.File;
 import java.io.Serializable;
@@ -80,7 +80,9 @@ import java.util.Properties;
 public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V extends Cacheable<K>, G extends Serializable> extends AbstractBackingCacheEntryStoreSource<K, V, G> implements ClusteredBackingCacheEntryStoreSource<K, V, G> {
     public static final short SCOPE_ID = 223;
 
-    private String cacheName = DEFAULT_BACKING_CACHE;
+    private String cacheContainerName = DEFAULT_CACHE_CONTAINER;
+    private String beanCacheName = DEFAULT_BEAN_CACHE;
+    private String clientMappingsCacheName = DEFAULT_CLIENT_MAPPING_CACHE;
     private int maxSize = ClusteredBackingCacheEntryStoreConfig.DEFAULT_MAX_SIZE;
     private boolean passivateEventsOnReplicate = DEFAULT_PASSIVATE_EVENTS_ON_REPLICATE;
 
@@ -94,24 +96,24 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
 
     @Override
     public void addDependencies(ServiceTarget target, ServiceBuilder<?> builder) {
-        ServiceName baseServiceName = EmbeddedCacheManagerService.getServiceName(null);
-        ServiceName serviceName = ServiceName.parse((this.cacheName != null) ? this.cacheName : DEFAULT_BACKING_CACHE);
-        if (!baseServiceName.isParentOf(serviceName)) {
-            serviceName = baseServiceName.append(serviceName);
-        }
-        if (serviceName.length() < 4) {
-            serviceName = serviceName.append(CacheContainer.DEFAULT_CACHE_NAME);
-        }
-        String container = serviceName.getParent().getSimpleName();
         // install the GroupCommunicationService
         final CoreGroupCommunicationServiceService groupCommunicationService = new CoreGroupCommunicationServiceService(SCOPE_ID);
-        groupCommunicationService.build(target, container).setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .addDependency(ServiceBuilder.DependencyType.OPTIONAL, GroupMembershipNotifierRegistryService.SERVICE_NAME, GroupMembershipNotifierRegistry.class, groupCommunicationService.getGroupMembershipNotifierRegistryInjector())
-                .install();
-        new SharedLocalYieldingClusterLockManagerService(container).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
-        builder.addDependency(serviceName, Cache.class, this.groupCache);
-        builder.addDependency(SharedLocalYieldingClusterLockManagerService.getServiceName(container), SharedLocalYieldingClusterLockManager.class, this.lockManager);
-        builder.addDependency(EJBRemoteConnectorService.EJB_REMOTE_CONNECTOR_CLIENT_MAPPINGS_REGISTRY_SERVICE, Registry.class, this.registry);
+        groupCommunicationService.build(target, this.cacheContainerName).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        new SharedLocalYieldingClusterLockManagerService(this.cacheContainerName).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        builder.addDependency(CacheService.getServiceName(this.cacheContainerName, this.beanCacheName), Cache.class, this.groupCache);
+        builder.addDependency(SharedLocalYieldingClusterLockManagerService.getServiceName(this.cacheContainerName), SharedLocalYieldingClusterLockManager.class, this.lockManager);
+
+        ServiceName registryServiceName = ClusteredBackingCacheEntryStoreSourceService.getClientMappingRegistryServiceName(this.cacheContainerName);
+        builder.addDependency(registryServiceName, Registry.class, this.registry);
+
+        @SuppressWarnings("rawtypes")
+        InjectedValue<Registry.RegistryEntryProvider> registryEntryProvider = new InjectedValue<Registry.RegistryEntryProvider>();
+        RegistryService<String, Object> registryService = new RegistryService<String, Object>(new RegistryEntryProviderValue(registryEntryProvider));
+        registryService.build(target, registryServiceName, CacheService.getServiceName(this.cacheContainerName, this.clientMappingsCacheName))
+                .addDependency(EJBRemotingConnectorClientMappingsEntryProviderService.SERVICE_NAME, Registry.RegistryEntryProvider.class, registryEntryProvider)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .install()
+        ;
     }
 
     @Override
@@ -198,13 +200,33 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
     }
 
     @Override
-    public String getBackingCache() {
-        return this.cacheName;
+    public String getCacheContainer() {
+        return this.cacheContainerName;
     }
 
     @Override
-    public void setBackingCache(String cacheName) {
-        this.cacheName = cacheName;
+    public void setCacheContainer(String cacheContainerName) {
+        this.cacheContainerName = cacheContainerName;
+    }
+
+    @Override
+    public String getClientMappingCache() {
+        return this.clientMappingsCacheName;
+    }
+
+    @Override
+    public void setClientMappingCache(String cacheName) {
+        this.clientMappingsCacheName = cacheName;
+    }
+
+    @Override
+    public String getBeanCache() {
+        return this.beanCacheName;
+    }
+
+    @Override
+    public void setBeanCache(String cacheName) {
+        this.beanCacheName = cacheName;
     }
 
     @Override
@@ -225,5 +247,29 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
     @Override
     public void setMaxSize(int maxSize) {
         this.maxSize = maxSize;
+    }
+
+    private class RegistryEntryProviderValue implements Registry.RegistryEntryProvider<String, Object> {
+        @SuppressWarnings("rawtypes")
+        private final Value<Registry.RegistryEntryProvider> provider;
+
+        @SuppressWarnings("rawtypes")
+        RegistryEntryProviderValue(Value<Registry.RegistryEntryProvider> provider) {
+            this.provider = provider;
+        }
+
+        @Override
+        public String getKey() {
+            @SuppressWarnings("unchecked")
+            Registry.RegistryEntryProvider<String, Object> provider = this.provider.getValue();
+            return provider.getKey();
+        }
+
+        @Override
+        public Object getValue() {
+            @SuppressWarnings("unchecked")
+            Registry.RegistryEntryProvider<String, Object> provider = this.provider.getValue();
+            return provider.getValue();
+        }
     }
 }

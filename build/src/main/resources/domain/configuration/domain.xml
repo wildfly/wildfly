@@ -426,13 +426,13 @@
                 </caches>
                 <passivation-stores>
                     <file-passivation-store name="file"/>
-                    <cluster-passivation-store name="infinispan" backing-cache="sfsb"/>
+                    <cluster-passivation-store name="infinispan" cache-container="ejb"/>
                 </passivation-stores>
                 <async thread-pool-name="default"/>
                 <timer-service thread-pool-name="default">
                     <data-store path="timer-service-data" relative-to="jboss.server.data.dir"/>
                 </timer-service>
-                <remote connector-ref="remoting-connector" thread-pool-name="default" client-mappings-cache-container-ref="sfsb" client-mappings-cache-ref="ejb-remote-connector-client-mappings"/>
+                <remote connector-ref="remoting-connector" thread-pool-name="default"/>
                 <thread-pools>
                     <thread-pool name="default" max-threads="10" keepalive-time="100"/>
                 </thread-pools>
@@ -458,7 +458,8 @@
                     <replicated-cache name="registry" mode="SYNC" batching="true"/>
                     <replicated-cache name="sso" mode="SYNC" batching="true"/>
                 </cache-container>
-                <cache-container name="sfsb" default-cache="repl">
+                <cache-container name="ejb" default-cache="repl">
+                    <alias>sfsb</alias>
                     <alias>sfsb-cache</alias>
                     <transport lock-timeout="60000"/>
                     <replicated-cache name="repl" mode="ASYNC" batching="true">
@@ -471,7 +472,7 @@
                     </distributed-cache>
                     <!-- Clustered cache used internally by EJB subsytem for managing the client-mapping(s) of
                     the socketbinding referenced by the EJB remoting connector -->
-                    <replicated-cache name="ejb-remote-connector-client-mappings" mode="SYNC" batching="true"/>
+                    <replicated-cache name="remote-connector-client-mappings" mode="SYNC" batching="true"/>
                     
                 </cache-container>
                 <cache-container name="hibernate" default-cache="local-query">

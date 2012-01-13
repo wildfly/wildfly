@@ -28,14 +28,15 @@ import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 
-import org.jboss.as.clustering.GroupMembershipNotifierRegistry;
+import org.jboss.as.clustering.registry.RegistryCollector;
+import org.jboss.as.clustering.registry.RegistryCollectorService;
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.ejb3.cache.impl.backing.clustering.GroupMembershipNotifierRegistryService;
+import org.jboss.as.ejb3.cache.impl.backing.clustering.ClusteredBackingCacheEntryStoreSourceService;
 import org.jboss.as.ejb3.component.EJBUtilities;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.processors.ApplicationExceptionAnnotationProcessor;
@@ -98,6 +99,7 @@ import org.jboss.as.ejb3.remote.TCCLBasedEJBClientContextSelector;
 import org.jboss.as.jacorb.rmi.DelegatingStubFactoryFactory;
 import org.jboss.as.jacorb.service.CorbaPOAService;
 import org.jboss.as.naming.InitialContext;
+import org.jboss.as.network.ClientMapping;
 import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.as.security.service.SimpleSecurityManagerService;
 import org.jboss.as.server.AbstractDeploymentChainStep;
@@ -113,6 +115,7 @@ import org.jboss.ejb.client.naming.ejb.ejbURLContextFactory;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.omg.PortableServer.POA;
 
@@ -321,14 +324,14 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
             final LocalEjbReceiver byValueLocalEjbReceiver = new LocalEjbReceiver(nodeName, false);
             newControllers.add(context.getServiceTarget().addService(LocalEjbReceiver.BY_VALUE_SERVICE_NAME, byValueLocalEjbReceiver)
                     .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, byValueLocalEjbReceiver.getDeploymentRepository())
-                    .addDependency(GroupMembershipNotifierRegistryService.SERVICE_NAME, GroupMembershipNotifierRegistry.class, byValueLocalEjbReceiver.getClusterRegistryInjector())
+                    .addDependency(ClusteredBackingCacheEntryStoreSourceService.CLIENT_MAPPING_REGISTRY_COLLECTOR_SERVICE_NAME, RegistryCollector.class, byValueLocalEjbReceiver.getClusterRegistryCollectorInjector())
                     .install());
 
             //the receiver for invocations that allow pass by reference
             final LocalEjbReceiver byReferenceLocalEjbReceiver = new LocalEjbReceiver(nodeName, true);
             newControllers.add(context.getServiceTarget().addService(LocalEjbReceiver.BY_REFERENCE_SERVICE_NAME, byReferenceLocalEjbReceiver)
                     .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, byReferenceLocalEjbReceiver.getDeploymentRepository())
-                    .addDependency(GroupMembershipNotifierRegistryService.SERVICE_NAME, GroupMembershipNotifierRegistry.class, byReferenceLocalEjbReceiver.getClusterRegistryInjector())
+                    .addDependency(ClusteredBackingCacheEntryStoreSourceService.CLIENT_MAPPING_REGISTRY_COLLECTOR_SERVICE_NAME, RegistryCollector.class, byReferenceLocalEjbReceiver.getClusterRegistryCollectorInjector())
                     .install());
 
             clientContextService.addReceiver(clientContextServiceBuilder, LocalEjbReceiver.BY_VALUE_SERVICE_NAME);
@@ -341,9 +344,8 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         if (appclient) {
             return;
         }
-        final GroupMembershipNotifierRegistryService groupMembershipNotifierRegistryService = new GroupMembershipNotifierRegistryService();
-        final ServiceController<GroupMembershipNotifierRegistry> groupMembershipNotifierRegistryServiceController = context.getServiceTarget().addService(GroupMembershipNotifierRegistryService.SERVICE_NAME, groupMembershipNotifierRegistryService).install();
-        newControllers.add(groupMembershipNotifierRegistryServiceController);
+        final RegistryCollectorService<String, List<ClientMapping>> registryCollectorService = new RegistryCollectorService<String, List<ClientMapping>>();
+        final ServiceController<RegistryCollector<String, List<ClientMapping>>> registryCollectorServiceController = context.getServiceTarget().addService(ClusteredBackingCacheEntryStoreSourceService.CLIENT_MAPPING_REGISTRY_COLLECTOR_SERVICE_NAME, registryCollectorService).install();
+        newControllers.add(registryCollectorServiceController);
     }
-
 }

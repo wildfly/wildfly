@@ -28,13 +28,19 @@ import org.jboss.as.ejb3.cache.spi.BackingCacheEntryStoreConfig;
  * @author Paul Ferraro
  */
 public interface ClusteredBackingCacheEntryStoreConfig extends BackingCacheEntryStoreConfig {
-    String DEFAULT_BACKING_CACHE = "sfsb";
+    String DEFAULT_CACHE_CONTAINER = "ejb";
+    String DEFAULT_BEAN_CACHE = null;
+    String DEFAULT_CLIENT_MAPPING_CACHE = "remote-connector-client-mappings";
     int DEFAULT_MAX_SIZE = 10000;
     boolean DEFAULT_PASSIVATE_EVENTS_ON_REPLICATE = true;
 
-    String getBackingCache();
+    String getCacheContainer();
+    String getBeanCache();
+    String getClientMappingCache();
 
-    void setBackingCache(String cache);
+    void setCacheContainer(String cacheContainer);
+    void setBeanCache(String cache);
+    void setClientMappingCache(String cache);
 
     void setPassivateEventsOnReplicate(boolean passivateEventsOnReplicate);
 }

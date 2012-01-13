@@ -432,7 +432,7 @@
                 </caches>
                 <passivation-stores>
                     <file-passivation-store name="file"/>
-                    <cluster-passivation-store name="infinispan" backing-cache="sfsb"/>
+                    <cluster-passivation-store name="infinispan" cache-container="ejb"/>
                 </passivation-stores>
                 <async thread-pool-name="default"/>
                 <timer-service thread-pool-name="default">
@@ -462,13 +462,14 @@
                         <file-store/>
                     </distributed-cache>
                 </cache-container>
-                <cache-container name="sfsb" default-cache="repl">
+                <cache-container name="ejb" default-cache="repl">
+                    <alias>sfsb</alias>
                     <alias>sfsb-cache</alias>
-                    <transport lock-timeout="60000"/>
                     <replicated-cache name="repl" mode="ASYNC" batching="true">
                         <eviction strategy="LRU" max-entries="10000"/>
                         <file-store/>
                     </replicated-cache>
+                    <replicated-cache name="remote-connector-client-mappings" mode="SYNC" batching="true"/>
                 </cache-container>
                 <cache-container name="hibernate" default-cache="local-query">
                     <transport lock-timeout="60000"/>
