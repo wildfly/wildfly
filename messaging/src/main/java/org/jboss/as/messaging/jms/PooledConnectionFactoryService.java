@@ -216,6 +216,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
             }
 
             TransactionManagerLocator.container = container;
+            AS7RecoveryRegistry.container = container;
             properties.add(simpleProperty("TransactionManagerLocatorClass", STRING_TYPE, TransactionManagerLocator.class.getName()));
             properties.add(simpleProperty("TransactionManagerLocatorMethod", STRING_TYPE, "getTransactionManager"));
 

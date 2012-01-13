@@ -24,6 +24,7 @@ package org.jboss.as.messaging;
 
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.config.impl.FileConfiguration;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.jboss.as.controller.AttributeDefinition;
@@ -117,6 +118,9 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition CONFIRMATION_WINDOW_SIZE = new SimpleAttributeDefinition("confirmation-window-size",
             new ModelNode().set(HornetQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE), ModelType.INT,  true, MeasurementUnit.BYTES);
+
+    SimpleAttributeDefinition BRIDGE_CONFIRMATION_WINDOW_SIZE = new SimpleAttributeDefinition("confirmation-window-size",
+            new ModelNode().set(FileConfiguration.DEFAULT_CONFIRMATION_WINDOW_SIZE), ModelType.INT,  true, MeasurementUnit.BYTES);
 
     JndiEntriesAttribute CONNECTION_ENTRIES = JndiEntriesAttribute.CONNECTION_FACTORY;
 
@@ -602,13 +606,13 @@ public interface CommonAttributes {
     AttributeDefinition[] BRIDGE_ATTRIBUTES = {
             QUEUE_NAME, BRIDGE_FORWARDING_ADDRESS, HA, FILTER, TRANSFORMER_CLASS_NAME,
             RETRY_INTERVAL, RETRY_INTERVAL_MULTIPLIER, BRIDGE_RECONNECT_ATTEMPTS, FAILOVER_ON_SERVER_SHUTDOWN,
-            BRIDGE_USE_DUPLICATE_DETECTION, CONFIRMATION_WINDOW_SIZE, USER, PASSWORD, ConnectorRefsAttribute.BRIDGE_CONNECTORS,
+            BRIDGE_USE_DUPLICATE_DETECTION, BRIDGE_CONFIRMATION_WINDOW_SIZE, USER, PASSWORD, ConnectorRefsAttribute.BRIDGE_CONNECTORS,
             DISCOVERY_GROUP_NAME
     };
 
     AttributeDefinition[] CLUSTER_CONNECTION_ATTRIBUTES = {
         CLUSTER_CONNECTION_ADDRESS,  CONNECTOR_REF, RETRY_INTERVAL, CLUSTER_CONNECTION_USE_DUPLICATE_DETECTION,
-        FORWARD_WHEN_NO_CONSUMERS,  MAX_HOPS, CONFIRMATION_WINDOW_SIZE, ConnectorRefsAttribute.CLUSTER_CONNECTION_CONNECTORS,
+        FORWARD_WHEN_NO_CONSUMERS,  MAX_HOPS, BRIDGE_CONFIRMATION_WINDOW_SIZE, ConnectorRefsAttribute.CLUSTER_CONNECTION_CONNECTORS,
         DISCOVERY_GROUP_NAME, ALLOW_DIRECT_CONNECTIONS_ONLY
     };
 

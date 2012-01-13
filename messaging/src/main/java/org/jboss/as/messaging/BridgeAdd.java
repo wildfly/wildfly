@@ -147,7 +147,7 @@ public class BridgeAdd extends AbstractAddStepHandler implements DescriptionProv
         final double retryIntervalMultiplier = CommonAttributes.RETRY_INTERVAL_MULTIPLIER.resolveModelAttribute(context, model).asDouble();
         final int reconnectAttempts = CommonAttributes.BRIDGE_RECONNECT_ATTEMPTS.resolveModelAttribute(context, model).asInt();
         final boolean useDuplicateDetection = CommonAttributes.BRIDGE_USE_DUPLICATE_DETECTION.resolveModelAttribute(context, model).asBoolean();
-        final int confirmationWindowSize = CommonAttributes.CONFIRMATION_WINDOW_SIZE.resolveModelAttribute(context, model).asInt();
+        final int confirmationWindowSize = CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE.resolveModelAttribute(context, model).asInt();
         final long clientFailureCheckPeriod = HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD;
         final ModelNode discoveryNode = CommonAttributes.DISCOVERY_GROUP_NAME.resolveModelAttribute(context, model);
         final String discoveryGroupName = discoveryNode.isDefined() ? discoveryNode.asString() : null;
