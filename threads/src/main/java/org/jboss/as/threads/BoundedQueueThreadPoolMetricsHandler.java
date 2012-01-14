@@ -25,39 +25,41 @@ package org.jboss.as.threads;
 import java.util.Arrays;
 import java.util.List;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 
 
 /**
+ * Handles metrics for a bounded queue thread pool.
  *
  * @author Alexey Loubyansky
  */
-public class QueuelessThreadPoolReadAttributeHandler extends ThreadPoolReadAttributeHandler {
+public class BoundedQueueThreadPoolMetricsHandler extends ThreadPoolMetricsHandler {
 
-    public static final List<String> METRICS = Arrays.asList(CommonAttributes.CURRENT_THREAD_COUNT, CommonAttributes.LARGEST_THREAD_COUNT,
-            CommonAttributes.REJECTED_COUNT);
+    public static final List<AttributeDefinition> METRICS =
+            Arrays.asList(PoolAttributeDefinitions.CURRENT_THREAD_COUNT, PoolAttributeDefinitions.LARGEST_THREAD_COUNT, PoolAttributeDefinitions.REJECTED_COUNT);
 
-    public static final QueuelessThreadPoolReadAttributeHandler INSTANCE = new QueuelessThreadPoolReadAttributeHandler();
+    public static final BoundedQueueThreadPoolMetricsHandler INSTANCE = new BoundedQueueThreadPoolMetricsHandler();
 
-    public QueuelessThreadPoolReadAttributeHandler() {
+    public BoundedQueueThreadPoolMetricsHandler() {
         super(METRICS);
     }
 
     @Override
     protected void setResult(OperationContext context, final String attributeName, final Service<?> service)
             throws OperationFailedException {
-        final QueuelessThreadPoolService pool = (QueuelessThreadPoolService) service;
+        BoundedQueueThreadPoolService bounded = (BoundedQueueThreadPoolService) service;
         if(attributeName.equals(CommonAttributes.CURRENT_THREAD_COUNT)) {
-            context.getResult().set(pool.getCurrentThreadCount());
+            context.getResult().set(bounded.getCurrentThreadCount());
         } else if (attributeName.equals(CommonAttributes.LARGEST_THREAD_COUNT)) {
-            context.getResult().set(pool.getLargestThreadCount());
+            context.getResult().set(bounded.getLargestThreadCount());
         } else if (attributeName.equals(CommonAttributes.REJECTED_COUNT)) {
-            context.getResult().set(pool.getRejectedCount());
-        } else if (METRICS.contains(attributeName)) {
-            throw new OperationFailedException(new ModelNode().set("Unsupported attribute '" + attributeName + "'"));
+            context.getResult().set(bounded.getRejectedCount());
+        } else {
+            // Programming bug. Throw a RuntimeException, not OFE, as this is not a client error
+            throw new IllegalStateException("Unsupported attribute '" + attributeName + "'");
         }
     }
 }

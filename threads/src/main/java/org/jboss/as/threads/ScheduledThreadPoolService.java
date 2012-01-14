@@ -99,7 +99,15 @@ public final class ScheduledThreadPoolService implements Service<ManagedSchedule
         return executor.getCompletedTaskCount();
     }
 
-    public int getLargestPoolSize() {
+    public int getCurrentThreadCount() {
+        final ManagedScheduledExecutorService executor = this.executor;
+        if(executor == null) {
+            throw new IllegalStateException("The exector service hasn't been initialized.");
+        }
+        return executor.getPoolSize();
+    }
+
+    public int getLargestThreadCount() {
         final ManagedScheduledExecutorService executor = this.executor;
         if(executor == null) {
             throw new IllegalStateException("The exector service hasn't been initialized.");

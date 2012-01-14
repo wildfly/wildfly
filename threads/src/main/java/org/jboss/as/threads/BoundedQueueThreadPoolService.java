@@ -165,4 +165,12 @@ public class BoundedQueueThreadPoolService implements Service<ManagedQueueExecut
     TimeUnit getKeepAliveUnit() {
         return keepAlive == null ? TimeSpec.DEFAULT_KEEPALIVE.getUnit() : keepAlive.getUnit();
     }
+
+    public int getRejectedCount() {
+        final ManagedQueueExecutorService executor = this.executor;
+        if(executor == null) {
+            throw new IllegalStateException("The exector service hasn't been initialized.");
+        }
+        return executor.getRejectedCount();
+    }
 }

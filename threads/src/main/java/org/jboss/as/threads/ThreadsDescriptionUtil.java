@@ -22,14 +22,8 @@
 
 package org.jboss.as.threads;
 
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import org.jboss.as.controller.operations.common.Util;
 import static org.jboss.as.threads.CommonAttributes.ALLOW_CORE_TIMEOUT;
-import static org.jboss.as.threads.CommonAttributes.BLOCKING;
-import static org.jboss.as.threads.CommonAttributes.BOUNDED_QUEUE_THREAD_POOL;
 import static org.jboss.as.threads.CommonAttributes.CORE_THREADS;
 import static org.jboss.as.threads.CommonAttributes.GROUP_NAME;
 import static org.jboss.as.threads.CommonAttributes.HANDOFF_EXECUTOR;
@@ -37,15 +31,14 @@ import static org.jboss.as.threads.CommonAttributes.KEEPALIVE_TIME;
 import static org.jboss.as.threads.CommonAttributes.MAX_THREADS;
 import static org.jboss.as.threads.CommonAttributes.NAME;
 import static org.jboss.as.threads.CommonAttributes.PRIORITY;
-import static org.jboss.as.threads.CommonAttributes.PROPERTIES;
-import static org.jboss.as.threads.CommonAttributes.QUEUELESS_THREAD_POOL;
 import static org.jboss.as.threads.CommonAttributes.QUEUE_LENGTH;
-import static org.jboss.as.threads.CommonAttributes.SCHEDULED_THREAD_POOL;
 import static org.jboss.as.threads.CommonAttributes.THREAD_FACTORY;
 import static org.jboss.as.threads.CommonAttributes.THREAD_NAME_PATTERN;
-import static org.jboss.as.threads.CommonAttributes.UNBOUNDED_QUEUE_THREAD_POOL;
+
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 
 /**
  * @author John Bailey
@@ -59,17 +52,11 @@ public class ThreadsDescriptionUtil {
         if (pool.hasDefined(THREAD_FACTORY)) {
             operation.get(THREAD_FACTORY).set(pool.get(THREAD_FACTORY));
         }
-        if (pool.hasDefined(PROPERTIES)) {
-            operation.get(PROPERTIES).set(pool.get(PROPERTIES));
-        }
         if (pool.hasDefined(MAX_THREADS)) {
             operation.get(MAX_THREADS).set(pool.get(MAX_THREADS));
         }
         if (pool.hasDefined(KEEPALIVE_TIME)) {
             operation.get(KEEPALIVE_TIME).set(pool.get(KEEPALIVE_TIME));
-        }
-        if (pool.hasDefined(BLOCKING)) {
-            operation.get(BLOCKING).set(pool.get(BLOCKING));
         }
         if (pool.hasDefined(HANDOFF_EXECUTOR)) {
             operation.get(HANDOFF_EXECUTOR).set(pool.get(HANDOFF_EXECUTOR));
@@ -93,17 +80,11 @@ public class ThreadsDescriptionUtil {
         if (pool.hasDefined(THREAD_FACTORY)) {
             operation.get(THREAD_FACTORY).set(pool.get(THREAD_FACTORY));
         }
-        if (pool.hasDefined(PROPERTIES)) {
-            operation.get(PROPERTIES).set(pool.get(PROPERTIES));
-        }
         if (pool.hasDefined(MAX_THREADS)) {
             operation.get(MAX_THREADS).set(pool.get(MAX_THREADS));
         }
         if (pool.hasDefined(KEEPALIVE_TIME)) {
             operation.get(KEEPALIVE_TIME).set(pool.get(KEEPALIVE_TIME));
-        }
-        if (pool.hasDefined(BLOCKING)) {
-            operation.get(BLOCKING).set(pool.get(BLOCKING));
         }
         if (pool.hasDefined(HANDOFF_EXECUTOR)) {
             operation.get(HANDOFF_EXECUTOR).set(pool.get(HANDOFF_EXECUTOR));
@@ -124,9 +105,6 @@ public class ThreadsDescriptionUtil {
         if (pool.hasDefined(PRIORITY)) {
             operation.get(PRIORITY).set(pool.get(PRIORITY));
         }
-        if (pool.hasDefined(PROPERTIES)) {
-            operation.get(PROPERTIES).set(pool.get(PROPERTIES));
-        }
         result.add(operation);
     }
 
@@ -136,9 +114,6 @@ public class ThreadsDescriptionUtil {
         operation.get(NAME).set(pool.require(NAME));
         if (pool.hasDefined(THREAD_FACTORY)) {
             operation.get(THREAD_FACTORY).set(pool.get(THREAD_FACTORY));
-        }
-        if (pool.hasDefined(PROPERTIES)) {
-            operation.get(PROPERTIES).set(pool.get(PROPERTIES));
         }
         if (pool.hasDefined(MAX_THREADS)) {
             operation.get(MAX_THREADS).set(pool.get(MAX_THREADS));
@@ -155,9 +130,6 @@ public class ThreadsDescriptionUtil {
         operation.get(NAME).set(pool.require(NAME));
         if (pool.hasDefined(THREAD_FACTORY)) {
             operation.get(THREAD_FACTORY).set(pool.get(THREAD_FACTORY));
-        }
-        if (pool.hasDefined(PROPERTIES)) {
-            operation.get(PROPERTIES).set(pool.get(PROPERTIES));
         }
         if (pool.hasDefined(MAX_THREADS)) {
             operation.get(MAX_THREADS).set(pool.get(MAX_THREADS));

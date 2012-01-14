@@ -21,21 +21,20 @@
  */
 package org.jboss.as.threads;
 
-import java.util.Locale;
-import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 
 /**
+ * Removes a thread factory resource.
+ *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
-public class ThreadFactoryRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
+public class ThreadFactoryRemove extends AbstractRemoveStepHandler {
 
     static final ThreadFactoryRemove INSTANCE = new ThreadFactoryRemove();
 
@@ -45,13 +44,8 @@ public class ThreadFactoryRemove extends AbstractRemoveStepHandler implements De
         context.removeService(ThreadsServices.threadFactoryName(name));
     }
 
-    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
-        // TODO:  RE-ADD SERVICES
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return ThreadsSubsystemProviders.REMOVE_THREAD_FACTORY_DESC.getModelDescription(locale);
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        ThreadFactoryAdd.INSTANCE.performRuntime(context, operation, model, null, null);
     }
 
 }

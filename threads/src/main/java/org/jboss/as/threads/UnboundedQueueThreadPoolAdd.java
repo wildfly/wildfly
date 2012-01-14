@@ -21,8 +21,10 @@
  */
 package org.jboss.as.threads;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import java.util.List;
-import java.util.Locale;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -30,18 +32,9 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import org.jboss.as.threads.ThreadsSubsystemThreadPoolOperationUtils.BaseThreadPoolParameters;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Adds an unbounded queue thread pool.
@@ -49,9 +42,8 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author <a href="alex@jboss.org">Alexey Loubyansky</a>
- * @version $Revision: 1.1 $
  */
-public class UnboundedQueueThreadPoolAdd extends AbstractAddStepHandler implements DescriptionProvider {
+public class UnboundedQueueThreadPoolAdd extends AbstractAddStepHandler {
 
     static final UnboundedQueueThreadPoolAdd INSTANCE = new UnboundedQueueThreadPoolAdd();
 
@@ -61,10 +53,7 @@ public class UnboundedQueueThreadPoolAdd extends AbstractAddStepHandler implemen
     static final AttributeDefinition[] RW_ATTRIBUTES = new AttributeDefinition[] {PoolAttributeDefinitions.KEEPALIVE_TIME,
         PoolAttributeDefinitions.MAX_THREADS};
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return ThreadsSubsystemProviders.ADD_UNBOUNDED_QUEUE_THREAD_POOL_DESC.getModelDescription(locale);
-    }
+    private final DefaultThreadFactoryProvider threadFactoryProvider = DefaultThreadFactoryProvider.STANDARD_PROVIDER;
 
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
@@ -83,17 +72,10 @@ public class UnboundedQueueThreadPoolAdd extends AbstractAddStepHandler implemen
 
         final BaseThreadPoolParameters params = ThreadsSubsystemThreadPoolOperationUtils.parseUnboundedQueueThreadPoolParameters(context, operation, model);
 
-        ServiceTarget target = context.getServiceTarget();
-        final ServiceName serviceName = ThreadsServices.executorName(params.getName());
         final UnboundedQueueThreadPoolService service = new UnboundedQueueThreadPoolService(params.getMaxThreads(), params.getKeepAliveTime());
-        final ServiceBuilder<ManagedJBossThreadPoolExecutorService> serviceBuilder = target.addService(serviceName, service);
-        ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target, params.getName() + "-threads");
-        if (verificationHandler != null) {
-            serviceBuilder.addListener(verificationHandler);
-        }
-        ServiceController<?> sc = serviceBuilder.install();
-        if (newControllers != null) {
-            newControllers.add(sc);
-        }
+
+        ThreadsSubsystemThreadPoolOperationUtils.installThreadPoolService(service, params.getName(), params.getThreadFactory(),
+                threadFactoryProvider, service.getThreadFactoryInjector(), null,
+                null, context.getServiceTarget(), newControllers, verificationHandler);
     }
 }

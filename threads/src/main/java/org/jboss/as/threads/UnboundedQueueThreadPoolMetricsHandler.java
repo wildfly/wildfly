@@ -25,25 +25,25 @@ package org.jboss.as.threads;
 import java.util.Arrays;
 import java.util.List;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 
 
 /**
- *
+ * Handles metrics for an unbounded queue thread pool.
  * @author Alexey Loubyansky
  */
-public class UnboundedQueueThreadPoolReadAttributeHandler extends ThreadPoolReadAttributeHandler {
+public class UnboundedQueueThreadPoolMetricsHandler extends ThreadPoolMetricsHandler {
 
-    public static final List<String> METRICS = Arrays.asList(CommonAttributes.ACTIVE_COUNT, CommonAttributes.COMPLETED_TASK_COUNT,
-            CommonAttributes.CURRENT_THREAD_COUNT, CommonAttributes.LARGEST_THREAD_COUNT, CommonAttributes.LARGEST_POOL_SIZE,
-            CommonAttributes.REJECTED_COUNT, CommonAttributes.TASK_COUNT);
+    public static final List<AttributeDefinition> METRICS = Arrays.asList(PoolAttributeDefinitions.ACTIVE_COUNT, PoolAttributeDefinitions.COMPLETED_TASK_COUNT,
+            PoolAttributeDefinitions.CURRENT_THREAD_COUNT, PoolAttributeDefinitions.LARGEST_THREAD_COUNT,
+            PoolAttributeDefinitions.REJECTED_COUNT, PoolAttributeDefinitions.TASK_COUNT);
 
-    public static final UnboundedQueueThreadPoolReadAttributeHandler INSTANCE = new UnboundedQueueThreadPoolReadAttributeHandler();
+    public static final UnboundedQueueThreadPoolMetricsHandler INSTANCE = new UnboundedQueueThreadPoolMetricsHandler();
 
-    public UnboundedQueueThreadPoolReadAttributeHandler() {
+    public UnboundedQueueThreadPoolMetricsHandler() {
         super(METRICS);
     }
 
@@ -59,14 +59,13 @@ public class UnboundedQueueThreadPoolReadAttributeHandler extends ThreadPoolRead
             context.getResult().set(pool.getCurrentThreadCount());
         } else if (attributeName.equals(CommonAttributes.LARGEST_THREAD_COUNT)) {
             context.getResult().set(pool.getLargestThreadCount());
-        } else if (attributeName.equals(CommonAttributes.LARGEST_POOL_SIZE)) {
-            context.getResult().set(pool.getLargestPoolSize());
         } else if (attributeName.equals(CommonAttributes.REJECTED_COUNT)) {
             context.getResult().set(pool.getRejectedCount());
         } else if (attributeName.equals(CommonAttributes.TASK_COUNT)) {
             context.getResult().set(pool.getTaskCount());
-        } else if (METRICS.contains(attributeName)) {
-            throw new OperationFailedException(new ModelNode().set("Unsupported attribute '" + attributeName + "'"));
+        } else {
+            // Programming bug. Throw a RuntimeException, not OFE, as this is not a client error
+            throw new IllegalStateException("Unsupported attribute '" + attributeName + "'");
         }
     }
 }

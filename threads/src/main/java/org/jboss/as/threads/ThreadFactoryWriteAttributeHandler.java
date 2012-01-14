@@ -33,6 +33,7 @@ import org.jboss.msc.service.ServiceName;
 
 
 /**
+ * Handles attribute writes for a thread factory.
  *
  * @author Alexey Loubyansky
  */
