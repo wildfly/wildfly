@@ -52,7 +52,7 @@ public class ClusterPassivationStoreAdd extends PassivationStoreAdd {
             config.setBeanCache(model.get(EJB3SubsystemModel.BEAN_CACHE).asString());
         }
         if (model.hasDefined(EJB3SubsystemModel.CLIENT_MAPPINGS_CACHE)) {
-            config.setBeanCache(model.get(EJB3SubsystemModel.CLIENT_MAPPINGS_CACHE).asString());
+            config.setClientMappingCache(model.get(EJB3SubsystemModel.CLIENT_MAPPINGS_CACHE).asString());
         }
         if (model.hasDefined(EJB3SubsystemModel.PASSIVATE_EVENTS_ON_REPLICATE)) {
             config.setPassivateEventsOnReplicate(model.get(EJB3SubsystemModel.PASSIVATE_EVENTS_ON_REPLICATE).asBoolean());
