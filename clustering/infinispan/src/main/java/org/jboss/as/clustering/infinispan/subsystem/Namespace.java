@@ -26,10 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
 
 /**
  * @author Paul Ferraro
@@ -37,10 +35,10 @@ import org.jboss.staxmapper.XMLElementWriter;
  */
 public enum Namespace {
     // must be first
-    UNKNOWN(0, 0, null, null),
+    UNKNOWN(0, 0, null),
 
-    INFINISPAN_1_0(1, 0, InfinispanSubsystemParser_1_0.getInstance(), null),
-    INFINISPAN_1_1(1, 1, InfinispanSubsystemParser_1_1.getInstance(), InfinispanSubsystemParser_1_1.getInstance());
+    INFINISPAN_1_0(1, 0, new InfinispanSubsystemXMLReader_1_0()),
+    INFINISPAN_1_1(1, 1, new InfinispanSubsystemXMLReader_1_1());
 
     private static final String BASE_URN = "urn:jboss:domain:infinispan:";
 
@@ -52,13 +50,11 @@ public enum Namespace {
     private final int major;
     private final int minor;
     private final XMLElementReader<List<ModelNode>> reader;
-    private final XMLElementWriter<SubsystemMarshallingContext> writer;
 
-    Namespace(int major, int minor, XMLElementReader<List<ModelNode>> reader, XMLElementWriter<SubsystemMarshallingContext> writer) {
+    Namespace(int major, int minor, XMLElementReader<List<ModelNode>> reader) {
         this.major = major;
         this.minor = minor;
         this.reader = reader;
-        this.writer = writer;
     }
 
     public int getMajorVersion() {
@@ -78,12 +74,8 @@ public enum Namespace {
         return BASE_URN + major + "." + minor;
     }
 
-    public XMLElementReader<List<ModelNode>> getReader() {
+    public XMLElementReader<List<ModelNode>> getXMLReader() {
         return this.reader;
-    }
-
-    public XMLElementWriter<SubsystemMarshallingContext> getWriter() {
-        return this.writer;
     }
 
     private static final Map<String, Namespace> namespaces;

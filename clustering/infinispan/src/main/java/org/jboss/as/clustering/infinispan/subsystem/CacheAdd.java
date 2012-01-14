@@ -220,13 +220,6 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
                 .setInitialMode(startMode.getMode())
         ;
 
-        // If this cache is clustered, it must depend on the transport of the cache container (an alias to the actual channel service)
-        if (config.clustering().cacheMode().isClustered()) {
-            ServiceName transportServiceName = EmbeddedCacheManagerService.getTransportServiceName(containerName);
-            cacheBuilder.addDependency(transportServiceName);
-            context.getServiceRegistry(true).getRequiredService(transportServiceName).setMode(ServiceController.Mode.ON_DEMAND);
-        }
-
         if (config.transaction().recovery().enabled()) {
             cacheBuilder.addDependency(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, XAResourceRecoveryRegistry.class, cacheDependencies.getRecoveryRegistryInjector());
         }

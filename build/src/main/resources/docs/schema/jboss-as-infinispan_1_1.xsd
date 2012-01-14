@@ -167,7 +167,7 @@
                 <xs:documentation>Defines the executor used for asynchronous transport communication.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="lock-timeout" type="xs:long" default="60000">
+        <xs:attribute name="lock-timeout" type="xs:long" default="240000">
             <xs:annotation>
                 <xs:documentation>
                     Infinispan uses a distributed lock to maintain a coherent transaction log during state transfer or rehashing, which means that only one cache can be doing state transfer or rehashing at the same time.

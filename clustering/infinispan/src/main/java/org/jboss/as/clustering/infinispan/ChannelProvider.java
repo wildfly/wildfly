@@ -29,7 +29,6 @@ import java.util.Properties;
 import org.infinispan.configuration.global.TransportConfigurationBuilder;
 import org.infinispan.remoting.transport.jgroups.JGroupsChannelLookup;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
-import org.jboss.msc.value.Value;
 import org.jgroups.Channel;
 
 /**
@@ -39,11 +38,11 @@ public class ChannelProvider implements JGroupsChannelLookup {
 
     private static final String CHANNEL = "channel";
 
-    public static void init(TransportConfigurationBuilder builder, Value<Channel> channel) {
+    public static void init(TransportConfigurationBuilder builder, Channel channel) {
         Properties properties = new Properties();
         properties.setProperty(JGroupsTransport.CHANNEL_LOOKUP, ChannelProvider.class.getName());
         properties.put(CHANNEL, channel);
-        builder.transport().transport(new JGroupsTransport()).withProperties(properties);
+        builder.transport().defaultTransport().withProperties(properties);
     }
 
     /**
@@ -52,13 +51,12 @@ public class ChannelProvider implements JGroupsChannelLookup {
      */
     @Override
     public Channel getJGroupsChannel(Properties properties) {
-        @SuppressWarnings("unchecked")
-        Value<Channel> channel = (Value<Channel>) properties.get(CHANNEL);
+        Channel channel = (Channel) properties.get(CHANNEL);
 
         if (channel == null) {
             throw MESSAGES.invalidTransportProperty(CHANNEL, properties);
         }
-        return channel.getValue();
+        return channel;
     }
 
     /**

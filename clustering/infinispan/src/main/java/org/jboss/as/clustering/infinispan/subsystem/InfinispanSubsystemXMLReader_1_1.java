@@ -2,28 +2,23 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.clustering.infinispan.InfinispanLogger.ROOT_LOGGER;
 
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
-import org.infinispan.configuration.cache.CacheMode;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
 import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.transaction.LockingMode;
 import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ParseUtils;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * Infinispan subsystem parsing code.
@@ -32,13 +27,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  * @author Tristan Tarrant
  */
-public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<ModelNode>> {
-
-    private static final InfinispanSubsystemParser_1_0 INSTANCE = new InfinispanSubsystemParser_1_0();
-
-    public static InfinispanSubsystemParser_1_0 getInstance() {
-        return INSTANCE;
-    }
+public class InfinispanSubsystemXMLReader_1_1 implements XMLElementReader<List<ModelNode>> {
 
     /**
      * {@inheritDoc}
@@ -196,18 +185,6 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
                     transport.get(ModelKeys.LOCK_TIMEOUT).set(Long.parseLong(value));
                     break;
                 }
-                case SITE: {
-                    transport.get(ModelKeys.SITE).set(value);
-                    break;
-                }
-                case RACK: {
-                    transport.get(ModelKeys.RACK).set(value);
-                    break;
-                }
-                case MACHINE: {
-                    transport.get(ModelKeys.MACHINE).set(value);
-                    break;
-                }
                 default: {
                     throw ParseUtils.unexpectedAttribute(reader, i);
                 }
@@ -237,6 +214,10 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
                 } catch (IllegalArgumentException e) {
                     throw ParseUtils.invalidAttributeValue(reader, index);
                 }
+                break;
+            }
+            case JNDI_NAME: {
+                cache.get(ModelKeys.JNDI_NAME).set(value);
                 break;
             }
             case BATCHING: {
@@ -533,6 +514,10 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
                     rehashing.get(ModelKeys.TIMEOUT).set(Long.parseLong(value));
                     break;
                 }
+                case WAIT: {
+                    rehashing.get(ModelKeys.WAIT).set(Long.parseLong(value));
+                    break;
+                }
                 default: {
                     throw ParseUtils.unexpectedAttribute(reader, i);
                 }
@@ -646,10 +631,6 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
                     } catch (IllegalArgumentException e) {
                         throw ParseUtils.invalidAttributeValue(reader, i);
                     }
-                    break;
-                }
-                case EAGER_LOCKING: {
-                    ROOT_LOGGER.eagerAttributeDeprecated();
                     break;
                 }
                 default: {

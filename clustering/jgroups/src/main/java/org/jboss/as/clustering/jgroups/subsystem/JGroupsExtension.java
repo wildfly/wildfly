@@ -21,6 +21,7 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.List;
 import java.util.Locale;
 
 import org.jboss.as.controller.Extension;
@@ -33,6 +34,7 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLElementReader;
 
 /**
  * Registers the JGroups subsystem.
@@ -62,7 +64,7 @@ public class JGroupsExtension implements Extension, DescriptionProvider {
     @Override
     public void initialize(ExtensionContext context) {
         SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, Namespace.CURRENT.getMajorVersion(), Namespace.CURRENT.getMinorVersion());
-        subsystem.registerXMLElementWriter(Namespace.CURRENT.getWriter());
+        subsystem.registerXMLElementWriter(new JGroupsSubsystemXMLWriter());
 
         ManagementResourceRegistration registration = subsystem.registerSubsystemModel(this);
         registration.registerOperationHandler(ModelDescriptionConstants.ADD, add, add, false);
@@ -81,8 +83,9 @@ public class JGroupsExtension implements Extension, DescriptionProvider {
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
         for (Namespace namespace: Namespace.values()) {
-            if (namespace != Namespace.UNKNOWN) {
-                context.setSubsystemXmlMapping(SUBSYSTEM_NAME, namespace.getUri(), namespace.getReader());
+            XMLElementReader<List<ModelNode>> reader = namespace.getXMLReader();
+            if (reader != null) {
+                context.setSubsystemXmlMapping(SUBSYSTEM_NAME, namespace.getUri(), reader);
             }
         }
     }

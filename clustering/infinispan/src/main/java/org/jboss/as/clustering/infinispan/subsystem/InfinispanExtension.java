@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 import java.util.EnumSet;
+import java.util.List;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
@@ -36,6 +37,8 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLElementReader;
 
 /**
  * Defines the Infinispan subsystem and its addressable resources.
@@ -62,7 +65,6 @@ public class InfinispanExtension implements Extension {
     private static final PathElement rehashingPath = PathElement.pathElement(ModelKeys.SINGLETON, ModelKeys.REHASHING);
     private static final PathElement storePropertyPath = PathElement.pathElement(ModelKeys.PROPERTY);
 
-
     /**
      * {@inheritDoc}
      * @see org.jboss.as.controller.Extension#initialize(org.jboss.as.controller.ExtensionContext)
@@ -70,7 +72,7 @@ public class InfinispanExtension implements Extension {
     @Override
     public void initialize(ExtensionContext context) {
         SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, Namespace.CURRENT.getMajorVersion(), Namespace.CURRENT.getMinorVersion());
-        subsystem.registerXMLElementWriter(Namespace.CURRENT.getWriter());
+        subsystem.registerXMLElementWriter(new InfinispanSubsystemXMLWriter());
 
         ManagementResourceRegistration registration = subsystem.registerSubsystemModel(InfinispanSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, InfinispanSubsystemAdd.INSTANCE, InfinispanSubsystemProviders.SUBSYSTEM_ADD, false);
@@ -122,8 +124,9 @@ public class InfinispanExtension implements Extension {
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
         for (Namespace namespace: Namespace.values()) {
-            if (namespace != Namespace.UNKNOWN) {
-                context.setSubsystemXmlMapping(SUBSYSTEM_NAME, namespace.getUri(), namespace.getReader());
+            XMLElementReader<List<ModelNode>> reader = namespace.getXMLReader();
+            if (reader != null) {
+                context.setSubsystemXmlMapping(SUBSYSTEM_NAME, namespace.getUri(), reader);
             }
         }
     }
