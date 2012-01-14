@@ -24,6 +24,7 @@ package org.jboss.as.clustering.infinispan;
 
 import java.net.UnknownHostException;
 
+import org.infinispan.configuration.cache.CacheMode;
 import org.jboss.as.clustering.ClusteringMessages;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.network.OutboundSocketBinding;
@@ -32,6 +33,7 @@ import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 import org.jboss.msc.inject.InjectionException;
+import org.jboss.msc.service.StartException;
 
 /**
  * Date: 29.08.2011
@@ -58,5 +60,6 @@ public interface InfinispanMessages extends ClusteringMessages {
     @Message(id = 10310, value = "Could not resolve destination address for outbound socket binding named '%s'")
     InjectionException failedToInjectSocketBinding(@Cause UnknownHostException cause, OutboundSocketBinding binding);
 
-
+    @Message(id = 10311, value = "Failed to add %s %s cache to non-clustered %s cache container.")
+    StartException transportRequired(CacheMode mode, String cache, String cacheContainer);
 }

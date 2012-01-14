@@ -25,14 +25,17 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 
+import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.jboss.as.clustering.infinispan.InfinispanMessages;
 import org.jboss.as.clustering.infinispan.TransactionManagerProvider;
 import org.jboss.as.clustering.infinispan.TransactionSynchronizationRegistryProvider;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
 /**
@@ -76,7 +79,7 @@ public class CacheConfigurationService implements Service<Configuration> {
      * @see org.jboss.msc.service.Service#start(org.jboss.msc.service.StartContext)
      */
     @Override
-    public void start(StartContext context) {
+    public void start(StartContext context) throws StartException {
         TransactionManager tm = this.dependencies.getTransactionManager();
         if (tm != null) {
             this.builder.transaction().transactionManagerLookup(new TransactionManagerProvider(tm));
@@ -86,7 +89,14 @@ public class CacheConfigurationService implements Service<Configuration> {
             this.builder.transaction().transactionSynchronizationRegistryLookup(new TransactionSynchronizationRegistryProvider(tsr));
         }
         this.config = this.builder.build();
-        this.dependencies.getCacheContainer().defineConfiguration(this.name, this.config);
+
+        EmbeddedCacheManager container = this.dependencies.getCacheContainer();
+        CacheMode mode = this.config.clustering().cacheMode();
+        if (mode.isClustered() && (container.getTransport() == null)) {
+            throw InfinispanMessages.MESSAGES.transportRequired(mode, this.name, container.getCacheManagerConfiguration().globalJmxStatistics().cacheManagerName());
+        }
+
+        container.defineConfiguration(this.name, this.config);
     }
 
     /**

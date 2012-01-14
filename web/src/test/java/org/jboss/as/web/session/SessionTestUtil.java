@@ -81,7 +81,6 @@ import org.jboss.metadata.web.jboss.ReplicationConfig;
 import org.jboss.metadata.web.jboss.ReplicationGranularity;
 import org.jboss.metadata.web.jboss.ReplicationTrigger;
 import org.jboss.metadata.web.jboss.SnapshotMode;
-import org.jboss.msc.value.InjectedValue;
 import org.jgroups.Channel;
 import org.jgroups.conf.XmlConfigurator;
 
@@ -165,8 +164,6 @@ public class SessionTestUtil {
                 .clusterName("test")
                 .globalJmxStatistics().cacheManagerName(name).disable()
         ;
-        InjectedValue<Channel> channelInjection = new InjectedValue<Channel>();
-        ChannelProvider.init(globalBuilder.transport(), channelInjection);
         ConfigurationBuilder builder = new ConfigurationBuilder().read(CacheAdd.getDefaultConfiguration(mode));
         builder.transaction()
                 .syncCommitPhase(true)
@@ -182,7 +179,7 @@ public class SessionTestUtil {
         try {
             final Channel channel = new MuxChannel(XmlConfigurator.getInstance(Thread.currentThread().getContextClassLoader().getResource("jgroups-udp.xml")));
             channel.setName(name);
-            channelInjection.inject(channel);
+            ChannelProvider.init(globalBuilder.transport(), channel);
 
             final EmbeddedCacheManager container = new DefaultEmbeddedCacheManager(new DefaultCacheManager(globalBuilder.build(), builder.build(), false), CacheContainer.DEFAULT_CACHE_NAME) {
                 @Override

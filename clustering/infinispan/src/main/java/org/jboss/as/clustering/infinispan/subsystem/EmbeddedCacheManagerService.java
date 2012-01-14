@@ -43,12 +43,10 @@ import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.Value;
 import org.jgroups.Channel;
 import org.jgroups.util.TopologyUUID;
 
@@ -65,18 +63,9 @@ public class EmbeddedCacheManagerService implements Service<EmbeddedCacheManager
         return (name != null) ? SERVICE_NAME.append(name) : SERVICE_NAME;
     }
 
-    public static ServiceName getTransportServiceName(String name) {
-        return getServiceName(name).append("transport");
-    }
-
-    public static ServiceName getTransportRequiredServiceName(String name) {
-        return getTransportServiceName(name).append("required");
-    }
-
     interface TransportConfiguration {
         Long getLockTimeout();
-
-        Value<Channel> getChannel();
+        Channel getChannel();
         Executor getExecutor();
     }
 
@@ -126,16 +115,16 @@ public class EmbeddedCacheManagerService implements Service<EmbeddedCacheManager
         TransportConfiguration transport = this.dependencies.getTransportConfiguration();
         TransportConfigurationBuilder transportBuilder = globalBuilder.transport();
 
-        // If our transport service is running, configure Infinispan to use it
-        if (context.getController().getServiceContainer().getRequiredService(getTransportServiceName(this.name)).getState() == ServiceController.State.UP) {
+        if (transport != null) {
             // See ISPN-1675
             // transportBuilder.transport(new ChannelTransport(transport.getChannel()));
             ChannelProvider.init(transportBuilder, transport.getChannel());
             Long timeout = transport.getLockTimeout();
-            transportBuilder.distributedSyncTimeout((timeout != null) ? timeout.longValue() : 60000);
-
+            if (timeout != null) {
+                transportBuilder.distributedSyncTimeout(timeout.longValue());
+            }
             // Topology is retrieved from the channel
-            Channel channel = transport.getChannel().getValue();
+            Channel channel = transport.getChannel();
             if(channel.getAddress() instanceof TopologyUUID) {
                 TopologyUUID topologyAddress = (TopologyUUID)channel.getAddress();
                 String site = topologyAddress.getSiteId();
@@ -159,8 +148,6 @@ public class EmbeddedCacheManagerService implements Service<EmbeddedCacheManager
                 // globalBuilder.asyncTransportExecutor().factory(new ManagedExecutorFactory(executor));
                 ExecutorProvider.initTransportExecutor(globalBuilder, executor);
             }
-        } else {
-            transportBuilder.transport(null);
         }
 
         Executor listenerExecutor = this.dependencies.getListenerExecutor();

@@ -58,7 +58,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
 import org.jgroups.Channel;
 
 /**
@@ -115,7 +114,8 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
 
         String defaultCache = model.require(ModelKeys.DEFAULT_CACHE).asString();
 
-        Transport transportConfig = new Transport();
+        boolean hasTransport = model.hasDefined(ModelKeys.SINGLETON) && model.get(ModelKeys.SINGLETON).hasDefined(ModelKeys.TRANSPORT);
+        Transport transportConfig = hasTransport ? new Transport() : null;
         EmbeddedCacheManagerDependencies dependencies = new EmbeddedCacheManagerDependencies(transportConfig);
 
         ServiceName[] aliases = null;
@@ -147,18 +147,8 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         ;
         newControllers.add(binderBuilder.install());
 
-        // Because caches are added after this method completes, we can never be sure whether or not
-        // we need a transport. The service TransportRequiredService is set by ClusteredCacheAdd subclasses
-        // to indicate that a transport needs to be initialised in the enclosing cache container.
-        // The transport will only be initialised in EmbeddedCacheManagerService.start() if this value is true.
-        // Here, we always assume that a transport may be required and so perform the necessary setup.
-        String stack = null;
-
-        //
-        // the transport is stored as a child resource /subsystem=infinispan/cache-container=name/singleton=transport
-        // in the form of a ModelNode, so we need to retrieve it from the model
-        //
-        if (model.hasDefined(ModelKeys.SINGLETON)) {
+        if (hasTransport) {
+            String stack = null;
             ModelNode transport = model.get(ModelKeys.SINGLETON, ModelKeys.TRANSPORT);
             if (transport.hasDefined(ModelKeys.STACK)) {
                 stack = transport.get(ModelKeys.STACK).asString();
@@ -167,11 +157,17 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
                 transportConfig.setLockTimeout(transport.get(ModelKeys.LOCK_TIMEOUT).asLong());
             }
             addExecutorDependency(containerBuilder, transport, ModelKeys.EXECUTOR, transportConfig.getExecutorInjector());
-        }
 
-        ServiceName channelServiceName = ChannelService.getServiceName(name);
-        // add an optional dependency on a ChannelService which has the cache-container name
-        containerBuilder.addDependency(DependencyType.OPTIONAL, channelServiceName, Channel.class, transportConfig.getChannelInjector());
+            ServiceName channelServiceName = ChannelService.getServiceName(name);
+            containerBuilder.addDependency(channelServiceName, Channel.class, transportConfig.getChannelInjector());
+
+            InjectedValue<ChannelFactory> channelFactory = new InjectedValue<ChannelFactory>();
+            ServiceBuilder<Channel> channelBuilder = target.addService(channelServiceName, new ChannelService(name, channelFactory))
+                    .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, channelFactory)
+                    .setInitialMode(ServiceController.Mode.ON_DEMAND)
+            ;
+            newControllers.add(channelBuilder.install());
+        }
 
         addExecutorDependency(containerBuilder, model, ModelKeys.LISTENER_EXECUTOR, dependencies.getListenerExecutorInjector());
         addScheduledExecutorDependency(containerBuilder, model, ModelKeys.EVICTION_EXECUTOR, dependencies.getEvictionExecutorInjector());
@@ -179,16 +175,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
 
         newControllers.add(containerBuilder.install());
 
-        InjectedValue<ChannelFactory> channelFactory = new InjectedValue<ChannelFactory>();
-        // Set initial mode to NEVER - Cache add operations will update mode to ON_DEMAND when necessary
-        ServiceBuilder<Channel> channelBuilder = target.addService(channelServiceName, new ChannelService(name, channelFactory))
-                .addAliases(EmbeddedCacheManagerService.getTransportServiceName(name))
-                .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, channelFactory)
-                .setInitialMode(ServiceController.Mode.NEVER)
-        ;
-        newControllers.add(channelBuilder.install());
-
-        log.debugf("Cache container %s installed", name);
+        log.debugf("%s cache container installed", name);
      }
 
     private void addExecutorDependency(ServiceBuilder<EmbeddedCacheManager> builder, ModelNode model, String key, Injector<Executor> injector) {
@@ -276,8 +263,8 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         }
 
         @Override
-        public Value<Channel> getChannel() {
-            return this.channel;
+        public Channel getChannel() {
+            return this.channel.getValue();
         }
 
         @Override

@@ -447,12 +447,14 @@
             <subsystem xmlns="urn:jboss:domain:infinispan:1.1" default-cache-container="cluster">
                 <cache-container name="cluster" default-cache="default">
                     <alias>ha-partition</alias>
+                    <transport lock-timeout="60000"/>
                     <replicated-cache name="default" mode="SYNC" batching="true">
                         <locking isolation="REPEATABLE_READ"/>
                     </replicated-cache>
                 </cache-container>
                 <cache-container name="web" default-cache="repl">
                     <alias>standard-session-cache</alias>
+                    <transport lock-timeout="60000"/>
                     <replicated-cache name="repl" mode="ASYNC" batching="true">
                         <file-store/>
                     </replicated-cache>
@@ -462,13 +464,14 @@
                 </cache-container>
                 <cache-container name="sfsb" default-cache="repl">
                     <alias>sfsb-cache</alias>
-                    <alias>jboss.cache:service=EJB3SFSBClusteredCache</alias>
+                    <transport lock-timeout="60000"/>
                     <replicated-cache name="repl" mode="ASYNC" batching="true">
                         <eviction strategy="LRU" max-entries="10000"/>
                         <file-store/>
                     </replicated-cache>
                 </cache-container>
                 <cache-container name="hibernate" default-cache="local-query">
+                    <transport lock-timeout="60000"/>
                     <invalidation-cache name="entity" mode="SYNC">
                         <eviction strategy="LRU" max-entries="10000"/>
                         <expiration max-idle="100000"/>
