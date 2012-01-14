@@ -76,6 +76,7 @@ public class OperationDialog extends JDialog {
 
         contentPane.add(makeButtonPanel(), BorderLayout.SOUTH);
         pack();
+        setResizable(false);
     }
 
     @Override
