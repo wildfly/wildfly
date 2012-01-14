@@ -25,6 +25,8 @@ import org.jboss.as.jpa.config.PersistenceProviderDeploymentHolder;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.AttachmentList;
 
+import javax.persistence.spi.PersistenceProvider;
+
 /**
  * @author Stuart Douglas
  */
@@ -36,6 +38,11 @@ public class JpaAttachments {
      * List<PersistenceUnitMetadataImpl> that represents the JPA persistent units
      */
     public static final AttachmentKey<PersistenceProviderDeploymentHolder> DEPLOYED_PERSISTENCE_PROVIDER = AttachmentKey.create(PersistenceProviderDeploymentHolder.class);
+
+    /**
+     * List of app provided providers.
+     */
+    public static final AttachmentKey<AttachmentList<PersistenceProvider>> APP_PROVIDERS = AttachmentKey.createList(PersistenceProvider.class);
 
     /**
      * List ignored PU, that don't get turned into PUServiceImpl.

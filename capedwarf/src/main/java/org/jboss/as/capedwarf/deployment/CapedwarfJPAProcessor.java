@@ -22,6 +22,7 @@
 
 package org.jboss.as.capedwarf.deployment;
 
+import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.jpa.processor.JpaAttachments;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
@@ -43,7 +44,10 @@ public class CapedwarfJPAProcessor extends CapedwarfPersistenceProcessor {
             final List<PersistenceUnitMetadata> pus = holder.getPersistenceUnits();
             if (pus != null && pus.isEmpty() == false) {
                 for (PersistenceUnitMetadata pumd : pus) {
-                    unit.addToAttachmentList(JpaAttachments.IGNORED_PU_SERVICES, pumd.getPersistenceUnitName());
+                    final String providerClass = pumd.getPersistenceProviderClassName();
+                    if (Configuration.PROVIDER_CLASS_DATANUCLEUS.equals(providerClass) || Configuration.PROVIDER_CLASS_DATANUCLEUS_GAE.equals(providerClass)) {
+                        unit.addToAttachmentList(JpaAttachments.IGNORED_PU_SERVICES, pumd.getPersistenceUnitName());
+                    }
                 }
             }
         }

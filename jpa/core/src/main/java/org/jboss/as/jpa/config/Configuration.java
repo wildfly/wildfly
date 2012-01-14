@@ -92,6 +92,11 @@ public class Configuration {
     public static final String PROVIDER_CLASS_DATANUCLEUS = "org.datanucleus.api.jpa.PersistenceProviderImpl";
 
     /**
+     * DataNucleus provider GAE
+     */
+    public static final String PROVIDER_CLASS_DATANUCLEUS_GAE = "org.datanucleus.store.appengine.jpa.DatastorePersistenceProvider";
+
+    /**
      * default provider class
      */
     public static final String PROVIDER_CLASS_DEFAULT = PROVIDER_CLASS_HIBERNATE;
