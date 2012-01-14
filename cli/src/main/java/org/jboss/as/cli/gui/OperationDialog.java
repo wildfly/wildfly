@@ -20,14 +20,17 @@ package org.jboss.as.cli.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.Vector;
 import javax.swing.AbstractButton;
+import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -52,7 +55,7 @@ public class OperationDialog extends JDialog {
 
     private ManagementModelNode node;
     private String opName;
-    private List<RequestProp> props;
+    private SortedSet<RequestProp> props;
 
     public OperationDialog(ManagementModelNode node, String opName, String strDescription, ModelNode requestProperties) {
         super(GuiMain.getFrame(), opName, true);
@@ -91,7 +94,7 @@ public class OperationDialog extends JDialog {
     }
 
     private void setProps(ModelNode requestProperties) {
-        props = new ArrayList<RequestProp>();
+        props = new TreeSet<RequestProp>();
         if (opName.equals("add")) {
             UserObject usrObj = (UserObject)node.getUserObject();
             props.add(new RequestProp("/" + usrObj.getName() + "=<name>/", "Resource name for the new " + usrObj.getName(), true));
@@ -103,10 +106,30 @@ public class OperationDialog extends JDialog {
     }
 
     private JPanel makeInputPanel() {
-        JPanel inputPanel = new JPanel(new GridLayout(props.size(), 1));
+        boolean hasRequiredFields = false;
+        JPanel inputPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbConst = new GridBagConstraints();
+        gbConst.anchor = GridBagConstraints.WEST;
+        gbConst.insets = new Insets(5,5,5,5);
+
         for (RequestProp prop : props) {
-            inputPanel.add(prop.getInputComponent());
+            JLabel label = prop.getLabel();
+            gbConst.gridwidth = 1;
+            inputPanel.add(label, gbConst);
+
+            inputPanel.add(Box.createHorizontalStrut(5));
+
+            JComponent comp = prop.getValueComponent();
+            gbConst.gridwidth = GridBagConstraints.REMAINDER;
+            inputPanel.add(comp, gbConst);
+
+            if (prop.isRequired) hasRequiredFields = true;
         }
+
+        if (hasRequiredFields) {
+            inputPanel.add(new JLabel(" * = Required Field"));
+        }
+
         return inputPanel;
     }
 
@@ -138,10 +161,11 @@ public class OperationDialog extends JDialog {
             if (OperationDialog.this.opName.equals("add")) {
                 UserObject usrObj = (UserObject)OperationDialog.this.node.getUserObject();
                 ManagementModelNode parent = (ManagementModelNode)OperationDialog.this.node.getParent();
-                String value = OperationDialog.this.props.get(0).getValueAsString();
+                RequestProp resourceProp = OperationDialog.this.props.first();
+                String value = resourceProp.getValueAsString();
                 value = ManagementModelNode.escapeAddressElement(value);
                 addressPath = parent.addressPath() + usrObj.getName() + "=" + value + "/";
-                OperationDialog.this.props.remove(0);
+                OperationDialog.this.props.remove(resourceProp);
             }
 
             StringBuilder command = new StringBuilder();
@@ -155,9 +179,8 @@ public class OperationDialog extends JDialog {
             GuiMain.getCommandText().requestFocus();
         }
 
-        private void addRequestProps(StringBuilder command, List<RequestProp> reqProps) {
-            if (reqProps.isEmpty()) return;
-
+        private void addRequestProps(StringBuilder command, SortedSet<RequestProp> reqProps) {
+            boolean addedProps = false;
             command.append("(");
             for (RequestProp prop : reqProps) {
                 String value = prop.getValueAsString();
@@ -165,6 +188,7 @@ public class OperationDialog extends JDialog {
                 if (value == null) continue;
                 if (value.equals("")) continue;
 
+                addedProps = true;
                 command.append(prop.getName());
                 command.append("=");
                 command.append(value);
@@ -172,8 +196,13 @@ public class OperationDialog extends JDialog {
                 command.append(",");
             }
 
-            // replace training comma with close paren
-            command.replace(command.length()-1, command.length(), ")");
+            if (addedProps) {
+                // replace training comma with close paren
+                command.replace(command.length()-1, command.length(), ")");
+            } else {
+                // remove opening paren
+                command.deleteCharAt(command.length() - 1);
+            }
         }
 
     }
@@ -183,8 +212,8 @@ public class OperationDialog extends JDialog {
      *
      * It is also responsible for building the input component for the attribute.
      */
-    private class RequestProp {
-        private String name;
+    private class RequestProp implements Comparable {
+        private final String name;
         private ModelNode props;
         private ModelType type;
         private String description;
@@ -192,11 +221,13 @@ public class OperationDialog extends JDialog {
         private boolean nillable = false;
         private ModelNode defaultValue = null;
 
-        JComponent inputComponent;
-        JComponent valueComponent;
+        private JLabel label;
+        private JComponent valueComponent;
+
+        private boolean isResourceName = false;
 
         /**
-         * Constructor used for manually constructed property.
+         * Constructor used for resource name property.
          * @param name Property name
          * @param description Description for tool tip text.
          * @param isRequired Is this a isRequired property?
@@ -207,6 +238,7 @@ public class OperationDialog extends JDialog {
             this.description = description;
             this.type = ModelType.STRING;
             this.isRequired = required;
+            this.isResourceName = true;
             setInputComponent();
         }
 
@@ -239,12 +271,12 @@ public class OperationDialog extends JDialog {
             return name;
         }
 
-        public JComponent getInputComponent() {
-            return inputComponent;
-        }
-
         public JComponent getValueComponent() {
             return valueComponent;
+        }
+
+        public JLabel getLabel() {
+            return this.label;
         }
 
         public String getValueAsString() {
@@ -264,37 +296,39 @@ public class OperationDialog extends JDialog {
         }
 
         private void setInputComponent() {
-            JComponent comp = null;
             if (type == ModelType.BOOLEAN) {
                 if (defaultValue == null) {
-                    comp = new JCheckBox(name);
+                    this.valueComponent = new JCheckBox(makeLabelString(false));
                 } else {
-                    comp = new JCheckBox(name, defaultValue.asBoolean());
+                    this.valueComponent = new JCheckBox(makeLabelString(false), defaultValue.asBoolean());
                 }
-                comp.setToolTipText(description);
-                this.valueComponent = comp;
+                this.valueComponent.setToolTipText(description);
+                this.label = new JLabel();
             } else if (props.get("allowed").isDefined()) {
                 JComboBox comboBox = makeJComboBox(props.get("allowed").asList());
-                this.valueComponent = comboBox;
                 if (defaultValue != null) comboBox.setSelectedItem(defaultValue.asString());
-                comp = makeComponentPanel();
+                this.valueComponent = comboBox;
+                this.label = makeLabel();
             } else {
-                JTextField textField = new JTextField(40);
-                this.valueComponent = textField;
+                JTextField textField = new JTextField(30);
                 if (defaultValue != null) textField.setText(defaultValue.asString());
-                comp = makeComponentPanel();
+                this.valueComponent = textField;
+                this.label = makeLabel();
             }
 
-            this.inputComponent = comp;
         }
 
-        private JPanel makeComponentPanel() {
-            JPanel panel = new JPanel(new FlowLayout());
-            JLabel label = new JLabel(name);
+        private String makeLabelString(boolean addColon) {
+            String labelString = name;
+            if (addColon) labelString += ":";
+            if (isRequired) labelString += " *";
+            return labelString;
+        }
+
+        private JLabel makeLabel() {
+            JLabel label = new JLabel(makeLabelString(true));
             label.setToolTipText(description);
-            panel.add(label);
-            panel.add(valueComponent);
-            return panel;
+            return label;
         }
 
         private JComboBox makeJComboBox(List<ModelNode> values) {
@@ -324,6 +358,29 @@ public class OperationDialog extends JDialog {
             if (usrObj.getValue().equals("undefined")) return;
 
             if (this.name.equals("value")) ((JTextField)valueComponent).setText(usrObj.getValue());
+        }
+
+        @Override
+        public int compareTo(Object t) {
+            if (this.equals(t)) return 0;
+            if (this.isResourceName) return -1;
+            RequestProp compareTo = (RequestProp)t;
+            if (this.isRequired && compareTo.isRequired) return 1;
+            if (this.isRequired) return -1;
+            return 1;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) return true;
+            if (!(obj instanceof RequestProp)) return false;
+            RequestProp compareTo = (RequestProp)obj;
+            return this.name.equals(compareTo.name);
+        }
+
+        @Override
+        public int hashCode() {
+            return name.hashCode();
         }
 
     }
