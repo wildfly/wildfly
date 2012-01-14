@@ -290,10 +290,14 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
 
     @Override
     public void registryRemoved(Registry<String, List<ClientMapping>> registry) {
-        final String clusterName = registry.getName();
-        for (final EJBReceiverContext receiverContext : this.contexts) {
-            receiverContext.getClientContext().removeCluster(clusterName);
-        }
+        // Removal of the registry (service) on one node of a cluster doesn't mean the entire
+        // cluster has been removed.
+        // TODO: We need a different/better hook for entire cluster removal event
+        // Maybe if the cluster node count reaches 0 then send a cluster removal message?
+//        final String clusterName = registry.getName();
+//        for (final EJBReceiverContext receiverContext : this.contexts) {
+//            receiverContext.getClientContext().removeCluster(clusterName);
+//        }
     }
 
     @SuppressWarnings("rawtypes")
