@@ -276,13 +276,13 @@
                 <archive-validation enabled="true"/>
                 <bean-validation enabled="true"/>
                 <default-workmanager>
-                    <short-running-threads blocking="true">
+                    <short-running-threads>
                         <core-threads count="50"/>
                         <queue-length count="50"/>
                         <max-threads count="50"/>
                         <keepalive-time time="10" unit="seconds"/>
                     </short-running-threads>
-                    <long-running-threads blocking="true">
+                    <long-running-threads>
                         <core-threads count="50"/>
                         <queue-length count="50"/>
                         <max-threads count="50"/>
@@ -617,13 +617,13 @@
                 <archive-validation enabled="true"/>
                 <bean-validation enabled="true"/>
                 <default-workmanager>
-                    <short-running-threads blocking="true">
+                    <short-running-threads>
                         <core-threads count="10" per-cpu="20"/>
                         <queue-length count="10" per-cpu="20"/>
                         <max-threads count="10" per-cpu="20"/>
                         <keepalive-time time="10" unit="seconds"/>
                     </short-running-threads>
-                    <long-running-threads blocking="true">
+                    <long-running-threads>
                         <core-threads count="10" per-cpu="20"/>
                         <queue-length count="10" per-cpu="20"/>
                         <max-threads count="10" per-cpu="20"/>

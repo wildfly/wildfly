@@ -26,11 +26,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import java.util.List;
 
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
@@ -40,19 +40,16 @@ import org.jboss.msc.service.ServiceController;
 *
 * @author Alexey Loubyansky
 */
-public abstract class ThreadPoolReadAttributeHandler extends AbstractRuntimeOnlyHandler {
+public abstract class ThreadPoolMetricsHandler extends AbstractRuntimeOnlyHandler {
 
-    private ParametersValidator validator = new ParametersValidator();
+    private final List<AttributeDefinition> metrics;
 
-    private final List<String> metrics;
-
-    public ThreadPoolReadAttributeHandler(List<String> metrics) {
-        super();
+    public ThreadPoolMetricsHandler(List<AttributeDefinition> metrics) {
         this.metrics = metrics;
     }
 
     public void registerAttributes(final ManagementResourceRegistration registration) {
-        for (String metric : metrics) {
+        for (AttributeDefinition metric : metrics) {
             registration.registerMetric(metric, this);
         }
     }
@@ -60,7 +57,6 @@ public abstract class ThreadPoolReadAttributeHandler extends AbstractRuntimeOnly
     @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        validator.validate(operation);
         final String attributeName = operation.require(ModelDescriptionConstants.NAME).asString();
 
         ServiceController<?> serviceController = getService(context, operation);

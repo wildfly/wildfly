@@ -22,13 +22,8 @@
 
 package org.jboss.as.cmp.subsystem;
 
-import java.util.Locale;
-import java.util.ResourceBundle;
 import static org.jboss.as.cmp.subsystem.CmpConstants.HILO_KEY_GENERATOR;
 import static org.jboss.as.cmp.subsystem.CmpConstants.UUID_KEY_GENERATOR;
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
@@ -44,7 +39,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQ
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
-import static org.jboss.as.threads.CommonAttributes.BLOCKING;
+
+import java.util.Locale;
+import java.util.ResourceBundle;
+
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 

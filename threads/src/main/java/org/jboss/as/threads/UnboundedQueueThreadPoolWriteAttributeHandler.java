@@ -39,6 +39,7 @@ import org.jboss.msc.service.ServiceName;
 
 
 /**
+ * Handles attribute writes for an unbounded queue thread pool.
  *
  * @author Alexey Loubyansky
  */

@@ -21,8 +21,10 @@
  */
 package org.jboss.as.threads;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import java.util.List;
-import java.util.Locale;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -30,17 +32,9 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.as.threads.ThreadsSubsystemThreadPoolOperationUtils.BoundedThreadPoolParameters;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Adds a bounded queue thread pool.
@@ -48,24 +42,34 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author <a href="alex@jboss.org">Alexey Loubyansky</a>
- * @version $Revision: 1.1 $
  */
-public class BoundedQueueThreadPoolAdd extends AbstractAddStepHandler implements DescriptionProvider {
+public class BoundedQueueThreadPoolAdd extends AbstractAddStepHandler {
 
-    public static final BoundedQueueThreadPoolAdd INSTANCE = new BoundedQueueThreadPoolAdd();
+    public static final BoundedQueueThreadPoolAdd BLOCKING = new BoundedQueueThreadPoolAdd(true, DefaultThreadFactoryProvider.STANDARD_PROVIDER);
+    public static final BoundedQueueThreadPoolAdd NON_BLOCKING = new BoundedQueueThreadPoolAdd(false, DefaultThreadFactoryProvider.STANDARD_PROVIDER);
 
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {PoolAttributeDefinitions.KEEPALIVE_TIME,
+    static final AttributeDefinition[] BLOCKING_ATTRIBUTES = new AttributeDefinition[] {PoolAttributeDefinitions.KEEPALIVE_TIME,
         PoolAttributeDefinitions.MAX_THREADS, PoolAttributeDefinitions.THREAD_FACTORY,
-        PoolAttributeDefinitions.CORE_THREADS, PoolAttributeDefinitions.QUEUE_LENGTH, PoolAttributeDefinitions.HANDOFF_EXECUTOR,
-        PoolAttributeDefinitions.ALLOW_CORE_TIMEOUT, PoolAttributeDefinitions.BLOCKING};
+        PoolAttributeDefinitions.CORE_THREADS, PoolAttributeDefinitions.QUEUE_LENGTH,
+        PoolAttributeDefinitions.ALLOW_CORE_TIMEOUT};
+
+    static final AttributeDefinition[] NON_BLOCKING_ATTRIBUTES = new AttributeDefinition[BLOCKING_ATTRIBUTES.length + 1] ;
 
     static final AttributeDefinition[] RW_ATTRIBUTES = new AttributeDefinition[] {PoolAttributeDefinitions.KEEPALIVE_TIME,
         PoolAttributeDefinitions.MAX_THREADS, PoolAttributeDefinitions.CORE_THREADS, PoolAttributeDefinitions.QUEUE_LENGTH,
-        PoolAttributeDefinitions.ALLOW_CORE_TIMEOUT, PoolAttributeDefinitions.BLOCKING};
+        PoolAttributeDefinitions.ALLOW_CORE_TIMEOUT};
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return ThreadsSubsystemProviders.ADD_BOUNDED_QUEUE_THREAD_POOL_DESC.getModelDescription(locale);
+    static {
+        System.arraycopy(BLOCKING_ATTRIBUTES, 0, NON_BLOCKING_ATTRIBUTES, 0, BLOCKING_ATTRIBUTES.length);
+        NON_BLOCKING_ATTRIBUTES[NON_BLOCKING_ATTRIBUTES.length - 1] = PoolAttributeDefinitions.HANDOFF_EXECUTOR;
+    }
+
+    private final boolean blocking;
+    private final DefaultThreadFactoryProvider defaultThreadFactoryProvider;
+
+    public BoundedQueueThreadPoolAdd(boolean blocking, DefaultThreadFactoryProvider defaultThreadFactoryProvider) {
+        this.blocking = blocking;
+        this.defaultThreadFactoryProvider = defaultThreadFactoryProvider;
     }
 
     @Override
@@ -74,7 +78,8 @@ public class BoundedQueueThreadPoolAdd extends AbstractAddStepHandler implements
         final String name = address.getLastElement().getValue();
         model.get(NAME).set(name);
 
-        for(final AttributeDefinition attribute : ATTRIBUTES) {
+        AttributeDefinition[] attributes = blocking ? BLOCKING_ATTRIBUTES : NON_BLOCKING_ATTRIBUTES;
+        for(final AttributeDefinition attribute : attributes) {
             attribute.validateAndSet(operation, model);
         }
     }
@@ -83,29 +88,18 @@ public class BoundedQueueThreadPoolAdd extends AbstractAddStepHandler implements
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
             final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-        final BoundedThreadPoolParameters params = ThreadsSubsystemThreadPoolOperationUtils.parseBoundedThreadPoolParameters(context, operation, model);
+        final BoundedThreadPoolParameters params = ThreadsSubsystemThreadPoolOperationUtils.parseBoundedThreadPoolParameters(context, operation, model, blocking);
 
-        ServiceTarget target = context.getServiceTarget();
-        final ServiceName serviceName = ThreadsServices.executorName(params.getName());
         final BoundedQueueThreadPoolService service = new BoundedQueueThreadPoolService(
                 params.getCoreThreads(),
                 params.getMaxThreads(),
                 params.getQueueLength(),
-                params.isBlocking(),
+                blocking,
                 params.getKeepAliveTime(),
                 params.isAllowCoreTimeout());
 
-        //TODO add the handoffExceutor injection
-
-        final ServiceBuilder<ManagedQueueExecutorService> serviceBuilder = target.addService(serviceName, service);
-        ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target, params.getName() + "-threads");
-
-        if (verificationHandler != null) {
-            serviceBuilder.addListener(verificationHandler);
-        }
-        ServiceController<?> sc = serviceBuilder.install();
-        if (newControllers != null) {
-            newControllers.add(sc);
-        }
+        ThreadsSubsystemThreadPoolOperationUtils.installThreadPoolService(service, params.getName(), params.getThreadFactory(),
+                defaultThreadFactoryProvider, service.getThreadFactoryInjector(), service.getHandoffExecutorInjector(),
+                params.getHandoffExecutor(), context.getServiceTarget(), newControllers, verificationHandler);
     }
 }

@@ -42,7 +42,9 @@
             <xs:element name="thread-factory" type="thread-factory"/>
             <xs:element name="unbounded-queue-thread-pool" type="unbounded-queue-thread-pool"/>
             <xs:element name="bounded-queue-thread-pool" type="bounded-queue-thread-pool"/>
+            <xs:element name="blocking-bounded-queue-thread-pool" type="blocking-bounded-queue-thread-pool"/>
             <xs:element name="queueless-thread-pool" type="queueless-thread-pool"/>
+            <xs:element name="blocking-queueless-thread-pool" type="blocking-queueless-thread-pool"/>
             <xs:element name="scheduled-thread-pool" type="scheduled-thread-pool"/>
         </xs:choice>
     </xs:complexType>
@@ -105,18 +107,15 @@
         <xs:annotation>
             <xs:documentation>
             <![CDATA[
-                A thread pool executor with a bounded queue.  Such a thread pool has a core and maximum size and a
-                specified queue length.  When a task is submitted, if the number of running threads is less than the
-                core size, a new thread is created.  Otherwise, if there is room in the queue, the task is enqueued.
-                Otherwise, if the number of running threads is less than the maximum size, a new thread is created.
-                Otherwise, if blocking is enabled, the caller blocks until room becomes available in the queue.
-                Otherwise, the task is handed off to the designated handoff executor, if one is specified.  Otherwise,
-                the task is rejected.
+                A thread pool executor with a bounded queue, where threads attempting to submit tasks will not block.
+                Such a thread pool has a core and maximum size and a specified queue length.  When a task is submitted,
+                if the number of running threads is less than the core size, a new thread is created.  Otherwise, if
+                there is room in the queue, the task is enqueued. Otherwise, if the number of running threads is less
+                than the maximum size, a new thread is created. Otherwise, the task is handed off to the designated
+                handoff executor, if one is specified.  Otherwise, the task is discarded.
 
                 The "name" attribute is the bean name of the created executor.  The "allow-core-timeout" attribute
                 specifies whether core threads may time out; if false, only threads above the core size will time out.
-                The "blocking" attribute specifies whether the submitter thread will block if no space is available in
-                this executor.
 
                 The optional "core-threads" element may be used to specify the core thread pool size which is smaller
                 than the maximum pool size.  The required "max-threads" element specifies the maximum thread pool size.
@@ -141,17 +140,50 @@
         <xs:attribute name="blocking" use="optional" type="xs:boolean" default="false"/>
     </xs:complexType>
 
+    <xs:complexType name="blocking-bounded-queue-thread-pool">
+        <xs:annotation>
+            <xs:documentation>
+            <![CDATA[
+                A thread pool executor with a bounded queue, where threads attempting to submit tasks may block.
+                Such a thread pool has a core and maximum size and a specified queue length.  When a task is submitted,
+                if the number of running threads is less than the core size, a new thread is created.  Otherwise, if
+                there is room in the queue, the task is enqueued. Otherwise, if the number of running threads is less
+                than the maximum size, a new thread is created.Otherwise, the caller blocks until room becomes available
+                in the queue.
+
+                The "name" attribute is the bean name of the created executor.  The "allow-core-timeout" attribute
+                specifies whether core threads may time out; if false, only threads above the core size will time out.
+
+                The optional "core-threads" element may be used to specify the core thread pool size which is smaller
+                than the maximum pool size.  The required "max-threads" element specifies the maximum thread pool size.
+                The required "queue-length" element specifies the queue length.  The optional "keepalive-time" element may
+                used to specify the amount of time that threads beyond the core pool size should be kept running when idle.
+                The optional "thread-factory" element specifies the bean name of a specific thread factory to use to
+                create worker threads.
+            ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:all>
+            <xs:element name="core-threads" type="countType" minOccurs="0"/>
+            <xs:element name="queue-length" type="countType"/>
+            <xs:element name="max-threads" type="countType"/>
+            <xs:element name="keepalive-time" type="time" minOccurs="0"/>
+            <xs:element name="thread-factory" type="ref" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="allow-core-timeout" use="optional" type="xs:boolean" default="false"/>
+    </xs:complexType>
+
     <xs:complexType name="queueless-thread-pool">
         <xs:annotation>
             <xs:documentation>
             <![CDATA[
-                A thread pool executor with no queue.  When a task is submitted, if the number of running threads is
-                less than the maximum size, a new thread is created.  Otherwise, if blocking is enabled, the caller
-                blocks until another thread completes its task and accepts the new one.  Otherwise, the task is handed
-                off to the designated handoff executor, if one is specified.  Otherwise, the task is rejected.
+                A thread pool executor with no queue, where threads attempting to submit tasks will not block.
+                When a task is submitted, if the number of running threads is less than the maximum size, a new thread
+                is created. Otherwise, the task is handed off to the designated handoff executor, if one is specified.
+                Otherwise, the task is discarded.
 
-                The "name" attribute is the bean name of the created executor.  The "blocking" attribute specifies
-                whether the submitter thread will block if no space is available in this executor.
+                The "name" attribute is the bean name of the created executor.
 
                 The "max-threads" attribute specifies the number of threads to use for this executor before
                 tasks cannot be accepted anymore.  The optional "keepalive-time" is used to specify the amount of time
@@ -169,7 +201,32 @@
             <xs:element name="handoff-executor" type="ref" minOccurs="0"/>
         </xs:all>
         <xs:attribute name="name" use="required" type="xs:string"/>
-        <xs:attribute name="blocking" use="optional" type="xs:boolean" default="false"/>
+    </xs:complexType>
+
+    <xs:complexType name="blocking-queueless-thread-pool">
+        <xs:annotation>
+            <xs:documentation>
+            <![CDATA[
+                A thread pool executor with no queue, where threads attempting to submit tasks may block.
+                When a task is submitted, if the number of running threads is less than the maximum size, a new thread
+                is created.  Otherwise, the caller blocks until another thread completes its task and accepts the new one.
+
+                The "name" attribute is the bean name of the created executor.
+
+                The "max-threads" attribute specifies the number of threads to use for this executor before
+                tasks cannot be accepted anymore.  The optional "keepalive-time" is used to specify the amount of time
+                that threads should be kept running when idle; by default threads run indefinitely.  The optional
+                "thread-factory" element specifies the bean name of a specific thread factory to use to create worker
+                threads.
+            ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:all>
+            <xs:element name="max-threads" type="countType"/>
+            <xs:element name="keepalive-time" type="time" minOccurs="0"/>
+            <xs:element name="thread-factory" type="ref" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="name" use="required" type="xs:string"/>
     </xs:complexType>
 
     <xs:complexType name="scheduled-thread-pool">

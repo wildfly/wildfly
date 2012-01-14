@@ -166,7 +166,7 @@
         <xs:annotation>
             <xs:documentation>
             <![CDATA[
-                See threads:bounded-queue-thread-pool.
+                See threads:blocking-bounded-queue-thread-pool.
             ]]>
             </xs:documentation>
         </xs:annotation>
@@ -176,9 +176,7 @@
             <xs:element name="max-threads" type="threads:countType"/>
             <xs:element name="keepalive-time" type="threads:time" minOccurs="0"/>
             <xs:element name="thread-factory" type="threads:ref" minOccurs="0"/>
-            <xs:element name="handoff-executor" type="threads:ref" minOccurs="0"/>
         </xs:all>
         <xs:attribute name="allow-core-timeout" use="optional" type="xs:boolean"/>
-        <xs:attribute name="blocking" use="optional" type="xs:boolean"/>
     </xs:complexType>
 </xs:schema>

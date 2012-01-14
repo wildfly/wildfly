@@ -22,13 +22,12 @@
 package org.jboss.as.threads;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.threads.CommonAttributes.COUNT;
 import static org.jboss.as.threads.CommonAttributes.KEEPALIVE_TIME;
-import static org.jboss.as.threads.CommonAttributes.PER_CPU;
-import static org.jboss.as.threads.CommonAttributes.PROPERTIES;
 import static org.jboss.as.threads.CommonAttributes.TIME;
 import static org.jboss.as.threads.CommonAttributes.UNIT;
 
+import java.util.List;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
@@ -36,28 +35,60 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
- * Utilities related to converted detyped thread pool config ModelNodes to typed config objects.
+ * Utilities related to converting detyped thread pool config ModelNodes to typed config objects.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 class ThreadsSubsystemThreadPoolOperationUtils {
 
-    static <T> void addThreadFactoryDependency(final String threadFactory, final ServiceName serviceName, ServiceBuilder<T> serviceBuilder, Injector<ThreadFactory> injector, ServiceTarget target, String defaultThreadGroupName) {
+    static <T> void installThreadPoolService(final Service<T> threadPoolService,
+                                               final String threadPoolName, final String threadFactoryName,
+                                               final DefaultThreadFactoryProvider defaultThreadFactoryProvider,
+                                               final Injector<ThreadFactory> threadFactoryInjector,
+                                               final Injector<Executor> handoffExecutorInjector,
+                                               final String handoffExecutorName,
+                                               final ServiceTarget target, final List<ServiceController<?>> newControllers,
+                                               final ServiceListener<Object>... newServiceListeners) {
+
+        final ServiceName serviceName = ThreadsServices.executorName(threadPoolName);
+
+        final ServiceBuilder<?> serviceBuilder = target.addService(serviceName, threadPoolService);
+
+        addThreadFactoryDependency(threadFactoryName, threadPoolName, serviceName,
+                defaultThreadFactoryProvider, serviceBuilder, threadFactoryInjector, target, newControllers, newServiceListeners);
+
+        if (handoffExecutorInjector != null && handoffExecutorName != null) {
+            serviceBuilder.addDependency(ThreadsServices.executorName(handoffExecutorName), Executor.class, handoffExecutorInjector);
+        }
+
+        if (newServiceListeners != null  && newServiceListeners.length > 0) {
+            serviceBuilder.addListener(newServiceListeners);
+        }
+        ServiceController<?> sc = serviceBuilder.install();
+        if (newControllers != null) {
+            newControllers.add(sc);
+        }
+
+    }
+
+    private static void addThreadFactoryDependency(final String threadFactory, final String threadPoolName,
+                                               final ServiceName threadPoolServiceName,
+                                               final DefaultThreadFactoryProvider defaultThreadFactoryProvider,
+                                               final ServiceBuilder<?> serviceBuilder, final Injector<ThreadFactory> injector,
+                                               final ServiceTarget target, final List<ServiceController<?>> newControllers,
+                                               final ServiceListener<Object>... newServiceListeners) {
         final ServiceName threadFactoryName;
         if (threadFactory == null) {
-            threadFactoryName = serviceName.append("thread-factory");
-            final ThreadFactoryService service = new ThreadFactoryService();
-            service.setThreadGroupName(defaultThreadGroupName);
-            service.setNamePattern("%G - %t");
-            target.addService(threadFactoryName, service)
-                .install();
+            threadFactoryName = defaultThreadFactoryProvider.getDefaultThreadFactory(threadPoolName, threadPoolServiceName, target, newControllers, newServiceListeners);
         } else {
             threadFactoryName = ThreadsServices.threadFactoryName(threadFactory);
         }
@@ -74,25 +105,27 @@ class ThreadsSubsystemThreadPoolOperationUtils {
         return parseBaseThreadPoolOperationParameters(context, operation, model, params);
     }
 
-    static QueuelessThreadPoolParameters parseQueuelessThreadPoolParameters(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
+    static QueuelessThreadPoolParameters parseQueuelessThreadPoolParameters(final OperationContext context, final ModelNode operation, final ModelNode model, boolean blocking) throws OperationFailedException {
         ThreadPoolParametersImpl params = new ThreadPoolParametersImpl();
         parseBaseThreadPoolOperationParameters(context, operation, model, params);
 
-        params.blocking = PoolAttributeDefinitions.BLOCKING.resolveModelAttribute(context, model).asBoolean();
-        ModelNode handoffEx = PoolAttributeDefinitions.HANDOFF_EXECUTOR.resolveModelAttribute(context, model);
-        params.handoffExecutor = handoffEx.isDefined() ? handoffEx.asString() : null;
+        if (!blocking) {
+            ModelNode handoffEx = PoolAttributeDefinitions.HANDOFF_EXECUTOR.resolveModelAttribute(context, model);
+            params.handoffExecutor = handoffEx.isDefined() ? handoffEx.asString() : null;
+        }
 
         return params;
     }
 
-    static BoundedThreadPoolParameters parseBoundedThreadPoolParameters(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
+    static BoundedThreadPoolParameters parseBoundedThreadPoolParameters(final OperationContext context, final ModelNode operation, final ModelNode model, boolean blocking) throws OperationFailedException {
         ThreadPoolParametersImpl params = new ThreadPoolParametersImpl();
         parseBaseThreadPoolOperationParameters(context, operation, model, params);
 
-        params.blocking = PoolAttributeDefinitions.BLOCKING.resolveModelAttribute(context, model).asBoolean();
         params.allowCoreTimeout = PoolAttributeDefinitions.ALLOW_CORE_TIMEOUT.resolveModelAttribute(context, model).asBoolean();
-        ModelNode handoffEx = PoolAttributeDefinitions.HANDOFF_EXECUTOR.resolveModelAttribute(context, model);
-        params.handoffExecutor = handoffEx.isDefined() ? handoffEx.asString() : null;
+        if (!blocking) {
+            ModelNode handoffEx = PoolAttributeDefinitions.HANDOFF_EXECUTOR.resolveModelAttribute(context, model);
+            params.handoffExecutor = handoffEx.isDefined() ? handoffEx.asString() : null;
+        }
         ModelNode coreTh = PoolAttributeDefinitions.CORE_THREADS.resolveModelAttribute(context, model);
         params.coreThreads = coreTh.isDefined() ? coreTh.asInt() : params.maxThreads;
         params.queueLength = PoolAttributeDefinitions.QUEUE_LENGTH.resolveModelAttribute(context, model).asInt();
@@ -109,17 +142,6 @@ class ThreadsSubsystemThreadPoolOperationUtils {
         //Get/validate the properties
         ModelNode tfNode = PoolAttributeDefinitions.THREAD_FACTORY.resolveModelAttribute(context, model);
         params.threadFactory = tfNode.isDefined() ? tfNode.asString() : null;
-        params.properties = model.hasDefined(PROPERTIES) ? model.get(PROPERTIES) : null;
-        if (params.properties != null) {
-            if (params.properties.getType() != ModelType.LIST) {
-                throw new IllegalArgumentException(PROPERTIES + " must be a list of properties"); //TODO i18n
-            }
-            for (ModelNode property : params.properties.asList()) {
-                if (property.getType() != ModelType.PROPERTY) {
-                    throw new IllegalArgumentException(PROPERTIES + " must be a list of properties"); //TODO i18n
-                }
-            }
-        }
         params.maxThreads = PoolAttributeDefinitions.MAX_THREADS.resolveModelAttribute(context, model).asInt();
 
         if (model.hasDefined(KEEPALIVE_TIME)) {
@@ -143,15 +165,12 @@ class ThreadsSubsystemThreadPoolOperationUtils {
 
         String getThreadFactory();
 
-        ModelNode getProperties();
-
         int getMaxThreads();
 
         TimeSpec getKeepAliveTime();
     }
 
     interface QueuelessThreadPoolParameters extends BaseThreadPoolParameters {
-        boolean isBlocking();
 
         String getHandoffExecutor();
     }
@@ -166,10 +185,8 @@ class ThreadsSubsystemThreadPoolOperationUtils {
         ModelNode address;
         String name;
         String threadFactory;
-        ModelNode properties;
         int maxThreads;
         TimeSpec keepAliveTime;
-        boolean blocking;
         String handoffExecutor;
         boolean allowCoreTimeout;
         int coreThreads;
@@ -191,11 +208,6 @@ class ThreadsSubsystemThreadPoolOperationUtils {
         }
 
         @Override
-        public ModelNode getProperties() {
-            return properties;
-        }
-
-        @Override
         public int getMaxThreads() {
             return maxThreads;
         }
@@ -203,11 +215,6 @@ class ThreadsSubsystemThreadPoolOperationUtils {
         @Override
         public TimeSpec getKeepAliveTime() {
             return keepAliveTime;
-        }
-
-        @Override
-        public boolean isBlocking() {
-            return blocking;
         }
 
         @Override

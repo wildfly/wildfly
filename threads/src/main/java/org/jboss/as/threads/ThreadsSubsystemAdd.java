@@ -38,9 +38,8 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
-class ThreadsSubsystemAdd extends AbstractAddStepHandler implements DescriptionProvider {
+class ThreadsSubsystemAdd extends AbstractAddStepHandler {
 
     static final ThreadsSubsystemAdd INSTANCE = new ThreadsSubsystemAdd();
 
@@ -54,10 +53,5 @@ class ThreadsSubsystemAdd extends AbstractAddStepHandler implements DescriptionP
 
     protected boolean requiresRuntime(OperationContext context) {
         return false;
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return ThreadsSubsystemProviders.SUBSYSTEM_ADD_DESC.getModelDescription(locale);
     }
 }

@@ -39,15 +39,17 @@ import org.jboss.msc.service.ServiceName;
 
 
 /**
- *
+ * Handles attribute writes for a bounded queue thread pool.
  * @author Alexey Loubyansky
  */
 public class BoundedQueueThreadPoolWriteAttributeHandler extends ThreadsWriteAttributeOperationHandler {
 
-    public static final BoundedQueueThreadPoolWriteAttributeHandler INSTANCE = new BoundedQueueThreadPoolWriteAttributeHandler();
+    public static final BoundedQueueThreadPoolWriteAttributeHandler BLOCKING = new BoundedQueueThreadPoolWriteAttributeHandler(true);
+    public static final BoundedQueueThreadPoolWriteAttributeHandler NON_BLOCKING = new BoundedQueueThreadPoolWriteAttributeHandler(false);
 
-    private BoundedQueueThreadPoolWriteAttributeHandler() {
-        super(BoundedQueueThreadPoolAdd.ATTRIBUTES, BoundedQueueThreadPoolAdd.RW_ATTRIBUTES);
+    private BoundedQueueThreadPoolWriteAttributeHandler(boolean blocking) {
+        super(blocking ? BoundedQueueThreadPoolAdd.BLOCKING_ATTRIBUTES : BoundedQueueThreadPoolAdd.NON_BLOCKING_ATTRIBUTES,
+                BoundedQueueThreadPoolAdd.RW_ATTRIBUTES);
     }
 
     @Override
@@ -80,8 +82,6 @@ public class BoundedQueueThreadPoolWriteAttributeHandler extends ThreadsWriteAtt
             pool.setQueueLength(PoolAttributeDefinitions.QUEUE_LENGTH.resolveModelAttribute(context, model).asInt());
         } else if(PoolAttributeDefinitions.ALLOW_CORE_TIMEOUT.getName().equals(attributeName)) {
             pool.setAllowCoreTimeout(PoolAttributeDefinitions.ALLOW_CORE_TIMEOUT.resolveModelAttribute(context, model).asBoolean());
-        } else if(PoolAttributeDefinitions.BLOCKING.getName().equals(attributeName)) {
-            pool.setBlocking(PoolAttributeDefinitions.BLOCKING.resolveModelAttribute(context, model).asBoolean());
         } else {
             throw new IllegalArgumentException("Unexpected attribute '" + attributeName + "'");
         }

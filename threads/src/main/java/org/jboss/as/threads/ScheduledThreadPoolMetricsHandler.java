@@ -25,36 +25,44 @@ package org.jboss.as.threads;
 import java.util.Arrays;
 import java.util.List;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 
 
 /**
- *
+ * Handles metrics for a scheduled thread pool.
  * @author Alexey Loubyansky
  */
-public class BoundedQueueThreadPoolReadAttributeHandler extends ThreadPoolReadAttributeHandler {
+public class ScheduledThreadPoolMetricsHandler extends ThreadPoolMetricsHandler {
 
-    public static final List<String> METRICS = Arrays.asList(CommonAttributes.CURRENT_THREAD_COUNT, CommonAttributes.LARGEST_THREAD_COUNT);
+    public static final List<AttributeDefinition> METRICS = Arrays.asList(PoolAttributeDefinitions.ACTIVE_COUNT, PoolAttributeDefinitions.COMPLETED_TASK_COUNT,
+            PoolAttributeDefinitions.CURRENT_THREAD_COUNT, PoolAttributeDefinitions.LARGEST_THREAD_COUNT, PoolAttributeDefinitions.TASK_COUNT);
 
-    public static final BoundedQueueThreadPoolReadAttributeHandler INSTANCE = new BoundedQueueThreadPoolReadAttributeHandler();
+    public static final ScheduledThreadPoolMetricsHandler INSTANCE = new ScheduledThreadPoolMetricsHandler();
 
-    public BoundedQueueThreadPoolReadAttributeHandler() {
+    public ScheduledThreadPoolMetricsHandler() {
         super(METRICS);
     }
 
     @Override
     protected void setResult(OperationContext context, final String attributeName, final Service<?> service)
             throws OperationFailedException {
-        BoundedQueueThreadPoolService bounded = (BoundedQueueThreadPoolService) service;
-        if(attributeName.equals(CommonAttributes.CURRENT_THREAD_COUNT)) {
-            context.getResult().set(bounded.getCurrentThreadCount());
+        final ScheduledThreadPoolService pool = (ScheduledThreadPoolService) service;
+        if(attributeName.equals(CommonAttributes.ACTIVE_COUNT)) {
+            context.getResult().set(pool.getActiveCount());
+        } else if(attributeName.equals(CommonAttributes.COMPLETED_TASK_COUNT)) {
+            context.getResult().set(pool.getCompletedTaskCount());
+        } else if (attributeName.equals(CommonAttributes.CURRENT_THREAD_COUNT)) {
+            context.getResult().set(pool.getCurrentThreadCount());
         } else if (attributeName.equals(CommonAttributes.LARGEST_THREAD_COUNT)) {
-            context.getResult().set(bounded.getLargestThreadCount());
-        } else if (METRICS.contains(attributeName)) {
-            throw new OperationFailedException(new ModelNode().set("Unsupported attribute '" + attributeName + "'"));
+            context.getResult().set(pool.getLargestThreadCount());
+        } else if (attributeName.equals(CommonAttributes.TASK_COUNT)) {
+            context.getResult().set(pool.getTaskCount());
+        } else {
+            // Programming bug. Throw a RuntimeException, not OFE, as this is not a client error
+            throw new IllegalStateException("Unsupported attribute '" + attributeName + "'");
         }
     }
 }

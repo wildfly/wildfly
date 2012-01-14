@@ -39,15 +39,17 @@ import org.jboss.msc.service.ServiceName;
 
 
 /**
+ * Handles attribute writes for a queueless thread pool.
  *
  * @author Alexey Loubyansky
  */
 public class QueuelessThreadPoolWriteAttributeHandler extends ThreadsWriteAttributeOperationHandler {
 
-    public static final QueuelessThreadPoolWriteAttributeHandler INSTANCE = new QueuelessThreadPoolWriteAttributeHandler();
+    public static final QueuelessThreadPoolWriteAttributeHandler BLOCKING = new QueuelessThreadPoolWriteAttributeHandler(true);
+    public static final QueuelessThreadPoolWriteAttributeHandler NON_BLOCKING = new QueuelessThreadPoolWriteAttributeHandler(false);
 
-    private QueuelessThreadPoolWriteAttributeHandler() {
-        super(QueuelessThreadPoolAdd.ATTRIBUTES, QueuelessThreadPoolAdd.RW_ATTRIBUTES);
+    private QueuelessThreadPoolWriteAttributeHandler(boolean blocking) {
+        super(blocking ? QueuelessThreadPoolAdd.BLOCKING_ATTRIBUTES : QueuelessThreadPoolAdd.NON_BLOCKING_ATTRIBUTES, QueuelessThreadPoolAdd.RW_ATTRIBUTES);
     }
 
     @Override
@@ -74,8 +76,6 @@ public class QueuelessThreadPoolWriteAttributeHandler extends ThreadsWriteAttrib
             pool.setKeepAlive(spec);
         } else if(PoolAttributeDefinitions.MAX_THREADS.getName().equals(attributeName)) {
             pool.setMaxThreads(PoolAttributeDefinitions.MAX_THREADS.resolveModelAttribute(context, model).asInt());
-        } else if(PoolAttributeDefinitions.BLOCKING.getName().equals(attributeName)) {
-            pool.setBlocking(PoolAttributeDefinitions.BLOCKING.resolveModelAttribute(context, model).asBoolean());
         } else {
             throw new IllegalStateException("Unexpected attribute '" + attributeName + "'");
         }

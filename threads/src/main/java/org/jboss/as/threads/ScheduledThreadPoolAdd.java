@@ -21,8 +21,10 @@
  */
 package org.jboss.as.threads;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import java.util.List;
-import java.util.Locale;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -30,26 +32,17 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.as.threads.ThreadsSubsystemThreadPoolOperationUtils.BaseThreadPoolParameters;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Adds a scheduled thread pool.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
-public class ScheduledThreadPoolAdd extends AbstractAddStepHandler implements DescriptionProvider {
+public class ScheduledThreadPoolAdd extends AbstractAddStepHandler {
 
     static final ScheduledThreadPoolAdd INSTANCE = new ScheduledThreadPoolAdd();
 
@@ -58,10 +51,7 @@ public class ScheduledThreadPoolAdd extends AbstractAddStepHandler implements De
 
     static final AttributeDefinition[] RW_ATTRIBUTES = new AttributeDefinition[]{};
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return ThreadsSubsystemProviders.ADD_SCHEDULED_THREAD_POOL_DESC.getModelDescription(locale);
-    }
+    private final DefaultThreadFactoryProvider threadFactoryProvider = DefaultThreadFactoryProvider.STANDARD_PROVIDER;
 
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
@@ -80,18 +70,10 @@ public class ScheduledThreadPoolAdd extends AbstractAddStepHandler implements De
 
         final BaseThreadPoolParameters params = ThreadsSubsystemThreadPoolOperationUtils.parseScheduledThreadPoolParameters(context, operation, model);
 
-        ServiceTarget target = context.getServiceTarget();
-        final ServiceName serviceName = ThreadsServices.executorName(params.getName());
         final ScheduledThreadPoolService service = new ScheduledThreadPoolService(params.getMaxThreads(), params.getKeepAliveTime());
-        final ServiceBuilder<ManagedScheduledExecutorService> serviceBuilder = target.addService(serviceName, service);
-        ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target, params.getName() + "-threads");
-        if (verificationHandler != null) {
-            serviceBuilder.addListener(verificationHandler);
-        }
-        ServiceController<?> sc = serviceBuilder.install();
-        if (newControllers != null) {
-            newControllers.add(sc);
-        }
 
+        ThreadsSubsystemThreadPoolOperationUtils.installThreadPoolService(service, params.getName(), params.getThreadFactory(),
+                threadFactoryProvider, service.getThreadFactoryInjector(), null,
+                null, context.getServiceTarget(), newControllers, verificationHandler);
     }
 }

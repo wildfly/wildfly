@@ -21,10 +21,8 @@
  */
 package org.jboss.as.threads;
 
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.threads.CommonAttributes.BOUNDED_QUEUE_THREAD_POOL;
 import static org.jboss.as.threads.CommonAttributes.QUEUELESS_THREAD_POOL;
@@ -38,12 +36,6 @@ import static org.jboss.as.threads.ThreadsDescriptionUtil.addScheduledThreadPool
 import static org.jboss.as.threads.ThreadsDescriptionUtil.addThreadFactory;
 import static org.jboss.as.threads.ThreadsDescriptionUtil.addUnboundedQueueThreadPool;
 import static org.jboss.as.threads.ThreadsDescriptionUtil.pathAddress;
-import static org.jboss.as.threads.ThreadsSubsystemProviders.BOUNDED_QUEUE_THREAD_POOL_DESC;
-import static org.jboss.as.threads.ThreadsSubsystemProviders.QUEUELESS_THREAD_POOL_DESC;
-import static org.jboss.as.threads.ThreadsSubsystemProviders.SCHEDULED_THREAD_POOL_DESC;
-import static org.jboss.as.threads.ThreadsSubsystemProviders.SUBSYSTEM_PROVIDER;
-import static org.jboss.as.threads.ThreadsSubsystemProviders.THREAD_FACTORY_DESC;
-import static org.jboss.as.threads.ThreadsSubsystemProviders.UNBOUNDED_QUEUE_THREAD_POOL_DESC;
 
 import java.util.Locale;
 
@@ -56,31 +48,36 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
 
 /**
  * Extension for thread management.
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class ThreadsExtension implements Extension {
+
     private static final Logger log = Logger.getLogger("org.jboss.as.threads");
 
     public static String SUBSYSTEM_NAME = "threads";
 
-    private static final DescriptionProvider SUBSYSTEM_REMOVE_PROVIDER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(final Locale locale) {
-            return ThreadsSubsystemProviders.getSubsystemRemoveDescription(locale);
-        }
-    };
+    static final String RESOURCE_NAME = ThreadsExtension.class.getPackage().getName() + ".LocalDescriptions";
+
+    public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix, boolean useUnprefixedChildTypes) {
+        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, ThreadsExtension.class.getClassLoader(), true, useUnprefixedChildTypes);
+    }
 
     @Override
     public void initialize(final ExtensionContext context) {
@@ -92,62 +89,13 @@ public class ThreadsExtension implements Extension {
         // Register the remoting subsystem
         final SubsystemRegistration registration = context.registerSubsystem(THREADS, 1, 0);
         registration.registerXMLElementWriter(ThreadsParser.INSTANCE);
+
         // Remoting subsystem description and operation handlers
-        final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(SUBSYSTEM_PROVIDER);
-        subsystem.registerOperationHandler(ADD, ThreadsSubsystemAdd.INSTANCE, ThreadsSubsystemAdd.INSTANCE, false);
-        subsystem.registerOperationHandler(DESCRIBE, ThreadsSubsystemDescribeHandler.INSTANCE,
-                ThreadsSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
-        subsystem.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, SUBSYSTEM_REMOVE_PROVIDER, false);
-
-        final ManagementResourceRegistration threadFactories = subsystem.registerSubModel(PathElement.pathElement(THREAD_FACTORY),
-                THREAD_FACTORY_DESC);
-        threadFactories.registerOperationHandler(ADD, ThreadFactoryAdd.INSTANCE, ThreadFactoryAdd.INSTANCE, false);
-        threadFactories.registerOperationHandler(REMOVE, ThreadFactoryRemove.INSTANCE, ThreadFactoryRemove.INSTANCE, false);
-        ThreadFactoryWriteAttributeHandler.INSTANCE.registerAttributes(threadFactories);
-
-        final ManagementResourceRegistration boundedQueueThreadPools = subsystem.registerSubModel(
-                PathElement.pathElement(BOUNDED_QUEUE_THREAD_POOL), BOUNDED_QUEUE_THREAD_POOL_DESC);
-        boundedQueueThreadPools.registerOperationHandler(ADD, BoundedQueueThreadPoolAdd.INSTANCE,
-                BoundedQueueThreadPoolAdd.INSTANCE, false);
-        boundedQueueThreadPools.registerOperationHandler(REMOVE, BoundedQueueThreadPoolRemove.INSTANCE,
-                BoundedQueueThreadPoolRemove.INSTANCE, false);
-        if (registerRuntimeOnly) {
-            BoundedQueueThreadPoolReadAttributeHandler.INSTANCE.registerAttributes(boundedQueueThreadPools);
-        }
-        BoundedQueueThreadPoolWriteAttributeHandler.INSTANCE.registerAttributes(boundedQueueThreadPools);
-
-        final ManagementResourceRegistration unboundedQueueThreadPools = subsystem.registerSubModel(
-                PathElement.pathElement(UNBOUNDED_QUEUE_THREAD_POOL), UNBOUNDED_QUEUE_THREAD_POOL_DESC);
-        unboundedQueueThreadPools.registerOperationHandler(ADD, UnboundedQueueThreadPoolAdd.INSTANCE,
-                UnboundedQueueThreadPoolAdd.INSTANCE, false);
-        unboundedQueueThreadPools.registerOperationHandler(REMOVE, UnboundedQueueThreadPoolRemove.INSTANCE,
-                UnboundedQueueThreadPoolRemove.INSTANCE, false);
-        if (registerRuntimeOnly) {
-            UnboundedQueueThreadPoolReadAttributeHandler.INSTANCE.registerAttributes(unboundedQueueThreadPools);
-        }
-        UnboundedQueueThreadPoolWriteAttributeHandler.INSTANCE.registerAttributes(unboundedQueueThreadPools);
-
-        final ManagementResourceRegistration queuelessThreadPools = subsystem.registerSubModel(
-                PathElement.pathElement(QUEUELESS_THREAD_POOL), QUEUELESS_THREAD_POOL_DESC);
-        queuelessThreadPools.registerOperationHandler(ADD, QueuelessThreadPoolAdd.INSTANCE, QueuelessThreadPoolAdd.INSTANCE,
-                false);
-        queuelessThreadPools.registerOperationHandler(REMOVE, QueuelessThreadPoolRemove.INSTANCE,
-                QueuelessThreadPoolRemove.INSTANCE, false);
-        if (registerRuntimeOnly) {
-            QueuelessThreadPoolReadAttributeHandler.INSTANCE.registerAttributes(queuelessThreadPools);
-        }
-        QueuelessThreadPoolWriteAttributeHandler.INSTANCE.registerAttributes(queuelessThreadPools);
-
-        final ManagementResourceRegistration scheduledThreadPools = subsystem.registerSubModel(
-                PathElement.pathElement(SCHEDULED_THREAD_POOL), SCHEDULED_THREAD_POOL_DESC);
-        scheduledThreadPools.registerOperationHandler(ADD, ScheduledThreadPoolAdd.INSTANCE, ScheduledThreadPoolAdd.INSTANCE,
-                false);
-        scheduledThreadPools.registerOperationHandler(REMOVE, ScheduledThreadPoolRemove.INSTANCE,
-                ScheduledThreadPoolRemove.INSTANCE, false);
-        if (registerRuntimeOnly) {
-            ScheduledThreadPoolReadAttributeHandler.INSTANCE.registerAttributes(scheduledThreadPools);
-        }
-        ScheduledThreadPoolWriteAttributeHandler.INSTANCE.registerAttributes(scheduledThreadPools);
+        final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(new ThreadSubsystemResourceDefinition(registerRuntimeOnly));
+//        subsystem.registerOperationHandler(DESCRIBE, ThreadsSubsystemDescribeHandler.INSTANCE,
+//                ThreadsSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        subsystem.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE,
+                GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
     }
 
     @Override
@@ -164,7 +112,8 @@ public class ThreadsExtension implements Extension {
 
             result.add(Util.getEmptyOperation(ADD, pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME))));
 
-            final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
+            final ModelNode model = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
+
             addBoundedQueueThreadPools(result, model);
             addQueuelessThreadPools(result, model);
             addScheduledThreadPools(result, model);
