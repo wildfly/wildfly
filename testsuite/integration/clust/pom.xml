@@ -119,44 +119,44 @@
                                 </configuration>
                             </execution>
 
-                            <!-- Single node clustering tests. -->
-                            <execution>
-                                <id>tests-clustering-single-node.surefire</id>
-                                <phase>test</phase>
-                                <goals><goal>test</goal></goals>
-                                <configuration>
-                                    <!-- Tests to execute. -->
-                                    <includes>
-                                        <include>org/jboss/as/test/clustering/single/**/*TestCase.java</include>
-                                    </includes>
+                            <!--&lt;!&ndash; Single node clustering tests. &ndash;&gt;-->
+                            <!--<execution>-->
+                                <!--<id>tests-clustering-single-node.surefire</id>-->
+                                <!--<phase>test</phase>-->
+                                <!--<goals><goal>test</goal></goals>-->
+                                <!--<configuration>-->
+                                    <!--&lt;!&ndash; Tests to execute. &ndash;&gt;-->
+                                    <!--<includes>-->
+                                        <!--<include>org/jboss/as/test/clustering/single/**/*TestCase.java</include>-->
+                                    <!--</includes>-->
 
-                                    <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables>
-                                        <arquillian.launch>clustering-udp-single</arquillian.launch>
-                                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
-                                    </systemPropertyVariables>
-                                </configuration>
-                            </execution>
+                                    <!--&lt;!&ndash; Parameters to test cases. &ndash;&gt;-->
+                                    <!--<systemPropertyVariables>-->
+                                        <!--<arquillian.launch>clustering-udp-single</arquillian.launch>-->
+                                        <!--<jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>-->
+                                    <!--</systemPropertyVariables>-->
+                                <!--</configuration>-->
+                            <!--</execution>-->
 
-                            <!-- Multi node clustering tests. -->
-                            <execution>
-                                <id>tests-clustering-multi-node.surefire</id>
-                                <phase>test</phase>
-                                <goals><goal>test</goal></goals>
-                                <configuration>
-                                    <!-- Tests to execute. -->
-                                    <includes>
-                                        <include>org/jboss/as/test/clustering/cluster/**/*TestCase.java</include>
-                                    </includes>
+                            <!--&lt;!&ndash; Multi node clustering tests. &ndash;&gt;-->
+                            <!--<execution>-->
+                                <!--<id>tests-clustering-multi-node.surefire</id>-->
+                                <!--<phase>test</phase>-->
+                                <!--<goals><goal>test</goal></goals>-->
+                                <!--<configuration>-->
+                                    <!--&lt;!&ndash; Tests to execute. &ndash;&gt;-->
+                                    <!--<includes>-->
+                                        <!--<include>org/jboss/as/test/clustering/cluster/**/*TestCase.java</include>-->
+                                    <!--</includes>-->
 
-                                    <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables>
-                                        <arquillian.launch>clustering-udp</arquillian.launch>
-                                        <!-- Use combine.children="append" to pick up parent properties automatically. -->
-                                        <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
-                                    </systemPropertyVariables>
-                                </configuration>
-                            </execution>
+                                    <!--&lt;!&ndash; Parameters to test cases. &ndash;&gt;-->
+                                    <!--<systemPropertyVariables>-->
+                                        <!--<arquillian.launch>clustering-udp</arquillian.launch>-->
+                                        <!--&lt;!&ndash; Use combine.children="append" to pick up parent properties automatically. &ndash;&gt;-->
+                                        <!--<jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>-->
+                                    <!--</systemPropertyVariables>-->
+                                <!--</configuration>-->
+                            <!--</execution>-->
 
                         </executions>
                     </plugin>
