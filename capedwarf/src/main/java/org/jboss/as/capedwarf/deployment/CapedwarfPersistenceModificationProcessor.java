@@ -68,16 +68,10 @@ public class CapedwarfPersistenceModificationProcessor extends CapedwarfPersiste
     static final String IN_META_INF = "META-INF/" + PERSISTENCE_XML;
     static final String IN_WEB_INF = "WEB-INF/classes/" + IN_META_INF;
 
-    static final String PROVIDER_START = "<provider>";
-    static final String PROVIDER_END = "</provider>";
-    static final String PROVIDER_REGEXP = PROVIDER_START + "[a-zA-z0-9\\.^<]+" + PROVIDER_END;
-    static final String HIBERNATE_PROVIDER = PROVIDER_START + Configuration.PROVIDER_CLASS_HIBERNATE + PROVIDER_END;
-    static final String HIBERNATE_OGM_PROVIDER = PROVIDER_START + Configuration.PROVIDER_CLASS_HIBERNATE_OGM + PROVIDER_END;
-    static final String NON_JTA_DS = "<non-jta-data-source>";
-    static final String NON_JTA_DS_DEFINITION = NON_JTA_DS + "java:jboss/datasources/ExampleDS</non-jta-data-source>";
+    static final String DATANUCLEUS_PROVIDER = Configuration.PROVIDER_CLASS_DATANUCLEUS;
+    static final String DATANUCLEUS_GAE_PROVIDER = Configuration.PROVIDER_CLASS_DATANUCLEUS_GAE;
     static final String PROPERTIES = "<properties>";
-    static final String DIALECT_PROPERTY = "<property name=\"hibernate.dialect\" value=\"" + DEFAULT_DIALECT + "\"/>";
-    static final String CREATE_DROP = "<property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>";
+    static final String LOAD_AT_RUNTIME = "<property name=\"datanucleus.metadata.allowLoadAtRuntime\" value=\"true\"/>";
 
     static final AttachmentKey<AttachmentList<Closeable>> ASSEMBLY_HANDLE = AttachmentKey.createList(Closeable.class);
     static final Random rng = new Random();
@@ -115,10 +109,13 @@ public class CapedwarfPersistenceModificationProcessor extends CapedwarfPersiste
 
     protected void modifyPersistenceFile(DeploymentUnit unit, VirtualFile persistenceXml) throws IOException {
         if (persistenceXml != null && persistenceXml.exists()) {
-            final VirtualFile parent = persistenceXml.getParent();
-            final File modifiedFile = tempDir.createFile(Long.toHexString(rng.nextLong()) + "_" + PERSISTENCE_XML, rewritePersistenceXml(persistenceXml));
-            final Closeable closeable = VFS.mount(parent, new ModifiedFileSystem(parent.getPhysicalFile(), modifiedFile));
-            unit.addToAttachmentList(ASSEMBLY_HANDLE, closeable);
+            final InputStream stream = rewritePersistenceXml(persistenceXml);
+            if (stream != null) {
+                final File modifiedFile = tempDir.createFile(Long.toHexString(rng.nextLong()) + "_" + PERSISTENCE_XML, stream);
+                final VirtualFile parent = persistenceXml.getParent();
+                final Closeable closeable = VFS.mount(parent, new ModifiedFileSystem(parent.getPhysicalFile(), modifiedFile));
+                unit.addToAttachmentList(ASSEMBLY_HANDLE, closeable);
+            }
         }
     }
 
@@ -128,24 +125,17 @@ public class CapedwarfPersistenceModificationProcessor extends CapedwarfPersiste
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
             VFSUtils.copyStream(is, baos);
             String content = baos.toString();
-            content = content.replaceAll(PROVIDER_REGEXP, HIBERNATE_PROVIDER);
+            if (content.contains(DATANUCLEUS_PROVIDER) == false && content.contains(DATANUCLEUS_GAE_PROVIDER) == false)
+                return null; // we're not using DataNucleus
+
             final StringBuilder builder = new StringBuilder(content);
-            final int ds = builder.indexOf(NON_JTA_DS);
-            if (ds < 0) {
-                int pe = -1;
-                while (true) {
-                    pe = builder.indexOf(PROVIDER_END, pe + 1); // TODO -- assume provider is always defined
-                    if (pe < 0) break;
-                    builder.insert(pe + PROVIDER_END.length(), NON_JTA_DS_DEFINITION);
-                }
-            }
-            final int p = builder.indexOf(PROPERTIES);
-            if (p > 0) {
+            int p = -1;
+            while (true) {
+                p = builder.indexOf(PROPERTIES, p + 1);
+                if (p < 0) break;
+
                 final int offset = p + PROPERTIES.length();
-                builder.insert(offset, CREATE_DROP);
-                builder.insert(offset, DIALECT_PROPERTY);
-            } else {
-                // TODO
+                builder.insert(offset, LOAD_AT_RUNTIME);
             }
             content = builder.toString();
             return new ByteArrayInputStream(content.getBytes());
