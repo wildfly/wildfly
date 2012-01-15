@@ -20,10 +20,11 @@ package org.jboss.as.cli.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import javax.swing.Action;
+import java.net.URL;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -92,6 +93,8 @@ public class GuiMain {
 
     private static synchronized void initJFrame() {
         frame = new JFrame("CLI GUI");
+        URL iconURL = GuiMain.class.getResource("/icon/as7_logo.png");
+        frame.setIconImage(Toolkit.getDefaultToolkit().getImage(iconURL));
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.addWindowListener(new WindowAdapter() {
             @Override

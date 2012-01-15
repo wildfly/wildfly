@@ -41,7 +41,6 @@ import org.jboss.dmr.ModelNode;
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
 public class DoOperationActionListener extends AbstractAction {
-    public static String newline = System.getProperty("line.separator");
 
     private CommandExecutor executor;
 
