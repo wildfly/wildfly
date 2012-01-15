@@ -55,6 +55,7 @@ public class GuiMain {
     private static JButton submitButton = new JButton("Submit");
     private static JTextPane output = new JTextPane();
     private static JTabbedPane tabs;
+    private static DoOperationActionListener opListener;
 
     private GuiMain() {} // don't allow an instance
 
@@ -106,6 +107,8 @@ public class GuiMain {
 
         mainPanel.setLayout(new BorderLayout(5,5));
         tabs = makeTabbedPane();
+        opListener = new DoOperationActionListener(output, tabs);
+        output.addMouseListener(new SelectPreviousOpMouseAdapter(output, cmdText, opListener));
 
         mainPanel.add(makeCommandLine(), BorderLayout.NORTH);
         mainPanel.add(tabs, BorderLayout.CENTER);
@@ -127,13 +130,12 @@ public class GuiMain {
         cmdLine.add(new JLabel("cmd>"), BorderLayout.WEST);
         cmdText.setText("/");
         cmdLine.add(cmdText, BorderLayout.CENTER);
-        Action submitListener = new DoOperationActionListener(output, tabs);
 
         KeyStroke enterKey = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true);
         cmdText.getInputMap().put(enterKey, SUBMIT_ACTION);
-        cmdText.getActionMap().put(SUBMIT_ACTION, submitListener);
+        cmdText.getActionMap().put(SUBMIT_ACTION, opListener);
 
-        submitButton.addActionListener(submitListener);
+        submitButton.addActionListener(opListener);
         cmdLine.add(submitButton, BorderLayout.EAST);
         return cmdLine;
     }
