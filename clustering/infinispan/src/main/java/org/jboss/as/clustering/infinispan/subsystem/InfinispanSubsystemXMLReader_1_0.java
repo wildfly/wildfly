@@ -91,6 +91,10 @@ public class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<List<M
                     name = value;
                     break;
                 }
+                case ALIASES: {
+                    container.get(ModelKeys.ALIASES).set(parseAliases(value));
+                    break;
+                }
                 case DEFAULT_CACHE: {
                     container.get(ModelKeys.DEFAULT_CACHE).set(value);
                     break;
@@ -132,10 +136,6 @@ public class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<List<M
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             Element element = Element.forName(reader.getLocalName());
             switch (element) {
-                case ALIAS: {
-                    container.get(ModelKeys.ALIAS).add(reader.getElementText());
-                    break;
-                }
                 case TRANSPORT: {
                     parseTransport(reader, containerAddress, operations);
                     break;
@@ -161,6 +161,21 @@ public class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<List<M
                 }
             }
         }
+    }
+
+    private ModelNode parseAliases(String aliasesString) throws XMLStreamException {
+
+        // assume a space-separated list of aliases give the xs:list type in xsd
+        final String REGEX = " " ;
+        ModelNode list = new ModelNode();
+        String[] aliases = aliasesString.split(REGEX);
+        if (aliases.length > 0) {
+            list.setEmptyList();
+            for (String alias : aliases) {
+                list.add(alias);
+            }
+        }
+        return list ;
     }
 
     private void parseTransport(XMLExtendedStreamReader reader, ModelNode containerAddress, List<ModelNode> operations) throws XMLStreamException {

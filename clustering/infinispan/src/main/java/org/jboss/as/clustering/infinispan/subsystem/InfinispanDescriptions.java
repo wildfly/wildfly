@@ -116,7 +116,7 @@ public class InfinispanDescriptions {
             addNode(attributes, attr.getName(), resources.getString(keyPrefix + "." + attr.getName()), attr.getType(), !attr.isAllowNull());
         }
         // alias is a special case as it has a value type
-        addNode(attributes, ModelKeys.ALIAS, resources.getString(keyPrefix + ".alias"), ModelType.LIST, false).get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
+        addNode(attributes, ModelKeys.ALIASES, resources.getString(keyPrefix + ".aliases"), ModelType.LIST, false).get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
 
         // information about its child "singleton=transport"
         description.get(CHILDREN, ModelKeys.SINGLETON, DESCRIPTION).set(resources.getString(keyPrefix + ".singleton"));
@@ -159,7 +159,7 @@ public class InfinispanDescriptions {
             addNode(requestProperties, attr.getName(), resources.getString(keyPrefix + "." + attr.getName()), attr.getType(), !attr.isAllowNull());
         }
         // alias is a special case as it has a value type
-        addNode(requestProperties, ModelKeys.ALIAS, resources.getString("infinispan.container.alias"), ModelType.LIST, false).get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
+        addNode(requestProperties, ModelKeys.ALIASES, resources.getString("infinispan.container.aliases"), ModelType.LIST, false).get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
 
         return description;
     }

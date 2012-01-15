@@ -79,6 +79,9 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
 
     private static void populate(ModelNode source, ModelNode target) {
         target.get(ModelKeys.DEFAULT_CACHE).set(source.require(ModelKeys.DEFAULT_CACHE));
+        if (source.hasDefined(ModelKeys.ALIASES)) {
+            target.get(ModelKeys.ALIASES).set(source.get(ModelKeys.ALIASES));
+        }
         if (source.hasDefined(ModelKeys.JNDI_NAME)) {
             target.get(ModelKeys.JNDI_NAME).set(source.get(ModelKeys.JNDI_NAME));
         }
@@ -90,12 +93,6 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         }
         if (source.hasDefined(ModelKeys.REPLICATION_QUEUE_EXECUTOR)) {
             target.get(ModelKeys.REPLICATION_QUEUE_EXECUTOR).set(source.get(ModelKeys.REPLICATION_QUEUE_EXECUTOR));
-        }
-        if (source.hasDefined(ModelKeys.ALIAS)) {
-            ModelNode aliases = target.get(ModelKeys.ALIAS);
-            for (ModelNode alias : source.get(ModelKeys.ALIAS).asList()) {
-                aliases.add(alias);
-            }
         }
     }
 
@@ -119,8 +116,8 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         EmbeddedCacheManagerDependencies dependencies = new EmbeddedCacheManagerDependencies(transportConfig);
 
         ServiceName[] aliases = null;
-        if (model.hasDefined(ModelKeys.ALIAS)) {
-            List<ModelNode> list = operation.get(ModelKeys.ALIAS).asList();
+        if (model.hasDefined(ModelKeys.ALIASES)) {
+            List<ModelNode> list = operation.get(ModelKeys.ALIASES).asList();
             aliases = new ServiceName[list.size()];
             for (int i = 0; i < list.size(); i++) {
                 aliases[i] = EmbeddedCacheManagerService.getServiceName(list.get(i).asString());
