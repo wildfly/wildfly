@@ -19,6 +19,9 @@
 package org.jboss.as.cli.gui;
 
 import java.awt.event.ActionEvent;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
@@ -38,12 +41,15 @@ import org.jboss.dmr.ModelNode;
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
 public class DoOperationActionListener extends AbstractAction {
+    public static String newline = System.getProperty("line.separator");
 
     private CommandExecutor executor;
 
     private JTextField cmdText;
     private JTextComponent output;
     private JTabbedPane tabs;
+
+    private LinkedList<String> cmdHistory = new LinkedList<String>();
 
     public DoOperationActionListener(JTextComponent output, JTabbedPane tabs) {
         this.executor = GuiMain.getExecutor();
@@ -55,6 +61,7 @@ public class DoOperationActionListener extends AbstractAction {
     public void actionPerformed(ActionEvent ae) {
         String command = cmdText.getText();
         try {
+            cmdHistory.push(command);
             ModelNode result = executor.doCommand(command);
             postOutput(command, result.toString());
         } catch (Exception e) {
@@ -66,6 +73,10 @@ public class DoOperationActionListener extends AbstractAction {
         } finally {
             tabs.setSelectedIndex(1); // set to Output tab to view the output
         }
+    }
+
+    public List getCmdHistory() {
+        return Collections.unmodifiableList(this.cmdHistory);
     }
 
     private void postOutput(String command, String response) throws BadLocationException {
