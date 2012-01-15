@@ -79,6 +79,12 @@
         <!-- This value is overridden in modules with the correct relative pathname. -->
         <jboss.dist>${project.basedir}/../build/target/jboss-as-${jboss.as.release.version}</jboss.dist>
         <jboss.home>${jboss.dist}</jboss.home>
+        
+        <!-- This project's testsuite dir. To be changed for every submodule (until we figure out how to do it automatically). -->
+        <jbossas.ts.dir>${basedir}</jbossas.ts.dir>
+        <!-- This project's root dir. -->
+        <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir> <!-- TODO: Remove from submodules (is inherited). -->
+        
 
         <!-- Used to provide an absolute location for the XSLT scripts. -->
         <!-- This value is overridden in modules with the correct relative pathname. -->
@@ -100,7 +106,7 @@
         <jvm.args.security>${jvm.args.securityManager} ${jvm.args.securityPolicy}</jvm.args.security>
         
         <!-- JaCoCo - Code coverage (-Dcoverage). -->
-        <jvm.args.jacoco></jvm.args.jacoco>
+        <jvm.args.jacoco>-javaagent:${jbossas.ts.dir}/tools/jacoco/jacocoagent.jar=destfile=${basedir}/target/jacoco.exec,includes=${jboss.home}/modules/**/*,excludes=${basedir}/target/classes/**/*,append=true,output=file</jvm.args.jacoco>
         
         <!-- Timeout ratios. 100 will leave the timeout as it was coded. -->
         <timeout.ratio.fsio>100</timeout.ratio.fsio>
@@ -550,12 +556,14 @@
                                 <configuration>
                                     <append>true</append>
                                     <destFile>target/jacoco.exec</destFile>
+                                    <!--
                                     <includes>
-                                        <include>org.jboss.as.*</include>
+                                        <include>${jboss.home}/modules/**/*</include>
                                     </includes>
                                     <excludes>
-                                        <exclude>org.jboss.as.test*</exclude>
+                                        <exclude>${basedir}/target/classes/**/*</exclude>
                                     </excludes>
+                                    -->
                                     <output>file</output>
                                     <propertyName>jvm.args.jacoco</propertyName>
                                 </configuration>
