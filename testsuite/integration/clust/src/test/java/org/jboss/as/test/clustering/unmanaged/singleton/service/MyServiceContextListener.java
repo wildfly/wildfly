@@ -28,7 +28,7 @@ public class MyServiceContextListener implements ServletContextListener {
     public void contextInitialized(ServletContextEvent event) {
         MyService service = new MyService();
         SingletonService<String> singleton = new SingletonService<String>(service, MyService.SERVICE_NAME);
-        singleton.setElectionPolicy(new PreferredSingletonElectionPolicy(new NamePreference(PREFERRED_NODE + "/" + SingletonService.DEFAULT_CONTAINER), new SimpleSingletonElectionPolicy()));
+        singleton.setElectionPolicy(new PreferredSingletonElectionPolicy(new NamePreference(PREFERRED_NODE), new SimpleSingletonElectionPolicy()));
         ServiceController<String> controller = singleton.build(CurrentServiceContainer.getServiceContainer())
             .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.getEnvInjector())
             .install()
