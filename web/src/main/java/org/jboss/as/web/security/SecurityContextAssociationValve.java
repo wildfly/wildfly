@@ -145,7 +145,7 @@ public class SecurityContextAssociationValve extends ValveBase {
                     }
                 }
             } catch (Throwable e) {
-                //TODO:decide whether to log this as info or warn 
+                //TODO:decide whether to log this as info or warn
                 log.debug("Failed to determine servlet", e);
             }
             // set JACC contextID
