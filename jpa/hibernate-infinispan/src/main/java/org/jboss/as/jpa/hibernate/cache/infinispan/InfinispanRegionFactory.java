@@ -22,10 +22,13 @@
 
 package org.jboss.as.jpa.hibernate.cache.infinispan;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Properties;
 
 import org.hibernate.cache.CacheException;
 import org.hibernate.internal.util.config.ConfigurationHelper;
+import org.infinispan.AdvancedCache;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
 import org.jboss.as.server.CurrentServiceContainer;
@@ -58,5 +61,17 @@ public class InfinispanRegionFactory extends org.hibernate.cache.infinispan.Infi
     @Override
     public void stop() {
         // Do not attempt to stop our cache manager because it wasn't created by this region factory.
+    }
+
+    @SuppressWarnings("rawtypes")
+    @Override
+    protected AdvancedCache createCacheWrapper(AdvancedCache cache) {
+        PrivilegedAction<ClassLoader> action = new PrivilegedAction<ClassLoader>() {
+            @Override
+            public ClassLoader run() {
+                return Thread.currentThread().getContextClassLoader();
+            }
+        };
+        return cache.with(AccessController.doPrivileged(action));
     }
 }
