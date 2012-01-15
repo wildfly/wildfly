@@ -51,7 +51,11 @@ class ServerDeploymentPlanResultFuture implements Future<ServerDeploymentPlanRes
 
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
-        return nodeFuture.cancel(mayInterruptIfRunning);
+        boolean cancelled = nodeFuture.cancel(mayInterruptIfRunning);
+        if (cancelled) {
+            plan.cleanup();
+        } // else wait for finalize()
+        return cancelled;
     }
 
     @Override
@@ -66,15 +70,46 @@ class ServerDeploymentPlanResultFuture implements Future<ServerDeploymentPlanRes
 
     @Override
     public ServerDeploymentPlanResult get() throws InterruptedException, ExecutionException {
-        ModelNode node = nodeFuture.get();
+        boolean cleanup = true;
+        ModelNode node;
+        try {
+            node = nodeFuture.get();
+        } catch (InterruptedException ie) {
+            cleanup = false;  // still may be in progress, so wait for finalize()
+            throw ie;
+        } finally {
+            if (cleanup) {
+                plan.cleanup();
+            }
+        }
         return getResultFromNode(node.get(ClientConstants.RESULT));
     }
 
     @Override
     public ServerDeploymentPlanResult get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException,
             TimeoutException {
-        ModelNode node = nodeFuture.get(timeout, unit);
+        boolean cleanup = true;
+        ModelNode node;
+        try {
+            node = nodeFuture.get(timeout, unit);
+        } catch (InterruptedException ie) {
+            cleanup = false;  // still may be in progress, so wait for finalize()
+            throw ie;
+        } catch (TimeoutException te) {
+            cleanup = false;  // still may be in progress, so wait for finalize()
+            throw te;
+        } finally {
+            if (cleanup) {
+                plan.cleanup();
+            }
+        }
         return getResultFromNode(node.get(ClientConstants.RESULT));
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        plan.cleanup();
     }
 
     private ServerDeploymentPlanResult getResultFromNode(ModelNode planResultNode) {
