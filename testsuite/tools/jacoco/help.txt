@@ -1,0 +1,166 @@
+
+Name: JaCoCo :: Maven Plugin
+Description: The JaCoCo Maven Plugin provides the JaCoCo runtime agent to
+  your tests and allows basic report creation.
+Group Id: org.jacoco
+Artifact Id: jacoco-maven-plugin
+Version: 0.5.5.201112152213
+Goal Prefix: jacoco
+
+This plugin has 3 goals:
+
+jacoco:help
+  Description: Display help information on jacoco-maven-plugin.
+    Call
+      mvn jacoco:help -Ddetail=true -Dgoal=<goal-name>
+    to display parameter details.
+  Implementation: org.jacoco.maven.HelpMojo
+  Language: java
+
+  Available parameters:
+
+    detail (Default: false)
+      Expression: ${detail}
+      If true, display all settable properties for each goal.
+
+    goal
+      Expression: ${goal}
+      The name of the goal for which to show help. If unspecified, all goals
+      will be displayed.
+
+    indentSize (Default: 2)
+      Expression: ${indentSize}
+      The number of spaces per indentation level, should be positive.
+
+    lineLength (Default: 80)
+      Expression: ${lineLength}
+      The maximum length of a display line, should be positive.
+
+
+jacoco:prepare-agent
+  Description: Prepares a property pointing to the JaCoCo runtime agent that
+    can be passed as a VM argument to the application under test. Depending on
+    the project packaging type by default a property with the following name is
+    set:
+    - tycho.testArgLine for packaging type eclipse-test-plugin and
+    - argLine otherwise.
+    Resulting coverage information is collected during execution and by default
+    written to a file when the process terminates.
+  Implementation: org.jacoco.maven.AgentMojo
+  Language: java
+  Bound to phase: initialize
+
+  Available parameters:
+
+    address
+      Expression: ${jacoco.address}
+      IP address or hostname to bind to when the output method is tcpserver or
+      connect to when the output method is tcpclient. In tcpserver mode the
+      value '*' causes the agent to accept connections on any local address.
+
+    append
+      Expression: ${jacoco.append}
+      If set to true and the execution data file already exists, coverage data
+      is appended to the existing file. If set to false, an existing execution
+      data file will be replaced.
+
+    destFile (Default: ${project.build.directory}/jacoco.exec)
+      Expression: ${jacoco.destFile}
+      Path to the output file for execution data.
+
+    dumpOnExit
+      Expression: ${jacoco.dumpOnExit}
+      If set to true coverage data will be written on VM shutdown.
+
+    exclClassLoaders
+      Expression: ${jacoco.exclClassLoaders}
+      A list of class loader names, that should be excluded from execution
+      analysis. The list entries are separated by a colon (:) and may use
+      wildcard characters (* and ?). This option might be required in case of
+      special frameworks that conflict with JaCoCo code instrumentation, in
+      particular class loaders that do not have access to the Java runtime
+      classes.
+
+    excludes
+      Expression: ${jacoco.excludes}
+      A list of class files to exclude from instrumentation/analysis/reports.
+      May use wildcard characters (* and ?).
+
+    includes
+      Expression: ${jacoco.includes}
+      A list of class files to include in instrumentation/analysis/reports. May
+      use wildcard characters (* and ?). When not specified - everything will
+      be included.
+
+    output
+      Expression: ${jacoco.output}
+      Output method to use for writing coverage data. Valid options are:
+      - file: At VM termination execution data is written to the file specified
+        in the destfile.
+      - tcpserver: The agent listens for incoming connections on the TCP port
+        specified by the address and port. Execution data is written to this
+        TCP connection.
+      - tcpclient: At startup the agent connects to the TCP port specified by
+        the address and port. Execution data is written to this TCP connection.
+      - mbean: The agent registers an JMX MBean under the name
+        org.jacoco:type=Runtime.
+
+    port
+      Expression: ${jacoco.port}
+      Port to bind to when the output method is tcpserver or connect to when
+      the output method is tcpclient. In tcpserver mode the port must be
+      available, which means that if multiple JaCoCo agents should run on the
+      same machine, different ports have to be specified.
+
+    propertyName
+      Expression: ${jacoco.propertyName}
+      Allows to specify property which will contains settings for JaCoCo Agent.
+      If not specified, then 'argLine' would be used for 'jar' packaging and
+      'tycho.testArgLine' for 'eclipse-test-plugin'.
+
+    sessionId
+      Expression: ${jacoco.sessionId}
+      A session identifier that is written with the execution data. Without
+      this parameter a random identifier is created by the agent.
+
+    skip (Default: false)
+      Expression: ${jacoco.skip}
+      Flag used to suppress execution.
+
+jacoco:report
+  Description: Creates a code coverage report for a single project in
+    multiple formats (HTML, XML, and CSV).
+  Implementation: org.jacoco.maven.ReportMojo
+  Language: java
+
+  Available parameters:
+
+    dataFile (Default: ${project.build.directory}/jacoco.exec)
+      File with execution data.
+
+    excludes
+      Expression: ${jacoco.excludes}
+      A list of class files to exclude from instrumentation/analysis/reports.
+      May use wildcard characters (* and ?).
+
+    includes
+      Expression: ${jacoco.includes}
+      A list of class files to include in instrumentation/analysis/reports. May
+      use wildcard characters (* and ?). When not specified - everything will
+      be included.
+
+    outputDirectory (Default: ${project.reporting.outputDirectory}/jacoco)
+      Output directory for the reports.
+
+    outputEncoding (Default: UTF-8)
+      Expression: ${project.reporting.outputEncoding}
+      Encoding of the generated reports.
+
+    skip (Default: false)
+      Expression: ${jacoco.skip}
+      Flag used to suppress execution.
+
+    sourceEncoding (Default: UTF-8)
+      Expression: ${project.build.sourceEncoding}
+      Encoding of the source files.
+

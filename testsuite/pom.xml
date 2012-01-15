@@ -99,6 +99,9 @@
         <jvm.args.securityPolicy></jvm.args.securityPolicy>
         <jvm.args.security>${jvm.args.securityManager} ${jvm.args.securityPolicy}</jvm.args.security>
         
+        <!-- JaCoCo - Code coverage (-Dcoverage). -->
+        <jvm.args.jacoco></jvm.args.jacoco>
+        
         <!-- Timeout ratios. 100 will leave the timeout as it was coded. -->
         <timeout.ratio.fsio>100</timeout.ratio.fsio>
         <timeout.ratio.netio>100</timeout.ratio.netio>
@@ -372,7 +375,7 @@
                     <testFailureIgnore>${surefire.test.failure.ignore}</testFailureIgnore>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                     <systemPropertyVariables>
-                        <jboss.options>${surefire.system.args}</jboss.options>
+                        <jboss.options>${surefire.system.args} ${jvm.args.jacoco}</jboss.options>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                         <jboss.dist>${jboss.dist}</jboss.dist>
                         <jboss.home>${basedir}/target/jbossas</jboss.home>
@@ -528,6 +531,67 @@
                 <surefire.jpda.args>-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y</surefire.jpda.args>
             </properties>
         </profile>
+        
+
+        <!-- JaCoCo test coverage. Will set ${jvm.args.jacoco} to be used in Arquillian config. -->
+        <profile>
+            <id>ts.jacoco.profile</id>
+            <activation><property><name>coverage</name></property></activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>0.5.5.201112152213</version>
+                        <executions>
+                            <execution><id>ts.jacoco-prepare</id>
+                                <phase>process-test-classes</phase>
+                                <goals><goal>prepare-agent</goal></goals>
+                                <configuration>
+                                    <append>true</append>
+                                    <destFile>target/jacoco.exec</destFile>
+                                    <includes>
+                                        <include>org.jboss.as.*</include>
+                                    </includes>
+                                    <excludes>
+                                        <exclude>org.jboss.as.test*</exclude>
+                                    </excludes>
+                                    <output>file</output>
+                                    <propertyName>jvm.args.jacoco</propertyName>
+                                </configuration>
+                            </execution>
+                            <execution><id>ts.jacoco.report</id>
+                                <phase>post-integration-test</phase>
+                                <goals><goal>report</goal></goals>
+                                <configuration>
+                                    <dataFile>target/jacoco.exec</dataFile>
+                                    <outputDirectory>target/coverageReport</outputDirectory>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- DEBUG -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>ts.jacoco.debug</id>
+                                <phase>post-integration-test</phase>
+                                <goals><goal>run</goal></goals>
+                                <inherited>false</inherited>
+                                <configuration>
+                                    <target>
+                                        <echo>${jvm.args.jacoco}</echo>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        
 
 
         <!-- IPv6. AS7-2228. -->
