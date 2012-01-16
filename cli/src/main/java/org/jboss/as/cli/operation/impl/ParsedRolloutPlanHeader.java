@@ -47,6 +47,7 @@ public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
     private static final int SEPARATOR_PROPERTY = 3;
     private static final int SEPARATOR_PROPERTY_LIST_START = 4;
     private static final int SEPARATOR_PROPERTY_LIST_END = 5;
+    private static final int SEPARATOR_PLAN_ID_VALUE = 6;
 
     private final String planId;
     private String planRef;
@@ -86,7 +87,7 @@ public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
         return planRef;
     }
 
-    public void setPlanRef(String planRef) {
+    public void setPlanRef(int index, String planRef) {
         if(planRef == null || planRef.isEmpty()) {
             throw new IllegalArgumentException("Plan ref is null or empty.");
         }
@@ -94,6 +95,17 @@ public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
             throw new IllegalStateException("Plan ref can't be specified when groups are specified.");
         }
         this.planRef = planRef;
+        lastChunkIndex = index;
+        separator = -1;
+    }
+
+    public boolean endsOnPlanIdValueSeparator() {
+        return separator == SEPARATOR_PLAN_ID_VALUE;
+    }
+
+    public void planIdValueSeparator(int index) {
+        lastSeparatorIndex = index;
+        separator = SEPARATOR_PLAN_ID_VALUE;
     }
 
     public void addGroup(SingleRolloutPlanGroup group) {

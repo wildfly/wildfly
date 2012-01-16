@@ -73,6 +73,8 @@ public class RolloutPlanHeaderCallbackHandler implements ParsingStateCallbackHan
             if(group != null) {
                 group.addProperty(name, lastChunkIndex);
                 group.propertyValueSeparator(ctx.getLocation());
+            } else {
+                header.planIdValueSeparator(ctx.getLocation());
             }
         } else if(ServerGroupSeparatorState.ID.equals(id)) {
             header.groupSequenceSeparator(ctx.getLocation());
@@ -101,7 +103,7 @@ public class RolloutPlanHeaderCallbackHandler implements ParsingStateCallbackHan
 
             if(group == null) {
                 if("id".equals(name)) {
-                    header.setPlanRef(value);
+                    header.setPlanRef(lastChunkIndex, value);
                 } else {
                     header.addProperty(name, value, lastChunkIndex);
                 }

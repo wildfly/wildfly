@@ -37,6 +37,11 @@ public class RolloutPlanCompleter implements CommandLineCompleter {
 
     public static final RolloutPlanCompleter INSTANCE = new RolloutPlanCompleter();
 
+    private static final DefaultOperationRequestAddress address = new DefaultOperationRequestAddress();
+    static {
+        address.toNode(Util.MANAGEMENT_CLIENT_CONTENT, Util.ROLLOUT_PLANS);
+    }
+
     /* (non-Javadoc)
      * @see org.jboss.as.cli.CommandLineCompleter#complete(org.jboss.as.cli.CommandContext, java.lang.String, int, java.util.List)
      */
@@ -45,6 +50,7 @@ public class RolloutPlanCompleter implements CommandLineCompleter {
         final ParsedCommandLine parsedCmd = ctx.getParsedCommandLine();
         final List<ParsedOperationRequestHeader> headers = parsedCmd.getHeaders();
         if(headers.isEmpty()) {
+            candidates.add("id=");
             candidates.addAll(Util.getServerGroups(ctx.getModelControllerClient()));
             return buffer.length();
         }
@@ -53,6 +59,22 @@ public class RolloutPlanCompleter implements CommandLineCompleter {
             throw new IllegalStateException("Expected " + ParsedRolloutPlanHeader.class + " but got " + lastHeader);
         }
         final ParsedRolloutPlanHeader rollout = (ParsedRolloutPlanHeader) lastHeader;
+
+        if(rollout.endsOnPlanIdValueSeparator()) {
+            candidates.addAll(Util.getNodeNames(ctx.getModelControllerClient(), address, Util.ROLLOUT_PLAN));
+            return rollout.getLastSeparatorIndex() + 1;
+        }
+
+        final String planRef = rollout.getPlanRef();
+        if(planRef != null) {
+            final List<String> nodeNames = Util.getNodeNames(ctx.getModelControllerClient(), address, Util.ROLLOUT_PLAN);
+            for(String name : nodeNames) {
+                if(name.startsWith(planRef)) {
+                    candidates.add(name);
+                }
+            }
+            return rollout.getLastChunkIndex();
+        }
 
         if(rollout.hasProperties()) {
             final String lastName = rollout.getLastPropertyName();
@@ -84,6 +106,7 @@ public class RolloutPlanCompleter implements CommandLineCompleter {
                 // header properties
                 candidates.add(Util.ROLLBACK_ACROSS_GROUPS);
             }
+            candidates.add("}");
             return buffer.length();
         }
 
@@ -101,10 +124,14 @@ public class RolloutPlanCompleter implements CommandLineCompleter {
                     candidates.add(Util.TRUE);
                 } else if(Util.FALSE.startsWith(propValue)) {
                     candidates.add(Util.FALSE);
+                } else {
+                    return buffer.length();
                 }
             } else if(lastGroup.endsOnPropertyValueSeparator()) {
-                candidates.add(Util.FALSE);
-                candidates.add(Util.TRUE);
+                if(Util.ROLLING_TO_SERVERS.equals(lastGroup.getLastPropertyName())) {
+                    candidates.add(Util.FALSE);
+                    candidates.add(Util.TRUE);
+                }
                 return buffer.length();
             } else if(lastGroup.endsOnPropertySeparator()) {
                 if(!lastGroup.hasProperty(Util.MAX_FAILED_SERVERS)) {
@@ -137,6 +164,7 @@ public class RolloutPlanCompleter implements CommandLineCompleter {
             candidates.add(",");
             // header propersties
             candidates.add(Util.ROLLBACK_ACROSS_GROUPS);
+            candidates.add("}");
             return buffer.length();
         }
 
@@ -149,11 +177,16 @@ public class RolloutPlanCompleter implements CommandLineCompleter {
                 candidates.add(group);
             }
         }
-        if(candidates.size() == 1) {
-            final String group = candidates.get(0);
-            candidates.set(0, group + '(');
-            candidates.add(group + ',');
-            candidates.add(group + '^');
+        if(Util.ID.startsWith(groupName)) {
+            candidates.add("id=");
+        } else {
+            if (candidates.size() == 1) {
+                final String group = candidates.get(0);
+                candidates.set(0, group + '(');
+                candidates.add(group + ',');
+                candidates.add(group + '^');
+                candidates.add(group + '}');
+            }
         }
 
         return result;
