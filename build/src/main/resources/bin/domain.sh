@@ -134,7 +134,6 @@ while true; do
          \"-Dlogging.configuration=file:$JBOSS_HOME/domain/configuration/logging.properties\" \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"${JBOSS_MODULEPATH}\" \
-         -logmodule "org.jboss.logmanager" \
          org.jboss.as.process-controller \
          -jboss-home \"$JBOSS_HOME\" \
          -jvm \"$JAVA\" \
@@ -153,7 +152,6 @@ while true; do
          \"-Dlogging.configuration=file:$JBOSS_HOME/domain/configuration/logging.properties\" \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"${JBOSS_MODULEPATH}\" \
-         -logmodule "org.jboss.logmanager" \
          org.jboss.as.process-controller \
          -jboss-home \"$JBOSS_HOME\" \
          -jvm \"$JAVA\" \

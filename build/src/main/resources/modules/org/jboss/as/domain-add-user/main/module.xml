@@ -32,5 +32,6 @@
 
     <dependencies>
         <module name="org.jboss.as.domain-management"/>
+        <module name="org.jboss.logmanager" services="import"/>
     </dependencies>
 </module>

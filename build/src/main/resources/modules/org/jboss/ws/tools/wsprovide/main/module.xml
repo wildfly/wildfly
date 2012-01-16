@@ -27,6 +27,7 @@
     <main-class name="org.jboss.ws.tools.cmd.WSProvide"/>
 
     <dependencies>
+        <module name="org.jboss.logmanager" services="import"/>
         <module name="org.jboss.ws.tools.common"/>
     </dependencies>
 

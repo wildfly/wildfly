@@ -40,7 +40,7 @@
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc" export="true"/>
         <module name="org.jboss.logging"/>
-        <module name="org.jboss.logmanager"/>
+        <module name="org.jboss.logmanager" services="import"/>
         <module name="org.jboss.logmanager.log4j"/>
         <module name="org.jboss.remoting3"/>
         <module name="org.jboss.staxmapper"/>
