@@ -74,6 +74,10 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
 
     @Override
     public final void start() throws LifecycleException {
+        if(containerConfig.getUsername() != null) {
+            Authentication.USERNAME = containerConfig.getUsername();
+            Authentication.PASSWORD = containerConfig.getPassword();
+        }
 
         ModelControllerClient modelControllerClient = ModelControllerClient.Factory.create(
                 containerConfig.getManagementAddress(),
