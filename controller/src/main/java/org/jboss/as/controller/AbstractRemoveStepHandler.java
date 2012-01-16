@@ -23,9 +23,11 @@
 package org.jboss.as.controller;
 
 import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
@@ -38,9 +40,16 @@ import org.jboss.dmr.ModelNode;
  */
 public abstract class AbstractRemoveStepHandler implements OperationStepHandler {
 
-    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+    private ModelNode model;
 
-        final ModelNode model = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        try {
+            model = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
+        } catch (NoSuchElementException e) {
+            ModelNode description = new ModelNode();
+            description.set("Unknown deployment: " + operation.get(OP_ADDR));
+            throw new OperationFailedException("Unknown deployment", description);
+        }
 
         performRemove(context, operation, model);
 
