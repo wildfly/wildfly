@@ -225,8 +225,13 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
 
 
     @Override
-    protected void verify(final String appName, final String moduleName, final String distinctName, final String beanName) throws Exception {
-        findBean(appName, moduleName, distinctName, beanName);
+    protected boolean exists(final String appName, final String moduleName, final String distinctName, final String beanName) {
+        try {
+            final EjbDeploymentInformation ejbDeploymentInformation = findBean(appName, moduleName, distinctName, beanName);
+            return ejbDeploymentInformation != null;
+        } catch (IllegalArgumentException iae) {
+            return false;
+        }
     }
 
     private EjbDeploymentInformation findBean(final String appName, final String moduleName, final String distinctName, final String beanName) {
