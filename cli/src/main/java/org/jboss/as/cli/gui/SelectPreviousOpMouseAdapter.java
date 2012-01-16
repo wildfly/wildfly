@@ -18,6 +18,11 @@
  */
 package org.jboss.as.cli.gui;
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.JTextField;
@@ -29,10 +34,11 @@ import javax.swing.text.Utilities;
  *
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
-public class SelectPreviousOpMouseAdapter extends MouseAdapter {
+public class SelectPreviousOpMouseAdapter extends MouseAdapter implements ClipboardOwner {
     private JTextPane output;
     private JTextField cmdText;
     private DoOperationActionListener opListener;
+    private Clipboard systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 
     public SelectPreviousOpMouseAdapter(JTextPane output, JTextField cmdText, DoOperationActionListener opListener) {
         this.output = output;
@@ -53,11 +59,16 @@ public class SelectPreviousOpMouseAdapter extends MouseAdapter {
             if (opListener.getCmdHistory().contains(line)) {
                 output.select(rowStart, rowEnd);
                 cmdText.setText(line);
+                systemClipboard.setContents(new StringSelection(line), this);
             }
         } catch (BadLocationException e) {
             e.printStackTrace();
         }
 
+    }
+
+    public void lostOwnership(Clipboard clpbrd, Transferable t) {
+        // do nothing
     }
 
 }
