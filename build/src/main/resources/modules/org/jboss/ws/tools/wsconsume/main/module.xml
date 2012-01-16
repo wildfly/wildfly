@@ -24,6 +24,10 @@
 
 <module xmlns="urn:jboss:module:1.1" name="org.jboss.ws.tools.wsconsume">
 
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
     <main-class name="org.jboss.ws.tools.cmd.WSConsume"/>
 
     <dependencies>
