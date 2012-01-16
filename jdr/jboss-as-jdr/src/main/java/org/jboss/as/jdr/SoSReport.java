@@ -22,8 +22,9 @@
 
 package org.jboss.as.jdr;
 
-import static java.io.File.separator;
+import static org.jboss.as.jdr.JdrMessages.MESSAGES;
 import static org.jboss.as.jdr.JdrLogger.ROOT_LOGGER;
+import static java.io.File.separator;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -181,15 +182,15 @@ public class SoSReport {
      * Sets the ModelControllerClient instance for sosreport to use.
      *
      * @param controllerClient the ModelControllerClient instance to use
-     * */
+     * @throws IllegalArgumentException if <code>controllerClient</code> is <code>null</code>
+     *
+     */
     public void setControllerClient(ModelControllerClient controllerClient) {
-        if (controllerClient != null ) {
-            setGlobal("controller_client_proxy",
-                    new ModelControllerClientProxy(controllerClient));
+        if (controllerClient == null ) {
+            throw MESSAGES.varNull("controllerClient");
         }
-        else {
-            System.out.println("CONTROLLER CLIENT IS NULL!?");
-        }
+
+        setGlobal("controller_client_proxy", new ModelControllerClientProxy(controllerClient));
     }
 
     /**
