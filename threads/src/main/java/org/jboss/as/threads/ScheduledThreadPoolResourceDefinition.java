@@ -39,11 +39,11 @@ public class ScheduledThreadPoolResourceDefinition extends SimpleResourceDefinit
     private final ServiceName serviceNameBase;
 
     public static ScheduledThreadPoolResourceDefinition create(boolean registerRuntimeOnly) {
-        return create(CommonAttributes.SCHEDULED_THREAD_POOL, DefaultThreadFactoryProvider.STANDARD_PROVIDER, ThreadsServices.EXECUTOR, registerRuntimeOnly);
+        return create(CommonAttributes.SCHEDULED_THREAD_POOL, ThreadsServices.STANDARD_THREAD_FACTORY_RESOLVER, ThreadsServices.EXECUTOR, registerRuntimeOnly);
     }
-    public static ScheduledThreadPoolResourceDefinition create(String type, DefaultThreadFactoryProvider defaultThreadFactoryProvider,
+    public static ScheduledThreadPoolResourceDefinition create(String type, ThreadFactoryResolver threadFactoryResolver,
                                                  ServiceName serviceNameBase, boolean registerRuntimeOnly) {
-        ScheduledThreadPoolAdd addHandler = new ScheduledThreadPoolAdd(defaultThreadFactoryProvider, serviceNameBase);
+        ScheduledThreadPoolAdd addHandler = new ScheduledThreadPoolAdd(threadFactoryResolver, serviceNameBase);
         return new ScheduledThreadPoolResourceDefinition(type, addHandler, serviceNameBase, registerRuntimeOnly);
     }
 

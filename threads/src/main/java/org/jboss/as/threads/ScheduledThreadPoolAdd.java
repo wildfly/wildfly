@@ -32,7 +32,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.threads.ThreadsSubsystemThreadPoolOperationUtils.BaseThreadPoolParameters;
+import org.jboss.as.threads.ThreadPoolManagementUtils.BaseThreadPoolParameters;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -50,11 +50,11 @@ public class ScheduledThreadPoolAdd extends AbstractAddStepHandler {
 
     static final AttributeDefinition[] RW_ATTRIBUTES = new AttributeDefinition[]{};
 
-    private final DefaultThreadFactoryProvider threadFactoryProvider;
+    private final ThreadFactoryResolver threadFactoryResolver;
     private final ServiceName serviceNameBase;
 
-    public ScheduledThreadPoolAdd(DefaultThreadFactoryProvider threadFactoryProvider, ServiceName serviceNameBase) {
-        this.threadFactoryProvider = threadFactoryProvider;
+    public ScheduledThreadPoolAdd(ThreadFactoryResolver threadFactoryResolver, ServiceName serviceNameBase) {
+        this.threadFactoryResolver = threadFactoryResolver;
         this.serviceNameBase = serviceNameBase;
     }
 
@@ -74,16 +74,20 @@ public class ScheduledThreadPoolAdd extends AbstractAddStepHandler {
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
             final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-        final BaseThreadPoolParameters params = ThreadsSubsystemThreadPoolOperationUtils.parseScheduledThreadPoolParameters(context, operation, model);
+        final BaseThreadPoolParameters params = ThreadPoolManagementUtils.parseScheduledThreadPoolParameters(context, operation, model);
 
         final ScheduledThreadPoolService service = new ScheduledThreadPoolService(params.getMaxThreads(), params.getKeepAliveTime());
 
-        ThreadsSubsystemThreadPoolOperationUtils.installThreadPoolService(service, params.getName(), serviceNameBase, params.getThreadFactory(),
-                threadFactoryProvider, service.getThreadFactoryInjector(), null,
-                null, context.getServiceTarget(), newControllers, verificationHandler);
+        ThreadPoolManagementUtils.installThreadPoolService(service, params.getName(), serviceNameBase,
+                params.getThreadFactory(), threadFactoryResolver, service.getThreadFactoryInjector(),
+                context.getServiceTarget(), newControllers, verificationHandler);
     }
 
     ServiceName getServiceNameBase() {
         return serviceNameBase;
+    }
+
+    ThreadFactoryResolver getThreadFactoryResolver() {
+        return threadFactoryResolver;
     }
 }

@@ -43,10 +43,13 @@ public class BoundedQueueThreadPoolRemove extends AbstractRemoveStepHandler {
         this.addHandler = addHandler;
     }
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        final String name = address.getLastElement().getValue();
-        context.removeService(addHandler.getServiceNameBase().append(name));
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        final ThreadPoolManagementUtils.BoundedThreadPoolParameters params =
+                ThreadPoolManagementUtils.parseBoundedThreadPoolParameters(context, operation, model, addHandler.isBlocking());
+        ThreadPoolManagementUtils.removeThreadPoolService(params.getName(), addHandler.getServiceNameBase(),
+                params.getThreadFactory(), addHandler.getThreadFactoryResolver(),
+                params.getHandoffExecutor(), addHandler.getHandoffExecutorResolver(),
+                context);
     }
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {

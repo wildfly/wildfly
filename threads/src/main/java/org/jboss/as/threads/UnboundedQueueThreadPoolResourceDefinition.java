@@ -39,11 +39,12 @@ public class UnboundedQueueThreadPoolResourceDefinition extends SimpleResourceDe
     private final ServiceName serviceNameBase;
 
     public static UnboundedQueueThreadPoolResourceDefinition create(boolean registerRuntimeOnly) {
-        return create(CommonAttributes.UNBOUNDED_QUEUE_THREAD_POOL, DefaultThreadFactoryProvider.STANDARD_PROVIDER, ThreadsServices.EXECUTOR, registerRuntimeOnly);
+        return create(CommonAttributes.UNBOUNDED_QUEUE_THREAD_POOL, ThreadsServices.STANDARD_THREAD_FACTORY_RESOLVER,
+                ThreadsServices.EXECUTOR, registerRuntimeOnly);
     }
-    public static UnboundedQueueThreadPoolResourceDefinition create(String type, DefaultThreadFactoryProvider defaultThreadFactoryProvider,
+    public static UnboundedQueueThreadPoolResourceDefinition create(String type, ThreadFactoryResolver threadFactoryResolver,
                                                  ServiceName serviceNameBase, boolean registerRuntimeOnly) {
-        UnboundedQueueThreadPoolAdd addHandler = new UnboundedQueueThreadPoolAdd(defaultThreadFactoryProvider, serviceNameBase);
+        UnboundedQueueThreadPoolAdd addHandler = new UnboundedQueueThreadPoolAdd(threadFactoryResolver, serviceNameBase);
         return new UnboundedQueueThreadPoolResourceDefinition(type, addHandler, serviceNameBase, registerRuntimeOnly);
     }
 

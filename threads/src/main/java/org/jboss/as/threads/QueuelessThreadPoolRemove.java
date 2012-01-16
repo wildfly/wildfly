@@ -21,12 +21,9 @@
  */
 package org.jboss.as.threads;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -43,10 +40,13 @@ public class QueuelessThreadPoolRemove extends AbstractRemoveStepHandler {
         this.addHandler = addHandler;
     }
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        final String name = address.getLastElement().getValue();
-        context.removeService(addHandler.getServiceNameBase().append(name));
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        final ThreadPoolManagementUtils.QueuelessThreadPoolParameters params =
+                ThreadPoolManagementUtils.parseQueuelessThreadPoolParameters(context, operation, model, addHandler.isBlocking());
+        ThreadPoolManagementUtils.removeThreadPoolService(params.getName(), addHandler.getServiceNameBase(),
+                params.getThreadFactory(), addHandler.getThreadFactoryResolver(),
+                params.getHandoffExecutor(), addHandler.getHandoffExecutorResolver(),
+                context);
     }
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
