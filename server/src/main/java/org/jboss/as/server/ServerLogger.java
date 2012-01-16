@@ -72,6 +72,15 @@ public interface ServerLogger extends BasicLogger {
     ServerLogger DEPLOYMENT_LOGGER = Logger.getMessageLogger(ServerLogger.class, "org.jboss.as.deployment");
 
     /**
+     * Logger for private APIs.
+     */
+    ServerLogger PRIVATE_DEP_LOGGER = Logger.getMessageLogger(ServerLogger.class, "org.jboss.as.dependency.private");
+    /**
+     * Logger for unsupported APIs.
+     */
+    ServerLogger UNSUPPORTED_DEP_LOGGER = Logger.getMessageLogger(ServerLogger.class, "org.jboss.as.dependency.unsupported");
+
+    /**
      * A logger with the category {@code org.jboss.as.deployment.module}.
      */
     ServerLogger DEPLOYMENT_MODULE_LOGGER = Logger.getMessageLogger(ServerLogger.class, "org.jboss.as.deployment.module");
@@ -168,4 +177,11 @@ public interface ServerLogger extends BasicLogger {
     @Message(id = 18566, value = "Annotations import option %s specified in jboss-deployment-structure.xml for additional module %s has been ignored. Additional modules cannot import annotations.")
     void annotationImportIgnored(ModuleIdentifier annotationModuleId, ModuleIdentifier additionalModuleId);
 
+    @LogMessage(level = WARN)
+    @Message(id = 18567, value = "Deployment \"%s\" is using a private module (\"%s\") which may be changed or removed in future versions without notice.")
+    void privateApiUsed(String deployment, ModuleIdentifier dependency);
+
+    @LogMessage(level = WARN)
+    @Message(id = 18568, value = "Deployment \"%s\" is using an unsupported module (\"%s\") which may be changed or removed in future versions without notice.")
+    void unsupportedApiUsed(String deployment, ModuleIdentifier dependency);
 }
