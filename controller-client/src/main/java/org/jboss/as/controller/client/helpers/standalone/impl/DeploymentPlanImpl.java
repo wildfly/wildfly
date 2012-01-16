@@ -30,6 +30,7 @@ import java.util.UUID;
 
 import org.jboss.as.controller.client.helpers.standalone.DeploymentAction;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
+import org.jboss.as.protocol.StreamUtils;
 
 /**
  * Describes a set of actions to take to change the deployment content available
@@ -93,5 +94,19 @@ public class DeploymentPlanImpl implements DeploymentPlan {
      */
     public List<DeploymentActionImpl> getDeploymentActionImpls() {
         return new ArrayList<DeploymentActionImpl>(deploymentActions);
+    }
+
+    void cleanup() {
+        for (DeploymentActionImpl action : deploymentActions) {
+            if (action.isInternalStream() && action.getContentStream() != null) {
+                StreamUtils.safeClose(action.getContentStream());
+            }
+        }
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        cleanup();
     }
 }
