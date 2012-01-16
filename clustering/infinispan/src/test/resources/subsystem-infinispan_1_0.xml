@@ -40,7 +40,7 @@
             <transaction mode="FULL_XA" stop-timeout="60000"/>
             <eviction max-entries="20000" strategy="UNORDERED"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
-            <rehashing enabled="true" timeout="1200000" wait="60000"/>
+            <rehashing enabled="true" timeout="1200000"/>
             <jdbc-store datasource="java:jboss/jdbc/store" fetch-state="false" passivation="false" preload="true" purge="false" shared="true" singleton="true">
                 <entry-table prefix="ispn_entry" batch-size="100" fetch-size="100">
                     <id-column name="id" type="VARCHAR"/>
