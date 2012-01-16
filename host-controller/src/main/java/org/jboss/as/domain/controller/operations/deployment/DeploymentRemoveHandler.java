@@ -69,7 +69,6 @@ public abstract class DeploymentRemoveHandler implements OperationStepHandler, D
     }
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-
         checkCanRemove(context, operation);
         final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
         final List<byte[]> deploymentHashes = DeploymentUtils.getDeploymentHash(resource);
