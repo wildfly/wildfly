@@ -48,7 +48,7 @@
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.threads"/>
         <module name="org.jboss.logging"/>
-        <module name="org.jboss.logmanager"/>
+        <module name="org.jboss.logmanager" services="import"/>
         <module name="org.jboss.marshalling"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>

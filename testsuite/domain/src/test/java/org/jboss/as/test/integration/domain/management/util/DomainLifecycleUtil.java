@@ -134,8 +134,6 @@ public class DomainLifecycleUtil {
             cmd.add(modulesJar.getAbsolutePath());
             cmd.add("-mp");
             cmd.add(modulePath);
-            cmd.add("-logmodule");
-            cmd.add("org.jboss.logmanager");
             //cmd.add("-jaxpmodule");
             //cmd.add("javax.xml.jaxp-provider");
             cmd.add("org.jboss.as.process-controller");

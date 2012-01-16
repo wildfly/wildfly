@@ -23,6 +23,5 @@ rem Execute the command
     -classpath "%JAVA_HOME%\lib\tools.jar;%JBOSS_HOME%\jboss-modules.jar" ^
     org.jboss.modules.Main ^
     -mp "%JBOSS_HOME%\modules" ^
-    -logmodule "org.jboss.logmanager" ^
     org.jboss.ws.tools.wsconsume ^
     %*
