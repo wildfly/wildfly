@@ -23,6 +23,9 @@
   -->
 
 <module xmlns="urn:jboss:module:1.1" name="org.jboss.as.domain-add-user">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
 
     <main-class name="org.jboss.as.domain.management.security.AddPropertiesUser"/>
 

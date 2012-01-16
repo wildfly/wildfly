@@ -23,26 +23,30 @@
   -->
 
 <module xmlns="urn:jboss:module:1.1" name="org.jboss.ironjacamar.impl">
-  <resources>
-    <!-- Insert resources here -->
-  </resources>
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
 
-  <dependencies>
-    <!-- javax.security.auth.callback -->
-    <module name="javax.api"/>
-    <module name="javax.resource.api"/>
-    <module name="javax.security.auth.message.api"/>
-    <module name="javax.validation.api"/>
-    <module name="org.hibernate.validator"/>
-    <module name="org.jboss.as.naming"/>
-    <module name="org.jboss.as.transactions"/>
-    <module name="org.jboss.common-core"/>
-    <module name="org.jboss.jboss-transaction-spi"/>
-    <module name="org.jboss.ironjacamar.api"/>
-    <module name="org.jboss.logging"/>
-    <module name="org.jboss.threads"/>
-    <!-- org.jboss.security -->
-    <module name="org.picketbox"/>
-    <module name="javax.xml.stream.api"/>
-  </dependencies>
+    <resources>
+        <!-- Insert resources here -->
+    </resources>
+
+    <dependencies>
+        <!-- javax.security.auth.callback -->
+        <module name="javax.api"/>
+        <module name="javax.resource.api"/>
+        <module name="javax.security.auth.message.api"/>
+        <module name="javax.validation.api"/>
+        <module name="org.hibernate.validator"/>
+        <module name="org.jboss.as.naming"/>
+        <module name="org.jboss.as.transactions"/>
+        <module name="org.jboss.common-core"/>
+        <module name="org.jboss.jboss-transaction-spi"/>
+        <module name="org.jboss.ironjacamar.api"/>
+        <module name="org.jboss.logging"/>
+        <module name="org.jboss.threads"/>
+        <!-- org.jboss.security -->
+        <module name="org.picketbox"/>
+        <module name="javax.xml.stream.api"/>
+    </dependencies>
 </module>

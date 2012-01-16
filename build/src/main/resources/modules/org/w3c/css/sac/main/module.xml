@@ -23,6 +23,11 @@
   -->
 
 <module xmlns="urn:jboss:module:1.1" name="org.w3c.css.sac">
+
+    <properties>
+        <property name="jboss.api" value="unsupported"/>
+    </properties>
+
     <resources>
         <!-- Insert resources here -->
     </resources>
