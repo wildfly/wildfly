@@ -524,7 +524,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
 
         @Override
         public void deleteDeployment(byte[] deploymentHash) {
-            //NOOP
+            localFileRepository.deleteDeployment(deploymentHash);
         }
     }
 
