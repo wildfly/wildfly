@@ -99,7 +99,8 @@ public class ClientMapping implements Serializable {
     }
 
     void updatePortIfUnknown(int port) {
-        if (port == -1)
+        if (this.destinationPort == -1) {
             this.destinationPort = port;
+        }
     }
 }
