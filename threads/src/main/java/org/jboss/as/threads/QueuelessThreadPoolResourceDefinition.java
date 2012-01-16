@@ -37,23 +37,32 @@ import org.jboss.msc.service.ServiceName;
 public class QueuelessThreadPoolResourceDefinition extends SimpleResourceDefinition {
 
     public static QueuelessThreadPoolResourceDefinition create(boolean blocking, boolean registerRuntimeOnly) {
-        return create(blocking, DefaultThreadFactoryProvider.STANDARD_PROVIDER, ThreadsServices.EXECUTOR, registerRuntimeOnly);
+        if (blocking) {
+            return create(CommonAttributes.BLOCKING_QUEUELESS_THREAD_POOL, ThreadsServices.STANDARD_THREAD_FACTORY_RESOLVER,
+                    null, ThreadsServices.EXECUTOR, registerRuntimeOnly);
+        } else {
+            return create(CommonAttributes.QUEUELESS_THREAD_POOL, ThreadsServices.STANDARD_THREAD_FACTORY_RESOLVER,
+                    ThreadsServices.STANDARD_HANDOFF_EXECUTOR_RESOLVER, ThreadsServices.EXECUTOR, registerRuntimeOnly);
+        }
     }
 
     public static QueuelessThreadPoolResourceDefinition create(boolean blocking, String type, boolean registerRuntimeOnly) {
-        return create(blocking, type, DefaultThreadFactoryProvider.STANDARD_PROVIDER, ThreadsServices.EXECUTOR, registerRuntimeOnly);
+        if (blocking) {
+            return create(type, ThreadsServices.STANDARD_THREAD_FACTORY_RESOLVER,
+                    null, ThreadsServices.EXECUTOR, registerRuntimeOnly);
+
+        } else {
+            return create(type, ThreadsServices.STANDARD_THREAD_FACTORY_RESOLVER,
+                    ThreadsServices.STANDARD_HANDOFF_EXECUTOR_RESOLVER, ThreadsServices.EXECUTOR, registerRuntimeOnly);
+        }
     }
 
-    public static QueuelessThreadPoolResourceDefinition create(boolean blocking, DefaultThreadFactoryProvider defaultThreadFactoryProvider,
+    public static QueuelessThreadPoolResourceDefinition create(String type, ThreadFactoryResolver threadFactoryResolver,
+                                                               HandoffExecutorResolver handoffExecutorResolver,
                                                                ServiceName serviceNameBase, boolean registerRuntimeOnly) {
-        final String type = blocking ? CommonAttributes.BLOCKING_QUEUELESS_THREAD_POOL : CommonAttributes.QUEUELESS_THREAD_POOL;
-        return create(blocking, type, defaultThreadFactoryProvider, serviceNameBase, registerRuntimeOnly);
-    }
-
-    public static QueuelessThreadPoolResourceDefinition create(boolean blocking, String type, DefaultThreadFactoryProvider defaultThreadFactoryProvider,
-                                                               ServiceName serviceNameBase, boolean registerRuntimeOnly) {
+        final boolean blocking = handoffExecutorResolver == null;
         final String resolverPrefix = blocking ? CommonAttributes.BLOCKING_QUEUELESS_THREAD_POOL : CommonAttributes.QUEUELESS_THREAD_POOL;
-        final QueuelessThreadPoolAdd addHandler = new QueuelessThreadPoolAdd(blocking, defaultThreadFactoryProvider, serviceNameBase);
+        final QueuelessThreadPoolAdd addHandler = new QueuelessThreadPoolAdd(blocking, threadFactoryResolver, handoffExecutorResolver, serviceNameBase);
         final OperationStepHandler removeHandler = new QueuelessThreadPoolRemove(addHandler);
         return new QueuelessThreadPoolResourceDefinition(blocking, registerRuntimeOnly, type, serviceNameBase, resolverPrefix, addHandler, removeHandler);
     }

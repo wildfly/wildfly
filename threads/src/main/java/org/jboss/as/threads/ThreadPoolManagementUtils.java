@@ -44,32 +44,55 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
- * Utilities related to converting detyped thread pool config ModelNodes to typed config objects.
+ * Utilities related to management of thread pools.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-class ThreadsSubsystemThreadPoolOperationUtils {
+class ThreadPoolManagementUtils {
 
     static <T> void installThreadPoolService(final Service<T> threadPoolService,
                                              final String threadPoolName,
                                              final ServiceName serviceNameBase,
                                              final String threadFactoryName,
-                                             final DefaultThreadFactoryProvider defaultThreadFactoryProvider,
+                                             final ThreadFactoryResolver threadFactoryResolver,
                                              final Injector<ThreadFactory> threadFactoryInjector,
-                                             final Injector<Executor> handoffExecutorInjector,
+                                             final ServiceTarget target,
+                                             final List<ServiceController<?>> newControllers,
+                                             final ServiceListener<Object>... newServiceListeners) {
+        installThreadPoolService(threadPoolService, threadPoolName, serviceNameBase,
+                threadFactoryName, threadFactoryResolver, threadFactoryInjector,
+                null, null, null,
+                target, newControllers, newServiceListeners);
+    }
+
+    static <T> void installThreadPoolService(final Service<T> threadPoolService,
+                                             final String threadPoolName,
+                                             final ServiceName serviceNameBase,
+                                             final String threadFactoryName,
+                                             final ThreadFactoryResolver threadFactoryResolver,
+                                             final Injector<ThreadFactory> threadFactoryInjector,
                                              final String handoffExecutorName,
-                                             final ServiceTarget target, final List<ServiceController<?>> newControllers,
+                                             final HandoffExecutorResolver handoffExecutorResolver,
+                                             final Injector<Executor> handoffExecutorInjector,
+                                             final ServiceTarget target,
+                                             final List<ServiceController<?>> newControllers,
                                              final ServiceListener<Object>... newServiceListeners) {
 
-        final ServiceName serviceName = serviceNameBase.append(threadPoolName);
+        final ServiceName threadPoolServiceName = serviceNameBase.append(threadPoolName);
 
-        final ServiceBuilder<?> serviceBuilder = target.addService(serviceName, threadPoolService);
+        final ServiceBuilder<?> serviceBuilder = target.addService(threadPoolServiceName, threadPoolService);
 
-        addThreadFactoryDependency(threadFactoryName, threadPoolName, serviceName,
-                defaultThreadFactoryProvider, serviceBuilder, threadFactoryInjector, target, newControllers, newServiceListeners);
+        final ServiceName threadFactoryServiceName = threadFactoryResolver.resolveThreadFactory(threadFactoryName,
+                threadPoolName, threadPoolServiceName, target, newControllers, newServiceListeners);
+        serviceBuilder.addDependency(threadFactoryServiceName, ThreadFactory.class, threadFactoryInjector);
 
-        if (handoffExecutorInjector != null && handoffExecutorName != null) {
-            serviceBuilder.addDependency(serviceNameBase.append(handoffExecutorName), Executor.class, handoffExecutorInjector);
+        if (handoffExecutorInjector != null) {
+            ServiceName handoffServiceName = handoffExecutorResolver.resolveHandoffExecutor(handoffExecutorName,
+                    threadPoolName, threadPoolServiceName, target, newControllers, newServiceListeners);
+            if (handoffServiceName != null) {
+                serviceBuilder.addDependency(handoffServiceName, Executor.class, handoffExecutorInjector);
+            }
         }
 
         if (newServiceListeners != null  && newServiceListeners.length > 0) {
@@ -82,19 +105,32 @@ class ThreadsSubsystemThreadPoolOperationUtils {
 
     }
 
-    private static void addThreadFactoryDependency(final String threadFactory, final String threadPoolName,
-                                               final ServiceName threadPoolServiceName,
-                                               final DefaultThreadFactoryProvider defaultThreadFactoryProvider,
-                                               final ServiceBuilder<?> serviceBuilder, final Injector<ThreadFactory> injector,
-                                               final ServiceTarget target, final List<ServiceController<?>> newControllers,
-                                               final ServiceListener<Object>... newServiceListeners) {
-        final ServiceName threadFactoryName;
-        if (threadFactory == null) {
-            threadFactoryName = defaultThreadFactoryProvider.getDefaultThreadFactory(threadPoolName, threadPoolServiceName, target, newControllers, newServiceListeners);
-        } else {
-            threadFactoryName = ThreadsServices.threadFactoryName(threadFactory);
+    static <T> void removeThreadPoolService(final String threadPoolName,
+                                             final ServiceName serviceNameBase,
+                                             final String threadFactoryName,
+                                             final ThreadFactoryResolver threadFactoryResolver,
+                                             final OperationContext operationContext) {
+        removeThreadPoolService(threadPoolName, serviceNameBase, threadFactoryName, threadFactoryResolver, null, null, operationContext);
+    }
+
+    static <T> void removeThreadPoolService(final String threadPoolName,
+                                             final ServiceName serviceNameBase,
+                                             final String threadFactoryName,
+                                             final ThreadFactoryResolver threadFactoryResolver,
+                                             final String handoffExecutorName,
+                                             final HandoffExecutorResolver handoffExecutorResolver,
+                                             final OperationContext operationContext) {
+
+        final ServiceName threadPoolServiceName = serviceNameBase.append(threadPoolName);
+
+        operationContext.removeService(threadPoolServiceName);
+
+        threadFactoryResolver.releaseThreadFactory(threadFactoryName, threadPoolName, threadPoolServiceName, operationContext);
+
+        if (handoffExecutorResolver != null) {
+            handoffExecutorResolver.releaseHandoffExecutor(handoffExecutorName, threadPoolName, threadPoolServiceName, operationContext);
         }
-        serviceBuilder.addDependency(threadFactoryName, ThreadFactory.class, injector);
+
     }
 
     static BaseThreadPoolParameters parseUnboundedQueueThreadPoolParameters(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {

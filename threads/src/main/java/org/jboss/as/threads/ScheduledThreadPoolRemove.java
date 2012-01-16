@@ -44,10 +44,13 @@ public class ScheduledThreadPoolRemove extends AbstractRemoveStepHandler {
     }
 
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        final String name = address.getLastElement().getValue();
-        context.removeService(addHandler.getServiceNameBase().append(name));
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+
+        final ThreadPoolManagementUtils.BaseThreadPoolParameters params =
+                ThreadPoolManagementUtils.parseScheduledThreadPoolParameters(context, operation, model);
+        ThreadPoolManagementUtils.removeThreadPoolService(params.getName(), addHandler.getServiceNameBase(),
+                params.getThreadFactory(), addHandler.getThreadFactoryResolver(),
+                context);
     }
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {

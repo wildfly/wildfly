@@ -37,23 +37,30 @@ import org.jboss.msc.service.ServiceName;
 public class BoundedQueueThreadPoolResourceDefinition extends SimpleResourceDefinition {
 
     public static BoundedQueueThreadPoolResourceDefinition create(boolean blocking, boolean registerRuntimeOnly) {
-        return create(blocking, DefaultThreadFactoryProvider.STANDARD_PROVIDER, ThreadsServices.EXECUTOR, registerRuntimeOnly);
+        if (blocking) {
+            return create(CommonAttributes.BLOCKING_BOUNDED_QUEUE_THREAD_POOL, ThreadsServices.STANDARD_THREAD_FACTORY_RESOLVER,
+                    null, ThreadsServices.EXECUTOR, registerRuntimeOnly);
+        } else {
+            return create(CommonAttributes.BOUNDED_QUEUE_THREAD_POOL, ThreadsServices.STANDARD_THREAD_FACTORY_RESOLVER,
+                    ThreadsServices.STANDARD_HANDOFF_EXECUTOR_RESOLVER, ThreadsServices.EXECUTOR, registerRuntimeOnly);
+        }
     }
 
     public static BoundedQueueThreadPoolResourceDefinition create(boolean blocking, String type, boolean registerRuntimeOnly) {
-        return create(blocking, type, DefaultThreadFactoryProvider.STANDARD_PROVIDER, ThreadsServices.EXECUTOR, registerRuntimeOnly);
+        if (blocking) {
+            return create(type, ThreadsServices.STANDARD_THREAD_FACTORY_RESOLVER, null, ThreadsServices.EXECUTOR, registerRuntimeOnly);
+        } else {
+            return create(type, ThreadsServices.STANDARD_THREAD_FACTORY_RESOLVER, ThreadsServices.STANDARD_HANDOFF_EXECUTOR_RESOLVER,
+                    ThreadsServices.EXECUTOR, registerRuntimeOnly);
+        }
     }
 
-    public static BoundedQueueThreadPoolResourceDefinition create(boolean blocking, DefaultThreadFactoryProvider defaultThreadFactoryProvider,
+    public static BoundedQueueThreadPoolResourceDefinition create(String type, ThreadFactoryResolver threadFactoryResolver,
+                                                                  HandoffExecutorResolver handoffExecutorResolver,
                                                                   ServiceName poolNameBase, boolean registerRuntimeOnly) {
-        final String type = blocking ? CommonAttributes.BLOCKING_BOUNDED_QUEUE_THREAD_POOL : CommonAttributes.BOUNDED_QUEUE_THREAD_POOL;
-        return create(blocking, type, defaultThreadFactoryProvider, poolNameBase, registerRuntimeOnly);
-    }
-
-    public static BoundedQueueThreadPoolResourceDefinition create(boolean blocking, String type, DefaultThreadFactoryProvider defaultThreadFactoryProvider,
-                                                                  ServiceName poolNameBase, boolean registerRuntimeOnly) {
+        final boolean blocking = handoffExecutorResolver == null;
         final String resolverPrefix = blocking ? CommonAttributes.BLOCKING_BOUNDED_QUEUE_THREAD_POOL : CommonAttributes.BOUNDED_QUEUE_THREAD_POOL;
-        final BoundedQueueThreadPoolAdd addHandler = new BoundedQueueThreadPoolAdd(blocking, defaultThreadFactoryProvider, poolNameBase);
+        final BoundedQueueThreadPoolAdd addHandler = new BoundedQueueThreadPoolAdd(blocking, threadFactoryResolver, handoffExecutorResolver, poolNameBase);
         final OperationStepHandler removeHandler = new BoundedQueueThreadPoolRemove(addHandler);
         return new BoundedQueueThreadPoolResourceDefinition(blocking, registerRuntimeOnly, type, poolNameBase, resolverPrefix, addHandler, removeHandler);
     }

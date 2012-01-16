@@ -32,7 +32,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.threads.ThreadsSubsystemThreadPoolOperationUtils.QueuelessThreadPoolParameters;
+import org.jboss.as.threads.ThreadPoolManagementUtils.QueuelessThreadPoolParameters;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -59,12 +59,15 @@ public class QueuelessThreadPoolAdd extends AbstractAddStepHandler {
     }
 
     private final boolean blocking;
-    private final DefaultThreadFactoryProvider defaultThreadFactoryProvider;
+    private final ThreadFactoryResolver threadFactoryResolver;
+    private final HandoffExecutorResolver handoffExecutorResolver;
     private final ServiceName serviceNameBase;
 
-    public QueuelessThreadPoolAdd(boolean blocking, DefaultThreadFactoryProvider defaultThreadFactoryProvider, ServiceName serviceNameBase) {
+    public QueuelessThreadPoolAdd(boolean blocking, ThreadFactoryResolver threadFactoryResolver,
+                                  HandoffExecutorResolver handoffExecutorResolver, ServiceName serviceNameBase) {
         this.blocking = blocking;
-        this.defaultThreadFactoryProvider = defaultThreadFactoryProvider;
+        this.threadFactoryResolver = threadFactoryResolver;
+        this.handoffExecutorResolver = handoffExecutorResolver;
         this.serviceNameBase = serviceNameBase;
     }
 
@@ -84,16 +87,29 @@ public class QueuelessThreadPoolAdd extends AbstractAddStepHandler {
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
             final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-        final QueuelessThreadPoolParameters params = ThreadsSubsystemThreadPoolOperationUtils.parseQueuelessThreadPoolParameters(context, operation, model, blocking);
+        final QueuelessThreadPoolParameters params = ThreadPoolManagementUtils.parseQueuelessThreadPoolParameters(context, operation, model, blocking);
 
         final QueuelessThreadPoolService service = new QueuelessThreadPoolService(params.getMaxThreads(), blocking, params.getKeepAliveTime());
 
-        ThreadsSubsystemThreadPoolOperationUtils.installThreadPoolService(service, params.getName(), serviceNameBase, params.getThreadFactory(),
-                defaultThreadFactoryProvider, service.getThreadFactoryInjector(), service.getHandoffExecutorInjector(),
-                params.getHandoffExecutor(), context.getServiceTarget(), newControllers, verificationHandler);
+        ThreadPoolManagementUtils.installThreadPoolService(service, params.getName(), serviceNameBase,
+                params.getThreadFactory(), threadFactoryResolver, service.getThreadFactoryInjector(),
+                params.getHandoffExecutor(), handoffExecutorResolver, service.getHandoffExecutorInjector(),
+                context.getServiceTarget(), newControllers, verificationHandler);
+    }
+
+    boolean isBlocking() {
+        return blocking;
     }
 
     ServiceName getServiceNameBase() {
         return serviceNameBase;
+    }
+
+    ThreadFactoryResolver getThreadFactoryResolver() {
+        return threadFactoryResolver;
+    }
+
+    HandoffExecutorResolver getHandoffExecutorResolver() {
+        return handoffExecutorResolver;
     }
 }
