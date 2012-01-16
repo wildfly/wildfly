@@ -27,6 +27,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * {@link ResourceDefinition} for a queueless thread pool resource.
@@ -36,46 +37,49 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 public class QueuelessThreadPoolResourceDefinition extends SimpleResourceDefinition {
 
     public static QueuelessThreadPoolResourceDefinition create(boolean blocking, boolean registerRuntimeOnly) {
-        return create(blocking, DefaultThreadFactoryProvider.STANDARD_PROVIDER, registerRuntimeOnly);
+        return create(blocking, DefaultThreadFactoryProvider.STANDARD_PROVIDER, ThreadsServices.EXECUTOR, registerRuntimeOnly);
     }
 
     public static QueuelessThreadPoolResourceDefinition create(boolean blocking, String type, boolean registerRuntimeOnly) {
-        return create(blocking, type, DefaultThreadFactoryProvider.STANDARD_PROVIDER, registerRuntimeOnly);
+        return create(blocking, type, DefaultThreadFactoryProvider.STANDARD_PROVIDER, ThreadsServices.EXECUTOR, registerRuntimeOnly);
     }
 
-    public static QueuelessThreadPoolResourceDefinition create(boolean blocking, DefaultThreadFactoryProvider defaultThreadFactoryProvider, boolean registerRuntimeOnly) {
+    public static QueuelessThreadPoolResourceDefinition create(boolean blocking, DefaultThreadFactoryProvider defaultThreadFactoryProvider,
+                                                               ServiceName serviceNameBase, boolean registerRuntimeOnly) {
         final String type = blocking ? CommonAttributes.BLOCKING_QUEUELESS_THREAD_POOL : CommonAttributes.QUEUELESS_THREAD_POOL;
-        return create(blocking, type, defaultThreadFactoryProvider, registerRuntimeOnly);
+        return create(blocking, type, defaultThreadFactoryProvider, serviceNameBase, registerRuntimeOnly);
     }
 
-    public static QueuelessThreadPoolResourceDefinition create(boolean blocking, String type, DefaultThreadFactoryProvider defaultThreadFactoryProvider, boolean registerRuntimeOnly) {
+    public static QueuelessThreadPoolResourceDefinition create(boolean blocking, String type, DefaultThreadFactoryProvider defaultThreadFactoryProvider,
+                                                               ServiceName serviceNameBase, boolean registerRuntimeOnly) {
         final String resolverPrefix = blocking ? CommonAttributes.BLOCKING_QUEUELESS_THREAD_POOL : CommonAttributes.QUEUELESS_THREAD_POOL;
-        final QueuelessThreadPoolAdd addHandler = new QueuelessThreadPoolAdd(blocking, defaultThreadFactoryProvider);
+        final QueuelessThreadPoolAdd addHandler = new QueuelessThreadPoolAdd(blocking, defaultThreadFactoryProvider, serviceNameBase);
         final OperationStepHandler removeHandler = new QueuelessThreadPoolRemove(addHandler);
-        return new QueuelessThreadPoolResourceDefinition(blocking, registerRuntimeOnly, type, resolverPrefix, addHandler, removeHandler);
+        return new QueuelessThreadPoolResourceDefinition(blocking, registerRuntimeOnly, type, serviceNameBase, resolverPrefix, addHandler, removeHandler);
     }
 
     private final boolean registerRuntimeOnly;
     private final boolean blocking;
+    private final ServiceName serviceNameBase;
 
     private QueuelessThreadPoolResourceDefinition(boolean blocking, boolean registerRuntimeOnly,
-                                                  String type, String resolverPrefix, OperationStepHandler addHandler,
+                                                  String type, ServiceName serviceNameBase, String resolverPrefix, OperationStepHandler addHandler,
                                                   OperationStepHandler removeHandler) {
         super(PathElement.pathElement(type),
                 new ThreadPoolResourceDescriptionResolver(resolverPrefix, ThreadsExtension.RESOURCE_NAME, ThreadsExtension.class.getClassLoader()),
                 addHandler, removeHandler);
         this.registerRuntimeOnly = registerRuntimeOnly;
         this.blocking = blocking;
+        this.serviceNameBase = serviceNameBase;
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadOnlyAttribute(PoolAttributeDefinitions.NAME, null);
-        QueuelessThreadPoolWriteAttributeHandler writeHandler = blocking ? QueuelessThreadPoolWriteAttributeHandler.BLOCKING
-                : QueuelessThreadPoolWriteAttributeHandler.NON_BLOCKING;
+        QueuelessThreadPoolWriteAttributeHandler writeHandler = new QueuelessThreadPoolWriteAttributeHandler(blocking, serviceNameBase);
         writeHandler.registerAttributes(resourceRegistration);
         if (registerRuntimeOnly) {
-            QueuelessThreadPoolMetricsHandler.INSTANCE.registerAttributes(resourceRegistration);
+            new QueuelessThreadPoolMetricsHandler(serviceNameBase).registerAttributes(resourceRegistration);
         }
     }
 }

@@ -29,6 +29,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
 
 
 /**
@@ -41,10 +42,8 @@ public class UnboundedQueueThreadPoolMetricsHandler extends ThreadPoolMetricsHan
             PoolAttributeDefinitions.CURRENT_THREAD_COUNT, PoolAttributeDefinitions.LARGEST_THREAD_COUNT,
             PoolAttributeDefinitions.REJECTED_COUNT, PoolAttributeDefinitions.TASK_COUNT);
 
-    public static final UnboundedQueueThreadPoolMetricsHandler INSTANCE = new UnboundedQueueThreadPoolMetricsHandler();
-
-    public UnboundedQueueThreadPoolMetricsHandler() {
-        super(METRICS);
+    public UnboundedQueueThreadPoolMetricsHandler(final ServiceName serviceNameBase) {
+        super(METRICS, serviceNameBase);
     }
 
     @Override

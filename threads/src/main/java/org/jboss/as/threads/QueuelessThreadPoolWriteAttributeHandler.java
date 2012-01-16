@@ -45,11 +45,12 @@ import org.jboss.msc.service.ServiceName;
  */
 public class QueuelessThreadPoolWriteAttributeHandler extends ThreadsWriteAttributeOperationHandler {
 
-    public static final QueuelessThreadPoolWriteAttributeHandler BLOCKING = new QueuelessThreadPoolWriteAttributeHandler(true);
-    public static final QueuelessThreadPoolWriteAttributeHandler NON_BLOCKING = new QueuelessThreadPoolWriteAttributeHandler(false);
 
-    private QueuelessThreadPoolWriteAttributeHandler(boolean blocking) {
+    private final ServiceName serviceNameBase;
+
+    public QueuelessThreadPoolWriteAttributeHandler(boolean blocking, ServiceName serviceNameBase) {
         super(blocking ? QueuelessThreadPoolAdd.BLOCKING_ATTRIBUTES : QueuelessThreadPoolAdd.NON_BLOCKING_ATTRIBUTES, QueuelessThreadPoolAdd.RW_ATTRIBUTES);
+        this.serviceNameBase = serviceNameBase;
     }
 
     @Override
@@ -84,7 +85,7 @@ public class QueuelessThreadPoolWriteAttributeHandler extends ThreadsWriteAttrib
     @Override
     protected ServiceController<?> getService(final OperationContext context, final ModelNode model) throws OperationFailedException {
         final String name = Util.getNameFromAddress(model.require(OP_ADDR));
-        final ServiceName serviceName = ThreadsServices.executorName(name);
+        final ServiceName serviceName = serviceNameBase.append(name);
         ServiceController<?> controller = context.getServiceRegistry(true).getService(serviceName);
         if(controller == null) {
             throw new OperationFailedException(new ModelNode().set("Service " + serviceName + " not found."));

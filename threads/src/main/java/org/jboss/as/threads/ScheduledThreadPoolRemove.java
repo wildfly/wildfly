@@ -37,15 +37,20 @@ import org.jboss.dmr.ModelNode;
  */
 public class ScheduledThreadPoolRemove extends AbstractRemoveStepHandler {
 
-    static final ScheduledThreadPoolRemove INSTANCE = new ScheduledThreadPoolRemove();
+    private final ScheduledThreadPoolAdd addHandler;
+
+    public ScheduledThreadPoolRemove(ScheduledThreadPoolAdd addHandler) {
+        this.addHandler = addHandler;
+    }
+
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
-        context.removeService(ThreadsServices.executorName(name));
+        context.removeService(addHandler.getServiceNameBase().append(name));
     }
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        ScheduledThreadPoolAdd.INSTANCE.performRuntime(context, operation, model, null, null);
+        addHandler.performRuntime(context, operation, model, null, null);
     }
 }

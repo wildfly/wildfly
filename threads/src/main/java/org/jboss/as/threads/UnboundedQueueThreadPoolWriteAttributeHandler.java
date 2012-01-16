@@ -45,10 +45,11 @@ import org.jboss.msc.service.ServiceName;
  */
 public class UnboundedQueueThreadPoolWriteAttributeHandler extends ThreadsWriteAttributeOperationHandler {
 
-    public static final UnboundedQueueThreadPoolWriteAttributeHandler INSTANCE = new UnboundedQueueThreadPoolWriteAttributeHandler();
+    private final ServiceName serviceNameBase;
 
-    private UnboundedQueueThreadPoolWriteAttributeHandler() {
+    public UnboundedQueueThreadPoolWriteAttributeHandler(ServiceName serviceNameBase) {
         super(UnboundedQueueThreadPoolAdd.ATTRIBUTES, UnboundedQueueThreadPoolAdd.RW_ATTRIBUTES);
+        this.serviceNameBase = serviceNameBase;
     }
 
     @Override
@@ -83,7 +84,7 @@ public class UnboundedQueueThreadPoolWriteAttributeHandler extends ThreadsWriteA
     @Override
     protected ServiceController<?> getService(final OperationContext context, final ModelNode model) throws OperationFailedException {
         final String name = Util.getNameFromAddress(model.require(OP_ADDR));
-        final ServiceName serviceName = ThreadsServices.executorName(name);
+        final ServiceName serviceName = serviceNameBase.append(name);
         ServiceController<?> controller = context.getServiceRegistry(true).getService(serviceName);
         if(controller == null) {
             throw new OperationFailedException(new ModelNode().set("Service " + serviceName + " not found."));

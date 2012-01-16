@@ -29,6 +29,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
 
 
 /**
@@ -40,10 +41,8 @@ public class QueuelessThreadPoolMetricsHandler extends ThreadPoolMetricsHandler 
     public static final List<AttributeDefinition> METRICS = Arrays.asList(PoolAttributeDefinitions.CURRENT_THREAD_COUNT, PoolAttributeDefinitions.LARGEST_THREAD_COUNT,
             PoolAttributeDefinitions.REJECTED_COUNT);
 
-    public static final QueuelessThreadPoolMetricsHandler INSTANCE = new QueuelessThreadPoolMetricsHandler();
-
-    public QueuelessThreadPoolMetricsHandler() {
-        super(METRICS);
+    public QueuelessThreadPoolMetricsHandler(final ServiceName serviceNameBase) {
+        super(METRICS, serviceNameBase);
     }
 
     @Override

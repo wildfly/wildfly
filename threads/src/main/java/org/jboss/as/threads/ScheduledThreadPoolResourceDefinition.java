@@ -26,6 +26,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * {@link ResourceDefinition} for a scheduled thread pool resource.
@@ -35,25 +36,33 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 public class ScheduledThreadPoolResourceDefinition extends SimpleResourceDefinition {
 
     private final boolean registerRuntimeOnly;
+    private final ServiceName serviceNameBase;
 
-    public ScheduledThreadPoolResourceDefinition(boolean registerRuntimeOnly) {
-        this(CommonAttributes.SCHEDULED_THREAD_POOL, registerRuntimeOnly);
+    public static ScheduledThreadPoolResourceDefinition create(boolean registerRuntimeOnly) {
+        return create(CommonAttributes.SCHEDULED_THREAD_POOL, DefaultThreadFactoryProvider.STANDARD_PROVIDER, ThreadsServices.EXECUTOR, registerRuntimeOnly);
+    }
+    public static ScheduledThreadPoolResourceDefinition create(String type, DefaultThreadFactoryProvider defaultThreadFactoryProvider,
+                                                 ServiceName serviceNameBase, boolean registerRuntimeOnly) {
+        ScheduledThreadPoolAdd addHandler = new ScheduledThreadPoolAdd(defaultThreadFactoryProvider, serviceNameBase);
+        return new ScheduledThreadPoolResourceDefinition(type, addHandler, serviceNameBase, registerRuntimeOnly);
     }
 
-    public ScheduledThreadPoolResourceDefinition(String type, boolean registerRuntimeOnly) {
+    private ScheduledThreadPoolResourceDefinition(String type, ScheduledThreadPoolAdd addHandler,
+                                                 ServiceName serviceNameBase, boolean registerRuntimeOnly) {
         super(PathElement.pathElement(type),
                 new ThreadPoolResourceDescriptionResolver(CommonAttributes.SCHEDULED_THREAD_POOL, ThreadsExtension.RESOURCE_NAME,
                 ThreadsExtension.class.getClassLoader()),
-                ScheduledThreadPoolAdd.INSTANCE, ScheduledThreadPoolAdd.INSTANCE);
+                addHandler, new ScheduledThreadPoolRemove(addHandler));
         this.registerRuntimeOnly = registerRuntimeOnly;
+        this.serviceNameBase = serviceNameBase;
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadOnlyAttribute(PoolAttributeDefinitions.NAME, null);
-        ScheduledThreadPoolWriteAttributeHandler.INSTANCE.registerAttributes(resourceRegistration);
+        new ScheduledThreadPoolWriteAttributeHandler(serviceNameBase).registerAttributes(resourceRegistration);
         if (registerRuntimeOnly) {
-            ScheduledThreadPoolMetricsHandler.INSTANCE.registerAttributes(resourceRegistration);
+            new ScheduledThreadPoolMetricsHandler(serviceNameBase).registerAttributes(resourceRegistration);
         }
     }
 }

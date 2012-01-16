@@ -35,6 +35,7 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.threads.ThreadsSubsystemThreadPoolOperationUtils.BoundedThreadPoolParameters;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Adds a bounded queue thread pool.
@@ -44,9 +45,6 @@ import org.jboss.msc.service.ServiceController;
  * @author <a href="alex@jboss.org">Alexey Loubyansky</a>
  */
 public class BoundedQueueThreadPoolAdd extends AbstractAddStepHandler {
-
-    public static final BoundedQueueThreadPoolAdd BLOCKING = new BoundedQueueThreadPoolAdd(true, DefaultThreadFactoryProvider.STANDARD_PROVIDER);
-    public static final BoundedQueueThreadPoolAdd NON_BLOCKING = new BoundedQueueThreadPoolAdd(false, DefaultThreadFactoryProvider.STANDARD_PROVIDER);
 
     static final AttributeDefinition[] BLOCKING_ATTRIBUTES = new AttributeDefinition[] {PoolAttributeDefinitions.KEEPALIVE_TIME,
         PoolAttributeDefinitions.MAX_THREADS, PoolAttributeDefinitions.THREAD_FACTORY,
@@ -66,10 +64,12 @@ public class BoundedQueueThreadPoolAdd extends AbstractAddStepHandler {
 
     private final boolean blocking;
     private final DefaultThreadFactoryProvider defaultThreadFactoryProvider;
+    private final ServiceName serviceNameBase;
 
-    public BoundedQueueThreadPoolAdd(boolean blocking, DefaultThreadFactoryProvider defaultThreadFactoryProvider) {
+    public BoundedQueueThreadPoolAdd(boolean blocking, DefaultThreadFactoryProvider defaultThreadFactoryProvider, ServiceName serviceNameBase) {
         this.blocking = blocking;
         this.defaultThreadFactoryProvider = defaultThreadFactoryProvider;
+        this.serviceNameBase = serviceNameBase;
     }
 
     @Override
@@ -98,8 +98,12 @@ public class BoundedQueueThreadPoolAdd extends AbstractAddStepHandler {
                 params.getKeepAliveTime(),
                 params.isAllowCoreTimeout());
 
-        ThreadsSubsystemThreadPoolOperationUtils.installThreadPoolService(service, params.getName(), params.getThreadFactory(),
+        ThreadsSubsystemThreadPoolOperationUtils.installThreadPoolService(service, params.getName(), serviceNameBase, params.getThreadFactory(),
                 defaultThreadFactoryProvider, service.getThreadFactoryInjector(), service.getHandoffExecutorInjector(),
                 params.getHandoffExecutor(), context.getServiceTarget(), newControllers, verificationHandler);
+    }
+
+    ServiceName getServiceNameBase() {
+        return serviceNameBase;
     }
 }

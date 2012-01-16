@@ -59,8 +59,8 @@ class ThreadSubsystemResourceDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerSubModel(BoundedQueueThreadPoolResourceDefinition.create(true, registerRuntimeOnly));
         resourceRegistration.registerSubModel(BoundedQueueThreadPoolResourceDefinition.create(false, registerRuntimeOnly));
 
-        resourceRegistration.registerSubModel(new UnboundedQueueThreadPoolResourceDefinition(registerRuntimeOnly));
+        resourceRegistration.registerSubModel(UnboundedQueueThreadPoolResourceDefinition.create(registerRuntimeOnly));
 
-        resourceRegistration.registerSubModel(new ScheduledThreadPoolResourceDefinition(registerRuntimeOnly));
+        resourceRegistration.registerSubModel(ScheduledThreadPoolResourceDefinition.create(registerRuntimeOnly));
     }
 }
