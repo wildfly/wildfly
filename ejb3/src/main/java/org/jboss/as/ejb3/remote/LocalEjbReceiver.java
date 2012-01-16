@@ -187,7 +187,7 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
     }
 
     @Override
-    protected <T> StatefulEJBLocator<T> openSession(EJBReceiverContext context, Class<T> viewType, String appName, String moduleName, String distinctName, String beanName) throws Exception {
+    protected <T> StatefulEJBLocator<T> openSession(EJBReceiverContext context, Class<T> viewType, String appName, String moduleName, String distinctName, String beanName) throws IllegalArgumentException {
         final EjbDeploymentInformation ejbInfo = findBean(appName, moduleName, distinctName, beanName);
         final EJBComponent component = ejbInfo.getEjbComponent();
         if (!(component instanceof StatefulSessionComponent)) {
