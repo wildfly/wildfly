@@ -81,7 +81,7 @@ interface JdrLogger extends BasicLogger {
     void urlDecodeExceptionEncountered(@Cause Throwable cause);
 
     /**
-     * JDR was unable to decode a path URL for standarization across platforms.
+     * JDR plugin location is not a directory as expected.
      */
     @LogMessage(level = WARN)
     @Message(id=14505, value="Plugin contrib location is not a directory.  Ignoring.")

@@ -1,4 +1,4 @@
- /*
+/*
  * JBoss, Home of Professional Open Source.
  * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
@@ -21,14 +21,33 @@
  */
 package org.jboss.as.jdr;
 
+import static org.jboss.as.jdr.JdrMessages.MESSAGES;
+
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 
+/**
+ *  Wrapper for {@link org.jboss.as.controller.client.ModelControllerClient}
+ *  used for easier jython consumption.
+ *
+ *  @author Jesse Jaggars
+ *  @author Mike M. Clark
+ */
 public class ModelControllerClientProxy {
 
     public ModelControllerClient client;
 
+    /**
+     * Creates a proxy to wrap a {@link org.jboss.as.controller.client.ModelControllerClient}
+     * to ease passing into python code.
+     *
+     * @param client <code>ModelControllerClient</code> being wrapped
+     * @throws IllegalArgumentException if <code>client</code> is <code>null</code>
+     */
     public ModelControllerClientProxy(ModelControllerClient client) {
+        if (client == null) {
+            throw MESSAGES.varNull("client");
+        }
         this.client = client;
     }
 
