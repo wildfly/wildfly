@@ -37,15 +37,19 @@ import org.jboss.dmr.ModelNode;
  */
 public class UnboundedQueueThreadPoolRemove extends AbstractRemoveStepHandler {
 
-    static final UnboundedQueueThreadPoolRemove INSTANCE = new UnboundedQueueThreadPoolRemove();
+    private final UnboundedQueueThreadPoolAdd addHandler;
+
+    public UnboundedQueueThreadPoolRemove(UnboundedQueueThreadPoolAdd addHandler) {
+        this.addHandler = addHandler;
+    }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
-        context.removeService(ThreadsServices.executorName(name));
+        context.removeService(addHandler.getServiceNameBase().append(name));
     }
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        UnboundedQueueThreadPoolAdd.INSTANCE.performRuntime(context, operation, model, null, null);
+        addHandler.performRuntime(context, operation, model, null, null);
     }
 }

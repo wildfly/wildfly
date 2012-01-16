@@ -37,9 +37,6 @@ import org.jboss.dmr.ModelNode;
  */
 public class QueuelessThreadPoolRemove extends AbstractRemoveStepHandler {
 
-    public static final QueuelessThreadPoolRemove BLOCKING = new QueuelessThreadPoolRemove(QueuelessThreadPoolAdd.BLOCKING);
-    public static final QueuelessThreadPoolRemove NON_BLOCKING = new QueuelessThreadPoolRemove(QueuelessThreadPoolAdd.NON_BLOCKING);
-
     private final QueuelessThreadPoolAdd addHandler;
 
     public QueuelessThreadPoolRemove(QueuelessThreadPoolAdd addHandler) {
@@ -49,7 +46,7 @@ public class QueuelessThreadPoolRemove extends AbstractRemoveStepHandler {
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
-        context.removeService(ThreadsServices.executorName(name));
+        context.removeService(addHandler.getServiceNameBase().append(name));
     }
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {

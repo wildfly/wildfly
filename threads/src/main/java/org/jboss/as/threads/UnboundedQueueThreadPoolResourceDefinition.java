@@ -26,6 +26,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * {@link ResourceDefinition} for an unbounded queue thread pool resource.
@@ -35,25 +36,33 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 public class UnboundedQueueThreadPoolResourceDefinition extends SimpleResourceDefinition {
 
     private final boolean registerRuntimeOnly;
+    private final ServiceName serviceNameBase;
 
-    public UnboundedQueueThreadPoolResourceDefinition(boolean registerRuntimeOnly) {
-        this(CommonAttributes.UNBOUNDED_QUEUE_THREAD_POOL, registerRuntimeOnly);
+    public static UnboundedQueueThreadPoolResourceDefinition create(boolean registerRuntimeOnly) {
+        return create(CommonAttributes.UNBOUNDED_QUEUE_THREAD_POOL, DefaultThreadFactoryProvider.STANDARD_PROVIDER, ThreadsServices.EXECUTOR, registerRuntimeOnly);
+    }
+    public static UnboundedQueueThreadPoolResourceDefinition create(String type, DefaultThreadFactoryProvider defaultThreadFactoryProvider,
+                                                 ServiceName serviceNameBase, boolean registerRuntimeOnly) {
+        UnboundedQueueThreadPoolAdd addHandler = new UnboundedQueueThreadPoolAdd(defaultThreadFactoryProvider, serviceNameBase);
+        return new UnboundedQueueThreadPoolResourceDefinition(type, addHandler, serviceNameBase, registerRuntimeOnly);
     }
 
-    public UnboundedQueueThreadPoolResourceDefinition(String type, boolean registerRuntimeOnly) {
+    private UnboundedQueueThreadPoolResourceDefinition(String type, UnboundedQueueThreadPoolAdd addHandler,
+                                                 ServiceName serviceNameBase, boolean registerRuntimeOnly) {
         super(PathElement.pathElement(type),
                 new ThreadPoolResourceDescriptionResolver(CommonAttributes.UNBOUNDED_QUEUE_THREAD_POOL, ThreadsExtension.RESOURCE_NAME,
                 ThreadsExtension.class.getClassLoader()),
-                UnboundedQueueThreadPoolAdd.INSTANCE, UnboundedQueueThreadPoolRemove.INSTANCE);
+                addHandler, new UnboundedQueueThreadPoolRemove(addHandler));
         this.registerRuntimeOnly = registerRuntimeOnly;
+        this.serviceNameBase = serviceNameBase;
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadOnlyAttribute(PoolAttributeDefinitions.NAME, null);
-        UnboundedQueueThreadPoolWriteAttributeHandler.INSTANCE.registerAttributes(resourceRegistration);
+        new UnboundedQueueThreadPoolWriteAttributeHandler(serviceNameBase).registerAttributes(resourceRegistration);
         if (registerRuntimeOnly) {
-            UnboundedQueueThreadPoolMetricsHandler.INSTANCE.registerAttributes(resourceRegistration);
+            new UnboundedQueueThreadPoolMetricsHandler(serviceNameBase).registerAttributes(resourceRegistration);
         }
     }
 }

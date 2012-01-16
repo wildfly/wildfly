@@ -27,6 +27,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * {@link ResourceDefinition} for a bounded queue thread pool resource.
@@ -36,46 +37,49 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 public class BoundedQueueThreadPoolResourceDefinition extends SimpleResourceDefinition {
 
     public static BoundedQueueThreadPoolResourceDefinition create(boolean blocking, boolean registerRuntimeOnly) {
-        return create(blocking, DefaultThreadFactoryProvider.STANDARD_PROVIDER, registerRuntimeOnly);
+        return create(blocking, DefaultThreadFactoryProvider.STANDARD_PROVIDER, ThreadsServices.EXECUTOR, registerRuntimeOnly);
     }
 
     public static BoundedQueueThreadPoolResourceDefinition create(boolean blocking, String type, boolean registerRuntimeOnly) {
-        return create(blocking, type, DefaultThreadFactoryProvider.STANDARD_PROVIDER, registerRuntimeOnly);
+        return create(blocking, type, DefaultThreadFactoryProvider.STANDARD_PROVIDER, ThreadsServices.EXECUTOR, registerRuntimeOnly);
     }
 
-    public static BoundedQueueThreadPoolResourceDefinition create(boolean blocking, DefaultThreadFactoryProvider defaultThreadFactoryProvider, boolean registerRuntimeOnly) {
+    public static BoundedQueueThreadPoolResourceDefinition create(boolean blocking, DefaultThreadFactoryProvider defaultThreadFactoryProvider,
+                                                                  ServiceName poolNameBase, boolean registerRuntimeOnly) {
         final String type = blocking ? CommonAttributes.BLOCKING_BOUNDED_QUEUE_THREAD_POOL : CommonAttributes.BOUNDED_QUEUE_THREAD_POOL;
-        return create(blocking, type, defaultThreadFactoryProvider, registerRuntimeOnly);
+        return create(blocking, type, defaultThreadFactoryProvider, poolNameBase, registerRuntimeOnly);
     }
 
-    public static BoundedQueueThreadPoolResourceDefinition create(boolean blocking, String type, DefaultThreadFactoryProvider defaultThreadFactoryProvider, boolean registerRuntimeOnly) {
+    public static BoundedQueueThreadPoolResourceDefinition create(boolean blocking, String type, DefaultThreadFactoryProvider defaultThreadFactoryProvider,
+                                                                  ServiceName poolNameBase, boolean registerRuntimeOnly) {
         final String resolverPrefix = blocking ? CommonAttributes.BLOCKING_BOUNDED_QUEUE_THREAD_POOL : CommonAttributes.BOUNDED_QUEUE_THREAD_POOL;
-        final BoundedQueueThreadPoolAdd addHandler = new BoundedQueueThreadPoolAdd(blocking, defaultThreadFactoryProvider);
+        final BoundedQueueThreadPoolAdd addHandler = new BoundedQueueThreadPoolAdd(blocking, defaultThreadFactoryProvider, poolNameBase);
         final OperationStepHandler removeHandler = new BoundedQueueThreadPoolRemove(addHandler);
-        return new BoundedQueueThreadPoolResourceDefinition(blocking, registerRuntimeOnly, type, resolverPrefix, addHandler, removeHandler);
+        return new BoundedQueueThreadPoolResourceDefinition(blocking, registerRuntimeOnly, type, poolNameBase, resolverPrefix, addHandler, removeHandler);
     }
 
     private final boolean registerRuntimeOnly;
     private final boolean blocking;
+    private final ServiceName serviceNameBase;
 
     private BoundedQueueThreadPoolResourceDefinition(boolean blocking, boolean registerRuntimeOnly,
-                                                     String type, String resolverPrefix, OperationStepHandler addHandler,
+                                                     String type, ServiceName serviceNameBase, String resolverPrefix, OperationStepHandler addHandler,
                                                      OperationStepHandler removeHandler) {
         super(PathElement.pathElement(type),
                 new ThreadPoolResourceDescriptionResolver(resolverPrefix, ThreadsExtension.RESOURCE_NAME, ThreadsExtension.class.getClassLoader()),
                 addHandler, removeHandler);
         this.registerRuntimeOnly = registerRuntimeOnly;
         this.blocking = blocking;
+        this.serviceNameBase = serviceNameBase;
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadOnlyAttribute(PoolAttributeDefinitions.NAME, null);
-        BoundedQueueThreadPoolWriteAttributeHandler writeHandler = blocking ? BoundedQueueThreadPoolWriteAttributeHandler.BLOCKING
-                : BoundedQueueThreadPoolWriteAttributeHandler.NON_BLOCKING;
+        BoundedQueueThreadPoolWriteAttributeHandler writeHandler = new BoundedQueueThreadPoolWriteAttributeHandler(blocking, serviceNameBase);
         writeHandler.registerAttributes(resourceRegistration);
         if (registerRuntimeOnly) {
-            BoundedQueueThreadPoolMetricsHandler.INSTANCE.registerAttributes(resourceRegistration);
+            new BoundedQueueThreadPoolMetricsHandler(serviceNameBase).registerAttributes(resourceRegistration);
         }
     }
 }

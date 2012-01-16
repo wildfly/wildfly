@@ -35,6 +35,7 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.threads.ThreadsSubsystemThreadPoolOperationUtils.BaseThreadPoolParameters;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Adds a scheduled thread pool.
@@ -44,14 +45,19 @@ import org.jboss.msc.service.ServiceController;
  */
 public class ScheduledThreadPoolAdd extends AbstractAddStepHandler {
 
-    static final ScheduledThreadPoolAdd INSTANCE = new ScheduledThreadPoolAdd();
-
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {PoolAttributeDefinitions.KEEPALIVE_TIME,
         PoolAttributeDefinitions.MAX_THREADS, PoolAttributeDefinitions.THREAD_FACTORY};
 
     static final AttributeDefinition[] RW_ATTRIBUTES = new AttributeDefinition[]{};
 
-    private final DefaultThreadFactoryProvider threadFactoryProvider = DefaultThreadFactoryProvider.STANDARD_PROVIDER;
+    private final DefaultThreadFactoryProvider threadFactoryProvider;
+    private final ServiceName serviceNameBase;
+
+    public ScheduledThreadPoolAdd(DefaultThreadFactoryProvider threadFactoryProvider, ServiceName serviceNameBase) {
+        this.threadFactoryProvider = threadFactoryProvider;
+        this.serviceNameBase = serviceNameBase;
+    }
+
 
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
@@ -72,8 +78,12 @@ public class ScheduledThreadPoolAdd extends AbstractAddStepHandler {
 
         final ScheduledThreadPoolService service = new ScheduledThreadPoolService(params.getMaxThreads(), params.getKeepAliveTime());
 
-        ThreadsSubsystemThreadPoolOperationUtils.installThreadPoolService(service, params.getName(), params.getThreadFactory(),
+        ThreadsSubsystemThreadPoolOperationUtils.installThreadPoolService(service, params.getName(), serviceNameBase, params.getThreadFactory(),
                 threadFactoryProvider, service.getThreadFactoryInjector(), null,
                 null, context.getServiceTarget(), newControllers, verificationHandler);
+    }
+
+    ServiceName getServiceNameBase() {
+        return serviceNameBase;
     }
 }

@@ -35,17 +35,20 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 
 /**
-*
-* @author Alexey Loubyansky
-*/
+ * Base class for operation step handlers that expose thread pool resource metrics.
+ * @author Alexey Loubyansky
+ */
 public abstract class ThreadPoolMetricsHandler extends AbstractRuntimeOnlyHandler {
 
     private final List<AttributeDefinition> metrics;
+    private final ServiceName serviceNameBase;
 
-    public ThreadPoolMetricsHandler(List<AttributeDefinition> metrics) {
+    protected ThreadPoolMetricsHandler(List<AttributeDefinition> metrics, ServiceName serviceNameBase) {
         this.metrics = metrics;
+        this.serviceNameBase = serviceNameBase;
     }
 
     public void registerAttributes(final ManagementResourceRegistration registration) {
@@ -72,9 +75,9 @@ public abstract class ThreadPoolMetricsHandler extends AbstractRuntimeOnlyHandle
     protected ServiceController<?> getService(final OperationContext context, final ModelNode operation)
             throws OperationFailedException {
                 final String name = Util.getNameFromAddress(operation.require(OP_ADDR));
-                ServiceController<?> controller = context.getServiceRegistry(true).getService(ThreadsServices.executorName(name));
+                ServiceController<?> controller = context.getServiceRegistry(true).getService(serviceNameBase.append(name));
                 if(controller == null) {
-                    throw new OperationFailedException(new ModelNode().set("Failed to locate executor service " + ThreadsServices.executorName(name)));
+                    throw new OperationFailedException(new ModelNode().set("Failed to locate executor service " + serviceNameBase.append(name)));
                 }
                 return controller;
             }

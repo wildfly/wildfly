@@ -29,6 +29,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
 
 
 /**
@@ -40,10 +41,8 @@ public class ScheduledThreadPoolMetricsHandler extends ThreadPoolMetricsHandler 
     public static final List<AttributeDefinition> METRICS = Arrays.asList(PoolAttributeDefinitions.ACTIVE_COUNT, PoolAttributeDefinitions.COMPLETED_TASK_COUNT,
             PoolAttributeDefinitions.CURRENT_THREAD_COUNT, PoolAttributeDefinitions.LARGEST_THREAD_COUNT, PoolAttributeDefinitions.TASK_COUNT);
 
-    public static final ScheduledThreadPoolMetricsHandler INSTANCE = new ScheduledThreadPoolMetricsHandler();
-
-    public ScheduledThreadPoolMetricsHandler() {
-        super(METRICS);
+    public ScheduledThreadPoolMetricsHandler(final ServiceName serviceNameBase) {
+        super(METRICS, serviceNameBase);
     }
 
     @Override

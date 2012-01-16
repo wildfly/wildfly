@@ -51,15 +51,17 @@ import org.jboss.msc.service.ServiceTarget;
 class ThreadsSubsystemThreadPoolOperationUtils {
 
     static <T> void installThreadPoolService(final Service<T> threadPoolService,
-                                               final String threadPoolName, final String threadFactoryName,
-                                               final DefaultThreadFactoryProvider defaultThreadFactoryProvider,
-                                               final Injector<ThreadFactory> threadFactoryInjector,
-                                               final Injector<Executor> handoffExecutorInjector,
-                                               final String handoffExecutorName,
-                                               final ServiceTarget target, final List<ServiceController<?>> newControllers,
-                                               final ServiceListener<Object>... newServiceListeners) {
+                                             final String threadPoolName,
+                                             final ServiceName serviceNameBase,
+                                             final String threadFactoryName,
+                                             final DefaultThreadFactoryProvider defaultThreadFactoryProvider,
+                                             final Injector<ThreadFactory> threadFactoryInjector,
+                                             final Injector<Executor> handoffExecutorInjector,
+                                             final String handoffExecutorName,
+                                             final ServiceTarget target, final List<ServiceController<?>> newControllers,
+                                             final ServiceListener<Object>... newServiceListeners) {
 
-        final ServiceName serviceName = ThreadsServices.executorName(threadPoolName);
+        final ServiceName serviceName = serviceNameBase.append(threadPoolName);
 
         final ServiceBuilder<?> serviceBuilder = target.addService(serviceName, threadPoolService);
 
@@ -67,7 +69,7 @@ class ThreadsSubsystemThreadPoolOperationUtils {
                 defaultThreadFactoryProvider, serviceBuilder, threadFactoryInjector, target, newControllers, newServiceListeners);
 
         if (handoffExecutorInjector != null && handoffExecutorName != null) {
-            serviceBuilder.addDependency(ThreadsServices.executorName(handoffExecutorName), Executor.class, handoffExecutorInjector);
+            serviceBuilder.addDependency(serviceNameBase.append(handoffExecutorName), Executor.class, handoffExecutorInjector);
         }
 
         if (newServiceListeners != null  && newServiceListeners.length > 0) {
