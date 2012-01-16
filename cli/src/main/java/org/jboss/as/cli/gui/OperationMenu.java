@@ -67,8 +67,12 @@ public class OperationMenu extends JPopupMenu {
 
             for (ModelNode name : opNames.get("result").asList()) {
                 String strName = name.asString();
+
+                // filter operations
                 if (node.isGeneric() && !genericOpList.contains(strName)) continue;
                 if (node.isLeaf() && !leafOpList.contains(strName)) continue;
+                if (!node.isGeneric() && !node.isLeaf() && strName.equals("add")) continue;
+
                 ModelNode opDescription = getResourceDescription(addressPath, strName);
                 add(new OperationAction(node, strName, opDescription));
             }
