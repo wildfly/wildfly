@@ -49,7 +49,7 @@ public class ReloadRequiredWriteAttributeHandler extends AbstractWriteAttributeH
     }
 
     @Override
-    protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> voidHandback) {
+    protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> voidHandback) throws OperationFailedException {
         return true;
     }
 
