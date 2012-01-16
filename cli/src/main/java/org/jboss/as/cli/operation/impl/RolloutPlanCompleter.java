@@ -47,6 +47,9 @@ public class RolloutPlanCompleter implements CommandLineCompleter {
      */
     @Override
     public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
+        if(!ctx.isDomainMode()) {
+            return -1;
+        }
         final ParsedCommandLine parsedCmd = ctx.getParsedCommandLine();
         final List<ParsedOperationRequestHeader> headers = parsedCmd.getHeaders();
         if(headers.isEmpty()) {
