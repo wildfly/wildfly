@@ -57,6 +57,7 @@ public class Util {
     public static final String FULL_REPLACE_DEPLOYMENT = "full-replace-deployment";
     public static final String FALSE = "false";
     public static final String HEAD_COMMENT_ALLOWED = "head-comment-allowed";
+    public static final String ID = "id";
     public static final String IN_SERIES = "in-series";
     public static final String INCLUDE_DEFAULTS = "include-defaults";
     public static final String INCLUDE_RUNTIME = "include-runtime";

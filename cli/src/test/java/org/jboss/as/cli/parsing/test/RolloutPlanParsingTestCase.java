@@ -932,37 +932,11 @@ public class RolloutPlanParsingTestCase extends TestCase {
     }
 
     @Test
-    public void testRolloutId() throws Exception {
+    public void testRolloutIdWithValue() throws Exception {
 
-/* the plans are not in the config any more, just test the parsing of the reference
+        parse(":do{ rollout id = myplan}");
 
-        RolloutPlanHeader myPlan = new RolloutPlanHeader("myplan");
-
-        ConcurrentRolloutPlanGroup concurrent = new ConcurrentRolloutPlanGroup();
-
-        SingleRolloutPlanGroup group = new SingleRolloutPlanGroup("groupA");
-        group.addProperty("rolling-to-servers", "true");
-        group.addProperty("max-failure-percentage", "20");
-        concurrent.addGroup(group);
-
-        group = new SingleRolloutPlanGroup("groupB");
-        group.addProperty("rolling-to-servers", "false");
-        group.addProperty("max-failed-servers", "2");
-        concurrent.addGroup(group);
-
-        myPlan.addGroup(concurrent);
-
-        group = new SingleRolloutPlanGroup("groupC");
-        myPlan.addGroup(group);
-
-        myPlan.addProperty("rollback-across-groups", "true");
-
-        ((MockCliConfig)ctx.getConfig()).addRolloutPlan(myPlan);
-*/
-        //parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout in-series = groupA}");
-        parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout id = myplan}");
-
-        assertTrue(handler.hasAddress());
+        assertFalse(handler.hasAddress());
         assertTrue(handler.hasOperationName());
         assertFalse(handler.hasProperties());
         assertFalse(handler.endsOnAddressOperationNameSeparator());
@@ -983,37 +957,40 @@ public class RolloutPlanParsingTestCase extends TestCase {
 
         final ParsedRolloutPlanHeader rollout = (ParsedRolloutPlanHeader) header;
         assertEquals("myplan", rollout.getPlanRef());
+        assertEquals(18, rollout.getLastChunkIndex());
+    }
 
-/*        final ModelNode op = handler.toOperationRequest(ctx);
-        assertTrue(op.hasDefined(Util.OPERATION_HEADERS));
-        final ModelNode headersNode = op.get(Util.OPERATION_HEADERS);
+    @Test
+    public void testEndsOnPlanRef() throws Exception {
 
-        final ModelNode expectedHeaders = new ModelNode();
-        final ModelNode rolloutPlan = expectedHeaders.get(Util.ROLLOUT_PLAN);
-        final ModelNode inSeries = rolloutPlan.get(Util.IN_SERIES);
+        parse(":do{ rollout id=");
 
-        ModelNode concurrentNode = new ModelNode();
-        ModelNode cg = concurrentNode.get(Util.CONCURRENT_GROUPS);
+        assertFalse(handler.hasAddress());
+        assertTrue(handler.hasOperationName());
+        assertFalse(handler.hasProperties());
+        assertFalse(handler.endsOnAddressOperationNameSeparator());
+        assertFalse(handler.endsOnPropertyListStart());
+        assertFalse(handler.endsOnPropertySeparator());
+        assertFalse(handler.endsOnPropertyValueSeparator());
+        assertFalse(handler.endsOnNodeSeparator());
+        assertFalse(handler.endsOnNodeTypeNameSeparator());
+        assertFalse(handler.endsOnSeparator());
+        assertFalse(handler.endsOnHeaderListStart());
+        assertFalse(handler.isRequestComplete());
+        assertTrue(handler.hasHeaders());
 
-        ModelNode groupNode = cg.get("groupA");
-        groupNode.get("rolling-to-servers").set("true");
-        groupNode.get("max-failure-percentage").set("20");
+        final List<ParsedOperationRequestHeader> headers = handler.getHeaders();
+        assertEquals(1, headers.size());
+        final ParsedOperationRequestHeader header = headers.get(0);
+        assertTrue(header instanceof ParsedRolloutPlanHeader);
 
-        groupNode = cg.get("groupB");
-        groupNode.get("rolling-to-servers").set("false");
-        groupNode.get("max-failed-servers").set("2");
-
-        inSeries.add().set(concurrentNode);
-
-        ModelNode sg = new ModelNode();
-        groupNode = sg.get(Util.SERVER_GROUP);
-        groupNode.get("groupC");
-        inSeries.add().set(sg);
-
-        rolloutPlan.get("rollback-across-groups").set("true");
-
-        assertEquals(expectedHeaders, headersNode);
-*/    }
+        final ParsedRolloutPlanHeader rollout = (ParsedRolloutPlanHeader) header;
+        assertNull(rollout.getPlanRef());
+        assertFalse(rollout.hasProperties());
+        assertNull(rollout.getLastGroup());
+        assertTrue(rollout.endsOnPlanIdValueSeparator());
+        assertEquals(15, rollout.getLastSeparatorIndex());
+    }
 
     @Test
     public void testArgumentValueConverter() throws Exception {
