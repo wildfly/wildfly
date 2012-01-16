@@ -40,6 +40,9 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
+import static org.jboss.as.server.ServerLogger.PRIVATE_DEP_LOGGER;
+import static org.jboss.as.server.ServerLogger.UNSUPPORTED_DEP_LOGGER;
+
 /**
  * Service that loads and re-links a module once all the modules dependencies are available.
  *
@@ -48,21 +51,32 @@ import org.jboss.msc.value.InjectedValue;
 public class ModuleLoadService implements Service<Module> {
 
     private final InjectedValue<ServiceModuleLoader> serviceModuleLoader = new InjectedValue<ServiceModuleLoader>();
-
     private final InjectedValue<ModuleSpec> moduleSpec = new InjectedValue<ModuleSpec>();
+    private final List<ModuleIdentifier> dependencies;
 
     private volatile Module module;
 
-    private ModuleLoadService() {
-
+    private ModuleLoadService(final List<ModuleIdentifier> dependencies) {
+        this.dependencies = dependencies;
     }
 
     @Override
     public synchronized void start(StartContext context) throws StartException {
         try {
-            module = serviceModuleLoader.getValue().loadModule(moduleSpec.getValue().getModuleIdentifier());
-            serviceModuleLoader.getValue().relinkModule(module);
-
+            final ServiceModuleLoader moduleLoader = serviceModuleLoader.getValue();
+            final Module module = moduleLoader.loadModule(moduleSpec.getValue().getModuleIdentifier());
+            moduleLoader.relinkModule(module);
+            for (ModuleIdentifier id : dependencies) {
+                String val = moduleLoader.loadModule(id).getProperty("jboss.api");
+                if (val != null) {
+                    if (val.equals("private")) {
+                        PRIVATE_DEP_LOGGER.privateApiUsed(moduleSpec.getValue().getModuleIdentifier().getName(), id);
+                    } else if (val.equals("unsupported")) {
+                        UNSUPPORTED_DEP_LOGGER.unsupportedApiUsed(moduleSpec.getValue().getModuleIdentifier().getName(), id);
+                    }
+                }
+            }
+            this.module = module;
         } catch (ModuleLoadException e) {
             throw new StartException("Failed to load module: " + moduleSpec.getValue().getModuleIdentifier(), e);
         }
@@ -88,7 +102,7 @@ public class ModuleLoadService implements Service<Module> {
     }
 
     public static ServiceName installService(final ServiceTarget target, final ModuleIdentifier identifier, final List<ModuleIdentifier> dependencies) {
-        final ModuleLoadService service = new ModuleLoadService();
+        final ModuleLoadService service = new ModuleLoadService(dependencies);
         final ServiceName serviceName = ServiceModuleLoader.moduleServiceName(identifier);
         final ServiceBuilder<Module> builder = target.addService(serviceName, service);
         builder.addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, service.getServiceModuleLoader());
