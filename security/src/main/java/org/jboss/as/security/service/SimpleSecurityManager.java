@@ -235,7 +235,7 @@ public class SimpleSecurityManager {
             boolean authenticated = authenticate(current);
             if (authenticated == false) {
                 // TODO - Better type needed.
-                throw SecurityMessages.MESSAGES.securityException("Invalid User");
+                throw SecurityMessages.MESSAGES.invalidUserException();
             }
         }
 

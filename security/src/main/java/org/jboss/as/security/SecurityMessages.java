@@ -227,9 +227,22 @@ public interface SecurityMessages {
 
     /**
      * Create a {@link IllegalArgumentException} when the path address does not contain a security domain name
-     * @param arg an argument that is null
      * @return {@link IllegalArgumentException}
      */
     @Message(id = 13321, value = "Address did not contain a security domain name")
     IllegalArgumentException addressDidNotContainSecurityDomain();
+
+    /**
+     * Create a {@link SecurityException} to indicate that the vault is not initialized
+     * @return {@link SecurityException}
+     */
+    @Message(id = 13322, value = "Vault is not initialized")
+    SecurityException vaultNotInitializedException();
+
+    /**
+     * Create a {@link SecurityException} to indicate that the vault is not initialized
+     * @return {@link SecurityException}
+     */
+    @Message(id = 13323, value = "Invalid User")
+    SecurityException invalidUserException();
 }

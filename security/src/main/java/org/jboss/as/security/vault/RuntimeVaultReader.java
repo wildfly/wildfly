@@ -95,7 +95,7 @@ public class RuntimeVaultReader extends AbstractVaultReader {
         if (isVaultFormat(password)) {
 
             if (vault == null) {
-                throw SecurityMessages.MESSAGES.securityException("Vault is not initialized");
+                throw SecurityMessages.MESSAGES.vaultNotInitializedException();
             }
 
             try {
