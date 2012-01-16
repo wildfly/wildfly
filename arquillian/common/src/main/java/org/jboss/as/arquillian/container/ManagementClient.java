@@ -16,6 +16,18 @@
  */
 package org.jboss.as.arquillian.container;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+
 import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
@@ -36,19 +48,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 /**
  * A helper class to join management related operations, like extract sub system ip/port (web/jmx)
@@ -207,28 +206,6 @@ public class ManagementClient {
             throw new RuntimeException(e);
         }
     }
-
-    private String getInterface(final String name) {
-        final ModelNode address = new ModelNode();
-        address.add(INTERFACE, name);
-
-        final ModelNode operation = new ModelNode();
-        operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
-        operation.get(OP_ADDR).set(address);
-        operation.get(NAME).set("resolved-address");
-
-        try {
-            // Poke the runtime handler to give us the resolved address
-            final String ip = executeForResult(operation).asString();
-            if ("0.0.0.0".equals(ip) || "0:0:0:0:0:0:0:0".equals(ip)) {
-                return mgmtAddress;
-            }
-            return ip;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
 
     //-------------------------------------------------------------------------------------||
     // Metadata Extraction Operations -----------------------------------------------------||

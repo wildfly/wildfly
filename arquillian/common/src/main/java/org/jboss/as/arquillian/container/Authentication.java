@@ -33,8 +33,8 @@ import java.net.PasswordAuthentication;
  */
 public class Authentication {
 
-    public static final String USERNAME = "testUser";
-    public static final String PASSWORD = "test_user_password";
+    public static String USERNAME = "testUser";
+    public static String PASSWORD = "test_user_password";
 
     public static CallbackHandler getCallbackHandler() {
         return new CallbackHandler() {
