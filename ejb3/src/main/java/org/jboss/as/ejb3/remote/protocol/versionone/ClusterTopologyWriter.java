@@ -51,8 +51,8 @@ class ClusterTopologyWriter {
     /**
      * Writes out a EJB remoting protocol message containing the cluster topology information for the passed <code>clusters</code>
      *
-     * @param output   The {@link DataOutput} into which the message will be written
-     * @param clusters The clusters whose topology will be written to the <code>output</code>
+     * @param output                   The {@link DataOutput} into which the message will be written
+     * @param clientMappingsRegistries
      * @throws IOException
      */
     void writeCompleteClusterTopology(final DataOutput output, final Collection<Registry<String, List<ClientMapping>>> clientMappingsRegistries) throws IOException {
@@ -80,8 +80,8 @@ class ClusterTopologyWriter {
      * Writes out a EJB remoting protocol message containing the names of the <code>clusters</code> which have been removed
      * from the server.
      *
-     * @param output   The {@link DataOutput} to which the message will be written
-     * @param clusters The clusters which have been removed
+     * @param output     The {@link DataOutput} to which the message will be written
+     * @param registries
      * @throws IOException
      */
     void writeClusterRemoved(final DataOutput output, final Collection<Registry<String, List<ClientMapping>>> registries) throws IOException {
@@ -160,18 +160,22 @@ class ClusterTopologyWriter {
 
             // for each client-mapping write out the mapping info
             for (final ClientMapping clientMapping : clientMappingsForNode) {
-                // client source network address
-                InetAddress clientNetworkAddress = clientMapping.getSourceNetworkAddress();
-                // if it's a Inet4Address (which implies 4 bytes), then pass along a (16 byte) IPv6
-                // representation (@see javadoc of Inet6Address) of the form ::w.x.y.z
+                final InetAddress clientNetworkAddress = clientMapping.getSourceNetworkAddress();
+                // client netmask + 1 bit for differentiating IPv6/IPv4 source address
+                final int netMask = clientMapping.getSourceNetworkMaskBits();
+                final int netMaskAndIPFamilyDifferentiator;
                 if (clientNetworkAddress instanceof Inet4Address) {
-                    final String ipv4MappedAddress = "::" + clientNetworkAddress.getHostAddress();
-                    clientNetworkAddress = InetAddress.getByName(ipv4MappedAddress);
+                    // add a trailing 1 bit to indicate it's a ipv4 address
+                    netMaskAndIPFamilyDifferentiator = (netMask << 1) | 1;
+                } else {
+                    // add a trailing 0 bit to indicate it's a ipv6 address
+                    netMaskAndIPFamilyDifferentiator = (netMask << 1);
                 }
-                final byte[] clientNetworkAddressBytes = clientNetworkAddress.getAddress();
-                output.write(clientNetworkAddressBytes);
-                // client netmask
-                output.writeByte(clientMapping.getSourceNetworkMaskBits());
+                // write the netMask with the ipv6/ipv4 differentiator
+                PackedInteger.writePackedInteger(output, netMaskAndIPFamilyDifferentiator);
+
+                // write client source network address
+                output.write(clientNetworkAddress.getAddress());
                 // destination address
                 output.writeUTF(clientMapping.getDestinationAddress());
                 // destination port
