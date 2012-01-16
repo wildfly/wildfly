@@ -56,7 +56,7 @@ class DeploymentPlanBuilderImpl
     private final boolean shutdown;
     private final long gracefulShutdownPeriod;
     private final boolean globalRollback;
-    private volatile boolean built;
+    private volatile boolean cleanupInFinalize = true;
 
     private final List<DeploymentActionImpl> deploymentActions = new ArrayList<DeploymentActionImpl>();
 
@@ -71,6 +71,7 @@ class DeploymentPlanBuilderImpl
         this.shutdown = existing.shutdown;
         this.globalRollback = existing.globalRollback;
         this.gracefulShutdownPeriod = existing.gracefulShutdownPeriod;
+        existing.cleanupInFinalize = false;
     }
 
     DeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, boolean globalRollback) {
@@ -78,6 +79,7 @@ class DeploymentPlanBuilderImpl
         this.shutdown = false;
         this.globalRollback = globalRollback;
         this.gracefulShutdownPeriod = -1;
+        existing.cleanupInFinalize = false;
     }
 
     DeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, long gracefulShutdownPeriod) {
@@ -85,6 +87,7 @@ class DeploymentPlanBuilderImpl
         this.shutdown = true;
         this.globalRollback = false;
         this.gracefulShutdownPeriod = gracefulShutdownPeriod;
+        existing.cleanupInFinalize = false;
     }
 
     DeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentActionImpl modification) {
@@ -125,7 +128,7 @@ class DeploymentPlanBuilderImpl
     @Override
     public DeploymentPlan build() {
         DeploymentPlan dp = new DeploymentPlanImpl(Collections.unmodifiableList(deploymentActions), globalRollback, shutdown, gracefulShutdownPeriod);
-        built = true;
+        cleanupInFinalize = false;
         return dp;
     }
 
@@ -405,7 +408,7 @@ class DeploymentPlanBuilderImpl
     @Override
     protected void finalize() throws Throwable {
         super.finalize();
-        if (!built) {
+        if (cleanupInFinalize) {
             cleanup();
         }
     }
