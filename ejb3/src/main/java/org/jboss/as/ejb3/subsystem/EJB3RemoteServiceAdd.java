@@ -132,16 +132,6 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
                 .addDependency(EJBRemoteTransactionsRepository.SERVICE_NAME, EJBRemoteTransactionsRepository.class, ejbRemoteConnectorService.getEJBRemoteTransactionsRepositoryInjector())
                 .addDependency(ClusteredBackingCacheEntryStoreSourceService.CLIENT_MAPPING_REGISTRY_COLLECTOR_SERVICE_NAME, RegistryCollector.class, ejbRemoteConnectorService.getClusterRegistryCollectorInjector())
                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, ejbRemoteConnectorService.getServerEnvironmentInjector())
-                        // optional dependency on the client-mapping registry service (which is backed by a cache). The dependency will be
-                        // available only in the presence of clustering subsystem
-                        // TODO: It looks like (optional) dependency on a PASSIVE service (like the client mapping registry service) which
-                        // in turn has a (optional) dependency (which can be unavailable) is broken. i.e. the service which depends on such
-                        // a PASSIVE service is marked as DOWN with PROBLEM. So for now let's not add an explicit dependency
-                        // on the client-mapping registry service and let's just look it up at runtime from the VersionOneProtocolChannelReceiver
-                        // .addDependency(ServiceBuilder.DependencyType.OPTIONAL, EJBRemoteConnectorService.EJB_REMOTE_CONNECTOR_CLIENT_MAPPINGS_REGISTRY_SERVICE, Registry.class, ejbRemoteConnectorService.getClientMappingsRegistryServiceInjector())
-                        // optional dependency on the backing cache of the client-mapping registry (available only in the presence of clustering
-                        // subsystem)
-                        //.addDependency(ServiceBuilder.DependencyType.OPTIONAL, clientMappingCacheServiceName, Cache.class, ejbRemoteConnectorService.getClientMappingsBackingCacheInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE);
         if (verificationHandler != null) {
             ejbRemoteConnectorServiceBuilder.addListener(verificationHandler);
