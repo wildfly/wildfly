@@ -22,18 +22,17 @@
 
 package org.jboss.as.test.integration.ejb.interceptor.classinherit;
 
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
-import javax.interceptor.Interceptors;
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.InvocationContext;
 
 /**
  * @author <a href="mailto:amay@ingenta.com">Andrew May</a>
  */
-@Stateless
-@Remote(B.class)
-@Interceptors({ InterceptB.class })
-public class BBean extends ABean implements B {
-    public String getOtherMessage() {
-        return "The Other Message";
+public class InterceptB {
+    @AroundInvoke
+    Object audit(InvocationContext ctx) throws Exception {
+        String message = (String) ctx.proceed();
+        // System.out.println("Interceptor called for "+ctx.getMethod().getName());
+        return "InterceptedB: " + message;
     }
 }

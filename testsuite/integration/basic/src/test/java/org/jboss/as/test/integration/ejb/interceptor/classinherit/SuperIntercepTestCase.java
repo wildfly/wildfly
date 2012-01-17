@@ -58,7 +58,7 @@ public class SuperIntercepTestCase {
         B b = (B) ctx.lookup("java:module/" + BBean.class.getSimpleName());
 
         String result = b.getOtherMessage();
-        Assert.assertEquals("Intercepted: The Other Message", result);
+        Assert.assertEquals("InterceptedA: InterceptedB: The Other Message", result);
     }
 
     @Test
@@ -66,7 +66,7 @@ public class SuperIntercepTestCase {
         B b = (B) ctx.lookup("java:module/" + BBean.class.getSimpleName());
 
         String result = b.getMessage();
-        Assert.assertEquals("Intercepted: The Message", result);
+        Assert.assertEquals("InterceptedA: InterceptedB: The Message", result);
     }
 
     @Test
@@ -77,7 +77,7 @@ public class SuperIntercepTestCase {
         String supposedResult = TestInterceptor.class.getSimpleName() + ":" + StatelessBean.class.getSimpleName();
         String result = slWithInterceptor.method();
         Assert.assertEquals(supposedResult + ".method()", result);
-        
+
         result = slWithInterceptor.superMethod();
         Assert.assertEquals(supposedResult + ".superMethod()", result);
     }
@@ -88,8 +88,9 @@ public class SuperIntercepTestCase {
                 + StatelessWithBeanInterceptorBean.class.getSimpleName());
 
         // supposing this chain fo interceptions
-        String supposedResult = TestInterceptor.class.getSimpleName() + ":" + AbstractBaseClassWithInterceptor.class.getSimpleName() + ":" +
-                StatelessWithBeanInterceptorBean.class.getSimpleName();
+        String supposedResult = TestInterceptor.class.getSimpleName() + ":"
+                + AbstractBaseClassWithInterceptor.class.getSimpleName() + ":"
+                + StatelessWithBeanInterceptorBean.class.getSimpleName();
         String result = slWithInterceptorAndBean.method();
         Assert.assertEquals(supposedResult + ".method()", result);
 

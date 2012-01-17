@@ -32,7 +32,7 @@ public abstract class AbstractBaseClassWithInterceptor {
 
     @AroundInvoke
     public Object intercept(InvocationContext ctx) throws Exception {
-        String message = (String) ctx.proceed(); 
+        String message = (String) ctx.proceed();
         return AbstractBaseClassWithInterceptor.class.getSimpleName() + ":" + message;
     }
 
