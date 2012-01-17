@@ -846,6 +846,26 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase {
         public ModelNode resolveExpressions(ModelNode node) {
             return null;
         }
+
+        @Override
+         public <V> V getAttachment(final AttachmentKey<V> key) {
+            return null;
+        }
+
+        @Override
+        public <V> V attach(final AttachmentKey<V> key, final V value) {
+            return null;
+        }
+
+        @Override
+        public <V> V attachIfAbsent(final AttachmentKey<V> key, final V value) {
+            return null;
+        }
+
+        @Override
+        public <V> V detach(final AttachmentKey<V> key) {
+            return null;
+        }
     }
 
     private Resource createRootResource() {

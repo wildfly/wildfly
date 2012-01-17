@@ -664,6 +664,26 @@ public abstract class AttributeDefinition {
         }
 
         @Override
+        public <T> T getAttachment(final AttachmentKey<T> key) {
+            return null;
+        }
+
+        @Override
+        public <T> T attach(final AttachmentKey<T> key, final T value) {
+            return null;
+        }
+
+        @Override
+        public <T> T attachIfAbsent(final AttachmentKey<T> key, final T value) {
+            return null;
+        }
+
+        @Override
+        public <T> T detach(final AttachmentKey<T> key) {
+            return null;
+        }
+
+        @Override
         public Resource getOriginalRootResource() {
             return null;
         }
