@@ -189,7 +189,6 @@ public class SoSReport {
         if (controllerClient == null ) {
             throw MESSAGES.varNull("controllerClient");
         }
-
         setGlobal("controller_client_proxy", new ModelControllerClientProxy(controllerClient));
     }
 

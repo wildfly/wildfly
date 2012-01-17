@@ -45,6 +45,8 @@ public class SosInterpreter {
 
     private String jbossHomeDir = null;
     private String reportLocationDir = System.getProperty("user.dir");
+    private String hostControllerName = null;
+    private String serverName = null;
     private ModelControllerClient controllerClient = null;
 
     public SosInterpreter() {
@@ -87,6 +89,9 @@ public class SosInterpreter {
             reporter.setPassword(password);
             reporter.setHostname(host);
             reporter.setPort(port);
+            reporter.setControllerClient(controllerClient);
+            reporter.setHostControllerName(hostControllerName);
+            reporter.setServerName(serverName);
             reporter.setHome(homeDir);
             reporter.setTmpDir(locationDir);
             reporter.setCompressionType(CompressionType.ZIP);
@@ -130,6 +135,14 @@ public class SosInterpreter {
 
     public void setControllerClient(ModelControllerClient controllerClient) {
         this.controllerClient = controllerClient;
+    }
+
+    public void setHostControllerName(String hostControllerName) {
+        this.hostControllerName = hostControllerName;
+    }
+
+    public void setServerName(String serverName) {
+        this.serverName = serverName;
     }
 
     /**

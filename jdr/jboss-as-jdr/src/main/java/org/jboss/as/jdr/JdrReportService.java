@@ -124,6 +124,8 @@ public class JdrReportService implements JdrReportCollector, Service<JdrReportCo
         interpreter.setJbossHomeDir(serverEnvironment.getHomeDir().getAbsolutePath());
         interpreter.setReportLocationDir(serverEnvironment.getServerTempDir().getAbsolutePath());
         interpreter.setControllerClient(controllerClient);
+        interpreter.setHostControllerName(serverEnvironment.getHostControllerName());
+        interpreter.setServerName(serverEnvironment.getServerName());
         return interpreter.collect();
     }
 
