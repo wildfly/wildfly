@@ -41,6 +41,7 @@ import org.jboss.as.server.controller.descriptions.ServerDescriptions;
 import org.jboss.as.server.operations.HttpManagementAddHandler;
 import org.jboss.as.server.operations.HttpManagementRemoveHandler;
 import org.jboss.as.server.operations.HttpManagementWriteAttributeHandler;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -85,7 +86,12 @@ public class HttpManagementResourceDefinition extends SimpleResourceDefinition {
             .setAlternatives(ModelDescriptionConstants.INTERFACE)
             .build();
 
-    public static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = new AttributeDefinition[] {INTERFACE, HTTP_PORT, HTTPS_PORT, SECURITY_REALM, SOCKET_BINDING, SECURE_SOCKET_BINDING};
+    public static final SimpleAttributeDefinition CONSOLE_ENABLED = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.CONSOLE_ENABLED, ModelType.BOOLEAN, true)
+            .setXmlName(Attribute.CONSOLE_ENABLED.getLocalName())
+            .setDefaultValue(new ModelNode(true))
+            .build();
+
+    public static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = new AttributeDefinition[] {INTERFACE, HTTP_PORT, HTTPS_PORT, SECURITY_REALM, SOCKET_BINDING, SECURE_SOCKET_BINDING,CONSOLE_ENABLED};
 
     public static final HttpManagementResourceDefinition INSTANCE = new HttpManagementResourceDefinition();
 

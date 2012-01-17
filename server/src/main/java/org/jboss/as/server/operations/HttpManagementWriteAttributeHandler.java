@@ -66,6 +66,7 @@ public class HttpManagementWriteAttributeHandler extends AbstractWriteAttributeH
                             HttpManagementResourceDefinition.SECURE_SOCKET_BINDING.getName()));
                     throw new OperationFailedException(failure);
                 }
+                context.completeStep();
             }
         }, OperationContext.Stage.MODEL);
 

@@ -46,6 +46,7 @@ public enum Attribute {
     CODE("code"),
     CONNECTION("connection"),
     CONNECTOR("connector"),
+    CONSOLE_ENABLED("console-enabled"),
     DEFAULT_INTERFACE("default-interface"),
     DEBUG_ENABLED("debug-enabled"),
     DEBUG_OPTIONS("debug-options"),

@@ -204,8 +204,14 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
         } else {
             ServerLogger.ROOT_LOGGER.httpManagementInterfaceIsUnsecured();
         }
+        boolean consoleEnabled = model.get(ModelDescriptionConstants.CONSOLE_ENABLED).asBoolean(true);
+        ConsoleMode consoleMode;
+        if (consoleEnabled){
+            consoleMode = context.getRunningMode() == RunningMode.ADMIN_ONLY ? ConsoleMode.ADMIN_ONLY : ConsoleMode.CONSOLE;
+        }else{
+            consoleMode = ConsoleMode.NO_CONSOLE;
+        }
 
-        ConsoleMode consoleMode = context.getRunningMode() == RunningMode.ADMIN_ONLY ? ConsoleMode.ADMIN_ONLY : ConsoleMode.CONSOLE;
         ServerEnvironment environment = (ServerEnvironment) context.getServiceRegistry(false).getRequiredService(ServerEnvironmentService.SERVICE_NAME).getValue();
         final HttpManagementService service = new HttpManagementService(consoleMode, environment.getProductConfig().getConsoleSlot());
         ServiceBuilder<HttpManagement> builder = serviceTarget.addService(HttpManagementService.SERVICE_NAME, service)
