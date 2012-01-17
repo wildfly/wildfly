@@ -25,11 +25,14 @@ package org.jboss.as.server;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.services.security.VaultReaderException;
+import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
@@ -40,12 +43,6 @@ import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 import org.jboss.vfs.VirtualFile;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.List;
 
 /**
  * This module is using message IDs in the range 15700-15999.
@@ -225,4 +222,14 @@ public interface ServerMessages {
 
     @Message(id = 15837, value = "Did not read the entire file. Missing: %d")
     IOException didNotReadEntireFile(long missing);
+
+    @Message(id = 15838, value = "Could not find the file repository connection to the host controller.")
+    IllegalStateException couldNotFindHcFileRepositoryConnection();
+
+    @Message(id = 15839, value = "Only 'hash' is allowed for deployment addition for a domain mode server: %s")
+    IllegalStateException onlyHashAllowedForDeploymentAddInDomainServer(ModelNode contentItemNode);
+
+    @Message(id = 15840, value = "Only 'hash' is allowed for deployment full replacement for a domain mode server: %s")
+    IllegalStateException onlyHashAllowedForDeploymentFullReplaceInDomainServer(ModelNode contentItemNode);
+
 }

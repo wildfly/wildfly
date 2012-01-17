@@ -21,12 +21,16 @@
  */
 package org.jboss.as.server.deployment;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
+import org.jboss.vfs.VirtualFile;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -51,7 +55,6 @@ public class DeploymentAddHandlerTestCase {
     @Ignore("TODO: JBAS-9020: Archive deployments are not yet implemented")
     @Test
     public void testContent() throws OperationFailedException {
-        final ContentRepository contentRepository = null;
         final DeploymentAddHandler handler = DeploymentAddHandler.createForStandalone(contentRepository);
         final OperationContext context = Mockito.mock(OperationContext.class);
         Mockito.when(context.getResult()).thenReturn(new ModelNode());
@@ -70,7 +73,6 @@ public class DeploymentAddHandlerTestCase {
 
     @Test (expected = OperationFailedException.class)
     public void testTooMuchContent() throws OperationFailedException {
-        final ContentRepository contentRepository = null;
         final DeploymentAddHandler handler = DeploymentAddHandler.createForStandalone(contentRepository);
         final OperationContext context = Mockito.mock(OperationContext.class);
         final ModelNode operation = new ModelNode();
@@ -84,7 +86,6 @@ public class DeploymentAddHandlerTestCase {
 
     @Test
     public void testValidator() throws OperationFailedException {
-        final ContentRepository contentRepository = null;
         final DeploymentAddHandler handler = DeploymentAddHandler.createForStandalone(contentRepository);
         final OperationContext context = Mockito.mock(OperationContext.class);
         final ModelNode operation = new ModelNode();
@@ -95,4 +96,26 @@ public class DeploymentAddHandlerTestCase {
             // TODO: check exception
         }
     }
+
+    private ContentRepository contentRepository = new ContentRepository() {
+
+        @Override
+        public void removeContent(byte[] hash) {
+        }
+
+        @Override
+        public boolean hasContent(byte[] hash) {
+            return false;
+        }
+
+        @Override
+        public VirtualFile getContent(byte[] hash) {
+            return null;
+        }
+
+        @Override
+        public byte[] addContent(InputStream stream) throws IOException {
+            return null;
+        }
+    };
 }

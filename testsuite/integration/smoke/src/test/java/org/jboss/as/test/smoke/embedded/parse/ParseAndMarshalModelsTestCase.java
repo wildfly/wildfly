@@ -355,7 +355,7 @@ public class ParseAndMarshalModelsTestCase {
         final ModelController controller = createController(ProcessType.STANDALONE_SERVER, model, new Setup() {
             public void setup(Resource resource, ManagementResourceRegistration rootRegistration) {
                 ServerControllerModelUtil.updateCoreModel(model, null);
-                ServerControllerModelUtil.initOperations(rootRegistration, null, persister, null, null, null, null, extensionRegistry, false, null);
+                ServerControllerModelUtil.initOperations(rootRegistration, new MockContentRepository(), persister, null, null, null, null, extensionRegistry, false, new MockFileRepository());
             }
         });
 
@@ -508,7 +508,7 @@ public class ParseAndMarshalModelsTestCase {
         final ModelController controller = createController(ProcessType.HOST_CONTROLLER, model, new Setup() {
             public void setup(Resource resource, ManagementResourceRegistration rootRegistration) {
                 DomainModelUtil.updateCoreModel(resource, null);
-                DomainModelUtil.initializeMasterDomainRegistry(rootRegistration, persister, null, new MockFileRepository(), new MockDomainController(), null, extensionRegistry);
+                DomainModelUtil.initializeMasterDomainRegistry(rootRegistration, persister, new MockContentRepository(), new MockFileRepository(), new MockDomainController(), null, extensionRegistry);
             }
         });
 

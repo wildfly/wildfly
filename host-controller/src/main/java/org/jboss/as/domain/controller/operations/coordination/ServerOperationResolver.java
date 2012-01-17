@@ -345,7 +345,6 @@ public class ServerOperationResolver {
                 result = getServerSystemPropertyOperations(operation, address, Level.SERVER_GROUP, domain, affectedGroup, host);
             }
         } else if (REPLACE_DEPLOYMENT.equals(operation.require(OP).asString())) {
-            //TODO Might need to handle all the deployment ops here
             String groupName = address.getElement(0).getValue();
             Set<ServerIdentity> servers = getServersForGroup(groupName, host, localHostName, serverProxies);
             ModelNode serverOp = operation.clone();

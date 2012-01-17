@@ -125,6 +125,7 @@ import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
 import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
 import org.jboss.as.security.vault.RuntimeVaultReader;
 import org.jboss.as.server.ServerControllerModelUtil;
+import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.as.server.file.repository.api.HostFileRepository;
 import org.jboss.as.server.parsing.StandaloneXml;
 import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
@@ -143,6 +144,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.vfs.VirtualFile;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -488,7 +490,7 @@ public class ParseAndMarshalModelsTestCase {
         final ModelController controller = createController(ProcessType.STANDALONE_SERVER, model, new Setup() {
             public void setup(Resource resource, ManagementResourceRegistration rootRegistration) {
                 ServerControllerModelUtil.updateCoreModel(model, null);
-                ServerControllerModelUtil.initOperations(rootRegistration, null, persister, null, null, null, null, extensionRegistry, false, null);
+                ServerControllerModelUtil.initOperations(rootRegistration, new MockContentRepository(), persister, null, null, null, null, extensionRegistry, false, new MockFileRepository());
             }
         });
 
@@ -641,7 +643,7 @@ public class ParseAndMarshalModelsTestCase {
         final ModelController controller = createController(ProcessType.HOST_CONTROLLER, model, new Setup() {
             public void setup(Resource resource, ManagementResourceRegistration rootRegistration) {
                 DomainModelUtil.updateCoreModel(resource, null);
-                DomainModelUtil.initializeMasterDomainRegistry(rootRegistration, persister, null, new MockFileRepository(),
+                DomainModelUtil.initializeMasterDomainRegistry(rootRegistration, persister, new MockContentRepository(), new MockFileRepository(),
                         new MockDomainController(), null, extensionRegistry);
             }
         });
@@ -812,6 +814,29 @@ public class ParseAndMarshalModelsTestCase {
             rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.SERVICE_CONTAINER), Resource.Factory.create());
         }
 
+
+    }
+
+    private static class MockContentRepository implements ContentRepository {
+
+        @Override
+        public byte[] addContent(InputStream stream) throws IOException {
+            return null;
+        }
+
+        @Override
+        public VirtualFile getContent(byte[] hash) {
+            return null;
+        }
+
+        @Override
+        public boolean hasContent(byte[] hash) {
+            return false;
+        }
+
+        @Override
+        public void removeContent(byte[] hash) {
+        }
 
     }
 
