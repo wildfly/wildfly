@@ -23,6 +23,10 @@
   -->
 
 <module xmlns="urn:jboss:module:1.1" name="org.jboss.integration.ext-content">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
     <resources>
         <resource-root path="bundled"/>
     </resources>

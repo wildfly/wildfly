@@ -23,6 +23,10 @@
   -->
 
 <module xmlns="urn:jboss:module:1.1" name="jline">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
     <resources>
         <!-- Insert resources here -->
     </resources>

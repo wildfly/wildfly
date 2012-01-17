@@ -59,6 +59,5 @@ fi
 eval \"$JAVA\" $JAVA_OPTS \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"${JBOSS_MODULEPATH}\" \
-         -logmodule "org.jboss.logmanager" \
          org.jboss.as.domain-add-user \
          "$@" 

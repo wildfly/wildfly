@@ -69,6 +69,5 @@ eval \"$JAVA\" $JAVA_OPTS \
     -classpath \"$JBOSS_CLASSPATH\" \
     org.jboss.modules.Main \
     -mp \"$JBOSS_HOME/modules\" \
-    -logmodule "org.jboss.logmanager" \
     org.jboss.ws.tools.wsconsume \
     "$@"

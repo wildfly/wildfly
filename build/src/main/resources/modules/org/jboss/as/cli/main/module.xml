@@ -23,6 +23,9 @@
   -->
 
 <module xmlns="urn:jboss:module:1.1" name="org.jboss.as.cli">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
 
     <main-class name="org.jboss.as.cli.CommandLineMain"/>
 
@@ -32,6 +35,7 @@
 
     <dependencies>
         <module name="jline"/>
+        <module name="org.jboss.logmanager" services="import"/>
         <module name="org.jboss.as.controller-client"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.as.protocol"/>

@@ -23,22 +23,26 @@
   -->
 
 <module xmlns="urn:jboss:module:1.1" name="org.jboss.ironjacamar.jdbcadapters">
-  <resources>
-    <!-- Insert resources here -->
-  </resources>
-  
-  <dependencies>
-    <module name="javax.api"/>
-    <module name="javax.resource.api"/>
-    <module name="javax.validation.api"/>
-    <module name="org.hibernate.validator"/>
-    <module name="org.jboss.as.naming"/>      
-    <module name="org.jboss.as.transactions"/>      
-    <module name="org.jboss.common-core"/>
-    <module name="org.jboss.jboss-transaction-spi"/>    
-    <module name="org.jboss.ironjacamar.api"/>
-    <module name="org.jboss.logging"/>
-    <module name="org.jboss.threads"/>
-    <module name="javax.xml.stream.api"/>
-  </dependencies>
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <!-- Insert resources here -->
+    </resources>
+
+    <dependencies>
+        <module name="javax.api"/>
+        <module name="javax.resource.api"/>
+        <module name="javax.validation.api"/>
+        <module name="org.hibernate.validator"/>
+        <module name="org.jboss.as.naming"/>
+        <module name="org.jboss.as.transactions"/>
+        <module name="org.jboss.common-core"/>
+        <module name="org.jboss.jboss-transaction-spi"/>
+        <module name="org.jboss.ironjacamar.api"/>
+        <module name="org.jboss.logging"/>
+        <module name="org.jboss.threads"/>
+        <module name="javax.xml.stream.api"/>
+    </dependencies>
 </module>

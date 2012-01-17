@@ -387,7 +387,7 @@ public class CLIWrapper implements Runnable {
                 + " -Djline.WindowsTerminal.directConsole=false"
                 + " -jar " + asDist + "/jboss-modules.jar"
                 + " -mp " + asDist + "/modules"
-                + " -logmodule org.jboss.logmanager org.jboss.as.cli"
+                + " org.jboss.as.cli"
                 + " --user=" + USERNAME
                 + " --password=" + PASSWORD;
         return cliCommand;
