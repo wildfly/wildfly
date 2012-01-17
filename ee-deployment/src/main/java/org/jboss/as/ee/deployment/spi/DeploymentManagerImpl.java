@@ -26,7 +26,6 @@ import org.dom4j.io.SAXReader;
 import org.jboss.as.ee.deployment.spi.configurations.WarConfiguration;
 import org.jboss.as.ee.deployment.spi.status.DeploymentStatusImpl;
 import org.jboss.as.ee.deployment.spi.status.ProgressObjectImpl;
-import org.jboss.util.NotImplementedException;
 import org.jboss.util.xml.JBossEntityResolver;
 
 import javax.enterprise.deploy.model.DeployableObject;
@@ -468,16 +467,10 @@ public class DeploymentManagerImpl implements DeploymentManager {
         jos.close();
 
         // rename the deployment
-        int retry = 0;
         String deploymentName = tmpFile.getParent() + File.separator + metaData.getDeploymentName();
         File deployment = new File(deploymentName);
-        while (deployment.exists() && deployment.delete() == false) {
-            // on winos the file may not have been delete
-            // throw new IOException(MESSAGES.cannotDeleteExistingDeployment(deployment));
-            String prefix = (++retry < 10 ? "retry0" + retry : "retry" + retry);
-            deploymentName = tmpFile.getParent() + File.separator + prefix + "_" + metaData.getDeploymentName();
-            deployment = new File(deploymentName);
-        }
+        if (deployment.exists() && deployment.delete() == false)
+            throw new IOException(MESSAGES.cannotDeleteExistingDeployment(deployment));
 
         tmpFile.renameTo(deployment);
         moduleInfo.setModuleID(deployment.toURI().toURL());
