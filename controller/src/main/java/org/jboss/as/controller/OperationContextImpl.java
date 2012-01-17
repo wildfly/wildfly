@@ -34,6 +34,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
@@ -81,6 +82,8 @@ final class OperationContextImpl extends AbstractOperationContext {
     private final Map<PathAddress, Object> affectsModel;
     /** Resources that have had their services restarted, used by ALLOW_RESOURCE_SERVICE_RESTART This should be confined to a thread, so no sync needed */
     private Map<PathAddress, Object> restartedResources = Collections.emptyMap();
+    /** A concurrent map for the attachments. **/
+    private final ConcurrentMap<AttachmentKey<?>, Object> valueAttachments = new ConcurrentHashMap<AttachmentKey<?>, Object>();
     /** Tracks whether any steps have gotten write access to the management resource registration*/
     private volatile boolean affectsResourceRegistration;
 
@@ -620,6 +623,39 @@ final class OperationContextImpl extends AbstractOperationContext {
     @Override
     public ModelNode resolveExpressions(ModelNode node) throws OperationFailedException {
         return modelController.resolveExpressions(node);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <V> V getAttachment(final AttachmentKey<V> key) {
+        if (key == null) {
+            throw MESSAGES.nullVar("key");
+        }
+        return key.cast(valueAttachments.get(key));
+    }
+
+    @Override
+    public <V> V attach(final AttachmentKey<V> key, final V value) {
+        if (key == null) {
+            throw MESSAGES.nullVar("key");
+        }
+        return key.cast(valueAttachments.put(key, value));
+    }
+
+    @Override
+    public <V> V attachIfAbsent(final AttachmentKey<V> key, final V value) {
+        if (key == null) {
+            throw MESSAGES.nullVar("key");
+        }
+        return key.cast(valueAttachments.putIfAbsent(key, value));
+    }
+
+    @Override
+    public <V> V detach(final AttachmentKey<V> key) {
+        if (key == null) {
+            throw MESSAGES.nullVar("key");
+        }
+        return key.cast(valueAttachments.remove(key));
     }
 
     class ContextServiceTarget implements ServiceTarget {

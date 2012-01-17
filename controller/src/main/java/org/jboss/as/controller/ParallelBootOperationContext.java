@@ -263,4 +263,24 @@ class ParallelBootOperationContext extends AbstractOperationContext {
         return primaryContext.resolveExpressions(node);
     }
 
+    @Override
+    public <T> T getAttachment(final AttachmentKey<T> key) {
+        return primaryContext.getAttachment(key);
+    }
+
+    @Override
+    public <T> T attach(final AttachmentKey<T> key, final T value) {
+        return primaryContext.attach(key, value);
+    }
+
+    @Override
+    public <T> T attachIfAbsent(final AttachmentKey<T> key, final T value) {
+        return primaryContext.attachIfAbsent(key, value);
+    }
+
+    @Override
+    public <T> T detach(final AttachmentKey<T> key) {
+        return primaryContext.detach(key);
+    }
+
 }
