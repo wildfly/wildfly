@@ -28,11 +28,11 @@ import javax.interceptor.InvocationContext;
 /**
  * @author <a href="mailto:amay@ingenta.com">Andrew May</a>
  */
-public class Intercept {
+public class InterceptA {
     @AroundInvoke
     Object audit(InvocationContext ctx) throws Exception {
         String message = (String) ctx.proceed();
         // System.out.println("Interceptor called for "+ctx.getMethod().getName());
-        return "Intercepted: " + message;
+        return "InterceptedA: " + message;
     }
 }
