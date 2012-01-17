@@ -23,9 +23,12 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            targetNamespace="urn:jboss:domain:ejb3:1.2"
            xmlns="urn:jboss:domain:ejb3:1.2"
+           xmlns:threads="urn:jboss:domain:threads:1.1"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
            version="1.2">
+
+    <xs:import namespace="urn:jboss:domain:threads:1.1" schemaLocation="jboss-as-threads_1_1.xsd"/>
 
     <!-- The ejb3 subsystem root element -->
     <xs:element name="subsystem" type="ejb3-subsystemType"/>
@@ -135,13 +138,13 @@
             <xs:element name="cache" type="cacheType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
-    
+
     <xs:complexType name="cacheType">
         <xs:attribute name="name" type="xs:string" use="required"/>
         <xs:attribute name="passivation-store-ref" type="xs:string"/>
         <xs:attribute name="aliases" type="aliases"/>
     </xs:complexType>
-    
+
     <xs:complexType name="passivation-storesType">
         <xs:choice minOccurs="0" maxOccurs="unbounded">
             <xs:element name="file-passivation-store" type="file-passivation-storeType"/>
@@ -211,27 +214,31 @@
     </xs:complexType>
 
     <xs:complexType name="threadPoolType">
-        <xs:attribute name="name" type="xs:token" use="required">
-            <xs:annotation>
-                <xs:documentation>
-                    The name of this thread pool
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="max-threads" type="xs:int">
-            <xs:annotation>
-                <xs:documentation>
-                    The maximum number of threads in the thread pool. Defaults to the number of CPU cores.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="keepalive-time" type="xs:int">
-            <xs:annotation>
-                <xs:documentation>
-                    The time in milliseconds that a thread with nothing to do will stay around for.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
+        <xs:annotation>
+            <xs:documentation>
+            <![CDATA[
+                A thread pool executor with an unbounded queue.  Such a thread pool has a core size and a queue with no
+                upper bound.  When a task is submitted, if the number of running threads is less than the core size,
+                a new thread is created.  Otherwise, the task is placed in queue.  If too many tasks are allowed to be
+                submitted to this type of executor, an out of memory condition may occur.
+
+                The "name" attribute is the name of the created executor.
+
+                The "max-threads" attribute must be used to specify the thread pool size.  The nested
+                "keepalive-time" element may used to specify the amount of time that pool threads should
+                be kept running when idle; if not specified, threads will run until the executor is shut down.
+                The "thread-factory" element specifies the bean name of a specific threads subsystem thread factory to
+                use to create worker threads. Usually it will not be set for an EJB3 thread pool and an appropriate
+                default thread factory will be used.
+            ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:all>
+            <xs:element name="max-threads" type="threads:countType"/>
+            <xs:element name="keepalive-time" type="threads:time" minOccurs="0"/>
+            <xs:element name="thread-factory" type="threads:ref" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="name" use="required" type="xs:string"/>
     </xs:complexType>
 
     <xs:complexType name="dataStoreType">

@@ -161,7 +161,7 @@ public interface ThreadFactoryResolver {
                                      ServiceListener<? super ThreadFactory>... newServiceListeners) {
             final ServiceName threadFactoryServiceName = threadPoolServiceName.append("thread-factory");
             final ThreadFactoryService service = new ThreadFactoryService();
-            service.setThreadGroupName(threadPoolName + "-threads");
+            service.setThreadGroupName(getThreadGroupName(threadPoolName));
             service.setNamePattern("%G - %t");
             ServiceBuilder<ThreadFactory> builder = serviceTarget.addService(threadFactoryServiceName, service);
             if (newServiceListeners != null && newServiceListeners.length > 0) {
@@ -174,6 +174,10 @@ public interface ThreadFactoryResolver {
                 newControllers.add(sc);
             }
             return threadFactoryServiceName;
+        }
+
+        protected String getThreadGroupName(String threadPoolName) {
+            return threadPoolName + "-threads";
         }
 
         /**
