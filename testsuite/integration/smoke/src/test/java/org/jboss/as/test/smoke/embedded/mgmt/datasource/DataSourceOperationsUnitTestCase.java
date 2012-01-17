@@ -409,7 +409,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
      * @throws Exception
      */
     @Test
-    @Ignore("AS7-3173")
+   
     public void DisableAndReEnableXaDs() throws Exception {
         final String dsName = "XaDsNameDisEn";
         final String jndiDsName = "XaJndiDsNameDisEn";
@@ -651,8 +651,128 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
         Assert.assertTrue("node:"+rightChild.asString()+";\nparams"+params,checkModelParams(rightChild, params));
 
     }
+    
+    /**
+     *  test case for AS7-3316 issue - xa datasource with system properties
+     *
+     * @throws Exception
+     */
+    @Test
+    @Ignore("AS7-3316")
+    public void testXaDsWithSystemProperties() throws Exception {
+     	
+    	final ModelNode propAddress=new ModelNode();
+    	propAddress.add("system-property","sql.parameter");
+    	propAddress.protect();
+    	
+    	final ModelNode propOperation=new ModelNode();
+    	propOperation.get(OP).set("add");
+    	propOperation.get(OP_ADDR).set(propAddress);
+    	propOperation.get("value").set("sa");
+    	executeOperation(propOperation);
+    	
+        final String dsName = "XaDsName2";
+        final String jndiDsName = "XaJndiDsName2";
+
+        final ModelNode address = new ModelNode();
+        address.add("subsystem", "datasources");
+        address.add("xa-data-source", dsName);
+        address.protect();
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set("add");
+        operation.get(OP_ADDR).set(address);
+
+        operation.get("name").set(dsName);
+        operation.get("jndi-name").set("java:jboss/datasources/" + jndiDsName);
 
 
+        operation.get("driver-name").set("h2");
+        operation.get("pool-name").set(dsName + "_Pool");
+
+        operation.get("user-name").set("${sql.parameter}");
+        operation.get("password").set("${sql.parameter}");
+
+        executeOperation(operation);
+
+        final ModelNode xaDatasourcePropertiesAddress = address.clone();
+        xaDatasourcePropertiesAddress.add("xa-datasource-properties", "URL");
+        xaDatasourcePropertiesAddress.protect();
+        final ModelNode xaDatasourcePropertyOperation = new ModelNode();
+        xaDatasourcePropertyOperation.get(OP).set("add");
+        xaDatasourcePropertyOperation.get(OP_ADDR).set(xaDatasourcePropertiesAddress);
+        xaDatasourcePropertyOperation.get("value").set("jdbc:h2:mem:test");
+
+        executeOperation(xaDatasourcePropertyOperation);
+
+        final ModelNode operation2 = new ModelNode();
+        operation2.get(OP).set("enable");
+        operation2.get(OP_ADDR).set(address);
+
+        executeOperation(operation2);
+        
+        testConnectionXA(dsName, getModelControllerClient());
+        
+        remove(address);
+        remove(propAddress);
+
+    }
+    /**
+     *  test case for AS7-3316 issue -  datasource with system properties
+     *
+     * @throws Exception
+     */
+    @Test
+    @Ignore("AS7-3316")
+    public void testDsWithSystemProperties() throws Exception {
+    	//System.setProperty("sql.parameter", "sa");
+    	
+    	final ModelNode propAddress=new ModelNode();
+    	propAddress.add("system-property","sql.parameter");
+    	propAddress.protect();
+    	
+    	final ModelNode propOperation=new ModelNode();
+    	propOperation.get(OP).set("add");
+    	propOperation.get(OP_ADDR).set(propAddress);
+    	propOperation.get("value").set("sa");
+    	executeOperation(propOperation);
+    	//System.out.println("sql.parameter="+System.getProperty("sql.parameter"));
+    	
+    	final ModelNode address = new ModelNode();
+        address.add("subsystem", "datasources");
+        address.add("data-source", "MyNewDs");
+        address.protect();
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set("add");
+        operation.get(OP_ADDR).set(address);
+
+        operation.get("name").set("MyNewDs");
+        operation.get("jndi-name").set("java:jboss/datasources/MyNewDs");
+
+
+        operation.get("driver-name").set("h2");
+        operation.get("pool-name").set("MyNewDs_Pool");
+
+        operation.get("connection-url").set("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
+        operation.get("user-name").set("${sql.parameter}");
+        operation.get("password").set("${sql.parameter}");
+
+        executeOperation(operation);
+
+        final ModelNode operation2 = new ModelNode();
+        operation2.get(OP).set("enable");
+        operation2.get(OP_ADDR).set(address);
+
+        executeOperation(operation2);
+        
+        testConnection("MyNewDs", getModelControllerClient());
+        
+        remove(address);
+        remove(propAddress);
+
+    }
+    
     private static <T> T lookup(ModelControllerClient client, String name, Class<T> expected) throws Exception {
         //TODO Don't do this FakeJndi stuff once we have remote JNDI working
 

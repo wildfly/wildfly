@@ -55,10 +55,10 @@ import java.util.HashMap;
 public class DataSourceOperationTestUtil {
 
 
-    static void testConnection(final String dsName, final ModelControllerClient client) throws Exception {
+    static void testConnectionInPool(String type, final String dsName, final ModelControllerClient client) throws Exception {
         final ModelNode address3 = new ModelNode();
         address3.add("subsystem", "datasources");
-        address3.add("data-source", dsName);
+        address3.add(type, dsName);
         address3.protect();
 
         final ModelNode operation3 = new ModelNode();
@@ -66,21 +66,14 @@ public class DataSourceOperationTestUtil {
         operation3.get(OP_ADDR).set(address3);
 
         final ModelNode result3 = client.execute(operation3);
-        Assert.assertEquals(SUCCESS, result3.get(OUTCOME).asString());
+        Assert.assertEquals("testConnection failed for "+dsName,SUCCESS, result3.get(OUTCOME).asString());
     }
 
     static void testConnectionXA(final String dsName, final ModelControllerClient client) throws Exception {
-        final ModelNode address3 = new ModelNode();
-        address3.add("subsystem", "datasources");
-        address3.add("xa-data-source", dsName);
-        address3.protect();
-
-        final ModelNode operation3 = new ModelNode();
-        operation3.get(OP).set("test-connection-in-pool");
-        operation3.get(OP_ADDR).set(address3);
-
-        final ModelNode result3 = client.execute(operation3);
-        Assert.assertEquals(SUCCESS, result3.get(OUTCOME).asString());
+        testConnectionInPool("xa-data-source", dsName, client);
+    }
+    static void testConnection(final String dsName, final ModelControllerClient client) throws Exception {
+        testConnectionInPool("data-source", dsName, client);
     }
     static List<ModelNode> marshalAndReparseDsResources(final String childType,ModelControllerClient client) throws Exception {
 
@@ -98,13 +91,13 @@ public class DataSourceOperationTestUtil {
         Assert.assertTrue("Management operation " + operation.asString() + " failed: " + ret.asString(),
                 SUCCESS.equals(ret.get(OUTCOME).asString()));
         final ModelNode result = ret.get(RESULT);
-        Assert.assertNotNull(result);
+        Assert.assertNotNull("Result of marshalling is empty",result);
 
         final Map<String, ModelNode> children = getChildren(result);
         for (final Entry<String, ModelNode> child : children.entrySet()) {
-            Assert.assertTrue(child.getKey() != null);
-            Assert.assertTrue(child.getValue().hasDefined("jndi-name"));
-            Assert.assertTrue(child.getValue().hasDefined("driver-name"));
+            Assert.assertTrue("Model is empty",child.getKey() != null);
+            Assert.assertTrue("No JNDI name found",child.getValue().hasDefined("jndi-name"));
+            Assert.assertTrue("No driver name found",child.getValue().hasDefined("driver-name"));
         }
 
         ModelNode dsNode = new ModelNode();
