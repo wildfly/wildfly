@@ -209,8 +209,8 @@ public class TransactionUtil {
                     JPA_LOGGER.debugf("%s: closing entity managersession", getEntityManagerDetails(manager));
                 manager.close();
             }
-            // clear TX reference to entity manager
-            getInstance().putEntityManagerInTransactionRegistry(scopedPuName, null);
+            // The TX reference to the entity manager, should be cleared by the TM
+
         }
     }
 
