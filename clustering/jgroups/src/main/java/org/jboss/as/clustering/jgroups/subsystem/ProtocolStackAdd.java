@@ -111,13 +111,13 @@ public class ProtocolStackAdd extends AbstractAddStepHandler implements Descript
             transportConfig.setShared(transport.get(ModelKeys.SHARED).asBoolean());
         }
         if (transport.hasDefined(ModelKeys.MACHINE)) {
-            transportConfig.setMachineId(transport.get(ModelKeys.MACHINE).asString());
+            transportConfig.setMachineId(transport.get(ModelKeys.MACHINE).resolve().asString());
         }
         if (transport.hasDefined(ModelKeys.RACK)) {
-            transportConfig.setRackId(transport.get(ModelKeys.RACK).asString());
+            transportConfig.setRackId(transport.get(ModelKeys.RACK).resolve().asString());
         }
         if (transport.hasDefined(ModelKeys.SITE)) {
-            transportConfig.setSiteId(transport.get(ModelKeys.SITE).asString());
+            transportConfig.setSiteId(transport.get(ModelKeys.SITE).resolve().asString());
         }
         build(builder, transport, transportConfig);
         addSocketBindingDependency(builder, transport, ModelKeys.DIAGNOSTICS_SOCKET_BINDING, transportConfig.getDiagnosticsSocketBindingInjector());
