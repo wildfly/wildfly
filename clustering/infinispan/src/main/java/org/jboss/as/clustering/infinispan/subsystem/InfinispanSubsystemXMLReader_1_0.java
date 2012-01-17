@@ -305,6 +305,7 @@ public class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<List<M
 
     }
 
+    @SuppressWarnings("deprecation")
     private void parseDistributedCache(XMLExtendedStreamReader reader, ModelNode containerAddress, List<ModelNode> operations) throws XMLStreamException {
 
         // ModelNode for the cache add operation
@@ -505,7 +506,7 @@ public class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<List<M
 
         // ModelNode for the rehashing add operation
         ModelNode rehashingAddress = cache.get(ModelDescriptionConstants.OP_ADDR).clone() ;
-        rehashingAddress.add(ModelKeys.SINGLETON,ModelKeys.REHASHING) ;
+        rehashingAddress.add(ModelKeys.SINGLETON, ModelKeys.STATE_TRANSFER) ;
         rehashingAddress.protect();
         ModelNode rehashing = Util.getEmptyOperation(ModelDescriptionConstants.ADD, rehashingAddress);
 
@@ -530,6 +531,7 @@ public class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<List<M
         operations.add(rehashing);
     }
 
+    @SuppressWarnings("deprecation")
     private void parseStateTransfer(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
         // ModelNode for the state transfer add operation
         ModelNode stateTransferAddress = cache.get(ModelDescriptionConstants.OP_ADDR).clone() ;
@@ -550,7 +552,7 @@ public class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<List<M
                     break;
                 }
                 case FLUSH_TIMEOUT: {
-                    stateTransfer.get(ModelKeys.FLUSH_TIMEOUT).set(Long.parseLong(value));
+                    // Ignore
                     break;
                 }
                 default: {

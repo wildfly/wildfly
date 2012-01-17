@@ -23,10 +23,6 @@
 <!-- N.B. This is *not* meant to be a usable cache configuration -->
 <!-- This file supplies the internal configuration defaults per cache mode -->
 <infinispan xmlns="urn:infinispan:config:5.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:infinispan:config:5.1 http://docs.jboss.org/infinispan/schemas/infinispan-config-5.1.xsd">
-    <global>
-        <transport distributedSyncTimeout="60000"/>
-        <shutdown hookBehavior="DONT_REGISTER"/>
-    </global>
     <default>
         <transaction useSynchronization="true" transactionMode="TRANSACTIONAL"/>
         <locking lockAcquisitionTimeout="15000" useLockStriping="false" concurrencyLevel="1000"/>
@@ -45,20 +41,20 @@
         <storeAsBinary enabled="true"/>
         <clustering mode="replication">
             <stateRetrieval timeout="60000" fetchInMemoryState="true"/>
-            <async useReplQueue="true" replQueueInterval="10"/>
+            <async/>
         </clustering>
     </namedCache>
     <namedCache name="DIST_SYNC">
         <storeAsBinary enabled="true"/>
         <clustering mode="distribution">
-            <stateRetrieval fetchInMemoryState="false"/>
+            <stateRetrieval fetchInMemoryState="true"/>
             <sync replTimeout="17500"/>
         </clustering>
     </namedCache>
     <namedCache name="DIST_ASYNC">
         <storeAsBinary enabled="true"/>
         <clustering mode="distribution">
-            <stateRetrieval fetchInMemoryState="false"/>
+            <stateRetrieval fetchInMemoryState="true"/>
             <async/>
         </clustering>
     </namedCache>

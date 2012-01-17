@@ -62,7 +62,6 @@ public class InfinispanExtension implements Extension {
     private static final PathElement evictionPath = PathElement.pathElement(ModelKeys.SINGLETON, ModelKeys.EVICTION);
     private static final PathElement expirationPath = PathElement.pathElement(ModelKeys.SINGLETON, ModelKeys.EXPIRATION);
     private static final PathElement stateTransferPath = PathElement.pathElement(ModelKeys.SINGLETON, ModelKeys.STATE_TRANSFER);
-    private static final PathElement rehashingPath = PathElement.pathElement(ModelKeys.SINGLETON, ModelKeys.REHASHING);
     private static final PathElement storePropertyPath = PathElement.pathElement(ModelKeys.PROPERTY);
 
     /**
@@ -161,13 +160,6 @@ public class InfinispanExtension implements Extension {
         stateTransfer.registerOperationHandler(ADD, CacheConfigOperationHandlers.STATE_TRANSFER_ADD, InfinispanSubsystemProviders.STATE_TRANSFER_ADD);
         stateTransfer.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.STATE_TRANSFER_REMOVE);
         CacheConfigOperationHandlers.STATE_TRANSFER_ATTR.registerAttributes(stateTransfer);
-
-        // register the singleton=rehashing handlers
-        final ManagementResourceRegistration rehashing = resource.registerSubModel(rehashingPath, InfinispanSubsystemProviders.REHASHING);
-        rehashing.registerOperationHandler(ADD, CacheConfigOperationHandlers.REHASHING_ADD, InfinispanSubsystemProviders.REHASHING_ADD);
-        rehashing.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.REHASHING_REMOVE);
-        CacheConfigOperationHandlers.STATE_TRANSFER_ATTR.registerAttributes(rehashing);
-
     }
 
     static void createPropertyRegistration(final ManagementResourceRegistration parent) {

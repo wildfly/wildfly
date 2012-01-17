@@ -87,7 +87,6 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                     writer.writeEndElement();
                 }
 
-
                 // create a list of all caches in the model
                 List<Property> cachesPL = new ArrayList<Property>();
                 String[] cacheTypes = {ModelKeys.LOCAL_CACHE, ModelKeys.INVALIDATION_CACHE, ModelKeys.REPLICATED_CACHE, ModelKeys.DISTRIBUTED_CACHE};
@@ -173,16 +172,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                             writer.writeStartElement(Element.STATE_TRANSFER.getLocalName());
                             this.writeOptional(writer, Attribute.ENABLED, stateTransfer, ModelKeys.ENABLED);
                             this.writeOptional(writer, Attribute.TIMEOUT, stateTransfer, ModelKeys.TIMEOUT);
-                            this.writeOptional(writer, Attribute.FLUSH_TIMEOUT, stateTransfer, ModelKeys.FLUSH_TIMEOUT);
-                            writer.writeEndElement();
-                        }
-
-                        if (cache.get(ModelKeys.SINGLETON, ModelKeys.REHASHING).isDefined()) {
-                            ModelNode rehashing = cache.get(ModelKeys.SINGLETON, ModelKeys.REHASHING);
-                            writer.writeStartElement(Element.REHASHING.getLocalName());
-                            this.writeOptional(writer, Attribute.ENABLED, rehashing, ModelKeys.ENABLED);
-                            this.writeOptional(writer, Attribute.TIMEOUT, rehashing, ModelKeys.TIMEOUT);
-                            this.writeOptional(writer, Attribute.WAIT, rehashing, ModelKeys.WAIT);
+                            this.writeOptional(writer, Attribute.CHUNK_SIZE, stateTransfer, ModelKeys.CHUNK_SIZE);
                             writer.writeEndElement();
                         }
                     }
@@ -211,9 +201,9 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                         writer.writeStartElement(Element.JDBC_STORE.getLocalName());
                         this.writeRequired(writer, Attribute.DATASOURCE, store, ModelKeys.DATASOURCE);
                         this.writeStoreAttributes(writer, store);
-                        this.writeJDBCStoreTable(writer, Element.ENTRY_TABLE, store, ModelKeys.ENTRY_TABLE);
-                        this.writeJDBCStoreTable(writer, Element.BUCKET_TABLE, store, ModelKeys.BUCKET_TABLE);
                         this.writeStoreProperties(writer, store);
+                        this.writeJDBCStoreTable(writer, Element.BUCKET_TABLE, store, ModelKeys.BUCKET_TABLE);
+                        this.writeJDBCStoreTable(writer, Element.ENTRY_TABLE, store, ModelKeys.ENTRY_TABLE);
                         writer.writeEndElement();
                     }
 
@@ -224,12 +214,12 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                         this.writeOptional(writer, Attribute.SOCKET_TIMEOUT, store, ModelKeys.SOCKET_TIMEOUT);
                         this.writeOptional(writer, Attribute.TCP_NO_DELAY, store, ModelKeys.TCP_NO_DELAY);
                         this.writeStoreAttributes(writer, store);
-                        for (ModelNode remoteServer : store.get(ModelKeys.REMOTE_SERVER).asList()) {
+                        this.writeStoreProperties(writer, store);
+                        for (ModelNode remoteServer: store.get(ModelKeys.REMOTE_SERVER).asList()) {
                             writer.writeStartElement(Element.REMOTE_SERVER.getLocalName());
                             writer.writeAttribute(Attribute.OUTBOUND_SOCKET_BINDING.getLocalName(), remoteServer.get(ModelKeys.OUTBOUND_SOCKET_BINDING).asString());
                             writer.writeEndElement();
                         }
-                        this.writeStoreProperties(writer, store);
                         writer.writeEndElement();
                     }
 

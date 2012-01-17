@@ -341,12 +341,6 @@ public class InfinispanDescriptions {
             addNode(requestProperties, attr.getName(), resources.getString(keyPrefix + "." + attr.getName()), attr.getType(), !attr.isAllowNull());
         }
 
-        keyPrefix = "infinispan.distributed-cache.rehashing" ;
-        ModelNode rehashing = addNode(requestProperties, ModelKeys.REHASHING, resources.getString(keyPrefix), ModelType.OBJECT, false).get(ModelDescriptionConstants.VALUE_TYPE);
-        for (AttributeDefinition attr : CommonAttributes.REHASHING_ATTRIBUTES) {
-            addNode(rehashing, attr.getName(), resources.getString(keyPrefix + "." + attr.getName()), attr.getType(), !attr.isAllowNull());
-        }
-
         return description;
     }
 
@@ -448,10 +442,6 @@ public class InfinispanDescriptions {
 
     private static ModelNode createStateTransferOperationDescription(String operation, ResourceBundle resources) {
         return createOperationDescription(operation, resources, "infinispan.replicated-cache.state-transfer." + operation);
-    }
-
-    private static ModelNode createRehashingOperationDescription(String operation, ResourceBundle resources) {
-        return createOperationDescription(operation, resources, "infinispan.distributed-cache.rehashing." + operation);
     }
 
     private static ModelNode createAddAliasCommandOperationDescription(String operation, ResourceBundle resources) {
@@ -755,39 +745,6 @@ public class InfinispanDescriptions {
     static ModelNode getStateTransferRemoveDescription(Locale locale) {
         ResourceBundle resources = getResources(locale);
         ModelNode description = createStateTransferOperationDescription(REMOVE, resources);
-        description.get(REQUEST_PROPERTIES).setEmptyObject();
-        return description;
-    }
-
-    // cache rehashing element
-    static ModelNode getRehashingDescription(Locale locale) {
-        ResourceBundle resources = getResources(locale);
-        String rehashingPrefix = "infinispan.distributed-cache.rehashing" ;
-        ModelNode description = createDescription(resources, rehashingPrefix);
-        ModelNode attributes = description.get(ModelDescriptionConstants.ATTRIBUTES);
-        for (AttributeDefinition attr : CommonAttributes.REHASHING_ATTRIBUTES) {
-            addNode(attributes, attr.getName(), resources.getString(rehashingPrefix + "." + attr.getName()), attr.getType(), !attr.isAllowNull());
-        }
-
-        return description ;
-    }
-
-    static ModelNode getRehashingAddDescription(Locale locale) {
-        ResourceBundle resources = getResources(locale);
-        ModelNode description = createRehashingOperationDescription(ADD, resources);
-
-        String rehashingPrefix = "infinispan.distributed-cache.rehashing" ;
-        ModelNode requestProperties = description.get(ModelDescriptionConstants.REQUEST_PROPERTIES);
-        for (AttributeDefinition attr : CommonAttributes.REHASHING_ATTRIBUTES) {
-            addNode(requestProperties, attr.getName(), resources.getString(rehashingPrefix + "." + attr.getName()), attr.getType(), !attr.isAllowNull());
-        }
-
-        return description;
-    }
-
-    static ModelNode getRehashingRemoveDescription(Locale locale) {
-        ResourceBundle resources = getResources(locale);
-        ModelNode description = createRehashingOperationDescription(REMOVE, resources);
         description.get(REQUEST_PROPERTIES).setEmptyObject();
         return description;
     }

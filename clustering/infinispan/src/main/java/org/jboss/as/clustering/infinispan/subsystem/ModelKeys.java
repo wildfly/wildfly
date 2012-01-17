@@ -34,6 +34,7 @@ public class ModelKeys {
     static final String CACHE = "cache";
     static final String CACHE_MODE = "cache-mode";
     static final String CACHE_CONTAINER = "cache-container";
+    static final String CHUNK_SIZE = "chunk-size";
     static final String CLASS = "class";
     static final String CONCURRENCY_LEVEL = "concurrency-level";
     static final String DATA_COLUMN = "data-column";
@@ -51,7 +52,6 @@ public class ModelKeys {
     static final String FETCH_SIZE = "fetch-size";
     static final String FETCH_STATE = "fetch-state";
     static final String FILE_STORE = "file-store";
-    static final String FLUSH_TIMEOUT = "flush-timeout";
     static final String ID_COLUMN = "id-column";
     static final String INDEXING = "indexing";
     static final String INTERVAL = "interval";
@@ -81,7 +81,6 @@ public class ModelKeys {
     static final String QUEUE_FLUSH_INTERVAL = "queue-flush-interval";
     static final String QUEUE_SIZE = "queue-size";
     static final String RACK = "rack";
-    static final String REHASHING = "rehashing";
     static final String RELATIVE_TO = "relative-to";
     static final String REMOTE_SERVER = "remote-server";
     static final String REMOTE_STORE = "remote-store";

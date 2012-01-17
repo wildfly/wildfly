@@ -108,7 +108,6 @@ public class EmbeddedCacheManagerService implements Service<EmbeddedCacheManager
         GlobalConfigurationBuilder globalBuilder = new GlobalConfigurationBuilder();
         globalBuilder
             .shutdown().hookBehavior(ShutdownHookBehavior.DONT_REGISTER)
-            .transport().strictPeerToPeer(false)
         ;
 
         // set up transport only if transport is required by some cache in the cache manager

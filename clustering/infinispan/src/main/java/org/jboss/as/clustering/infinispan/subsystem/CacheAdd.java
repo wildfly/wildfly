@@ -418,23 +418,13 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         if (cache.hasDefined(ModelKeys.SINGLETON) && cache.get(ModelKeys.SINGLETON, ModelKeys.STATE_TRANSFER).isDefined()) {
             ModelNode stateTransfer = cache.get(ModelKeys.SINGLETON, ModelKeys.STATE_TRANSFER);
             if (stateTransfer.hasDefined(ModelKeys.ENABLED)) {
-                builder.clustering().stateRetrieval().fetchInMemoryState(stateTransfer.get(ModelKeys.ENABLED).asBoolean());
+                builder.clustering().stateTransfer().fetchInMemoryState(stateTransfer.get(ModelKeys.ENABLED).asBoolean());
             }
             if (stateTransfer.hasDefined(ModelKeys.TIMEOUT)) {
-                builder.clustering().stateRetrieval().timeout(stateTransfer.get(ModelKeys.TIMEOUT).asLong());
+                builder.clustering().stateTransfer().timeout(stateTransfer.get(ModelKeys.TIMEOUT).asLong());
             }
-            if (stateTransfer.hasDefined(ModelKeys.FLUSH_TIMEOUT)) {
-                builder.clustering().stateRetrieval().logFlushTimeout(stateTransfer.get(ModelKeys.FLUSH_TIMEOUT).asLong());
-            }
-        }
-        // rehashing is a child resource
-        if (cache.hasDefined(ModelKeys.SINGLETON) && cache.get(ModelKeys.SINGLETON, ModelKeys.REHASHING).isDefined()) {
-            ModelNode rehashing = cache.get(ModelKeys.SINGLETON, ModelKeys.REHASHING);
-            if (rehashing.hasDefined(ModelKeys.ENABLED)) {
-                builder.clustering().hash().rehashEnabled(rehashing.get(ModelKeys.ENABLED).asBoolean());
-            }
-            if (rehashing.hasDefined(ModelKeys.TIMEOUT)) {
-                builder.clustering().hash().rehashRpcTimeout(rehashing.get(ModelKeys.TIMEOUT).asLong());
+            if (stateTransfer.hasDefined(ModelKeys.CHUNK_SIZE)) {
+                builder.clustering().stateTransfer().chunkSize(stateTransfer.get(ModelKeys.CHUNK_SIZE).asInt());
             }
         }
 

@@ -159,8 +159,7 @@ public class SessionTestUtil {
         GlobalConfigurationBuilder globalBuilder = new GlobalConfigurationBuilder();
         String name = "container" + containerIndex++;
         globalBuilder.transport()
-                .transport(new JGroupsTransport())
-                .distributedSyncTimeout(60000)
+                .defaultTransport()
                 .clusterName("test")
                 .globalJmxStatistics().cacheManagerName(name).disable()
         ;

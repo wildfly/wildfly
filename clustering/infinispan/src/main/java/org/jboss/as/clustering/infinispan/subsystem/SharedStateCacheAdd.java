@@ -31,9 +31,9 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Paul Ferraro
  */
-public abstract class NonDistributedCacheAdd extends ClusteredCacheAdd {
+public abstract class SharedStateCacheAdd extends ClusteredCacheAdd {
 
-    NonDistributedCacheAdd(CacheMode mode) {
+    SharedStateCacheAdd(CacheMode mode) {
         super(mode);
     }
 
@@ -47,13 +47,13 @@ public abstract class NonDistributedCacheAdd extends ClusteredCacheAdd {
             ModelNode stateTransfer = cache.get(ModelKeys.SINGLETON, ModelKeys.STATE_TRANSFER);
 
             if (stateTransfer.hasDefined(ModelKeys.ENABLED)) {
-                builder.clustering().stateRetrieval().fetchInMemoryState(stateTransfer.get(ModelKeys.ENABLED).asBoolean());
+                builder.clustering().stateTransfer().fetchInMemoryState(stateTransfer.get(ModelKeys.ENABLED).asBoolean());
             }
             if (stateTransfer.hasDefined(ModelKeys.TIMEOUT)) {
-                builder.clustering().stateRetrieval().timeout(stateTransfer.get(ModelKeys.TIMEOUT).asLong());
+                builder.clustering().stateTransfer().timeout(stateTransfer.get(ModelKeys.TIMEOUT).asLong());
             }
-            if (stateTransfer.hasDefined(ModelKeys.FLUSH_TIMEOUT)) {
-                builder.clustering().stateRetrieval().logFlushTimeout(stateTransfer.get(ModelKeys.FLUSH_TIMEOUT).asLong());
+            if (stateTransfer.hasDefined(ModelKeys.CHUNK_SIZE)) {
+                builder.clustering().stateTransfer().chunkSize(stateTransfer.get(ModelKeys.CHUNK_SIZE).asInt());
             }
         }
     }

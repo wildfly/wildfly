@@ -9,7 +9,7 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class ReplicatedCacheAdd extends NonDistributedCacheAdd {
+public class ReplicatedCacheAdd extends SharedStateCacheAdd {
 
     static final ReplicatedCacheAdd INSTANCE = new ReplicatedCacheAdd();
 
