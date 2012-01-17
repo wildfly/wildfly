@@ -31,7 +31,6 @@ import javax.security.jacc.PolicyContextException;
 import org.jboss.as.security.SecurityExtension;
 import org.jboss.as.security.SecurityLogger;
 import org.jboss.as.security.SecurityMessages;
-import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -47,7 +46,7 @@ import org.jboss.msc.value.InjectedValue;
  */
 public abstract class JaccService<T> implements Service<PolicyConfiguration> {
 
-    protected static final Logger log = Logger.getLogger(JaccService.class);
+    protected static final SecurityLogger log = SecurityLogger.ROOT_LOGGER;
 
     public static final ServiceName SERVICE_NAME = SecurityExtension.JBOSS_SECURITY.append("jacc");
 

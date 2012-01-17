@@ -23,8 +23,8 @@
 package org.jboss.as.security.service;
 
 import org.jboss.as.security.SecurityExtension;
+import org.jboss.as.security.SecurityLogger;
 import org.jboss.as.security.plugins.JNDIBasedSecurityManagement;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -41,7 +41,7 @@ public class SecurityManagementService implements Service<ISecurityManagement> {
 
     public static final ServiceName SERVICE_NAME = SecurityExtension.JBOSS_SECURITY.append("security-management");
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.security");
+    private static final SecurityLogger log = SecurityLogger.ROOT_LOGGER;
 
     private final String authenticationManagerClassName;
 

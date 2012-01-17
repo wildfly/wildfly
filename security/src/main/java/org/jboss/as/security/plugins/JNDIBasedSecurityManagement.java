@@ -35,8 +35,8 @@ import javax.security.auth.callback.CallbackHandler;
 import org.infinispan.Cache;
 import org.infinispan.config.Configuration;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.jboss.as.security.SecurityLogger;
 import org.jboss.as.security.SecurityMessages;
-import org.jboss.logging.Logger;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.AuthorizationManager;
 import org.jboss.security.CacheableManager;
@@ -57,7 +57,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
 
     private static final long serialVersionUID = 1924631329555621041L;
 
-    protected static Logger log = Logger.getLogger("org.jboss.as.security");
+    protected static SecurityLogger log = SecurityLogger.ROOT_LOGGER;
 
     private transient ConcurrentHashMap<String, SecurityDomainContext> securityMgrMap = new ConcurrentHashMap<String, SecurityDomainContext>();
     private transient ConcurrentHashMap<String, AuthenticationManager> authMgrMap = new ConcurrentHashMap<String, AuthenticationManager>();

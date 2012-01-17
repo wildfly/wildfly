@@ -27,8 +27,8 @@ import java.security.acl.Group;
 
 import javax.security.auth.login.LoginException;
 
+import org.jboss.as.security.SecurityLogger;
 import org.jboss.as.security.SecurityMessages;
-import org.jboss.logging.Logger;
 import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.security.UserPrincipal;
 import org.jboss.security.SimpleGroup;
@@ -44,10 +44,11 @@ import org.jboss.security.auth.spi.AbstractServerLoginModule;
  */
 public class RemotingLoginModule extends AbstractServerLoginModule {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.security");
+    private static final SecurityLogger log = SecurityLogger.ROOT_LOGGER;
 
     private Principal identity;
 
+    @SuppressWarnings("unchecked")
     @Override
     public boolean login() throws LoginException {
         if (super.login() == true) {
