@@ -323,17 +323,6 @@ final class WebservicesSubsystemParser implements XMLStreamConstants, XMLElement
                     featureName = parseElementNoAttributes(reader);
                     break;
                 }
-                case FEATURE_DATA: {
-                    //skip the feature data content
-                    while (reader.hasNext()) {
-                        if (reader.next() == END_ELEMENT
-                                && match(reader, Namespace.JAXWSCONFIG.getUriString(), Constants.FEATURE_DATA)) {
-                            break;
-                        }
-                    }
-                    break;
-
-                }
                 default: {
                     throw unexpectedElement(reader);
                 }
