@@ -36,6 +36,7 @@ import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.web.deployment.TldsMetaData;
 import org.jboss.as.web.deployment.WarMetaData;
 import org.jboss.as.web.deployment.WebAttachments;
+import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.metadata.web.spec.FilterMetaData;
 import org.jboss.metadata.web.spec.ListenerMetaData;
@@ -50,6 +51,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import javax.servlet.AsyncListener;
 
 /**
  * Processor that figures out what type of component a servlet/listener is, and registers the appropriate metadata.
@@ -73,6 +76,10 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
      */
     private static final String[] BUILTIN_TAGLIBS = {"org.apache.taglibs.standard", "com.sun.faces.taglib.jsf_core",  "com.sun.faces.ext.taglib", "com.sun.faces.taglib.html_basic",};
 
+    /**
+     * Dotname for AsyncListener, which can be injected dynamically.
+     */
+    private static final DotName ASYNC_LISTENER_INTERFACE = DotName.createSimple(AsyncListener.class.getName());
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -97,7 +104,7 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
 
         final WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
         final TldsMetaData tldsMetaData = deploymentUnit.getAttachment(TldsMetaData.ATTACHMENT_KEY);
-        final Set<String> classes = getAllComponentClasses(deploymentUnit, warMetaData, tldsMetaData);
+        final Set<String> classes = getAllComponentClasses(deploymentUnit, compositeIndex, warMetaData, tldsMetaData);
         for (String clazz : classes) {
             if (clazz == null || clazz.trim().isEmpty()) {
                 continue;
@@ -144,7 +151,7 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
      * @param metaData
      * @return
      */
-    private Set<String> getAllComponentClasses(DeploymentUnit deploymentUnit, WarMetaData metaData, TldsMetaData tldsMetaData) {
+    private Set<String> getAllComponentClasses(DeploymentUnit deploymentUnit, CompositeIndex index, WarMetaData metaData, TldsMetaData tldsMetaData) {
         final Set<String> classes = new HashSet<String>();
         if (metaData.getAnnotationsMetaData() != null)
             for (Map.Entry<String, WebMetaData> webMetaData : metaData.getAnnotationsMetaData().entrySet()) {
@@ -168,6 +175,7 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
             for (Map.Entry<String, TldMetaData> tldMetaData : tldsMetaData.getTlds().entrySet()) {
                 getAllComponentClasses(tldMetaData.getValue(), classes);
             }
+        getAllAsyncListenerClasses(index, classes);
         return classes;
     }
 
@@ -200,5 +208,14 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
             for (TagMetaData tag : metaData.getTags()) {
                 classes.add(tag.getTagClass());
             }
+    }
+
+    private void getAllAsyncListenerClasses(CompositeIndex index, Set<String> classes) {
+        if (index != null) {
+            Set<ClassInfo> classInfos = index.getAllKnownImplementors(ASYNC_LISTENER_INTERFACE);
+            for (ClassInfo classInfo : classInfos) {
+                classes.add(classInfo.name().toString());
+            }
+        }
     }
 }
