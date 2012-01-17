@@ -665,6 +665,7 @@ public abstract class AbstractSubsystemTest {
 
         @Override
         public void writeContent(XMLExtendedStreamWriter writer, ModelMarshallingContext context) throws XMLStreamException {
+
             String defaultNamespace = writer.getNamespaceContext().getNamespaceURI(XMLConstants.DEFAULT_NS_PREFIX);
             try {
                 ModelNode subsystem = context.getModelNode().get(SUBSYSTEM, mainSubsystemName);
