@@ -43,6 +43,7 @@ import org.jboss.as.clustering.jgroups.ProtocolStackConfiguration;
 import org.jboss.as.clustering.jgroups.TransportConfiguration;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -94,7 +95,7 @@ public class ProtocolStackAdd extends AbstractAddStepHandler implements Descript
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
         ModelNode transport = operation.get(ModelKeys.TRANSPORT);
@@ -111,13 +112,13 @@ public class ProtocolStackAdd extends AbstractAddStepHandler implements Descript
             transportConfig.setShared(transport.get(ModelKeys.SHARED).asBoolean());
         }
         if (transport.hasDefined(ModelKeys.MACHINE)) {
-            transportConfig.setMachineId(transport.get(ModelKeys.MACHINE).asString());
+            transportConfig.setMachineId(context.resolveExpressions(transport.get(ModelKeys.MACHINE)).asString());
         }
         if (transport.hasDefined(ModelKeys.RACK)) {
-            transportConfig.setRackId(transport.get(ModelKeys.RACK).asString());
+            transportConfig.setRackId(context.resolveExpressions(transport.get(ModelKeys.RACK)).asString());
         }
         if (transport.hasDefined(ModelKeys.SITE)) {
-            transportConfig.setSiteId(transport.get(ModelKeys.SITE).asString());
+            transportConfig.setSiteId(context.resolveExpressions(transport.get(ModelKeys.SITE)).asString());
         }
         build(builder, transport, transportConfig);
         addSocketBindingDependency(builder, transport, ModelKeys.DIAGNOSTICS_SOCKET_BINDING, transportConfig.getDiagnosticsSocketBindingInjector());
