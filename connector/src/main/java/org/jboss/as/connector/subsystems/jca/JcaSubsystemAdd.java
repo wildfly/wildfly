@@ -29,6 +29,7 @@ import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.connector.deployers.DsDeploymentActivator;
 import org.jboss.as.connector.deployers.RaDeploymentActivator;
 import org.jboss.as.connector.registry.DriverRegistryService;
 import org.jboss.as.connector.transactionintegration.TransactionIntegrationService;
@@ -61,11 +62,13 @@ class JcaSubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
-        final RaDeploymentActivator deploymentActivator = new RaDeploymentActivator();
+        final DsDeploymentActivator dsDeploymentActivator = new DsDeploymentActivator();
+        final RaDeploymentActivator raDeploymentActivator = new RaDeploymentActivator();
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
-                deploymentActivator.activateProcessors(processorTarget);
+                dsDeploymentActivator.activateProcessors(processorTarget);
+                raDeploymentActivator.activateProcessors(processorTarget);
             }
         }, OperationContext.Stage.RUNTIME);
 
@@ -115,6 +118,7 @@ class JcaSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .addListener(verificationHandler)
                 .install());
 
-        newControllers.addAll(deploymentActivator.activateServices(serviceTarget, verificationHandler));
+        newControllers.addAll(dsDeploymentActivator.activateServices(serviceTarget, verificationHandler));
+        newControllers.addAll(raDeploymentActivator.activateServices(serviceTarget, verificationHandler));
     }
 }

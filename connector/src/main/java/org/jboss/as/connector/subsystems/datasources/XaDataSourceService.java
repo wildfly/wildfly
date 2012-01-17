@@ -64,7 +64,6 @@ public class XaDataSourceService extends AbstractDataSourceService {
     @Override
     public AS7DataSourceDeployer getDeployer() throws ValidateException {
         return new AS7DataSourceDeployer(dataSourceConfig.getValue().getUnModifiableInstance());
-
     }
 
     public Injector<ModifiableXaDataSource> getDataSourceConfigInjector() {

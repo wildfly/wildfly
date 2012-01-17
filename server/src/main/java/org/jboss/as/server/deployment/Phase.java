@@ -275,6 +275,7 @@ public enum Phase {
     public static final int PARSE_TRANSACTION_ROLLBACK_ACTION           = 0x3B00;
     public static final int PARSE_WEB_INITIALIZE_IN_ORDER               = 0x3C00;
     public static final int PARSE_EAR_MESSAGE_DESTINATIONS              = 0x3D00;
+    public static final int PARSE_DSXML_DEPLOYMENT                      = 0x3E00;
 
     // DEPENDENCIES
     public static final int DEPENDENCIES_EJB                            = 0x0000;

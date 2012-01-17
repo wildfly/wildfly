@@ -41,7 +41,7 @@ import static org.jboss.as.connector.ConnectorLogger.SUBSYSTEM_RA_LOGGER;
  * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano
  *         Maestri</a>
  */
-final class ResourceAdaptersService implements Service<ResourceAdaptersService.ModifiableResourceAdaptors> {
+public final class ResourceAdaptersService implements Service<ResourceAdaptersService.ModifiableResourceAdaptors> {
 
     private final ModifiableResourceAdaptors value = new ModifiableResourceAdaptors();
 
