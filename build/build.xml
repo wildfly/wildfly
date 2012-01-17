@@ -254,7 +254,39 @@
 
     </target>
 
-    <target name="modules" depends="modules-minimalistic">
+    <target name="modules-osgi" unless="disable-osgi">
+        <module-def name="org.jboss.as.osgi">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-osgi-service"/>
+        </module-def>
+
+        <module-def name="org.jboss.osgi.framework">
+            <maven-resource group="org.jboss.osgi.deployment" artifact="jbosgi-deployment"/>
+            <maven-resource group="org.jboss.osgi.framework" artifact="jbosgi-framework-core"/>
+            <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-api"/>
+            <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-spi"/>
+            <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-felix"/>
+            <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-metadata"/>
+        </module-def>
+
+        <module-def name="org.jboss.osgi.repository.api">
+            <maven-resource group="org.jboss.osgi.repository" artifact="jbosgi-repository-api"/>
+        </module-def>
+
+        <module-def name="org.jboss.osgi.spi">
+            <maven-resource group="org.jboss.osgi.spi" artifact="jbosgi-spi"/>
+        </module-def>
+
+        <module-def name="org.jboss.osgi.vfs">
+            <maven-resource group="org.jboss.osgi.vfs" artifact="jbosgi-vfs"/>
+            <maven-resource group="org.jboss.osgi.vfs" artifact="jbosgi-vfs30"/>
+        </module-def>
+
+        <module-def name="org.osgi.core">
+            <maven-resource group="org.osgi" artifact="org.osgi.core"/>
+        </module-def>
+    </target>
+
+    <target name="modules" depends="modules-minimalistic,modules-osgi">
         <!--
           ~ Complete list of modules to assemble.
           ~
@@ -816,10 +848,6 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-naming"/>
         </module-def>
 
-     	<module-def name="org.jboss.as.osgi">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-osgi-service"/>
-        </module-def>
-
         <module-def name="org.jboss.as.sar">
             <maven-resource group="org.jboss.as" artifact="jboss-as-sar"/>
         </module-def>
@@ -936,28 +964,6 @@
 
         <module-def name="org.jboss.netty">
             <maven-resource group="org.jboss.netty" artifact="netty"/>
-        </module-def>
-
-        <module-def name="org.jboss.osgi.framework">
-            <maven-resource group="org.jboss.osgi.deployment" artifact="jbosgi-deployment"/>
-            <maven-resource group="org.jboss.osgi.framework" artifact="jbosgi-framework-core"/>
-            <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-api"/>
-            <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-spi"/>
-            <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-felix"/>
-            <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-metadata"/>
-        </module-def>
-
-        <module-def name="org.jboss.osgi.repository.api">
-            <maven-resource group="org.jboss.osgi.repository" artifact="jbosgi-repository-api"/>
-        </module-def>
-
-        <module-def name="org.jboss.osgi.spi">
-            <maven-resource group="org.jboss.osgi.spi" artifact="jbosgi-spi"/>
-        </module-def>
-
-        <module-def name="org.jboss.osgi.vfs">
-            <maven-resource group="org.jboss.osgi.vfs" artifact="jbosgi-vfs"/>
-            <maven-resource group="org.jboss.osgi.vfs" artifact="jbosgi-vfs30"/>
         </module-def>
 
         <module-def name="org.jboss.remote-naming">
@@ -1109,10 +1115,6 @@
         </module-def>
 
         <module-def name="org.omg.api" />
-
-        <module-def name="org.osgi.core">
-            <maven-resource group="org.osgi" artifact="org.osgi.core"/>
-        </module-def>
 
         <module-def name="org.picketlink">
             <maven-resource group="org.picketlink" artifact="picketlink-fed" jandex="true"/>

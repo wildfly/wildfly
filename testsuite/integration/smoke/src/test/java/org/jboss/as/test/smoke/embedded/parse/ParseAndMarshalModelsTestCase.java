@@ -218,7 +218,7 @@ public class ParseAndMarshalModelsTestCase {
         ModelNode originalModel = loadServerModel(file);
         ModelNode reparsedModel = loadServerModel(file);
 
-        fixupOSGiStandalone(originalModel, reparsedModel);
+//        fixupOSGiStandalone(originalModel, reparsedModel);
 
         compare(originalModel, reparsedModel);
     }

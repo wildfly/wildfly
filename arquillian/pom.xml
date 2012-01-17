@@ -69,4 +69,15 @@
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <id>osgi-enabled</id>
+            <activation>
+                <property><name>!disable-osgi</name></property>
+            </activation>
+            <modules>
+                <module>osgi</module>
+            </modules>
+        </profile>
+    </profiles>
 </project>

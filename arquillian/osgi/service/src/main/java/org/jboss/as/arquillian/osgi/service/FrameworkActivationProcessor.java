@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.arquillian.service;
+package org.jboss.as.arquillian.osgi.service;
 
 import java.util.List;
 
@@ -43,7 +43,7 @@ import org.jboss.msc.service.ServiceContainer;
  *
  * @author Thomas.Diesler@jboss.com
  */
-public class FrameworkActivationProcessor {
+class FrameworkActivationProcessor {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.arquillian");
 

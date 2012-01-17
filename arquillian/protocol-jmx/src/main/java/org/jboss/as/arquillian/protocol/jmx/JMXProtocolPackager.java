@@ -44,8 +44,6 @@ import org.jboss.as.arquillian.service.ArquillianService;
 import org.jboss.as.arquillian.service.JMXProtocolEndpointExtension;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceActivator;
-import org.jboss.osgi.spi.util.BundleInfo;
-import org.jboss.osgi.testing.ManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.ArchivePaths;
@@ -128,24 +126,24 @@ public class JMXProtocolPackager implements DeploymentPackager {
         }
         loadableExtensions.add(JMXProtocolEndpointExtension.class.getName());
 
+        final ManifestAsset manifest = new ManifestAsset();
+        StringBuffer dependencies = new StringBuffer();
+        dependencies.append("org.jboss.as.jmx,");
+        dependencies.append("org.jboss.as.server,");
+        /*
+        dependencies.append("org.jboss.as.osgi,");
+        */
+        dependencies.append("org.jboss.jandex,");
+        dependencies.append("org.jboss.logging,");
+        dependencies.append("org.jboss.modules,");
+        dependencies.append("org.jboss.msc,");
+        /*
+        dependencies.append("org.jboss.osgi.framework,");
+        dependencies.append("org.osgi.core");
+        */
+        manifest.getMainAttributes().putValue("Dependencies", dependencies.toString());
         // Generate the manifest with it's dependencies
-        archive.setManifest(new Asset() {
-            public InputStream openStream() {
-                ManifestBuilder builder = ManifestBuilder.newInstance();
-                StringBuffer dependencies = new StringBuffer();
-                dependencies.append("org.jboss.as.jmx,");
-                dependencies.append("org.jboss.as.server,");
-                dependencies.append("org.jboss.as.osgi,");
-                dependencies.append("org.jboss.jandex,");
-                dependencies.append("org.jboss.logging,");
-                dependencies.append("org.jboss.modules,");
-                dependencies.append("org.jboss.msc,");
-                dependencies.append("org.jboss.osgi.framework,");
-                dependencies.append("org.osgi.core");
-                builder.addManifestHeader("Dependencies", dependencies.toString());
-                return builder.openStream();
-            }
-        });
+        archive.setManifest(manifest);
 
         // Add the ServiceActivator
         String serviceActivatorPath = "META-INF/services/" + ServiceActivator.class.getName();
@@ -187,9 +185,11 @@ public class JMXProtocolPackager implements DeploymentPackager {
         final Manifest manifest = ManifestUtils.getOrCreateManifest(appArchive);
 
         // Don't enrich with Modules Dependencies if this is a OSGi bundle
+        /*
         if(BundleInfo.isValidBundleManifest(manifest)) {
             return;
         }
+        */
         Attributes attributes = manifest.getMainAttributes();
         if (attributes.getValue(Attributes.Name.MANIFEST_VERSION.toString()) == null) {
             attributes.putValue(Attributes.Name.MANIFEST_VERSION.toString(), "1.0");

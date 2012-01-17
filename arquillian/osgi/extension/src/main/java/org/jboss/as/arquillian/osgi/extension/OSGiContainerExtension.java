@@ -14,23 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.as.arquillian.container;
+package org.jboss.as.arquillian.osgi.extension;
 
-import org.jboss.arquillian.container.spi.client.container.DeploymentExceptionTransformer;
+import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
 import org.jboss.arquillian.core.spi.LoadableExtension;
-import org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider;
 
 /**
- * The extensions used by the any jboss container.
+ * The extensions used by an OSGi enabled JBoss container.
  *
  * @author Thomas.Diesler@jboss.com
  * @since 02-Jun-2011
  */
-public class CommonContainerExtension implements LoadableExtension {
+public class OSGiContainerExtension implements LoadableExtension {
 
     @Override
-    public void register(final ExtensionBuilder builder) {
-        builder.service(DeploymentExceptionTransformer.class, ExceptionTransformer.class);
-        builder.service(ResourceProvider.class, ManagementClientProvider.class);
+    public void register(ExtensionBuilder builder) {
+        builder.service(ApplicationArchiveProcessor.class, OSGiApplicationArchiveProcessor.class);
     }
 }

@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.arquillian.service;
+package org.jboss.as.arquillian.osgi.service;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,6 +28,8 @@ import java.util.Set;
 
 import org.jboss.arquillian.testenricher.msc.ServiceContainerAssociation;
 import org.jboss.arquillian.testenricher.msc.ServiceTargetAssociation;
+import org.jboss.arquillian.testenricher.osgi.BundleAssociation;
+import org.jboss.as.osgi.deployment.OSGiDeploymentAttachment;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -42,6 +44,12 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
+import org.jboss.osgi.deployment.deployer.Deployment;
+import org.jboss.osgi.framework.BundleManagerService;
+import org.jboss.osgi.framework.Services;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
 
 /**
  * The ArquillianConfig represents an Arquillian deployment.
@@ -57,10 +65,8 @@ class ArquillianConfig implements Service<ArquillianConfig> {
     private final ServiceName serviceName;
     private final List<String> testClasses = new ArrayList<String>();
 
-    /*
     private final InjectedValue<BundleManagerService> injectedBundleManager = new InjectedValue<BundleManagerService>();
     private final InjectedValue<BundleContext> injectedBundleContext = new InjectedValue<BundleContext>();
-    */
     private ServiceContainer serviceContainer;
     private ServiceTarget serviceTarget;
 
@@ -81,13 +87,11 @@ class ArquillianConfig implements Service<ArquillianConfig> {
         return builder;
     }
 
-    /*
     void addFrameworkDependency(ServiceBuilder<ArquillianConfig> builder) {
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManagerService.class, injectedBundleManager);
         builder.addDependency(Services.SYSTEM_CONTEXT, BundleContext.class, injectedBundleContext);
         builder.addDependency(Services.FRAMEWORK_ACTIVATOR);
     }
-    */
 
     ServiceName getServiceName() {
         return serviceName;
@@ -101,11 +105,9 @@ class ArquillianConfig implements Service<ArquillianConfig> {
         return Collections.unmodifiableList(testClasses);
     }
 
-    /*
     BundleContext getBundleContext() {
         return injectedBundleContext.getOptionalValue();
     }
-    */
 
     Class<?> loadClass(String className) throws ClassNotFoundException {
 
@@ -113,7 +115,6 @@ class ArquillianConfig implements Service<ArquillianConfig> {
             throw new ClassNotFoundException("Class '" + className + "' not found in: " + testClasses);
 
         Module module = depUnit.getAttachment(Attachments.MODULE);
-        /*
         Deployment osgidep = OSGiDeploymentAttachment.getDeployment(depUnit);
         if (module == null && osgidep == null)
             throw new IllegalStateException("Cannot determine deployment type: " + depUnit);
@@ -128,10 +129,6 @@ class ArquillianConfig implements Service<ArquillianConfig> {
         } else {
             testClass = module.getClassLoader().loadClass(className);
         }
-        */
-        if (module == null)
-            throw new IllegalStateException("Cannot determine deployment type: " + depUnit);
-        final Class<?> testClass = module.getClassLoader().loadClass(className);
 
         // Always make the MSC artefacts available
         ServiceTargetAssociation.setServiceTarget(serviceTarget);
@@ -146,12 +143,10 @@ class ArquillianConfig implements Service<ArquillianConfig> {
         serviceTarget = context.getChildTarget();
         arqService.registerArquillianConfig(this);
 
-        /*
         BundleManagerService bundleManager = injectedBundleManager.getOptionalValue();
         if (bundleManager != null) {
             arqService.registerArquillianServiceWithOSGi(bundleManager);
         }
-        */
     }
 
     @Override

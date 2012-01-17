@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.arquillian.service;
+package org.jboss.as.arquillian.osgi.service;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -32,6 +32,7 @@ import java.util.Set;
 import javax.management.MBeanServer;
 
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner;
+import org.jboss.arquillian.testenricher.osgi.BundleContextAssociation;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -39,6 +40,7 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
+import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -50,6 +52,10 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.osgi.framework.BundleManagerService;
+import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
 
 import static org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT;
 
@@ -115,9 +121,7 @@ public class ArquillianService implements Service<ArquillianService> {
                             if (arqConfig != null) {
                                 log.infof("Arquillian deployment detected: %s", arqConfig);
                                 ServiceBuilder<ArquillianConfig> builder = arqConfig.buildService(serviceTarget, serviceController);
-                                /*
                                 FrameworkActivationProcessor.process(serviceContainer, builder, arqConfig);
-                                */
                                 builder.install();
                             }
                         }
@@ -189,7 +193,6 @@ public class ArquillianService implements Service<ArquillianService> {
         return getArquillianConfig(className, -1);
     }
 
-    /*
     void registerArquillianServiceWithOSGi(BundleManagerService bundleManager) {
         ModuleClassLoader classLoader = ((ModuleClassLoader) ArquillianService.class.getClassLoader());
         Module module = classLoader.getModule();
@@ -207,7 +210,6 @@ public class ArquillianService implements Service<ArquillianService> {
             }
         }
     }
-    */
 
     class ExtendedJMXTestRunner extends JMXTestRunner {
 
@@ -251,10 +253,8 @@ public class ArquillianService implements Service<ArquillianService> {
                 throw new ClassNotFoundException("No Arquillian config found for: " + className);
 
             // Make the BundleContext available to the {@link OSGiTestEnricher}
-            /*
             BundleContext bundleContext = arqConfig.getBundleContext();
             BundleContextAssociation.setBundleContext(bundleContext);
-            */
 
             return arqConfig.loadClass(className);
         }
@@ -300,7 +300,7 @@ public class ArquillianService implements Service<ArquillianService> {
     }
 
     /**
-     * {@link PrivilegedAction} implementation to get at the TCCL
+     * {@link java.security.PrivilegedAction} implementation to get at the TCCL
      *
      * @author <a href="mailto:alr@jboss.org">Andrew Lee Rubinger</a>
      */

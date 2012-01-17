@@ -46,10 +46,6 @@
         </dependency>
         <dependency>
           <groupId>org.jboss.as</groupId>
-          <artifactId>jboss-as-osgi-service</artifactId>
-        </dependency>
-        <dependency>
-          <groupId>org.jboss.as</groupId>
           <artifactId>jboss-as-arquillian-testenricher-msc</artifactId>
         </dependency>
         <dependency>
@@ -70,4 +66,18 @@
           <scope>provided</scope>
         </dependency>
     </dependencies>
+
+    <!--
+    <profiles>
+        <profile>
+            <id>osgi-enabled</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-osgi-service</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+    -->
 </project>
