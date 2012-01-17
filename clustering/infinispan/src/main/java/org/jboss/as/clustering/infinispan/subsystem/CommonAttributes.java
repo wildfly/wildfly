@@ -64,7 +64,7 @@ public interface CommonAttributes {
     SimpleAttributeDefinition MAX_IDLE = new SimpleAttributeDefinition(ModelKeys.MAX_IDLE,
             new ModelNode().set(longDefault), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
     SimpleAttributeDefinition MODE = new SimpleAttributeDefinition(ModelKeys.MODE, ModelType.STRING, true);
-    // name String
+    SimpleAttributeDefinition NAME = new SimpleAttributeDefinition(ModelKeys.NAME, ModelType.STRING, true);
     // namespace String
     SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING = new SimpleAttributeDefinition(ModelKeys.OUTBOUND_SOCKET_BINDING, ModelType.STRING, true);
     SimpleAttributeDefinition OWNERS = new SimpleAttributeDefinition(ModelKeys.OWNERS,
@@ -75,6 +75,7 @@ public interface CommonAttributes {
     SimpleAttributeDefinition PREFIX = new SimpleAttributeDefinition(ModelKeys.PREFIX, ModelType.STRING, true);
     SimpleAttributeDefinition PRELOAD = new SimpleAttributeDefinition(ModelKeys.PRELOAD,
             new ModelNode().set(booleanDefault), ModelType.BOOLEAN,  true);
+    SimpleAttributeDefinition PROPERTY = new SimpleAttributeDefinition(ModelKeys.PROPERTY, ModelType.LIST, true);
     SimpleAttributeDefinition PURGE = new SimpleAttributeDefinition(ModelKeys.PURGE,
             new ModelNode().set(booleanDefault), ModelType.BOOLEAN,  true);
     SimpleAttributeDefinition QUEUE_FLUSH_INTERVAL = new SimpleAttributeDefinition(ModelKeys.QUEUE_FLUSH_INTERVAL,
@@ -83,6 +84,7 @@ public interface CommonAttributes {
             new ModelNode().set(intDefault), ModelType.INT, true);
     SimpleAttributeDefinition RACK = new SimpleAttributeDefinition(ModelKeys.RACK, ModelType.STRING, true);
     SimpleAttributeDefinition RELATIVE_TO = new SimpleAttributeDefinition(ModelKeys.RELATIVE_TO, ModelType.STRING, true);
+    SimpleAttributeDefinition REMOTE_SERVER = new SimpleAttributeDefinition(ModelKeys.REMOTE_SERVER, ModelType.LIST, true);
     SimpleAttributeDefinition REMOTE_TIMEOUT = new SimpleAttributeDefinition(ModelKeys.REMOTE_TIMEOUT,
             new ModelNode().set(longDefault), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
     SimpleAttributeDefinition REPLICATION_QUEUE_EXECUTOR = new SimpleAttributeDefinition(ModelKeys.REPLICATION_QUEUE_EXECUTOR, ModelType.STRING, true);
