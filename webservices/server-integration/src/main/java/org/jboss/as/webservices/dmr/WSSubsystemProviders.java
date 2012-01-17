@@ -374,11 +374,6 @@ final class WSSubsystemProviders {
             node.get(ATTRIBUTES, Constants.FEATURE, Constants.FEATURE_NAME, DESCRIPTION).set(bundle.getString("feature.name"));
             node.get(ATTRIBUTES, Constants.FEATURE, Constants.FEATURE_NAME, REQUIRED).set(true);
 
-            /* not supported yet
-            node.get(ATTRIBUTES, Constants.FEATURE, Constants.FEATURE_DATA, TYPE).set(ModelType.STRING);
-            node.get(ATTRIBUTES, Constants.FEATURE, Constants.FEATURE_DATA, DESCRIPTION).set(bundle.getString("feature.value"));
-            node.get(ATTRIBUTES, Constants.FEATURE, Constants.FEATURE_DATA, REQUIRED).set(true);
-            */
             return node;
         }
 
@@ -447,12 +442,6 @@ final class WSSubsystemProviders {
             node.get(REQUEST_PROPERTIES, Constants.FEATURE, Constants.FEATURE_NAME, TYPE).set(ModelType.STRING);
             node.get(REQUEST_PROPERTIES, Constants.FEATURE, Constants.FEATURE_NAME, DESCRIPTION).set(bundle.getString("feature.name"));
             node.get(REQUEST_PROPERTIES, Constants.FEATURE, Constants.FEATURE_NAME, REQUIRED).set(true);
-
-            /*Not supported
-            node.get(REQUEST_PROPERTIES, Constants.FEATURE, Constants.FEATURE_DATA, TYPE).set(ModelType.STRING);
-            node.get(REQUEST_PROPERTIES, Constants.FEATURE, Constants.FEATURE_DATA, DESCRIPTION).set(bundle.getString("feature.value"));
-            node.get(REQUEST_PROPERTIES, Constants.FEATURE, Constants.FEATURE_DATA, REQUIRED).set(true);
-            */
 
             return node;
         }
