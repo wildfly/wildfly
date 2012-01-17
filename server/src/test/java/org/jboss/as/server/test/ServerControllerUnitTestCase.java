@@ -23,7 +23,9 @@
 package org.jboss.as.server.test;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -56,6 +58,8 @@ import org.jboss.as.server.ServerControllerModelUtil;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
+import org.jboss.as.server.deployment.repository.api.ContentRepository;
+import org.jboss.as.server.file.repository.api.DeploymentFileRepository;
 import org.jboss.as.server.parsing.StandaloneXml;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.dmr.ModelNode;
@@ -67,6 +71,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.vfs.VirtualFile;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -250,7 +255,7 @@ public class ServerControllerUnitTestCase {
             final String hostControllerName = "hostControllerName"; // Host Controller name may not be null when in a managed domain
             final ServerEnvironment environment = new ServerEnvironment(hostControllerName, properties, new HashMap<String, String>(), null, ServerEnvironment.LaunchType.DOMAIN, null, new ProductConfig(Module.getBootModuleLoader(), "."));
             final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER, new RunningModeControl(RunningMode.NORMAL));
-            ServerControllerModelUtil.initOperations(rootRegistration, null, persister, environment, processState, null, null, extensionRegistry, false, null);
+            ServerControllerModelUtil.initOperations(rootRegistration, MockRepository.INSTANCE, persister, environment, processState, null, null, extensionRegistry, false, MockRepository.INSTANCE);
         }
 
         @Override
@@ -360,5 +365,43 @@ public class ServerControllerUnitTestCase {
         }
     }
 
+    static final class MockRepository implements ContentRepository, DeploymentFileRepository {
+
+        static MockRepository INSTANCE = new MockRepository();
+
+        @Override
+        public File[] getDeploymentFiles(byte[] deploymentHash) {
+            return null;
+        }
+
+        @Override
+        public File getDeploymentRoot(byte[] deploymentHash) {
+            return null;
+        }
+
+        @Override
+        public void deleteDeployment(byte[] deploymentHash) {
+        }
+
+        @Override
+        public byte[] addContent(InputStream stream) throws IOException {
+            return null;
+        }
+
+        @Override
+        public VirtualFile getContent(byte[] hash) {
+            return null;
+        }
+
+        @Override
+        public boolean hasContent(byte[] hash) {
+            return false;
+        }
+
+        @Override
+        public void removeContent(byte[] hash) {
+        }
+
+    }
 
 }

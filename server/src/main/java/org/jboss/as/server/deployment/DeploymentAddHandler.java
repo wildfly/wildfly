@@ -18,6 +18,7 @@
  */
 package org.jboss.as.server.deployment;
 
+import static org.jboss.as.server.ServerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
@@ -62,6 +63,7 @@ import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.deployment.DeploymentHandlerUtil.ContentItem;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
+import org.jboss.as.server.file.repository.api.DeploymentFileRepository;
 import org.jboss.as.server.mgmt.domain.RemoteFileRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -92,6 +94,7 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
     protected final ParametersValidator managedContentValidator = new ParametersValidator();
 
     protected DeploymentAddHandler(final ContentRepository contentRepository) {
+        assert contentRepository != null : "Null contentRepository";
         this.contentRepository = contentRepository;
         this.validator.registerValidator(RUNTIME_NAME, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
         this.validator.registerValidator(ENABLED, new ModelTypeValidator(ModelType.BOOLEAN, true));
@@ -122,7 +125,7 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
         return new DeploymentAddHandler(contentRepository);
     }
 
-    public static DeploymentAddHandler createForDomainServer(final ContentRepository contentRepository, final RemoteFileRepository remoteFileRepository) {
+    public static DeploymentAddHandler createForDomainServer(final ContentRepository contentRepository, final DeploymentFileRepository remoteFileRepository) {
         return new DomainServerDeploymentAddHandler(contentRepository, remoteFileRepository);
     }
 
@@ -175,7 +178,7 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
 
     DeploymentHandlerUtil.ContentItem addFromHash(byte[] hash, ModelNode contentItemNode) throws OperationFailedException {
         if (!contentRepository.hasContent(hash)) {
-            ServerMessages.MESSAGES.noSuchDeploymentContent(HashUtil.bytesToHexString(hash));
+            throw ServerMessages.MESSAGES.noSuchDeploymentContent(HashUtil.bytesToHexString(hash));
         }
         return new DeploymentHandlerUtil.ContentItem(hash);
     }
@@ -208,27 +211,23 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
     }
 
     private static class DomainServerDeploymentAddHandler extends DeploymentAddHandler {
-        final RemoteFileRepository remoteFileRepository;
+        final DeploymentFileRepository remoteFileRepository;
 
-        DomainServerDeploymentAddHandler(ContentRepository contentRepository, RemoteFileRepository remoteFileRepository) {
+        DomainServerDeploymentAddHandler(ContentRepository contentRepository, DeploymentFileRepository remoteFileRepository) {
             super(contentRepository);
+            assert remoteFileRepository != null : "Null remoteFileRepository";
             this.remoteFileRepository = remoteFileRepository;
         }
 
+        @Override
         DeploymentHandlerUtil.ContentItem addFromHash(byte[] hash, ModelNode contentItemNode) throws OperationFailedException {
             remoteFileRepository.getDeploymentFiles(hash);
             return super.addFromHash(hash, contentItemNode);
         }
 
+        @Override
         DeploymentHandlerUtil.ContentItem addFromContentAdditionParameter(OperationContext context, ModelNode contentItemNode) throws OperationFailedException {
-            //TODO i18n
-            throw new OperationFailedException("Only hash is available for addition in domain mode");
-        }
-
-        DeploymentHandlerUtil.ContentItem addUnmanaged(ModelNode contentItemNode) throws OperationFailedException {
-            //TODO i18n
-            //TODO Is this true
-            throw new OperationFailedException("Unmanaged content only available on domain mode");
+            throw MESSAGES.onlyHashAllowedForDeploymentFullReplaceInDomainServer(contentItemNode);
         }
     }
 }

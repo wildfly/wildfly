@@ -103,7 +103,7 @@ public class RemoteProxyController extends AbstractMessageHandler<Void, RemotePr
     }
 
     @Override
-    public ManagementRequestHandler<Void, ExecuteRequestContext> getRequestHandler(byte operationType) {
+    protected ManagementRequestHandler<Void, ExecuteRequestContext> getRequestHandler(byte operationType) {
         if (operationType == ModelControllerProtocol.HANDLE_REPORT_REQUEST) {
             return new HandleReportRequestHandler();
         } else if (operationType == ModelControllerProtocol.OPERATION_FAILED_REQUEST) {

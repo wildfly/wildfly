@@ -112,10 +112,10 @@ import org.jboss.as.server.deployment.DeploymentUploadBytesHandler;
 import org.jboss.as.server.deployment.DeploymentUploadStreamAttachmentHandler;
 import org.jboss.as.server.deployment.DeploymentUploadURLHandler;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
+import org.jboss.as.server.file.repository.api.DeploymentFileRepository;
 import org.jboss.as.server.mgmt.HttpManagementResourceDefinition;
 import org.jboss.as.server.mgmt.NativeManagementResourceDefinition;
 import org.jboss.as.server.mgmt.NativeRemotingManagementResourceDefinition;
-import org.jboss.as.server.mgmt.domain.RemoteFileRepository;
 import org.jboss.as.server.operations.DumpServicesHandler;
 import org.jboss.as.server.operations.LaunchTypeHandler;
 import org.jboss.as.server.operations.ProcessTypeHandler;
@@ -193,7 +193,7 @@ public class ServerControllerModelUtil {
                                       final AbstractVaultReader vaultReader,
                                       final ExtensionRegistry extensionRegistry,
                                       final boolean parallelBoot,
-                                      final RemoteFileRepository remoteFileRepository) {
+                                      final DeploymentFileRepository remoteFileRepository) {
         boolean isDomain = serverEnvironment == null ? true : serverEnvironment.getLaunchType() == LaunchType.DOMAIN;
         // Build up the core model registry
         root.registerReadWriteAttribute(NAME, null, new StringLengthValidatingHandler(1), AttributeAccess.Storage.CONFIGURATION);
@@ -234,9 +234,11 @@ public class ServerControllerModelUtil {
         root.registerOperationHandler(DeploymentUploadURLHandler.OPERATION_NAME, duuh, duuh, false);
         DeploymentUploadStreamAttachmentHandler dush = new DeploymentUploadStreamAttachmentHandler(contentRepository);
         root.registerOperationHandler(DeploymentUploadStreamAttachmentHandler.OPERATION_NAME, dush, dush, false);
-        final DeploymentReplaceHandler drh = new DeploymentReplaceHandler(contentRepository);
+        final DeploymentReplaceHandler drh = serverEnvironment == null || serverEnvironment.getLaunchType() == LaunchType.DOMAIN ?
+                DeploymentReplaceHandler.createForDomainServer(contentRepository, remoteFileRepository) : DeploymentReplaceHandler.createForStandalone(contentRepository);
         root.registerOperationHandler(DeploymentReplaceHandler.OPERATION_NAME, drh, drh, false);
-        DeploymentFullReplaceHandler dfrh = new DeploymentFullReplaceHandler(contentRepository);
+        DeploymentFullReplaceHandler dfrh = serverEnvironment == null || serverEnvironment.getLaunchType() == LaunchType.DOMAIN ?
+                DeploymentFullReplaceHandler.createForDomainServer(contentRepository, remoteFileRepository) : DeploymentFullReplaceHandler.createForStandalone(contentRepository);
         root.registerOperationHandler(DeploymentFullReplaceHandler.OPERATION_NAME, dfrh, dfrh, false);
 
         SnapshotDeleteHandler snapshotDelete = new SnapshotDeleteHandler(extensibleConfigurationPersister);

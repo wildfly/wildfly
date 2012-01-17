@@ -21,6 +21,8 @@
 */
 package org.jboss.as.server.mgmt.domain;
 
+import static org.jboss.as.server.ServerMessages.MESSAGES;
+
 import java.io.File;
 
 import org.jboss.as.controller.HashUtil;
@@ -78,23 +80,24 @@ public class RemoteFileRepository implements DeploymentFileRepository, Service<R
     }
 
     private File getFile(final String relativePath, final byte repoId) {
-        RemoteFileRepositoryExecutor remoteFileRepositoryExecutor = null;
-        synchronized (this) {
-            remoteFileRepositoryExecutor = this.remoteFileRepositoryExecutor;
-            long now = System.currentTimeMillis();
-            long end = now + 30000;
-            while (remoteFileRepositoryExecutor == null && now < end){
-               try {
-                  wait(end - now);
-               } catch (InterruptedException ignore){
-               }
-               now = System.currentTimeMillis();
-               remoteFileRepositoryExecutor = this.remoteFileRepositoryExecutor;
+        //The executor might not have been set up yet if we start with deployments
+        RemoteFileRepositoryExecutor remoteFileRepositoryExecutor = this.remoteFileRepositoryExecutor;
+        if (remoteFileRepositoryExecutor == null) {
+            synchronized (this) {
+                remoteFileRepositoryExecutor = this.remoteFileRepositoryExecutor;
+                try {
+                    while (remoteFileRepositoryExecutor == null){
+                        wait();
+                        remoteFileRepositoryExecutor = this.remoteFileRepositoryExecutor;
+                    }
+                } catch (InterruptedException e){
+                    Thread.currentThread().interrupt();
+                }
             }
         }
         if (remoteFileRepositoryExecutor == null) {
             //TODO i18n
-            throw new RuntimeException("Could not find executor");
+            throw MESSAGES.couldNotFindHcFileRepositoryConnection();
         }
         return remoteFileRepositoryExecutor.getFile(relativePath, repoId, localDeploymentFolder);
     }

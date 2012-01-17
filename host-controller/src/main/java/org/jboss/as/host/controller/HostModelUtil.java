@@ -102,7 +102,6 @@ import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
 import org.jboss.as.domain.controller.operations.deployment.HostProcessReloadHandler;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
 import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
-import org.jboss.as.host.controller.RemoteDomainConnectionService.RemoteFileRepository;
 import org.jboss.as.host.controller.descriptions.HostDescriptionProviders;
 import org.jboss.as.host.controller.descriptions.HostRootDescription;
 import org.jboss.as.host.controller.operations.HostShutdownHandler;
@@ -191,7 +190,7 @@ public class HostModelUtil {
                                           final HostControllerEnvironment environment, final HostRunningModeControl runningModeControl,
                                           final HostFileRepository localFileRepository,
                                           final LocalHostControllerInfoImpl hostControllerInfo, final ServerInventory serverInventory,
-                                          final RemoteFileRepository remoteFileRepository,
+                                          final HostFileRepository remoteFileRepository,
                                           final ContentRepository contentRepository,
                                           final DomainController domainController,
                                           final UnregisteredHostChannelRegistry channelRegistry,

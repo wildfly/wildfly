@@ -32,6 +32,7 @@ import java.util.List;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.services.security.VaultReaderException;
+import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
@@ -311,15 +312,16 @@ public interface ServerMessages {
     @Message(id = 15837, value = "Did not read the entire file. Missing: %d")
     IOException didNotReadEntireFile(long missing);
 
-    /**
-     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#INTERFACE_BIND_ADDRESS} command line
-     * argument.
-     *
-     * @param argument the name of the argument
-     *
-     * @return the message.
-     */
-    @Message(id = 15838, value = "No value was provided for argument %s%n")
+   @Message(id = 15838, value = "No value was provided for argument %s%n")
     String noArgValue(String argument);
+
+    @Message(id = 15839, value = "Could not find the file repository connection to the host controller.")
+    IllegalStateException couldNotFindHcFileRepositoryConnection();
+
+    @Message(id = 15840, value = "Only 'hash' is allowed for deployment addition for a domain mode server: %s")
+    IllegalStateException onlyHashAllowedForDeploymentAddInDomainServer(ModelNode contentItemNode);
+
+    @Message(id = 15841, value = "Only 'hash' is allowed for deployment full replacement for a domain mode server: %s")
+    IllegalStateException onlyHashAllowedForDeploymentFullReplaceInDomainServer(ModelNode contentItemNode);
 
 }
