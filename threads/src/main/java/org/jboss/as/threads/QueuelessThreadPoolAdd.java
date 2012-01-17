@@ -93,7 +93,7 @@ public class QueuelessThreadPoolAdd extends AbstractAddStepHandler {
 
         ThreadPoolManagementUtils.installThreadPoolService(service, params.getName(), serviceNameBase,
                 params.getThreadFactory(), threadFactoryResolver, service.getThreadFactoryInjector(),
-                params.getHandoffExecutor(), handoffExecutorResolver, service.getHandoffExecutorInjector(),
+                params.getHandoffExecutor(), handoffExecutorResolver, blocking ?  null : service.getHandoffExecutorInjector(),
                 context.getServiceTarget(), newControllers, verificationHandler);
     }
 

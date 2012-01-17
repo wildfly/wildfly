@@ -42,6 +42,9 @@ import org.jboss.as.ejb3.subsystem.deployment.MessageDrivenBeanResourceDefinitio
 import org.jboss.as.ejb3.subsystem.deployment.SingletonBeanDeploymentResourceDefinition;
 import org.jboss.as.ejb3.subsystem.deployment.StatefulSessionBeanDeploymentResourceDefinition;
 import org.jboss.as.ejb3.subsystem.deployment.StatelessSessionBeanDeploymentResourceDefinition;
+import org.jboss.as.threads.ThreadFactoryResolver;
+import org.jboss.as.threads.ThreadsServices;
+import org.jboss.as.threads.UnboundedQueueThreadPoolResourceDefinition;
 
 /**
  * Extension that provides the EJB3 subsystem.
@@ -67,6 +70,9 @@ public class EJB3Extension implements Extension {
      */
     @Override
     public void initialize(ExtensionContext context) {
+
+        final boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
+
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
 
         subsystem.registerXMLElementWriter(EJB3Subsystem12Parser.INSTANCE);
@@ -93,12 +99,13 @@ public class EJB3Extension implements Extension {
         subsystemRegistration.registerSubModel(TimerServiceResourceDefinition.INSTANCE);
 
         // subsystem=ejb3/thread-pool=*
-        subsystemRegistration.registerSubModel(EJB3ThreadPoolResourceDefinition.INSTANCE);
+        subsystemRegistration.registerSubModel(UnboundedQueueThreadPoolResourceDefinition.create(EJB3SubsystemModel.THREAD_POOL,
+                new EJB3ThreadFactoryResolver(), EJB3SubsystemModel.BASE_THREAD_POOL_SERVICE_NAME, registerRuntimeOnly));
 
         // subsystem=ejb3/service=iiop
         subsystemRegistration.registerSubModel(EJB3IIOPResourceDefinition.INSTANCE);
 
-        if (context.isRuntimeOnlyRegistrationValid()) {
+        if (registerRuntimeOnly) {
             ResourceDefinition deploymentsDef = new SimpleResourceDefinition(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME),
                     getResourceDescriptionResolver("deployed"));
             final ManagementResourceRegistration deploymentsRegistration = subsystem.registerDeploymentModel(deploymentsDef);
@@ -118,5 +125,17 @@ public class EJB3Extension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_0, EJB3Subsystem10Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_1, EJB3Subsystem11Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_2, EJB3Subsystem12Parser.INSTANCE);
+    }
+
+    private static class EJB3ThreadFactoryResolver extends ThreadFactoryResolver.SimpleResolver {
+
+        private EJB3ThreadFactoryResolver() {
+            super(ThreadsServices.FACTORY);
+        }
+
+        @Override
+        protected String getThreadGroupName(String threadPoolName) {
+            return "EJB " + threadPoolName;
+        }
     }
 }

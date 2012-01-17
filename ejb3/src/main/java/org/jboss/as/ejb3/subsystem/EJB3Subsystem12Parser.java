@@ -25,6 +25,8 @@ package org.jboss.as.ejb3.subsystem;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.threads.Namespace;
+import org.jboss.as.threads.ThreadsParser;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementReader;
@@ -189,8 +191,8 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
         if (model.hasDefined(THREAD_POOL)) {
             // <timer-service>
             writer.writeStartElement(EJB3SubsystemXMLElement.THREAD_POOLS.getLocalName());
-            final ModelNode iiopModel = model.get(THREAD_POOL);
-            this.writeThreadPools(writer, iiopModel);
+            final ModelNode threadsModel = model.get(THREAD_POOL);
+            this.writeThreadPools(writer, threadsModel);
             // </timer-service>
             writer.writeEndElement();
         }
@@ -215,16 +217,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
 
     private void writeThreadPools(final XMLExtendedStreamWriter writer, final ModelNode threadPoolsModel) throws XMLStreamException {
         for (Property threadPool : threadPoolsModel.asPropertyList()) {
-            writer.writeStartElement(EJB3SubsystemXMLElement.THREAD_POOL.getLocalName());
-            writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), threadPool.getName());
-
-            if (threadPool.getValue().has(MAX_THREADS)) {
-                writer.writeAttribute(EJB3SubsystemXMLAttribute.MAX_THREADS.getLocalName(), threadPool.getValue().get(MAX_THREADS).asString());
-            }
-            if (threadPool.getValue().has(KEEPALIVE_TIME)) {
-                writer.writeAttribute(EJB3SubsystemXMLAttribute.KEEPALIVE_TIME.getLocalName(), threadPool.getValue().get(KEEPALIVE_TIME).asString());
-            }
-            writer.writeEndElement();
+            ThreadsParser.getInstance().writeUnboundedQueueThreadPool(writer, threadPool.getValue(), EJB3SubsystemXMLElement.THREAD_POOL.getLocalName(), true);
         }
     }
 
@@ -1077,10 +1070,17 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
     private void parseThreadPools(final XMLExtendedStreamReader reader, final List<ModelNode> operations) throws XMLStreamException {
         // no attributes expected
         requireNoAttributes(reader);
+
+
+        final ModelNode parentAddress = new ModelNode();
+        parentAddress.add(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME);
+
         while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
+            EJB3SubsystemNamespace readerNS = EJB3SubsystemNamespace.forUri(reader.getNamespaceURI());
             switch (EJB3SubsystemXMLElement.forName(reader.getLocalName())) {
                 case THREAD_POOL: {
-                    this.parseThreadPool(reader, operations);
+                    ThreadsParser.getInstance().parseUnboundedQueueThreadPool(reader, readerNS.getUriString(),
+                            Namespace.THREADS_1_1, parentAddress, operations, THREAD_POOL, null);
                     break;
                 }
                 default: {
@@ -1088,53 +1088,6 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
                 }
             }
         }
-    }
-
-
-    private void parseThreadPool(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
-
-        final int attCount = reader.getAttributeCount();
-        String threadPoolName = null;
-        Integer maxThreads = null;
-        Integer keepAlive = null;
-        final EnumSet<EJB3SubsystemXMLAttribute> required = EnumSet.of(EJB3SubsystemXMLAttribute.NAME);
-        for (int i = 0; i < attCount; i++) {
-            requireNoNamespaceAttribute(reader, i);
-            final String value = reader.getAttributeValue(i);
-            final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
-            required.remove(attribute);
-            switch (attribute) {
-                case NAME:
-                    threadPoolName = value.trim();
-                    break;
-                case MAX_THREADS:
-                    maxThreads = EJB3ThreadPoolResourceDefinition.MAX_THREADS.parse(value, reader).asInt();
-                    break;
-                case KEEPALIVE_TIME:
-                    keepAlive = EJB3ThreadPoolResourceDefinition.KEEPALIVE_TIME.parse(value, reader).asInt();
-                    break;
-                default:
-                    throw unexpectedAttribute(reader, i);
-            }
-        }
-        if (!required.isEmpty()) {
-            throw missingRequired(reader, required);
-        }
-
-        requireNoContent(reader);
-        final ModelNode address = new ModelNode();
-        address.add(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME);
-        address.add(THREAD_POOL, threadPoolName);
-        final ModelNode threadPoolAdd = new ModelNode();
-        threadPoolAdd.get(OP).set(ADD);
-        threadPoolAdd.get(OP_ADDR).set(address);
-        if (maxThreads != null) {
-            threadPoolAdd.get(MAX_THREADS).set(maxThreads.intValue());
-        }
-        if (keepAlive != null) {
-            threadPoolAdd.get(KEEPALIVE_TIME).set(keepAlive.intValue());
-        }
-        operations.add(threadPoolAdd);
     }
 
     /**

@@ -23,6 +23,8 @@
 package org.jboss.as.ejb3.subsystem;
 
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.threads.ThreadsServices;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * User: jpai
@@ -89,4 +91,6 @@ public interface EJB3SubsystemModel {
     PathElement TIMER_SERVICE_PATH = PathElement.pathElement(SERVICE, TIMER_SERVICE);
     PathElement THREAD_POOL_PATH = PathElement.pathElement(THREAD_POOL);
     PathElement IIOP_PATH = PathElement.pathElement(SERVICE, IIOP);
+
+    ServiceName BASE_THREAD_POOL_SERVICE_NAME = ThreadsServices.EXECUTOR.append("ejb3");
 }

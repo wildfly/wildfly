@@ -141,7 +141,10 @@
             </timer-service>
             <remote connector-ref="remoting-connector" thread-pool-name="default"/>
             <thread-pools>
-                <thread-pool name="default" max-threads="10" keepalive-time="100"/>
+                <thread-pool name="default">
+                    <max-threads count="10"/>
+                    <keepalive-time time="100" unit="milliseconds"/>
+                </thread-pool>
             </thread-pools>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:infinispan:1.1" default-cache-container="hibernate">
@@ -348,10 +351,10 @@
 			 <refresh-timeout>10000</refresh-timeout>
 		      </discovery-group>
 		   </discovery-groups>
-		   
+
 		   <cluster-connections>
 		      <cluster-connection name="my-cluster">
-			 <address>jms</address>	 
+			 <address>jms</address>
 			 <connector-ref>netty</connector-ref>
 			      <discovery-group-ref discovery-group-name="dg-group1"/>
 		      </cluster-connection>

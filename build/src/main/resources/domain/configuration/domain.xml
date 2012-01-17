@@ -127,7 +127,10 @@
                 </timer-service>
                 <remote connector-ref="remoting-connector" thread-pool-name="default"/>
                 <thread-pools>
-                    <thread-pool name="default" max-threads="10" keepalive-time="100"/>
+                    <thread-pool name="default">
+                        <max-threads count="10"/>
+                        <keepalive-time time="100" unit="milliseconds"/>
+                    </thread-pool>
                 </thread-pools>
                 <iiop enable-by-default="true" use-qualified-name="true"/>
             </subsystem>
@@ -434,7 +437,10 @@
                 </timer-service>
                 <remote connector-ref="remoting-connector" thread-pool-name="default"/>
                 <thread-pools>
-                    <thread-pool name="default" max-threads="10" keepalive-time="100"/>
+                    <thread-pool name="default">
+                        <max-threads count="10"/>
+                        <keepalive-time time="100" unit="milliseconds"/>
+                    </thread-pool>
                 </thread-pools>
                 <iiop enable-by-default="true" use-qualified-name="true"/>
             </subsystem>
