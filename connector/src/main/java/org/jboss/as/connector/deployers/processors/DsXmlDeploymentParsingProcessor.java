@@ -51,6 +51,7 @@ import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.DataSources;
 import org.jboss.jca.common.api.metadata.ds.XaDataSource;
 import org.jboss.jca.common.metadata.ds.DsParser;
+import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.logging.Logger;
@@ -204,6 +205,7 @@ public class DsXmlDeploymentParsingProcessor implements DeploymentUnitProcessor 
                         dataSourceService.getmanagementRepositoryInjector())
                 .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
                         dataSourceService.getSubjectFactoryInjector())
+                .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class, dataSourceService.getCcmInjector())
                 .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class,
                         dataSourceService.getDriverRegistryInjector()).addDependency(NamingService.SERVICE_NAME);
 
