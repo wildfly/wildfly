@@ -69,6 +69,7 @@ import java.util.concurrent.ExecutorService;
 import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.Attribute;
@@ -546,6 +547,12 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
                             HttpManagementResourceDefinition.SECURITY_REALM.parseAndSetParameter(value, addOp, reader);
                         } else {
                             NativeManagementResourceDefinition.SECURITY_REALM.parseAndSetParameter(value, addOp, reader);
+                        }
+                        break;
+                    }
+                    case CONSOLE_ENABLED:{
+                        if (http){
+                            HttpManagementResourceDefinition.CONSOLE_ENABLED.parseAndSetParameter(value,addOp,reader);
                         }
                         break;
                     }
@@ -1071,6 +1078,10 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
 
         writer.writeStartElement(Element.HTTP_INTERFACE.getLocalName());
         HttpManagementResourceDefinition.SECURITY_REALM.marshallAsAttribute(protocol, writer);
+        boolean consoleEnabled = protocol.get(ModelDescriptionConstants.CONSOLE_ENABLED).asBoolean(true);
+        if (!consoleEnabled){
+            HttpManagementResourceDefinition.CONSOLE_ENABLED.marshallAsAttribute(protocol, writer);
+        }
 
         if (HttpManagementResourceDefinition.INTERFACE.isMarshallable(protocol)) {
             writer.writeEmptyElement(Element.SOCKET.getLocalName());

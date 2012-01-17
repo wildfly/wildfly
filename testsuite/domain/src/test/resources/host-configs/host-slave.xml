@@ -44,7 +44,7 @@
             <native-interface security-realm="ManagementRealm">
                 <socket interface="public" port="19999"/>
             </native-interface>
-            <http-interface security-realm="ManagementRealm">
+            <http-interface security-realm="ManagementRealm" console-enabled="false">
                 <socket interface="public" port="19990"/>
             </http-interface>
         </management-interfaces>

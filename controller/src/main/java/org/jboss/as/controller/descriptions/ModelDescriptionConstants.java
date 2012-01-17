@@ -62,6 +62,7 @@ public class ModelDescriptionConstants {
     public static final String CONCURRENT_GROUPS = "concurrent-groups";
     public static final String CONNECTION = "connection";
     public static final String CONNECTIONS = "connections";
+    public static final String CONSOLE_ENABLED = "console-enabled";
     public static final String CONTENT = "content";
     public static final String CORE_SERVICE = "core-service";
     public static final String CPU_AFFINITY = "cpu-affinity";

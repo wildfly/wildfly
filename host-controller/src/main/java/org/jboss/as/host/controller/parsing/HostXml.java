@@ -27,6 +27,7 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONSOLE_ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
@@ -567,6 +568,12 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
                         }
                         break;
                     }
+                    case CONSOLE_ENABLED:{
+                        if (http){
+                            org.jboss.as.server.mgmt.HttpManagementResourceDefinition.CONSOLE_ENABLED.parseAndSetParameter(value,addOp,reader);
+                        }
+                        break;
+                    }
                     default:
                         throw unexpectedAttribute(reader, i);
                 }
@@ -1067,6 +1074,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
 
         writer.writeStartElement(Element.HTTP_INTERFACE.getLocalName());
         HttpManagementResourceDefinition.SECURITY_REALM.marshallAsAttribute(protocol, writer);
+        HttpManagementResourceDefinition.CONSOLE_ENABLED.marshallAsAttribute(protocol, writer);
 
         writer.writeEmptyElement(Element.SOCKET.getLocalName());
         HttpManagementResourceDefinition.INTERFACE.marshallAsAttribute(protocol, writer);
@@ -1092,6 +1100,9 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
             }
             if (remote.hasDefined(SECURITY_REALM)) {
                 writeAttribute(writer, Attribute.SECURITY_REALM, remote.require(SECURITY_REALM).asString());
+            }
+            if (remote.get(CONSOLE_ENABLED).asBoolean(false)){
+                writeAttribute(writer, Attribute.CONSOLE_ENABLED, remote.require(CONSOLE_ENABLED).asString());
             }
             writer.writeEndElement();
         }
