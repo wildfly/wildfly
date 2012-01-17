@@ -403,4 +403,27 @@ public interface DomainManagementMessages {
      */
     @Message(id = 15245, value = "No authentication mechanism defined in security realm '%s'.")
     OperationFailedException noAuthenticationDefined(String realmName);
+
+    /**
+     * Creates an exception indicating that one of {@code attr1} or {@code attr2} is required.
+     *
+     * @param attr1 the first attribute.
+     * @param attr2 the second attribute.
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 15246, value = "One of '%s' or '%s' required.")
+    OperationFailedException operationFailedOneOfRequired(String attr1, String attr2);
+
+    /**
+     * Creates an exception indicating that only one of {@code attr1} or {@code attr2} is required.
+     *
+     * @param attr1 the first attribute.
+     * @param attr2 the second attribute.
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 15247, value = "Only one of '%s' or '%s' is required.")
+    OperationFailedException operationFailedOnlyOneOfRequired(String attr1, String attr2);
+
 }
