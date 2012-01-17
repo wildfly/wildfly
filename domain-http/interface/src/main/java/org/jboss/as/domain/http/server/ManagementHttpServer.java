@@ -46,6 +46,8 @@ import org.jboss.com.sun.net.httpserver.HttpsServer;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.sasl.callback.DigestHashCallback;
 
+import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
+
 /**
  * The general HTTP server for handling management API requests.
  *
@@ -170,11 +172,11 @@ public class ManagementHttpServer {
         }
 
         ManagementHttpServer managementHttpServer = new ManagementHttpServer(httpServer, secureHttpServer, securityRealm);
-        ResourceHandler consoleHandler;
+        ResourceHandler consoleHandler = null;
         try {
             consoleHandler = consoleMode.createConsoleHandler(consoleSlot);
         } catch (ModuleLoadException e) {
-            throw new IOException("Unable to load resource handler", e);
+            HttpServerLogger.ROOT_LOGGER.consoleModuleNotFound(consoleSlot==null?"main":consoleSlot);
         }
         managementHttpServer.addHandler(new RootHandler(consoleHandler));
         managementHttpServer.addHandler(new DomainApiHandler(modelControllerClient, auth));

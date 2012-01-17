@@ -149,7 +149,7 @@ class ResourceHandler implements ManagementHttpHandler {
             http.close();
 
             return;
-        } else if (resource.indexOf(".") == -1) {
+        } else if (!resource.contains(".")) {
             respond404(http);
         }
 
