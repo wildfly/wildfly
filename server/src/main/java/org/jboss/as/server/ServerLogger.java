@@ -184,4 +184,16 @@ public interface ServerLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 18568, value = "Deployment \"%s\" is using an unsupported module (\"%s\") which may be changed or removed in future versions without notice.")
     void unsupportedApiUsed(String deployment, ModuleIdentifier dependency);
+
+    @Message(id = 18569, value = "Exception occurred removing deployment content %s")
+    void failedToRemoveDeploymentContent(@Cause Throwable cause, String hash);
+
+    @LogMessage(level = INFO)
+    @Message(id = 15870, value = "Deploy of deployment \"%s\" was rolled back with failure message %s")
+    void deploymentRolledBack(String deployment, String message);
+
+    @LogMessage(level = INFO)
+    @Message(id = 15871, value = "Deploy of deployment \"%s\" was rolled back with no failure message")
+    void deploymentRolledBackWithNoMessage(String deployment);
+
 }

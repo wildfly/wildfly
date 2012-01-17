@@ -18,6 +18,18 @@
  */
 package org.jboss.as.server.deployment;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
+import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getContents;
+import static org.jboss.msc.service.ServiceController.Mode.REMOVE;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -28,7 +40,6 @@ import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.ServerLogger;
-import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.deployment.repository.api.ServerDeploymentRepository;
 import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.dmr.ModelNode;
@@ -39,17 +50,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.vfs.VirtualFile;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
-import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getContents;
-import static org.jboss.msc.service.ServiceController.Mode.REMOVE;
 
 /**
  * Utility methods used by operation handlers involved with deployment.
@@ -121,9 +121,9 @@ public class DeploymentHandlerUtil {
                                 context.removeService(controller.getName());
                             }
                             if (context.hasFailureDescription()) {
-                                ServerLogger.ROOT_LOGGER.undeploymentRolledBack(deploymentUnitName, context.getFailureDescription().asString());
+                                ServerLogger.ROOT_LOGGER.deploymentRolledBack(deploymentUnitName, context.getFailureDescription().asString());
                             } else {
-                                ServerLogger.ROOT_LOGGER.undeploymentRolledBackWithNoMessage(deploymentUnitName);
+                                ServerLogger.ROOT_LOGGER.deploymentRolledBackWithNoMessage(deploymentUnitName);
                             }
                         } else {
                             ServerLogger.ROOT_LOGGER.deploymentDeployed(deploymentUnitName);
@@ -134,7 +134,7 @@ public class DeploymentHandlerUtil {
         }
     }
 
-    private static Collection<ServiceController<?>> doDeploy(final OperationContext context, final String deploymentUnitName, final String managementName, final ServiceVerificationHandler verificationHandler,
+    public static Collection<ServiceController<?>> doDeploy(final OperationContext context, final String deploymentUnitName, final String managementName, final ServiceVerificationHandler verificationHandler,
                                                              final Resource deploymentResource, final ImmutableManagementResourceRegistration registration, final ManagementResourceRegistration mutableRegistration, final ContentItem... contents) {
         final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
         final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
@@ -175,7 +175,8 @@ public class DeploymentHandlerUtil {
         return controllers;
     }
 
-    public static void redeploy(final OperationContext operationContext, final String deploymentUnitName, final String managementName, final ContentItem... contents) throws OperationFailedException {
+    public static void redeploy(final OperationContext operationContext, final String deploymentUnitName,
+                                final String managementName, final ContentItem... contents) throws OperationFailedException {
         assert contents != null : "contents is null";
 
         if (operationContext.getType() == OperationContext.Type.SERVER) {
@@ -192,6 +193,7 @@ public class DeploymentHandlerUtil {
                     context.removeService(deploymentUnitServiceName);
                     context.removeService(deploymentUnitServiceName.append("contents"));
 
+                    final AtomicBoolean logged = new AtomicBoolean(false);
                     context.addStep(new OperationStepHandler() {
                         @Override
                         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -200,23 +202,27 @@ public class DeploymentHandlerUtil {
                             if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                                 if (context.hasFailureDescription()) {
                                     ServerLogger.ROOT_LOGGER.redeployRolledBack(deploymentUnitName, context.getFailureDescription().asString());
+                                    logged.set(true);
                                 } else {
                                     ServerLogger.ROOT_LOGGER.redeployRolledBackWithNoMessage(deploymentUnitName);
+                                    logged.set(true);
                                 }
                             } else {
                                 ServerLogger.ROOT_LOGGER.deploymentRedeployed(deploymentUnitName);
                             }
                         }
                     }, OperationContext.Stage.IMMEDIATE);
+
                     if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-                        // TODO restore
-                        if (context.hasFailureDescription()) {
-                            ServerLogger.ROOT_LOGGER.undeploymentRolledBack(deploymentUnitName, context.getFailureDescription().asString());
-                        } else {
-                            ServerLogger.ROOT_LOGGER.undeploymentRolledBackWithNoMessage(deploymentUnitName);
+                        ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
+                        doDeploy(context, deploymentUnitName, managementName, verificationHandler, deployment, registration, mutableRegistration,  contents);
+                        if (!logged.get()) {
+                            if (context.hasFailureDescription()) {
+                                ServerLogger.ROOT_LOGGER.undeploymentRolledBack(deploymentUnitName, context.getFailureDescription().asString());
+                            } else {
+                                ServerLogger.ROOT_LOGGER.undeploymentRolledBackWithNoMessage(deploymentUnitName);
+                            }
                         }
-                    } else {
-                        ServerLogger.ROOT_LOGGER.deploymentUndeployed(deploymentUnitName);
                     }
                 }
             }, OperationContext.Stage.RUNTIME);
