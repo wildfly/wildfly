@@ -113,7 +113,7 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
         final ModelNode modelB = servicesB.readWholeModel();
 
         //Make sure the models from the two controllers are identical
-        super.compare(modelA, modelB);
+        compare(modelA, modelB);
 
         // Test the describe operation
         final ModelNode operation = createDescribeOperation();
@@ -126,9 +126,9 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
         final KernelServices servicesC = super.installInController(additionalInit, operations);
         final ModelNode modelC = servicesC.readWholeModel();
 
-        super.compare(modelA, modelC);
+        compare(modelA, modelC);
 
-        super.assertRemoveSubsystemResources(servicesA, getIgnoredChildResourcesForRemovalTest());
+        assertRemoveSubsystemResources(servicesA, getIgnoredChildResourcesForRemovalTest());
     }
 
     protected ModelNode createDescribeOperation() {

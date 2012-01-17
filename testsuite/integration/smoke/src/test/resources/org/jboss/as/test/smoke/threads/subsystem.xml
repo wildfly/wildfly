@@ -1,0 +1,96 @@
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2012, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+<subsystem xmlns="urn:jboss:domain:threads:1.1">
+
+    <thread-factory name="factory1" group-name="factory1-threads" thread-name-pattern="%G %i" priority="5"/>
+    <thread-factory name="factory2"/>
+
+    <unbounded-queue-thread-pool name="unbounded-1">
+        <max-threads count="10"/>
+        <keepalive-time time="10" unit="seconds"/>
+    </unbounded-queue-thread-pool>
+    <unbounded-queue-thread-pool name="unbounded-2">
+        <max-threads count="10"/>
+        <keepalive-time time="10" unit="seconds"/>
+        <thread-factory name="factory1"/>
+    </unbounded-queue-thread-pool>
+
+    <bounded-queue-thread-pool name="bounded-1" allow-core-timeout="true">
+        <core-threads count="5"/>
+        <queue-length count="100"/>
+        <max-threads count="10"/>
+        <keepalive-time time="10" unit="seconds"/>
+        <handoff-executor name="unbounded-1"/>
+    </bounded-queue-thread-pool>
+    <bounded-queue-thread-pool name="bounded-2">
+        <core-threads count="5"/>
+        <queue-length count="100"/>
+        <max-threads count="10"/>
+        <keepalive-time time="10" unit="seconds"/>
+        <thread-factory name="factory1"/>
+    </bounded-queue-thread-pool>
+
+    <blocking-bounded-queue-thread-pool name="blocking-bounded-1" allow-core-timeout="true">
+        <core-threads count="5"/>
+        <queue-length count="100"/>
+        <max-threads count="10"/>
+        <keepalive-time time="10" unit="seconds"/>
+    </blocking-bounded-queue-thread-pool>
+    <blocking-bounded-queue-thread-pool name="blocking-bounded-2">
+        <core-threads count="5"/>
+        <queue-length count="100"/>
+        <max-threads count="10"/>
+        <keepalive-time time="10" unit="seconds"/>
+        <thread-factory name="factory1"/>
+    </blocking-bounded-queue-thread-pool>
+
+    <queueless-thread-pool name="queueless-1">
+        <max-threads count="10"/>
+        <keepalive-time time="10" unit="seconds"/>
+        <handoff-executor name="unbounded-1"/>
+    </queueless-thread-pool>
+    <queueless-thread-pool name="queueless-2">
+        <max-threads count="10"/>
+        <keepalive-time time="10" unit="seconds"/>
+        <thread-factory name="factory1"/>
+    </queueless-thread-pool>
+
+    <blocking-queueless-thread-pool name="blocking-queueless-1">
+        <max-threads count="10"/>
+        <keepalive-time time="10" unit="seconds"/>
+    </blocking-queueless-thread-pool>
+    <blocking-queueless-thread-pool name="blocking-queueless-2">
+        <max-threads count="10"/>
+        <keepalive-time time="10" unit="seconds"/>
+        <thread-factory name="factory1"/>
+    </blocking-queueless-thread-pool>
+
+    <scheduled-thread-pool name="scheduled-1">
+        <max-threads count="10"/>
+        <keepalive-time time="10" unit="seconds"/>
+    </scheduled-thread-pool>
+    <scheduled-thread-pool name="scheduled-2">
+        <max-threads count="10"/>
+        <keepalive-time time="10" unit="seconds"/>
+        <thread-factory name="factory1"/>
+    </scheduled-thread-pool>
+</subsystem>
