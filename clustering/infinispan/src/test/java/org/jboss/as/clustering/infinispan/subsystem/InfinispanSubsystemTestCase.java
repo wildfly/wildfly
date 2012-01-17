@@ -71,7 +71,7 @@ public class InfinispanSubsystemTestCase extends ClusteringSubsystemTest {
        */
        // Check that we have the expected number of operations
        // one for each resource instance
-       Assert.assertEquals(28, operations.size());
+       Assert.assertEquals(27, operations.size());
 
        // Check that each operation has the correct content
        ModelNode addSubsystem = operations.get(0);

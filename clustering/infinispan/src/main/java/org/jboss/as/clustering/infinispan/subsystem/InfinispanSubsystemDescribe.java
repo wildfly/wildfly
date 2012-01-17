@@ -174,13 +174,6 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
                 stateTransferAddress.add(ModelKeys.SINGLETON, ModelKeys.STATE_TRANSFER);
                 result.add(CacheConfigOperationHandlers.createOperation(CommonAttributes.STATE_TRANSFER_ATTRIBUTES, stateTransferAddress, stateTransfer));
             }
-            // command to recreate the rehashing configuration
-            if (cache.getValue().get(ModelKeys.SINGLETON, ModelKeys.REHASHING).isDefined()) {
-                ModelNode rehashing = cache.getValue().get(ModelKeys.SINGLETON, ModelKeys.REHASHING);
-                ModelNode rehashingAddress = address.clone();
-                rehashingAddress.add(ModelKeys.SINGLETON, ModelKeys.REHASHING);
-                result.add(CacheConfigOperationHandlers.createOperation(CommonAttributes.REHASHING_ATTRIBUTES, rehashingAddress, rehashing));
-            }
         }
     }
 }

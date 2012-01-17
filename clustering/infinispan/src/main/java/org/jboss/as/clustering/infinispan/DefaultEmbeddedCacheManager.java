@@ -41,6 +41,8 @@ import org.infinispan.commands.VisitableCommand;
 import org.infinispan.config.ConfigurationException;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.global.GlobalConfiguration;
+import org.infinispan.configuration.global.GlobalConfigurationBuilder;
+import org.infinispan.configuration.global.LegacyGlobalConfigurationAdaptor;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.interceptors.base.CommandInterceptor;
 import org.infinispan.manager.AbstractDelegatingEmbeddedCacheManager;
@@ -62,11 +64,25 @@ import org.infinispan.notifications.cachelistener.event.Event;
  * @author Paul Ferraro
  */
 public class DefaultEmbeddedCacheManager extends AbstractDelegatingEmbeddedCacheManager {
+
+    @SuppressWarnings("deprecation")
+    private static org.infinispan.config.GlobalConfiguration adapt(GlobalConfiguration config) {
+        org.infinispan.config.GlobalConfiguration global = LegacyGlobalConfigurationAdaptor.adapt(config);
+        global.fluent().globalJmxStatistics().cacheManagerName(config.globalJmxStatistics().cacheManagerName());
+        return global;
+    }
+
+    @SuppressWarnings("deprecation")
+    private static GlobalConfiguration adapt(org.infinispan.config.GlobalConfiguration global) {
+        GlobalConfigurationBuilder builder = new GlobalConfigurationBuilder().read(LegacyGlobalConfigurationAdaptor.adapt(global));
+        return builder.globalJmxStatistics().cacheManagerName(global.getCacheManagerName()).build();
+    }
+
     private final String defaultCache;
 
     @SuppressWarnings("deprecation")
     public DefaultEmbeddedCacheManager(GlobalConfiguration config, String defaultCache) {
-        this(new DefaultCacheManager(LegacyGlobalConfigurationAdapter.adapt(config), false), defaultCache);
+        this(new DefaultCacheManager(adapt(config), false), defaultCache);
     }
 
     public DefaultEmbeddedCacheManager(EmbeddedCacheManager container, String defaultCache) {
@@ -192,12 +208,9 @@ public class DefaultEmbeddedCacheManager extends AbstractDelegatingEmbeddedCache
         return ((name == null) || name.equals(CacheContainer.DEFAULT_CACHE_NAME)) ? this.defaultCache : name;
     }
 
-    /**
-     * Workaround for ISPN-1701.
-     */
     @Override
     public GlobalConfiguration getCacheManagerConfiguration() {
-        return LegacyGlobalConfigurationAdapter.adapt(this.getGlobalConfiguration());
+        return adapt(this.getGlobalConfiguration());
     }
 
     /**

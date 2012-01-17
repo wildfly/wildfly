@@ -356,13 +356,6 @@
     <xs:complexType name="invalidation-cache">
         <xs:complexContent>
             <xs:extension base="tns:clustered-cache">
-                <xs:sequence>
-                    <xs:element name="state-transfer" type="tns:state-transfer" minOccurs="0">
-                        <xs:annotation>
-                            <xs:documentation></xs:documentation>
-                        </xs:annotation>
-                    </xs:element>
-                </xs:sequence>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
@@ -385,7 +378,7 @@
         <xs:complexContent>
             <xs:extension base="tns:clustered-cache">
                 <xs:sequence>
-                    <xs:element name="rehashing" type="tns:rehashing" minOccurs="0">
+                    <xs:element name="state-transfer" type="tns:state-transfer" minOccurs="0">
                         <xs:annotation>
                             <xs:documentation></xs:documentation>
                         </xs:annotation>
@@ -654,25 +647,7 @@
                 <xs:documentation></xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="flush-timeout" type="xs:long" default="60000">
-            <xs:annotation>
-                <xs:documentation></xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-    </xs:complexType>
-
-    <xs:complexType name="rehashing">
-        <xs:attribute name="enabled" type="xs:boolean" default="true">
-            <xs:annotation>
-                <xs:documentation></xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="timeout" type="xs:long" default="600000">
-            <xs:annotation>
-                <xs:documentation></xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="wait" type="xs:long" default="600000">
+        <xs:attribute name="chunk-size" type="xs:integer" default="10000">
             <xs:annotation>
                 <xs:documentation></xs:documentation>
             </xs:annotation>

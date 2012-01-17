@@ -231,25 +231,6 @@ public class InfinispanSubsystemProviders {
         }
     };
 
-    static final DescriptionProvider REHASHING = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return InfinispanDescriptions.getRehashingDescription(locale);
-        }
-    };
-    static final DescriptionProvider REHASHING_ADD = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return InfinispanDescriptions.getRehashingAddDescription(locale);
-        }
-    };
-    static final DescriptionProvider REHASHING_REMOVE = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return InfinispanDescriptions.getRehashingRemoveDescription(locale);
-        }
-    };
-
     static final DescriptionProvider STORE_PROPERTY = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {

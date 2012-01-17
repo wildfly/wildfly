@@ -26,6 +26,8 @@ public interface CommonAttributes {
             new ModelNode().set(intDefault), ModelType.INT, true);
     SimpleAttributeDefinition BATCHING = new SimpleAttributeDefinition(ModelKeys.BATCHING,
             new ModelNode().set(booleanDefault), ModelType.BOOLEAN,  true);
+    SimpleAttributeDefinition CHUNK_SIZE = new SimpleAttributeDefinition(ModelKeys.CHUNK_SIZE,
+            new ModelNode().set(intDefault), ModelType.INT,  true);
     SimpleAttributeDefinition CLASS = new SimpleAttributeDefinition(ModelKeys.CLASS, ModelType.STRING, true);
     SimpleAttributeDefinition CONCURRENCY_LEVEL = new SimpleAttributeDefinition(ModelKeys.CONCURRENCY_LEVEL,
             new ModelNode().set(intDefault), ModelType.INT, true);
@@ -43,8 +45,6 @@ public interface CommonAttributes {
             new ModelNode().set(intDefault), ModelType.INT, true);
     SimpleAttributeDefinition FETCH_STATE = new SimpleAttributeDefinition(ModelKeys.FETCH_STATE,
             new ModelNode().set(booleanDefault), ModelType.BOOLEAN,  true);
-    SimpleAttributeDefinition FLUSH_TIMEOUT = new SimpleAttributeDefinition(ModelKeys.FLUSH_TIMEOUT,
-            new ModelNode().set(longDefault), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
     SimpleAttributeDefinition INDEXING = new SimpleAttributeDefinition(ModelKeys.INDEXING, ModelType.STRING, true);
     SimpleAttributeDefinition INTERVAL = new SimpleAttributeDefinition(ModelKeys.INTERVAL,
             new ModelNode().set(longDefault), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
@@ -109,8 +109,6 @@ public interface CommonAttributes {
     SimpleAttributeDefinition VALUE = new SimpleAttributeDefinition("value", ModelType.STRING, false);
     SimpleAttributeDefinition VIRTUAL_NODES = new SimpleAttributeDefinition(ModelKeys.VIRTUAL_NODES,
             new ModelNode().set(intDefault), ModelType.INT, true);
-    SimpleAttributeDefinition WAIT = new SimpleAttributeDefinition(ModelKeys.WAIT,
-            new ModelNode().set(longDefault), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
 
     AttributeDefinition[] CACHE_CONTAINER_ATTRIBUTES = { DEFAULT_CACHE, JNDI_NAME, LISTENER_EXECUTOR, EVICTION_EXECUTOR, REPLICATION_QUEUE_EXECUTOR, ALIAS };
     AttributeDefinition[] TRANSPORT_ATTRIBUTES = { STACK, EXECUTOR, LOCK_TIMEOUT, SITE, RACK, MACHINE  };
@@ -128,7 +126,5 @@ public interface CommonAttributes {
     AttributeDefinition[] JDBC_STORE_ATTRIBUTES = { DATA_SOURCE };
     AttributeDefinition[] REMOTE_ATTRIBUTES = { /* REMOTE_SERVER */ };
 
-    AttributeDefinition[] STATE_TRANSFER_ATTRIBUTES = { ENABLED, TIMEOUT, FLUSH_TIMEOUT };
-    AttributeDefinition[] REHASHING_ATTRIBUTES = { ENABLED, TIMEOUT, WAIT };
-
+    AttributeDefinition[] STATE_TRANSFER_ATTRIBUTES = { ENABLED, TIMEOUT, CHUNK_SIZE };
 }

@@ -58,10 +58,6 @@ public class CacheConfigOperationHandlers {
     static final OperationStepHandler STATE_TRANSFER_ADD = new BasicCacheConfigAdd(CommonAttributes.STATE_TRANSFER_ATTRIBUTES);
     static final SelfRegisteringAttributeHandler STATE_TRANSFER_ATTR = new AttributeWriteHandler(CommonAttributes.STATE_TRANSFER_ATTRIBUTES);
 
-    /** The cache rehashing config add operation handler. */
-    static final OperationStepHandler REHASHING_ADD = new BasicCacheConfigAdd(CommonAttributes.REHASHING_ATTRIBUTES);
-    static final SelfRegisteringAttributeHandler REHASHING_ATTR = new AttributeWriteHandler(CommonAttributes.REHASHING_ATTRIBUTES);
-
     /** The cache store config add operation handler. */
     static final OperationStepHandler STORE_ADD = new BasicCacheConfigAdd(CommonAttributes.STORE_ATTRIBUTES);
     static final SelfRegisteringAttributeHandler STORE_ATTR = new AttributeWriteHandler(CommonAttributes.STORE_ATTRIBUTES);

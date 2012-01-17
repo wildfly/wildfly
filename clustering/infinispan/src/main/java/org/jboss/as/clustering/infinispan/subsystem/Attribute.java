@@ -41,6 +41,7 @@ public enum Attribute {
     BATCH_SIZE(ModelKeys.BATCH_SIZE),
     BATCHING(ModelKeys.BATCHING),
     CACHE(ModelKeys.CACHE),
+    CHUNK_SIZE(ModelKeys.CHUNK_SIZE),
     CLASS(ModelKeys.CLASS),
     CONCURRENCY_LEVEL(ModelKeys.CONCURRENCY_LEVEL),
     DATASOURCE(ModelKeys.DATASOURCE),
@@ -52,7 +53,7 @@ public enum Attribute {
     EXECUTOR(ModelKeys.EXECUTOR),
     FETCH_SIZE(ModelKeys.FETCH_SIZE),
     FETCH_STATE(ModelKeys.FETCH_STATE),
-    FLUSH_TIMEOUT(ModelKeys.FLUSH_TIMEOUT),
+    @Deprecated FLUSH_TIMEOUT("flush-timeout"),
     INDEXING(ModelKeys.INDEXING),
     INTERVAL(ModelKeys.INTERVAL),
     ISOLATION(ModelKeys.ISOLATION),
@@ -94,7 +95,6 @@ public enum Attribute {
     TIMEOUT(ModelKeys.TIMEOUT),
     TYPE(ModelKeys.TYPE),
     VIRTUAL_NODES(ModelKeys.VIRTUAL_NODES),
-    WAIT(ModelKeys.WAIT)
     ;
 
     private final String name;
