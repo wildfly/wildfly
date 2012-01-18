@@ -5,8 +5,8 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.loginmodules.common.Coding;
-import org.jboss.as.test.integration.security.loginmodules.common.Utils;
 import org.jboss.as.test.integration.security.loginmodules.common.WebAppDeployment;
 import org.jboss.as.test.integration.web.security.SecuredServlet;
 import org.jboss.logging.Logger;
@@ -19,10 +19,10 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.jboss.as.test.integration.security.loginmodules.common.Utils.authAndGetResponse;
-import static org.jboss.as.test.integration.security.loginmodules.common.Utils.getContent;
-import static org.jboss.as.test.integration.security.loginmodules.common.Utils.getResource;
-import static org.jboss.as.test.integration.security.loginmodules.common.Utils.hash;
+import static org.jboss.as.test.integration.security.common.Utils.authAndGetResponse;
+import static org.jboss.as.test.integration.security.common.Utils.getContent;
+import static org.jboss.as.test.integration.security.common.Utils.getResource;
+import static org.jboss.as.test.integration.security.common.Utils.hash;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
