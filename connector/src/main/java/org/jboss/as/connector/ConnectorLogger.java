@@ -22,14 +22,14 @@
 
 package org.jboss.as.connector;
 
+import java.sql.Driver;
+
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 import org.jboss.msc.service.ServiceName;
-
-import java.sql.Driver;
 
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
@@ -192,4 +192,8 @@ public interface ConnectorLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 10410, value = "Unbound JCA %s [%s]")
     void unboundJca(String description, String jndiName);
+
+    @LogMessage(level = WARN)
+    @Message(id = 10411, value = "<drivers/> in standalone -ds.xml deployments aren't supported: Ignoring %s")
+    void driversElementNotSupported(String deploymentName);
 }

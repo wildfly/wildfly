@@ -412,4 +412,7 @@ public interface ConnectorMessages {
     @Message(id = 10463, value = "%s cannot be null or empty")
     IllegalArgumentException stringParamCannotBeNullOrEmpty(final String paramName);
 
+    @Message(id = 10464, value = "Exception deploying datasource %s")
+    DeploymentUnitProcessingException exceptionDeployingDatasource(@Cause Throwable cause, String datasource);
+
 }

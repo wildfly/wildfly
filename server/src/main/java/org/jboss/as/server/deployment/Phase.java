@@ -413,6 +413,7 @@ public enum Phase {
     public static final int INSTALL_DEPLOYMENT_REPOSITORY               = 0x1E00;
     public static final int INSTALL_EJB_MANAGEMENT_RESOURCES            = 0x1F00;
     public static final int INSTALL_APPLICATION_CLIENT                  = 0x2000;
+    public static final int INSTALL_DSXML_DEPLOYMENT                    = 0x2010;
 
     // CLEANUP
     public static final int CLEANUP_REFLECTION_INDEX                    = 0x0100;

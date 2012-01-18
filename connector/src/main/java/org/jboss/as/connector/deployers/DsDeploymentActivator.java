@@ -25,6 +25,7 @@ package org.jboss.as.connector.deployers;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.jboss.as.connector.deployers.processors.DsXmlDeploymentInstallProcessor;
 import org.jboss.as.connector.deployers.processors.DsXmlDeploymentParsingProcessor;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
@@ -50,5 +51,6 @@ public class DsDeploymentActivator {
 
     public void activateProcessors(final DeploymentProcessorTarget updateContext) {
         updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_DSXML_DEPLOYMENT, new DsXmlDeploymentParsingProcessor());
+        updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_DSXML_DEPLOYMENT, new DsXmlDeploymentInstallProcessor());
     }
 }
