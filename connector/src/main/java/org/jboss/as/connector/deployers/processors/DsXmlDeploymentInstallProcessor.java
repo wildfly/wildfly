@@ -25,6 +25,7 @@ package org.jboss.as.connector.deployers.processors;
 import java.sql.Driver;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.jboss.as.connector.ConnectorLogger;
 import org.jboss.as.connector.ConnectorMessages;
@@ -37,21 +38,27 @@ import org.jboss.as.connector.subsystems.datasources.LocalDataSourceService;
 import org.jboss.as.connector.subsystems.datasources.ModifiableDataSource;
 import org.jboss.as.connector.subsystems.datasources.ModifiableXaDataSource;
 import org.jboss.as.connector.subsystems.datasources.XMLDataSourceRuntimeHandler;
+import org.jboss.as.connector.subsystems.datasources.XMLXaDataSourceRuntimeHandler;
 import org.jboss.as.connector.subsystems.datasources.XaDataSourceService;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.security.service.SubjectFactoryService;
+import org.jboss.as.server.deployment.DeploymentModelUtils;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.DataSources;
 import org.jboss.jca.common.api.metadata.ds.XaDataSource;
@@ -75,12 +82,9 @@ import static org.jboss.as.connector.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGE
 public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor {
 
     private static final String DATA_SOURCE = "data-source";
-
-    /**
-     * Construct a new instance.
-     */
-    public DsXmlDeploymentInstallProcessor() {
-    }
+    private static final String XA_DATA_SOURCE = "xa-data-source";
+    private static final String CONNECTION_PROPERTIES = "connection-properties";
+    private static final String XA_CONNECTION_PROPERTIES = "xa-datasource-properties";
 
     /**
      * Process a deployment for standard ra deployment files. Will parse the xml
@@ -95,6 +99,8 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
         final DataSources dataSources = deploymentUnit.getAttachment(DsXmlDeploymentParsingProcessor.DATA_SOURCES_ATTACHMENT_KEY);
+
+        final ManagementResourceRegistration registration = phaseContext.getDeploymentUnit().getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT);
 
         if (dataSources != null) {
             if (dataSources.getDrivers() != null && dataSources.getDrivers().size() > 0) {
@@ -111,8 +117,8 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                             final String jndiName = cleanupJavaContext(ds.getJndiName());
                             LocalDataSourceService lds = new LocalDataSourceService(jndiName);
                             lds.getDataSourceConfigInjector().inject(buildDataSource(ds));
-                            startDataSource(lds, jndiName, ds.getDriver(), serviceTarget, verificationHandler);
                             installManagementModel(ds, deploymentUnit);
+                            startDataSource(lds, jndiName, ds.getDriver(), serviceTarget, verificationHandler, registration);
                         } catch (Exception e) {
                             throw ConnectorMessages.MESSAGES.exceptionDeployingDatasource(e, ds.getJndiName());
                         }
@@ -129,8 +135,8 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                             String jndiName = cleanupJavaContext(xads.getJndiName());
                             XaDataSourceService xds = new XaDataSourceService(jndiName);
                             xds.getDataSourceConfigInjector().inject(buildXaDataSource(xads));
-
-                            startDataSource(xds, jndiName, xads.getDriver(), serviceTarget, verificationHandler);
+                            installManagementModel(xads, deploymentUnit);
+                            startDataSource(xds, jndiName, xads.getDriver(), serviceTarget, verificationHandler, registration);
 
                         } catch (Exception e) {
                             throw ConnectorMessages.MESSAGES.exceptionDeployingDatasource(e, xads.getJndiName());
@@ -144,15 +150,40 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
 
     }
 
+
     private void installManagementModel(final DataSource ds, final DeploymentUnit deploymentUnit) {
-        final PathAddress addr = getDataSourceAddress(ds.getJndiName(), deploymentUnit);
+        final PathAddress addr = getDataSourceAddress(ds.getJndiName(), deploymentUnit, false);
         XMLDataSourceRuntimeHandler.INSTANCE.registerDataSource(addr, ds);
         deploymentUnit.createDeploymentSubModel(DataSourcesExtension.SUBSYSTEM_NAME, addr.getLastElement());
+        if (ds.getConnectionProperties() != null) {
+            for (final Map.Entry<String, String> prop : ds.getConnectionProperties().entrySet()) {
+                PathAddress registration = PathAddress.pathAddress(addr.getLastElement(), PathElement.pathElement(CONNECTION_PROPERTIES, prop.getKey()));
+                createDeploymentSubModel(registration, deploymentUnit);
+            }
+        }
+    }
+
+
+    private void installManagementModel(final XaDataSource ds, final DeploymentUnit deploymentUnit) {
+        final PathAddress addr = getDataSourceAddress(ds.getJndiName(), deploymentUnit, true);
+        XMLXaDataSourceRuntimeHandler.INSTANCE.registerDataSource(addr, ds);
+        deploymentUnit.createDeploymentSubModel(DataSourcesExtension.SUBSYSTEM_NAME, addr.getLastElement());
+        if (ds.getXaDataSourceProperty() != null) {
+            for (final Map.Entry<String, String> prop : ds.getXaDataSourceProperty().entrySet()) {
+                PathAddress registration = PathAddress.pathAddress(addr.getLastElement(), PathElement.pathElement(XA_CONNECTION_PROPERTIES, prop.getKey()));
+                createDeploymentSubModel(registration, deploymentUnit);
+            }
+        }
     }
 
     private void undeployDataSource(final DataSource ds, final DeploymentUnit deploymentUnit) {
-        final PathAddress addr = getDataSourceAddress(ds.getJndiName(), deploymentUnit);
+        final PathAddress addr = getDataSourceAddress(ds.getJndiName(), deploymentUnit, false);
         XMLDataSourceRuntimeHandler.INSTANCE.unregisterDataSource(addr);
+    }
+
+    private void undeployXaDataSource(final XaDataSource ds, final DeploymentUnit deploymentUnit) {
+        final PathAddress addr = getDataSourceAddress(ds.getJndiName(), deploymentUnit, true);
+        XMLXaDataSourceRuntimeHandler.INSTANCE.unregisterDataSource(addr);
     }
 
     public void undeploy(final DeploymentUnit context) {
@@ -162,6 +193,11 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
             if (dataSources.getDataSource() != null) {
                 for (final DataSource ds : dataSources.getDataSource()) {
                     undeployDataSource(ds, context);
+                }
+            }
+            if (dataSources.getXaDataSource() != null) {
+                for (final XaDataSource ds : dataSources.getXaDataSource()) {
+                    undeployXaDataSource(ds, context);
                 }
             }
         }
@@ -193,7 +229,9 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                                  final String jndiName,
                                  final String driverName,
                                  final ServiceTarget serviceTarget,
-                                 final ServiceVerificationHandler verificationHandler) {
+                                 final ServiceVerificationHandler verificationHandler,
+                                 final ManagementResourceRegistration registration) {
+
 
         final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
         final ServiceBuilder<?> dataSourceServiceBuilder = serviceTarget
@@ -207,6 +245,8 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                 .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class, dataSourceService.getCcmInjector())
                 .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class,
                         dataSourceService.getDriverRegistryInjector()).addDependency(NamingService.SERVICE_NAME);
+
+        //dataSourceServiceBuilder.addListener(new DataSourceStatisticsListener(registration, jndiName));
 
         final ServiceName driverServiceName = ServiceName.JBOSS.append("jdbc-driver", driverName.replaceAll("\\.", "_"));
         if (driverServiceName != null) {
@@ -263,7 +303,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
     }
 
 
-    private static PathAddress getDataSourceAddress(final String jndiName, DeploymentUnit deploymentUnit) {
+    private static PathAddress getDataSourceAddress(final String jndiName, DeploymentUnit deploymentUnit, boolean xa) {
         List<PathElement> elements = new ArrayList<PathElement>();
         if (deploymentUnit.getParent() == null) {
             elements.add(PathElement.pathElement(ModelDescriptionConstants.DEPLOYMENT, deploymentUnit.getName()));
@@ -272,7 +312,44 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
             elements.add(PathElement.pathElement(ModelDescriptionConstants.SUBDEPLOYMENT, deploymentUnit.getName()));
         }
         elements.add(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, DataSourcesExtension.SUBSYSTEM_NAME));
-        elements.add(PathElement.pathElement(DATA_SOURCE, jndiName));
+        if (xa) {
+            elements.add(PathElement.pathElement(XA_DATA_SOURCE, jndiName));
+        } else {
+            elements.add(PathElement.pathElement(DATA_SOURCE, jndiName));
+        }
         return PathAddress.pathAddress(elements);
     }
+
+
+    static ModelNode createDeploymentSubModel(final PathAddress address, final DeploymentUnit unit) {
+        final Resource root = unit.getAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE);
+        synchronized (root) {
+            final ImmutableManagementResourceRegistration registration = unit.getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT);
+            final PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, DataSourcesExtension.SUBSYSTEM_NAME));
+            final Resource subsystem = getOrCreate(root, subsystemAddress);
+
+            final ImmutableManagementResourceRegistration subModel = registration.getSubModel(subsystemAddress.append(address));
+            if (subModel == null) {
+                throw new IllegalStateException(address.toString());
+            }
+            return getOrCreate(subsystem, address).getModel();
+        }
+    }
+
+    static Resource getOrCreate(final Resource parent, final PathAddress address) {
+        Resource current = parent;
+        for (final PathElement element : address) {
+            synchronized (current) {
+                if (current.hasChild(element)) {
+                    current = current.requireChild(element);
+                } else {
+                    final Resource resource = Resource.Factory.create();
+                    current.registerChild(element, resource);
+                    current = resource;
+                }
+            }
+        }
+        return current;
+    }
+
 }

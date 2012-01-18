@@ -246,10 +246,10 @@ public class DataSourcesExtension implements Extension {
 
         for (final SimpleAttributeDefinition attribute : DataSourcesSubsystemProviders.DATASOURCE_ATTRIBUTE) {
             if (PoolConfigurationRWHandler.ATTRIBUTES.contains(attribute.getName())) {
-               dataSources.registerReadWriteAttribute(attribute.getName(), PoolConfigurationReadHandler.INSTANCE,
-                    LocalAndXaDataSourcePoolConfigurationWriteHandler.INSTANCE, Storage.CONFIGURATION);
+                dataSources.registerReadWriteAttribute(attribute.getName(), PoolConfigurationReadHandler.INSTANCE,
+                        LocalAndXaDataSourcePoolConfigurationWriteHandler.INSTANCE, Storage.CONFIGURATION);
             } else {
-               dataSources.registerReadWriteAttribute(attribute.getName(), null, new DisableRequiredWriteAttributeHandler(DATASOURCE_ATTRIBUTE) , Storage.CONFIGURATION);
+                dataSources.registerReadWriteAttribute(attribute.getName(), null, new DisableRequiredWriteAttributeHandler(DATASOURCE_ATTRIBUTE), Storage.CONFIGURATION);
             }
         }
 
@@ -274,10 +274,10 @@ public class DataSourcesExtension implements Extension {
 
         for (final SimpleAttributeDefinition attribute : DataSourcesSubsystemProviders.XA_DATASOURCE_ATTRIBUTE) {
             if (PoolConfigurationRWHandler.ATTRIBUTES.contains(attribute.getName())) {
-               xaDataSources.registerReadWriteAttribute(attribute.getName(), PoolConfigurationReadHandler.INSTANCE,
-                    LocalAndXaDataSourcePoolConfigurationWriteHandler.INSTANCE, Storage.CONFIGURATION);
+                xaDataSources.registerReadWriteAttribute(attribute.getName(), PoolConfigurationReadHandler.INSTANCE,
+                        LocalAndXaDataSourcePoolConfigurationWriteHandler.INSTANCE, Storage.CONFIGURATION);
             } else {
-               xaDataSources.registerReadWriteAttribute(attribute.getName(), null, new DisableRequiredWriteAttributeHandler(XA_DATASOURCE_ATTRIBUTE) , Storage.CONFIGURATION);
+                xaDataSources.registerReadWriteAttribute(attribute.getName(), null, new DisableRequiredWriteAttributeHandler(XA_DATASOURCE_ATTRIBUTE), Storage.CONFIGURATION);
             }
         }
         if (registerRuntimeOnly) {
@@ -291,41 +291,31 @@ public class DataSourcesExtension implements Extension {
         final ManagementResourceRegistration deploymentsRegistration = registration.registerDeploymentModel(deploymentsDef);
 
         final ManagementResourceRegistration dataSources = deploymentsRegistration.registerSubModel(PathElement.pathElement(DATA_SOURCE), DATA_SOURCE_DESC);
-        if (registerRuntimeOnly) {
-            dataSources.registerOperationHandler("flush-idle-connection-in-pool",
-                    PoolOperations.FlushIdleConnectionInPool.DS_INSTANCE, FLUSH_IDLE_CONNECTION_DESC, false);
-            dataSources.registerOperationHandler("flush-all-connection-in-pool",
-                    PoolOperations.FlushAllConnectionInPool.DS_INSTANCE, FLUSH_ALL_CONNECTION_DESC, false);
-            dataSources.registerOperationHandler("test-connection-in-pool", PoolOperations.TestConnectionInPool.DS_INSTANCE,
-                    TEST_CONNECTION_DESC, false);
-        }
+        dataSources.registerOperationHandler("flush-idle-connection-in-pool",
+                PoolOperations.FlushIdleConnectionInPool.DS_INSTANCE, FLUSH_IDLE_CONNECTION_DESC, false);
+        dataSources.registerOperationHandler("flush-all-connection-in-pool",
+                PoolOperations.FlushAllConnectionInPool.DS_INSTANCE, FLUSH_ALL_CONNECTION_DESC, false);
+        dataSources.registerOperationHandler("test-connection-in-pool", PoolOperations.TestConnectionInPool.DS_INSTANCE,
+                TEST_CONNECTION_DESC, false);
 
         final ManagementResourceRegistration configAdapter = dataSources.registerSubModel(PathElement.pathElement(CONNECTION_PROPERTIES.getName()), CONNECTION_PROPERTIES_DESC);
+        configAdapter.registerReadOnlyAttribute(Constants.CONNECTION_PROPERTY_VALUE.getName(), XMLDataSourceRuntimeHandler.INSTANCE, Storage.RUNTIME);
 
         for (final SimpleAttributeDefinition attribute : DataSourcesSubsystemProviders.DATASOURCE_ATTRIBUTE) {
-            if (PoolConfigurationRWHandler.ATTRIBUTES.contains(attribute.getName())) {
-                dataSources.registerReadOnlyAttribute(attribute.getName(), PoolConfigurationReadHandler.INSTANCE, Storage.RUNTIME);
-            } else {
-                dataSources.registerReadOnlyAttribute(attribute.getName(), XMLDataSourceRuntimeHandler.INSTANCE, Storage.RUNTIME);
-            }
+            dataSources.registerReadOnlyAttribute(attribute.getName(), XMLDataSourceRuntimeHandler.INSTANCE, Storage.RUNTIME);
         }
 
         final ManagementResourceRegistration xaDataSources = deploymentsRegistration.registerSubModel(PathElement.pathElement(XA_DATASOURCE),
                 XA_DATA_SOURCE_DESC);
-        if (registerRuntimeOnly) {
-            xaDataSources.registerOperationHandler("flush-idle-connection-in-pool", PoolOperations.FlushIdleConnectionInPool.DS_INSTANCE, FLUSH_IDLE_CONNECTION_DESC, false);
-            xaDataSources.registerOperationHandler("flush-all-connection-in-pool", PoolOperations.FlushAllConnectionInPool.DS_INSTANCE, FLUSH_ALL_CONNECTION_DESC, false);
-            xaDataSources.registerOperationHandler("test-connection-in-pool", PoolOperations.TestConnectionInPool.DS_INSTANCE, TEST_CONNECTION_DESC, false);
-        }
+        xaDataSources.registerOperationHandler("flush-idle-connection-in-pool", PoolOperations.FlushIdleConnectionInPool.DS_INSTANCE, FLUSH_IDLE_CONNECTION_DESC, false);
+        xaDataSources.registerOperationHandler("flush-all-connection-in-pool", PoolOperations.FlushAllConnectionInPool.DS_INSTANCE, FLUSH_ALL_CONNECTION_DESC, false);
+        xaDataSources.registerOperationHandler("test-connection-in-pool", PoolOperations.TestConnectionInPool.DS_INSTANCE, TEST_CONNECTION_DESC, false);
 
         final ManagementResourceRegistration xadatasourcePropertyAdapter = xaDataSources.registerSubModel(PathElement.pathElement(XADATASOURCE_PROPERTIES.getName()), XADATASOURCE_PROPERTIES_DESC);
+        xadatasourcePropertyAdapter.registerReadOnlyAttribute(Constants.CONNECTION_PROPERTY_VALUE.getName(), XMLXaDataSourceRuntimeHandler.INSTANCE, Storage.RUNTIME);
 
         for (final SimpleAttributeDefinition attribute : DataSourcesSubsystemProviders.XA_DATASOURCE_ATTRIBUTE) {
-            if (PoolConfigurationRWHandler.ATTRIBUTES.contains(attribute.getName())) {
-                xaDataSources.registerReadOnlyAttribute(attribute.getName(), PoolConfigurationReadHandler.INSTANCE, Storage.RUNTIME);
-            } else {
-                xaDataSources.registerReadOnlyAttribute(attribute.getName(), null, Storage.RUNTIME);
-            }
+            xaDataSources.registerReadOnlyAttribute(attribute.getName(), XMLXaDataSourceRuntimeHandler.INSTANCE, Storage.RUNTIME);
         }
     }
 
@@ -842,7 +832,7 @@ public class DataSourcesExtension implements Extension {
 
                     }
 
-                    if (! dataSource.hasDefined(ENABLED.getName()) || dataSource.get(ENABLED.getName()).asBoolean()) {
+                    if (!dataSource.hasDefined(ENABLED.getName()) || dataSource.get(ENABLED.getName()).asBoolean()) {
                         final ModelNode enableOperation = new ModelNode();
                         enableOperation.get(OP).set(ENABLE);
                         enableOperation.get(OP_ADDR).set(address);
@@ -876,7 +866,7 @@ public class DataSourcesExtension implements Extension {
 
                     }
 
-                    if (! dataSource.hasDefined(ENABLED.getName()) || dataSource.get(ENABLED.getName()).asBoolean()) {
+                    if (!dataSource.hasDefined(ENABLED.getName()) || dataSource.get(ENABLED.getName()).asBoolean()) {
                         final ModelNode enableOperation = new ModelNode();
                         enableOperation.get(OP).set(ENABLE);
                         enableOperation.get(OP_ADDR).set(address);

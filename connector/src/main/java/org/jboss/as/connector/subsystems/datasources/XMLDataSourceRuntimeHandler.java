@@ -5,6 +5,7 @@ import java.util.Map;
 import org.jboss.as.connector.ConnectorMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.ds.DataSource;
 
@@ -19,6 +20,24 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
 
     @Override
     protected void executeReadAttribute(final String attributeName, final OperationContext context, final DataSource dataSource, final PathAddress address) {
+
+        final String target = address.getLastElement().getKey();
+        if(target.equals(CONNECTION_PROPERTIES)) {
+            handlePropertyAttribute(attributeName, context, dataSource, address.getLastElement().getValue());
+        } else if(target.equals(DATA_SOURCE)) {
+            handleDatasourceAttribute(attributeName, context, dataSource);
+        }
+    }
+
+    private void handlePropertyAttribute(final String attributeName, final OperationContext context, final DataSource dataSource, final String propName) {
+        if(attributeName.equals(ModelDescriptionConstants.VALUE)) {
+            setStringIfNotNull(context, dataSource.getConnectionProperties().get(propName));
+        } else {
+            throw ConnectorMessages.MESSAGES.unknownAttribute(attributeName);
+        }
+    }
+
+    private void handleDatasourceAttribute(final String attributeName, final OperationContext context, final DataSource dataSource) {
         if (attributeName.equals(Constants.CONNECTION_URL.getName())) {
             setStringIfNotNull(context, dataSource.getConnectionUrl());
         } else if (attributeName.equals(Constants.DRIVER_CLASS.getName())) {
@@ -256,27 +275,4 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
         }
     }
 
-    private void setLongIfNotNull(final OperationContext context, final Long value) {
-        if (value != null) {
-            context.getResult().set(value);
-        }
-    }
-
-    private void setIntIfNotNull(final OperationContext context, final Integer value) {
-        if (value != null) {
-            context.getResult().set(value);
-        }
-    }
-
-    private void setBooleanIfNotNull(final OperationContext context, final Boolean value) {
-        if (value != null) {
-            context.getResult().set(value);
-        }
-    }
-
-    private void setStringIfNotNull(final OperationContext context, final String value) {
-        if (value != null) {
-            context.getResult().set(value);
-        }
-    }
 }

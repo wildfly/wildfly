@@ -44,6 +44,11 @@ import org.jboss.dmr.ModelNode;
  */
 public abstract class AbstractXMLDataSourceRuntimeHandler<T> extends AbstractRuntimeOnlyHandler {
 
+    protected static final String CONNECTION_PROPERTIES = "connection-properties";
+    protected static final String XA_DATASOURCE_PROPERTIES = "xa-datasource-properties";
+    protected static final String DATA_SOURCE = "data-source";
+    protected static final String XA_DATA_SOURCE = "xa-data-source";
+
     private final Map<PathAddress, T> dataSourceConfigs = Collections.synchronizedMap(new HashMap<PathAddress, T>());
 
     @Override
@@ -87,7 +92,13 @@ public abstract class AbstractXMLDataSourceRuntimeHandler<T> extends AbstractRun
         }
 
         final PathAddress pa = PathAddress.pathAddress(relativeAddress);
-        final T config = dataSourceConfigs.get(pa);
+        final T config;
+        if(operationAddress.getLastElement().getKey().equals(CONNECTION_PROPERTIES) ||
+                operationAddress.getLastElement().getKey().equals(XA_DATASOURCE_PROPERTIES)) {
+            config = dataSourceConfigs.get(pa.subAddress(0, pa.size() - 1));
+        } else {
+           config = dataSourceConfigs.get(pa);
+        }
         if (config == null) {
             String exceptionMessage = ConnectorMessages.MESSAGES.noDataSourceRegisteredForAddress(operationAddress);
             throw new OperationFailedException(new ModelNode().set(exceptionMessage));
@@ -96,4 +107,28 @@ public abstract class AbstractXMLDataSourceRuntimeHandler<T> extends AbstractRun
         return config;
     }
 
+
+    protected void setLongIfNotNull(final OperationContext context, final Long value) {
+        if (value != null) {
+            context.getResult().set(value);
+        }
+    }
+
+    protected void setIntIfNotNull(final OperationContext context, final Integer value) {
+        if (value != null) {
+            context.getResult().set(value);
+        }
+    }
+
+    protected void setBooleanIfNotNull(final OperationContext context, final Boolean value) {
+        if (value != null) {
+            context.getResult().set(value);
+        }
+    }
+
+    protected void setStringIfNotNull(final OperationContext context, final String value) {
+        if (value != null) {
+            context.getResult().set(value);
+        }
+    }
 }

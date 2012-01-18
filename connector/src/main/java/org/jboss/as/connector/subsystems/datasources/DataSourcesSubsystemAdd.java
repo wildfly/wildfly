@@ -22,13 +22,21 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import java.util.List;
+
+import org.jboss.as.connector.deployers.DsDeploymentActivator;
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.server.AbstractDeploymentChainStep;
+import org.jboss.as.server.DeploymentProcessorTarget;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
+
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATA_SOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE;
-
-import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.dmr.ModelNode;
 
 
 /**
@@ -37,7 +45,7 @@ import org.jboss.dmr.ModelNode;
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  * @author John Bailey
  */
-class DataSourcesSubsystemAdd extends AbstractAddStepHandler {
+class DataSourcesSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     static final DataSourcesSubsystemAdd INSTANCE = new DataSourcesSubsystemAdd();
 
@@ -48,7 +56,17 @@ class DataSourcesSubsystemAdd extends AbstractAddStepHandler {
         model.get(JDBC_DRIVER_NAME);
     }
 
-    protected boolean requiresRuntime(OperationContext context) {
-        return false;
+    @Override
+    protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+        final DsDeploymentActivator dsDeploymentActivator = new DsDeploymentActivator();
+
+        context.addStep(new AbstractDeploymentChainStep() {
+            protected void execute(DeploymentProcessorTarget processorTarget) {
+                dsDeploymentActivator.activateProcessors(processorTarget);
+            }
+        }, OperationContext.Stage.RUNTIME);
+
+
+        newControllers.addAll(dsDeploymentActivator.activateServices(context.getServiceTarget(), verificationHandler));
     }
 }
