@@ -228,7 +228,7 @@ public class ParserUtil {
                     buffer.setLength(0);
                     inValue = false;
                 } else if (HeaderListState.ID.equals(id)) {
-                    if (ctx.getCharacter() == '}') {
+                    if (!ctx.isEndOfContent()) {
                         handler.headerListEnd(ctx.getLocation());
                     }
                 } else if (HeaderNameState.ID.equals(id)) {

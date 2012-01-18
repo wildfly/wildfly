@@ -80,11 +80,12 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
     private Map<String, Map<String, CommandArgument>> propsByOp;
 
     private Map<String, ArgumentValueConverter> propConverters;
+    private Map<String, CommandLineCompleter> valueCompleters;
 
     public GenericTypeOperationHandler(CommandContext ctx, String nodeType, String idProperty) {
         this(ctx, nodeType, idProperty, Arrays.asList("read-attribute", "read-children-names", "read-children-resources",
                 "read-children-types", "read-operation-description", "read-operation-names",
-                "read-resource-description", "validate-address", "write-attribute"));
+                "read-resource-description", "validate-address", "write-attribute", "undefine-attribute"));
     }
 
     public GenericTypeOperationHandler(CommandContext ctx, String nodeType, String idProperty, List<String> excludeOperations) {
@@ -224,6 +225,13 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         propConverters.put(propertyName, converter);
     }
 
+    public void addValueCompleter(String propertyName, CommandLineCompleter completer) {
+        if(valueCompleters == null) {
+            valueCompleters = new HashMap<String, CommandLineCompleter>();
+        }
+        valueCompleters.put(propertyName, completer);
+    }
+
     @Override
     public Collection<CommandArgument> getArguments(CommandContext ctx) {
         ParsedCommandLine args = ctx.getParsedCommandLine();
@@ -254,12 +262,17 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                         if(propConverters != null) {
                             valueConverter = propConverters.get(prop.getName());
                         }
+                        if(valueCompleters != null) {
+                            valueCompleter = valueCompleters.get(prop.getName());
+                        }
                         if(valueConverter == null) {
                             valueConverter = ArgumentValueConverter.DEFAULT;
                             if(propDescr.has(Util.TYPE)) {
                                 type = propDescr.get(Util.TYPE).asType();
                                 if(ModelType.BOOLEAN == type) {
-                                    valueCompleter = SimpleTabCompleter.BOOLEAN;
+                                    if(valueCompleter == null) {
+                                        valueCompleter = SimpleTabCompleter.BOOLEAN;
+                                    }
                                 } else if(prop.getName().endsWith("properties")) { // TODO this is bad but can't rely on proper descriptions
                                     valueConverter = ArgumentValueConverter.PROPERTIES;
                                 } else if(ModelType.LIST == type) {
@@ -307,12 +320,17 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                         if(propConverters != null) {
                             valueConverter = propConverters.get(prop.getName());
                         }
+                        if(valueCompleters != null) {
+                            valueCompleter = valueCompleters.get(prop.getName());
+                        }
                         if(valueConverter == null) {
                             valueConverter = ArgumentValueConverter.DEFAULT;
                             if(propDescr.has(Util.TYPE)) {
                                 type = propDescr.get(Util.TYPE).asType();
                                 if(ModelType.BOOLEAN == type) {
-                                    valueCompleter = SimpleTabCompleter.BOOLEAN;
+                                    if(valueCompleter == null) {
+                                        valueCompleter = SimpleTabCompleter.BOOLEAN;
+                                    }
                                 } else if(prop.getName().endsWith("properties")) { // TODO this is bad but can't rely on proper descriptions
                                     valueConverter = ArgumentValueConverter.PROPERTIES;
                                 } else if(ModelType.LIST == type) {
