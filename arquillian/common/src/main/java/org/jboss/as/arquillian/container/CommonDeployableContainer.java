@@ -16,8 +16,15 @@
  */
 package org.jboss.as.arquillian.container;
 
+import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
+
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
@@ -33,8 +40,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 import org.jboss.util.NotImplementedException;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
-
 /**
  * A JBossAS deployable container
  *
@@ -43,6 +48,8 @@ import static org.jboss.as.arquillian.container.Authentication.getCallbackHandle
  */
 public abstract class CommonDeployableContainer<T extends CommonContainerConfiguration> implements DeployableContainer<T> {
 
+    private static final String JBOSS_URL_PKG_PREFIX = "org.jboss.ejb.client.naming";
+
     private final Logger log = Logger.getLogger(CommonDeployableContainer.class.getName());
     private T containerConfig;
     private ManagementClient managementClient;
@@ -50,6 +57,10 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
     @Inject
     @ContainerScoped
     private InstanceProducer<ArchiveDeployer> archiveDeployerInst;
+
+    @Inject
+    @ContainerScoped
+    private InstanceProducer<Context> jndiContext;
 
     @Override
     public ProtocolDescription getDefaultProtocol() {
@@ -73,6 +84,14 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
 
         archiveDeployerInst.set(new ArchiveDeployer(
                 ServerDeploymentManager.Factory.create(modelControllerClient)));
+
+        try {
+            final Properties jndiProps = new Properties();
+            jndiProps.setProperty(Context.URL_PKG_PREFIXES, JBOSS_URL_PKG_PREFIX);
+            jndiContext.set(new InitialContext(jndiProps));
+        } catch (final NamingException ne) {
+            throw new LifecycleException("Could not set JNDI Naming Context", ne);
+        }
 
         try {
             startInternal();
