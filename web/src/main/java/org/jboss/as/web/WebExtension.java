@@ -70,7 +70,6 @@ public class WebExtension implements Extension {
     /** {@inheritDoc} */
     @Override
     public void initialize(ExtensionContext context) {
-        log.debugf("Activating Web Extension");
 
         final boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
 

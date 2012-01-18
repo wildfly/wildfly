@@ -24,6 +24,7 @@ package org.jboss.as.web;
 
 
 import static org.jboss.as.web.Constants.MIME_MAPPING;
+import static org.jboss.as.web.WebMessages.MESSAGES;
 
 import java.util.Locale;
 
@@ -52,7 +53,7 @@ public class MimeMappingRemove implements OperationStepHandler, DescriptionProvi
             if (operation.hasDefined("name")) {
                 mimetypes.remove(operation.get("name").asString());
             } else
-                throw new OperationFailedException(new ModelNode().set("name is needed for remove-mime"));
+                throw new OperationFailedException(new ModelNode().set(MESSAGES.nameRequiredForRemoveMimeMapping()));
         }
 
         context.completeStep();

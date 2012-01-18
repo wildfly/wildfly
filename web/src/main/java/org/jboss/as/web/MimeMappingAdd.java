@@ -23,6 +23,7 @@
 package org.jboss.as.web;
 
 import static org.jboss.as.web.Constants.MIME_MAPPING;
+import static org.jboss.as.web.WebMessages.MESSAGES;
 
 import java.util.Locale;
 
@@ -51,7 +52,7 @@ public class MimeMappingAdd implements OperationStepHandler, DescriptionProvider
             if (operation.hasDefined("name") && operation.hasDefined("value")) {
                 mimetypes.get(operation.get("name").asString()).set(operation.get("value").asString());
             } else
-                throw new OperationFailedException(new ModelNode().set("name and value are needed for add-mime"));
+                throw new OperationFailedException(new ModelNode().set(MESSAGES.nameAndValueRequiredForAddMimeMapping()));
         }
 
         context.completeStep();

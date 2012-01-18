@@ -14,6 +14,8 @@
  */
 package org.jboss.as.web;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 import javax.management.MBeanServer;
 
 import org.apache.catalina.Engine;
@@ -96,7 +98,7 @@ class WebServerService implements WebServer, Service<WebServer> {
             server.init();
             server.start();
         } catch (Exception e) {
-            throw new StartException(e);
+            throw new StartException(MESSAGES.errorStartingWeb(), e);
         }
         this.server = server;
         this.service = service;

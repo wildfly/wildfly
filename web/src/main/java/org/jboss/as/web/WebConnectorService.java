@@ -21,6 +21,8 @@
  */
 package org.jboss.as.web;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
@@ -141,7 +143,7 @@ class WebConnectorService implements Service<Connector> {
                 if (connector.getProtocolHandler() instanceof Http11AprProtocol) {
                     nativeSSL = true;
                 } else if (!(connector.getProtocolHandler() instanceof Http11Protocol)) {
-                    throw new StartException("Non HTTP connectors do not support SSL");
+                    throw new StartException(MESSAGES.noSSLWithNonHTTPConnectors());
                 }
                 // Enable SSL
                 try {
@@ -149,7 +151,7 @@ class WebConnectorService implements Service<Connector> {
                     m.invoke(connector.getProtocolHandler(), true);
                 } catch (NoSuchMethodException e) {
                     // No SSL support
-                    throw new StartException(e);
+                    throw new StartException(MESSAGES.failedSSLConfiguration(), e);
                 }
                 if (nativeSSL) {
                     // OpenSSL configuration
@@ -191,7 +193,7 @@ class WebConnectorService implements Service<Connector> {
                             m.invoke(connector.getProtocolHandler(), ssl.get(Constants.CA_REVOCATION_URL).asString());
                         }
                    } catch (NoSuchMethodException e) {
-                        throw new StartException(e);
+                       throw new StartException(MESSAGES.failedSSLConfiguration(), e);
                     }
                 } else {
                     // JSSE configuration
@@ -259,7 +261,7 @@ class WebConnectorService implements Service<Connector> {
                         }
 
                     } catch (NoSuchMethodException e) {
-                        throw new StartException(e);
+                        throw new StartException(MESSAGES.failedSSLConfiguration(), e);
                     }
                 }
             }
@@ -268,7 +270,7 @@ class WebConnectorService implements Service<Connector> {
             connector.start();
             this.connector = connector;
         } catch (Exception e) {
-            throw new StartException(e);
+            throw new StartException(MESSAGES.connectorStartError(), e);
         }
         // Register the binding after the connector is started
         binding.getSocketBindings().getNamedRegistry().registerBinding(new ConnectorBinding(binding));
@@ -295,7 +297,7 @@ class WebConnectorService implements Service<Connector> {
     public synchronized Connector getValue() throws IllegalStateException {
         final Connector connector = this.connector;
         if (connector == null) {
-            throw new IllegalStateException();
+            throw MESSAGES.nullValue();
         }
         return connector;
     }

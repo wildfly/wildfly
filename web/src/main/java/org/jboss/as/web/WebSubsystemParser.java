@@ -34,6 +34,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttri
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.web.Constants.*;
+import static org.jboss.as.web.WebMessages.MESSAGES;
 
 import java.util.Collections;
 import java.util.List;
@@ -532,13 +533,13 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     break;
                 case DEFAULT_WEB_MODULE:
                     if (welcome)
-                        throw new XMLStreamException("A default web module can not be specified when the welcome root has been enabled", reader.getLocation());
+                        throw new XMLStreamException(MESSAGES.noRootWebappWithWelcomeWebapp(), reader.getLocation());
                     defaultWebModule = value;
                     break;
                 case ENABLE_WELCOME_ROOT:
                     welcome = Boolean.parseBoolean(value);
                     if (welcome && defaultWebModule != null)
-                        throw new XMLStreamException("The welcome root can not be enabled on a host that has a default web module", reader.getLocation());
+                        throw new XMLStreamException(MESSAGES.noWelcomeWebappWithDefaultWebModule(), reader.getLocation());
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);

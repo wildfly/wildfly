@@ -21,6 +21,8 @@
  */
 package org.jboss.as.web;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 
@@ -105,12 +107,12 @@ class WelcomeContextService implements Service<Context> {
                 host.addChild(context);
                 context.create();
             } catch (Exception e) {
-                throw new StartException("failed to create context", e);
+                throw new StartException(MESSAGES.createWelcomeContextFailed(), e);
             }
             try {
                 context.start();
             } catch (LifecycleException e) {
-                throw new StartException("failed to start context", e);
+                throw new StartException(MESSAGES.startWelcomeContextFailed(), e);
             }
     }
 
@@ -120,12 +122,12 @@ class WelcomeContextService implements Service<Context> {
             hostInjector.getValue().getHost().removeChild(context);
             context.stop();
         } catch (LifecycleException e) {
-            log.error("exception while stopping context", e);
+            WebLogger.WEB_LOGGER.stopWelcomeContextFailed(e);
         }
         try {
             context.destroy();
         } catch (Exception e) {
-            log.error("exception while destroying context", e);
+            WebLogger.WEB_LOGGER.destroyWelcomeContextFailed(e);
         }
     }
 
@@ -133,7 +135,7 @@ class WelcomeContextService implements Service<Context> {
     public synchronized Context getValue() throws IllegalStateException {
         final Context context = this.context;
         if (context == null) {
-            throw new IllegalStateException();
+            throw MESSAGES.nullValue();
         }
         return context;
     }

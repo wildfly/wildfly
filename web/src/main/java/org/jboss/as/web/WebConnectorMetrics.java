@@ -24,6 +24,7 @@ package org.jboss.as.web;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.web.WebMessages.MESSAGES;
 
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.RequestGroupInfo;
@@ -77,16 +78,16 @@ class WebConnectorMetrics implements OperationStepHandler {
                                 }
                             }
                         } catch (Exception e) {
-                            throw new OperationFailedException(new ModelNode().set("failed to get metrics" + e.getMessage()));
+                            throw new OperationFailedException(new ModelNode().set(MESSAGES.failedToGetMetrics(e.getMessage())));
                         }
                     } else {
-                        context.getResult().set("no metrics available");
+                        context.getResult().set(MESSAGES.noMetricsAvailable());
                     }
                     context.completeStep();
                 }
             }, OperationContext.Stage.RUNTIME);
         } else {
-            context.getResult().set("no metrics available");
+            context.getResult().set(MESSAGES.noMetricsAvailable());
         }
         context.completeStep();
     }

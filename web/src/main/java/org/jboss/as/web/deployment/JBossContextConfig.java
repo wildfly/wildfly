@@ -61,6 +61,7 @@ import org.jboss.as.clustering.web.DistributedCacheManagerFactory;
 import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.web.WebLogger;
 import org.jboss.as.web.deployment.helpers.VFSDirContext;
 import org.jboss.as.web.session.DistributableSessionManager;
 import org.jboss.logging.Logger;
@@ -146,7 +147,7 @@ public class JBossContextConfig extends ContextConfig {
                     try {
                         sci.onStartup(scisMetaData.getHandlesTypes().get(sci), context.getServletContext());
                     } catch (Throwable t) {
-                        log.error("Error calling onStartup for servlet container initializer: " + sci.getClass().getName(), t);
+                        WebLogger.WEB_LOGGER.sciOnStartupError(sci.getClass().getName(), t);
                         ok = false;
                     }
                 }
@@ -243,7 +244,7 @@ public class JBossContextConfig extends ContextConfig {
             }
             return instance;
         } catch (Throwable t) {
-            log.error("Error instantiating container component: " + className, t);
+            WebLogger.WEB_LOGGER.componentInstanceCreationFailed(className, t);
             ok = false;
         }
         return null;
@@ -284,7 +285,7 @@ public class JBossContextConfig extends ContextConfig {
                 context.setManager(new DistributableSessionManager<OutgoingDistributableSessionData>(this.factory.getOptionalValue(), this.context.getParent(), metaData));
                 context.setDistributable(true);
             } catch (Exception e) {
-                log.warn("Clustering not supported, falling back to non-clustered session manager.");
+                WebLogger.WEB_LOGGER.clusteringNotSupported();
             }
         }
 
@@ -903,7 +904,7 @@ public class JBossContextConfig extends ContextConfig {
                     }
                 } else if (overlays.size() > 0) {
                     // Error, overlays need a ProxyDirContext to compose results
-                    log.error(sm.getString("contextConfig.noOverlay", context.getName()));
+                    WebLogger.WEB_LOGGER.noOverlay(context.getName());
                     ok = false;
                 }
             }
@@ -923,7 +924,7 @@ public class JBossContextConfig extends ContextConfig {
 
         // Make our application unavailable if problems were encountered
         if (!ok) {
-            log.error(sm.getString("contextConfig.unavailable"));
+            WebLogger.WEB_LOGGER.unavailable(context.getName());
             context.setConfigured(false);
         }
 

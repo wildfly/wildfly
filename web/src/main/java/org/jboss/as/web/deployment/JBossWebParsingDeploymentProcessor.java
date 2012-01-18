@@ -21,6 +21,8 @@
  */
 package org.jboss.as.web.deployment;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -65,9 +67,9 @@ public class JBossWebParsingDeploymentProcessor implements DeploymentUnitProcess
                 XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
                 warMetaData.setJbossWebMetaData(JBossWebMetaDataParser.parse(xmlReader));
             } catch (XMLStreamException e) {
-                throw new DeploymentUnitProcessingException("Failed to parse " + jbossWebXml + " at [" + e.getLocation().getLineNumber() + "," +  e.getLocation().getColumnNumber() + "]");
+                throw new DeploymentUnitProcessingException(MESSAGES.failToParseXMLDescriptor(jbossWebXml, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber()));
             } catch (IOException e) {
-                throw new DeploymentUnitProcessingException("Failed to parse " + jbossWebXml, e);
+                throw new DeploymentUnitProcessingException(MESSAGES.failToParseXMLDescriptor(jbossWebXml), e);
             } finally {
                 try {
                     if (is != null) {
