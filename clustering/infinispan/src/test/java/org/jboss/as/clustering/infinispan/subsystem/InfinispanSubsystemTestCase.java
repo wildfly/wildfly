@@ -63,8 +63,7 @@ public class InfinispanSubsystemTestCase extends ClusteringSubsystemTest {
 
     @Parameters
     public static Collection<Object[]> data() {
-     // Object[][] data = new Object[][] { { "subsystem-infinispan_1_0.xml", 28 }, { "subsystem-infinispan_1_1.xml", 27 } };
-     Object[][] data = new Object[][] { { "subsystem-infinispan_1_0.xml", 28 } };
+     Object[][] data = new Object[][] { { "subsystem-infinispan_1_0.xml", 27 }, { "subsystem-infinispan_1_1.xml", 27 } };
       return Arrays.asList(data);
     }
 
@@ -134,6 +133,7 @@ public class InfinispanSubsystemTestCase extends ClusteringSubsystemTest {
        // Get the model and the persisted xml from the first controller
        ModelNode modelA = servicesA.readWholeModel();
        String marshalled = servicesA.getPersistedSubsystemXml();
+
        // Install the persisted xml from the first controller into a second controller
        KernelServices servicesB = super.installInController(marshalled);
        ModelNode modelB = servicesB.readWholeModel();

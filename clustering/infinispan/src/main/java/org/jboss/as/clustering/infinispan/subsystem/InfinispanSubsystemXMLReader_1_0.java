@@ -431,10 +431,6 @@ public class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<List<M
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             Element element = Element.forName(reader.getLocalName());
             switch (element) {
-                case STATE_TRANSFER: {
-                    this.parseStateTransfer(reader, cache, additionalConfigurationOperations);
-                    break;
-                }
                 default: {
                     this.parseCacheElement(reader, element, cache, additionalConfigurationOperations);
                 }
