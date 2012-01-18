@@ -167,13 +167,37 @@ interface ProcessMessages {
     String argDefaultMulticastAddress();
 
     /**
+     * Instructions for the {@link CommandLineArgument#ADMIN_ONLY} command line argument.
+     *
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Set the host controller's running type to ADMIN_ONLY causing it to open administrative interfaces and accept management requests but not start servers or, if this host controller is the master for the domain, accept incoming connections from slave host controllers.")
+    String argAdminOnly();
+
+    /**
+     * Instructions for the {@link CommandLineArgument#ADMIN_ONLY} command line argument.
+     *
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Set system property jboss.domain.master.address to the given value. In a default slave Host Controller config, this is used to configure the address of the master Host Controller.")
+    String argMasterAddress();
+
+    /**
+     * Instructions for the {@link CommandLineArgument#ADMIN_ONLY} command line argument.
+     *
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Set system property jboss.domain.master.port to the given value. In a default slave Host Controller config, this is used to configure the port used for native management communication by the master Host Controller.")
+    String argMasterPort();
+
+    /**
      * Instructions for the {@link CommandLineArgument#INTERFACE_BIND_ADDRESS} command line argument.
      *
      * @param argument the name of the argument
      *
      * @return the message.
      */
-    @Message(id = 12056, value = "No value was provided for argument %s")
+    @Message(id = 12050, value = "No value was provided for argument %s")
     String noArgValue(String argument);
 
     /**
@@ -183,7 +207,7 @@ interface ProcessMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 12057, value = "Could not find java executable under %s.")
+    @Message(id = 12051, value = "Could not find java executable under %s.")
     IllegalStateException cannotFindJavaExe(String binDir);
 
     /**
@@ -191,7 +215,7 @@ interface ProcessMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 12058, value = "Authentication key must be 16 bytes long")
+    @Message(id = 12052, value = "Authentication key must be 16 bytes long")
     IllegalArgumentException invalidAuthKeyLen();
 
     /**
@@ -199,7 +223,7 @@ interface ProcessMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 12059, value = "cmd must have at least one entry")
+    @Message(id = 12053, value = "cmd must have at least one entry")
     IllegalArgumentException invalidCommandLen();
 
     /**
@@ -209,7 +233,7 @@ interface ProcessMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 12060, value = "Java home '%s' does not exist.")
+    @Message(id = 12054, value = "Java home '%s' does not exist.")
     IllegalStateException invalidJavaHome(String dir);
 
     /**
@@ -220,7 +244,7 @@ interface ProcessMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 12061, value = "Java home's bin '%s' does not exist. The home directory was determined to be %s.")
+    @Message(id = 12055, value = "Java home's bin '%s' does not exist. The home directory was determined to be %s.")
     IllegalStateException invalidJavaHomeBin(String binDir, String javaHomeDir);
 
     /**
@@ -230,7 +254,7 @@ interface ProcessMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 12062, value = "%s length is invalid")
+    @Message(id = 12056, value = "%s length is invalid")
     IllegalArgumentException invalidLength(String parameterName);
 
     /**
@@ -240,7 +264,7 @@ interface ProcessMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 12063, value = "Invalid option: %s")
+    @Message(id = 12057, value = "Invalid option: %s")
     IllegalArgumentException invalidOption(String option);
 
     /**
@@ -248,7 +272,7 @@ interface ProcessMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 12064, value = "Command contains a null component")
+    @Message(id = 12058, value = "Command contains a null component")
     IllegalArgumentException nullCommandComponent();
 
     /**
@@ -258,30 +282,6 @@ interface ProcessMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 12065, value = "%s is null")
+    @Message(id = 12059, value = "%s is null")
     IllegalArgumentException nullVar(String varName);
-
-    /**
-     * Instructions for the {@link CommandLineArgument#ADMIN_ONLY} command line argument.
-     *
-     * @return the message.
-     */
-    @Message(id = 12066, value = "Set the host controller's running type to ADMIN_ONLY causing it to open administrative interfaces and accept management requests but not start servers or, if this host controller is the master for the domain, accept incoming connections from slave host controllers.")
-    String argAdminOnly();
-
-    /**
-     * Instructions for the {@link CommandLineArgument#ADMIN_ONLY} command line argument.
-     *
-     * @return the message.
-     */
-    @Message(id = 12067, value = "Set system property jboss.domain.master.address to the given value. In a default slave Host Controller config, this is used to configure the address of the master Host Controller.")
-    String argMasterAddress();
-
-    /**
-     * Instructions for the {@link CommandLineArgument#ADMIN_ONLY} command line argument.
-     *
-     * @return the message.
-     */
-    @Message(id = 12068, value = "Set system property jboss.domain.master.port to the given value. In a default slave Host Controller config, this is used to configure the port used for native management communication by the master Host Controller.")
-    String argMasterPort();
 }

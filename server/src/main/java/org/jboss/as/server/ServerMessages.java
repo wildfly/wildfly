@@ -235,7 +235,7 @@ public interface ServerMessages {
      *
      * @return the message.
      */
-    @Message(value = "Display this message and exit")
+    @Message(id = Message.NONE, value = "Display this message and exit")
     String argHelp();
 
     /**
@@ -300,7 +300,7 @@ public interface ServerMessages {
      *
      * @return the message.
      */
-    @Message(value = "No value was provided for argument %s%n")
+    @Message(id = 18534, value = "No value was provided for argument %s%n")
     String noArgValue(String argument);
 
     /**
