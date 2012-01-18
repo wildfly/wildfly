@@ -211,6 +211,13 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
         }else{
             consoleMode = ConsoleMode.NO_CONSOLE;
         }
+        boolean consoleEnabled = model.get(ModelDescriptionConstants.CONSOLE_ENABLED).asBoolean(true);
+        ConsoleMode consoleMode;
+        if (consoleEnabled){
+            consoleMode = context.getRunningMode() == RunningMode.ADMIN_ONLY ? ConsoleMode.ADMIN_ONLY : ConsoleMode.CONSOLE;
+        }else{
+            consoleMode = ConsoleMode.NO_CONSOLE;
+        }
 
         ServerEnvironment environment = (ServerEnvironment) context.getServiceRegistry(false).getRequiredService(ServerEnvironmentService.SERVICE_NAME).getValue();
         final HttpManagementService service = new HttpManagementService(consoleMode, environment.getProductConfig().getConsoleSlot());
