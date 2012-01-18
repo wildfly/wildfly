@@ -23,6 +23,7 @@
 package org.jboss.as.connector;
 
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.dmr.ModelNode;
@@ -415,4 +416,27 @@ public interface ConnectorMessages {
     @Message(id = 10464, value = "Exception deploying datasource %s")
     DeploymentUnitProcessingException exceptionDeployingDatasource(@Cause Throwable cause, String datasource);
 
+    /**
+     * No datasource exists at the deployment address
+     *
+     */
+    @Message(id = 10465, value = "No DataSource exists at address %s")
+    String noDataSourceRegisteredForAddress(PathAddress address);
+
+    /**
+     * Creates an exception indicating unknown attribute
+     *
+     * @return an {@link IllegalStateException} for the error.
+     */
+    @Message(id = 10466, value = "Unknown attribute %s")
+    IllegalStateException unknownAttribute(String attributeName);
+
+
+    /**
+     * Creates an exception indicating unknown operation
+     *
+     * @return an {@link IllegalStateException} for the error.
+     */
+    @Message(id = 10467, value = "Unknown operation %s")
+    IllegalStateException unknownOperation(String attributeName);
 }

@@ -23,6 +23,8 @@
 package org.jboss.as.connector.deployers.processors;
 
 import java.sql.Driver;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jboss.as.connector.ConnectorLogger;
 import org.jboss.as.connector.ConnectorMessages;
@@ -30,11 +32,16 @@ import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.registry.DriverRegistry;
 import org.jboss.as.connector.subsystems.datasources.AbstractDataSourceService;
 import org.jboss.as.connector.subsystems.datasources.DataSourceReferenceFactoryService;
+import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension;
 import org.jboss.as.connector.subsystems.datasources.LocalDataSourceService;
 import org.jboss.as.connector.subsystems.datasources.ModifiableDataSource;
 import org.jboss.as.connector.subsystems.datasources.ModifiableXaDataSource;
+import org.jboss.as.connector.subsystems.datasources.XMLDataSourceRuntimeHandler;
 import org.jboss.as.connector.subsystems.datasources.XaDataSourceService;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -67,6 +74,8 @@ import static org.jboss.as.connector.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGE
  */
 public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor {
 
+    private static final String DATA_SOURCE = "data-source";
+
     /**
      * Construct a new instance.
      */
@@ -85,7 +94,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
-        DataSources dataSources = deploymentUnit.getAttachment(DsXmlDeploymentParsingProcessor.DATA_SOURCES_ATTACHMENT_KEY);
+        final DataSources dataSources = deploymentUnit.getAttachment(DsXmlDeploymentParsingProcessor.DATA_SOURCES_ATTACHMENT_KEY);
 
         if (dataSources != null) {
             if (dataSources.getDrivers() != null && dataSources.getDrivers().size() > 0) {
@@ -102,8 +111,8 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                             final String jndiName = cleanupJavaContext(ds.getJndiName());
                             LocalDataSourceService lds = new LocalDataSourceService(jndiName);
                             lds.getDataSourceConfigInjector().inject(buildDataSource(ds));
-
                             startDataSource(lds, jndiName, ds.getDriver(), serviceTarget, verificationHandler);
+                            installManagementModel(ds, deploymentUnit);
                         } catch (Exception e) {
                             throw ConnectorMessages.MESSAGES.exceptionDeployingDatasource(e, ds.getJndiName());
                         }
@@ -135,9 +144,29 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
 
     }
 
+    private void installManagementModel(final DataSource ds, final DeploymentUnit deploymentUnit) {
+        final PathAddress addr = getDataSourceAddress(ds.getJndiName(), deploymentUnit);
+        XMLDataSourceRuntimeHandler.INSTANCE.registerDataSource(addr, ds);
+        deploymentUnit.createDeploymentSubModel(DataSourcesExtension.SUBSYSTEM_NAME, addr.getLastElement());
+    }
+
+    private void undeployDataSource(final DataSource ds, final DeploymentUnit deploymentUnit) {
+        final PathAddress addr = getDataSourceAddress(ds.getJndiName(), deploymentUnit);
+        XMLDataSourceRuntimeHandler.INSTANCE.unregisterDataSource(addr);
+    }
 
     public void undeploy(final DeploymentUnit context) {
+        final DataSources dataSources = context.getAttachment(DsXmlDeploymentParsingProcessor.DATA_SOURCES_ATTACHMENT_KEY);
+
+        if (dataSources != null) {
+            if (dataSources.getDataSource() != null) {
+                for (final DataSource ds : dataSources.getDataSource()) {
+                    undeployDataSource(ds, context);
+                }
+            }
+        }
     }
+
 
     private ModifiableDataSource buildDataSource(DataSource ds) throws org.jboss.jca.common.api.validator.ValidateException {
         return new ModifiableDataSource(ds.getConnectionUrl(),
@@ -231,5 +260,19 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
             bindName = jndiName;
         }
         return bindName;
+    }
+
+
+    private static PathAddress getDataSourceAddress(final String jndiName, DeploymentUnit deploymentUnit) {
+        List<PathElement> elements = new ArrayList<PathElement>();
+        if (deploymentUnit.getParent() == null) {
+            elements.add(PathElement.pathElement(ModelDescriptionConstants.DEPLOYMENT, deploymentUnit.getName()));
+        } else {
+            elements.add(PathElement.pathElement(ModelDescriptionConstants.DEPLOYMENT, deploymentUnit.getParent().getName()));
+            elements.add(PathElement.pathElement(ModelDescriptionConstants.SUBDEPLOYMENT, deploymentUnit.getName()));
+        }
+        elements.add(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, DataSourcesExtension.SUBSYSTEM_NAME));
+        elements.add(PathElement.pathElement(DATA_SOURCE, jndiName));
+        return PathAddress.pathAddress(elements);
     }
 }

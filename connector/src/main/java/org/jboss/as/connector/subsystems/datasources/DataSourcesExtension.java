@@ -306,7 +306,7 @@ public class DataSourcesExtension implements Extension {
             if (PoolConfigurationRWHandler.ATTRIBUTES.contains(attribute.getName())) {
                 dataSources.registerReadOnlyAttribute(attribute.getName(), PoolConfigurationReadHandler.INSTANCE, Storage.RUNTIME);
             } else {
-                dataSources.registerReadOnlyAttribute(attribute.getName(), null, Storage.RUNTIME);
+                dataSources.registerReadOnlyAttribute(attribute.getName(), XMLDataSourceRuntimeHandler.INSTANCE, Storage.RUNTIME);
             }
         }
 
