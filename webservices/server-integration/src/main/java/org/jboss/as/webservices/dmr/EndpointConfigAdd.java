@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -39,55 +39,37 @@ import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.wsf.spi.management.ServerConfig;
 import org.jboss.wsf.spi.metadata.config.EndpointConfig;
-import org.jboss.wsf.spi.metadata.config.Feature;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData;
 
 /**
- * OperationHandler to add an endpoint configuration to {@link org.jboss.as.webservices.service.ServerConfigService ServerConfigService}
  * @author <a href="ema@redhat.com">Jim Ma</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class EndpointConfigAdd extends AbstractAddStepHandler {
+final class EndpointConfigAdd extends AbstractAddStepHandler {
 
     static final EndpointConfigAdd INSTANCE = new EndpointConfigAdd();
 
+    private EndpointConfigAdd() {}
+
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-
-        if (operation.hasDefined(Constants.PRE_HANDLER_CHAINS)) {
-            ModelNode preHandlers = operation.get(Constants.PRE_HANDLER_CHAINS);
-            model.get(Constants.PRE_HANDLER_CHAINS).set(preHandlers);
-        }
-
-        if (operation.hasDefined(Constants.POST_HANDLER_CHAINS)) {
-            ModelNode postHandlers = operation.get(Constants.POST_HANDLER_CHAINS);
-            model.get(Constants.POST_HANDLER_CHAINS).set(postHandlers);
-        }
-
-        if (operation.hasDefined(Constants.PROPERTY)) {
-            ModelNode property = operation.get(Constants.PROPERTY);
-            model.get(Constants.PROPERTY).set(property);
-        }
-        if (operation.hasDefined(Constants.FEATURE)) {
-            ModelNode feature = operation.get(Constants.FEATURE);
-            model.get(Constants.FEATURE).set(feature);
-        }
+        // does nothing
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
-                                  ServiceVerificationHandler verificationHandler,
-                                  List<ServiceController<?>> newControllers) throws OperationFailedException {
-
-        ServiceController<?> configService = context.getServiceRegistry(true).getService(WSServices.CONFIG_SERVICE);
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+        // TODO: providy utility method to do this lookup
+        final ServiceController<?> configService = context.getServiceRegistry(true).getService(WSServices.CONFIG_SERVICE);
         if (configService != null) {
-
             final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             final String name = address.getLastElement().getValue();
 
             ServerConfig config = (ServerConfig) configService.getValue();
             EndpointConfig endpointConfig = new EndpointConfig();
             endpointConfig.setConfigName(name);
+            // TODO: remove this code
+            /*
             if (model.hasDefined(Constants.PRE_HANDLER_CHAINS)) {
                 ModelNode preHandlers = model.get(Constants.PRE_HANDLER_CHAINS);
                 endpointConfig.setPreHandlerChains(buildChainMD(preHandlers));
@@ -107,6 +89,7 @@ public class EndpointConfigAdd extends AbstractAddStepHandler {
                     endpointConfig.setFeature(new Feature(key), true);
                 }
             }
+            */
             config.addEndpointConfig(endpointConfig);
         }
     }
