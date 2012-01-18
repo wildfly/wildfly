@@ -90,6 +90,7 @@ import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.process.ExitCodes;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.process.ProcessInfo;
+import org.jboss.as.process.ProcessMessageHandler;
 import org.jboss.as.remoting.EndpointService;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.BootstrapListener;
@@ -410,9 +411,14 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
     @Override
     public void stopLocalHost() {
+        stopLocalHost(0);
+    }
+
+    @Override
+    public void stopLocalHost(int exitCode) {
         final ProcessControllerClient client = injectedProcessControllerConnection.getValue().getClient();
         try {
-            client.shutdown();
+            client.shutdown(exitCode);
         } catch (IOException e) {
             throw MESSAGES.errorClosingDownHost(e);
         }
@@ -461,16 +467,20 @@ public class DomainModelControllerService extends AbstractControllerService impl
     }
 
     private class DelegatingServerInventory implements ServerInventory {
-        public void serverRegistered(String serverProcessName, Channel channel, ProxyCreatedCallback callback) {
-            serverInventory.serverRegistered(serverProcessName, channel, callback);
+        public void serverCommunicationRegistered(String serverProcessName, Channel channel, ProxyCreatedCallback callback) {
+            serverInventory.serverCommunicationRegistered(serverProcessName, channel, callback);
+        }
+
+        public void serverProcessAdded(String processName) {
+            serverInventory.serverProcessAdded(processName);
         }
 
         public void serverStartFailed(String serverProcessName) {
             serverInventory.serverStartFailed(serverProcessName);
         }
 
-        public void serverStopped(String serverProcessName) {
-            serverInventory.serverStopped(serverProcessName);
+        public void serverProcessStopped(String serverProcessName) {
+            serverInventory.serverProcessStopped(serverProcessName);
         }
 
         public String getServerProcessName(String serverName) {
@@ -532,6 +542,26 @@ public class DomainModelControllerService extends AbstractControllerService impl
         @Override
         public void stopServers(int gracefulTimeout) {
             serverInventory.stopServers(gracefulTimeout);
+        }
+
+        @Override
+        public void connectionFinished() {
+            serverInventory.connectionFinished();
+        }
+
+        @Override
+        public void serverProcessStarted(String processName) {
+            serverInventory.serverProcessStarted(processName);
+        }
+
+        @Override
+        public void serverProcessRemoved(String processName) {
+            serverInventory.serverProcessRemoved(processName);
+        }
+
+        @Override
+        public void operationFailed(String processName, ProcessMessageHandler.OperationType type) {
+            serverInventory.operationFailed(processName, type);
         }
     }
 

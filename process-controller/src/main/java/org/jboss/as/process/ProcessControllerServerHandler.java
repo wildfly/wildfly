@@ -22,6 +22,7 @@
 
 package org.jboss.as.process;
 
+import static org.jboss.as.process.ProcessLogger.ROOT_LOGGER;
 import static org.jboss.as.process.ProcessLogger.SERVER_LOGGER;
 import static org.jboss.as.process.protocol.StreamUtils.readBoolean;
 import static org.jboss.as.process.protocol.StreamUtils.readFully;
@@ -32,6 +33,7 @@ import static org.jboss.as.process.protocol.StreamUtils.safeClose;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -122,14 +124,16 @@ public final class ProcessControllerServerHandler implements ConnectionHandler {
             }
 
             public void handleMessage(final Connection connection, final InputStream dataStream) throws IOException {
+                ProcessMessageHandler.OperationType operationType = null;
+                String processName = null;
                 try {
-
                     final int cmd = StreamUtils.readUnsignedByte(dataStream);
                     switch (cmd) {
                         case Protocol.SEND_STDIN: {
                             // HostController only
                             if (isPrivileged) {
-                                final String processName = readUTFZBytes(dataStream);
+                                operationType = ProcessMessageHandler.OperationType.SEND_STDIN;
+                                processName = readUTFZBytes(dataStream);
                                 SERVER_LOGGER.tracef("Received send_stdin for process %s", processName);
                                 processController.sendStdin(processName, dataStream);
                             } else {
@@ -140,7 +144,8 @@ public final class ProcessControllerServerHandler implements ConnectionHandler {
                         }
                         case Protocol.ADD_PROCESS: {
                             if (isPrivileged) {
-                                final String processName = readUTFZBytes(dataStream);
+                                operationType = ProcessMessageHandler.OperationType.ADD;
+                                processName = readUTFZBytes(dataStream);
                                 final byte[] authKey = new byte[16];
                                 readFully(dataStream, authKey);
                                 final int commandCount = readInt(dataStream);
@@ -164,7 +169,8 @@ public final class ProcessControllerServerHandler implements ConnectionHandler {
                         }
                         case Protocol.START_PROCESS: {
                             if (isPrivileged) {
-                                final String processName = readUTFZBytes(dataStream);
+                                operationType = ProcessMessageHandler.OperationType.START;
+                                processName = readUTFZBytes(dataStream);
                                 processController.startProcess(processName);
                                 SERVER_LOGGER.tracef("Received start_process for process %s", processName);
                             } else {
@@ -175,7 +181,8 @@ public final class ProcessControllerServerHandler implements ConnectionHandler {
                         }
                         case Protocol.STOP_PROCESS: {
                             if (isPrivileged) {
-                                final String processName = readUTFZBytes(dataStream);
+                                operationType = ProcessMessageHandler.OperationType.STOP;
+                                processName = readUTFZBytes(dataStream);
                                 // HostController only
                                 processController.stopProcess(processName);
                             } else {
@@ -186,7 +193,8 @@ public final class ProcessControllerServerHandler implements ConnectionHandler {
                         }
                         case Protocol.REMOVE_PROCESS: {
                             if (isPrivileged) {
-                                final String processName = readUTFZBytes(dataStream);
+                                operationType = ProcessMessageHandler.OperationType.REMOVE;
+                                processName = readUTFZBytes(dataStream);
                                 processController.removeProcess(processName);
                             } else {
                                 SERVER_LOGGER.tracef("Ignoring remove_process message from untrusted source");
@@ -196,6 +204,7 @@ public final class ProcessControllerServerHandler implements ConnectionHandler {
                         }
                         case Protocol.REQUEST_PROCESS_INVENTORY: {
                             if (isPrivileged) {
+                                operationType = ProcessMessageHandler.OperationType.INVENTORY;
                                 processController.sendInventory();
                             } else {
                                 SERVER_LOGGER.tracef("Ignoring request_process_inventory message from untrusted source");
@@ -205,7 +214,8 @@ public final class ProcessControllerServerHandler implements ConnectionHandler {
                         }
                         case Protocol.RECONNECT_PROCESS: {
                             if (isPrivileged) {
-                                final String processName = readUTFZBytes(dataStream);
+                                operationType = ProcessMessageHandler.OperationType.REMOVE;
+                                processName = readUTFZBytes(dataStream);
                                 final String hostName = readUTFZBytes(dataStream);
                                 final int port = readInt(dataStream);
                                 final boolean managementSubsystemEndpoint = readBoolean(dataStream);
@@ -219,10 +229,11 @@ public final class ProcessControllerServerHandler implements ConnectionHandler {
                             break;
                         } case Protocol.SHUTDOWN: {
                             if (isPrivileged) {
+                                final int exitCode = readInt(dataStream);
                                 new Thread(new Runnable() {
                                     public void run() {
                                         processController.shutdown();
-                                        System.exit(0);
+                                        System.exit(exitCode);
                                     }
                                 }).start();
                             } else {
@@ -236,6 +247,24 @@ public final class ProcessControllerServerHandler implements ConnectionHandler {
                             dataStream.close();
                         }
                     }
+                } catch(IOException e) {
+                    if(operationType != null && processName != null) {
+                        safeClose(dataStream);
+                        try {
+                            final OutputStream os = connection.writeMessage();
+                            try {
+                                os.write(Protocol.OPERATION_FAILED);
+                                os.write(operationType.getCode());
+                                StreamUtils.writeUTFZBytes(os, processName);
+                                os.close();
+                            } finally {
+                                safeClose(os);
+                            }
+                        } catch (IOException ignore) {
+                            ROOT_LOGGER.debugf(ignore, "failed to write operation failed message");
+                        }
+                    }
+                    throw e;
                 } finally {
                     safeClose(dataStream);
                 }
@@ -256,7 +285,7 @@ public final class ProcessControllerServerHandler implements ConnectionHandler {
             public void handleFinished(final Connection connection) throws IOException {
                 SERVER_LOGGER.tracef("Connection finished");
                 processController.removeManagedConnection(connection);
-                // nothing
+                connection.close();
             }
         }
     }

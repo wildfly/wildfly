@@ -785,6 +785,11 @@ public class ParseAndMarshalModelsTestCase {
 
         public void stopLocalHost() {
         }
+
+        @Override
+        public void stopLocalHost(int exitCode) {
+            //
+        }
     }
 
     private static class MockVaultReader extends RuntimeVaultReader {

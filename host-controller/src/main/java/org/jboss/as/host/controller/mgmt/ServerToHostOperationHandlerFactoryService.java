@@ -138,7 +138,7 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
                     @Override
                     public void run() {
                         final Channel mgmtChannel = channel;
-                        ServerToHostOperationHandlerFactoryService.this.callback.getValue().serverRegistered(serverName, mgmtChannel, new ServerInventory.ProxyCreatedCallback() {
+                        ServerToHostOperationHandlerFactoryService.this.callback.getValue().serverCommunicationRegistered(serverName, mgmtChannel, new ServerInventory.ProxyCreatedCallback() {
                             @Override
                             public void proxyOperationHandlerCreated(final ManagementMessageHandler handler) {
                                 channel.addCloseHandler(new CloseHandler<Channel>() {
