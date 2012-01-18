@@ -88,5 +88,24 @@
         </dependency>
 
     </dependencies>
-    
+
+    <profiles>
+        <profile>
+            <id>osgi-enabled</id>
+            <activation>
+                <property><name>!disable-osgi</name></property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>jboss-as-arquillian-osgi-extension</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.jboss.arquillian.testenricher</groupId>
+                    <artifactId>arquillian-testenricher-osgi</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>

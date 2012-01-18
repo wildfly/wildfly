@@ -25,7 +25,7 @@ import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
 import org.jboss.arquillian.container.spi.event.container.BeforeDeploy;
 import org.jboss.arquillian.container.spi.event.container.BeforeStop;
 import org.jboss.arquillian.core.api.annotation.Observes;
-import org.jboss.as.arquillian.protocol.jmx.JMXProtocolAS7.ServiceArchiveHolder;
+import org.jboss.as.arquillian.protocol.jmx.AbstractJMXProtocolAS7.ServiceArchiveHolder;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 

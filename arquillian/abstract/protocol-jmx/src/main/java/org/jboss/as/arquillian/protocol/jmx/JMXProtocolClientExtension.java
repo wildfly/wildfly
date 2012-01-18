@@ -17,7 +17,6 @@
  */
 package org.jboss.as.arquillian.protocol.jmx;
 
-import org.jboss.arquillian.container.test.spi.client.protocol.Protocol;
 import org.jboss.arquillian.core.spi.LoadableExtension;
 
 /**
@@ -30,7 +29,6 @@ public class JMXProtocolClientExtension implements LoadableExtension {
 
     @Override
     public void register(ExtensionBuilder builder) {
-        builder.service(Protocol.class, JMXProtocolAS7.class);
         builder.observer(ArquillianServiceDeployer.class);
     }
 }

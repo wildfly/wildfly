@@ -45,7 +45,7 @@
     </properties>
 
     <profiles>
-        
+
         <!-- Run all tests on -DallTests. -->
         <profile>
             <id>ts.integ.allGroups</id>
@@ -251,5 +251,5 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-    
+
 </project>

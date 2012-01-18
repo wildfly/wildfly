@@ -39,7 +39,7 @@ import org.jboss.arquillian.container.test.spi.TestDeployment;
 import org.jboss.arquillian.container.test.spi.client.deployment.DeploymentPackager;
 import org.jboss.arquillian.container.test.spi.client.deployment.ProtocolArchiveProcessor;
 import org.jboss.arquillian.protocol.jmx.AbstractJMXProtocol;
-import org.jboss.as.arquillian.protocol.jmx.JMXProtocolAS7.ServiceArchiveHolder;
+import org.jboss.as.arquillian.protocol.jmx.AbstractJMXProtocolAS7.ServiceArchiveHolder;
 import org.jboss.as.arquillian.service.ArquillianService;
 import org.jboss.as.arquillian.service.JMXProtocolEndpointExtension;
 import org.jboss.logging.Logger;
@@ -79,7 +79,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
 
     private ServiceArchiveHolder archiveHolder;
 
-    JMXProtocolPackager(ServiceArchiveHolder archiveHolder) {
+    protected JMXProtocolPackager(ServiceArchiveHolder archiveHolder) {
         this.archiveHolder = archiveHolder;
     }
 
@@ -96,7 +96,25 @@ public class JMXProtocolPackager implements DeploymentPackager {
         return appArchive;
     }
 
-    private JavaArchive generateArquillianServiceArchive(Collection<Archive<?>> auxArchives) {
+    protected CharSequence getDependencies() {
+        StringBuffer dependencies = new StringBuffer();
+        dependencies.append("org.jboss.as.jmx,");
+        dependencies.append("org.jboss.as.server,");
+        /*
+        dependencies.append("org.jboss.as.osgi,");
+        */
+        dependencies.append("org.jboss.jandex,");
+        dependencies.append("org.jboss.logging,");
+        dependencies.append("org.jboss.modules,");
+        dependencies.append("org.jboss.msc,");
+        /*
+        dependencies.append("org.jboss.osgi.framework,");
+        dependencies.append("org.osgi.core");
+        */
+        return dependencies;
+    }
+
+    protected JavaArchive generateArquillianServiceArchive(Collection<Archive<?>> auxArchives) {
 
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "arquillian-service");
         log.debugf("Generating: %s", archive.getName());
@@ -127,21 +145,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
         loadableExtensions.add(JMXProtocolEndpointExtension.class.getName());
 
         final ManifestAsset manifest = new ManifestAsset();
-        StringBuffer dependencies = new StringBuffer();
-        dependencies.append("org.jboss.as.jmx,");
-        dependencies.append("org.jboss.as.server,");
-        /*
-        dependencies.append("org.jboss.as.osgi,");
-        */
-        dependencies.append("org.jboss.jandex,");
-        dependencies.append("org.jboss.logging,");
-        dependencies.append("org.jboss.modules,");
-        dependencies.append("org.jboss.msc,");
-        /*
-        dependencies.append("org.jboss.osgi.framework,");
-        dependencies.append("org.osgi.core");
-        */
-        manifest.getMainAttributes().putValue("Dependencies", dependencies.toString());
+        manifest.getMainAttributes().putValue("Dependencies", getDependencies().toString());
         // Generate the manifest with it's dependencies
         archive.setManifest(manifest);
 
@@ -178,7 +182,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
      *
      * @param appArchive The Archive to deploy
      */
-    private void addModulesManifestDependencies(Archive<?> appArchive) {
+    protected void addModulesManifestDependencies(Archive<?> appArchive) {
         if (appArchive instanceof ManifestContainer<?> == false)
             throw new IllegalArgumentException("ManifestContainer expected " + appArchive);
 
@@ -218,5 +222,9 @@ public class JMXProtocolPackager implements DeploymentPackager {
                         }
                     }
                 }, manifestPath);
+    }
+
+    protected static Manifest getOrCreateManifest(Archive<?> archive) {
+        return ManifestUtils.getOrCreateManifest(archive);
     }
 }

@@ -17,7 +17,9 @@
 package org.jboss.as.arquillian.osgi.extension;
 
 import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
+import org.jboss.arquillian.container.test.spi.client.protocol.Protocol;
 import org.jboss.arquillian.core.spi.LoadableExtension;
+import org.jboss.as.arquillian.osgi.extension.protocol.OSGiJMXProtocolAS7;
 
 /**
  * The extensions used by an OSGi enabled JBoss container.
@@ -30,5 +32,7 @@ public class OSGiContainerExtension implements LoadableExtension {
     @Override
     public void register(ExtensionBuilder builder) {
         builder.service(ApplicationArchiveProcessor.class, OSGiApplicationArchiveProcessor.class);
+        // the JMX protocol is now entangled in the client extension
+        builder.service(Protocol.class, OSGiJMXProtocolAS7.class);
     }
 }

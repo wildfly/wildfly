@@ -225,6 +225,9 @@
     <profiles>
         <profile>
             <id>osgi-enabled</id>
+            <activation>
+                <property><name>!disable-osgi</name></property>
+            </activation>
             <dependencies>
                 <dependency>
                     <groupId>org.jboss.as</groupId>

@@ -33,18 +33,20 @@ import org.jboss.shrinkwrap.api.Archive;
  * @author thomas.diesler@jboss.com
  * @since 31-May-2011
  */
-public class JMXProtocolAS7 extends AbstractJMXProtocol {
+public abstract class AbstractJMXProtocolAS7 extends AbstractJMXProtocol {
 
     @Inject
     @SuiteScoped
     private InstanceProducer<ServiceArchiveHolder> archiveHolderInst;
+
+    protected abstract DeploymentPackager createDeploymentPackager(final ServiceArchiveHolder holder);
 
     @Override
     public DeploymentPackager getPackager() {
         if(archiveHolderInst.get() == null) {
             archiveHolderInst.set(new ServiceArchiveHolder());
         }
-        return new JMXProtocolPackager(archiveHolderInst.get());
+        return createDeploymentPackager(archiveHolderInst.get());
     }
 
     @Override
@@ -52,7 +54,7 @@ public class JMXProtocolAS7 extends AbstractJMXProtocol {
         return "jmx-as7";
     }
 
-    class ServiceArchiveHolder {
+    public class ServiceArchiveHolder {
         /*
          * We store the Arquillian Service so we only create it once. It is later deployed on first Deployment that needs it.
          */

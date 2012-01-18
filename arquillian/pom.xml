@@ -36,11 +36,21 @@
 
     <name>JBoss Application Server: Arquillian</name>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>jboss-as-arquillian-osgi-extension</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <modules>
+        <module>abstract</module>
         <module>common</module>
         <module>container-managed</module>
         <module>container-remote</module>
-        <module>protocol-jmx</module>
         <module>testenricher-msc</module>
         <module>testng-integration</module>
         <!--
