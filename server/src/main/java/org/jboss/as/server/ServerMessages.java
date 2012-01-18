@@ -23,15 +23,24 @@
 package org.jboss.as.server;
 
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.services.security.VaultReaderException;
+import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 import org.jboss.logging.Param;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
+import org.jboss.vfs.VirtualFile;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 
 /**
  * This module is using message IDs in the range 15700-15999.
@@ -148,4 +157,58 @@ public interface ServerMessages {
 
     @Message(id = 15815, value = "Deployment %s is already started")
     OperationFailedException deploymentAlreadyStarted(String deploymentName);
+
+    @Message(id = 15816, value = "Missing configuration value for: %s")
+    IllegalStateException missingHomeDirConfiguration(String propertyName);
+
+    @Message(id = 15817, value = "\n        %s is missing: %s")
+    String missingDependencies(ServiceName dependentService, String missingDependencies);
+
+    @Message(id = 15818, value = "%s is required")
+    OperationFailedException attributeIsRequired(String attribute);
+
+    @Message(id = 15819, value = "%s is not allowed when %s are present")
+    OperationFailedException attributeNotAllowedWhenAlternativeIsPresent(String attribute, List<String> alternatives);
+
+    @Message(id = 15820, value = "%s is invalid")
+    OperationFailedException attributeIsInvalid(String attribute);
+
+    @Message(id = 15821, value = "Caught IOException reading uploaded deployment content")
+    OperationFailedException caughtIOExceptionUploadingContent(@Cause IOException cause);
+
+    @Message(id = 15822, value = "Null stream at index [%d]")
+    OperationFailedException nullStreamAttachment(int index);
+
+    @Message(id = 15823, value = "'%s' is not a valid URL")
+    OperationFailedException invalidDeploymentURL(String urlSpec, @Cause MalformedURLException e);
+
+    @Message(id = 15824, value = "Error obtaining input stream from URL '%s'")
+    OperationFailedException problemOpeningStreamFromDeploymentURL(String urlSpec, @Cause IOException e);
+
+    @Message(id = 15825, value = "Could not load module '%s' as corresponding module spec service '%s' was not found")
+    ModuleLoadException moduleSpecServiceNotFound(ModuleIdentifier identifier, ModuleIdentifier again);
+
+    @Message(id = 15826, value = "ServiceModuleLoader already started")
+    IllegalStateException serviceModuleLoaderAlreadyStarted();
+
+    @Message(id = 15827, value = "ServiceModuleLoader already stopped")
+    IllegalStateException serviceModuleLoaderAlreadyStopped();
+
+    @Message(id = 15828, value = "'%s' cannot be loaded from a ServiceModuleLoader as its name does not start with '%s'")
+    IllegalArgumentException missingModulePrefix(ModuleIdentifier identifier, String prefix);
+
+    @Message(id = 15829, value = "Failed to read '%s'")
+    DeploymentUnitProcessingException failedToReadVirtualFile(VirtualFile file, @Cause IOException cause);
+
+    @Message(id = 15830, value = "Deployment root is required")
+    IllegalArgumentException deploymentRootRequired();
+
+    @Message(id = 15831, value = "Sub-deployments require a parent deployment unit")
+    IllegalArgumentException subdeploymentsRequireParent();
+
+    @Message(id = 15832, value = "No Module Identifier attached to deployment '%s'")
+    DeploymentUnitProcessingException noModuleIdentifier(String deploymentUnitName);
+
+    @Message(id = 15833, value = "Failed to create VFSResourceLoader for root [%s]")
+    DeploymentUnitProcessingException failedToCreateVFSResourceLoader(String resourceRoot, @Cause IOException cause);
 }

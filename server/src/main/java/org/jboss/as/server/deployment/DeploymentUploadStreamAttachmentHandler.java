@@ -24,6 +24,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
+import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 
@@ -68,7 +69,7 @@ public class DeploymentUploadStreamAttachmentHandler
         final int streamIndex = operation.require(INPUT_STREAM_INDEX).asInt();
         final InputStream in = operationContext.getAttachmentStream(streamIndex);
         if (in == null) {
-            throw new OperationFailedException(new ModelNode().set(String.format("Null stream at index %s", streamIndex)));
+            throw ServerMessages.MESSAGES.nullStreamAttachment(streamIndex);
         }
         return in;
     }

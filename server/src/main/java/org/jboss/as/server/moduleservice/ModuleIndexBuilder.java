@@ -21,12 +21,6 @@
  */
 package org.jboss.as.server.moduleservice;
 
-import org.jboss.as.server.deployment.annotation.CompositeIndex;
-import org.jboss.jandex.Index;
-import org.jboss.jandex.IndexReader;
-import org.jboss.logging.Logger;
-import org.jboss.modules.Module;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -34,14 +28,17 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.jboss.as.server.deployment.annotation.CompositeIndex;
+import org.jboss.jandex.Index;
+import org.jboss.jandex.IndexReader;
+import org.jboss.modules.Module;
+
 /**
  * Utility class for read a composite index from a system module.
  *
  * @author Stuart Douglas
  */
 public class ModuleIndexBuilder {
-
-    private static final Logger logger = Logger.getLogger(ModuleIndexBuilder.class);
 
     public static final String INDEX_LOCATION = "META-INF/jandex.idx";
 

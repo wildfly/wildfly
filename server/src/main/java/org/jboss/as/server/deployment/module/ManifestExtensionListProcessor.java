@@ -22,14 +22,12 @@
 
 package org.jboss.as.server.deployment.module;
 
-import org.jboss.as.server.deployment.Attachments;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.DeploymentUtils;
-import org.jboss.as.server.deployment.Services;
-import org.jboss.logging.Logger;
+import static java.util.jar.Attributes.Name.EXTENSION_LIST;
+import static java.util.jar.Attributes.Name.EXTENSION_NAME;
+import static java.util.jar.Attributes.Name.IMPLEMENTATION_URL;
+import static java.util.jar.Attributes.Name.IMPLEMENTATION_VENDOR_ID;
+import static java.util.jar.Attributes.Name.IMPLEMENTATION_VERSION;
+import static java.util.jar.Attributes.Name.SPECIFICATION_VERSION;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -37,7 +35,14 @@ import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
-import static java.util.jar.Attributes.Name.*;
+import org.jboss.as.server.ServerLogger;
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentUtils;
+import org.jboss.as.server.deployment.Services;
 
 /**
  * A processor which adds class path entries for each manifest entry.
@@ -46,8 +51,6 @@ import static java.util.jar.Attributes.Name.*;
  * @author Stuart Douglas
  */
 public final class ManifestExtensionListProcessor implements DeploymentUnitProcessor {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.server.deployment.module.extension-list");
 
     /** {@inheritDoc} */
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -70,8 +73,7 @@ public final class ManifestExtensionListProcessor implements DeploymentUnitProce
             for (String item : items) {
                 final String extensionName = mainAttributes.getValue(item + "-" + EXTENSION_NAME);
                 if (extensionName == null) {
-                    log.warnf("Extension %s is missing the required manifest attribute %s-%s (skipping extension)", item, item,
-                            EXTENSION_NAME);
+                    ServerLogger.DEPLOYMENT_LOGGER.extensionMissingManifestAttribute(item, item, EXTENSION_NAME);
                     continue;
                 }
                 final String specificationVersion = mainAttributes.getValue(item + "-" + SPECIFICATION_VERSION);
@@ -80,13 +82,14 @@ public final class ManifestExtensionListProcessor implements DeploymentUnitProce
                 final String implementationUrl = mainAttributes.getValue(item + "-" + IMPLEMENTATION_URL);
                 URI implementationUri = null;
                 if (implementationUrl == null) {
-                    log.debugf("Extension %s is missing the required manifest attribute %s-%s", item, item, IMPLEMENTATION_URL);
-                } else
+                    ServerLogger.DEPLOYMENT_LOGGER.debugf("Extension %s is missing the required manifest attribute %s-%s", item, item, IMPLEMENTATION_URL);
+                } else {
                     try {
                         implementationUri = new URI(implementationUrl);
                     } catch (URISyntaxException e) {
-                        log.warnf("Extension %s URI syntax is invalid: %s", item, e);
+                        ServerLogger.DEPLOYMENT_LOGGER.invalidExtensionURI(item, e);
                     }
+                }
                 resourceRoot.addToAttachmentList(Attachments.EXTENSION_LIST_ENTRIES, new ExtensionListEntry(item,
                         extensionName, specificationVersion, implementationVersion, implementationVendorId, implementationUri));
                 added = true;

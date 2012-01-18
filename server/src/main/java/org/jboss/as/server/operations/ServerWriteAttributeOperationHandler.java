@@ -29,8 +29,8 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers.WriteAttributeOperationHandler;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
+import org.jboss.as.server.ServerLogger;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 
 /**
  * Abstract superclass for write-attribute operation handlers that run on the
@@ -42,8 +42,6 @@ import org.jboss.logging.Logger;
  */
 @Deprecated
 public class ServerWriteAttributeOperationHandler extends WriteAttributeOperationHandler {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.server");
 
     private final ParameterValidator resolvedValueValidator;
 
@@ -112,10 +110,10 @@ public class ServerWriteAttributeOperationHandler extends WriteAttributeOperatio
             try {
                 revertUpdateToRuntime(context, operation, attributeName, valueToRestore, resolvedValue);
             } catch (Exception e) {
-                log.errorf(e, String.format("%s caught exception attempting to revert operation %s at address %s",
+                ServerLogger.ROOT_LOGGER.caughtExceptionRevertingOperation(e,
                         getClass().getSimpleName(),
                         operation.require(ModelDescriptionConstants.OP).asString(),
-                        PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR))));
+                        PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)));
             }
             if (restartRequired) {
                 context.revertReloadRequired();

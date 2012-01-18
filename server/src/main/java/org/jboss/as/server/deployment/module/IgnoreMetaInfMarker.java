@@ -22,7 +22,6 @@
 package org.jboss.as.server.deployment.module;
 
 import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.logging.Logger;
 
 /**
  * Marker that indicates that the contents of a resource roots META-INF directory should be ignored.
@@ -30,8 +29,6 @@ import org.jboss.logging.Logger;
  * @author Stuart Douglas
  */
 public class IgnoreMetaInfMarker {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.server.deployment.module");
 
     private static AttachmentKey<Boolean> IGNORE_META_INF = AttachmentKey.create(Boolean.class);
 
