@@ -128,6 +128,7 @@ import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
 import org.jboss.as.cli.operation.impl.DefaultPrefixFormatter;
+import org.jboss.as.cli.operation.impl.RolloutPlanCompleter;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
@@ -304,6 +305,7 @@ class CommandContextImpl implements CommandContext {
 
         final GenericTypeOperationHandler rolloutPlan = new GenericTypeOperationHandler(this, "/management-client-content=rollout-plans/rollout-plan", null);
         rolloutPlan.addValueConverter("content", ArgumentValueConverter.ROLLOUT_PLAN);
+        rolloutPlan.addValueCompleter("content", RolloutPlanCompleter.INSTANCE);
         cmdRegistry.registerHandler(rolloutPlan, "rollout-plan");
     }
 

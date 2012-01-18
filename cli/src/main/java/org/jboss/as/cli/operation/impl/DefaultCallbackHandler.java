@@ -403,9 +403,6 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
         lastChunkIndex = index;
         this.lastHeaderName = headerName;
         if(headerName.equals("rollout")) {
-            if(headers == null) {
-                headers = new ArrayList<ParsedOperationRequestHeader>();
-            }
             return new RolloutPlanHeaderCallbackHandler(this);
         }
         return null;
