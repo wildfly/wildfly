@@ -37,7 +37,7 @@ import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 
 /**
- * This module is using message IDs in the range 10900-10999. This file is using the subset 10975-10999 for domain
+ * This module is using message IDs in the range 10800-10899. This file is using the subset 10830-10899 for domain
  * controller non-logger messages. See http://community.jboss.org/docs/DOC-16810 for the full list of currently reserved
  * JBAS message id blocks.
  * <p/>
@@ -58,7 +58,7 @@ public interface DomainControllerMessages {
      *
      * @return a message for the error.
      */
-    @Message(id = 15830, value = "Registration of remote hosts is not supported on slave host controllers")
+    @Message(id = 10830, value = "Registration of remote hosts is not supported on slave host controllers")
     String slaveControllerCannotAcceptOtherSlaves();
 
     /**
@@ -69,7 +69,7 @@ public interface DomainControllerMessages {
      *
      * @return a message for the error.
      */
-    @Message(id = 15831, value = "The master host controller cannot register slave host controllers as it's current running mode is '%s'")
+    @Message(id = 10831, value = "The master host controller cannot register slave host controllers as it's current running mode is '%s'")
     String adminOnlyModeCannotAcceptSlaves(RunningMode runningMode);
 
     /**
@@ -80,7 +80,7 @@ public interface DomainControllerMessages {
      *
      * @return a message for the error.
      */
-    @Message(id = 15832, value = "There is already a registered host named '%s'")
+    @Message(id = 10832, value = "There is already a registered host named '%s'")
     String slaveAlreadyRegistered(String slaveName);
 
     /**
@@ -92,7 +92,7 @@ public interface DomainControllerMessages {
      *
      * @return the error message
      */
-    @Message(id = 15833, value = "%s is missing %s: %s")
+    @Message(id = 10833, value = "%s is missing %s: %s")
     String requiredChildIsMissing(String parent, String child, String parentSpec);
 
     /**
@@ -104,7 +104,7 @@ public interface DomainControllerMessages {
      *
      * @return the error message
      */
-    @Message(id = 15834, value = "%s recognizes only %s as children: %s")
+    @Message(id = 10834, value = "%s recognizes only %s as children: %s")
     String unrecognizedChildren(String parent, String children, String parentSpec);
 
     /**
@@ -114,7 +114,7 @@ public interface DomainControllerMessages {
      *
      * @return the error message
      */
-    @Message(id = 15835, value = IN_SERIES + " is missing groups: %s")
+    @Message(id = 10835, value = IN_SERIES + " is missing groups: %s")
     String inSeriesIsMissingGroups(String rolloutPlan);
 
     /**
@@ -124,7 +124,7 @@ public interface DomainControllerMessages {
      *
      * @return the error message
      */
-    @Message(id = 15836, value = SERVER_GROUP + " expects one and only one child: %s")
+    @Message(id = 10836, value = SERVER_GROUP + " expects one and only one child: %s")
     String serverGroupExpectsSingleChild(String rolloutPlan);
 
     /**
@@ -135,7 +135,7 @@ public interface DomainControllerMessages {
      *
      * @return the error message
      */
-    @Message(id = 15837, value = "One of the groups does not define neither " + SERVER_GROUP + " nor " + CONCURRENT_GROUPS + ": %s")
+    @Message(id = 10837, value = "One of the groups does not define neither " + SERVER_GROUP + " nor " + CONCURRENT_GROUPS + ": %s")
     String unexpectedInSeriesGroup(String rolloutPlan);
 
     /**
@@ -143,7 +143,7 @@ public interface DomainControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 15838, value = "Unexplained failure")
+    @Message(id = 10838, value = "Unexplained failure")
     String unexplainedFailure();
 
     /**
@@ -151,7 +151,7 @@ public interface DomainControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 15839, value = "Operation failed or was rolled back on all servers.")
+    @Message(id = 10839, value = "Operation failed or was rolled back on all servers.")
     String operationFailedOrRolledBack();
 
     /**
@@ -161,7 +161,7 @@ public interface DomainControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 15840, value = "Interrupted waiting for result from server %s")
+    @Message(id = 10840, value = "Interrupted waiting for result from server %s")
     String interruptedAwaitingResultFromServer(ServerIdentity server);
 
     /**
@@ -172,7 +172,7 @@ public interface DomainControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 15841, value = "Exception getting result from server %s: %s")
+    @Message(id = 10841, value = "Exception getting result from server %s: %s")
     String exceptionAwaitingResultFromServer(ServerIdentity server, String message);
 
     /**
@@ -184,7 +184,7 @@ public interface DomainControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 15842, value = "Invalid rollout plan. %s is not a valid child of node %s")
+    @Message(id = 10842, value = "Invalid rollout plan. %s is not a valid child of node %s")
     String invalidRolloutPlan(ModelNode modelNode, String nodeName);
 
     /**
@@ -195,7 +195,7 @@ public interface DomainControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 15843, value = "Invalid rollout plan. Plan operations affect server groups %s that are not reflected in the rollout plan")
+    @Message(id = 10843, value = "Invalid rollout plan. Plan operations affect server groups %s that are not reflected in the rollout plan")
     String invalidRolloutPlan(Set<String> groups);
 
     /**
@@ -206,7 +206,7 @@ public interface DomainControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 15844, value = "Invalid rollout plan. Server group %s appears more than once in the plan.")
+    @Message(id = 10844, value = "Invalid rollout plan. Server group %s appears more than once in the plan.")
     String invalidRolloutPlanGroupAlreadyExists(String group);
 
     /**
@@ -219,7 +219,7 @@ public interface DomainControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 15845, value = "Invalid rollout plan. Server group %s has a %s value of %s; must be between 0 and 100.")
+    @Message(id = 10845, value = "Invalid rollout plan. Server group %s has a %s value of %s; must be between 0 and 100.")
     String invalidRolloutPlanRange(String name, String propertyName, int value);
 
     /**
@@ -232,7 +232,7 @@ public interface DomainControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 15846, value = "Invalid rollout plan. Server group %s has a %s value of %s; cannot be less than 0.")
+    @Message(id = 10846, value = "Invalid rollout plan. Server group %s has a %s value of %s; cannot be less than 0.")
     String invalidRolloutPlanLess(String name, String propertyName, int value);
 
     /**
@@ -242,7 +242,7 @@ public interface DomainControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 15847, value = "Interrupted waiting for result from host %s")
+    @Message(id = 10847, value = "Interrupted waiting for result from host %s")
     String interruptedAwaitingResultFromHost(String name);
 
     /**
@@ -253,7 +253,7 @@ public interface DomainControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 15848, value = "Exception getting result from host %s: %s")
+    @Message(id = 10848, value = "Exception getting result from host %s: %s")
     String exceptionAwaitingResultFromHost(String name, String message);
 
     /**
@@ -265,7 +265,7 @@ public interface DomainControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 15849, value = "Operation %s for address %s can only be handled by the " +
+    @Message(id = 10849, value = "Operation %s for address %s can only be handled by the " +
             "master Domain Controller; this host is not the master Domain Controller")
     String masterDomainControllerOnlyOperation(String operation, PathAddress address);
 
@@ -277,7 +277,7 @@ public interface DomainControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 15850, value = "No handler for operation %s at address %s")
+    @Message(id = 10850, value = "No handler for operation %s at address %s")
     String noHandlerForOperation(String operationName, PathAddress address);
 
     /**
@@ -287,7 +287,7 @@ public interface DomainControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 15851, value = "Operation targets host %s but that host is not registered")
+    @Message(id = 10851, value = "Operation targets host %s but that host is not registered")
     String invalidOperationTargetHost(String name);
 
     /**
@@ -298,7 +298,7 @@ public interface DomainControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 15852, value = "Caught %s storing deployment content -- %s")
+    @Message(id = 10852, value = "Caught %s storing deployment content -- %s")
     String caughtExceptionStoringDeploymentContent(String exceptionName, Throwable exception);
 
     /**
@@ -308,7 +308,7 @@ public interface DomainControllerMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 15853, value = "Unexpected initial path key %s")
+    @Message(id = 10853, value = "Unexpected initial path key %s")
     IllegalStateException unexpectedInitialPathKey(String key);
 
     /**
@@ -318,7 +318,7 @@ public interface DomainControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 15854, value = "Null stream at index %d")
+    @Message(id = 10854, value = "Null stream at index %d")
     String nullStream(int index);
 
     /**
@@ -326,7 +326,7 @@ public interface DomainControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 15855, value = "Invalid byte stream.")
+    @Message(id = 10855, value = "Invalid byte stream.")
     String invalidByteStream();
 
     /**
@@ -334,7 +334,7 @@ public interface DomainControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 15856, value = "Invalid url stream.")
+    @Message(id = 10856, value = "Invalid url stream.")
     String invalidUrlStream();
 
     /**
@@ -342,7 +342,7 @@ public interface DomainControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 15857, value = "Only 1 piece of content is currently supported (AS7-431)")
+    @Message(id = 10857, value = "Only 1 piece of content is currently supported (AS7-431)")
     String as7431();
 
     /**
@@ -352,7 +352,7 @@ public interface DomainControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 15858, value = "No deployment content with hash %s is available in the deployment content repository.")
+    @Message(id = 10858, value = "No deployment content with hash %s is available in the deployment content repository.")
     String noDeploymentContentWithHash(String hash);
 
     /**
@@ -360,7 +360,7 @@ public interface DomainControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 15859, value = "A slave domain controller cannot accept deployment content uploads")
+    @Message(id = 10859, value = "A slave domain controller cannot accept deployment content uploads")
     String slaveCannotAcceptUploads();
 
     /**
@@ -370,7 +370,7 @@ public interface DomainControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 15860, value = "No deployment with name %s found")
+    @Message(id = 10860, value = "No deployment with name %s found")
     String noDeploymentContentWithName(String name);
 
     /**
@@ -381,7 +381,7 @@ public interface DomainControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 15861, value = "Cannot remove deployment %s from the domain as it is still used by server groups %s")
+    @Message(id = 10861, value = "Cannot remove deployment %s from the domain as it is still used by server groups %s")
     String cannotRemoveDeploymentInUse(String name, List<String> groups);
 
     /**
@@ -393,7 +393,7 @@ public interface DomainControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 15862, value = "Invalid '%s' value: %d, the maximum index is %d")
+    @Message(id = 10862, value = "Invalid '%s' value: %d, the maximum index is %d")
     String invalidValue(String name, int value, int maxIndex);
 
     /**
@@ -404,7 +404,7 @@ public interface DomainControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 15863, value = "%s is not a valid URL -- %s")
+    @Message(id = 10863, value = "%s is not a valid URL -- %s")
     String invalidUrl(String url, String message);
 
     /**
@@ -415,7 +415,7 @@ public interface DomainControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 15864, value = "Error obtaining input stream from URL %s -- %s")
+    @Message(id = 10864, value = "Error obtaining input stream from URL %s -- %s")
     String errorObtainingUrlStream(String url, String message);
 
     /**
@@ -423,7 +423,7 @@ public interface DomainControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 15865, value = "Invalid content declaration")
+    @Message(id = 10865, value = "Invalid content declaration")
     String invalidContentDeclaration();
 
     /**
@@ -433,7 +433,7 @@ public interface DomainControllerMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 15866, value = "%s is null")
+    @Message(id = 10866, value = "%s is null")
     IllegalArgumentException nullVar(String name);
 
     /**
@@ -448,7 +448,7 @@ public interface DomainControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 15867, value = "Cannot use %s with the same value for parameters %s and %s. " +
+    @Message(id = 10867, value = "Cannot use %s with the same value for parameters %s and %s. " +
             "Use %s to redeploy the same content or %s to replace content with a new version with the same name.")
     String cannotUseSameValueForParameters(String opName, String param1, String param2, String redeployOpName, String replaceOpName);
 
@@ -459,7 +459,7 @@ public interface DomainControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 15868, value = "Deployment %s is already started")
+    @Message(id = 10868, value = "Deployment %s is already started")
     String deploymentAlreadyStarted(String name);
 
     /**
@@ -470,7 +470,7 @@ public interface DomainControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 15869, value = "Unknown %s %s")
+    @Message(id = 10869, value = "Unknown %s %s")
     String unknown(String name, String value);
 
     /**
@@ -480,7 +480,7 @@ public interface DomainControllerMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 15870, value = "Unknown server group %s")
+    @Message(id = 10870, value = "Unknown server group %s")
     IllegalStateException unknownServerGroup(String serverGroup);
 
     /**
@@ -490,7 +490,7 @@ public interface DomainControllerMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 15871, value = "Unknown server %s")
+    @Message(id = 10871, value = "Unknown server %s")
     IllegalStateException unknownServer(ServerIdentity server);
 
     /**
@@ -500,6 +500,6 @@ public interface DomainControllerMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 15872, value = "Invalid code %d")
+    @Message(id = 10872, value = "Invalid code %d")
     IllegalArgumentException invalidCode(int code);
 }

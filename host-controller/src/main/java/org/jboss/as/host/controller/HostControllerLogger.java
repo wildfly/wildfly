@@ -35,7 +35,7 @@ import org.jboss.logging.MessageLogger;
 import org.jboss.remoting3.Channel;
 
 /**
- * This module is using message IDs in the range 10900-10999. This file is using the subset 10900-10924 for host
+ * This module is using message IDs in the range 10800-10999. This file is using the subset 10900-10939 for host
  * controller logger messages. See http://community.jboss.org/docs/DOC-16810 for the full list of currently reserved
  * JBAS message id blocks.
  * <p/>

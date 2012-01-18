@@ -34,7 +34,7 @@ import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 
 /**
- * This module is using message IDs in the range 10900-10999. This file is using the subset 10950-10974 for domain
+ * This module is using message IDs in the range 10800-10999. This file is using the subset 10800-10829 for domain
  * controller logger messages. See http://community.jboss.org/docs/DOC-16810 for the full list of currently reserved
  * JBAS message id blocks.
  * <p/>
@@ -71,11 +71,11 @@ public interface DomainControllerLogger extends BasicLogger {
     DomainControllerLogger HOST_CONTROLLER_LOGGER = Logger.getMessageLogger(DomainControllerLogger.class, "org.jboss.as.host.controller");
 
     @LogMessage(level = Level.WARN)
-    @Message(id = 15800, value = "Ignoring 'include' child of 'socket-binding-group' %s")
+    @Message(id = 10800, value = "Ignoring 'include' child of 'socket-binding-group' %s")
     void warnIgnoringSocketBindingGroupInclude(Location location);
 
     @LogMessage(level = Level.WARN)
-    @Message(id = 15801, value = "Ignoring 'include' child of 'profile' %s")
+    @Message(id = 10801, value = "Ignoring 'include' child of 'profile' %s")
     void warnIgnoringProfileInclude(Location location);
 
     /**
@@ -86,7 +86,7 @@ public interface DomainControllerLogger extends BasicLogger {
      * @param hostName   the name of the host.
      */
     @LogMessage(level = Level.WARN)
-    @Message(id = 15802, value = "Interrupted awaiting final response from server %s on host %s")
+    @Message(id = 10802, value = "Interrupted awaiting final response from server %s on host %s")
     void interruptedAwaitingFinalResponse(String serverName, String hostName);
 
     /**
@@ -98,7 +98,7 @@ public interface DomainControllerLogger extends BasicLogger {
      * @param hostName   the name of the host.
      */
     @LogMessage(level = Level.WARN)
-    @Message(id = 15803, value = "Caught exception awaiting final response from server %s on host %s")
+    @Message(id = 10803, value = "Caught exception awaiting final response from server %s on host %s")
     void caughtExceptionAwaitingFinalResponse(@Cause Throwable cause, String serverName, String hostName);
 
     /**
@@ -108,7 +108,7 @@ public interface DomainControllerLogger extends BasicLogger {
      * @param hostName the name of the host.
      */
     @LogMessage(level = Level.WARN)
-    @Message(id = 15804, value = "Interrupted awaiting final response from host %s")
+    @Message(id = 10804, value = "Interrupted awaiting final response from host %s")
     void interruptedAwaitingFinalResponse(String hostName);
 
     /**
@@ -119,7 +119,7 @@ public interface DomainControllerLogger extends BasicLogger {
      * @param hostName the name of the host.
      */
     @LogMessage(level = Level.WARN)
-    @Message(id = 15805, value = "Caught exception awaiting final response from host %s")
+    @Message(id = 10805, value = "Caught exception awaiting final response from host %s")
     void caughtExceptionAwaitingFinalResponse(@Cause Throwable cause, String hostName);
 
     /**
@@ -128,7 +128,7 @@ public interface DomainControllerLogger extends BasicLogger {
      * @param cause the cause of the error.
      */
     @LogMessage(level = Level.WARN)
-    @Message(id = 15806, value = "Caught exception closing input stream")
+    @Message(id = 10806, value = "Caught exception closing input stream")
     void caughtExceptionClosingInputStream(@Cause Throwable cause);
 
     /**
@@ -138,7 +138,7 @@ public interface DomainControllerLogger extends BasicLogger {
      * @param servers the servers that need to restart.
      */
     @LogMessage(level = Level.INFO)
-    @Message(id = 15807, value = "Domain model has changed on re-connect. The following servers will need to be restarted for changes to take affect: %s")
+    @Message(id = 10807, value = "Domain model has changed on re-connect. The following servers will need to be restarted for changes to take affect: %s")
     void domainModelChangedOnReConnect(Set<ServerIdentity> servers);
 
     /**
@@ -150,7 +150,7 @@ public interface DomainControllerLogger extends BasicLogger {
      * @param task          the task.
      */
     @LogMessage(level = Level.ERROR)
-    @Message(id = 15808, value = "%s caught %s waiting for task %s")
+    @Message(id = 10808, value = "%s caught %s waiting for task %s")
     void caughtExceptionWaitingForTask(String className, String exceptionName, String task);
 
     /**
@@ -162,7 +162,7 @@ public interface DomainControllerLogger extends BasicLogger {
      * @param task          the task.
      */
     @LogMessage(level = Level.ERROR)
-    @Message(id = 15809, value = "%s caught %s waiting for task %s; returning")
+    @Message(id = 10809, value = "%s caught %s waiting for task %s; returning")
     void caughtExceptionWaitingForTaskReturning(String className, String exceptionName, String task);
 
 }

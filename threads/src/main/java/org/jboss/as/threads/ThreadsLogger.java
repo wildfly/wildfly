@@ -27,7 +27,9 @@ import org.jboss.logging.Logger;
 import org.jboss.logging.MessageLogger;
 
 /**
- * Date: 05.11.2011
+ * This module is using message IDs in the range 12400-12499. This file is using the subset 12400-12449 for host
+ * controller logger messages. See http://community.jboss.org/docs/DOC-16810 for the full list of currently reserved
+ * JBAS message id blocks.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
