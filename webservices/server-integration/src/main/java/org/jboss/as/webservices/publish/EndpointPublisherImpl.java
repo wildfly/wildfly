@@ -56,6 +56,7 @@ import org.jboss.wsf.spi.deployment.DeploymentAspect;
 import org.jboss.wsf.spi.deployment.DeploymentAspectManager;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.deployment.WSFServlet;
+import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
 import org.jboss.wsf.spi.publish.Context;
 import org.jboss.wsf.spi.publish.EndpointPublisher;
 
@@ -75,14 +76,21 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
 
     @Override
     public Context publish(String context, ClassLoader loader, Map<String, String> urlPatternToClassNameMap) throws Exception {
-        return publish(null, context, loader, urlPatternToClassNameMap);
+        return publish(null, context, loader, urlPatternToClassNameMap, null);
     }
 
-    public Context publish(ServiceTarget target, String context, ClassLoader loader, Map<String, String> urlPatternToClassNameMap) throws Exception {
-        WSEndpointDeploymentUnit unit = new WSEndpointDeploymentUnit(loader, context, urlPatternToClassNameMap);
+    public Context publish(String context, ClassLoader loader, Map<String, String> urlPatternToClassNameMap, WebservicesMetaData metadata) throws Exception {
+        return publish(null, context, loader, urlPatternToClassNameMap, metadata);
+    }
+
+    public Context publish(ServiceTarget target, String context, ClassLoader loader, Map<String, String> urlPatternToClassNameMap, WebservicesMetaData metadata) throws Exception {
+        WSEndpointDeploymentUnit unit = new WSEndpointDeploymentUnit(loader, context, urlPatternToClassNameMap, metadata);
         return new Context(context, publish(target, unit));
     }
 
+    /**
+     * Publishes the endpoints declared to the provided WSEndpointDeploymentUnit
+     */
     public List<Endpoint> publish(ServiceTarget target, WSEndpointDeploymentUnit unit) throws Exception {
         List<DeploymentAspect> aspects = DeploymentAspectsProvider.getSortedDeploymentAspects();
         ClassLoader origClassLoader = SecurityActions.getContextClassLoader();
