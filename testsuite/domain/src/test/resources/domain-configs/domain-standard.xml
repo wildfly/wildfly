@@ -164,14 +164,12 @@
                 </thread-pools>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:infinispan:1.1" default-cache-container="cluster">
-                <cache-container name="cluster" default-cache="default">
-                    <alias>ha-partition</alias>
+                <cache-container name="cluster" aliases="ha-partition" default-cache="default">
                     <replicated-cache name="default" mode="SYNC" batching="true">
                         <locking isolation="REPEATABLE_READ"/>
                     </replicated-cache>
                 </cache-container>
-                <cache-container name="web" default-cache="repl">
-                    <alias>standard-session-cache</alias>
+                <cache-container name="web" aliases="standard-session-cache" default-cache="repl">
                     <replicated-cache name="repl" mode="ASYNC" batching="true">
                         <file-store/>
                     </replicated-cache>
@@ -179,9 +177,7 @@
                         <file-store/>
                     </distributed-cache>
                 </cache-container>
-                <cache-container name="sfsb" default-cache="repl">
-                    <alias>sfsb-cache</alias>
-                    <alias>jboss.cache:service=EJB3SFSBClusteredCache</alias>
+                <cache-container name="sfsb" aliases="sfsb-cache jboss.cache:service=EJB3SFSBClusteredCache" default-cache="repl">
                     <replicated-cache name="repl" mode="ASYNC" batching="true">
                         <eviction strategy="LRU" max-entries="10000"/>
                         <file-store/>
@@ -508,14 +504,12 @@
                 </thread-pools>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:infinispan:1.1" default-cache-container="cluster">
-                <cache-container name="cluster" default-cache="default">
-                    <alias>ha-partition</alias>
+                <cache-container name="cluster" aliases="ha-partition" default-cache="default">
                     <replicated-cache name="default" mode="SYNC" batching="true">
                         <locking isolation="REPEATABLE_READ"/>
                     </replicated-cache>
                 </cache-container>
-                <cache-container name="web" default-cache="repl">
-                    <alias>standard-session-cache</alias>
+                <cache-container name="web" aliases="standard-session-cache" default-cache="repl">
                     <replicated-cache name="repl" mode="ASYNC" batching="true">
                         <file-store/>
                     </replicated-cache>
@@ -523,9 +517,7 @@
                         <file-store/>
                     </distributed-cache>
                 </cache-container>
-                <cache-container name="sfsb" default-cache="repl">
-                    <alias>sfsb-cache</alias>
-                    <alias>jboss.cache:service=EJB3SFSBClusteredCache</alias>
+                <cache-container name="sfsb" aliases="sfsb-cache jboss.cache:service=EJB3SFSBClusteredCache" default-cache="repl">
                     <replicated-cache name="repl" mode="ASYNC" batching="true">
                         <eviction strategy="LRU" max-entries="10000"/>
                         <file-store/>

@@ -92,6 +92,12 @@ public class InfinispanSubsystemXMLReader_1_1 implements XMLElementReader<List<M
                     name = value;
                     break;
                 }
+                case ALIASES: {
+                    for (String alias: reader.getListAttributeValue(i)) {
+                        container.get(ModelKeys.ALIASES).add(alias);
+                    }
+                    break;
+                }
                 case DEFAULT_CACHE: {
                     container.get(ModelKeys.DEFAULT_CACHE).set(value);
                     break;

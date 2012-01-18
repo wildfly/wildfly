@@ -133,7 +133,7 @@ public class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<List<M
             Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case ALIAS: {
-                    container.get(ModelKeys.ALIAS).add(reader.getElementText());
+                    container.get(ModelKeys.ALIASES).add(reader.getElementText());
                     break;
                 }
                 case TRANSPORT: {

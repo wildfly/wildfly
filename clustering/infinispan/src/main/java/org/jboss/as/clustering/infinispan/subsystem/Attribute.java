@@ -22,10 +22,9 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import javax.xml.XMLConstants;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.xml.XMLConstants;
 
 import org.jboss.as.controller.AttributeDefinition;
 
@@ -38,6 +37,7 @@ public enum Attribute {
     // must be first
     UNKNOWN((String) null),
     ACQUIRE_TIMEOUT(ModelKeys.ACQUIRE_TIMEOUT),
+    ALIASES(ModelKeys.ALIASES),
     BATCH_SIZE(ModelKeys.BATCH_SIZE),
     BATCHING(ModelKeys.BATCHING),
     CACHE(ModelKeys.CACHE),

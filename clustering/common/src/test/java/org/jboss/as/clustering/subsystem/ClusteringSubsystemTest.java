@@ -1,9 +1,12 @@
 package org.jboss.as.clustering.subsystem;
 
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -45,6 +48,37 @@ public abstract class ClusteringSubsystemTest extends AbstractSubsystemBaseTest 
             throw new IllegalStateException(e);
         }
     }
+
+    /**
+     * Need to override the XML comparison in the case where the input xsd and the output xsd differ.
+     *
+     * @param configId the id of the xml configuration
+     * @param original the original subsystem xml
+     * @param marshalled the marshalled subsystem xml
+     *
+     * @throws Exception
+     */
+    @Override
+    protected void compareXml(String configId, final String original, final String marshalled) throws Exception {
+
+        final XMLStreamReader originalReader = XMLInputFactory.newInstance().createXMLStreamReader(new StringReader(original));
+        final XMLStreamReader marshalledReader = XMLInputFactory.newInstance().createXMLStreamReader(new StringReader(marshalled));
+
+        String originalNS = null ;
+        if (originalReader.next() == XMLStreamReader.START_ELEMENT) {
+           originalNS = originalReader.getNamespaceURI() ;
+        }
+        String marshalledNS = null ;
+        if (marshalledReader.next() == XMLStreamReader.START_ELEMENT) {
+           marshalledNS = marshalledReader.getNamespaceURI() ;
+        }
+
+        // only compare if namespace URIs are the same
+        if (originalNS.equals(marshalledNS)) {
+            compareXml(configId, original, marshalled, true);
+        }
+    }
+
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
