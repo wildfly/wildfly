@@ -43,7 +43,7 @@ interface ProcessMessages {
      */
     ProcessMessages MESSAGES = Messages.getBundle(ProcessMessages.class);
 
-    @Message(id = 12040, value = "Usage: ./domain.sh [args...]\nwhere args include:")
+    @Message(id = Message.NONE, value = "Usage: ./domain.sh [args...]%nwhere args include:")
     String argUsage();
 
     /**
@@ -51,7 +51,7 @@ interface ProcessMessages {
      *
      * @return the message.
      */
-    @Message(id = 12041, value = "Keep a copy of the persistent domain configuration even if this host is not the Domain Controller")
+    @Message(id = Message.NONE, value = "Keep a copy of the persistent domain configuration even if this host is not the Domain Controller")
     String argBackup();
 
     /**
@@ -59,7 +59,7 @@ interface ProcessMessages {
      *
      * @return the message.
      */
-    @Message(id = 12042, value = "If this host is not the Domain Controller and cannot contact the Domain Controller at boot, boot using a locally cached copy of the domain configuration (see --backup)")
+    @Message(id = Message.NONE, value = "If this host is not the Domain Controller and cannot contact the Domain Controller at boot, boot using a locally cached copy of the domain configuration (see --backup)")
     String argCachedDc();
 
     /**
@@ -67,7 +67,7 @@ interface ProcessMessages {
      *
      * @return the message.
      */
-    @Message(id = 12043, value = "Name of the domain configuration file to use (default is \"domain.xml\")")
+    @Message(id = Message.NONE, value = "Name of the domain configuration file to use (default is \"domain.xml\")")
     String argDomainConfig();
 
     /**
@@ -75,7 +75,7 @@ interface ProcessMessages {
      *
      * @return the message.
      */
-    @Message(id = 12044, value = "Display this message and exit")
+    @Message(id = Message.NONE, value = "Display this message and exit")
     String argHelp();
 
     /**
@@ -83,7 +83,7 @@ interface ProcessMessages {
      *
      * @return the message.
      */
-    @Message(id = 12045, value = "Address on which the host controller should listen for communication from the process controller")
+    @Message(id = Message.NONE, value = "Address on which the host controller should listen for communication from the process controller")
     String argInterProcessHcAddress();
 
     /**
@@ -91,7 +91,7 @@ interface ProcessMessages {
      *
      * @return the message.
      */
-    @Message(id = 12046, value = "Port on which the host controller should listen for communication from the process controller")
+    @Message(id = Message.NONE, value = "Port on which the host controller should listen for communication from the process controller")
     String argInterProcessHcPort();
 
     /**
@@ -99,7 +99,7 @@ interface ProcessMessages {
      *
      * @return the message.
      */
-    @Message(id = 12047, value = "Name of the host configuration file to use (default is \"host.xml\")")
+    @Message(id = Message.NONE, value = "Name of the host configuration file to use (default is \"host.xml\")")
     String argHostConfig();
 
     /**
@@ -107,7 +107,7 @@ interface ProcessMessages {
      *
      * @return the message.
      */
-    @Message(id = 12048, value = "Address on which the process controller listens for communication from processes it controls")
+    @Message(id = Message.NONE, value = "Address on which the process controller listens for communication from processes it controls")
     String argPcAddress();
 
     /**
@@ -115,7 +115,7 @@ interface ProcessMessages {
      *
      * @return the message.
      */
-    @Message(id = 12049, value = "Port on which the process controller listens for communication from processes it controls")
+    @Message(id = Message.NONE, value = "Port on which the process controller listens for communication from processes it controls")
     String argPcPort();
 
     /**
@@ -123,7 +123,7 @@ interface ProcessMessages {
      *
      * @return the message.
      */
-    @Message(id = 12050, value = "Load system properties from the given url")
+    @Message(id = Message.NONE, value = "Load system properties from the given url")
     String argProperties();
 
     /**
@@ -131,7 +131,7 @@ interface ProcessMessages {
      *
      * @return the message.
      */
-    @Message(id = 12051, value = "Set a system property")
+    @Message(id = Message.NONE, value = "Set a system property")
     String argSystem();
 
     /**
@@ -139,7 +139,7 @@ interface ProcessMessages {
      *
      * @return the message.
      */
-    @Message(id = 12052, value = "Print version and exit")
+    @Message(id = Message.NONE, value = "Print version and exit")
     String argVersion();
 
     /**
@@ -147,7 +147,7 @@ interface ProcessMessages {
      *
      * @return the message.
      */
-    @Message(id = 12053, value = "Set system property jboss.bind.address to the given value")
+    @Message(id = Message.NONE, value = "Set system property jboss.bind.address to the given value")
     String argPublicBindAddress();
 
     /**
@@ -155,7 +155,7 @@ interface ProcessMessages {
      *
      * @return the message.
      */
-    @Message(id = 12054, value = "Set system property jboss.bind.address.<interface> to the given value")
+    @Message(id = Message.NONE, value = "Set system property jboss.bind.address.<interface> to the given value")
     String argInterfaceBindAddress();
 
     /**
@@ -163,7 +163,7 @@ interface ProcessMessages {
      *
      * @return the message.
      */
-    @Message(id = 12055, value = "Set system property jboss.default.multicast.address to the given value")
+    @Message(id = Message.NONE, value = "Set system property jboss.default.multicast.address to the given value")
     String argDefaultMulticastAddress();
 
     /**
