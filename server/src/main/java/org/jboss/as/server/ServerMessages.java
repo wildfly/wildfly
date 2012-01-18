@@ -211,4 +211,103 @@ public interface ServerMessages {
 
     @Message(id = 15833, value = "Failed to create VFSResourceLoader for root [%s]")
     DeploymentUnitProcessingException failedToCreateVFSResourceLoader(String resourceRoot, @Cause IOException cause);
+
+    /**
+     * Instructions for the usage of standalone.sh.
+     *
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Usage: ./standalone.sh [args...]%nwhere args include:")
+    String argUsage();
+
+    /**
+     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#DOMAIN_CONFIG} and {@link
+     * org.jboss.as.process.CommandLineArgument#SHORT_DOMAIN_CONFIG} command line arguments.
+     *
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Name of the server configuration file to use (default is \"standalone.xml\")")
+    String argServerConfig();
+
+    /**
+     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#SHORT_HELP} or {@link
+     * org.jboss.as.process.CommandLineArgument#HELP} command line argument.
+     *
+     * @return the message.
+     */
+    @Message(value = "Display this message and exit")
+    String argHelp();
+
+    /**
+     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#SHORT_PROPERTIES} or {@link
+     * org.jboss.as.process.CommandLineArgument#PROPERTIES} command line argument.
+     *
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Load system properties from the given url")
+    String argProperties();
+
+    /**
+     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#SYSTEM_PROPERTY} command line argument.
+     *
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Set a system property")
+    String argSystem();
+
+    /**
+     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#SHORT_VERSION}, {@link
+     * org.jboss.as.process.CommandLineArgument#LEGACY_SHORT_VERSION} or {@link org.jboss.as.process.CommandLineArgument#VERSION}
+     * command line argument.
+     *
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Print version and exit")
+    String argVersion();
+
+    /**
+     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#PUBLIC_BIND_ADDRESS} or {@link
+     * org.jboss.as.process.CommandLineArgument#LEGACY_PUBLIC_BIND_ADDRESS} command line argument.
+     *
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Set system property jboss.bind.address to the given value")
+    String argPublicBindAddress();
+
+    /**
+     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#INTERFACE_BIND_ADDRESS} command line
+     * argument.
+     *
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Set system property jboss.bind.address.<interface> to the given value")
+    String argInterfaceBindAddress();
+
+    /**
+     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#DEFAULT_MULTICAST_ADDRESS} command line
+     * argument.
+     *
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Set system property jboss.default.multicast.address to the given value")
+    String argDefaultMulticastAddress();
+
+    /**
+     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#INTERFACE_BIND_ADDRESS} command line
+     * argument.
+     *
+     * @param argument the name of the argument
+     *
+     * @return the message.
+     */
+    @Message(value = "No value was provided for argument %s%n")
+    String noArgValue(String argument);
+
+    /**
+     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#ADMIN_ONLY} command line argument.
+     *
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Set the server's running type to ADMIN_ONLY causing it to open administrative interfaces and accept management requests but not start other runtime services or accept end user requests.")
+    String argAdminOnly();
 }
