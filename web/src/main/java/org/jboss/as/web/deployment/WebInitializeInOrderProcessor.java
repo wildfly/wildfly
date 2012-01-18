@@ -1,5 +1,7 @@
 package org.jboss.as.web.deployment;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 import org.jboss.as.ee.structure.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -20,7 +22,7 @@ public class WebInitializeInOrderProcessor implements DeploymentUnitProcessor {
 
     public WebInitializeInOrderProcessor(String defaultHost) {
         if (defaultHost == null) {
-            throw new IllegalArgumentException("null default host");
+            throw MESSAGES.nullDefaultHost();
         }
         this.defaultHost = defaultHost;
     }

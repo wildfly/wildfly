@@ -30,6 +30,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
+import org.jboss.as.web.WebLogger;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -106,7 +107,7 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
         if (jsfVersion.equals(JsfVersionMarker.JSF_2_0)) jsfModule = JSF_IMPL;
         if (jsfModule == null) {
             jsfModule = JSF_IMPL;
-            logger.warn("Unkown JSF version " + jsfVersion + " " + JsfVersionMarker.JSF_2_0 + " will be used instead");
+            WebLogger.WEB_LOGGER.unknownJSFVersion(jsfVersion, JsfVersionMarker.JSF_2_0);
         }
 
         ModuleDependency jsf = new ModuleDependency(moduleLoader, jsfModule, false, false, false);

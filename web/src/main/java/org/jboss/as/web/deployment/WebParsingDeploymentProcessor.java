@@ -21,6 +21,8 @@
  */
 package org.jboss.as.web.deployment;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -109,9 +111,9 @@ public class WebParsingDeploymentProcessor implements DeploymentUnitProcessor {
                 warMetaData.setWebMetaData(webMetaData);
 
             } catch (XMLStreamException e) {
-                throw new DeploymentUnitProcessingException("Failed to parse " + webXml + " at [" + e.getLocation().getLineNumber() + "," + e.getLocation().getColumnNumber() + "]");
+                throw new DeploymentUnitProcessingException(MESSAGES.failToParseXMLDescriptor(webXml, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber()));
             } catch (IOException e) {
-                throw new DeploymentUnitProcessingException("Failed to parse " + webXml, e);
+                throw new DeploymentUnitProcessingException(MESSAGES.failToParseXMLDescriptor(webXml), e);
             } finally {
                 try {
                     if (is != null) {

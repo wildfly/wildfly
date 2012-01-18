@@ -22,8 +22,16 @@
 
 package org.jboss.as.web;
 
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
+
+import org.jboss.as.web.deployment.JsfVersionMarker;
 import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Cause;
+import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
+import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 
 /**
@@ -48,4 +56,49 @@ public interface WebLogger extends BasicLogger {
      * A logger with the category {@code org.jboss.web}.
      */
     WebLogger WEB_LOGGER = Logger.getMessageLogger(WebLogger.class, "org.jboss.web");
+
+    @LogMessage(level = ERROR)
+    @Message(id = 18200, value = "Failed to start welcome context")
+    void stopWelcomeContextFailed(@Cause Throwable cause);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 18201, value = "Failed to destroy welcome context")
+    void destroyWelcomeContextFailed(@Cause Throwable cause);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 18202, value = "Error calling onStartup for servlet container initializer: %s")
+    void sciOnStartupError(String sciClassName, @Cause Throwable cause);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 18203, value = "Error instantiating container component: %s")
+    void componentInstanceCreationFailed(String className, @Cause Throwable cause);
+
+    @LogMessage(level = WARN)
+    @Message(id = 18204, value = "Clustering not supported, falling back to non-clustered session manager")
+    void clusteringNotSupported();
+
+    @LogMessage(level = ERROR)
+    @Message(id = 18205, value = "Cannot setup overlays for [%s] due to custom resources")
+    void noOverlay(String webappPath);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 18206, value = "Webapp [%s] is unavailable due to startup errors")
+    void unavailable(String webappPath);
+
+    @LogMessage(level = WARN)
+    @Message(id = 18207, value = "Unknown JSF version %s %s will be used instead")
+    void unknownJSFVersion(String version, String referenceVersion);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 18208, value = "Failed to start context")
+    void stopContextFailed(@Cause Throwable cause);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 18209, value = "Failed to destroy context")
+    void destroyContextFailed(@Cause Throwable cause);
+
+    @LogMessage(level = INFO)
+    @Message(id = 18210, value = "Registering web context: %s")
+    void registerWebapp(String webappPath);
+
 }

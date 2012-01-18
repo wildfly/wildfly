@@ -22,6 +22,8 @@
 
 package org.jboss.as.web.deployment;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -182,7 +184,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
             for (OrderingElementMetaData orderingElementMetaData : absoluteOrderingMetaData.getOrdering()) {
                 if (orderingElementMetaData.isOthers()) {
                     if (otherPos >= 0) {
-                        throw new DeploymentUnitProcessingException("Duplicate others in absolute ordering");
+                        throw new DeploymentUnitProcessingException(MESSAGES.invalidMultipleOthers());
                     }
                     otherPos = i;
                 } else {
@@ -196,8 +198,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
                         }
                     }
                     if (!found)
-                        throw new DeploymentUnitProcessingException("Could not resolve name in absolute ordering: "
-                                + orderingElementMetaData.getName());
+                        throw new DeploymentUnitProcessingException(MESSAGES.invalidAbsoluteOrdering(orderingElementMetaData.getName()));
                 }
                 i++;
             }
@@ -210,7 +211,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
             try {
                 resolveOrder(orderings, order);
             } catch (IllegalStateException e) {
-                throw new DeploymentUnitProcessingException("Invalid ordering", e);
+                throw new DeploymentUnitProcessingException(MESSAGES.invalidRelativeOrdering(), e);
             }
             jarsSet.clear();
         } else {
@@ -288,7 +289,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
             try {
                 WebCommonMetaDataMerger.augment(mergedFragmentMetaData, webFragmentMetaData, specMetaData, false);
             } catch (Exception e) {
-                throw new DeploymentUnitProcessingException("Deployment error processing fragment for JAR: " + jar, e);
+                throw new DeploymentUnitProcessingException(MESSAGES.invalidWebFragment(jar), e);
             }
         }
         // Augment with meta data from annotations from JARs excluded from the
@@ -314,7 +315,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
             try {
                 WebCommonMetaDataMerger.augment(mergedFragmentMetaData, webFragmentMetaData, specMetaData, false);
             } catch (Exception e) {
-                throw new DeploymentUnitProcessingException("Deployment error processing fragment for JAR: " + jar, e);
+                throw new DeploymentUnitProcessingException(MESSAGES.invalidWebFragment(jar), e);
             }
         }
         WebCommonMetaDataMerger.augment(specMetaData, mergedFragmentMetaData, null, true);
@@ -467,7 +468,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
             while (beforeIterator.hasNext()) {
                 Ordering check = beforeIterator.next();
                 if (checked.contains(check)) {
-                    throw new IllegalStateException("Ordering conflict with JAR: " + this.ordering.getJar());
+                    throw new IllegalStateException(MESSAGES.invalidRelativeOrdering(this.ordering.getJar()));
                 }
                 if (check.isBeforeInternal(ordering, checked)) {
                     return false;
@@ -495,7 +496,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
             while (afterIterator.hasNext()) {
                 Ordering check = afterIterator.next();
                 if (checked.contains(check)) {
-                    throw new IllegalStateException("Ordering conflict with JAR: " + this.ordering.getJar());
+                    throw new IllegalStateException(MESSAGES.invalidRelativeOrdering(this.ordering.getJar()));
                 }
                 if (check.isAfterInternal(ordering, checked)) {
                     return false;
@@ -571,8 +572,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
             ordering.beforeOthers = webOrdering.isBeforeOthers();
             if (ordering.afterOthers && ordering.beforeOthers) {
                 // Cannot be both after and before others
-                throw new IllegalStateException("Ordering includes both before and after others in JAR: "
-                        + webOrdering.getJar());
+                throw new IllegalStateException(MESSAGES.invalidRelativeOrderingBeforeAndAfter(webOrdering.getJar()));
             }
             work.add(ordering);
         }
@@ -593,7 +593,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
                     if (name.equals(ordering2.ordering.getName())) {
                         if (found) {
                             // Duplicate name
-                            throw new IllegalStateException("Duplicate name declared in JAR: " + webOrdering.getJar());
+                            throw new IllegalStateException(MESSAGES.invalidRelativeOrderingDuplicateName(webOrdering.getJar()));
                         }
                         ordering.addAfter(ordering2);
                         ordering2.addBefore(ordering);
@@ -602,7 +602,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
                 }
                 if (!found) {
                     // Unknown name
-                    throw new IllegalStateException("Unknown name declared in JAR: " + webOrdering.getJar());
+                    throw new IllegalStateException(MESSAGES.invalidRelativeOrderingUnkownName(webOrdering.getJar()));
                 }
             }
             Iterator<String> before = webOrdering.getBefore().iterator();
@@ -615,7 +615,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
                     if (name.equals(ordering2.ordering.getName())) {
                         if (found) {
                             // Duplicate name
-                            throw new IllegalStateException("Duplicate name declared in JAR: " + webOrdering.getJar());
+                            throw new IllegalStateException(MESSAGES.invalidRelativeOrderingDuplicateName(webOrdering.getJar()));
                         }
                         ordering.addBefore(ordering2);
                         ordering2.addAfter(ordering);
@@ -624,7 +624,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
                 }
                 if (!found) {
                     // Unknown name
-                    throw new IllegalStateException("Unknown name declared in JAR: " + webOrdering.getJar());
+                    throw new IllegalStateException(MESSAGES.invalidRelativeOrderingUnkownName(webOrdering.getJar()));
                 }
             }
         }
@@ -692,7 +692,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
                 }
                 if (insertAfter > insertBefore) {
                     // Conflicting order (probably caught earlier)
-                    throw new IllegalStateException("Fragment ordering conflict with JAR: " + ordering.ordering.getJar());
+                    throw new IllegalStateException(MESSAGES.invalidRelativeOrderingConflict(ordering.ordering.getJar()));
                 }
                 // Insert somewhere in the range
                 tempOrder.add(insertAfter + 1, ordering);

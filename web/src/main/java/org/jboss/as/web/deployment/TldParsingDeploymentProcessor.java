@@ -21,6 +21,8 @@
  */
 package org.jboss.as.web.deployment;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -123,9 +125,9 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
             XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
             return TldMetaDataParser.parse(xmlReader);
         } catch (XMLStreamException e) {
-            throw new DeploymentUnitProcessingException("Failed to parse " + tld + " at [" + e.getLocation().getLineNumber() + "," +  e.getLocation().getColumnNumber() + "]");
+            throw new DeploymentUnitProcessingException(MESSAGES.failToParseXMLDescriptor(tld, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber()));
         } catch (IOException e) {
-            throw new DeploymentUnitProcessingException("Failed to parse " + tld, e);
+            throw new DeploymentUnitProcessingException(MESSAGES.failToParseXMLDescriptor(tld), e);
         } finally {
             try {
                 if (is != null) {

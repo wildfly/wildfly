@@ -21,6 +21,8 @@
  */
 package org.jboss.as.web.deployment;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -144,7 +146,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                 ServletMetaData servlet = new ServletMetaData();
                 AnnotationTarget target = annotation.target();
                 if (!(target instanceof ClassInfo)) {
-                    throw new DeploymentUnitProcessingException("@WebServlet is only allowed at class level " + target);
+                    throw new DeploymentUnitProcessingException(MESSAGES.invalidWebServletAnnotation(target));
                 }
                 ClassInfo classInfo = ClassInfo.class.cast(target);
                 servlet.setServletClass(classInfo.toString());
@@ -172,7 +174,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                             AnnotationValue initParamName = initParamsAnnotation.value("name");
                             AnnotationValue initParamValue = initParamsAnnotation.value();
                             if (initParamName == null || initParamValue == null) {
-                                throw new DeploymentUnitProcessingException("@WebInitParam requires name and value on " + target);
+                                throw new DeploymentUnitProcessingException(MESSAGES.invalidWebInitParamAnnotation(target));
                             }
                             AnnotationValue initParamDescription = initParamsAnnotation.value("description");
                             initParam.setParamName(initParamName.asString());
@@ -233,7 +235,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                 FilterMetaData filter = new FilterMetaData();
                 AnnotationTarget target = annotation.target();
                 if (!(target instanceof ClassInfo)) {
-                    throw new DeploymentUnitProcessingException("@WebFilter is only allowed at class level " + target);
+                    throw new DeploymentUnitProcessingException(MESSAGES.invalidWebFilterAnnotation(target));
                 }
                 ClassInfo classInfo = ClassInfo.class.cast(target);
                 filter.setFilterClass(classInfo.toString());
@@ -257,7 +259,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                             AnnotationValue initParamName = initParamsAnnotation.value("name");
                             AnnotationValue initParamValue = initParamsAnnotation.value();
                             if (initParamName == null || initParamValue == null) {
-                                throw new DeploymentUnitProcessingException("@WebInitParam requires name and value on " + target);
+                                throw new DeploymentUnitProcessingException(MESSAGES.invalidWebInitParamAnnotation(target));
                             }
                             AnnotationValue initParamDescription = initParamsAnnotation.value("description");
                             initParam.setParamName(initParamName.asString());
@@ -339,7 +341,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                 ListenerMetaData listener = new ListenerMetaData();
                 AnnotationTarget target = annotation.target();
                 if (!(target instanceof ClassInfo)) {
-                    throw new DeploymentUnitProcessingException("@Weblistener is only allowed at class level " + target);
+                    throw new DeploymentUnitProcessingException(MESSAGES.invalidWebListenerAnnotation(target));
                 }
                 ClassInfo classInfo = ClassInfo.class.cast(target);
                 listener.setListenerClass(classInfo.toString());
@@ -375,7 +377,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                     annotations.add(annotationMD);
                 }
                 if (annotation.value() == null) {
-                    throw new DeploymentUnitProcessingException("@RunAs needs to specify a role name on " + target);
+                    throw new DeploymentUnitProcessingException(MESSAGES.invalidRunAsAnnotation(target));
                 }
                 RunAsMetaData runAs = new RunAsMetaData();
                 runAs.setRoleName(annotation.value().asString());
@@ -392,7 +394,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
             }
             for (final AnnotationInstance annotation : declareRolesAnnotations) {
                 if (annotation.value() == null) {
-                    throw new DeploymentUnitProcessingException("@DeclareRoles needs to specify role names on " + annotation.target());
+                    throw new DeploymentUnitProcessingException(MESSAGES.invalidDeclareRolesAnnotation(annotation.target()));
                 }
                 for (String role : annotation.value().asStringArray()) {
                     SecurityRoleMetaData sr = new SecurityRoleMetaData();
@@ -412,7 +414,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
             for (final AnnotationInstance annotation : multipartConfigAnnotations) {
                 AnnotationTarget target = annotation.target();
                 if (!(target instanceof ClassInfo)) {
-                    throw new DeploymentUnitProcessingException("@MultipartConfig is only allowed at class level " + target);
+                    throw new DeploymentUnitProcessingException(MESSAGES.invalidMultipartConfigAnnotation(target));
                 }
                 ClassInfo classInfo = ClassInfo.class.cast(target);
                 AnnotationMetaData annotationMD = annotations.get(classInfo.toString());
@@ -452,7 +454,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
             for (final AnnotationInstance annotation : servletSecurityAnnotations) {
                 AnnotationTarget target = annotation.target();
                 if (!(target instanceof ClassInfo)) {
-                    throw new DeploymentUnitProcessingException("@ServletSecurity is only allowed at class level " + target);
+                    throw new DeploymentUnitProcessingException(MESSAGES.invalidServletSecurityAnnotation(target));
                 }
                 ClassInfo classInfo = ClassInfo.class.cast(target);
                 AnnotationMetaData annotationMD = annotations.get(classInfo.toString());

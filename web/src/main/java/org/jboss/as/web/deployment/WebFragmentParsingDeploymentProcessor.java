@@ -21,6 +21,8 @@
  */
 package org.jboss.as.web.deployment;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -80,9 +82,9 @@ public class WebFragmentParsingDeploymentProcessor implements DeploymentUnitProc
                         XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
                         webFragments.put(resourceRoot.getRootName(), WebFragmentMetaDataParser.parse(xmlReader));
                     } catch (XMLStreamException e) {
-                        throw new DeploymentUnitProcessingException("Failed to parse " + webFragment + " at [" + e.getLocation().getLineNumber() + "," +  e.getLocation().getColumnNumber() + "]");
+                        throw new DeploymentUnitProcessingException(MESSAGES.failToParseXMLDescriptor(webFragment, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber()));
                     } catch (IOException e) {
-                        throw new DeploymentUnitProcessingException("Failed to parse " + webFragment, e);
+                        throw new DeploymentUnitProcessingException(MESSAGES.failToParseXMLDescriptor(webFragment), e);
                     } finally {
                         try {
                             if (is != null) {
