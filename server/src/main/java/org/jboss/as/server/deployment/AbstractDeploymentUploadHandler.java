@@ -18,16 +18,17 @@
  */
 package org.jboss.as.server.deployment;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.server.deployment.repository.api.ContentRepository;
-import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
-
 import java.io.IOException;
 import java.io.InputStream;
+
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.operations.validation.ParametersValidator;
+import org.jboss.as.server.ServerLogger;
+import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.deployment.repository.api.ContentRepository;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Base class for operation handlers that can handle the upload of deployment content.
@@ -36,9 +37,6 @@ import java.io.InputStream;
  */
 public abstract class AbstractDeploymentUploadHandler implements OperationStepHandler {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.server");
-
-    private static final String[] EMPTY = new String[0];
     private final ContentRepository contentRepository;
 
     private final ParametersValidator validator = new ParametersValidator();
@@ -65,9 +63,10 @@ public abstract class AbstractDeploymentUploadHandler implements OperationStepHa
             }
         }
         catch (IOException e) {
-            throw new OperationFailedException(new ModelNode().set(e.toString()));
+            throw ServerMessages.MESSAGES.caughtIOExceptionUploadingContent(e);
         }
-        context.completeStep();
+
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
     protected abstract InputStream getContentInputStream(OperationContext context, ModelNode operation) throws IOException, OperationFailedException;
@@ -78,7 +77,7 @@ public abstract class AbstractDeploymentUploadHandler implements OperationStepHa
                 is.close();
             }
             catch (Exception e) {
-                log.warn("Caught exception closing input stream", e);
+                ServerLogger.ROOT_LOGGER.caughtExceptionClosingContentInputStream(e);
             }
         }
     }

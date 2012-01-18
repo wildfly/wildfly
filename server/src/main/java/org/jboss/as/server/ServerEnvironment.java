@@ -21,16 +21,6 @@
  */
 package org.jboss.as.server;
 
-import org.jboss.as.controller.ControllerMessages;
-import org.jboss.as.controller.ProcessType;
-import org.jboss.as.controller.RunningMode;
-import org.jboss.as.controller.persistence.ConfigurationFile;
-import org.jboss.as.version.ProductConfig;
-import org.jboss.logging.Logger;
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoader;
-
 import java.io.File;
 import java.io.Serializable;
 import java.net.InetAddress;
@@ -38,6 +28,15 @@ import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
+
+import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.persistence.ConfigurationFile;
+import org.jboss.as.version.ProductConfig;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoader;
 
 /**
  * Encapsulates the runtime environment for a server.
@@ -71,9 +70,6 @@ public class ServerEnvironment implements Serializable {
             }
         }
     }
-
-    // Provide logging
-    private static final transient Logger log = Logger.getLogger(ServerEnvironment.class);
 
     // ///////////////////////////////////////////////////////////////////////
     // Configuration Value Identifiers //
@@ -152,15 +148,6 @@ public class ServerEnvironment implements Serializable {
      * Defaults to <tt><em>SERVER_BASE_DIR</em>/tmp</tt> .
      */
     public static final String SERVER_TEMP_DIR = "jboss.server.temp.dir";
-
-    /**
-     * Constant that holds the name of the environment property for specifying the directory which JBoss will use for internal
-     * system deployments.
-     *
-     * <p>
-     * Defaults to <tt><em>SERVER_DATA_DIR</em>/system-content</tt>.
-     */
-    public static final String SERVER_SYSTEM_DEPLOY_DIR = "jboss.server.system.deploy.dir";
 
     /**
      * Common alias between domain and standalone mode. Uses jboss.domain.temp.dir on domain mode,
@@ -313,7 +300,7 @@ public class ServerEnvironment implements Serializable {
         // Must have HOME_DIR
         homeDir = getFileFromProperty(HOME_DIR, props);
         if (homeDir == null)
-            throw new IllegalStateException("Missing configuration value for: " + HOME_DIR);
+            throw ServerMessages.MESSAGES.missingHomeDirConfiguration(HOME_DIR);
 
         File tmp = getFileFromProperty(MODULES_DIR, props);
         if (tmp == null) {
@@ -373,7 +360,7 @@ public class ServerEnvironment implements Serializable {
                 // Property was set to a valid value; user wishes to control core service threads
                 allowExecutor = false;
             } catch(NumberFormatException ex) {
-                log.warnf(ex, "Failed to parse property(%s), value(%s) as an integer", BOOTSTRAP_MAX_THREADS, maxThreads);
+                ServerLogger.ROOT_LOGGER.failedToParseCommandLineInteger(BOOTSTRAP_MAX_THREADS, maxThreads);
             }
         }
         allowModelControllerExecutor = allowExecutor;
@@ -401,7 +388,7 @@ public class ServerEnvironment implements Serializable {
             Module vfsModule = bootLoader.loadModule(ModuleIdentifier.create(VFS_MODULE_IDENTIFIER));
             Module.registerURLStreamHandlerFactoryModule(vfsModule);
         } catch (Exception ex) {
-            log.errorf(ex, "Cannot add module '%s' as URLStreamHandlerFactory provider", VFS_MODULE_IDENTIFIER);
+            ServerLogger.ROOT_LOGGER.cannotAddURLStreamHandlerFactory(ex, VFS_MODULE_IDENTIFIER);
         }
     }
 
@@ -535,7 +522,7 @@ public class ServerEnvironment implements Serializable {
                 int max = Integer.decode(maxThreads);
                 defaultThreads = Math.max(max, 1);
             } catch(NumberFormatException ex) {
-                log.warnf(ex, "Failed to parse property(%s), value(%s) as an integer", BOOTSTRAP_MAX_THREADS, maxThreads);
+                ServerLogger.ROOT_LOGGER.failedToParseCommandLineInteger(BOOTSTRAP_MAX_THREADS, maxThreads);
             }
         }
         return defaultThreads;

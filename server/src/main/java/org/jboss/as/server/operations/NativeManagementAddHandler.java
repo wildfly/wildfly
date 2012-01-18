@@ -28,6 +28,7 @@ import static org.jboss.as.server.mgmt.NativeManagementResourceDefinition.NATIVE
 import static org.jboss.as.server.mgmt.NativeManagementResourceDefinition.SECURITY_REALM;
 import static org.jboss.as.server.mgmt.NativeManagementResourceDefinition.SOCKET_BINDING;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -43,10 +44,11 @@ import org.jboss.as.remoting.EndpointService;
 import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.ServerLogger;
+import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -101,11 +103,11 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler {
         final String attributeName = definition.getName();
         final boolean has = operation.has(attributeName);
         if(! has && definition.isRequired(operation)) {
-            throw new OperationFailedException(new ModelNode().set(String.format("%s is required", attributeName)));
+            throw ServerMessages.MESSAGES.attributeIsRequired(attributeName);
         }
         if(has) {
             if(! definition.isAllowed(operation)) {
-                throw new OperationFailedException(new ModelNode().set(String.format("%s is not allowed when [%s] are present", attributeName, definition.getAlternatives())));
+                throw ServerMessages.MESSAGES.attributeNotAllowedWhenAlternativeIsPresent(attributeName, Arrays.asList(definition.getAlternatives()));
             }
             definition.validateAndSet(operation, subModel);
         } else {
@@ -120,13 +122,13 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler {
         final String attributeName = definition.getName();
         final boolean has = subModel.has(attributeName);
         if(! has && definition.isRequired(subModel)) {
-            throw new OperationFailedException(new ModelNode().set(String.format("%s is required", attributeName)));
+            throw ServerMessages.MESSAGES.attributeIsRequired(attributeName);
         }
         ModelNode result;
         if(has) {
             if(! definition.isAllowed(subModel)) {
                 if (subModel.hasDefined(attributeName)) {
-                    throw new OperationFailedException(new ModelNode().set(String.format("%s is not allowed when [%s] are present", attributeName, definition.getAlternatives())));
+                    throw ServerMessages.MESSAGES.attributeNotAllowedWhenAlternativeIsPresent(attributeName, Arrays.asList(definition.getAlternatives()));
                 } else {
                     // create the undefined node
                     result = new ModelNode();
@@ -164,7 +166,7 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler {
         if (realmNode.isDefined()) {
             realmSvcName = SecurityRealmService.BASE_SERVICE_NAME.append(realmNode.asString());
         } else {
-            Logger.getLogger("org.jboss.as").warn("No security realm defined for native management service, all access will be unrestricted.");
+            ServerLogger.ROOT_LOGGER.nativeManagementInterfaceIsUnsecured();
         }
 
         ServiceName tmpDirPath = ServiceName.JBOSS.append("server", "path", "jboss.server.temp.dir");

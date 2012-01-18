@@ -25,6 +25,7 @@ package org.jboss.as.server.deployment;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.msc.service.ServiceRegistry;
@@ -43,9 +44,9 @@ public class SubDeploymentUnitService extends AbstractDeploymentUnitService {
 
     public SubDeploymentUnitService(ResourceRoot deploymentRoot, DeploymentUnit parent, ImmutableManagementResourceRegistration registration, Resource resource, final ServiceVerificationHandler serviceVerificationHandler) {
         this.serviceVerificationHandler = serviceVerificationHandler;
-        if (deploymentRoot == null) throw new IllegalArgumentException("Deployment root is required");
+        if (deploymentRoot == null) throw ServerMessages.MESSAGES.deploymentRootRequired();
         this.deploymentRoot = deploymentRoot;
-        if (parent == null) throw new IllegalArgumentException("Sub-deployments require a parent deployment unit");
+        if (parent == null) throw ServerMessages.MESSAGES.subdeploymentsRequireParent();
         this.parent = parent;
         this.registration = registration;
         this.resource = resource;

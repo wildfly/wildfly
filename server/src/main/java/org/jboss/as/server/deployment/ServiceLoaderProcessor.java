@@ -22,12 +22,6 @@
 
 package org.jboss.as.server.deployment;
 
-import org.jboss.as.server.deployment.module.ModuleRootMarker;
-import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.logging.Logger;
-import org.jboss.vfs.VFSUtils;
-import org.jboss.vfs.VirtualFile;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,14 +32,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.jboss.as.server.ServerLogger;
+import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.deployment.module.ModuleRootMarker;
+import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.vfs.VFSUtils;
+import org.jboss.vfs.VirtualFile;
+
 /**
  * A processor which creates a service loader index.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ServiceLoaderProcessor implements DeploymentUnitProcessor {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.server.deployment.service-loader");
 
     private static final Pattern VALID_NAME = Pattern.compile("(?:[a-zA-Z0-9_]+\\.)*[a-zA-Z0-9_]+");
 
@@ -93,7 +92,7 @@ public final class ServiceLoaderProcessor implements DeploymentUnitProcessor {
                             continue;
                         }
                         if (!VALID_NAME.matcher(className).matches()) {
-                            log.warnf("Encountered invalid class name \"%s\" for service type \"%s\"", className, name);
+                            ServerLogger.DEPLOYMENT_LOGGER.invalidServiceClassName(className, name);
                         }
                         list.add(className);
                     }
@@ -101,7 +100,7 @@ public final class ServiceLoaderProcessor implements DeploymentUnitProcessor {
                     VFSUtils.safeClose(stream);
                 }
             } catch (IOException e) {
-                throw new DeploymentUnitProcessingException("Failed to read '" + child + "'", e);
+                throw ServerMessages.MESSAGES.failedToReadVirtualFile(child, e);
             }
         }
     }

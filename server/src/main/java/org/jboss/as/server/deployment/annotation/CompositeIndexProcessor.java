@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -40,7 +41,6 @@ import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.moduleservice.ModuleIndexBuilder;
 import org.jboss.jandex.Index;
-import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
@@ -54,8 +54,6 @@ import org.jboss.modules.ModuleLoadException;
  * @author Stuart Douglas
  */
 public class CompositeIndexProcessor implements DeploymentUnitProcessor {
-
-    private static final Logger log = Logger.getLogger(CompositeIndexProcessor.class);
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -74,7 +72,7 @@ public class CompositeIndexProcessor implements DeploymentUnitProcessor {
                 if (additionalIndex != null) {
                     indexes.addAll(additionalIndex.indexes);
                 } else {
-                    log.errorf("Module %s will not have it's annotations processed as no %s file was found in the deployment. Please generate this file using the Jandex ant task.", module.getIdentifier(), ModuleIndexBuilder.INDEX_LOCATION);
+                    ServerLogger.DEPLOYMENT_LOGGER.noCompositeIndex(module.getIdentifier(), ModuleIndexBuilder.INDEX_LOCATION);
                 }
             } catch (ModuleLoadException e) {
                 throw new DeploymentUnitProcessingException(e);

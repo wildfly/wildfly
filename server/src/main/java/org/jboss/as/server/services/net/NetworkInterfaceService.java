@@ -39,7 +39,6 @@ import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerMessages;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -52,7 +51,8 @@ import org.jboss.msc.service.StopContext;
  * @author Emanuel Muckenhuber Scott stark (sstark@redhat.com) (C) 2011 Red Hat Inc.
  */
 public class NetworkInterfaceService implements Service<NetworkInterfaceBinding> {
-    private static Logger log = Logger.getLogger("org.jboss.as.server.net");
+
+    private static ServerLogger log = ServerLogger.NETWORK_LOGGER;
 
     /** The service base name. */
     public static final ServiceName JBOSS_NETWORK_INTERFACE = ServiceName.JBOSS.append("network");

@@ -28,8 +28,6 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jboss.as.version.Version;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -145,15 +143,14 @@ public class BootstrapListener extends AbstractServiceListener<Object> {
 
     protected void done(ServiceContainer container, long elapsedTime, int started, int failed, EnumMap<ServiceController.Mode, AtomicInteger> map, Set<ServiceName> missingDepsSet) {
         futureContainer.done(container);
-        final Logger log = Logger.getLogger("org.jboss.as");
         final int active = map.get(ServiceController.Mode.ACTIVE).get();
         final int passive = map.get(ServiceController.Mode.PASSIVE).get();
         final int onDemand = map.get(ServiceController.Mode.ON_DEMAND).get();
         final int never = map.get(ServiceController.Mode.NEVER).get();
         if (failed == 0) {
-            log.infof("%s started in %dms - Started %d of %d services (%d services are passive or on-demand)", prettyVersion, Long.valueOf(elapsedTime), Integer.valueOf(started), Integer.valueOf(active + passive + onDemand + never), Integer.valueOf(onDemand + passive));
+            ServerLogger.AS_ROOT_LOGGER.startedClean(prettyVersion, elapsedTime, started, active + passive + onDemand + never, onDemand + passive);
         } else {
-            log.errorf("%s started (with errors) in %dms - Started %d of %d services (%d services failed or missing dependencies, %d services are passive or on-demand)", prettyVersion, Long.valueOf(elapsedTime), Integer.valueOf(started), Integer.valueOf(active + passive + onDemand + never), Integer.valueOf(failed), Integer.valueOf(onDemand + passive));
+            ServerLogger.AS_ROOT_LOGGER.startedWitErrors(prettyVersion, elapsedTime, started, active + passive + onDemand + never, failed, onDemand + passive);
         }
     }
 }
