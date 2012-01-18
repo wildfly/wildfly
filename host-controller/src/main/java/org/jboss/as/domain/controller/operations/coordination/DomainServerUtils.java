@@ -22,16 +22,25 @@
 
 package org.jboss.as.domain.controller.operations.coordination;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
+
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -138,5 +147,18 @@ public class DomainServerUtils {
             }
         }
         return result;
+    }
+
+    public static Map<String, ProxyController> getServerProxies(String localHostName, Resource domainRootResource, ImmutableManagementResourceRegistration domainRootResourceRegistration) {
+        final Set<String> serverNames = domainRootResource.getChild(PathElement.pathElement(HOST, localHostName)).getChildrenNames(SERVER_CONFIG);
+        final Map<String, ProxyController> proxies = new HashMap<String, ProxyController>();
+        for(String serverName : serverNames) {
+            final PathAddress serverAddress = PathAddress.pathAddress(PathElement.pathElement(HOST, localHostName), PathElement.pathElement(SERVER, serverName));
+            final ProxyController proxyController = domainRootResourceRegistration.getProxyController(serverAddress);
+            if(proxyController != null) {
+                proxies.put(serverName, proxyController);
+            }
+        }
+        return proxies;
     }
 }

@@ -24,6 +24,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COR
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CPU_AFFINITY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_STATE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
@@ -115,6 +116,7 @@ import org.jboss.as.host.controller.operations.RemoteDomainControllerAddHandler;
 import org.jboss.as.host.controller.operations.RemoteDomainControllerRemoveHandler;
 import org.jboss.as.host.controller.operations.ResolveExpressionOnHostHandler;
 import org.jboss.as.host.controller.operations.ServerAddHandler;
+import org.jboss.as.host.controller.operations.ServerConfigGroupWriteAttributeHandler;
 import org.jboss.as.host.controller.operations.ServerRemoveHandler;
 import org.jboss.as.host.controller.operations.ServerRestartHandler;
 import org.jboss.as.host.controller.operations.ServerStartHandler;
@@ -325,6 +327,7 @@ public class HostModelUtil {
         servers.registerReadWriteAttribute(SOCKET_BINDING_PORT_OFFSET, null, new WriteAttributeHandlers.IntRangeValidatingHandler(0, true), Storage.CONFIGURATION);
         servers.registerReadWriteAttribute(PRIORITY, null, new WriteAttributeHandlers.IntRangeValidatingHandler(0), Storage.CONFIGURATION);
         servers.registerReadWriteAttribute(CPU_AFFINITY, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1), Storage.CONFIGURATION);
+        servers.registerReadWriteAttribute(GROUP, null, new ServerConfigGroupWriteAttributeHandler(root, hostControllerInfo), Storage.CONFIGURATION);
 
         // Register server runtime operation handlers
         servers.registerMetric(ServerStatusHandler.ATTRIBUTE_NAME, new ServerStatusHandler(serverInventory));

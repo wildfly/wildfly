@@ -105,6 +105,7 @@ import org.jboss.as.domain.controller.operations.ProfileRemoveHandler;
 import org.jboss.as.domain.controller.operations.ReadMasterDomainModelHandler;
 import org.jboss.as.domain.controller.operations.ResolveExpressionOnDomainHandler;
 import org.jboss.as.domain.controller.operations.ServerGroupAddHandler;
+import org.jboss.as.domain.controller.operations.ServerGroupProfileWriteAttributeHandler;
 import org.jboss.as.domain.controller.operations.ServerGroupRemoveHandler;
 import org.jboss.as.domain.controller.operations.SocketBindingGroupAddHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentAddHandler;
@@ -263,6 +264,7 @@ public class DomainModelUtil {
         serverGroups.registerOperationHandler(REMOVE, ServerGroupRemoveHandler.INSTANCE, ServerGroupRemoveHandler.INSTANCE, false);
         serverGroups.registerReadWriteAttribute(SOCKET_BINDING_GROUP, null, WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE, Storage.CONFIGURATION);
         serverGroups.registerReadWriteAttribute(SOCKET_BINDING_PORT_OFFSET, null, new IntRangeValidatingHandler(0, true), Storage.CONFIGURATION);
+        serverGroups.registerReadWriteAttribute(PROFILE, null, new ServerGroupProfileWriteAttributeHandler(root, hostControllerInfo), Storage.CONFIGURATION);
         DomainServerLifecycleHandlers.registerServerGroupHandlers(serverGroups);
 
 
