@@ -46,7 +46,9 @@ public final class Constants {
     public static final String PROPERTY_VALUE="property-value";
     public static final String FEATURE="feature";
     public static final String FEATURE_NAME="feature-name";
+    public static final String PRE_HANDLER_CHAIN="pre-handler-chain";
     public static final String PRE_HANDLER_CHAINS="pre-handler-chains";
+    public static final String POST_HANDLER_CHAIN="post-handler-chain";
     public static final String POST_HANDLER_CHAINS="post-handler-chains";
     public static final String HANDLER_CHAIN="handler-chain";
     public static final String PROTOCOL_BINDING="protocol-bindings";

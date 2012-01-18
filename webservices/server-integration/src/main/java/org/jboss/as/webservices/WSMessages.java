@@ -27,6 +27,7 @@ import java.net.URL;
 
 import javax.xml.ws.WebServiceException;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.logging.Cause;
@@ -149,4 +150,7 @@ public interface WSMessages {
 
     @Message(id = 15536, value = "@WebServiceRef attribute 'type' is required fo class level annotations.")
     DeploymentUnitProcessingException requiredServiceRefType();
+
+    @Message(id = 15585, value = "Endpoint config %s doesn't exist")
+    OperationFailedException missingEndpointConfig(String configName);
 }

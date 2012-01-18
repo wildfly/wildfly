@@ -22,9 +22,10 @@
 
 package org.jboss.as.webservices.dmr;
 
+import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
+
 import java.util.List;
 
-import org.jboss.as.ee.component.deployers.EEResourceReferenceProcessorRegistry;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.webservices.deployers.AspectDeploymentProcessor;
@@ -37,7 +38,6 @@ import org.jboss.as.webservices.deployers.WSIntegrationProcessorJAXWS_HANDLER;
 import org.jboss.as.webservices.deployers.WSIntegrationProcessorJAXWS_JMS;
 import org.jboss.as.webservices.deployers.WSIntegrationProcessorJAXWS_POJO;
 import org.jboss.as.webservices.deployers.WSModelDeploymentProcessor;
-import org.jboss.as.webservices.deployers.WebServiceContextResourceProcessor;
 import org.jboss.as.webservices.deployers.WebServicesContextJndiSetupProcessor;
 import org.jboss.as.webservices.deployers.WebservicesDescriptorDeploymentProcessor;
 import org.jboss.as.webservices.deployers.deployment.DeploymentAspectsProvider;
@@ -45,8 +45,6 @@ import org.jboss.as.webservices.injection.WSHandlerChainAnnotationProcessor;
 import org.jboss.as.webservices.webserviceref.WSRefAnnotationProcessor;
 import org.jboss.as.webservices.webserviceref.WSRefDDProcessor;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
-
-import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 
 /**
  * @author alessio.soldano@jboss.com
