@@ -55,27 +55,7 @@ import org.jboss.stdio.StdioContext;
 public final class Main {
 
     public static void usage() {
-        System.out.println("Usage: ./standalone.sh [args...]\n");
-        System.out.println("where args include:");
-        System.out.println("    --admin-only                       Set the server's running type to ADMIN_ONLY causing it to open administrative interfaces ");
-        System.out.println("                                       and accept management requests but not start other runtime services or accept end user requests.\n");
-        System.out.println("    -b=<value>                         Set system property jboss.bind.address to the given value\n");
-        System.out.println("    -b <value>                         Set system property jboss.bind.address to the given value\n");
-        System.out.println("    -b<interface>=<value>              Set system property jboss.bind.address.<interface> to the given value\n");
-        System.out.println("    -c=<config>                        Name of the server configuration file to use (default is \"standalone.xml\")\n");
-        System.out.println("    -c <config>                        Name of the server configuration file to use (default is \"standalone.xml\")\n");
-        System.out.println("    -D<name>[=<value>]                 Set a system property\n");
-        System.out.println("    -h                                 Display this message and exit\n");
-        System.out.println("    --help                             Display this message and exit");
-        System.out.println("    -P=<url>                           Load system properties from the given url\n");
-        System.out.println("    -P <url>                           Load system properties from the given url\n");
-        System.out.println("    --properties=<url>                 Load system properties from the given url\n");
-        System.out.println("    --server-config=<config>           Name of the server configuration file to use (default is \"standalone.xml\")\n");
-        System.out.println("    -u=<value>                         Set system property jboss.default.multicast.address to the given value\n");
-        System.out.println("    -u <value>                         Set system property jboss.default.multicast.address to the given value\n");
-        System.out.println("    -V                                 Print version and exit\n");
-        System.out.println("    -v                                 Print version and exit\n");
-        System.out.println("    --version                          Print version and exit\n");
+        CommandLineArgument.printUsage(System.out);
     }
 
     private Main() {
@@ -205,7 +185,7 @@ public final class Main {
 
                     int idx = arg.indexOf('=');
                     if (idx == arg.length() - 1) {
-                        System.err.printf("Argument expected for option %s\n", arg);
+                        System.err.printf(ServerMessages.MESSAGES.noArgValue(arg));
                         usage();
                         return null;
                     }
@@ -241,13 +221,11 @@ public final class Main {
                     runningMode = RunningMode.ADMIN_ONLY;
                 } else {
                     System.err.printf(ServerMessages.MESSAGES.invalidCommandLineOption(arg));
-                    System.err.println();
                     usage();
                     return null;
                 }
             } catch (IndexOutOfBoundsException e) {
                 System.err.printf(ServerMessages.MESSAGES.valueExpectedForCommandLineOption(arg));
-                System.err.println();
                 usage();
                 return null;
             }
