@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2010, Red Hat Inc., and individual contributors as indicated
+ * Copyright 2012, Red Hat Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -19,23 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.ejb.interceptor.lifecycle.destory;
+package org.jboss.as.test.integration.ejb.interceptor.lifecycle.destroy;
 
-import javax.annotation.PreDestroy;
 import javax.interceptor.InvocationContext;
 
 /**
- * @author Stuart Douglas
+ * @author Ondrej Chaloupka
  */
-public class PreDestroyInterceptor {
+public class PreDestroyInterceptorDescriptor {
 
     public static boolean preDestroy = false;
-    public static boolean invocationTargetNull = false;
+    public static boolean postConstruct = false;
+    public static boolean preDestroyInvocationTargetNull = false;
+    public static boolean postConstructInvocationTargetNull = false;
 
-    @PreDestroy
+    @SuppressWarnings("unused")
+    private void postConstruct(InvocationContext ctx) throws Exception {
+        if(ctx.getTarget() == null) {
+            postConstructInvocationTargetNull = true;
+        }
+        postConstruct = true;
+        ctx.proceed();
+    }
+
+    @SuppressWarnings("unused")
     private void preDestroy(InvocationContext ctx) throws Exception {
         if(ctx.getTarget() == null) {
-            invocationTargetNull = true;
+            preDestroyInvocationTargetNull = true;
         }
         preDestroy = true;
         ctx.proceed();

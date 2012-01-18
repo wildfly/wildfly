@@ -19,34 +19,41 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.ejb.interceptor.lifecycle.destory;
+package org.jboss.as.test.integration.ejb.interceptor.lifecycle.destroy;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.ejb.Remove;
-import javax.ejb.Stateful;
-import javax.interceptor.Interceptors;
+import javax.interceptor.InvocationContext;
 
 /**
- * @author Stuart Douglas
+ * @author Stuart Douglas, Ondrej Chaloupka
  */
-@Stateful
-@Interceptors(PreDestroyInterceptor.class)
-public class PreDestroySFSB {
+public class PreDestroyInterceptor {
 
-    public static boolean preDestroyCalled = false;
+    public static boolean preDestroy = false;
+    public static boolean postConstruct = false;
+    public static boolean preDestroyInvocationTargetNull = false;
+    public static boolean postConstructInvocationTargetNull = false;
 
-    public void doStuff() {
-
+    @PostConstruct    
+    @SuppressWarnings("unused")
+    private void postConstruct(InvocationContext ctx) throws Exception {
+        if(ctx.getTarget() == null) {
+            postConstructInvocationTargetNull = true;
+        }
+        postConstruct = true;
+        ctx.proceed();
     }
 
-    @Remove
-    public void remove() {
-
+    @PreDestroy    
+    @SuppressWarnings("unused")
+    private void preDestroy(InvocationContext ctx) throws Exception {
+        if(ctx.getTarget() == null) {
+            preDestroyInvocationTargetNull = true;
+        }
+        preDestroy = true;
+        ctx.proceed();
     }
 
-    @PreDestroy
-    private void preDestroy() {
-        preDestroyCalled = true;
-    }
 
 }
