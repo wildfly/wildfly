@@ -57,7 +57,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -66,6 +65,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.extension.ExtensionResource;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
@@ -180,12 +180,13 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
         }
 
         if (!context.isBooting()) {
-            final ModelNode endRoot = Resource.Tools.readModel(context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS));
+            final Resource domainRootResource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
+            final ModelNode endRoot = Resource.Tools.readModel(domainRootResource);
             final Set<ServerIdentity> affectedServers = new HashSet<ServerIdentity>();
             final ModelNode hostModel = endRoot.require(HOST).asPropertyList().iterator().next().getValue();
             final ModelNode existingHostModel = startRoot.require(HOST).asPropertyList().iterator().next().getValue();
 
-            final Map<String, ProxyController> serverProxies = getServerProxies(context);
+            final Map<String, ProxyController> serverProxies = DomainServerUtils.getServerProxies(localHostInfo.getLocalHostName(), domainRootResource, context.getResourceRegistration());
 
             final ModelNode startExtensions = startRoot.get(EXTENSION);
             final ModelNode finishExtensions = endRoot.get(EXTENSION);
@@ -332,19 +333,6 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
             }
         }
         context.completeStep();
-    }
-
-    private Map<String, ProxyController> getServerProxies(OperationContext context) {
-        final Set<String> serverNames = context.readResource(PathAddress.pathAddress(PathElement.pathElement(HOST, localHostInfo.getLocalHostName()))).getChildrenNames(SERVER_CONFIG);
-        final Map<String, ProxyController> proxies = new HashMap<String, ProxyController>();
-        for(String serverName : serverNames) {
-            final PathAddress serverAddress = PathAddress.pathAddress(PathElement.pathElement(HOST, localHostInfo.getLocalHostName()), PathElement.pathElement(SERVER, serverName));
-            final ProxyController proxyController = context.getResourceRegistration().getProxyController(serverAddress);
-            if(proxyController != null) {
-                proxies.put(serverName, proxyController);
-            }
-        }
-        return proxies;
     }
 
     protected void initializeExtension(String module) {

@@ -29,6 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import java.util.List;
 import java.util.Set;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.dmr.ModelNode;
@@ -522,4 +523,15 @@ public interface DomainControllerMessages {
      */
     @Message(id = 15874, value = "Expected only one deployment, found %d")
     IllegalStateException expectedOnlyOneDeployment(int i);
+
+    /**
+     * Creates an exception indicating no profile could be found with the given name
+     *
+     * @param profile the profile name
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 10875, value = "No profile called: %s")
+    OperationFailedException noProfileCalled(String profile);
+
 }
