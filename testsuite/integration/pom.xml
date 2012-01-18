@@ -56,6 +56,7 @@
                 <module>clust</module>
                 <module>iiop</module>
                 <module>xts</module>
+                <module>multinode</module>
             </modules>
         </profile>
         <!-- Define ts.integration uber-group. -->
@@ -68,6 +69,7 @@
                 <module>clust</module>
                 <module>iiop</module>
                 <module>xts</module>
+                <module>multinode</module>
             </modules>
         </profile>
 
@@ -113,6 +115,15 @@
             <activation><property><name>ts.xts</name></property></activation>
             <modules>
                 <module>xts</module>
+            </modules>
+        </profile>
+
+        <!-- -Dts.multinode -->
+        <profile>
+            <id>ts.integ.group.multinode</id>
+            <activation><property><name>ts.multinode</name></property></activation>
+            <modules>
+                <module>multinode</module>
             </modules>
         </profile>
 
