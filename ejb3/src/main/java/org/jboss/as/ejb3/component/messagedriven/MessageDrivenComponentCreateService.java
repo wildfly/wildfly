@@ -75,15 +75,9 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
     @Override
     protected BasicComponent createComponent() {
         final ActivationSpec activationSpec = getEndpointDeployer().createActivationSpecs(resourceAdapterName, messageListenerInterface, activationProps, getDeploymentClassLoader());
-        //final ActivationSpec activationSpec = null;
         final MessageDrivenComponent component = new MessageDrivenComponent(this, messageListenerInterface, activationSpec);
         final ResourceAdapter resourceAdapter = this.resourceAdapterInjectedValue.getValue();
         component.setResourceAdapter(resourceAdapter);
-        try {
-            activationSpec.setResourceAdapter(resourceAdapter);
-        } catch (ResourceException e) {
-            throw new RuntimeException(e);
-        }
         return component;
     }
 
