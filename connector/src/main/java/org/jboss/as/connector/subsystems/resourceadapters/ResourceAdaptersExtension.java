@@ -21,6 +21,7 @@
  */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.pool.PoolOperations;
 import org.jboss.as.connector.subsystems.datasources.DisableRequiredWriteAttributeHandler;
 import org.jboss.as.controller.Extension;
@@ -232,8 +233,8 @@ public class ResourceAdaptersExtension implements Extension {
             if (ra.hasDefined(ARCHIVE.getName())) {
                 streamWriter.writeStartElement(ARCHIVE.getXmlName());
                 String archive = ra.get(ARCHIVE.getName()).asString();
-                if (archive.contains("#")) {
-                    streamWriter.writeCharacters(archive.substring(0, archive.indexOf("#")));
+                if (archive.contains(ConnectorServices.RA_SERVICE_NAME_SEPARATOR)) {
+                    streamWriter.writeCharacters(archive.substring(0, archive.indexOf(ConnectorServices.RA_SERVICE_NAME_SEPARATOR)));
                 } else {
                     streamWriter.writeCharacters(archive);
                 }

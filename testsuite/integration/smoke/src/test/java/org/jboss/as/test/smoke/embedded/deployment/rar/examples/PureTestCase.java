@@ -61,27 +61,26 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
  *        JBQA-5742 -Pure RA deployment test
  */
 @RunWith(Arquillian.class)
-@Ignore("AS7-3249")
 public class PureTestCase extends AbstractMgmtTestBase {
-	
+
 	//@BeforeClass - called from @Deployment
 		public static void setUp() throws Exception{
-			initModelControllerClient("localhost",9999);	
+			initModelControllerClient("localhost",9999);
 		    String xml=readResource("../test-classes/config/pure.xml");
 	        List<ModelNode> operations=XmlToRAModelOperations(xml);
 	        executeOperation(operationListToCompositeOperation(operations));
-        
+
 		}
 		@AfterClass
 		public static void tearDown() throws Exception{
-			
+
 			final ModelNode address = new ModelNode();
 	        address.add("subsystem", "resource-adapters");
 	        address.add("resource-adapter","pure.rar");
 	        address.protect();
 	        remove(address);
 	        closeModelControllerClient();
-	    
+
 		}
 
     /**
@@ -102,20 +101,20 @@ public class PureTestCase extends AbstractMgmtTestBase {
 
         raa.addAsManifestResource("rar/" + deploymentName + "/META-INF/ra.xml", "ra.xml")
         .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli,javax.inject.api,org.jboss.as.connector\n"),"MANIFEST.MF");
-       
-        return raa; 
+
+        return raa;
     }
-   
+
    @Inject
    public ServiceContainer serviceContainer;
-   
+
 
     /**
      * Test configuration
      *
      * @throws Throwable Thrown if case of an error
      */
-    @Test 
+    @Test
     public void testRegistryConfiguration() throws Throwable {
     	ServiceController<?> controller=serviceContainer.getService( ConnectorServices.RA_REPOSISTORY_SERVICE);
     	assertNotNull(controller);
@@ -124,15 +123,17 @@ public class PureTestCase extends AbstractMgmtTestBase {
     	Set<String> ids = repository.getResourceAdapters();
 
         assertNotNull(ids);
-        assertEquals(1, ids.size());
+        //On a running server it's 3 beacause HornetQResourceAdapter is always present  + ra itself and 1 actrivation from DMR
+        assertEquals(2, ids.size());
 
-        String piId = ids.iterator().next();
-        assertNotNull(piId);
-        System.out.println("PID:"+piId);
-        assertNotNull(repository.getResourceAdapter(piId));
-        
-    }   
-    @Test 
+        for (String piId : ids) {
+            assertNotNull(piId);
+            System.out.println("PID:" + piId);
+            assertNotNull(repository.getResourceAdapter(piId));
+        }
+
+    }
+    @Test
     public void testMetadataConfiguration() throws Throwable {
     	ServiceController<?> controller=serviceContainer.getService( ConnectorServices.IRONJACAMAR_MDR);
     	assertNotNull(controller);
@@ -141,10 +142,13 @@ public class PureTestCase extends AbstractMgmtTestBase {
     	Set<String> ids = repository.getResourceAdapters();
 
         assertNotNull(ids);
+        //on a running server it's always 2 beacause HornetQResourceAdapter is always present
         assertEquals(1, ids.size());
 
-        String piId = ids.iterator().next();
-        assertNotNull(piId);
-        assertNotNull(repository.getResourceAdapter(piId));
+        for (String piId : ids) {
+            assertNotNull(piId);
+            System.out.println("PID:" + piId);
+            assertNotNull(repository.getResourceAdapter(piId));
+        }
     }
 }

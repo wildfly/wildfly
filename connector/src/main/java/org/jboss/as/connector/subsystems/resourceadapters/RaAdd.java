@@ -61,12 +61,12 @@ public class RaAdd implements OperationStepHandler {
         final ModelNode address = operation.require(OP_ADDR);
         final String name = PathAddress.pathAddress(address).getLastElement().getValue();
         String archiveName =  operation.get(ARCHIVE.getName()).asString();
-        if (name.startsWith(archiveName) && (name.substring(archiveName.length()).contains("#") || name.equals(archiveName))) {
+        if (name.startsWith(archiveName) && (name.substring(archiveName.length()).contains(ConnectorServices.RA_SERVICE_NAME_SEPARATOR) || name.equals(archiveName))) {
             archiveName = name;
         } else {
            Integer identifier = ConnectorServices.getResourceIdentifier(archiveName);
             if (identifier != null && identifier != 0) {
-                archiveName = archiveName + "#" + identifier;
+                archiveName = archiveName + ConnectorServices.RA_SERVICE_NAME_SEPARATOR + identifier;
             }
         }
         operation.get(ARCHIVE.getName()).set(archiveName);

@@ -62,32 +62,31 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-//@Ignore("AS7-3185")
 public class ResourceAdapterOperationsUnitTestCase extends AbstractMgmtTestBase {
 
-    
+
     @Deployment
     public static Archive<?> getDeployment() {
     	initModelControllerClient("localhost",9999);
         return ShrinkWrapUtils.createEmptyJavaArchive("dummy");
     }
 
-    
+
 
     @After
     public void tearDown() throws IOException {
     	closeModelControllerClient();
     }
-    
+
     @Test
     public void complexResourceAdapterAddTest() throws Exception{
     	 final ModelNode address = new ModelNode();
          address.add("subsystem", "resource-adapters");
          address.add("resource-adapter", "some.rar");
          address.protect();
-         
+
          Properties params=raCommonProperties();
-         
+
          final ModelNode operation = new ModelNode();
          operation.get(OP).set("add");
          operation.get(OP_ADDR).set(address);
@@ -95,24 +94,24 @@ public class ResourceAdapterOperationsUnitTestCase extends AbstractMgmtTestBase 
          operation.get("beanvalidationgroups").add("Class0");
          operation.get("beanvalidationgroups").add("Class00");
          executeOperation(operation);
-         
+
          final ModelNode address1=address.clone();
          address1.add("config-properties", "Property");
          address1.protect();
-         
+
          final ModelNode operation11 = new ModelNode();
          operation11.get(OP).set("add");
          operation11.get(OP_ADDR).set(address1);
          operation11.get("value").set("A");;
 
          executeOperation(operation11);
-         
+
          final ModelNode conAddress=address.clone();
          conAddress.add("connection-definitions", "Pool1");
          conAddress.protect();
-         
+
          Properties conParams=raConnectionProperties();
-         
+
          final ModelNode operation2 = new ModelNode();
          operation2.get(OP).set("add");
          operation2.get(OP_ADDR).set(conAddress);
@@ -123,38 +122,38 @@ public class ResourceAdapterOperationsUnitTestCase extends AbstractMgmtTestBase 
          final ModelNode con1Address=conAddress.clone();
          con1Address.add("config-properties", "Property");
          con1Address.protect();
-         
+
          final ModelNode operation21 = new ModelNode();
          operation21.get(OP).set("add");
          operation21.get(OP_ADDR).set(con1Address);
          operation21.get("value").set("B");;
 
-         executeOperation(operation21);   
-         
+         executeOperation(operation21);
+
          final ModelNode admAddress=address.clone();
          admAddress.add("admin-objects", "Pool2");
          admAddress.protect();
-         
+
          Properties admParams=raAdminProperties();
-         
+
          final ModelNode operation3 = new ModelNode();
          operation3.get(OP).set("add");
          operation3.get(OP_ADDR).set(admAddress);
          setOperationParams(operation3,admParams);
 
          executeOperation(operation3);
-         
+
          final ModelNode adm1Address=admAddress.clone();
          adm1Address.add("config-properties", "Property");
          adm1Address.protect();
-         
+
          final ModelNode operation31 = new ModelNode();
          operation31.get(OP).set("add");
          operation31.get(OP_ADDR).set(adm1Address);
          operation31.get("value").set("D");;
 
          executeOperation(operation31);
-    	
+
          String xml=RAModelToXml("resource-adapter",getModelControllerClient());
          List<ModelNode> newList = marshalAndReparseRaResources("resource-adapter");
 
@@ -166,40 +165,40 @@ public class ResourceAdapterOperationsUnitTestCase extends AbstractMgmtTestBase 
          Assert.assertNotNull("There is no archive element:"+newList,node);
         // Assert.assertTrue("node:"+node.asString()+";\nparams"+params,checkModelParams(node,params));
          Assert.assertEquals("beanvalidationgroups element is incorrect:"+node.get("beanvalidationgroups").asString(),node.get("beanvalidationgroups").asString(), "[\"Class0\",\"Class00\"]");
-         
+
          node=findNodeWithProperty(newList,"jndi-name","java:jboss/name1");
          Assert.assertNotNull("There is no connection jndi-name element:"+newList,node);
         // Assert.assertTrue("node:"+node.asString()+";\nparams"+conParams,checkModelParams(node,conParams));
-         
+
          node=findNodeWithProperty(newList,"jndi-name","java:jboss/Name3");
          Assert.assertNotNull("There is no admin jndi-name element:"+newList,node);
          Assert.assertTrue("node:"+node.asString()+";\nparams"+admParams,checkModelParams(node,admParams));
-         
+
          node=findNodeWithProperty(newList,"value","D");
          Assert.assertNotNull("There is no admin-object config-property element:"+newList,node);
-         
+
          Map<String, ModelNode> parseChildren = getChildren(node.get("address"));
          Assert.assertEquals(parseChildren.get("admin-objects").asString(),"Pool2");
          Assert.assertEquals(parseChildren.get("config-properties").asString(),"Property");
-         
+
          node=findNodeWithProperty(newList,"value","A");
          Assert.assertNotNull("There is no resource-adapter config-property element:"+newList,node);
-         
-          parseChildren = getChildren(node.get("address")); 
+
+          parseChildren = getChildren(node.get("address"));
          Assert.assertEquals(parseChildren.get("resource-adapter").asString(),"some.rar");
          Assert.assertEquals(parseChildren.get("config-properties").asString(),"Property");
-         
+
          node=findNodeWithProperty(newList,"value","B");
          Assert.assertNotNull("There is no connection config-property element:"+newList,node);
-         
+
           parseChildren = getChildren(node.get("address"));
          Assert.assertEquals(parseChildren.get("connection-definitions").asString(),"Pool1");
          Assert.assertEquals(parseChildren.get("config-properties").asString(),"Property");
-    } 
+    }
 
     public List<ModelNode> marshalAndReparseRaResources(final String childType) throws Exception {
-    	
+
     	return(XmlToRAModelOperations(RAModelToXml(childType,getModelControllerClient())));
     }
-    
+
 }

@@ -1,9 +1,9 @@
 <subsystem xmlns="urn:jboss:domain:resource-adapters:1.0">
  <resource-adapters>
   <resource-adapter>
-   <archive>archive_mult.rar</archive>
+   <archive>archive_multi_partial.rar</archive>
       <transaction-support>NoTransaction</transaction-support>
-        <connection-definitions>  
+        <connection-definitions>
         	<connection-definition  class-name="org.jboss.as.test.smoke.embedded.deployment.rar.MultipleManagedConnectionFactory1" jndi-name="java:jboss/name1"  pool-name="Pool1">    </connection-definition>
 		</connection-definitions>
         <admin-objects>
