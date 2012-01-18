@@ -22,16 +22,12 @@
 
 package org.jboss.as.jacorb;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.jacorb.deployment.JacORBDependencyProcessor;
 import org.jboss.as.jacorb.deployment.JacORBMarkerProcessor;
 import org.jboss.as.jacorb.naming.jndi.JBossCNCtxFactory;
@@ -55,6 +51,11 @@ import org.omg.CORBA.ORB;
 import org.omg.PortableServer.IdAssignmentPolicyValue;
 import org.omg.PortableServer.LifespanPolicyValue;
 import org.omg.PortableServer.POA;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * <p>
@@ -91,7 +92,7 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         // populate the submodel.
-        for (SimpleAttributeDefinition attrDefinition : JacORBSubsystemDefinitions.SUBSYSTEM_ATTRIBUTES) {
+        for (AttributeDefinition attrDefinition : JacORBSubsystemDefinitions.SUBSYSTEM_ATTRIBUTES) {
             attrDefinition.validateAndSet(operation, model);
         }
         // if generic properties have been specified, add them to the model as well.
@@ -204,7 +205,7 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
         Properties props = new Properties();
 
         // get the configuration properties from the attribute definitions.
-        for (SimpleAttributeDefinition attrDefinition : JacORBSubsystemDefinitions.SUBSYSTEM_ATTRIBUTES) {
+        for (AttributeDefinition attrDefinition : JacORBSubsystemDefinitions.SUBSYSTEM_ATTRIBUTES) {
             ModelNode resolvedModelAttribute = attrDefinition.validateResolvedOperation(node);
             if (resolvedModelAttribute.isDefined()) {
                 String name = attrDefinition.getName();
