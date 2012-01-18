@@ -144,7 +144,7 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
         }
     }
 
-   /* @Test
+    @Test
     public void testDescribeHandler() throws Exception {
         // parse the subsystem xml and install into the first controller.
         String subsystemXml =
@@ -180,7 +180,7 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
         // make sure the models from the two controllers are identical.
         super.compare(modelA, modelB);
 
-    }*/
+    }
 
     // Tests for the version 1.0 of the JacORB subsystem configuration.
 

@@ -22,18 +22,28 @@
 
 package org.jboss.as.jacorb;
 
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.MapAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
+import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.parsing.Attribute;
+import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.operations.validation.IntRangeValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
+import java.util.ResourceBundle;
 
 /**
  * <p>
@@ -317,6 +327,10 @@ class JacORBSubsystemDefinitions {
             .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
+    public static final PropertiesAttributeDefinition PROPERTIES =
+            new PropertiesAttributeDefinition(JacORBSubsystemConstants.PROPERTIES,
+                    JacORBSubsystemConstants.PROPERTIES, true);
+
 
     // list that contains the orb attribute definitions.
     static final List<SimpleAttributeDefinition> ORB_ATTRIBUTES = Arrays.asList(ORB_NAME, ORB_PRINT_VERSION,
@@ -354,13 +368,13 @@ class JacORBSubsystemDefinitions {
             SECURITY_USE_DOMAIN_SSF);
 
     // list that contains all attribute definitions.
-    static final List<SimpleAttributeDefinition> SUBSYSTEM_ATTRIBUTES;
+    static final List<AttributeDefinition> SUBSYSTEM_ATTRIBUTES;
 
     // utility map that keys all definitions by their names.
-    static final Map<String, SimpleAttributeDefinition> ATTRIBUTES_BY_NAME;
+    static final Map<String, AttributeDefinition> ATTRIBUTES_BY_NAME;
 
     static {
-        SUBSYSTEM_ATTRIBUTES = new ArrayList<SimpleAttributeDefinition>();
+        SUBSYSTEM_ATTRIBUTES = new ArrayList<AttributeDefinition>();
         SUBSYSTEM_ATTRIBUTES.addAll(ORB_ATTRIBUTES);
         SUBSYSTEM_ATTRIBUTES.addAll(ORB_CONN_ATTRIBUTES);
         SUBSYSTEM_ATTRIBUTES.addAll(ORB_INIT_ATTRIBUTES);
@@ -369,10 +383,10 @@ class JacORBSubsystemDefinitions {
         SUBSYSTEM_ATTRIBUTES.addAll(NAMING_ATTRIBUTES);
         SUBSYSTEM_ATTRIBUTES.addAll(INTEROP_ATTRIBUTES);
         SUBSYSTEM_ATTRIBUTES.addAll(SECURITY_ATTRIBUTES);
+        SUBSYSTEM_ATTRIBUTES.add(PROPERTIES);
 
-        Map<String, SimpleAttributeDefinition> map = new HashMap<String, SimpleAttributeDefinition>();
-        for (SimpleAttributeDefinition attribute : SUBSYSTEM_ATTRIBUTES)
-            map.put(attribute.getName(), attribute);
+        Map<String, AttributeDefinition> map = new HashMap<String, AttributeDefinition>();
+        for (AttributeDefinition attribute : SUBSYSTEM_ATTRIBUTES) { map.put(attribute.getName(), attribute); }
         ATTRIBUTES_BY_NAME = map;
     }
 
@@ -384,7 +398,48 @@ class JacORBSubsystemDefinitions {
      * @param attributeNAme a {@code String} representing the attribute name.
      * @return the corresponding attribute definition or {@code null} if no definition was found with that name.
      */
-    public static SimpleAttributeDefinition valueOf(String attributeNAme) {
+    public static AttributeDefinition valueOf(String attributeNAme) {
         return ATTRIBUTES_BY_NAME.get(attributeNAme);
+    }
+
+
+    /**
+     * @see org.jboss.as.remoting.AbstractOutboundConnectionResourceDefinition.PropertiesAttributeDefinition
+     */
+    //todo has to be moved to some better place same as org.jboss.as.remoting.AbstractOutboundConnectionResourceDefinition.PropertiesAttributeDefinition
+    private static class PropertiesAttributeDefinition extends MapAttributeDefinition {
+
+        public PropertiesAttributeDefinition(final String name, final String xmlName, boolean allowNull) {
+            super(name, xmlName, allowNull, 0, Integer.MAX_VALUE, new ModelTypeValidator(ModelType.STRING));
+        }
+
+        @Override
+        protected void addValueTypeDescription(ModelNode node, ResourceBundle bundle) {
+            node.get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
+        }
+
+        @Override
+        protected void addAttributeValueTypeDescription(ModelNode node, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
+            node.get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
+        }
+
+        @Override
+        protected void addOperationParameterValueTypeDescription(ModelNode node, String operationName, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
+            node.get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
+        }
+
+        @Override
+        public void marshallAsElement(ModelNode resourceModel, XMLStreamWriter writer) throws XMLStreamException {
+            if (!isMarshallable(resourceModel)) { return; }
+
+            resourceModel = resourceModel.get(getName());
+            writer.writeStartElement(getName());
+            for (ModelNode property : resourceModel.asList()) {
+                writer.writeEmptyElement(getXmlName());
+                writer.writeAttribute(Attribute.NAME.getLocalName(), property.asProperty().getName());
+                writer.writeAttribute(Attribute.VALUE.getLocalName(), property.asProperty().getValue().asString());
+            }
+            writer.writeEndElement();
+        }
     }
 }

@@ -339,7 +339,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
             String[] initializers = initializersList.split(",");
             // read each configured initializer and set the appropriate values in the model node.
             for (String initializer : initializers) {
-                SimpleAttributeDefinition definition = JacORBSubsystemDefinitions.valueOf(initializer);
+                SimpleAttributeDefinition definition = (SimpleAttributeDefinition)JacORBSubsystemDefinitions.valueOf(initializer);
                 if (definition != null && JacORBSubsystemDefinitions.ORB_INIT_ATTRIBUTES.contains(definition))
                     node.get(definition.getName()).set("on");
                 else
@@ -622,7 +622,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
                 throw duplicateAttribute(reader, attribute.getLocalName());
             }
             requiredAttributes.remove(attribute);
-            JacORBSubsystemDefinitions.valueOf(attribute.getLocalName()).parseAndSetParameter(attrValue, node, reader);
+            ((SimpleAttributeDefinition)JacORBSubsystemDefinitions.valueOf(attribute.getLocalName())).parseAndSetParameter(attrValue, node, reader);
         }
 
       // throw an exception if a required attribute wasn't found.

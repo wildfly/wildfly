@@ -32,6 +32,7 @@ public class JacORBSubsystemResource extends SimpleResourceDefinition {
                 JacORBExtension.getResourceDescriptionResolver(JacORBExtension.SUBSYSTEM_NAME));
     }
 
+
     @Override
     public void registerOperations(final ManagementResourceRegistration rootResourceRegistration) {
         final ResourceDescriptionResolver rootResolver = getResourceDescriptionResolver();
@@ -44,10 +45,8 @@ public class JacORBSubsystemResource extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(final ManagementResourceRegistration registry) {
-
-        final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES);
         for (AttributeDefinition attr : JacORBSubsystemDefinitions.SUBSYSTEM_ATTRIBUTES) {
-            registry.registerReadWriteAttribute(attr.getName(), null, ATTRIBUTE_HANDLER, flags);
+            registry.registerReadWriteAttribute(attr, null, ATTRIBUTE_HANDLER);
         }
 
     }
