@@ -451,15 +451,13 @@
                 <iiop enable-by-default="true" use-qualified-name="true"/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:infinispan:1.1" default-cache-container="cluster">
-                <cache-container name="cluster" default-cache="default">
-                    <alias>ha-partition</alias>
+                <cache-container name="cluster" aliases="ha-partition" default-cache="default">
                     <transport lock-timeout="60000"/>
                     <replicated-cache name="default" mode="SYNC" batching="true">
                         <locking isolation="REPEATABLE_READ"/>
                     </replicated-cache>
                 </cache-container>
-                <cache-container name="web" default-cache="repl">
-                    <alias>standard-session-cache</alias>
+                <cache-container name="web" aliases="standard-session-cache" default-cache="repl">
                     <transport lock-timeout="60000"/>
                     <replicated-cache name="repl" mode="ASYNC" batching="true">
                         <file-store/>
@@ -468,9 +466,8 @@
                         <file-store/>
                     </distributed-cache>
                 </cache-container>
-                <cache-container name="ejb" default-cache="repl">
-                    <alias>sfsb</alias>
-                    <alias>sfsb-cache</alias>
+                <cache-container name="ejb" aliases="sfsb sfsb-cache" default-cache="repl">
+                    <transport lock-timeout="60000"/>
                     <replicated-cache name="repl" mode="ASYNC" batching="true">
                         <eviction strategy="LRU" max-entries="10000"/>
                         <file-store/>

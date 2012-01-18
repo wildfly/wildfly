@@ -62,18 +62,11 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                 writer.writeStartElement(Element.CACHE_CONTAINER.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), containerName);
                 this.writeRequired(writer, Attribute.DEFAULT_CACHE, container, ModelKeys.DEFAULT_CACHE);
+                this.writeAliases(writer, Attribute.ALIASES, container, ModelKeys.ALIASES);
                 this.writeOptional(writer, Attribute.JNDI_NAME, container, ModelKeys.JNDI_NAME);
                 this.writeOptional(writer, Attribute.LISTENER_EXECUTOR, container, ModelKeys.LISTENER_EXECUTOR);
                 this.writeOptional(writer, Attribute.EVICTION_EXECUTOR, container, ModelKeys.EVICTION_EXECUTOR);
                 this.writeOptional(writer, Attribute.REPLICATION_QUEUE_EXECUTOR, container, ModelKeys.REPLICATION_QUEUE_EXECUTOR);
-
-                if (container.hasDefined(ModelKeys.ALIAS)) {
-                    for (ModelNode alias : container.get(ModelKeys.ALIAS).asList()) {
-                        writer.writeStartElement(Element.ALIAS.getLocalName());
-                        writer.writeCharacters(alias.asString());
-                        writer.writeEndElement();
-                    }
-                }
 
                 if (container.hasDefined(ModelKeys.SINGLETON)) {
                     writer.writeStartElement(Element.TRANSPORT.getLocalName());
@@ -246,6 +239,23 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             return caches.asPropertyList();
         }
         return null ;
+    }
+
+    private void writeAliases(XMLExtendedStreamWriter writer, Attribute attribute, ModelNode container, String key) throws XMLStreamException {
+        if (container.hasDefined(key)) {
+            StringBuffer result = new StringBuffer() ;
+            ModelNode aliases = container.get(key);
+            if (aliases.isDefined() && aliases.getType() == ModelType.LIST) {
+                List<ModelNode> aliasesList = aliases.asList();
+                for (int i = 0; i < aliasesList.size(); i++) {
+                    result.append(aliasesList.get(i).asString());
+                    if (i < aliasesList.size()-1) {
+                        result.append(" ");
+                    }
+                }
+                writer.writeAttribute(attribute.getLocalName(), result.toString());
+            }
+        }
     }
 
     private void writeJDBCStoreTable(XMLExtendedStreamWriter writer, Element element, ModelNode store, String key) throws XMLStreamException {

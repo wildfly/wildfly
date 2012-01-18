@@ -442,34 +442,6 @@ public class InfinispanDescriptions {
         return op;
     }
 
-    // cache rehashing element
-    /*
-    static ModelNode getRehashingDescription(Locale locale) {
-        ResourceBundle resources = getResources(locale);
-        final ModelNode rehashing = createDescription(resources, "infinispan.distributed-cache.rehashing");
-        for (AttributeDefinition attr : CommonAttributes.REHASHING_ATTRIBUTES) {
-            attr.addResourceAttributeDescription(resources, "infinispan.distributed-cache.rehashing", rehashing);
-        }
-        return rehashing ;
-    }
-
-    static ModelNode getRehashingAddDescription(Locale locale) {
-        ResourceBundle resources = getResources(locale);
-        final ModelNode op = createOperationDescription(ADD, resources, "infinispan.distributed-cache.rehashing.add");
-        for (AttributeDefinition attr : CommonAttributes.REHASHING_ATTRIBUTES) {
-            attr.addOperationParameterDescription(resources, "infinispan.distributed-cache.rehashing", op);
-        }
-        return op;
-    }
-
-    static ModelNode getRehashingRemoveDescription(Locale locale) {
-        ResourceBundle resources = getResources(locale);
-        final ModelNode op = createOperationDescription(REMOVE, resources, "infinispan.distributed-cache.rehashing.remove");
-        op.get(REQUEST_PROPERTIES).setEmptyObject();
-        return op;
-    }
-    */
-
     static ModelNode getCacheStorePropertyDescription(Locale locale) {
         ResourceBundle resources = getResources(locale);
         final ModelNode storeProperty = createDescription(resources, "infinispan.cache.store.property");
@@ -645,5 +617,4 @@ public class InfinispanDescriptions {
 
        return node;
     }
-
 }

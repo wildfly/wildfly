@@ -58,11 +58,6 @@ public class CacheContainerWriteAttributeHandler implements OperationStepHandler
         ModelNode newValue = operation.hasDefined(VALUE) ? operation.get(VALUE) : new ModelNode();
         final ModelNode submodel = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
 
-        // for the attribute ALIAS, add the aliases in newValue to the current value
-        if (attributeName.equals(ModelKeys.ALIAS)) {
-            newValue = createAliasList(newValue.asString()) ;
-        }
-
         final AttributeDefinition attributeDefinition = getAttributeDefinition(attributeName);
         if (attributeDefinition != null) {
             final ModelNode syntheticOp = new ModelNode();
@@ -108,27 +103,5 @@ public class CacheContainerWriteAttributeHandler implements OperationStepHandler
         for (AttributeDefinition attr : CommonAttributes.CACHE_CONTAINER_ATTRIBUTES) {
            registry.registerReadWriteAttribute(attr.getName(), CacheContainerReadAttributeHandler.INSTANCE, this, flags);
         }
-    }
-
-    /**
-     * Creates a new ModelNode representing the list of aliases.
-     *
-     * @param aliasString comma-delimited list of new aliases to add
-     * @return LIST ModelNode with the added aliases
-     */
-    private ModelNode createAliasList(String aliasString) {
-
-        // check for empty string
-        if (aliasString == null || aliasString.equals(""))
-            return new ModelNode() ;
-
-        final String ALIAS_SEPARATOR = ",";
-        ModelNode newList = new ModelNode() ;
-        String[] aliases = aliasString.split(ALIAS_SEPARATOR) ;
-
-        for (String alias : aliases) {
-            newList.add().set(alias) ;
-        }
-        return newList ;
     }
 }

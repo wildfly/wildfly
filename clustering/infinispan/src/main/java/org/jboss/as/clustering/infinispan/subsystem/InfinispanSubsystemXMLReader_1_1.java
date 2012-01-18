@@ -92,6 +92,12 @@ public class InfinispanSubsystemXMLReader_1_1 implements XMLElementReader<List<M
                     name = value;
                     break;
                 }
+                case ALIASES: {
+                    for (String alias: reader.getListAttributeValue(i)) {
+                        container.get(ModelKeys.ALIASES).add(alias);
+                    }
+                    break;
+                }
                 case DEFAULT_CACHE: {
                     container.get(ModelKeys.DEFAULT_CACHE).set(value);
                     break;
@@ -133,10 +139,6 @@ public class InfinispanSubsystemXMLReader_1_1 implements XMLElementReader<List<M
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             Element element = Element.forName(reader.getLocalName());
             switch (element) {
-                case ALIAS: {
-                    container.get(ModelKeys.ALIAS).add(reader.getElementText());
-                    break;
-                }
                 case TRANSPORT: {
                     parseTransport(reader, containerAddress, operations);
                     break;

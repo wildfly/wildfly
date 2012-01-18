@@ -27,6 +27,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import org.jboss.as.clustering.subsystem.ClusteringSubsystemTest;
@@ -37,16 +39,35 @@ import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfigura
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
+@RunWith(value = Parameterized.class)
 public class InfinispanSubsystemTestCase extends ClusteringSubsystemTest {
 
-    public InfinispanSubsystemTestCase() {
-        super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension(), "subsystem-infinispan.xml");
+    String xmlFile = null ;
+    int operations = 0 ;
+
+    public InfinispanSubsystemTestCase(String xmlFile, int operations) {
+        super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension(), xmlFile);
+        this.xmlFile = xmlFile ;
+        this.operations = operations ;
+
+        System.out.println("xmlFile = " + xmlFile + ", operations = " + operations);
     }
+
+    @Parameters
+    public static Collection<Object[]> data() {
+     // Object[][] data = new Object[][] { { "subsystem-infinispan_1_0.xml", 28 }, { "subsystem-infinispan_1_1.xml", 27 } };
+     Object[][] data = new Object[][] { { "subsystem-infinispan_1_0.xml", 28 } };
+      return Arrays.asList(data);
+    }
+
 
     @Override
     protected ValidationConfiguration getModelValidationConfiguration() {
@@ -71,7 +92,7 @@ public class InfinispanSubsystemTestCase extends ClusteringSubsystemTest {
        */
        // Check that we have the expected number of operations
        // one for each resource instance
-       Assert.assertEquals(27, operations.size());
+       Assert.assertEquals(this.operations, operations.size());
 
        // Check that each operation has the correct content
        ModelNode addSubsystem = operations.get(0);

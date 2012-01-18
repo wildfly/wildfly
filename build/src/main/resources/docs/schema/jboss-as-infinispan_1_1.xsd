@@ -61,13 +61,11 @@
                 <xs:documentation>Uniquely identifies this cache container.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <!-- Preparation for AS7-2883 -->
-        <!-- Will also need to remove alias element from cache-container -->
-        <!--xs:attribute name="aliases" type="tns:aliases">
+        <xs:attribute name="aliases" type="tns:aliases">
             <xs:annotation>
                 <xs:documentation>A set of aliases by which this cache container may also be referenced.</xs:documentation>
             </xs:annotation>
-        </xs:attribute-->
+        </xs:attribute>
         <xs:attribute name="jndi-name" type="xs:string">
             <xs:annotation>
                 <xs:documentation>The jndi name to which to bind this cache container.</xs:documentation>
@@ -119,11 +117,6 @@
         <xs:complexContent>
             <xs:extension base="tns:base-cache-container">
                 <xs:sequence>
-                    <xs:element name="alias" type="xs:string" minOccurs="0" maxOccurs="unbounded">
-                        <xs:annotation>
-                            <xs:documentation>Defines an additional name by which this cache container may be referenced.</xs:documentation>
-                        </xs:annotation>
-                    </xs:element>
                     <xs:element name="transport" type="tns:transport" minOccurs="0">
                         <xs:annotation>
                             <xs:documentation>Overrides the transport characteristics for this cache container.</xs:documentation>

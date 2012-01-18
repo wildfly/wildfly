@@ -68,15 +68,7 @@ public class CacheContainerReadAttributeHandler implements OperationStepHandler 
 
         final AttributeDefinition attributeDefinition = getAttributeDefinition(attributeName);
 
-        // if the attribute is ALIAS, transform from LIST to comma-delimited String
-        if (attributeDefinition.getName().equals(CommonAttributes.ALIAS.getName())) {
-            // convert from LIST to String (note that the value of the list ModelNode may be undefined)
-            String listAsString = convertListToString(attributeDefinition.getName(), currentValue);
-            context.getResult().set(listAsString);
-        }
-        else {
-            context.getResult().set(currentValue);
-        }
+        context.getResult().set(currentValue);
 
         // since we are not updating the model, there is no need for a RUNTIME step
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
@@ -92,23 +84,5 @@ public class CacheContainerReadAttributeHandler implements OperationStepHandler 
 
     protected AttributeDefinition getAttributeDefinition(final String attributeName) {
         return attributeDefinitions == null ? null : attributeDefinitions.get(attributeName);
-    }
-
-    private String convertListToString(String name, ModelNode value) {
-
-        // the model need not have any aliases defined
-        if (value.getType() == ModelType.UNDEFINED)
-            return "" ;
-
-        assert (value.getType() == ModelType.LIST) : MESSAGES.validationFailed(name);
-        StringBuilder result = new StringBuilder();
-        List<ModelNode> list = value.asList();
-        int size = list.size();
-        for (int i = 0; i < size; i++) {
-            result.append(list.get(i).asString()) ;
-            if (i < size-1)
-                result.append(",") ;
-        }
-        return result.toString() ;
     }
 }
