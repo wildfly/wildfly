@@ -28,8 +28,8 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.loginmodules.common.Coding;
-import org.jboss.as.test.integration.security.loginmodules.common.Utils;
 import org.jboss.as.test.integration.security.loginmodules.common.WebAppDeployment;
 import org.jboss.as.test.integration.security.loginmodules.common.servlets.SecuredServletWithDBSetupForDep1;
 import org.jboss.as.test.integration.security.loginmodules.common.servlets.SecuredServletWithDBSetupForDep2;
@@ -56,9 +56,9 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static org.jboss.as.test.integration.security.loginmodules.common.Coding.BASE_64;
 import static org.jboss.as.test.integration.security.loginmodules.common.Coding.HEX;
-import static org.jboss.as.test.integration.security.loginmodules.common.Utils.authAndGetResponse;
-import static org.jboss.as.test.integration.security.loginmodules.common.Utils.getContent;
-import static org.jboss.as.test.integration.security.loginmodules.common.Utils.hash;
+import static org.jboss.as.test.integration.security.common.Utils.authAndGetResponse;
+import static org.jboss.as.test.integration.security.common.Utils.getContent;
+import static org.jboss.as.test.integration.security.common.Utils.hash;
 import static org.junit.Assert.assertTrue;
 
 /**

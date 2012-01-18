@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.security.loginmodules.common;
+package org.jboss.as.test.integration.security.common;
 
 import junit.framework.Assert;
 import org.apache.http.Header;
@@ -38,6 +38,7 @@ import org.apache.http.util.EntityUtils;
 import org.h2.tools.Server;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.test.integration.security.loginmodules.common.Coding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.util.Base64;
 
