@@ -360,13 +360,13 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         List<Property> stacks = node.get(LOGIN_MODULE_STACK).asPropertyList();
         for (Property stack : stacks) {
             String name = stack.getName();
-            List<ModelNode> nodes = stack.getValue().get(LOGIN_MODULES).asList();
+            ModelNode stackNode = stack.getValue();
 
             final LoginModuleStackHolder holder = new LoginModuleStackHolder(name, null);
             holders.put(name, holder);
             authenticationInfo.add(holder);
-            for (ModelNode login : nodes) {
-                processLoginModules(login, authenticationInfo, new LoginModuleContainer() {
+            if (stackNode.hasDefined(LOGIN_MODULES)) {
+                processLoginModules(stackNode.get(LOGIN_MODULES), authenticationInfo, new LoginModuleContainer() {
                     public void addAppConfigurationEntry(AppConfigurationEntry entry) {
                         holder.addAppConfigurationEntry(entry);
                     }
