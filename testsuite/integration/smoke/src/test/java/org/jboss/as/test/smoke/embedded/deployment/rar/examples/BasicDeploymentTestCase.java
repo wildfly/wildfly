@@ -50,37 +50,27 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
  *         JBQA-5737 basic subsystem deployment
  */
 @RunWith(Arquillian.class)
-@Ignore("AS7-3249")
 public class BasicDeploymentTestCase extends AbstractMgmtTestBase {
-	
+
 	//@BeforeClass - called from @Deployment
 	public static void setUp() throws Exception{
-		initModelControllerClient("localhost",9999);	
+		initModelControllerClient("localhost",9999);
 	    String xml=readResource("../test-classes/config/basic.xml");
         List<ModelNode> operations=XmlToRAModelOperations(xml);
         executeOperation(operationListToCompositeOperation(operations));
 
-        final ModelNode operationReload = new ModelNode();
-        operationReload.get(OP).set("reload");
-        executeOperation(operationReload);
-        // add delay to let server restart
-        // temporary, until JIRA AS7-1415 is not resolved
-        Thread.sleep(10000);
-        
 	}
 	@AfterClass
 	public static void tearDown() throws Exception{
-		
+
 		final ModelNode address = new ModelNode();
         address.add("subsystem", "resource-adapters");
-        address.add("resource-adapter","archive.rar");
+        address.add("resource-adapter","basic.rar");
         address.protect();
-        //workaround
-        try{remove(address);}
-        catch (Exception e){e.printStackTrace();}
+
         remove(address);
         closeModelControllerClient();
-    
+
 	}
 
     /**
@@ -91,8 +81,8 @@ public class BasicDeploymentTestCase extends AbstractMgmtTestBase {
    @Deployment
     public static ResourceAdapterArchive createDeployment()  throws Exception{
     	setUp();
-    	
-        String deploymentName = "archive.rar";
+
+        String deploymentName = "basic.rar";
 
         ResourceAdapterArchive raa =
                 ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName);
@@ -103,25 +93,26 @@ public class BasicDeploymentTestCase extends AbstractMgmtTestBase {
 
         raa.addAsManifestResource("rar/" + deploymentName + "/META-INF/ra.xml", "ra.xml")
         .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli\n"),"MANIFEST.MF");;
-        return raa; 
+        return raa;
     }
 
    @Resource(mappedName = "java:jboss/name1")
    private MultipleConnectionFactory1 connectionFactory1;
 
-  
+
    @Resource(mappedName="java:jboss/Name3")
    private MultipleAdminObject1 adminObject1;
-   
+
 
     /**
      * Test configuration
      *
      * @throws Throwable Thrown if case of an error
      */
-    @Test 
+    @Test
     public void testConfiguration() throws Throwable {
+
     	assertNotNull("CF1 not found",connectionFactory1);
     	assertNotNull("AO1 not found",adminObject1);
-    }   
+    }
 }

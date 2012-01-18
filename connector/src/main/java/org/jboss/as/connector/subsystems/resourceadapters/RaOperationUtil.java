@@ -21,7 +21,6 @@
  */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
-import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
 import static org.jboss.as.connector.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
@@ -279,8 +278,8 @@ public class RaOperationUtil {
 
     public static void activate(OperationContext context, String raName, String rarName)  throws OperationFailedException {
         ServiceRegistry registry = context.getServiceRegistry(true);
-        if (rarName.contains("#")) {
-            rarName = rarName.substring(0, rarName.indexOf("#"));
+        if (rarName.contains(ConnectorServices.RA_SERVICE_NAME_SEPARATOR)) {
+            rarName = rarName.substring(0, rarName.indexOf(ConnectorServices.RA_SERVICE_NAME_SEPARATOR));
         }
         final ServiceController<?> inactiveRaController = registry.getService(ConnectorServices.INACTIVE_RESOURCE_ADAPTER_SERVICE.append(rarName));
         if (inactiveRaController == null) {
@@ -290,6 +289,6 @@ public class RaOperationUtil {
         final ServiceController<?> RaxmlController = registry.getService(ServiceName.of(ConnectorServices.RA_SERVICE, raName));
         ResourceAdapter raxml = (ResourceAdapter) RaxmlController.getValue();
 
-        RaServicesFactory.createDeploymnetService(inactive.getRegistration(), inactive.getConnectorXmlDescriptor(), inactive.getModule(), context.getServiceTarget(), inactive.getDeployment(), inactive.getDeployment(), raxml);
+        RaServicesFactory.createDeploymentService(inactive.getRegistration(), inactive.getConnectorXmlDescriptor(), inactive.getModule(), context.getServiceTarget(), inactive.getDeployment(), inactive.getDeployment(), raxml);
     }
 }

@@ -153,7 +153,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
 
                             Integer identifier = ConnectorServices.getResourceIdentifier(archiveName);
                             if (identifier != null && identifier != 0) {
-                                archiveName = archiveName + "#" + identifier;
+                                archiveName = archiveName + ConnectorServices.RA_SERVICE_NAME_SEPARATOR + identifier;
                             }
 
                             raAddress.add(RESOURCEADAPTER_NAME, archiveName);

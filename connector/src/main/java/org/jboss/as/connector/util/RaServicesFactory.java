@@ -40,7 +40,7 @@ import java.util.Locale;
 import java.util.Map;
 
 public class RaServicesFactory {
-    public static void createDeploymnetService(final ManagementResourceRegistration registration, ConnectorXmlDescriptor connectorXmlDescriptor, Module module, ServiceTarget serviceTarget, final String deploymentUnitName, String deployment, ResourceAdapter raxml) {
+    public static void createDeploymentService(final ManagementResourceRegistration registration, ConnectorXmlDescriptor connectorXmlDescriptor, Module module, ServiceTarget serviceTarget, final String deploymentUnitName, String deployment, ResourceAdapter raxml) {
         // Create the service
         ServiceName serviceName = ConnectorServices.registerDeployment(raxml.getArchive());
 

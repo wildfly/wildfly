@@ -58,7 +58,7 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 @RunWith(Arquillian.class)
 @Ignore("AS7-3249")
 public class InflowTestCase extends AbstractMgmtTestBase {
-	
+
 
     /**
      * Define the deployment
@@ -79,20 +79,20 @@ public class InflowTestCase extends AbstractMgmtTestBase {
         raa.addAsManifestResource("rar/" + deploymentName + "/META-INF/ra.xml", "ra.xml")
         .addAsManifestResource("rar/" + deploymentName + "/META-INF/ironjacamar.xml", "ironjacamar.xml")
         .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli,javax.inject.api,org.jboss.as.connector\n"),"MANIFEST.MF");
-       
-        return raa; 
+
+        return raa;
     }
-   
+
    @Inject
    public ServiceContainer serviceContainer;
-   
+
 
     /**
      * Test configuration
      *
      * @throws Throwable Thrown if case of an error
      */
-    @Test 
+    @Test
     public void testRegistryConfiguration() throws Throwable {
     	ServiceController<?> controller=serviceContainer.getService( ConnectorServices.RA_REPOSISTORY_SERVICE);
     	assertNotNull(controller);
@@ -101,7 +101,7 @@ public class InflowTestCase extends AbstractMgmtTestBase {
     	Set<String> ids = repository.getResourceAdapters(javax.jms.MessageListener.class);
 
         assertNotNull(ids);
-        assertEquals(1, ids.size());
+        assertEquals(3, ids.size());
 
         String piId = ids.iterator().next();
         assertNotNull(piId);
@@ -118,8 +118,8 @@ public class InflowTestCase extends AbstractMgmtTestBase {
         ActivationSpec as = listener.getActivation().createInstance();
         assertNotNull(as);
         assertNotNull(as.getResourceAdapter());
-    }   
-    @Test 
+    }
+    @Test
     public void testMetadataConfiguration() throws Throwable {
     	ServiceController<?> controller=serviceContainer.getService( ConnectorServices.IRONJACAMAR_MDR);
     	assertNotNull(controller);
@@ -128,7 +128,7 @@ public class InflowTestCase extends AbstractMgmtTestBase {
     	Set<String> ids = repository.getResourceAdapters();
 
         assertNotNull(ids);
-        assertEquals(1, ids.size());
+        assertEquals(2, ids.size());
 
         String piId = ids.iterator().next();
         assertNotNull(piId);

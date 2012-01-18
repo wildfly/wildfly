@@ -103,7 +103,7 @@ public final class ConnectorServices {
 
     public static final ServiceName CONNECTION_VALIDATOR_SERVICE = ServiceName.JBOSS.append("ironjacamar", "connection-validator");
 
-    private static final String RA_SERVICE_NAME_SEPARATOR = "#";
+    public static final String RA_SERVICE_NAME_SEPARATOR = "#";
 
     private ConnectorServices() {
     }
@@ -147,7 +147,6 @@ public final class ConnectorServices {
         }
     }
 
-    //only for test purpose
     public static synchronized void unregisterResourceIdentifiers(String raName) {
             if (raName == null)
                 throw MESSAGES.undefinedVar("RaName");

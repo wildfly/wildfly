@@ -21,45 +21,66 @@
  */
 package org.jboss.as.test.smoke.embedded.deployment.rar.examples;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension;
+import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
+import org.jboss.as.test.smoke.embedded.deployment.rar.MultipleAdminObject1;
+import org.jboss.as.test.smoke.embedded.deployment.rar.MultipleConnectionFactory1;
+import org.jboss.dmr.ModelNode;
+import org.jboss.shrinkwrap.api.GenericArchive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
+import org.jboss.shrinkwrap.impl.base.spec.JavaArchiveImpl;
+import org.jboss.staxmapper.XMLElementReader;
+import org.junit.AfterClass;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import javax.annotation.Resource;
+import java.util.List;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.test.smoke.embedded.deployment.rar.examples.ResourceAdapterTestUtilities.XmlToRAModelOperations;
 import static org.jboss.as.test.smoke.embedded.deployment.rar.examples.ResourceAdapterTestUtilities.operationListToCompositeOperation;
 import static org.jboss.as.test.smoke.embedded.deployment.rar.examples.ResourceAdapterTestUtilities.readResource;
-
-import org.jboss.as.test.smoke.embedded.deployment.rar.MultipleAdminObject1;
-import org.jboss.as.test.smoke.embedded.deployment.rar.MultipleConnectionFactory1;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
-import org.jboss.as.test.integration.management.util.MgmtOperationException;
-import javax.annotation.Resource;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.junit.*;
-import org.junit.runner.RunWith;
-import org.jboss.dmr.*;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-import java.util.List;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
+import static org.junit.Assert.assertNotNull;
 
 
 /**
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
- *         JBQA-5740 multiple resources deployment
+ *         JBQA-5737 basic subsystem deployment
  */
 @RunWith(Arquillian.class)
-public class MultipleActivationTestCase extends AbstractMgmtTestBase {
+@Ignore
+public class AfterResourceCreationDeploymentTestCase extends AbstractMgmtTestBase {
 
-	//@BeforeClass - called from @Deployment
-	public static void setUp() throws Exception{
-		initModelControllerClient("localhost",9999);
-	    String xml=readResource("../test-classes/config/simple.xml");
+
+	//@BeforeClass - called from @Test to create resources after deploymnet
+    //@Deployment(order=2)
+	public JavaArchive setUpa() throws Exception{
+        Thread.sleep(10000);
+        initModelControllerClient("localhost",9999);
+        String xml=readResource("../test-classes/config/basic.xml");
         List<ModelNode> operations=XmlToRAModelOperations(xml);
         executeOperation(operationListToCompositeOperation(operations));
 
+        //since it is created after deployment it needs activation
+        final ModelNode address = new ModelNode();
+        address.add("subsystem", "resource-adapters");
+        address.add("resource-adapter", "archive.rar");
+        address.protect();
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set("activate");
+        operation.get(OP_ADDR).set(address);
+        executeOperation(operation);
+        return ShrinkWrap.create(JavaArchive.class,  "empty.jar");
 
 	}
 	@AfterClass
@@ -80,9 +101,9 @@ public class MultipleActivationTestCase extends AbstractMgmtTestBase {
      *
      * @return The deployment archive
      */
-   @Deployment
+   @Deployment()
     public static ResourceAdapterArchive createDeployment()  throws Exception{
-    	setUp();
+
 
         String deploymentName = "archive.rar";
 
@@ -90,7 +111,9 @@ public class MultipleActivationTestCase extends AbstractMgmtTestBase {
                 ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName);
          JavaArchive ja = ShrinkWrap.create(JavaArchive.class,  "multiple.jar");
         ja.addPackage(MultipleConnectionFactory1.class.getPackage()).
-        addClasses(MultipleActivationTestCase.class,AbstractMgmtTestBase.class,MgmtOperationException.class);
+        addClasses(AfterResourceCreationDeploymentTestCase.class,AbstractMgmtTestBase.class,MgmtOperationException.class,
+                ResourceAdapterTestUtilities.class, XMLElementReader.class, ResourceAdaptersExtension.class,
+                ResourceAdaptersExtension.ResourceAdapterSubsystemParser.class);
         raa.addAsLibrary(ja);
 
         raa.addAsManifestResource("rar/" + deploymentName + "/META-INF/ra.xml", "ra.xml")
@@ -101,14 +124,10 @@ public class MultipleActivationTestCase extends AbstractMgmtTestBase {
    @Resource(mappedName = "java:jboss/name1")
    private MultipleConnectionFactory1 connectionFactory1;
 
-   @Resource(mappedName = "java:jboss/name2")
-   private MultipleConnectionFactory1 connectionFactory2;
 
    @Resource(mappedName="java:jboss/Name3")
    private MultipleAdminObject1 adminObject1;
 
-   @Resource(mappedName="java:jboss/Name4")
-   private MultipleAdminObject1 adminObject2;
 
     /**
      * Test configuration
@@ -117,11 +136,9 @@ public class MultipleActivationTestCase extends AbstractMgmtTestBase {
      */
     @Test
     public void testConfiguration() throws Throwable {
-    	assertNotNull("CF1 not found",connectionFactory1);
-    	assertNotNull("CF2 not found",connectionFactory2);
-    	assertNotNull("AO1 not found",adminObject1);
-    	assertNotNull("AO2 not found",adminObject2);
-    	assertEquals("not equal AOs",adminObject1, adminObject2);
-    }
+        setUpa()                 ;
 
+    	assertNotNull("CF1 not found",connectionFactory1);
+    	assertNotNull("AO1 not found",adminObject1);
+    }
 }

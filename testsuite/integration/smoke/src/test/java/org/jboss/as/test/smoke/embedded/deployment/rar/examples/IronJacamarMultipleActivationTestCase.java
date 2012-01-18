@@ -51,7 +51,7 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 @RunWith(Arquillian.class)
 @Ignore("AS7-3249")
 public class IronJacamarMultipleActivationTestCase extends AbstractMgmtTestBase {
-	
+
     /**
      * Define the deployment
      *
@@ -71,7 +71,7 @@ public class IronJacamarMultipleActivationTestCase extends AbstractMgmtTestBase 
         raa.addAsManifestResource("rar/" + deploymentName + "/META-INF/ra.xml", "ra.xml")
         .addAsManifestResource("rar/" + deploymentName + "/META-INF/ironjacamar.xml", "ironjacamar.xml")
         .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli\n"),"MANIFEST.MF");;
-        return raa; 
+        return raa;
     }
    @Deployment(order=1,name="second")
    public static ResourceAdapterArchive newDeployment()  throws Exception{
@@ -87,9 +87,9 @@ public class IronJacamarMultipleActivationTestCase extends AbstractMgmtTestBase 
        raa.addAsManifestResource("rar/" + deploymentName + "/META-INF/ra.xml", "ra.xml")
        .addAsManifestResource("rar/" + deploymentName + "/META-INF/ironjacamar.xml", "ironjacamar.xml")
        .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli\n"),"MANIFEST.MF");;
-       return raa; 
+       return raa;
    }
-   
+
    @Resource(mappedName = "java:jboss/D1CF1")
    private MultipleConnectionFactory1 connectionFactory1;
 
@@ -98,9 +98,9 @@ public class IronJacamarMultipleActivationTestCase extends AbstractMgmtTestBase 
 
    @Resource(mappedName="java:jboss/D1AO1")
    private MultipleAdminObject1 adminObject1;
-   
+
    @Resource(mappedName="java:jboss/D1AO2")
-   private MultipleAdminObject2 adminObject2; 
+   private MultipleAdminObject2 adminObject2;
 
    @Resource(mappedName = "java:jboss/D2CF1")
    private MultipleConnectionFactory1 connectionFactory3;
@@ -110,89 +110,89 @@ public class IronJacamarMultipleActivationTestCase extends AbstractMgmtTestBase 
 
    @Resource(mappedName="java:jboss/D2AO1")
    private MultipleAdminObject1 adminObject3;
-   
+
    @Resource(mappedName="java:jboss/D2AO2")
-   private MultipleAdminObject2 adminObject4; 
-   
+   private MultipleAdminObject2 adminObject4;
+
   // @Resource
   // private static Context ctx;
-   
+
     /**
      * Test configuration
      *
      * @throws Throwable Thrown if case of an error
      */
-   @Test 
+   @Test
    public void testConfiguration1() throws Throwable {
    	assertNotNull("D1CF1 not found",connectionFactory1);
-   }   
-   @Test 
+   }
+   @Test
    public void testConfiguration11() throws Throwable {
    	MultipleConnectionFactory1 connectionFactory=(MultipleConnectionFactory1)new InitialContext().lookup("java:jboss/D1CF1");
    	assertNotNull("D1CF1 not found by lookup",connectionFactory);
    }
-   @Test 
+   @Test
    public void testConfiguration2() throws Throwable {
    	assertNotNull("D1CF2 not found",connectionFactory2);
-   }   
-   @Test 
+   }
+   @Test
    public void testConfiguration21() throws Throwable {
    	MultipleConnectionFactory2 connectionFactory=(MultipleConnectionFactory2)new InitialContext().lookup("java:jboss/D1CF2");
    	assertNotNull("D1CF2 not found by lookup",connectionFactory);
    }
-   @Test 
+   @Test
    public void testConfiguration3() throws Throwable {
    	assertNotNull("D2CF1 not found",connectionFactory3);
-   }   
-   @Test 
+   }
+   @Test
    public void testConfiguration31() throws Throwable {
    	MultipleConnectionFactory1 connectionFactory=(MultipleConnectionFactory1)new InitialContext().lookup("java:jboss/D2CF1");
    	assertNotNull("D2CF1 not found by lookup",connectionFactory);
    }
-   @Test 
+   @Test
    public void testConfiguration4() throws Throwable {
    	assertNotNull("D2CF2 not found",connectionFactory4);
-   }   
-   @Test 
+   }
+   @Test
    public void testConfiguration41() throws Throwable {
    	MultipleConnectionFactory2 connectionFactory=(MultipleConnectionFactory2)new InitialContext().lookup("java:jboss/D2CF2");
    	assertNotNull("D2CF2 not found by lookup",connectionFactory);
    }
-   @Test 
+   @Test
    public void testConfiguration5() throws Throwable {
    	assertNotNull("D1AO1 not found",adminObject1);
-   }   
-   @Test 
+   }
+   @Test
    public void testConfiguration51() throws Throwable {
    	MultipleAdminObject1 object=(MultipleAdminObject1)new InitialContext().lookup("java:jboss/D1AO1");
    	assertNotNull("D1AO1 not found by lookup",object);
    }
-   @Test 
+   @Test
    public void testConfiguration6() throws Throwable {
    	assertNotNull("D1AO2 not found",adminObject2);
-   }   
-   @Test 
+   }
+   @Test
    public void testConfiguration61() throws Throwable {
    	MultipleAdminObject2 object=(MultipleAdminObject2)new InitialContext().lookup("java:jboss/D1AO2");
    	assertNotNull("D1AO2 not found by lookup",object);
    }
-   @Test 
+   @Test
    public void testConfiguration7() throws Throwable {
    	assertNotNull("D2AO1 not found",adminObject3);
-   }   
-   @Test 
+   }
+   @Test
    public void testConfiguration71() throws Throwable {
    	MultipleAdminObject1 object=(MultipleAdminObject1)new InitialContext().lookup("java:jboss/D2AO1");
    	assertNotNull("D2AO1 not found by lookup",object);
    }
-   @Test 
+   @Test
    public void testConfiguration8() throws Throwable {
    	assertNotNull("D2AO2 not found",adminObject4);
-   }   
-   @Test 
+   }
+   @Test
    public void testConfiguration81() throws Throwable {
    	MultipleAdminObject2 object=(MultipleAdminObject2)new InitialContext().lookup("java:jboss/D2AO2");
    	assertNotNull("D2AO2 not found by lookup",object);
    }
-    
+
 }
