@@ -206,13 +206,6 @@ public class InfinispanDescriptions {
         // parameters
         addCommonCacheAddRequestProperties("infinispan.cache", op, resources);
         addCommonClusteredCacheAddRequestProperties("infinispan.clustered-cache", op, resources);
-        // nested resource initialization
-        String keyPrefix = "infinispan.replicated-cache.state-transfer" ;
-        ModelNode requestProperties = op.get(ModelDescriptionConstants.REQUEST_PROPERTIES);
-        ModelNode stateTransfer = addNode(requestProperties, ModelKeys.STATE_TRANSFER, resources.getString(keyPrefix), ModelType.OBJECT, false).get(ModelDescriptionConstants.VALUE_TYPE);
-        for (AttributeDefinition attr : CommonAttributes.STATE_TRANSFER_ATTRIBUTES) {
-            addAttributeDescription(attr, resources, keyPrefix, stateTransfer);
-        }
         return op;
     }
 
