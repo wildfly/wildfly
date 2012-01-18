@@ -27,6 +27,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.jboss.as.server.ServerLogger;
+import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -36,7 +38,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.moduleservice.ModuleLoadService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
-import org.jboss.logging.Logger;
 import org.jboss.modules.DependencySpec;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleSpec;
@@ -61,7 +62,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
 
     private static final AttachmentKey<Boolean> MARKER = AttachmentKey.create(Boolean.class);
 
-    private static final Logger logger = Logger.getLogger("org.jboss.as.server.deployment.module");
+    private static final ServerLogger logger = ServerLogger.DEPLOYMENT_LOGGER;
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -97,8 +98,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
 
         final ModuleIdentifier moduleIdentifier = deploymentUnit.getAttachment(Attachments.MODULE_IDENTIFIER);
         if (moduleIdentifier == null) {
-            throw new DeploymentUnitProcessingException("No Module Identifier attached to deployment "
-                    + deploymentUnit.getName());
+            throw ServerMessages.MESSAGES.noModuleIdentifier(deploymentUnit.getName());
         }
 
         // create the module servce and set it to attach to the deployment in the next phase
@@ -267,8 +267,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
                         .getRootName(), resource.getRoot(), resource.isUsePhysicalCodeSource()), filterBuilder.create()));
             }
         } catch (IOException e) {
-            throw new DeploymentUnitProcessingException("Failed to create VFSResourceLoader for root ["
-                    + resource.getRootName() + "]", e);
+            throw ServerMessages.MESSAGES.failedToCreateVFSResourceLoader(resource.getRootName(), e);
         }
     }
 

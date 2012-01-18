@@ -30,13 +30,13 @@ import static java.util.jar.Attributes.Name.SPECIFICATION_VERSION;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
+import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Services;
-import org.jboss.logging.Logger;
 
 /**
  * A processor which reads the Extension-Name attribute from a manifest
@@ -44,8 +44,6 @@ import org.jboss.logging.Logger;
  * @author Stuart Douglas
  */
 public final class ManifestExtensionNameProcessor implements DeploymentUnitProcessor {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.server.deployment.module");
 
     /** {@inheritDoc} */
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -69,7 +67,7 @@ public final class ManifestExtensionNameProcessor implements DeploymentUnitProce
         }
         final Attributes mainAttributes = manifest.getMainAttributes();
         final String extensionName = mainAttributes.getValue(EXTENSION_NAME);
-        log.debugf("Found Extension-Name manifest entry %s in %s", extensionName, deploymentRoot.getRoot().getPathName());
+        ServerLogger.DEPLOYMENT_LOGGER.debugf("Found Extension-Name manifest entry %s in %s", extensionName, deploymentRoot.getRoot().getPathName());
         if (extensionName == null) {
             // no entry
             return;

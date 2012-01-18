@@ -22,8 +22,12 @@
 
 package org.jboss.as.server.deployment;
 
+import java.util.Collections;
 import java.util.IdentityHashMap;
-import org.jboss.logging.Logger;
+import java.util.Set;
+
+import org.jboss.as.server.ServerLogger;
+import org.jboss.as.server.ServerMessages;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
@@ -38,9 +42,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
-import java.util.Collections;
-import java.util.Set;
-
 /**
  * Abstract service responsible for managing the life-cycle of a {@link DeploymentUnit}.
  *
@@ -48,7 +49,6 @@ import java.util.Set;
  */
 public abstract class AbstractDeploymentUnitService implements Service<DeploymentUnit> {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.server.deployment");
     private static final String FIRST_PHASE_NAME = Phase.values()[0].name();
     private final InjectedValue<DeployerChains> deployerChainsInjector = new InjectedValue<DeployerChains>();
 
@@ -63,7 +63,7 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
         final String deploymentName = context.getController().getName().getSimpleName();
         final DeploymentServiceListener listener = new DeploymentServiceListener(deploymentName);
         this.listener = listener;
-        log.infof("Starting deployment of \"%s\"", deploymentName);
+        ServerLogger.DEPLOYMENT_LOGGER.startingDeployment(deploymentName);
         // Create the first phase deployer
         target.addListener(ServiceListener.Inheritance.ALL, listener);
         deploymentUnit = createAndInitializeDeploymentUnit(context.getController().getServiceContainer());
@@ -89,7 +89,7 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
     public synchronized void stop(final StopContext context) {
         final String deploymentName = context.getController().getName().getSimpleName();
         deploymentUnit = null;
-        log.infof("Stopped deployment %s in %dms", deploymentName, Integer.valueOf((int) (context.getElapsedTime() / 1000000L)));
+        ServerLogger.DEPLOYMENT_LOGGER.stoppedDeployment(deploymentName, (int) (context.getElapsedTime() / 1000000L));
     }
 
     public synchronized DeploymentUnit getValue() throws IllegalStateException, IllegalArgumentException {
@@ -139,38 +139,37 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
                 previous = newStatus;
                 if (hasFailed || hasMissing) {
                     // write out failure
-                    final StringBuilder msg = new StringBuilder();
-                    msg.append("Deployment '").append(deploymentName).append("' has ");
+                    StringBuilder failures = null;
                     if (hasFailed) {
-                        msg.append("failed services");
-                        if (hasMissing) {
-                            msg.append(" and ");
-                        }
-                    }
-                    if (hasMissing) {
-                        msg.append("services missing dependencies");
-                    }
-                    if (hasFailed) {
-                        msg.append("\n    Failed services:");
+                        failures = new StringBuilder();
                         for (ServiceController<?> service : startFailedServices) {
                             final StartException cause = service.getStartException();
                             if (cause != null) {
-                                msg.append("\n        ").append(service.getName()).append(": ").append(cause);
+                                failures.append("\n        ").append(service.getName()).append(": ").append(cause);
                             }
                         }
                     }
+                    StringBuilder missingDependencies = null;
                     if (hasMissing) {
-                        msg.append("\n    Missing dependencies:");
+                        missingDependencies = new StringBuilder();
                         for (ServiceController<?> service : servicesMissingDependencies) {
-                            msg.append("\n        ").append(service.getName()).append(" is missing: ");
+                            StringBuilder dependencies = new StringBuilder();
                             for (ServiceName name : service.getImmediateUnavailableDependencies()) {
-                                msg.append("\n            ").append(name);
+                                dependencies.append("\n            ").append(name);
                             }
+                            missingDependencies.append(ServerMessages.MESSAGES.missingDependencies(service.getName(), dependencies.toString()));
                         }
                     }
-                    log.error(msg);
+                    if (hasFailed && hasMissing) {
+                        ServerLogger.DEPLOYMENT_LOGGER.deploymentHasMissingAndFailedServices(deploymentName, failures.toString(), missingDependencies.toString());
+                    } else if (hasFailed) {
+                        ServerLogger.DEPLOYMENT_LOGGER.deploymentHasFailedServices(deploymentName, failures.toString());
+                    } else {
+                        ServerLogger.DEPLOYMENT_LOGGER.deploymentHasMissingDependencies(deploymentName, missingDependencies.toString());
+                    }
+
                 } else {
-                    log.infof("Deployment '%s' started successfully", deploymentName);
+                    ServerLogger.DEPLOYMENT_LOGGER.deploymentStarted(deploymentName);
                 }
             }
         }

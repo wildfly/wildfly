@@ -38,14 +38,11 @@ import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.server.deployment.repository.impl.ContentRepositoryImpl;
 import org.jboss.as.server.deployment.repository.impl.ServerDeploymentRepositoryImpl;
-import org.jboss.as.server.mgmt.ShutdownHandler;
-import org.jboss.as.server.mgmt.ShutdownHandlerImpl;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
 import org.jboss.as.server.moduleservice.ModuleIndexService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.as.server.services.path.AbsolutePathService;
 import org.jboss.as.server.services.security.AbstractVaultReader;
-import org.jboss.as.version.Version;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
@@ -155,9 +152,6 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         }
 
         // TODO: decide the fate of these
-
-        // Graceful shutdown
-        serviceTarget.addService(ShutdownHandler.SERVICE_NAME, new ShutdownHandlerImpl()).install();
 
         // Add server environment
         ServerEnvironmentService.addService(serverEnvironment, serviceTarget);

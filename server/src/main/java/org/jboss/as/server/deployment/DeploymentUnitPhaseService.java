@@ -22,7 +22,11 @@
 
 package org.jboss.as.server.deployment;
 
-import org.jboss.logging.Logger;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ListIterator;
+
+import org.jboss.as.server.ServerLogger;
 import org.jboss.msc.service.DelegatingServiceRegistry;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -33,10 +37,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ListIterator;
 
 /**
  * A service which executes a particular phase of deployment.
@@ -52,8 +52,6 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
     private final Phase phase;
     private final AttachmentKey<T> valueKey;
     private final List<AttachedDependency> injectedAttachedDependencies = new ArrayList<AttachedDependency>();
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.server.deployment");
 
     private DeploymentUnitPhaseService(final DeploymentUnit deploymentUnit, final Phase phase, final AttachmentKey<T> valueKey) {
         this.deploymentUnit = deploymentUnit;
@@ -168,7 +166,7 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
         try {
             prev.undeploy(deploymentUnit);
         } catch (Throwable t) {
-            log.errorf(t, "Deployment unit processor %s unexpectedly threw an exception during undeploy phase %s of %s", prev, phase, deploymentUnit);
+            ServerLogger.DEPLOYMENT_LOGGER.caughtExceptionUndeploying(t, prev, phase, deploymentUnit);
         }
     }
 
