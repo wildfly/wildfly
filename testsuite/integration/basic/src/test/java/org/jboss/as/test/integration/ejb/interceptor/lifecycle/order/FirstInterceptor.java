@@ -34,7 +34,7 @@ public class FirstInterceptor {
     public static boolean postConstructCalled;
 
     @PostConstruct
-    public void child(InvocationContext ctx) throws Exception{
+    public void child(InvocationContext ctx) throws Exception {
         postConstructCalled = true;
         Assert.assertFalse(InterceptorParent.parentPostConstructCalled);
         Assert.assertFalse(InterceptorChild.childPostConstructCalled);

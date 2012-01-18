@@ -22,11 +22,13 @@
 package org.jboss.as.test.integration.ejb.interceptor.order;
 
 import javax.ejb.Stateless;
+import javax.interceptor.Interceptors;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 @Stateless
+@Interceptors({ FirstCustomInterceptor.class, SecondCustomInterceptor.class })
 public class GreeterBean implements GreeterRemote {
     public String sayHi(String name) {
         return "Hi " + name;

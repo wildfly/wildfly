@@ -35,6 +35,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Test migrated from EJB3 testsuite [JBQA-5451] - from test ejbthree1852
+ * 
  * @author Carlo de Wolf, Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
@@ -48,7 +49,7 @@ public class InterceptorOrderUnitTestCase {
         System.out.println(jar.toString(true));
         return jar;
     }
-   
+
     @Test
     public void test() throws Exception {
         GreeterRemote greeter = (GreeterRemote) new InitialContext().lookup("java:module/" + GreeterBean.class.getSimpleName()
