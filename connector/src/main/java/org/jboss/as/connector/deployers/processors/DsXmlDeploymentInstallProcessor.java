@@ -24,7 +24,9 @@ package org.jboss.as.connector.deployers.processors;
 
 import java.sql.Driver;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.jboss.as.connector.ConnectorLogger;
@@ -33,6 +35,7 @@ import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.registry.DriverRegistry;
 import org.jboss.as.connector.subsystems.datasources.AbstractDataSourceService;
 import org.jboss.as.connector.subsystems.datasources.DataSourceReferenceFactoryService;
+import org.jboss.as.connector.subsystems.datasources.DataSourceStatisticsListener;
 import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension;
 import org.jboss.as.connector.subsystems.datasources.LocalDataSourceService;
 import org.jboss.as.connector.subsystems.datasources.ModifiableDataSource;
@@ -44,7 +47,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.ManagedReferenceFactory;
@@ -100,8 +103,6 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
 
         final DataSources dataSources = deploymentUnit.getAttachment(DsXmlDeploymentParsingProcessor.DATA_SOURCES_ATTACHMENT_KEY);
 
-        final ManagementResourceRegistration registration = phaseContext.getDeploymentUnit().getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT);
-
         if (dataSources != null) {
             if (dataSources.getDrivers() != null && dataSources.getDrivers().size() > 0) {
                 ConnectorLogger.DS_DEPLOYER_LOGGER.driversElementNotSupported(deploymentUnit.getName());
@@ -117,8 +118,9 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                             final String jndiName = cleanupJavaContext(ds.getJndiName());
                             LocalDataSourceService lds = new LocalDataSourceService(jndiName);
                             lds.getDataSourceConfigInjector().inject(buildDataSource(ds));
-                            installManagementModel(ds, deploymentUnit);
-                            startDataSource(lds, jndiName, ds.getDriver(), serviceTarget, verificationHandler, registration);
+                            final PathAddress addr = getDataSourceAddress(ds.getJndiName(), deploymentUnit, false);
+                            installManagementModel(ds, deploymentUnit, addr);
+                            startDataSource(lds, jndiName, ds.getDriver(), serviceTarget, verificationHandler, getRegistration(false, deploymentUnit), ds.getJndiName());
                         } catch (Exception e) {
                             throw ConnectorMessages.MESSAGES.exceptionDeployingDatasource(e, ds.getJndiName());
                         }
@@ -135,8 +137,9 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                             String jndiName = cleanupJavaContext(xads.getJndiName());
                             XaDataSourceService xds = new XaDataSourceService(jndiName);
                             xds.getDataSourceConfigInjector().inject(buildXaDataSource(xads));
-                            installManagementModel(xads, deploymentUnit);
-                            startDataSource(xds, jndiName, xads.getDriver(), serviceTarget, verificationHandler, registration);
+                            final PathAddress addr = getDataSourceAddress(xads.getJndiName(), deploymentUnit, true);
+                            installManagementModel(xads, deploymentUnit, addr);
+                            startDataSource(xds, jndiName, xads.getDriver(), serviceTarget, verificationHandler, getRegistration(false, deploymentUnit), xads.getJndiName());
 
                         } catch (Exception e) {
                             throw ConnectorMessages.MESSAGES.exceptionDeployingDatasource(e, xads.getJndiName());
@@ -150,9 +153,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
 
     }
 
-
-    private void installManagementModel(final DataSource ds, final DeploymentUnit deploymentUnit) {
-        final PathAddress addr = getDataSourceAddress(ds.getJndiName(), deploymentUnit, false);
+    private void installManagementModel(final DataSource ds, final DeploymentUnit deploymentUnit, final PathAddress addr) {
         XMLDataSourceRuntimeHandler.INSTANCE.registerDataSource(addr, ds);
         deploymentUnit.createDeploymentSubModel(DataSourcesExtension.SUBSYSTEM_NAME, addr.getLastElement());
         if (ds.getConnectionProperties() != null) {
@@ -164,8 +165,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
     }
 
 
-    private void installManagementModel(final XaDataSource ds, final DeploymentUnit deploymentUnit) {
-        final PathAddress addr = getDataSourceAddress(ds.getJndiName(), deploymentUnit, true);
+    private void installManagementModel(final XaDataSource ds, final DeploymentUnit deploymentUnit, final PathAddress addr) {
         XMLXaDataSourceRuntimeHandler.INSTANCE.registerDataSource(addr, ds);
         deploymentUnit.createDeploymentSubModel(DataSourcesExtension.SUBSYSTEM_NAME, addr.getLastElement());
         if (ds.getXaDataSourceProperty() != null) {
@@ -230,7 +230,8 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                                  final String driverName,
                                  final ServiceTarget serviceTarget,
                                  final ServiceVerificationHandler verificationHandler,
-                                 final ManagementResourceRegistration registration) {
+                                 final ManagementResourceRegistration registration,
+                                 final String managementName) {
 
 
         final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
@@ -246,7 +247,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                 .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class,
                         dataSourceService.getDriverRegistryInjector()).addDependency(NamingService.SERVICE_NAME);
 
-        //dataSourceServiceBuilder.addListener(new DataSourceStatisticsListener(registration, jndiName));
+        dataSourceServiceBuilder.addListener(new DataSourceStatisticsListener(registration, managementName));
 
         final ServiceName driverServiceName = ServiceName.JBOSS.append("jdbc-driver", driverName.replaceAll("\\.", "_"));
         if (driverServiceName != null) {
@@ -321,18 +322,19 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
     }
 
 
-    static ModelNode createDeploymentSubModel(final PathAddress address, final DeploymentUnit unit) {
+    static ManagementResourceRegistration createDeploymentSubModel(final PathAddress address, final DeploymentUnit unit) {
         final Resource root = unit.getAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE);
         synchronized (root) {
-            final ImmutableManagementResourceRegistration registration = unit.getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT);
+            final ManagementResourceRegistration registration = unit.getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT);
             final PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, DataSourcesExtension.SUBSYSTEM_NAME));
             final Resource subsystem = getOrCreate(root, subsystemAddress);
 
-            final ImmutableManagementResourceRegistration subModel = registration.getSubModel(subsystemAddress.append(address));
+            final ManagementResourceRegistration subModel = registration.getSubModel(subsystemAddress.append(address));
             if (subModel == null) {
                 throw new IllegalStateException(address.toString());
             }
-            return getOrCreate(subsystem, address).getModel();
+            getOrCreate(subsystem, address);
+            return subModel;
         }
     }
 
@@ -351,5 +353,39 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
         }
         return current;
     }
+
+    private ManagementResourceRegistration getRegistration(final boolean xa, final DeploymentUnit unit) {
+        final Resource root = unit.getAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE);
+        synchronized (root) {
+            ManagementResourceRegistration registration = unit.getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT);
+            if (registration.isAllowsOverride()) {
+                registration = registration.registerOverrideModel(unit.getName(), new OverrideDescriptionProvider() {
+                    @Override
+                    public Map<String, ModelNode> getAttributeOverrideDescriptions(Locale locale) {
+                        return Collections.emptyMap();
+                    }
+
+                    @Override
+                    public Map<String, ModelNode> getChildTypeOverrideDescriptions(Locale locale) {
+                        return Collections.emptyMap();
+                    }
+                });
+            }
+            final PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, DataSourcesExtension.SUBSYSTEM_NAME));
+            getOrCreate(root, subsystemAddress);
+            final  PathAddress address;
+            if(xa) {
+                address = subsystemAddress.append(PathElement.pathElement(XA_DATA_SOURCE));
+            } else {
+                address = subsystemAddress.append(PathElement.pathElement(DATA_SOURCE));
+            }
+            final ManagementResourceRegistration subModel = registration.getSubModel(address);
+            if (subModel == null) {
+                throw new IllegalStateException(address.toString());
+            }
+            return subModel;
+        }
+    }
+
 
 }
