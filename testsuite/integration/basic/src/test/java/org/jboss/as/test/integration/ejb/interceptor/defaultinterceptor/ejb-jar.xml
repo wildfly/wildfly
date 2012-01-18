@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ejb-jar xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd"
+         version="3.0">
+    
+    <interceptors>
+      <interceptor>
+         <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.defaultinterceptor.DefaultInterceptor</interceptor-class>
+      </interceptor>
+      <interceptor>
+         <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.defaultinterceptor.ClassInterceptor</interceptor-class>
+      </interceptor>
+      <interceptor>
+         <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.defaultinterceptor.MethodInterceptor</interceptor-class>
+      </interceptor>
+    </interceptors>
+    
+   <assembly-descriptor>
+      <interceptor-binding>
+         <ejb-name>*</ejb-name>
+         <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.defaultinterceptor.DefaultInterceptor</interceptor-class>
+      </interceptor-binding>
+      <interceptor-binding>
+         <ejb-name>NoDefaultInterceptorsSLSB</ejb-name>
+         <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.defaultinterceptor.ClassInterceptor</interceptor-class>
+      </interceptor-binding>
+      <interceptor-binding>
+         <ejb-name>NoDefaultInterceptorsSLSB</ejb-name>
+         <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.defaultinterceptor.MethodInterceptor</interceptor-class>
+         <method>
+         	<method-name>noClassLevel</method-name>
+         </method>
+      </interceptor-binding>
+      <interceptor-binding>
+         <ejb-name>DefaultAndClassInterceptedSLSB</ejb-name>
+         <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.defaultinterceptor.MethodInterceptor</interceptor-class>
+         <exclude-default-interceptors>true</exclude-default-interceptors>
+         <exclude-class-interceptors>true</exclude-class-interceptors>
+         <method>
+         	<method-name>noClassAndDefaultInDescriptor</method-name>
+         </method>
+      </interceptor-binding>
+   </assembly-descriptor>
+   
+</ejb-jar>

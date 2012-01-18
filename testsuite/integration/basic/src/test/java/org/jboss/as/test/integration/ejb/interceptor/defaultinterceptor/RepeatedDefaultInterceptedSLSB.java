@@ -32,7 +32,7 @@ import javax.interceptor.Interceptors;
  */
 @Stateless
 @LocalBean
-@Interceptors({DefaultInterceptor.class, DefaultInterceptor.class})
+@Interceptors({ DefaultInterceptor.class, DefaultInterceptor.class })
 public class RepeatedDefaultInterceptedSLSB implements SessionBean {
 
     private boolean postConstructCalled;
