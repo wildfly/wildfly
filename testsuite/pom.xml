@@ -133,6 +133,7 @@
         <version.arquillian_as7>${project.parent.version}</version.arquillian_as7>
         <version.xml.maven.plugin>1.0</version.xml.maven.plugin>
         <version.saxon>8.7</version.saxon>
+        <version.jsfunit>2.0.0.Beta2</version.jsfunit>
     </properties>
 
     <dependencyManagement>
@@ -187,6 +188,22 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
+        
+        
+        <dependency>
+             <groupId>org.jboss.jsfunit</groupId>
+             <artifactId>jsfunit-arquillian</artifactId>
+             <version>${version.jsfunit}</version>
+             <scope>test</scope>
+         </dependency>
+         
+         <dependency>
+             <groupId>org.jboss.jsfunit</groupId>
+             <artifactId>jboss-jsfunit-core</artifactId>
+             <version>${version.jsfunit}</version>
+             <scope>test</scope>
+         </dependency>
+        
     </dependencies>
 
     <build>
