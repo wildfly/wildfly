@@ -112,6 +112,7 @@ public class ModelDescriptionConstants {
     public static final String INITIAL_CONTEXT_FACTORY = "initial-context-factory";
     public static final String INPUT_STREAM_INDEX = "input-stream-index";
     public static final String INTERFACE = "interface";
+    public static final String JAAS = "jaas";
     public static final String JVM = "jvm";
     public static final String JVM_TYPE = "type";
     public static final String KEYSTORE = "keystore";
