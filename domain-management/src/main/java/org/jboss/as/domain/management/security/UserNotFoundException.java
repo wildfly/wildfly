@@ -30,6 +30,8 @@ import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
  */
 public class UserNotFoundException extends IOException {
 
+    private static final long serialVersionUID = 8810299882992414311L;
+
     private final String username;
 
     public UserNotFoundException(String username) {

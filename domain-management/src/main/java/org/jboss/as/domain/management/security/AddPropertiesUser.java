@@ -53,7 +53,6 @@ public class AddPropertiesUser {
     private static final String DEFAULT_REALM = "ManagementRealm";
     private static final String NEW_LINE = "\n";
     private static final String SPACE = " ";
-    private static final String COMMENT = "#";
     private Console theConsole = System.console();
 
     private List<File> propertiesFiles;
