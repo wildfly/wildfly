@@ -21,7 +21,8 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition ACQUIRE_TIMEOUT = new SimpleAttributeDefinition(ModelKeys.ACQUIRE_TIMEOUT,
             new ModelNode().set(longDefault), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
-    SimpleAttributeDefinition ALIAS = new SimpleAttributeDefinition(ModelKeys.ALIAS, ModelType.LIST, true);
+    SimpleAttributeDefinition ALIAS = new SimpleAttributeDefinition(ModelKeys.ALIAS, ModelType.STRING, true);
+    SimpleAttributeDefinition ALIASES = new SimpleAttributeDefinition(ModelKeys.ALIASES, ModelType.LIST, true);
     SimpleAttributeDefinition BATCH_SIZE = new SimpleAttributeDefinition(ModelKeys.BATCH_SIZE,
             new ModelNode().set(intDefault), ModelType.INT, true);
     SimpleAttributeDefinition BATCHING = new SimpleAttributeDefinition(ModelKeys.BATCHING,
@@ -112,7 +113,7 @@ public interface CommonAttributes {
     SimpleAttributeDefinition VIRTUAL_NODES = new SimpleAttributeDefinition(ModelKeys.VIRTUAL_NODES,
             new ModelNode().set(intDefault), ModelType.INT, true);
 
-    AttributeDefinition[] CACHE_CONTAINER_ATTRIBUTES = { DEFAULT_CACHE, JNDI_NAME, LISTENER_EXECUTOR, EVICTION_EXECUTOR, REPLICATION_QUEUE_EXECUTOR, ALIAS };
+    AttributeDefinition[] CACHE_CONTAINER_ATTRIBUTES = { DEFAULT_CACHE, ALIASES, JNDI_NAME, LISTENER_EXECUTOR, EVICTION_EXECUTOR, REPLICATION_QUEUE_EXECUTOR };
     AttributeDefinition[] TRANSPORT_ATTRIBUTES = { STACK, EXECUTOR, LOCK_TIMEOUT, SITE, RACK, MACHINE  };
 
     AttributeDefinition[] CACHE_ATTRIBUTES = { /* NAME, */ START, BATCHING, INDEXING, JNDI_NAME };

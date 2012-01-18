@@ -35,14 +35,14 @@ public class RemoveAliasCommand implements OperationStepHandler {
         nameValidator.validate(operation);
         final String aliasToRemove = operation.require(NAME).asString();
         final ModelNode submodel = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
-        final ModelNode currentValue = submodel.get(CommonAttributes.ALIAS.getName()).clone();
+        final ModelNode currentValue = submodel.get(CommonAttributes.ALIASES.getName()).clone();
 
         ModelNode newValue = removeAliasFromList(currentValue, aliasToRemove) ;
 
         // now set the new ALIAS attribute
         final ModelNode syntheticOp = new ModelNode();
-        syntheticOp.get(CommonAttributes.ALIAS.getName()).set(newValue);
-        CommonAttributes.ALIAS.validateAndSet(syntheticOp, submodel);
+        syntheticOp.get(CommonAttributes.ALIASES.getName()).set(newValue);
+        CommonAttributes.ALIASES.validateAndSet(syntheticOp, submodel);
 
         // since we modified the model, set reload required
         if (requiresRuntime(context)) {
