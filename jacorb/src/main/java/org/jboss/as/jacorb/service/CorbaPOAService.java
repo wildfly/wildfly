@@ -22,6 +22,9 @@
 
 package org.jboss.as.jacorb.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -41,9 +44,6 @@ import org.omg.PortableServer.POAHelper;
 import org.omg.PortableServer.RequestProcessingPolicyValue;
 import org.omg.PortableServer.ServantRetentionPolicyValue;
 import org.omg.PortableServer.ThreadPolicyValue;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * <p>
@@ -184,7 +184,8 @@ public class CorbaPOAService implements Service<POA> {
     public void stop(StopContext context) {
         log.debugf("Stopping Service " + context.getController().getName().getCanonicalName());
         // destroy the created POA.
-        this.poa.destroy(false, false);
+        if (this.poa != null)
+            this.poa.destroy(false, false);
     }
 
     @Override
