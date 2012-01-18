@@ -35,10 +35,16 @@ public class ClassifiedBean {
         return "Secret";
     }
 
-
     @Interceptors(TopSecretInterceptor.class)
     public String topSecretMethod() {
         return "TopSecret";
     }
 
+    public String overloadedMethod(Integer i) {
+        return "ArgInt:" + i.toString();
+    }
+
+    public String overloadedMethod(String str) {
+        return "ArgStr:" + str;
+    }
 }

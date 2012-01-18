@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2010, Red Hat Inc., and individual contributors as indicated
+ * Copyright 2012, Red Hat Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -19,31 +19,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.test.integration.ejb.interceptor.method;
 
-import javax.annotation.PostConstruct;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.InvocationContext;
 
 /**
- * @author Stuart Douglas
+ * @author OndrejChaloupka
  */
-public class TopSecretInterceptor {
+public class AroundInvokeInterceptor {
 
-    public static boolean called = false;
-    public static boolean postConstructCalled = false;
-
-    // as this is a method level interceptor this should not be called
-    // see the interceptors spec
-    @PostConstruct
-    public void postConstruct(final InvocationContext invocationContext) throws Exception {
-        postConstructCalled = true;
-        invocationContext.proceed();
+    Object interceptDD(InvocationContext ctx) throws Exception {
+        return "InterceptedDD:" + ctx.proceed().toString();
     }
 
+    // this won't be called because of definition in ejb-jar.xml
     @AroundInvoke
-    public Object aroundInvoke(final InvocationContext invocationContext) throws Exception {
-        called = true;
-        return invocationContext.proceed();
+    Object intercept(InvocationContext ctx) throws Exception {
+        return "Intercepted:" + ctx.proceed().toString();
     }
 }
