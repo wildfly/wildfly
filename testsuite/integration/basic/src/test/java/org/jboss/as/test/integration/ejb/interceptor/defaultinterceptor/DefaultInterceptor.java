@@ -40,7 +40,7 @@ public class DefaultInterceptor {
     @AroundInvoke
     public Object aroundInvoke(final InvocationContext context) throws Exception {
         if (context.getMethod().getReturnType().equals(String.class)) {
-            return  MESSAGE + context.proceed().toString();
+            return MESSAGE + context.proceed().toString();
         }
         return context.proceed();
     }
