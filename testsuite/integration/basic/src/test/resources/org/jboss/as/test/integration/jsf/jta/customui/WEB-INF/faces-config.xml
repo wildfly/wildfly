@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<faces-config
+    xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-facesconfig_2_0.xsd"
+    version="2.0">
+
+	<!-- if faces config is empty, even annotations are not processed... -->
+	<managed-bean>
+		<managed-bean-name>SimpleLogin</managed-bean-name>
+		<managed-bean-class>org.jboss.as.test.integration.jsf.jta.login.SimpleLogin</managed-bean-class>
+		<managed-bean-scope>session</managed-bean-scope>
+	</managed-bean>
+	<component>
+	    <component-type>jsf.jta.customui.HelloUIComponent</component-type>
+	    <component-class>org.jboss.as.test.integration.jsf.jta.customui.HelloUIComponent</component-class>
+    </component>
+</faces-config>
