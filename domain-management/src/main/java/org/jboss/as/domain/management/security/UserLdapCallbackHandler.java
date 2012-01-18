@@ -141,8 +141,7 @@ public class UserLdapCallbackHandler implements Service<UserLdapCallbackHandler>
             String authenticationId = acb.getAuthenticationID();
             String authorizationId = acb.getAuthorizationID();
 
-            // TODO - Remove "" check once SASL-3 is resolved.
-            acb.setAuthorized("".equals(authorizationId) || authenticationId.equals(authorizationId));
+            acb.setAuthorized(authenticationId.equals(authorizationId));
 
             return;
         }

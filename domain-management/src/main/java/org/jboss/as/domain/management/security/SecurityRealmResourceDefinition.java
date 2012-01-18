@@ -51,6 +51,7 @@ public class SecurityRealmResourceDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerSubModel(new SecretServerIdentityResourceDefinition());
         resourceRegistration.registerSubModel(new SSLServerIdentityResourceDefinition());
         resourceRegistration.registerSubModel(new TruststoreAuthenticationResourceDefinition());
+        resourceRegistration.registerSubModel(new JaasAuthenticationResourceDefinition());
         resourceRegistration.registerSubModel(new LdapAuthenticationResourceDefinition());
         resourceRegistration.registerSubModel(new PropertiesAuthenticationResourceDefinition());
         resourceRegistration.registerSubModel(new XmlAuthenticationResourceDefinition());

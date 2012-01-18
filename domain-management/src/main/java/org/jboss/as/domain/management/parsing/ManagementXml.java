@@ -29,6 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JAAS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP_CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
@@ -71,6 +72,7 @@ import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
+import org.jboss.as.domain.management.security.JaasAuthenticationResourceDefinition;
 import org.jboss.as.domain.management.security.KeystoreAttributes;
 import org.jboss.as.domain.management.security.LdapAuthenticationResourceDefinition;
 import org.jboss.as.domain.management.security.PropertiesAuthenticationResourceDefinition;
@@ -447,6 +449,14 @@ public class ManagementXml {
             final Element element = Element.forName(reader.getLocalName());
 
             switch (element) {
+                case JAAS: {
+                    if (usernamePasswordFound) {
+                        throw unexpectedElement(reader);
+                    }
+                    parseJaasAuthentication(reader, expectedNs, realmAddress, list);
+                    usernamePasswordFound = true;
+                    break;
+                }
                 case LDAP: {
                     if (usernamePasswordFound) {
                         throw unexpectedElement(reader);
@@ -534,6 +544,41 @@ public class ManagementXml {
 
         if (required.size() > 0)
             throw missingRequired(reader, required);
+
+        requireNoContent(reader);
+    }
+
+    private void parseJaasAuthentication(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+            final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
+        ModelNode addr = realmAddress.clone().add(AUTHENTICATION, JAAS);
+        ModelNode jaas = Util.getEmptyOperation(ADD, addr);
+        list.add(jaas);
+
+        boolean nameFound = false;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME:
+                        if (nameFound) {
+                            throw unexpectedAttribute(reader, i);
+                        }
+                        nameFound = true;
+                        JaasAuthenticationResourceDefinition.NAME.parseAndSetParameter(value, jaas, reader);
+                        break;
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+        if (nameFound == false) {
+            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
+        }
 
         requireNoContent(reader);
     }
@@ -650,7 +695,7 @@ public class ManagementXml {
 
         requireNoContent(reader);
         // This property was not supported in version 1.0 of the schema, however it is set to true here to ensure
-        // the default behaviour is a document based on 1.0 of the schema is parsed, 1.1 now defaults this to false.
+        // the default behaviour if a document based on 1.0 of the schema is parsed, 1.1 now defaults this to false.
         properties.get(PLAIN_TEXT).set(true);
     }
 
@@ -845,7 +890,12 @@ public class ManagementXml {
             KeystoreAttributes.KEYSTORE_PASSWORD.marshallAsAttribute(truststore, writer);
         }
 
-        if (authentication.hasDefined(LDAP)) {
+        if (authentication.hasDefined(JAAS)) {
+            ModelNode jaas = authentication.get(JAAS);
+            writer.writeStartElement(Element.JAAS.getLocalName());
+            JaasAuthenticationResourceDefinition.NAME.marshallAsAttribute(jaas, writer);
+            writer.writeEndElement();
+        } else if (authentication.hasDefined(LDAP)) {
             ModelNode userLdap = authentication.get(LDAP);
             writer.writeStartElement(Element.LDAP.getLocalName());
             LdapAuthenticationResourceDefinition.CONNECTION.marshallAsAttribute(userLdap, writer);
@@ -862,13 +912,11 @@ public class ManagementXml {
             }
             writer.writeEndElement();
         } else if (authentication.hasDefined(PROPERTIES)) {
-
             ModelNode properties = authentication.require(PROPERTIES);
             writer.writeEmptyElement(Element.PROPERTIES.getLocalName());
             PropertiesAuthenticationResourceDefinition.PATH.marshallAsAttribute(properties, writer);
             PropertiesAuthenticationResourceDefinition.RELATIVE_TO.marshallAsAttribute(properties, writer);
             PropertiesAuthenticationResourceDefinition.PLAIN_TEXT.marshallAsAttribute(properties, writer);
-
         } else if (authentication.hasDefined(USERS)) {
             ModelNode userDomain = authentication.get(USERS);
             ModelNode users = userDomain.hasDefined(USER) ? userDomain.require(USER) : new ModelNode().setEmptyObject();

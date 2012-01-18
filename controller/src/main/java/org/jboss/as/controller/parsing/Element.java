@@ -71,6 +71,7 @@ public enum Element {
     INTERFACE_SPECS("interface-specs"),
     INTERFACES("interfaces"),
 
+    JAAS("jaas"),
     JAVA_AGENT("java-agent"),
     JVM("jvm"),
     JVMS("jvms"),

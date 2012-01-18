@@ -179,7 +179,7 @@
         </xs:complexContent>
     </xs:complexType>
 
-    <xs:complexType name="ldapType"> <!-- TODO - May extend from a common connection type for name -->
+    <xs:complexType name="ldapType"> 
         <xs:annotation>
             <xs:documentation>
                 The LDAP connection definition.
@@ -214,7 +214,6 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <!-- TODO - May drop this and just allow free name/value properties for extension. -->
         <xs:attribute name="initial-context-factory" type="xs:string" default="com.sun.jndi.ldap.LdapCtxFactory">
             <xs:annotation>
                 <xs:documentation>
@@ -342,11 +341,27 @@
                 </xs:annotation>
             </xs:element>
             <xs:choice minOccurs="0">
+                <xs:element name="jaas" type="jaasAuthenticationType" minOccurs="0" />            
                 <xs:element name="ldap" type="ldapAuthenticationType" minOccurs="0" />
                 <xs:element name="properties" type="propertiesAuthenticationType" minOccurs="0" />
                 <xs:element name="users" type="usersAuthenticationType" minOccurs="0" />
             </xs:choice>
         </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="jaasAuthenticationType">
+        <xs:annotation>
+            <xs:documentation>
+                Definition to use a JAAS based configuration for authentication.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The name identifying the jaas configuration of LoginModules.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>            
     </xs:complexType>
 
     <xs:complexType name="ldapAuthenticationType">
