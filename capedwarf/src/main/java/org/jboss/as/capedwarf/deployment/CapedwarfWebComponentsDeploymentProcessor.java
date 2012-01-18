@@ -104,7 +104,7 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
     }
 
     private void addFilterMappingTo(JBossWebMetaData webMetaData) {
-        getFilterMappings(webMetaData).add(GAE_FILTER_MAPPING);
+        getFilterMappings(webMetaData).add(0, GAE_FILTER_MAPPING);
     }
 
     private FilterMappingMetaData createFilterMapping() {
