@@ -1038,7 +1038,6 @@ public class RolloutPlanParsingTestCase extends TestCase {
     @Test
     public void testRollout() throws Exception {
 
-        //parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout in-series = groupA}");
         parse(":do{rollout");
 
         assertFalse(handler.hasAddress());
@@ -1058,6 +1057,26 @@ public class RolloutPlanParsingTestCase extends TestCase {
         final List<ParsedOperationRequestHeader> headers = handler.getHeaders();
         assertEquals(0, headers.size());
         assertEquals("rollout", handler.getLastHeaderName());
+    }
+
+    @Test
+    public void testOnlyHeaderListStart() throws Exception {
+
+        parse("{");
+
+        assertFalse(handler.hasAddress());
+        assertFalse(handler.hasOperationName());
+        assertFalse(handler.hasProperties());
+        assertFalse(handler.endsOnAddressOperationNameSeparator());
+        assertFalse(handler.endsOnPropertyListStart());
+        assertFalse(handler.endsOnPropertySeparator());
+        assertFalse(handler.endsOnPropertyValueSeparator());
+        assertFalse(handler.endsOnNodeSeparator());
+        assertFalse(handler.endsOnNodeTypeNameSeparator());
+        assertTrue(handler.endsOnSeparator());
+        assertTrue(handler.endsOnHeaderListStart());
+        assertFalse(handler.isRequestComplete());
+        assertFalse(handler.hasHeaders());
     }
 
     protected void parse(String opReq) throws CommandFormatException {

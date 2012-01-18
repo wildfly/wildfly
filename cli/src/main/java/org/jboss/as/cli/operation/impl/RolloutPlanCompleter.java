@@ -24,9 +24,9 @@ package org.jboss.as.cli.operation.impl;
 import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.Util;
-import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.cli.operation.ParsedOperationRequestHeader;
 
 /**
@@ -42,6 +42,8 @@ public class RolloutPlanCompleter implements CommandLineCompleter {
         address.toNode(Util.MANAGEMENT_CLIENT_CONTENT, Util.ROLLOUT_PLANS);
     }
 
+    private final DefaultCallbackHandler parsedOp = new DefaultCallbackHandler();
+
     /* (non-Javadoc)
      * @see org.jboss.as.cli.CommandLineCompleter#complete(org.jboss.as.cli.CommandContext, java.lang.String, int, java.util.List)
      */
@@ -50,11 +52,36 @@ public class RolloutPlanCompleter implements CommandLineCompleter {
         if(!ctx.isDomainMode()) {
             return -1;
         }
-        final ParsedCommandLine parsedCmd = ctx.getParsedCommandLine();
-        final List<ParsedOperationRequestHeader> headers = parsedCmd.getHeaders();
+        if(buffer.isEmpty()) {
+            candidates.add("{rollout");
+            return 0;
+        }
+
+        try {
+            parsedOp.parseOperation(null, buffer);
+        } catch (CommandFormatException e) {
+            return -1;
+        }
+        if(parsedOp.isRequestComplete()) {
+            return -1;
+        }
+
+        if(parsedOp.endsOnHeaderListStart() || parsedOp.endsOnHeaderSeparator()) {
+            candidates.add("rollout");
+            return parsedOp.getLastSeparatorIndex() + 1;
+        }
+        final List<ParsedOperationRequestHeader> headers = parsedOp.getHeaders();
         if(headers.isEmpty()) {
-            candidates.add("id=");
-            candidates.addAll(Util.getServerGroups(ctx.getModelControllerClient()));
+            if(ctx.getParsedCommandLine().getOriginalLine().endsWith(" ") /* '{rollout ' */) {
+                final String originalLine = ctx.getParsedCommandLine().getOriginalLine();
+                int bufferIndex = originalLine.lastIndexOf(buffer);
+                if(bufferIndex == -1) { // that's illegal state
+                    return -1;
+                }
+                candidates.add("id=");
+                candidates.addAll(Util.getServerGroups(ctx.getModelControllerClient()));
+                return originalLine.length() - bufferIndex;
+            }
             return buffer.length();
         }
         final ParsedOperationRequestHeader lastHeader = headers.get(headers.size() - 1);

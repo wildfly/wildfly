@@ -149,7 +149,7 @@ public interface ArgumentValueConverter {
             ParserUtil.parse(value, callback, initialState);
             final List<ParsedOperationRequestHeader> headers = callback.getHeaders();
             if(headers.isEmpty()) {
-                return null;
+                throw new CommandFormatException("'" + value + "' doesn't follow format {rollout server_group_list [rollback-across-groups]}");
             }
             if(headers.size() > 1) {
                 throw new CommandFormatException("Too many headers: " + headers);
