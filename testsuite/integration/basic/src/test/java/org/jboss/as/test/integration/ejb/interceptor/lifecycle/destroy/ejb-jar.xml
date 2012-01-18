@@ -1,0 +1,26 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<ejb-jar xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd"
+         version="3.1">
+
+    <interceptors>
+        <interceptor>
+            <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.lifecycle.destroy.PreDestroyInterceptorDescriptor</interceptor-class>
+            <post-construct>
+                <lifecycle-callback-method>postConstruct</lifecycle-callback-method>
+            </post-construct>
+            <pre-destroy>
+                <lifecycle-callback-method>preDestroy</lifecycle-callback-method>
+            </pre-destroy>
+        </interceptor>
+    </interceptors>
+
+    <assembly-descriptor>
+        <interceptor-binding>
+            <ejb-name>PreDestroySFSB</ejb-name>
+            <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.lifecycle.destroy.PreDestroyInterceptorDescriptor</interceptor-class>
+        </interceptor-binding>
+    </assembly-descriptor>
+
+</ejb-jar>
