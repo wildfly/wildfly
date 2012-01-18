@@ -28,6 +28,27 @@
 
     <target name="base" depends="clean-target, modules-minimalistic, copy-files, make-dirs"/>
 
+    <target name="configure-standalone" depends="configure-standalone-with-osgi,configure-standalone-without-osgi"/>
+
+    <target name="configure-standalone-with-osgi" unless="disable-osgi">
+        <xslt destdir="${output.dir}/standalone/configuration"
+              style="src/main/resources/transformations/enable-osgi.xsl"
+              useimplicitfileset="false">
+            <fileset dir="src/main/resources">
+                <include name="standalone/configuration/**.xml"/>
+            </fileset>
+            <mapper type="flatten"/>
+        </xslt>
+    </target>
+
+    <target name="configure-standalone-without-osgi" if="disable-osgi">
+        <copy todir="${output.dir}">
+            <fileset dir="src/main/resources">
+                <include name="standalone/configuration/**.xml"/>
+            </fileset>
+        </copy>
+    </target>
+
     <target name="copy-files">
         <copy todir="${output.dir}">
             <fileset dir="src/main/resources">
@@ -53,13 +74,7 @@
         <chmod perm="600" file="${output.dir}/standalone/configuration/mgmt-users.properties"/>
     </target>
 
-    <target name="copy-standalone" description="Copy all standard configurations">
-        <copy todir="${output.dir}">
-            <fileset dir="src/main/resources">
-                <include name="standalone/configuration/**.xml"/>
-            </fileset>
-        </copy>
-    </target>
+    <target name="copy-standalone" description="Copy all standard configurations" depends="configure-standalone"/>
 
     <target name="copy-standalone-minimalistic">
         <copy tofile="${output.dir}/standalone/configuration/standalone.xml" file="src/main/resources/docs/examples/configs/standalone-minimalistic.xml"/>
