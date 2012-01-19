@@ -67,6 +67,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.util.Base64;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -281,6 +282,7 @@ public class GetCallerPrincipalTestCase extends SecurityTest {
     }
 
     @Test
+    @Ignore("https://issues.jboss.org/browse/EJBCLIENT-17")
     public void testStatefulLifecycle() throws Exception {
         deployer.deploy("sfsb");
         SecurityClient client = this.login();
