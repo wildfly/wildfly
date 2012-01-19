@@ -80,7 +80,7 @@ public class EntityBeanEjbCreateMethodInterceptorFactory implements InterceptorF
                 }
                 final EntityBeanComponent entityBeanComponent = (EntityBeanComponent) component;
                 //grab an unasociated entity bean from the pool
-                final EntityBeanComponentInstance instance = entityBeanComponent.getPool().get();
+                final EntityBeanComponentInstance instance = entityBeanComponent.acquireUnAssociatedInstance();
 
                 //call the ejbCreate method
                 final Object primaryKey = invokeEjbCreate(context, ejbCreate, instance, params);
@@ -117,7 +117,7 @@ public class EntityBeanEjbCreateMethodInterceptorFactory implements InterceptorF
                             public void afterCompletion(final int status) {
                                 entityBeanComponent.getCache().release(instance, status == Status.STATUS_COMMITTED);
                                 if (status != Status.STATUS_COMMITTED) {
-                                    entityBeanComponent.getPool().release(instance);
+                                    entityBeanComponent.releaseEntityBeanInstance(instance);
                                 }
                             }
                         });

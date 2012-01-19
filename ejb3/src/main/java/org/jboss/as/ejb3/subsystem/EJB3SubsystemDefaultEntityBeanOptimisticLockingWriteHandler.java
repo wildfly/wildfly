@@ -25,43 +25,26 @@ package org.jboss.as.ejb3.subsystem;
 import java.util.List;
 
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.ejb3.component.pool.PoolConfig;
-import org.jboss.as.ejb3.component.pool.PoolConfigService;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.msc.service.ValueInjectionService;
+import org.jboss.msc.service.ValueService;
+import org.jboss.msc.value.ImmediateValue;
 
 /**
- * User: jpai
+ * @author Stuart Douglas
  */
-public class EJB3SubsystemDefaultPoolWriteHandler extends AbstractWriteAttributeHandler<Void> {
+public class EJB3SubsystemDefaultEntityBeanOptimisticLockingWriteHandler extends AbstractWriteAttributeHandler<Void> {
 
-    public static final EJB3SubsystemDefaultPoolWriteHandler MDB_POOL =
-            new EJB3SubsystemDefaultPoolWriteHandler(PoolConfigService.DEFAULT_MDB_POOL_CONFIG_SERVICE_NAME,
-                    EJB3SubsystemRootResourceDefinition.DEFAULT_MDB_INSTANCE_POOL);
 
-    public static final EJB3SubsystemDefaultPoolWriteHandler SLSB_POOL =
-            new EJB3SubsystemDefaultPoolWriteHandler(PoolConfigService.DEFAULT_SLSB_POOL_CONFIG_SERVICE_NAME,
-                    EJB3SubsystemRootResourceDefinition.DEFAULT_SLSB_INSTANCE_POOL);
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "entity-bean", "optimistic-locking");
 
-    public static final EJB3SubsystemDefaultPoolWriteHandler ENTITY_BEAN_POOL =
-            new EJB3SubsystemDefaultPoolWriteHandler(PoolConfigService.DEFAULT_ENTITY_POOL_CONFIG_SERVICE_NAME,
-                    EJB3SubsystemRootResourceDefinition.DEFAULT_ENTITY_BEAN_INSTANCE_POOL);
-
-    private final ServiceName poolConfigServiceName;
-    private final AttributeDefinition poolAttribute;
-
-    public EJB3SubsystemDefaultPoolWriteHandler(ServiceName poolConfigServiceName, AttributeDefinition poolAttribute) {
-        super(poolAttribute);
-        this.poolConfigServiceName = poolConfigServiceName;
-        this.poolAttribute = poolAttribute;
-    }
+    public static final EJB3SubsystemDefaultEntityBeanOptimisticLockingWriteHandler INSTANCE = new EJB3SubsystemDefaultEntityBeanOptimisticLockingWriteHandler();
 
     @Override
     protected void validateResolvedValue(String attributeName, ModelNode value) throws OperationFailedException {
@@ -72,7 +55,7 @@ public class EJB3SubsystemDefaultPoolWriteHandler extends AbstractWriteAttribute
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
                                            ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
         final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-        updatePoolService(context, model, null);
+        updateOptimisticLocking(context, model, null);
 
         return false;
     }
@@ -82,27 +65,24 @@ public class EJB3SubsystemDefaultPoolWriteHandler extends AbstractWriteAttribute
                                          ModelNode valueToRestore, ModelNode valueToRevert, Void handback) throws OperationFailedException {
         final ModelNode restored = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().clone();
         restored.get(attributeName).set(valueToRestore);
-        updatePoolService(context, restored, null);
+        updateOptimisticLocking(context, restored, null);
     }
 
-    void updatePoolService(final OperationContext context, final ModelNode model, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    void updateOptimisticLocking(final OperationContext context, final ModelNode model, List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-        final ModelNode poolName = poolAttribute.resolveModelAttribute(context, model);
+        final ModelNode enabled = EJB3SubsystemRootResourceDefinition.DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING.resolveModelAttribute(context, model);
 
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(true);
-        ServiceController existingDefaultPoolConfigService = serviceRegistry.getService(poolConfigServiceName);
-        // if a default MDB pool is already installed, then remove it first
-        if (existingDefaultPoolConfigService != null) {
-            context.removeService(existingDefaultPoolConfigService);
+        ServiceController existingService = serviceRegistry.getService(SERVICE_NAME);
+        // if a default optimistic locking config is installed, remove it
+        if (existingService != null) {
+            context.removeService(existingService);
         }
 
-        if (poolName.isDefined()) {
-            // now install default pool config service which points to an existing pool config service
-            final ValueInjectionService<PoolConfig> newDefaultPoolConfigService = new ValueInjectionService<PoolConfig>();
+        if (enabled.isDefined()) {
+            final Service<Boolean> newDefaultPoolConfigService = new ValueService<Boolean>(new ImmediateValue(enabled.asBoolean()));
             ServiceController<?> newController =
-                context.getServiceTarget().addService(poolConfigServiceName, newDefaultPoolConfigService)
-                    .addDependency(PoolConfigService.EJB_POOL_CONFIG_BASE_SERVICE_NAME.append(poolName.asString()),
-                            PoolConfig.class, newDefaultPoolConfigService.getInjector())
+                context.getServiceTarget().addService(SERVICE_NAME, newDefaultPoolConfigService)
                     .install();
             if (newControllers != null) {
                 newControllers.add(newController);

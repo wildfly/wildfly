@@ -34,7 +34,6 @@ import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
-import org.jboss.logging.Logger;
 
 /**
  * Cache of entity bean component instances by transaction key
@@ -47,8 +46,6 @@ public class TransactionLocalEntityCache implements ReadyEntityCache {
     private final TransactionSynchronizationRegistry transactionSynchronizationRegistry;
     private final ConcurrentMap<Object, Map<Object, CacheEntry>> cache = new ConcurrentHashMap<Object, Map<Object, CacheEntry>>(Runtime.getRuntime().availableProcessors());
     private final EntityBeanComponent component;
-
-    private static final Logger logger = Logger.getLogger(TransactionLocalEntityCache.class);
 
     public TransactionLocalEntityCache(final EntityBeanComponent component) {
         this.component = component;
@@ -111,14 +108,23 @@ public class TransactionLocalEntityCache implements ReadyEntityCache {
                 if (!success && instance.isRemoved()) {
                     instance.setRemoved(false);
                 }
-                instance.passivate();
-                component.getPool().release(instance);
-                map.remove(instance.getPrimaryKey());
+                final Object pk = instance.getPrimaryKey();
+                try {
+                    instance.passivate();
+                    component.releaseEntityBeanInstance(instance);
+                } finally {
+                    map.remove(pk);
+                }
             } else if (instance.isRemoved() && success) {
                 //the instance has been removed, we need to remove it from the cache
                 //even if someone is still referencing it, as their reference is no longer usable
-                component.getPool().release(instance);
-                map.remove(instance.getPrimaryKey());
+                final Object pk = instance.getPrimaryKey();
+                try {
+                    instance.passivate();
+                    component.releaseEntityBeanInstance(instance);
+                } finally {
+                    map.remove(pk);
+                }
             }
         }
     }
@@ -167,7 +173,7 @@ public class TransactionLocalEntityCache implements ReadyEntityCache {
     }
 
     private EntityBeanComponentInstance createInstance(Object pk) {
-        final EntityBeanComponentInstance instance = component.getPool().get();
+        final EntityBeanComponentInstance instance = component.acquireUnAssociatedInstance();
         instance.associate(pk);
         return instance;
     }

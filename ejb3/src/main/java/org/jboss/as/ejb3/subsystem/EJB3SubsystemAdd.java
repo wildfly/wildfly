@@ -120,6 +120,8 @@ import org.jboss.msc.service.ServiceTarget;
 import org.omg.PortableServer.POA;
 
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_CLUSTERED_SFSB_CACHE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_INSTANCE_POOL;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_MDB_INSTANCE_POOL;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SFSB_CACHE;
@@ -144,11 +146,13 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
     protected void populateModel(ModelNode operation, ModelNode model) {
         model.get(DEFAULT_MDB_INSTANCE_POOL).set(operation.get(DEFAULT_MDB_INSTANCE_POOL));
         model.get(DEFAULT_SLSB_INSTANCE_POOL).set(operation.get(DEFAULT_SLSB_INSTANCE_POOL));
+        model.get(DEFAULT_ENTITY_BEAN_INSTANCE_POOL).set(operation.get(DEFAULT_ENTITY_BEAN_INSTANCE_POOL));
         model.get(DEFAULT_SFSB_CACHE).set(operation.get(DEFAULT_SFSB_CACHE));
         model.get(DEFAULT_CLUSTERED_SFSB_CACHE).set(operation.get(DEFAULT_CLUSTERED_SFSB_CACHE));
         model.get(DEFAULT_RESOURCE_ADAPTER_NAME).set(operation.get(DEFAULT_RESOURCE_ADAPTER_NAME));
         model.get(DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT).set(operation.get(DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT));
         model.get(DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT).set(operation.get(DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT));
+        model.get(DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING).set(operation.get(DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING));
     }
 
     @Override
@@ -253,6 +257,10 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
             EJB3SubsystemDefaultPoolWriteHandler.SLSB_POOL.updatePoolService(context, model, newControllers);
         }
 
+        if (model.hasDefined(DEFAULT_ENTITY_BEAN_INSTANCE_POOL)) {
+            EJB3SubsystemDefaultPoolWriteHandler.ENTITY_BEAN_POOL.updatePoolService(context, model, newControllers);
+        }
+
         if (model.hasDefined(DEFAULT_SFSB_CACHE)) {
             EJB3SubsystemDefaultCacheWriteHandler.SFSB_CACHE.updateCacheService(context, model, newControllers);
         }
@@ -270,6 +278,10 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         if (model.hasDefined(DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT)) {
             DefaultStatefulBeanAccessTimeoutWriteHandler.INSTANCE.updateOrCreateDefaultStatefulBeanAccessTimeoutService(context, model, newControllers);
+        }
+
+        if(model.hasDefined(DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING)) {
+            EJB3SubsystemDefaultEntityBeanOptimisticLockingWriteHandler.INSTANCE.updateOptimisticLocking(context, model, newControllers);
         }
 
         final ServiceTarget serviceTarget = context.getServiceTarget();

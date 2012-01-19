@@ -46,6 +46,8 @@ public interface EJB3SubsystemModel {
     String DEFAULT_SLSB_INSTANCE_POOL = "default-slsb-instance-pool";
     String INSTANCE_ACQUISITION_TIMEOUT = "timeout";
     String INSTANCE_ACQUISITION_TIMEOUT_UNIT = "timeout-unit";
+    String DEFAULT_ENTITY_BEAN_INSTANCE_POOL = "default-entity-bean-instance-pool";
+    String DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING = "default-entity-bean-optimistic-locking";
 
     String MAX_POOL_SIZE = "max-pool-size";
     String STRICT_MAX_BEAN_INSTANCE_POOL = "strict-max-bean-instance-pool";
