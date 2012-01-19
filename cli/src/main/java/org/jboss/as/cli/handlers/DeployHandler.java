@@ -274,11 +274,14 @@ public class DeployHandler extends BatchModeCommandHandler {
 
             if(Util.isDeploymentInRepository(name, client)) {
                 replaceDeployment(ctx, f, name, runtimeName);
-            } else {
+                return;
+            } else if(ctx.isDomainMode()) {
                 // add deployment to the repository (enabled in standalone, disabled in domain (i.e. not associated with any sg))
-                addDeployment(ctx, f, name, runtimeName);
+                final ModelNode request = buildAddRequest(ctx, f, name, runtimeName);
+                execute(ctx, request, f);
+                return;
             }
-            return;
+            // standalone mode will add and deploy
         }
 
         if(disabled) {
@@ -300,13 +303,14 @@ public class DeployHandler extends BatchModeCommandHandler {
             }
 
             // add deployment to the repository disabled
-            addDeployment(ctx, f, name, runtimeName);
+            final ModelNode request = buildAddRequest(ctx, f, name, runtimeName);
+            execute(ctx, request, f);
             return;
         }
 
         // actually, the deployment is added before it is deployed
         // but this code here is to validate arguments and not to add deployment if something is wrong
-        ModelNode deployRequest = null;
+        final ModelNode deployRequest;
         if(ctx.isDomainMode()) {
             final List<String> sgList;
             if(allServerGroups) {
@@ -363,24 +367,28 @@ public class DeployHandler extends BatchModeCommandHandler {
                 this.force.getFullName() + " to replace the existing content in the repository).");
                 return;
             }
-            addDeployment(ctx, f, name, runtimeName);
+            final ModelNode request = new ModelNode();
+            request.get(Util.OPERATION).set(Util.COMPOSITE);
+            request.get(Util.ADDRESS).setEmptyList();
+            final ModelNode steps = request.get(Util.STEPS);
+            steps.add(buildAddRequest(ctx, f, name, runtimeName));
+            steps.add(deployRequest);
+            execute(ctx, request, f);
+            return;
         } else if(!Util.isDeploymentInRepository(name, client)) {
             ctx.printLine("'" + name + "' is not found among the registered deployments.");
             return;
         }
 
-        if(deployRequest != null) {
-            try {
-                final ModelNode result = client.execute(deployRequest);
-                if (!Util.isSuccess(result)) {
-                    ctx.printLine(Util.getFailureDescription(result));
-                    return;
-                }
-            } catch (Exception e) {
-                ctx.printLine("Failed to deploy: " + e.getLocalizedMessage());
+        try {
+            final ModelNode result = client.execute(deployRequest);
+            if (!Util.isSuccess(result)) {
+                ctx.printLine(Util.getFailureDescription(result));
                 return;
             }
-
+        } catch (Exception e) {
+            ctx.printLine("Failed to deploy: " + e.getLocalizedMessage());
+            return;
         }
     }
 
@@ -560,14 +568,7 @@ public class DeployHandler extends BatchModeCommandHandler {
         return request;
     }
 
-    protected void addDeployment(CommandContext ctx, final File f, String name, final String runtimeName) {
-        ModelNode request = new ModelNode();
-        request.get(Util.OPERATION).set(Util.ADD);
-        request.get(Util.ADDRESS, Util.DEPLOYMENT).set(name);
-        if (runtimeName != null) {
-            request.get(Util.RUNTIME_NAME).set(runtimeName);
-        }
-
+    protected void execute(CommandContext ctx, ModelNode request, File f) {
         ModelNode result;
         FileInputStream is = null;
         try {
@@ -586,6 +587,17 @@ public class DeployHandler extends BatchModeCommandHandler {
             ctx.printLine(Util.getFailureDescription(result));
             return;
         }
+    }
+
+    protected ModelNode buildAddRequest(CommandContext ctx, final File f, String name, final String runtimeName) {
+        final ModelNode request = new ModelNode();
+        request.get(Util.OPERATION).set(Util.ADD);
+        request.get(Util.ADDRESS, Util.DEPLOYMENT).set(name);
+        if (runtimeName != null) {
+            request.get(Util.RUNTIME_NAME).set(runtimeName);
+        }
+        request.get(Util.CONTENT).get(0).get(Util.INPUT_STREAM_INDEX).set(0);
+        return request;
     }
 
     protected void replaceDeployment(CommandContext ctx, final File f, String name, final String runtimeName) {
