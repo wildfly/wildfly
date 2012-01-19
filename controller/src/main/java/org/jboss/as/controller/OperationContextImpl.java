@@ -599,9 +599,12 @@ final class OperationContextImpl extends AbstractOperationContext {
             lockStep = null;
         }
         if (this.containerMonitorStep == step) {
-            awaitContainerMonitor();
-            modelController.releaseContainerMonitor();
-            containerMonitorStep = null;
+            try {
+                awaitContainerMonitor();
+            } finally {
+                modelController.releaseContainerMonitor();
+                containerMonitorStep = null;
+            }
         }
     }
 
