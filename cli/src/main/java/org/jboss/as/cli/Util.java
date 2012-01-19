@@ -52,6 +52,7 @@ public class Util {
     public static final String DEPLOYMENT = "deployment";
     public static final String DESCRIPTION = "description";
     public static final String DOMAIN_FAILURE_DESCRIPTION = "domain-failure-description";
+    public static final String ENABLED = "enabled";
     public static final String EXPRESSIONS_ALLOWED = "expressions-allowed";
     public static final String FAILURE_DESCRIPTION = "failure-description";
     public static final String FULL_REPLACE_DEPLOYMENT = "full-replace-deployment";
@@ -92,6 +93,7 @@ public class Util {
     public static final String ROLLOUT_PLANS = "rollout-plans";
     public static final String RUNTIME_NAME = "runtime-name";
     public static final String SERVER_GROUP = "server-group";
+    public static final String STATUS = "status";
     public static final String STEP_1 = "step-1";
     public static final String STEP_2 = "step-2";
     public static final String STEP_3 = "step-3";
