@@ -153,4 +153,13 @@ public interface WSMessages {
 
     @Message(id = 15585, value = "Endpoint config %s doesn't exist")
     OperationFailedException missingEndpointConfig(String configName);
+
+    @Message(id = 15586, value = "Attributes %s, %s and %s are mutually exclusive")
+    OperationFailedException mutuallyExclusiveHandlerChainAttributes(String attr1, String attr2, String attr3);
+
+    @Message(id = 15587, value = "Unsupported handler chain type: %s. Supported types are either %s or %s")
+    OperationFailedException wrongHandlerChainType(String unknownChainType, String knownChainType1, String knownChainType2);
+
+    @Message(id = 15588, value = "Cannot add new handler chain of type %s with id %s. This id is already used in config %s for another chain.")
+    OperationFailedException multipleHandlerChainsWithSameId(String chainType, String handlerChainId, String configId);
 }
