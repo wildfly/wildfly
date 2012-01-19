@@ -213,10 +213,13 @@
                 <capability name="javax.servlet.api"/>
                 <capability name="javax.transaction.api"/>
                 <!-- bundles installed on startup -->
-                <capability name="org.osgi.compendium"/>
+                <capability name="org.osgi.enterprise"/>
                 <!-- bundles started in startlevel 1 -->
+                <capability name="org.apache.felix.log" startlevel="1"/>
+                <capability name="org.jboss.osgi.logging" startlevel="1"/>
                 <capability name="org.apache.felix.configadmin" startlevel="1"/>
                 <capability name="org.jboss.as.osgi.configadmin" startlevel="1"/>
+                <capability name="org.jboss.osgi.repository" startlevel="1"/>
                 <!-- bundles started in startlevel 2 -->
                 <capability name="org.jboss.netty" startlevel="2"/>
                 <capability name="org.projectodd.stilts" startlevel="2"/>
