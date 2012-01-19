@@ -41,7 +41,6 @@
 
     <modules>
         <module>configadmin</module>
-        <module>asplugin</module>
         <module>service</module>
     </modules>
 </project>

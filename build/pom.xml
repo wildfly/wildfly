@@ -519,6 +519,11 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.apache.felix</groupId>
+                    <artifactId>org.apache.felix.log</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.apache.httpcomponents</groupId>
                     <artifactId>httpclient</artifactId>
                 </dependency>
@@ -1109,6 +1114,11 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.jboss.osgi.logging</groupId>
+                    <artifactId>jboss-osgi-logging</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.jboss.osgi.resolver</groupId>
                     <artifactId>jbosgi-resolver-api</artifactId>
                 </dependency>
@@ -1126,6 +1136,16 @@
                 <dependency>
                     <groupId>org.jboss.osgi.resolver</groupId>
                     <artifactId>jbosgi-resolver-spi</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.osgi.repository</groupId>
+                    <artifactId>jbosgi-repository</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.osgi.repository</groupId>
+                    <artifactId>jbosgi-repository-api</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1462,6 +1482,11 @@
                 <dependency>
                     <groupId>org.osgi</groupId>
                     <artifactId>org.osgi.compendium</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.osgi</groupId>
+                    <artifactId>org.osgi.enterprise</artifactId>
                 </dependency>
 
                 <dependency>
