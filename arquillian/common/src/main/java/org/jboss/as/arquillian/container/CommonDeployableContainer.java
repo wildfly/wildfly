@@ -62,6 +62,10 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
     @ContainerScoped
     private InstanceProducer<Context> jndiContext;
 
+    @Inject
+    @ContainerScoped
+    private InstanceProducer<ManagementClient> managementClientInst;
+
     @Override
     public ProtocolDescription getDefaultProtocol() {
         return new ProtocolDescription("jmx-as7");
@@ -81,6 +85,8 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
                 getCallbackHandler());
 
         managementClient = new ManagementClient(modelControllerClient, containerConfig.getManagementAddress().getHostAddress(), containerConfig.getManagementPort());
+
+        managementClientInst.set(managementClient);
 
         archiveDeployerInst.set(new ArchiveDeployer(
                 ServerDeploymentManager.Factory.create(modelControllerClient)));
