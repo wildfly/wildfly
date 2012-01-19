@@ -29,6 +29,7 @@ public final class Constants {
     private Constants() {
         // forbidden inheritance
     }
+    public static final String ID = "id";
     public static final String MODIFY_WSDL_ADDRESS = "modify-wsdl-address";
     public static final String WSDL_HOST = "wsdl-host";
     public static final String WSDL_PORT = "wsdl-port";
@@ -51,7 +52,7 @@ public final class Constants {
     public static final String POST_HANDLER_CHAIN="post-handler-chain";
     public static final String POST_HANDLER_CHAINS="post-handler-chains";
     public static final String HANDLER_CHAIN="handler-chain";
-    public static final String PROTOCOL_BINDING="protocol-bindings";
+    public static final String PROTOCOL_BINDINGS="protocol-bindings";
     public static final String SERVICE_NAME_PATTERN="service-name-pattern";
     public static final String PORT_NAME_PATTERN="port-name-pattern";
     public static final String HANDLER="handler";

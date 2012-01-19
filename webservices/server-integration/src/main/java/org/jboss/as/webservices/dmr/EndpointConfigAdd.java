@@ -100,8 +100,8 @@ final class EndpointConfigAdd extends AbstractAddStepHandler {
         if (handlerChainsNode.getType() == ModelType.LIST) {
             for (ModelNode chainNode : handlerChainsNode.asList()) {
                 UnifiedHandlerChainMetaData chainMetaData = new UnifiedHandlerChainMetaData();
-                if (chainNode.hasDefined(Constants.PROTOCOL_BINDING)) {
-                    chainMetaData.setProtocolBindings(chainNode.get(Constants.PROTOCOL_BINDING).asString());
+                if (chainNode.hasDefined(Constants.PROTOCOL_BINDINGS)) {
+                    chainMetaData.setProtocolBindings(chainNode.get(Constants.PROTOCOL_BINDINGS).asString());
                 }
                 if (chainNode.hasDefined(Constants.SERVICE_NAME_PATTERN)) {
                     chainMetaData.setServiceNamePattern(new QName(chainNode.get(Constants.SERVICE_NAME_PATTERN).asString()));

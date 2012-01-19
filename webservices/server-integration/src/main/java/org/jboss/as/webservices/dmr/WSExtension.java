@@ -29,9 +29,16 @@ import static org.jboss.as.controller.registry.OperationEntry.EntryType.PRIVATE;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONFIG;
 import static org.jboss.as.webservices.dmr.Constants.FEATURE;
+import static org.jboss.as.webservices.dmr.Constants.HANDLER;
+import static org.jboss.as.webservices.dmr.Constants.HANDLER_CLASS;
 import static org.jboss.as.webservices.dmr.Constants.MODIFY_WSDL_ADDRESS;
+import static org.jboss.as.webservices.dmr.Constants.POST_HANDLER_CHAIN;
+import static org.jboss.as.webservices.dmr.Constants.PRE_HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PROPERTY;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_HOST;
+import static org.jboss.as.webservices.dmr.Constants.PROTOCOL_BINDINGS;
+import static org.jboss.as.webservices.dmr.Constants.PORT_NAME_PATTERN;
+import static org.jboss.as.webservices.dmr.Constants.SERVICE_NAME_PATTERN;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_PORT;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_SECURE_PORT;
 
@@ -62,6 +69,9 @@ public final class WSExtension implements Extension {
     private static final PathElement endpointConfigPath = PathElement.pathElement(ENDPOINT_CONFIG);
     private static final PathElement featurePath = PathElement.pathElement(FEATURE);
     private static final PathElement propertyPath = PathElement.pathElement(PROPERTY);
+    private static final PathElement preHandlerChainPath = PathElement.pathElement(PRE_HANDLER_CHAIN);
+    private static final PathElement postHandlerChainPath = PathElement.pathElement(POST_HANDLER_CHAIN);
+    private static final PathElement handlerPath = PathElement.pathElement(HANDLER);
 
     public static final String SUBSYSTEM_NAME = "webservices";
 
@@ -91,7 +101,29 @@ public final class WSExtension implements Extension {
         final ManagementResourceRegistration endpointConfigProperty = endpointConfig.registerSubModel(propertyPath, WSSubsystemProviders.ENDPOINT_CONFIG_PROPERTY_DESCRIPTION);
         endpointConfigProperty.registerOperationHandler(ADD, EndpointConfigPropertyAdd.INSTANCE, WSSubsystemProviders.ENDPOINT_CONFIG_PROPERTY_ADD_DESCRIPTION, false);
         endpointConfigProperty.registerOperationHandler(REMOVE, EndpointConfigPropertyRemove.INSTANCE, WSSubsystemProviders.ENDPOINT_CONFIG_PROPERTY_REMOVE_DESCRIPTION, false);
-        endpointConfigProperty.registerReadWriteAttribute(VALUE, null, new EndpointConfigPropertyValueChangeHandler(new StringLengthValidator(1, Integer.MAX_VALUE, true, true)), Storage.CONFIGURATION);
+        endpointConfigProperty.registerReadOnlyAttribute(VALUE, null, Storage.CONFIGURATION);
+        // ws endpoint configuration pre handlers
+        final ManagementResourceRegistration preHandlerChain = endpointConfig.registerSubModel(preHandlerChainPath, WSSubsystemProviders.ENDPOINT_CONFIG_PRE_HANDLER_CHAIN_DESCRIPTION);
+        preHandlerChain.registerOperationHandler(ADD, EndpointConfigHandlerChainAdd.INSTANCE, WSSubsystemProviders.ENDPOINT_CONFIG_PRE_HANDLER_CHAIN_ADD_DESCRIPTION, false); // TODO: wrong handler
+        // TODO: implement handlerChain remove operation handler
+        preHandlerChain.registerReadOnlyAttribute(PROTOCOL_BINDINGS, null, Storage.CONFIGURATION);
+        preHandlerChain.registerReadOnlyAttribute(PORT_NAME_PATTERN, null, Storage.CONFIGURATION);
+        preHandlerChain.registerReadOnlyAttribute(SERVICE_NAME_PATTERN, null, Storage.CONFIGURATION);
+        final ManagementResourceRegistration preHandler = preHandlerChain.registerSubModel(handlerPath, WSSubsystemProviders.ENDPOINT_CONFIG_HANDLER_DESCRIPTION);
+        preHandler.registerOperationHandler(ADD, EndpointConfigHandlerAdd.INSTANCE, WSSubsystemProviders.ENDPOINT_CONFIG_HANDLER_ADD_DESCRIPTION, false);
+        // TODO: implement handler remove operation handler
+        preHandler.registerReadOnlyAttribute(HANDLER_CLASS, null, Storage.CONFIGURATION);
+        // ws endpoint configuration post handlers
+        final ManagementResourceRegistration postHandlerChain = endpointConfig.registerSubModel(postHandlerChainPath, WSSubsystemProviders.ENDPOINT_CONFIG_POST_HANDLER_CHAIN_DESCRIPTION);
+        postHandlerChain.registerOperationHandler(ADD, EndpointConfigHandlerChainAdd.INSTANCE, WSSubsystemProviders.ENDPOINT_CONFIG_POST_HANDLER_CHAIN_ADD_DESCRIPTION, false); // TODO: wrong handler
+        // TODO: implement handlerChain remove operation handler
+        postHandlerChain.registerReadOnlyAttribute(PROTOCOL_BINDINGS, null, Storage.CONFIGURATION);
+        postHandlerChain.registerReadOnlyAttribute(PORT_NAME_PATTERN, null, Storage.CONFIGURATION);
+        postHandlerChain.registerReadOnlyAttribute(SERVICE_NAME_PATTERN, null, Storage.CONFIGURATION);
+        final ManagementResourceRegistration postHandler = postHandlerChain.registerSubModel(handlerPath, WSSubsystemProviders.ENDPOINT_CONFIG_HANDLER_DESCRIPTION);
+        postHandler.registerOperationHandler(ADD, EndpointConfigHandlerAdd.INSTANCE, WSSubsystemProviders.ENDPOINT_CONFIG_HANDLER_ADD_DESCRIPTION, false);
+        // TODO: implement handler remove operation handler
+        postHandler.registerReadOnlyAttribute(HANDLER_CLASS, null, Storage.CONFIGURATION);
 
         if (registerRuntimeOnly) {
             final ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(WSSubsystemProviders.DEPLOYMENT_DESCRIPTION);
