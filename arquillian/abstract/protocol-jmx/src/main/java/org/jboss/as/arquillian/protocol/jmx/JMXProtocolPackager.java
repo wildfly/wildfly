@@ -100,17 +100,10 @@ public class JMXProtocolPackager implements DeploymentPackager {
         StringBuffer dependencies = new StringBuffer();
         dependencies.append("org.jboss.as.jmx,");
         dependencies.append("org.jboss.as.server,");
-        /*
-        dependencies.append("org.jboss.as.osgi,");
-        */
         dependencies.append("org.jboss.jandex,");
         dependencies.append("org.jboss.logging,");
         dependencies.append("org.jboss.modules,");
         dependencies.append("org.jboss.msc,");
-        /*
-        dependencies.append("org.jboss.osgi.framework,");
-        dependencies.append("org.osgi.core");
-        */
         return dependencies;
     }
 
@@ -188,12 +181,6 @@ public class JMXProtocolPackager implements DeploymentPackager {
 
         final Manifest manifest = ManifestUtils.getOrCreateManifest(appArchive);
 
-        // Don't enrich with Modules Dependencies if this is a OSGi bundle
-        /*
-        if(BundleInfo.isValidBundleManifest(manifest)) {
-            return;
-        }
-        */
         Attributes attributes = manifest.getMainAttributes();
         if (attributes.getValue(Attributes.Name.MANIFEST_VERSION.toString()) == null) {
             attributes.putValue(Attributes.Name.MANIFEST_VERSION.toString(), "1.0");
