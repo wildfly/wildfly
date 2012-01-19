@@ -356,6 +356,12 @@ final class OperationContextImpl extends AbstractOperationContext {
             modelController.awaitContainerMonitor(respectInterruption, 1);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+            if (this.containerMonitorStep != null) {
+                releaseContainerMonitor();
+            }
+            if (this.lockStep != null) {
+                releaseLock();
+            }
             throw MESSAGES.operationCancelledAsynchronously();
         }
     }
@@ -595,14 +601,22 @@ final class OperationContextImpl extends AbstractOperationContext {
     void releaseStepLocks(AbstractOperationContext.Step step) {
 
         if (this.lockStep == step) {
-            modelController.releaseLock();
-            lockStep = null;
+            releaseLock();
         }
         if (this.containerMonitorStep == step) {
             awaitContainerMonitor();
-            modelController.releaseContainerMonitor();
-            containerMonitorStep = null;
+            releaseContainerMonitor();
         }
+    }
+
+    private void releaseLock() {
+        modelController.releaseLock();
+        lockStep = null;
+    }
+
+    private void releaseContainerMonitor() {
+        modelController.releaseContainerMonitor();
+        containerMonitorStep = null;
     }
 
     private static Resource requireChild(final Resource resource, final PathElement childPath, final PathAddress fullAddress) {
