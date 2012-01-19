@@ -80,49 +80,4 @@
             <artifactId>jboss-sasl</artifactId>
         </dependency>
     </dependencies>
-
-    <!--
-    <profiles>
-        <profile>
-            <id>osgi-disabled</id>
-            <activation>
-                <property><name>disable-osgi</name></property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-compiler-plugin</artifactId>
-                        <configuration>
-                            <excludes>
-                                <exclude>org/jboss/as/arquillian/container/OSGiApplicationArchiveProcessor.java</exclude>
-                            </excludes>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
-            <id>osgi-enabled</id>
-            <dependencies>
-                <dependency>
-                    <groupId>org.jboss.arquillian.container</groupId>
-                    <artifactId>arquillian-container-osgi</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>org.jboss.arquillian.testenricher</groupId>
-                    <artifactId>arquillian-testenricher-osgi</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>org.jboss.osgi.spi</groupId>
-                    <artifactId>jbosgi-spi</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>org.osgi</groupId>
-                    <artifactId>org.osgi.core</artifactId>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
-    -->
 </project>

@@ -22,6 +22,8 @@
 
 package org.jboss.as.arquillian.osgi.service;
 
+import java.util.Set;
+
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner;
 import org.jboss.arquillian.testenricher.osgi.BundleContextAssociation;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -59,8 +61,8 @@ public class ArquillianService extends org.jboss.as.arquillian.service.Arquillia
     }
 
     @Override
-    protected ArquillianConfig createArquillianConfig(DeploymentUnit depUnit) {
-        return ArquillianConfigBuilder.processDeployment(this, depUnit);
+    protected ArquillianConfig createArquillianConfig(DeploymentUnit depUnit, Set<String> testClasses) {
+        return new ArquillianConfig(this, depUnit, testClasses);
     }
 
     @Override

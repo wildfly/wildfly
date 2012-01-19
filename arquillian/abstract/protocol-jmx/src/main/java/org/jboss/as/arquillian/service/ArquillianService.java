@@ -26,6 +26,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -37,6 +38,11 @@ import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.SetupAction;
+import org.jboss.as.server.deployment.annotation.CompositeIndex;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.AnnotationTarget;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -66,6 +72,17 @@ public abstract class ArquillianService<C extends ArquillianConfig> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.arquillian");
 
+    /*
+     * Note: Do not put direct class references on JUnit or TestNG here; this
+     * must be compatible with both without resulting in NCDFE
+     *
+     * AS7-1303
+     */
+
+    private static final String CLASS_NAME_JUNIT_RUNNER = "org.junit.runner.RunWith";
+
+    private static final String CLASS_NAME_TESTNG_RUNNER = "org.jboss.arquillian.testng.Arquillian";
+
     private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
     private final Set<ArquillianConfig> deployedTests = new HashSet<ArquillianConfig>();
     private ServiceContainer serviceContainer;
@@ -73,22 +90,15 @@ public abstract class ArquillianService<C extends ArquillianConfig> {
     private JMXTestRunner jmxTestRunner;
     AbstractServiceListener<Object> listener;
 
-    /*
-    public static void addService(final ServiceTarget serviceTarget) {
-        ArquillianService service = new ArquillianService();
-        ServiceBuilder<?> serviceBuilder = serviceTarget.addService(ArquillianService.SERVICE_NAME, service);
-        serviceBuilder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.injectedMBeanServer);
-        serviceBuilder.install();
-    }
-    */
-
     protected <T extends ArquillianService> void build(final ServiceBuilder<T> serviceBuilder) {
         serviceBuilder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, this.injectedMBeanServer);
     }
 
-    protected abstract C createArquillianConfig(final DeploymentUnit depUnit);
+    protected abstract C createArquillianConfig(final DeploymentUnit depUnit, final Set<String> testClasses);
 
-    protected abstract JMXTestRunner.TestClassLoader createTestClassLoader();
+    protected JMXTestRunner.TestClassLoader createTestClassLoader() {
+        return new ExtendedTestClassLoader();
+    }
 
     protected ServiceContainer getServiceContainer() {
         return serviceContainer;
@@ -96,6 +106,54 @@ public abstract class ArquillianService<C extends ArquillianConfig> {
 
     protected ServiceTarget getServiceTarget() {
         return serviceTarget;
+    }
+
+    private C processDeployment(final DeploymentUnit depUnit) {
+
+        final CompositeIndex compositeIndex = depUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
+        if(compositeIndex == null) {
+            log.warnf("Cannot find composite annotation index in: %s", depUnit);
+            return null;
+        }
+
+        // Got JUnit?
+        final DotName runWithName = DotName.createSimple(CLASS_NAME_JUNIT_RUNNER);
+        final List<AnnotationInstance> runWithList = compositeIndex.getAnnotations(runWithName);
+
+        // Got TestNG?
+        final DotName testNGClassName = DotName.createSimple(CLASS_NAME_TESTNG_RUNNER);
+        final Set<ClassInfo> testNgTests = compositeIndex.getAllKnownSubclasses(testNGClassName);
+
+        // Get Test Class Names
+        final Set<String> testClasses = new HashSet<String>();
+        // JUnit
+        for (AnnotationInstance instance : runWithList) {
+            final AnnotationTarget target = instance.target();
+            if (target instanceof ClassInfo) {
+                final ClassInfo classInfo = (ClassInfo) target;
+                final String testClassName = classInfo.name().toString();
+                testClasses.add(testClassName);
+            }
+        }
+        // TestNG
+        for(final ClassInfo classInfo : testNgTests){
+            testClasses.add(classInfo.name().toString());
+        }
+
+        // No tests found
+        if (testClasses.isEmpty()) {
+            return null;
+        }
+
+        // FIXME: Why do we get another service started event from a deployment INSTALLED service?
+        C arqConfig = createArquillianConfig(depUnit, testClasses);
+        if (getServiceContainer().getService(arqConfig.getServiceName()) != null) {
+            log.warnf("Arquillian config already registered: %s", arqConfig);
+            return null;
+        }
+
+        depUnit.putAttachment(ArquillianConfig.KEY, arqConfig);
+        return arqConfig;
     }
 
     public synchronized void start(StartContext context) throws StartException {
@@ -123,7 +181,7 @@ public abstract class ArquillianService<C extends ArquillianConfig> {
                             ServiceName parentName = serviceName.getParent();
                             ServiceController<?> parentController = serviceContainer.getService(parentName);
                             DeploymentUnit depUnit = (DeploymentUnit) parentController.getValue();
-                            C arqConfig = createArquillianConfig(depUnit);
+                            C arqConfig = processDeployment(depUnit);
 //                            C arqConfig = ArquillianConfigBuilder.processDeployment(arqService, depUnit);
                             if (arqConfig != null) {
                                 log.infof("Arquillian deployment detected: %s", arqConfig);
@@ -258,12 +316,6 @@ public abstract class ArquillianService<C extends ArquillianConfig> {
             final ArquillianConfig arqConfig = getArquillianConfig(className, -1);
             if (arqConfig == null)
                 throw new ClassNotFoundException("No Arquillian config found for: " + className);
-
-            // Make the BundleContext available to the {@link OSGiTestEnricher}
-            /*
-            BundleContext bundleContext = arqConfig.getBundleContext();
-            BundleContextAssociation.setBundleContext(bundleContext);
-            */
 
             return arqConfig.loadClass(className);
         }

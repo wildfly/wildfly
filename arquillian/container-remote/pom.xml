@@ -53,7 +53,8 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-arquillian-osgi-extension</artifactId>
+            <artifactId>jboss-as-arquillian-extension</artifactId>
+            <type>pom</type>
         </dependency>
         <dependency>
             <groupId>org.jboss.arquillian.junit</groupId>
