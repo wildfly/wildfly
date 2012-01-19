@@ -278,8 +278,8 @@ class CommandContextImpl implements CommandContext {
         cmdRegistry.registerHandler(new ReadAttributeHandler(this), "read-attribute");
 
         // data-source
-        cmdRegistry.registerHandler(new GenericTypeOperationHandler(this, "/subsystem=datasources/data-source", "jndi-name"), "data-source");
-        cmdRegistry.registerHandler(new GenericTypeOperationHandler(this, "/subsystem=datasources/xa-data-source", "jndi-name"), "xa-data-source");
+        cmdRegistry.registerHandler(new GenericTypeOperationHandler(this, "/subsystem=datasources/data-source", null), "data-source");
+        cmdRegistry.registerHandler(new GenericTypeOperationHandler(this, "/subsystem=datasources/xa-data-source", null), "xa-data-source");
         // supported but hidden from the tab-completion
         cmdRegistry.registerHandler(new DataSourceAddHandler(this), false, "add-data-source");
         cmdRegistry.registerHandler(new DataSourceModifyHandler(this), false, "modify-data-source");
