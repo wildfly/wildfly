@@ -111,6 +111,7 @@
         <version.org.apache.cxf>2.4.4</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>2.4.0</version.org.apache.cxf.xjcplugins>
         <version.org.apache.felix.configadmin>1.2.8</version.org.apache.felix.configadmin>
+        <version.org.apache.felix.log>1.0.0</version.org.apache.felix.log>
         <version.org.apache.james.apache-mime4j>0.6</version.org.apache.james.apache-mime4j>
         <version.org.apache.httpcomponents.httpclient>4.1.2</version.org.apache.httpcomponents.httpclient>
         <version.org.apache.httpcomponents.httpcore>4.1.2</version.org.apache.httpcomponents.httpcore>
@@ -169,7 +170,9 @@
         <version.org.jboss.netty>3.2.6.Final</version.org.jboss.netty>
         <version.org.jboss.osgi.deployment>1.0.10</version.org.jboss.osgi.deployment>
         <version.org.jboss.osgi.framework>1.1.0</version.org.jboss.osgi.framework>
+        <version.org.jboss.osgi.logging>1.0.0</version.org.jboss.osgi.logging>
         <version.org.jboss.osgi.resolver>1.0.10</version.org.jboss.osgi.resolver>
+        <version.org.jboss.osgi.repository>1.0.1</version.org.jboss.osgi.repository>
         <version.org.jboss.osgi.spi>1.0.28</version.org.jboss.osgi.spi>
         <version.org.jboss.osgi.vfs>1.0.6</version.org.jboss.osgi.vfs>
         <version.org.jboss.remote-naming>1.0.0.Beta3</version.org.jboss.remote-naming>
@@ -2696,6 +2699,22 @@
             </dependency>
 
             <dependency>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>org.apache.felix.log</artifactId>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.felix</groupId>
+                        <artifactId>org.osgi.core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.felix</groupId>
+                        <artifactId>org.osgi.compendium</artifactId>
+                    </exclusion>
+                </exclusions>
+                <version>${version.org.apache.felix.log}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
                 <version>${version.org.apache.httpcomponents.httpclient}</version>
@@ -4276,6 +4295,12 @@
             </dependency>
 
             <dependency>
+                <groupId>org.jboss.osgi.logging</groupId>
+                <artifactId>jboss-osgi-logging</artifactId>
+                <version>${version.org.jboss.osgi.logging}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss.osgi.resolver</groupId>
                 <artifactId>jbosgi-resolver-api</artifactId>
                 <version>${version.org.jboss.osgi.resolver}</version>
@@ -4285,16 +4310,6 @@
                 <groupId>org.jboss.osgi.resolver</groupId>
                 <artifactId>jbosgi-resolver-felix</artifactId>
                 <version>${version.org.jboss.osgi.resolver}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.osgi.resolver</groupId>
-                        <artifactId>jbosgi-resolver-metadata</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.osgi.resolver</groupId>
-                        <artifactId>jbosgi-resolver-spi</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
@@ -4307,6 +4322,18 @@
                 <groupId>org.jboss.osgi.resolver</groupId>
                 <artifactId>jbosgi-resolver-spi</artifactId>
                 <version>${version.org.jboss.osgi.resolver}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.osgi.repository</groupId>
+                <artifactId>jbosgi-repository</artifactId>
+                <version>${version.org.jboss.osgi.repository}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.osgi.repository</groupId>
+                <artifactId>jbosgi-repository-api</artifactId>
+                <version>${version.org.jboss.osgi.repository}</version>
             </dependency>
 
             <dependency>
@@ -5545,6 +5572,12 @@
             <dependency>
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.compendium</artifactId>
+                <version>${version.osgi}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.osgi</groupId>
+                <artifactId>org.osgi.enterprise</artifactId>
                 <version>${version.osgi}</version>
             </dependency>
 
