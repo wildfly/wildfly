@@ -247,6 +247,7 @@
 
         <!-- Non-default plugin versions and configuration -->
         <version.javacc.plugin>2.5</version.javacc.plugin>
+        <version.jacoco.plugin>0.5.5.201112152213</version.jacoco.plugin> <!-- Needs to be set explicitely to match with org.jacoco:org.jacoco.ant - see testsuite. -->
 
         <!-- Surefire args -->
         <surefire.jpda.args/>
