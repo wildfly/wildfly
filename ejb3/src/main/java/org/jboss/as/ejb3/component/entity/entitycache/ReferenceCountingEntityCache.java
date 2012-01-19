@@ -42,7 +42,7 @@ public class ReferenceCountingEntityCache implements ReadyEntityCache {
         this.component = component;
     }
 
-    public void create(final EntityBeanComponentInstance instance) {
+    public synchronized void create(final EntityBeanComponentInstance instance) {
         final CacheEntry existing = cache.putIfAbsent(instance.getPrimaryKey(), new CacheEntry(instance));
         if (existing != null) {
             if (existing.instance.isRemoved()) {
@@ -54,7 +54,7 @@ public class ReferenceCountingEntityCache implements ReadyEntityCache {
         }
     }
 
-    public EntityBeanComponentInstance get(final Object key) throws NoSuchEntityException {
+    public synchronized EntityBeanComponentInstance get(final Object key) throws NoSuchEntityException {
         if (!cache.containsKey(key)) {
             final EntityBeanComponentInstance instance = createInstance(key);
             create(instance);
@@ -67,7 +67,7 @@ public class ReferenceCountingEntityCache implements ReadyEntityCache {
         }
     }
 
-    public void reference(final EntityBeanComponentInstance instance) {
+    public synchronized void reference(final EntityBeanComponentInstance instance) {
         final CacheEntry cacheEntry = cache.get(instance.getPrimaryKey());
         if (cacheEntry == null) {
             throw new IllegalArgumentException("Instance [" + instance + "] not found in cache");
@@ -75,7 +75,7 @@ public class ReferenceCountingEntityCache implements ReadyEntityCache {
         cacheEntry.referenceCount.incrementAndGet();
     }
 
-    public void release(final EntityBeanComponentInstance instance, boolean success) {
+    public synchronized void release(final EntityBeanComponentInstance instance, boolean success) {
         if (instance.isDiscarded()) {
             return;
         }
@@ -104,18 +104,27 @@ public class ReferenceCountingEntityCache implements ReadyEntityCache {
             if (!success && instance.isRemoved()) {
                 instance.setRemoved(false);
             }
-            instance.passivate();
-            component.getPool().release(instance);
-            cache.remove(instance.getPrimaryKey());
+            final Object pk = instance.getPrimaryKey();
+            try {
+                instance.passivate();
+                component.releaseEntityBeanInstance(instance);
+            } finally {
+                cache.remove(pk);
+            }
         } else if (instance.isRemoved() && success) {
             //the instance has been removed, we need to remove it from the cache
             //even if someone is still referencing it, as their reference is no longer usable
-            component.getPool().release(instance);
-            cache.remove(instance.getPrimaryKey());
+            final Object pk = instance.getPrimaryKey();
+            try {
+                instance.passivate();
+                component.releaseEntityBeanInstance(instance);
+            } finally {
+                cache.remove(pk);
+            }
         }
     }
 
-    public void discard(final EntityBeanComponentInstance instance) {
+    public synchronized void discard(final EntityBeanComponentInstance instance) {
         final CacheEntry entry = cache.get(instance.getPrimaryKey());
         if (entry != null) {
             if (instance == entry.replacedInstance) {
@@ -136,7 +145,7 @@ public class ReferenceCountingEntityCache implements ReadyEntityCache {
     }
 
     private EntityBeanComponentInstance createInstance(final Object pk) {
-        final EntityBeanComponentInstance instance = component.getPool().get();
+        final EntityBeanComponentInstance instance = component.acquireUnAssociatedInstance();
         instance.associate(pk);
         return instance;
     }

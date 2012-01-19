@@ -178,6 +178,8 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
                 context.putPrivateData(InvocationType.class, InvocationType.ENTITY_EJB_PASSIVATE);
                 ejbPassivate.processInvocation(context);
             }
+            primaryKey = null;
+            removed = false;
         } catch (RemoteException e) {
             throw new WrappedRemoteException(e);
         } catch (RuntimeException e) {
