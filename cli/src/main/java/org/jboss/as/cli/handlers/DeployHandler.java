@@ -601,9 +601,6 @@ public class DeployHandler extends BatchModeCommandHandler {
     }
 
     protected void replaceDeployment(CommandContext ctx, final File f, String name, final String runtimeName) {
-
-        ModelNode result;
-
         // replace
         final ModelNode request = new ModelNode();
         request.get(Util.OPERATION).set(Util.FULL_REPLACE_DEPLOYMENT);
@@ -611,24 +608,8 @@ public class DeployHandler extends BatchModeCommandHandler {
         if(runtimeName != null) {
             request.get(Util.RUNTIME_NAME).set(runtimeName);
         }
-
-        FileInputStream is = null;
-        try {
-            is = new FileInputStream(f);
-            OperationBuilder op = new OperationBuilder(request);
-            op.addInputStream(is);
-            request.get(Util.CONTENT).get(0).get(Util.INPUT_STREAM_INDEX).set(0);
-            result = ctx.getModelControllerClient().execute(op.build());
-        } catch(Exception e) {
-            ctx.printLine("Failed to replace the deployment: " + e.getLocalizedMessage());
-            return;
-        } finally {
-            StreamUtils.safeClose(is);
-        }
-        if(!Util.isSuccess(result)) {
-            ctx.printLine(Util.getFailureDescription(result));
-            return;
-        }
+        request.get(Util.CONTENT).get(0).get(Util.INPUT_STREAM_INDEX).set(0);
+        execute(ctx, request, f);
     }
 
     protected byte[] readBytes(File f) throws OperationFormatException {
