@@ -99,7 +99,7 @@ public class InfinispanDescriptions {
             attr.addResourceAttributeDescription(resources, keyPrefix, container);
         }
         // need to add value type until we replace with a ListAttribute
-        ALIAS.addResourceAttributeDescription(resources, keyPrefix, container).
+        ALIASES.addResourceAttributeDescription(resources, keyPrefix, container).
                 get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
         // information about its child "singleton=transport"
         container.get(CHILDREN, ModelKeys.SINGLETON, DESCRIPTION).set(resources.getString(keyPrefix + ".singleton"));
@@ -139,7 +139,7 @@ public class InfinispanDescriptions {
             attr.addOperationParameterDescription(resources, "infinispan.container", op);
         }
         // need to add value type until we replace with a ListAttribute
-        ALIAS.addOperationParameterDescription(resources, "infinispan.container", op).
+        ALIASES.addOperationParameterDescription(resources, "infinispan.container", op).
                 get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
         return op;
     }
