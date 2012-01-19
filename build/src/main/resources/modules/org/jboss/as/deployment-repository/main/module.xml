@@ -32,6 +32,7 @@
     </resources>
 
     <dependencies>
+        <module name="org.jboss.as.protocol"/>
         <module name="org.jboss.vfs"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.modules"/>

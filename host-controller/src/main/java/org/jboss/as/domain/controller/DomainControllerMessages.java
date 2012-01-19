@@ -502,4 +502,24 @@ public interface DomainControllerMessages {
      */
     @Message(id = 10872, value = "Invalid code %d")
     IllegalArgumentException invalidCode(int code);
+
+    /**
+     * Creates an exception indicating the hash does not refer to any deployment.
+     *
+     * @param hash the invalid hash.
+     *
+     * @return an {@link IllegalArgumentException} for the error.
+     */
+    @Message(id = 15873, value = "Repository does not contain any deployment with hash %s")
+    IllegalStateException deploymentHashNotFoundInRepository(String hash);
+
+    /**
+     * Creates an exception indicating the hash does not refer to any deployment.
+     *
+     * @param hash the invalid hash.
+     *
+     * @return an {@link IllegalArgumentException} for the error.
+     */
+    @Message(id = 15874, value = "Expected only one deployment, found %d")
+    IllegalStateException expectedOnlyOneDeployment(int i);
 }

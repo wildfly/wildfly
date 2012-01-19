@@ -40,7 +40,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.controller.FileRepository;
+import org.jboss.as.server.file.repository.api.HostFileRepository;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -56,10 +56,10 @@ public class ServerGroupDeploymentReplaceHandler implements OperationStepHandler
         return Util.getEmptyOperation(OPERATION_NAME, address);
     }
 
-    private final FileRepository fileRepository;
+    private final HostFileRepository fileRepository;
     private final ParametersValidator validator = new ParametersValidator();
 
-    public ServerGroupDeploymentReplaceHandler(final FileRepository fileRepository) {
+    public ServerGroupDeploymentReplaceHandler(final HostFileRepository fileRepository) {
         if (fileRepository == null) {
             throw MESSAGES.nullVar("fileRepository");
         }

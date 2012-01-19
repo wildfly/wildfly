@@ -55,11 +55,9 @@ public class DeploymentRemoveHandler implements OperationStepHandler, Descriptio
     public static final String OPERATION_NAME = REMOVE;
 
     private final ContentRepository contentRepository;
-    private final boolean standalone;
 
-    public DeploymentRemoveHandler(ContentRepository contentRepository, boolean standalone) {
+    public DeploymentRemoveHandler(ContentRepository contentRepository) {
         this.contentRepository = contentRepository;
-        this.standalone = standalone;
     }
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -98,14 +96,13 @@ public class DeploymentRemoveHandler implements OperationStepHandler, Descriptio
                         if (enabled) {
                             ServerLogger.ROOT_LOGGER.deploymentUndeployed(deploymentUnitName);
                         }
-                        if (standalone) {
-                            for (byte[] hash : removedHashes) {
-                                try {
-                                    contentRepository.removeContent(hash);
-                                } catch (Exception e) {
-                                    //TODO
-                                    ServerLogger.DEPLOYMENT_LOGGER.failedToRemoveDeploymentContent(e, HashUtil.bytesToHexString(hash));
-                                }
+
+                        for (byte[] hash : removedHashes) {
+                            try {
+                                contentRepository.removeContent(hash);
+                            } catch (Exception e) {
+                                //TODO
+                                ServerLogger.DEPLOYMENT_LOGGER.failedToRemoveDeploymentContent(e, HashUtil.bytesToHexString(hash));
                             }
                         }
                     }

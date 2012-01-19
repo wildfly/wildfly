@@ -38,6 +38,7 @@ import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.server.deployment.repository.impl.ContentRepositoryImpl;
 import org.jboss.as.server.deployment.repository.impl.ServerDeploymentRepositoryImpl;
+import org.jboss.as.server.mgmt.domain.RemoteFileRepository;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
 import org.jboss.as.server.moduleservice.ModuleIndexService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
@@ -67,6 +68,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
     private final Bootstrap.Configuration configuration;
     private final RunningModeControl runningModeControl;
     private final ControlledProcessState processState;
+    private final boolean standalone;
     private volatile FutureServiceContainer futureContainer;
     private volatile long startTime;
 
@@ -75,6 +77,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         this.configuration = configuration;
         runningModeControl = configuration.getRunningModeControl();
         startTime = configuration.getStartTime();
+        standalone = configuration.getServerEnvironment().isStandalone();
         processState = new ControlledProcessState(configuration.getServerEnvironment().isStandalone());
     }
 
@@ -127,6 +130,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         final BootstrapListener bootstrapListener = new BootstrapListener(container, startTime, serviceTarget, futureContainer, prettyVersion);
         serviceTarget.addListener(ServiceListener.Inheritance.ALL, bootstrapListener);
         myController.addListener(bootstrapListener);
+        RemoteFileRepository remoteFileRepository = standalone ? null : RemoteFileRepository.addService(serviceTarget, serverEnvironment.getServerDeployDir());
         ContentRepositoryImpl contentRepository = ContentRepositoryImpl.addService(serviceTarget, serverEnvironment.getServerDeployDir());
         ServerDeploymentRepositoryImpl.addService(serviceTarget, contentRepository);
         ServiceModuleLoader.addService(serviceTarget, configuration);
@@ -134,7 +138,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         ModuleIndexService.addService(serviceTarget);
         final AbstractVaultReader vaultReader = service(AbstractVaultReader.class);
         AS_ROOT_LOGGER.debugf("Using VaultReader %s", vaultReader);
-        ServerService.addService(serviceTarget, configuration, processState, bootstrapListener, runningModeControl, vaultReader);
+        ServerService.addService(serviceTarget, configuration, processState, bootstrapListener, runningModeControl, vaultReader, remoteFileRepository);
         final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContext() {
             @Override
             public ServiceTarget getServiceTarget() {

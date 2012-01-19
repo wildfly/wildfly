@@ -71,10 +71,10 @@ import org.jboss.as.controller.operations.common.InterfaceLegacyCriteriaReadHand
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.NamespaceRemoveHandler;
 import org.jboss.as.controller.operations.common.ProcessReloadHandler;
+import org.jboss.as.controller.operations.common.ProcessStateAttributeHandler;
 import org.jboss.as.controller.operations.common.ResolveExpressionHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationRemoveHandler;
-import org.jboss.as.controller.operations.common.ProcessStateAttributeHandler;
 import org.jboss.as.controller.operations.common.SnapshotDeleteHandler;
 import org.jboss.as.controller.operations.common.SnapshotListHandler;
 import org.jboss.as.controller.operations.common.SnapshotTakeHandler;
@@ -96,6 +96,7 @@ import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
 import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
 import org.jboss.as.platform.mbean.PlatformMBeanResourceRegistrar;
+import org.jboss.as.server.ServerEnvironment.LaunchType;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionConstants;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
 import org.jboss.as.server.controller.descriptions.ServerDescriptions;
@@ -111,6 +112,7 @@ import org.jboss.as.server.deployment.DeploymentUploadBytesHandler;
 import org.jboss.as.server.deployment.DeploymentUploadStreamAttachmentHandler;
 import org.jboss.as.server.deployment.DeploymentUploadURLHandler;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
+import org.jboss.as.server.file.repository.api.DeploymentFileRepository;
 import org.jboss.as.server.mgmt.HttpManagementResourceDefinition;
 import org.jboss.as.server.mgmt.NativeManagementResourceDefinition;
 import org.jboss.as.server.mgmt.NativeRemotingManagementResourceDefinition;
@@ -189,8 +191,10 @@ public class ServerControllerModelUtil {
                                       final ControlledProcessState processState,
                                       final RunningModeControl runningModeControl,
                                       final AbstractVaultReader vaultReader,
-                                      ExtensionRegistry extensionRegistry,
-                                      final boolean parallelBoot) {
+                                      final ExtensionRegistry extensionRegistry,
+                                      final boolean parallelBoot,
+                                      final DeploymentFileRepository remoteFileRepository) {
+        boolean isDomain = serverEnvironment == null ? true : serverEnvironment.getLaunchType() == LaunchType.DOMAIN;
         // Build up the core model registry
         root.registerReadWriteAttribute(NAME, null, new StringLengthValidatingHandler(1), AttributeAccess.Storage.CONFIGURATION);
         if (serverEnvironment != null && serverEnvironment.getLaunchType() == ServerEnvironment.LaunchType.DOMAIN) {
@@ -230,9 +234,11 @@ public class ServerControllerModelUtil {
         root.registerOperationHandler(DeploymentUploadURLHandler.OPERATION_NAME, duuh, duuh, false);
         DeploymentUploadStreamAttachmentHandler dush = new DeploymentUploadStreamAttachmentHandler(contentRepository);
         root.registerOperationHandler(DeploymentUploadStreamAttachmentHandler.OPERATION_NAME, dush, dush, false);
-        final DeploymentReplaceHandler drh = new DeploymentReplaceHandler(contentRepository);
+        final DeploymentReplaceHandler drh = serverEnvironment == null || serverEnvironment.getLaunchType() == LaunchType.DOMAIN ?
+                DeploymentReplaceHandler.createForDomainServer(contentRepository, remoteFileRepository) : DeploymentReplaceHandler.createForStandalone(contentRepository);
         root.registerOperationHandler(DeploymentReplaceHandler.OPERATION_NAME, drh, drh, false);
-        DeploymentFullReplaceHandler dfrh = new DeploymentFullReplaceHandler(contentRepository);
+        DeploymentFullReplaceHandler dfrh = serverEnvironment == null || serverEnvironment.getLaunchType() == LaunchType.DOMAIN ?
+                DeploymentFullReplaceHandler.createForDomainServer(contentRepository, remoteFileRepository) : DeploymentFullReplaceHandler.createForStandalone(contentRepository);
         root.registerOperationHandler(DeploymentFullReplaceHandler.OPERATION_NAME, dfrh, dfrh, false);
 
         SnapshotDeleteHandler snapshotDelete = new SnapshotDeleteHandler(extensibleConfigurationPersister);
@@ -326,9 +332,10 @@ public class ServerControllerModelUtil {
 
         // Deployments
         ManagementResourceRegistration deployments = root.registerSubModel(PathElement.pathElement(DEPLOYMENT), ServerDescriptionProviders.DEPLOYMENT_PROVIDER);
-        DeploymentAddHandler dah = new DeploymentAddHandler(contentRepository);
+        DeploymentAddHandler dah = serverEnvironment == null || serverEnvironment.getLaunchType() == LaunchType.DOMAIN ?
+                DeploymentAddHandler.createForDomainServer(contentRepository, remoteFileRepository) : DeploymentAddHandler.createForStandalone(contentRepository);
         deployments.registerOperationHandler(DeploymentAddHandler.OPERATION_NAME, dah, dah, false);
-        DeploymentRemoveHandler dremh = new DeploymentRemoveHandler(contentRepository, serverEnvironment != null && serverEnvironment.isStandalone());
+        DeploymentRemoveHandler dremh = new DeploymentRemoveHandler(contentRepository);
         deployments.registerOperationHandler(DeploymentRemoveHandler.OPERATION_NAME, dremh, dremh, false);
         deployments.registerOperationHandler(DeploymentDeployHandler.OPERATION_NAME, DeploymentDeployHandler.INSTANCE, DeploymentDeployHandler.INSTANCE, false);
         deployments.registerOperationHandler(DeploymentUndeployHandler.OPERATION_NAME, DeploymentUndeployHandler.INSTANCE, DeploymentUndeployHandler.INSTANCE, false);

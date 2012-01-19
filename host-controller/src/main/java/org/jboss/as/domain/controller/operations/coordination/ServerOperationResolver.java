@@ -48,6 +48,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.domain.controller.operations.ResolveExpressionOnDomainHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentFullReplaceHandler;
+import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -138,10 +139,12 @@ public class ServerOperationResolver {
 
     private final String localHostName;
     private final Map<String,ProxyController> serverProxies;
+    private final ContentRepository contentRepository;
 
-    public ServerOperationResolver(final String localHostName, final Map<String,ProxyController> serverProxies) {
+    public ServerOperationResolver(final String localHostName, final ContentRepository contentRepository, final Map<String,ProxyController> serverProxies) {
         this.localHostName = localHostName;
         this.serverProxies = serverProxies;
+        this.contentRepository = contentRepository;
     }
 
     public Map<Set<ServerIdentity>, ModelNode> getServerOperations(ModelNode operation, PathAddress address, ModelNode domain, ModelNode host) {
@@ -661,4 +664,5 @@ public class ServerOperationResolver {
                 || SystemPropertyRemoveHandler.OPERATION_NAME.equals(opName)
                 || (ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION.equals(opName) && VALUE.equals(operation.require(NAME).asString())));
     }
+
 }

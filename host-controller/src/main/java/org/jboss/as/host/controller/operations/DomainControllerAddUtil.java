@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.domain.controller.FileRepository;
+import org.jboss.as.server.file.repository.api.HostFileRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -93,7 +93,7 @@ public class DomainControllerAddUtil {
         return controllers;
     }
 
-    static ServiceController<?> installRemoteDomainControllerConnection(final ModelNode host, final ServiceTarget serviceTarget, final FileRepository localFileRepository) {
+    static ServiceController<?> installRemoteDomainControllerConnection(final ModelNode host, final ServiceTarget serviceTarget, final HostFileRepository localFileRepository) {
 
         final String name;
         try {

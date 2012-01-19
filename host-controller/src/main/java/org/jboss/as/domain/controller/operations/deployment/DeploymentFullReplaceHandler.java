@@ -58,9 +58,9 @@ import org.jboss.as.controller.operations.validation.ParametersOfValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
+import org.jboss.as.server.file.repository.api.HostFileRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -74,7 +74,7 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
     public static final String OPERATION_NAME = FULL_REPLACE_DEPLOYMENT;
 
     private final ContentRepository contentRepository;
-    private final FileRepository fileRepository;
+    private final HostFileRepository fileRepository;
 
     private final ParametersValidator validator = new ParametersValidator();
     private final ParametersValidator unmanagedContentValidator = new ParametersValidator();
@@ -88,7 +88,7 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
     }
 
     /** Constructor for a slave Host Controller */
-    public DeploymentFullReplaceHandler(final FileRepository fileRepository) {
+    public DeploymentFullReplaceHandler(final HostFileRepository fileRepository) {
         this.contentRepository = null;
         this.fileRepository = fileRepository;
         init();

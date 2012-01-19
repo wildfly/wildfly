@@ -55,6 +55,7 @@ import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.ServerIdentity;
+import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -65,10 +66,12 @@ import org.jboss.dmr.ModelNode;
 public class OperationSlaveStepHandler {
 
     private final LocalHostControllerInfo localHostControllerInfo;
+    private final ContentRepository contentRepository;
     private final Map<String, ProxyController> serverProxies;
 
-    OperationSlaveStepHandler(final LocalHostControllerInfo localHostControllerInfo, Map<String, ProxyController> serverProxies) {
+    OperationSlaveStepHandler(final LocalHostControllerInfo localHostControllerInfo, final ContentRepository contentRepository, Map<String, ProxyController> serverProxies) {
         this.localHostControllerInfo = localHostControllerInfo;
+        this.contentRepository = contentRepository;
         this.serverProxies = serverProxies;
     }
 
@@ -100,7 +103,7 @@ public class OperationSlaveStepHandler {
             response.get(RESULT).set(IGNORED);
         }
 
-        ServerOperationResolver resolver = new ServerOperationResolver(localHostControllerInfo.getLocalHostName(), serverProxies);
+        ServerOperationResolver resolver = new ServerOperationResolver(localHostControllerInfo.getLocalHostName(), contentRepository, serverProxies);
         ServerOperationsResolverHandler sorh = new ServerOperationsResolverHandler(localHostControllerInfo.getLocalHostName(),
                 resolver, parsedOp, originalAddress, originalRegistration, response, recordResponse);
         context.addStep(sorh, OperationContext.Stage.DOMAIN);

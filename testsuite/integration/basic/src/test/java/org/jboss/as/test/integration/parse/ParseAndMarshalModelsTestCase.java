@@ -67,13 +67,13 @@ import javax.xml.namespace.QName;
 
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.BootContext;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ExpressionResolver;
-import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -87,6 +87,7 @@ import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.InterfaceAddHandler;
 import org.jboss.as.controller.operations.common.InterfaceCriteriaWriteHandler;
 import org.jboss.as.controller.operations.common.JVMHandlers;
@@ -108,7 +109,6 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainModelUtil;
-import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
 import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
@@ -125,6 +125,8 @@ import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
 import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
 import org.jboss.as.security.vault.RuntimeVaultReader;
 import org.jboss.as.server.ServerControllerModelUtil;
+import org.jboss.as.server.deployment.repository.api.ContentRepository;
+import org.jboss.as.server.file.repository.api.HostFileRepository;
 import org.jboss.as.server.parsing.StandaloneXml;
 import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
 import org.jboss.as.server.services.security.VaultAddHandler;
@@ -142,6 +144,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.vfs.VirtualFile;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -487,7 +490,7 @@ public class ParseAndMarshalModelsTestCase {
         final ModelController controller = createController(ProcessType.STANDALONE_SERVER, model, new Setup() {
             public void setup(Resource resource, ManagementResourceRegistration rootRegistration) {
                 ServerControllerModelUtil.updateCoreModel(model, null);
-                ServerControllerModelUtil.initOperations(rootRegistration, null, persister, null, null, null, null, extensionRegistry, false);
+                ServerControllerModelUtil.initOperations(rootRegistration, new MockContentRepository(), persister, null, null, null, null, extensionRegistry, false, new MockFileRepository());
             }
         });
 
@@ -640,7 +643,7 @@ public class ParseAndMarshalModelsTestCase {
         final ModelController controller = createController(ProcessType.HOST_CONTROLLER, model, new Setup() {
             public void setup(Resource resource, ManagementResourceRegistration rootRegistration) {
                 DomainModelUtil.updateCoreModel(resource, null);
-                DomainModelUtil.initializeMasterDomainRegistry(rootRegistration, persister, null, new MockFileRepository(),
+                DomainModelUtil.initializeMasterDomainRegistry(rootRegistration, persister, new MockContentRepository(), new MockFileRepository(),
                         new MockDomainController(), null, extensionRegistry);
             }
         });
@@ -814,7 +817,30 @@ public class ParseAndMarshalModelsTestCase {
 
     }
 
-    private static class MockFileRepository implements FileRepository {
+    private static class MockContentRepository implements ContentRepository {
+
+        @Override
+        public byte[] addContent(InputStream stream) throws IOException {
+            return null;
+        }
+
+        @Override
+        public VirtualFile getContent(byte[] hash) {
+            return null;
+        }
+
+        @Override
+        public boolean hasContent(byte[] hash) {
+            return false;
+        }
+
+        @Override
+        public void removeContent(byte[] hash) {
+        }
+
+    }
+
+    private static class MockFileRepository implements HostFileRepository {
 
         @Override
         public File getFile(String relativePath) {
@@ -834,6 +860,10 @@ public class ParseAndMarshalModelsTestCase {
         @Override
         public File getDeploymentRoot(byte[] deploymentHash) {
             return null;
+        }
+
+        @Override
+        public void deleteDeployment(byte[] deploymentHash) {
         }
     }
 
@@ -858,11 +888,11 @@ public class ParseAndMarshalModelsTestCase {
             return null;
         }
 
-        public FileRepository getLocalFileRepository() {
+        public HostFileRepository getLocalFileRepository() {
             return null;
         }
 
-        public FileRepository getRemoteFileRepository() {
+        public HostFileRepository getRemoteFileRepository() {
             return null;
         }
 

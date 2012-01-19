@@ -128,6 +128,7 @@ import org.jboss.as.management.client.content.ManagedDMRContentTypeResourceDefin
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionConstants;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
+import org.jboss.as.server.file.repository.api.HostFileRepository;
 import org.jboss.as.server.operations.LaunchTypeHandler;
 import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingResourceDefinition;
 import org.jboss.as.server.services.net.RemoteDestinationOutboundSocketBindingResourceDefinition;
@@ -175,20 +176,20 @@ public class DomainModelUtil {
     }
 
     public static void initializeMasterDomainRegistry(final ManagementResourceRegistration root, final ExtensibleConfigurationPersister configurationPersister,
-                                                                  final ContentRepository contentRepository, final FileRepository fileRepository,
+                                                                  final ContentRepository contentRepository, final HostFileRepository fileRepository,
                                                                   final DomainController domainController, final UnregisteredHostChannelRegistry channelRegistry,
                                                                   final ExtensionRegistry extensionRegistry) {
         initializeDomainRegistry(root, configurationPersister, contentRepository, fileRepository, true, domainController, channelRegistry, domainController.getLocalHostInfo(), extensionRegistry);
     }
 
     public static void initializeSlaveDomainRegistry(final ManagementResourceRegistration root, final ExtensibleConfigurationPersister configurationPersister,
-                                                                 final ContentRepository contentRepository, final FileRepository fileRepository,
+                                                                 final ContentRepository contentRepository, final HostFileRepository fileRepository,
                                                                  final LocalHostControllerInfo hostControllerInfo, final ExtensionRegistry extensionRegistry) {
         initializeDomainRegistry(root, configurationPersister, contentRepository, fileRepository, false, null, null, hostControllerInfo, extensionRegistry);
     }
 
     private static void initializeDomainRegistry(final ManagementResourceRegistration root, final ExtensibleConfigurationPersister configurationPersister,
-                                                             final ContentRepository contentRepo, final FileRepository fileRepository, final boolean isMaster,
+                                                             final ContentRepository contentRepo, final HostFileRepository fileRepository, final boolean isMaster,
                                                              final DomainController domainController, final UnregisteredHostChannelRegistry channelRegistry,
                                                              final LocalHostControllerInfo hostControllerInfo, final ExtensionRegistry extensionRegistry) {
 
@@ -291,7 +292,7 @@ public class DomainModelUtil {
         final ManagementResourceRegistration deployments = root.registerSubModel(PathElement.pathElement(DEPLOYMENT), DomainDescriptionProviders.DEPLOYMENT_PROVIDER);
         DeploymentAddHandler dah = isMaster ? new DeploymentAddHandler(contentRepo) : new DeploymentAddHandler();
         deployments.registerOperationHandler(DeploymentAddHandler.OPERATION_NAME, dah, dah);
-        DeploymentRemoveHandler drh = isMaster ? new DeploymentRemoveHandler(contentRepo) : new DeploymentRemoveHandler();
+        DeploymentRemoveHandler drh = isMaster ? DeploymentRemoveHandler.createForMaster(contentRepo) : DeploymentRemoveHandler.createForSlave(fileRepository);
         deployments.registerOperationHandler(DeploymentRemoveHandler.OPERATION_NAME, drh, drh);
 
         // Management client content
