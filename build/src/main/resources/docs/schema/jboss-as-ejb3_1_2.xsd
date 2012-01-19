@@ -42,6 +42,7 @@
         <xs:all>
             <xs:element name="session-bean" type="session-beanType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="mdb" type="mdbType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="entity-bean" type="entityType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="pools" type="poolsType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="caches" type="cachesType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="passivation-stores" type="passivation-storesType" minOccurs="0" maxOccurs="1"/>
@@ -58,6 +59,17 @@
             <xs:element name="resource-adapter-ref" type="resource-adapter-refType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="bean-instance-pool-ref" type="bean-instance-pool-refType" minOccurs="0" maxOccurs="1"/>
         </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="entityType">
+        <xs:all>
+            <xs:element name="bean-instance-pool-ref" type="bean-instance-pool-refType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="optimistic-locking" type="optimistic-lockingType" minOccurs="0" maxOccurs="1" />
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="optimistic-lockingType">
+        <xs:attribute name="enabled" type="xs:boolean" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="remoteType">

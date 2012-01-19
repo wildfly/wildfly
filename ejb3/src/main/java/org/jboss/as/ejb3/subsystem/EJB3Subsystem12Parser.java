@@ -22,6 +22,15 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -33,14 +42,6 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -54,8 +55,38 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.*;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ALIASES;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ASYNC;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.BEAN_CACHE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CACHE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CACHE_CONTAINER;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CLIENT_MAPPINGS_CACHE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CLUSTER_PASSIVATION_STORE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_CLUSTERED_SFSB_CACHE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SFSB_CACHE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.FILE_PASSIVATION_STORE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.GROUPS_PATH;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.IDLE_TIMEOUT;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.IDLE_TIMEOUT_UNIT;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.IIOP;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT_UNIT;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_POOL_SIZE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_SIZE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PASSIVATE_EVENTS_ON_REPLICATE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PASSIVATION_STORE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PATH;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.RELATIVE_TO;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SESSIONS_PATH;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SUBDIRECTORY_COUNT;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.THREAD_POOL;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.THREAD_POOL_NAME;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TIMER_SERVICE;
 
 /**
  * @author Jaikiran Pai
@@ -129,6 +160,15 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
             writer.writeEndElement();
         }
 
+        // write the entity bean element
+        if (model.hasDefined(EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_INSTANCE_POOL) || model.hasDefined(EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING)) {
+            // <entity-bean>
+            writer.writeStartElement(EJB3SubsystemXMLElement.ENTITY_BEAN.getLocalName());
+            // write out the mdb element contents
+            this.writeEntityBean(writer, model);
+            // </entity-bean>
+            writer.writeEndElement();
+        }
         // write the pools element
         if (model.hasDefined(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL)) {
             // <pools>
@@ -257,6 +297,11 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
                             this.parseMDB(reader, operations, ejb3SubsystemAddOperation);
                             break;
                         }
+                        case ENTITY_BEAN: {
+                            // read <entity-bean>
+                            this.parseEntityBean(reader, operations, ejb3SubsystemAddOperation);
+                            break;
+                        }
                         case POOLS: {
                             // read <pools>
                             this.parsePools(reader, operations);
@@ -302,18 +347,6 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
         }
     }
 
-    static String parseDefaultTimeout(XMLExtendedStreamReader reader, final String element) throws XMLStreamException {
-
-        // we don't expect any attributes for this element.
-        requireNoAttributes(reader);
-
-        final String value = reader.getElementText();
-        if (value == null || value.trim().isEmpty()) {
-            throw new XMLStreamException(MESSAGES.invalidValueForElement(value, element, reader.getLocation()));
-        }
-        return value.trim();
-    }
-
     private void writeRemote(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
         writer.writeAttribute(EJB3SubsystemXMLAttribute.CONNECTOR_REF.getLocalName(), model.require(EJB3SubsystemModel.CONNECTOR_REF).asString());
         writer.writeAttribute(EJB3SubsystemXMLAttribute.THREAD_POOL_NAME.getLocalName(), model.require(EJB3SubsystemModel.THREAD_POOL_NAME).asString());
@@ -351,23 +384,31 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
             writer.writeEndElement();
         }
     }
-
     /**
-     * Writes out the <session-bean> element and its nested elements
+     * Writes out the <entity-bean> element and its nested elements
      *
-     * @param writer XML writer
-     * @param model  The <session-bean> element {@link org.jboss.dmr.ModelNode}
+     * @param writer       XML writer
+     * @param entityModelNode The <mdb> element {@link org.jboss.dmr.ModelNode}
      * @throws javax.xml.stream.XMLStreamException
      *
      */
-    private void writeSessionBean(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
-        if (model.hasDefined(EJB3SubsystemModel.DEFAULT_SLSB_INSTANCE_POOL)) {
-            // <stateless>
-            writer.writeStartElement(EJB3SubsystemXMLElement.STATELESS.getLocalName());
-            // contents of <stateless> element
-            final ModelNode statelessBeanModeNode = model.get(EJB3SubsystemXMLElement.STATELESS.getLocalName());
-            this.writeDefaultSLSBPool(writer, statelessBeanModeNode);
-            // </stateless>
+    private void writeEntityBean(final XMLExtendedStreamWriter writer, final ModelNode entityModelNode) throws XMLStreamException {
+        if (entityModelNode.hasDefined(EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_INSTANCE_POOL)) {
+            // <bean-instance-pool-ref>
+            writer.writeStartElement(EJB3SubsystemXMLElement.BEAN_INSTANCE_POOL_REF.getLocalName());
+            final String poolRefName = entityModelNode.get(EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_INSTANCE_POOL).asString();
+            // write the value
+            writer.writeAttribute(EJB3SubsystemXMLAttribute.POOL_NAME.getLocalName(), poolRefName);
+            // </bean-instance-pool-ref>
+            writer.writeEndElement();
+        }
+        if (entityModelNode.hasDefined(EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING)) {
+            // <optimistic-locking>
+            writer.writeStartElement(EJB3SubsystemXMLElement.OPTIMISTIC_LOCKING.getLocalName());
+            final Boolean locking = entityModelNode.get(EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING).asBoolean();
+            // write the value
+            writer.writeAttribute(EJB3SubsystemXMLAttribute.ENABLED.getLocalName(), locking.toString());
+            // <optimistic-locking>
             writer.writeEndElement();
         }
     }
@@ -401,19 +442,6 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
             final String poolRefName = model.get(EJB3SubsystemModel.DEFAULT_SLSB_INSTANCE_POOL).asString();
             writer.writeAttribute(EJB3SubsystemXMLAttribute.POOL_NAME.getLocalName(), poolRefName);
             // </bean-instance-pool-ref>
-            writer.writeEndElement();
-        }
-
-    }
-
-    private void writePools(final XMLExtendedStreamWriter writer, final ModelNode poolsModelNode) throws XMLStreamException {
-        if (poolsModelNode.hasDefined(EJB3SubsystemXMLElement.BEAN_INSTANCE_POOLS.getLocalName())) {
-            // <bean-instance-pools>
-            writer.writeStartElement(EJB3SubsystemXMLElement.BEAN_INSTANCE_POOLS.getLocalName());
-            // write contents of bean-instance-pools
-            final ModelNode beanInstancePoolsModelNode = poolsModelNode.get(EJB3SubsystemXMLElement.BEAN_INSTANCE_POOLS.getLocalName());
-            this.writeBeanInstancePools(writer, beanInstancePoolsModelNode);
-            // </bean-instance-pools>
             writer.writeEndElement();
         }
 
@@ -608,6 +636,39 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
                 case RESOURCE_ADAPTER_REF: {
                     final String resourceAdapterName = readStringAttributeElement(reader, EJB3SubsystemXMLAttribute.RESOURCE_ADAPTER_NAME.getLocalName());
                     EJB3SubsystemRootResourceDefinition.DEFAULT_RESOURCE_ADAPTER_NAME.parseAndSetParameter(resourceAdapterName, ejb3SubsystemAddOperation, reader);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+        // if the resource-adapter-ref *hasn't* been explicitly specified, then default it to hornetq-ra
+        if (!ejb3SubsystemAddOperation.hasDefined(EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME)) {
+            final ModelNode defaultRAName = EJB3SubsystemRootResourceDefinition.DEFAULT_RESOURCE_ADAPTER_NAME.getDefaultValue();
+            if (defaultRAName != null) {
+                ejb3SubsystemAddOperation.get(EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME).set(defaultRAName);
+            }
+        }
+        return mdbModelNode;
+
+    }
+
+    private ModelNode parseEntityBean(final XMLExtendedStreamReader reader, List<ModelNode> operations, final ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
+        ModelNode mdbModelNode = new ModelNode();
+        // no attributes expected
+        requireNoAttributes(reader);
+
+        while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
+            switch (EJB3SubsystemXMLElement.forName(reader.getLocalName())) {
+                case BEAN_INSTANCE_POOL_REF: {
+                    final String poolName = readStringAttributeElement(reader, EJB3SubsystemXMLAttribute.POOL_NAME.getLocalName());
+                    EJB3SubsystemRootResourceDefinition.DEFAULT_ENTITY_BEAN_INSTANCE_POOL.parseAndSetParameter(poolName, ejb3SubsystemAddOperation, reader);
+                    break;
+                }
+                case OPTIMISTIC_LOCKING: {
+                    final String enabled = readStringAttributeElement(reader, EJB3SubsystemXMLAttribute.ENABLED.getLocalName());
+                    EJB3SubsystemRootResourceDefinition.DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING.parseAndSetParameter(enabled, ejb3SubsystemAddOperation, reader);
                     break;
                 }
                 default: {

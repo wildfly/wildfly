@@ -104,14 +104,23 @@ public class ReferenceCountingEntityCache implements ReadyEntityCache {
             if (!success && instance.isRemoved()) {
                 instance.setRemoved(false);
             }
-            instance.passivate();
-            component.getPool().release(instance);
-            cache.remove(instance.getPrimaryKey());
+            final Object pk = instance.getPrimaryKey();
+            try {
+                instance.passivate();
+                component.releaseEntityBeanInstance(instance);
+            } finally {
+                cache.remove(pk);
+            }
         } else if (instance.isRemoved() && success) {
             //the instance has been removed, we need to remove it from the cache
             //even if someone is still referencing it, as their reference is no longer usable
-            component.getPool().release(instance);
-            cache.remove(instance.getPrimaryKey());
+            final Object pk = instance.getPrimaryKey();
+            try {
+                instance.passivate();
+                component.releaseEntityBeanInstance(instance);
+            } finally {
+                cache.remove(pk);
+            }
         }
     }
 
@@ -136,7 +145,7 @@ public class ReferenceCountingEntityCache implements ReadyEntityCache {
     }
 
     private EntityBeanComponentInstance createInstance(final Object pk) {
-        final EntityBeanComponentInstance instance = component.getPool().get();
+        final EntityBeanComponentInstance instance = component.acquireUnAssociatedInstance();
         instance.associate(pk);
         return instance;
     }

@@ -37,7 +37,8 @@ import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.entity.entitycache.ReadyEntityCache;
 import org.jboss.as.ejb3.component.entity.entitycache.ReferenceCountingEntityCache;
-import org.jboss.as.ejb3.pool.InfinitePool;
+import org.jboss.as.ejb3.component.entity.entitycache.TransactionLocalEntityCache;
+import org.jboss.as.ejb3.component.pool.PoolConfig;
 import org.jboss.as.ejb3.pool.Pool;
 import org.jboss.as.ejb3.pool.StatelessObjectFactory;
 import org.jboss.as.naming.ManagedReference;
@@ -46,6 +47,7 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.SimpleInterceptorFactoryContext;
 
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
@@ -55,6 +57,7 @@ public class EntityBeanComponent extends EJBComponent {
 
     public static final Object PRIMARY_KEY_CONTEXT_KEY = new Object();
 
+    private final StatelessObjectFactory<EntityBeanComponentInstance> factory;
     private final Pool<EntityBeanComponentInstance> pool;
     private final ReadyEntityCache cache;
     private final Class<EJBHome> homeClass;
@@ -62,6 +65,7 @@ public class EntityBeanComponent extends EJBComponent {
     private final Class<EJBLocalObject> localClass;
     private final Class<EJBObject> remoteClass;
     private final Class<Object> primaryKeyClass;
+    private final Boolean optimisticLocking;
 
     private final Method ejbStoreMethod;
     private final Method ejbLoadMethod;
@@ -77,7 +81,7 @@ public class EntityBeanComponent extends EJBComponent {
     protected EntityBeanComponent(final EntityBeanComponentCreateService ejbComponentCreateService) {
         super(ejbComponentCreateService);
 
-        StatelessObjectFactory<EntityBeanComponentInstance> factory = new StatelessObjectFactory<EntityBeanComponentInstance>() {
+        factory = new StatelessObjectFactory<EntityBeanComponentInstance>() {
             @Override
             public EntityBeanComponentInstance create() {
                 return (EntityBeanComponentInstance) createInstance();
@@ -88,7 +92,15 @@ public class EntityBeanComponent extends EJBComponent {
                 obj.destroy();
             }
         };
-        pool = new InfinitePool<EntityBeanComponentInstance>(factory);
+        optimisticLocking = ejbComponentCreateService.getOptimisticLocking();
+        final PoolConfig poolConfig = ejbComponentCreateService.getPoolConfig();
+        if (poolConfig == null) {
+            ROOT_LOGGER.debug("Pooling is disabled for Stateless EJB " + ejbComponentCreateService.getComponentName());
+            this.pool = null;
+        } else {
+            ROOT_LOGGER.debug("Using pool config " + poolConfig + " to create pool for Stateless EJB " + ejbComponentCreateService.getComponentName());
+            this.pool = poolConfig.createPool(factory);
+        }
         this.cache = createEntityCache(ejbComponentCreateService);
 
         this.homeClass = ejbComponentCreateService.getHomeClass();
@@ -123,29 +135,45 @@ public class EntityBeanComponent extends EJBComponent {
         return factory.create(context);
     }
 
+    public EntityBeanComponentInstance acquireUnAssociatedInstance() {
+        if (pool != null) {
+            return pool.get();
+        } else {
+            return factory.create();
+        }
+    }
+
+    public void releaseEntityBeanInstance(final EntityBeanComponentInstance instance) {
+        if (pool != null) {
+            pool.release(instance);
+        } else {
+            factory.destroy(instance);
+        }
+    }
+
     public ReadyEntityCache getCache() {
         return cache;
     }
 
-    public Pool<EntityBeanComponentInstance> getPool() {
-        return pool;
-    }
-
     protected ReadyEntityCache createEntityCache(EntityBeanComponentCreateService ejbComponentCreateService) {
-        return new ReferenceCountingEntityCache(this);
+        if (optimisticLocking == null || !optimisticLocking) {
+            return new ReferenceCountingEntityCache(this);
+        } else {
+            return new TransactionLocalEntityCache(this);
+        }
     }
 
 
     public EJBLocalObject getEJBLocalObject(final Object pk) throws IllegalStateException {
         if (getEjbLocalObjectViewServiceName() == null) {
-            throw MESSAGES.beanComponentMissingEjbObject(getComponentName(),"EJBLocalObject");
+            throw MESSAGES.beanComponentMissingEjbObject(getComponentName(), "EJBLocalObject");
         }
         return createViewInstanceProxy(EJBLocalObject.class, Collections.singletonMap(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY, pk), getEjbLocalObjectViewServiceName());
     }
 
     public EJBObject getEJBObject(final Object pk) throws IllegalStateException {
         if (getEjbObjectViewServiceName() == null) {
-            throw MESSAGES.beanComponentMissingEjbObject(getComponentName(),"EJBObject");
+            throw MESSAGES.beanComponentMissingEjbObject(getComponentName(), "EJBObject");
         }
         return createViewInstanceProxy(EJBObject.class, Collections.singletonMap(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY, pk), getEjbObjectViewServiceName());
     }
@@ -208,6 +236,10 @@ public class EntityBeanComponent extends EJBComponent {
 
     public InterceptorFactory getUnsetEntityContext() {
         return unsetEntityContext;
+    }
+
+    public Pool<EntityBeanComponentInstance> getPool() {
+        return pool;
     }
 
     @Override

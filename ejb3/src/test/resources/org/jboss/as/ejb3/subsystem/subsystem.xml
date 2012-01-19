@@ -12,6 +12,8 @@
         <bean-instance-pools>
             <strict-max-pool name="slsb-strict-max-pool" max-pool-size="20" instance-acquisition-timeout="5"
                              instance-acquisition-timeout-unit="MINUTES"/>
+            <strict-max-pool name="entity-strict-max-pool" max-pool-size="20" instance-acquisition-timeout="5"
+                             instance-acquisition-timeout-unit="MINUTES"/>
         </bean-instance-pools>
     </pools>
     <caches>
@@ -40,6 +42,10 @@
             <keepalive-time time="100" unit="milliseconds"/>
         </thread-pool>
     </thread-pools>
+    <entity-bean>
+        <optimistic-locking enabled="true" />
+        <bean-instance-pool-ref pool-name="entity-strict-max-pool"/>
+    </entity-bean>
 
     <iiop use-qualified-name="true" enable-by-default="true"/>
 </subsystem>

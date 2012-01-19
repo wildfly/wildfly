@@ -31,11 +31,8 @@ import javax.transaction.Synchronization;
 import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.ee.component.Component;
-import org.jboss.as.ee.component.ComponentInjector;
-import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.ViewInstanceFactory;
-import org.jboss.as.ee.component.deployers.ComponentInstallProcessor;
 import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanHomeCreateInterceptorFactory;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
@@ -85,7 +82,7 @@ public class EntityBeanRemoteViewInstanceFactory implements ViewInstanceFactory 
         }
         final EntityBeanComponent entityBeanComponent = (EntityBeanComponent) component;
         //grab an unasociated entity bean from the pool
-        final EntityBeanComponentInstance instance = entityBeanComponent.getPool().get();
+        final EntityBeanComponentInstance instance = entityBeanComponent.acquireUnAssociatedInstance();
 
         //call the ejbCreate method
         final Object primaryKey;
@@ -114,7 +111,7 @@ public class EntityBeanRemoteViewInstanceFactory implements ViewInstanceFactory 
                 public void afterCompletion(final int status) {
                     if (status != Status.STATUS_COMMITTED) {
                         //if the transaction is rolled back we release the instance back into the pool
-                        entityBeanComponent.getPool().release(instance);
+                        entityBeanComponent.releaseEntityBeanInstance(instance);
                     }
                 }
             });
