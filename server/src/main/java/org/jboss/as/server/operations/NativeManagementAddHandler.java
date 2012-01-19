@@ -22,6 +22,7 @@
 
 package org.jboss.as.server.operations;
 
+import org.jboss.as.remoting.management.ManagementChannelRegistryService;
 import static org.jboss.as.server.mgmt.NativeManagementResourceDefinition.ATTRIBUTE_DEFINITIONS;
 import static org.jboss.as.server.mgmt.NativeManagementResourceDefinition.INTERFACE;
 import static org.jboss.as.server.mgmt.NativeManagementResourceDefinition.NATIVE_PORT;
@@ -81,7 +82,6 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler {
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
                                   ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
         final ServiceName endpointName = ManagementRemotingServices.MANAGEMENT_ENDPOINT;
@@ -89,6 +89,7 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler {
         ManagementRemotingServices.installRemotingEndpoint(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT, hostName, EndpointService.EndpointType.MANAGEMENT, verificationHandler, newControllers);
         installNativeManagementConnector(context, model, endpointName, serviceTarget, verificationHandler, newControllers);
 
+        ManagementChannelRegistryService.addService(serviceTarget);
         ManagementRemotingServices.installManagementChannelServices(serviceTarget,
                 endpointName,
                 new ModelControllerClientOperationHandlerFactoryService(),

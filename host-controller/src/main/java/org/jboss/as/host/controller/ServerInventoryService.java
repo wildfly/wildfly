@@ -22,6 +22,9 @@
 
 package org.jboss.as.host.controller;
 
+import org.jboss.as.remoting.management.ManagementChannelRegistryService;
+import org.jboss.as.remoting.management.ManagementRemotingServices;
+import static org.jboss.msc.service.ServiceController.Mode.ACTIVE;
 import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
 import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
 
@@ -83,6 +86,7 @@ class ServerInventoryService implements Service<ServerInventory> {
                 .addDependency(HostControllerService.HC_EXECUTOR_SERVICE_NAME, ExecutorService.class, inventory.executorService)
                 .addDependency(ProcessControllerConnectionService.SERVICE_NAME, ProcessControllerConnectionService.class, inventory.getClient())
                 .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceBinding), NetworkInterfaceBinding.class, inventory.interfaceBinding)
+                .addDependency(ManagementChannelRegistryService.SERVICE_NAME)
                 .install();
         return inventory.futureInventory;
     }

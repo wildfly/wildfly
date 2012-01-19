@@ -90,6 +90,7 @@ import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.process.ProcessMessageHandler;
 import org.jboss.as.remoting.EndpointService;
+import org.jboss.as.remoting.management.ManagementChannelRegistryService;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
@@ -310,13 +311,14 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
             final RunningMode currentRunningMode = runningModeControl.getRunningMode();
 
-            // Now we know our management interface configuration. Install the server inventory
-            Future<ServerInventory> inventoryFuture = ServerInventoryService.install(serviceTarget, this, runningModeControl, environment,
-                    hostControllerInfo.getNativeManagementInterface(), hostControllerInfo.getNativeManagementPort());
-
             // Install the core remoting endpoint and listener
             ManagementRemotingServices.installRemotingEndpoint(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
                     hostControllerInfo.getLocalHostName(), EndpointService.EndpointType.MANAGEMENT, null, null);
+
+            // Now we know our management interface configuration. Install the server inventory
+            ManagementChannelRegistryService.addService(serviceTarget);
+            Future<ServerInventory> inventoryFuture = ServerInventoryService.install(serviceTarget, this, runningModeControl, environment,
+                    hostControllerInfo.getNativeManagementInterface(), hostControllerInfo.getNativeManagementPort());
 
             if (!hostControllerInfo.isMasterDomainController() && !environment.isUseCachedDc()) {
                 serverInventory = getFuture(inventoryFuture);

@@ -106,9 +106,12 @@ public class HostControllerConnectionService implements Service<Channel> {
 
     /** {@inheritDoc} */
     public synchronized void stop(StopContext context) {
+        safeClose(channel);
+        safeClose(connection);
         safeClose(client);
-        client = null;
         channel = null;
+        connection = null;
+        client = null;
     }
 
     /** {@inheritDoc} */
