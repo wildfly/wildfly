@@ -28,6 +28,7 @@ import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.services.ResourceAdapterActivatorService;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
+import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.security.service.SubjectFactoryService;
@@ -132,6 +133,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
     private static final String JMS_MESSAGE_LISTENER = "javax.jms.MessageListener";
 
     private static final Collection<String> JMS_ACTIVATION_CONFIG_PROPERTIES = new HashSet<String>();
+    private static final String DEFAULT_MAX_RECONNECTS = "5";
 
     {
         // All the activation-config-properties that are mandated to be supported by the RA, as per EJB3.1 spec,
@@ -211,8 +213,18 @@ public class PooledConnectionFactoryService implements Service<Void> {
             if (connectorParams.length() > 0) {
                 properties.add(simpleProperty(CONNECTION_PARAMETERS, STRING_TYPE, connectorParams.toString()));
             }
+
+            boolean hasReconnect = false;
+            final String reconnectName = JMSServices.RECONNECT_ATTEMPTS_METHOD;
             for (PooledConnectionFactoryConfigProperties adapterParam : adapterParams) {
+                hasReconnect |= reconnectName.equals(adapterParam.getName());
+
                 properties.add(simpleProperty(adapterParam.getName(), adapterParam.getType(), adapterParam.getValue()));
+            }
+
+            // The default -1, which will hang forever until a server appears
+            if (!hasReconnect) {
+                properties.add(simpleProperty(reconnectName, Integer.class.getName(), DEFAULT_MAX_RECONNECTS));
             }
 
             TransactionManagerLocator.container = container;
