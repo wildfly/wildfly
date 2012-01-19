@@ -40,7 +40,6 @@ import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.AbstractServiceListener;
-import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -60,7 +59,7 @@ import static org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT;
  * @author Kabir Khan
  * @since 17-Nov-2010
  */
-public class ArquillianService implements Service<ArquillianService> {
+public abstract class ArquillianService<C extends ArquillianConfig> {
 
     public static final String TEST_CLASS_PROPERTY = "org.jboss.as.arquillian.testClass";
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("arquillian", "testrunner");
@@ -74,15 +73,29 @@ public class ArquillianService implements Service<ArquillianService> {
     private JMXTestRunner jmxTestRunner;
     AbstractServiceListener<Object> listener;
 
+    /*
     public static void addService(final ServiceTarget serviceTarget) {
         ArquillianService service = new ArquillianService();
         ServiceBuilder<?> serviceBuilder = serviceTarget.addService(ArquillianService.SERVICE_NAME, service);
         serviceBuilder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.injectedMBeanServer);
         serviceBuilder.install();
     }
+    */
 
-    ServiceContainer getServiceContainer() {
+    protected <T extends ArquillianService> void build(final ServiceBuilder<T> serviceBuilder) {
+        serviceBuilder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, this.injectedMBeanServer);
+    }
+
+    protected abstract C createArquillianConfig(final DeploymentUnit depUnit);
+
+    protected abstract JMXTestRunner.TestClassLoader createTestClassLoader();
+
+    protected ServiceContainer getServiceContainer() {
         return serviceContainer;
+    }
+
+    protected ServiceTarget getServiceTarget() {
+        return serviceTarget;
     }
 
     public synchronized void start(StartContext context) throws StartException {
@@ -98,7 +111,6 @@ public class ArquillianService implements Service<ArquillianService> {
             throw new StartException("Failed to start Arquillian Test Runner", t);
         }
 
-        final ArquillianService arqService = this;
         listener = new AbstractServiceListener<Object>() {
 
             @Override
@@ -111,13 +123,12 @@ public class ArquillianService implements Service<ArquillianService> {
                             ServiceName parentName = serviceName.getParent();
                             ServiceController<?> parentController = serviceContainer.getService(parentName);
                             DeploymentUnit depUnit = (DeploymentUnit) parentController.getValue();
-                            ArquillianConfig arqConfig = ArquillianConfigBuilder.processDeployment(arqService, depUnit);
+                            C arqConfig = createArquillianConfig(depUnit);
+//                            C arqConfig = ArquillianConfigBuilder.processDeployment(arqService, depUnit);
                             if (arqConfig != null) {
                                 log.infof("Arquillian deployment detected: %s", arqConfig);
-                                ServiceBuilder<ArquillianConfig> builder = arqConfig.buildService(serviceTarget, serviceController);
-                                /*
-                                FrameworkActivationProcessor.process(serviceContainer, builder, arqConfig);
-                                */
+                                ServiceBuilder<C> builder = arqConfig.buildService(serviceTarget, serviceController);
+                                startingToUp(builder, arqConfig);
                                 builder.install();
                             }
                         }
@@ -128,6 +139,8 @@ public class ArquillianService implements Service<ArquillianService> {
         };
         serviceContainer.addListener(listener);
     }
+
+    protected abstract void startingToUp(final ServiceBuilder<C> builder, final C arqConfig);
 
     public synchronized void stop(StopContext context) {
         log.debugf("Stopping Arquillian Test Runner");
@@ -140,11 +153,6 @@ public class ArquillianService implements Service<ArquillianService> {
         } finally {
             context.getController().getServiceContainer().removeListener(listener);
         }
-    }
-
-    @Override
-    public synchronized ArquillianService getValue() throws IllegalStateException {
-        return this;
     }
 
     void registerArquillianConfig(ArquillianConfig arqConfig) {
@@ -162,15 +170,16 @@ public class ArquillianService implements Service<ArquillianService> {
         }
     }
 
-    private ArquillianConfig getArquillianConfig(final String className, long timeout) {
+    protected C getArquillianConfig(final String className, long timeout) {
         synchronized (deployedTests) {
 
             log.debugf("Getting Arquillian config for: %s", className);
-            for (ArquillianConfig arqConfig : deployedTests) {
+            for (ArquillianConfig<?> arqConfig : deployedTests) {
                 for (String aux : arqConfig.getTestClasses()) {
                     if (aux.equals(className)) {
                         log.debugf("Found Arquillian config for: %s", className);
-                        return arqConfig;
+                        // TODO: is this cast valid?
+                        return (C) arqConfig;
                     }
                 }
             }
@@ -212,7 +221,7 @@ public class ArquillianService implements Service<ArquillianService> {
     class ExtendedJMXTestRunner extends JMXTestRunner {
 
         ExtendedJMXTestRunner() {
-            super(new ExtendedTestClassLoader());
+            super(createTestClassLoader());
         }
 
         @Override

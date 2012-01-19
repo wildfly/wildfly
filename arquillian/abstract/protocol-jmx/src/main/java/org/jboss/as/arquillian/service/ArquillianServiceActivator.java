@@ -38,6 +38,6 @@ public class ArquillianServiceActivator implements ServiceActivator {
     @Override
     public void activate(ServiceActivatorContext context) throws ServiceRegistryException {
         ServiceTarget serviceTarget = context.getServiceTarget();
-        ArquillianService.addService(serviceTarget);
+        //ArquillianService.addService(serviceTarget);
     }
 }

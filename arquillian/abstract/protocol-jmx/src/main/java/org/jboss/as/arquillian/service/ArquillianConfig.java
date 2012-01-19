@@ -22,6 +22,7 @@
 package org.jboss.as.arquillian.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -48,7 +49,7 @@ import org.jboss.msc.service.StopContext;
  *
  * @author Thomas.Diesler@jboss.com
  */
-class ArquillianConfig implements Service<ArquillianConfig> {
+public class ArquillianConfig<S extends ArquillianConfig> implements Service<S> {
 
     static final AttachmentKey<ArquillianConfig> KEY = AttachmentKey.create(ArquillianConfig.class);
 
@@ -57,10 +58,6 @@ class ArquillianConfig implements Service<ArquillianConfig> {
     private final ServiceName serviceName;
     private final List<String> testClasses = new ArrayList<String>();
 
-    /*
-    private final InjectedValue<BundleManagerService> injectedBundleManager = new InjectedValue<BundleManagerService>();
-    private final InjectedValue<BundleContext> injectedBundleContext = new InjectedValue<BundleContext>();
-    */
     private ServiceContainer serviceContainer;
     private ServiceTarget serviceTarget;
 
@@ -68,74 +65,52 @@ class ArquillianConfig implements Service<ArquillianConfig> {
         return ServiceName.JBOSS.append("arquillian", "config", depUnit.getName());
     }
 
-    ArquillianConfig(ArquillianService arqService, DeploymentUnit depUnit, Set<String> testClasses) {
+    protected ArquillianConfig(ArquillianService arqService, DeploymentUnit depUnit, Set<String> testClasses) {
         this.arqService = arqService;
         this.depUnit = depUnit;
         this.serviceName = getServiceName(depUnit);
         this.testClasses.addAll(testClasses);
     }
 
-    ServiceBuilder<ArquillianConfig> buildService(ServiceTarget serviceTarget, ServiceController<?> depController) {
-        ServiceBuilder<ArquillianConfig> builder = serviceTarget.addService(getServiceName(), this);
+    protected void associate() {
+        // Always make the MSC artifacts available
+        ServiceTargetAssociation.setServiceTarget(serviceTarget);
+        ServiceContainerAssociation.setServiceContainer(serviceContainer);
+    }
+
+    ServiceBuilder<S> buildService(ServiceTarget serviceTarget, ServiceController<?> depController) {
+        ServiceBuilder<S> builder = serviceTarget.addService(getServiceName(), this);
         builder.addDependency(depController.getName());
         return builder;
     }
 
-    /*
-    void addFrameworkDependency(ServiceBuilder<ArquillianConfig> builder) {
-        builder.addDependency(Services.BUNDLE_MANAGER, BundleManagerService.class, injectedBundleManager);
-        builder.addDependency(Services.SYSTEM_CONTEXT, BundleContext.class, injectedBundleContext);
-        builder.addDependency(Services.FRAMEWORK_ACTIVATOR);
+    protected ArquillianService getArquillianService() {
+        return arqService;
     }
-    */
 
-    ServiceName getServiceName() {
+    protected ServiceName getServiceName() {
         return serviceName;
     }
 
-    DeploymentUnit getDeploymentUnit() {
+    protected DeploymentUnit getDeploymentUnit() {
         return depUnit;
     }
 
-    List<String> getTestClasses() {
+    protected Collection<String> getTestClasses() {
         return Collections.unmodifiableList(testClasses);
     }
-
-    /*
-    BundleContext getBundleContext() {
-        return injectedBundleContext.getOptionalValue();
-    }
-    */
 
     Class<?> loadClass(String className) throws ClassNotFoundException {
 
         if (testClasses.contains(className) == false)
             throw new ClassNotFoundException("Class '" + className + "' not found in: " + testClasses);
 
-        Module module = depUnit.getAttachment(Attachments.MODULE);
-        /*
-        Deployment osgidep = OSGiDeploymentAttachment.getDeployment(depUnit);
-        if (module == null && osgidep == null)
-            throw new IllegalStateException("Cannot determine deployment type: " + depUnit);
-        if (module != null && osgidep != null)
-            throw new IllegalStateException("Found MODULE attachment for Bundle deployment: " + depUnit);
-
-        Class<?> testClass;
-        if (osgidep != null) {
-            Bundle bundle = osgidep.getAttachment(Bundle.class);
-            testClass = bundle.loadClass(className);
-            BundleAssociation.setBundle(bundle);
-        } else {
-            testClass = module.getClassLoader().loadClass(className);
-        }
-        */
+        final Module module = depUnit.getAttachment(Attachments.MODULE);
         if (module == null)
             throw new IllegalStateException("Cannot determine deployment type: " + depUnit);
         final Class<?> testClass = module.getClassLoader().loadClass(className);
 
-        // Always make the MSC artefacts available
-        ServiceTargetAssociation.setServiceTarget(serviceTarget);
-        ServiceContainerAssociation.setServiceContainer(serviceContainer);
+        associate();
 
         return testClass;
     }
@@ -145,13 +120,6 @@ class ArquillianConfig implements Service<ArquillianConfig> {
         serviceContainer = context.getController().getServiceContainer();
         serviceTarget = context.getChildTarget();
         arqService.registerArquillianConfig(this);
-
-        /*
-        BundleManagerService bundleManager = injectedBundleManager.getOptionalValue();
-        if (bundleManager != null) {
-            arqService.registerArquillianServiceWithOSGi(bundleManager);
-        }
-        */
     }
 
     @Override
@@ -161,8 +129,8 @@ class ArquillianConfig implements Service<ArquillianConfig> {
     }
 
     @Override
-    public synchronized ArquillianConfig getValue() {
-        return this;
+    public synchronized S getValue() {
+        return (S) this;
     }
 
     @Override

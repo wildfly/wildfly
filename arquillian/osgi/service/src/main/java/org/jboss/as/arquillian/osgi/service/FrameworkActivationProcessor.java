@@ -35,7 +35,6 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceContainer;
 
 /**
  * Uses the annotation index to check whether the OSGi needs to get activated.
@@ -47,7 +46,7 @@ class FrameworkActivationProcessor {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.arquillian");
 
-    static void process(final ServiceContainer serviceContainer, final ServiceBuilder<ArquillianConfig> builder, final ArquillianConfig arqConfig) {
+    static void process(final ServiceBuilder<ArquillianConfig> builder, final ArquillianConfig arqConfig) {
 
         final DeploymentUnit depUnit = arqConfig.getDeploymentUnit();
         final CompositeIndex compositeIndex = depUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
