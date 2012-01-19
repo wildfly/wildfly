@@ -72,6 +72,7 @@ public abstract class ManagementClientChannelStrategy implements Closeable {
      * @param handler the {@code ManagementMessageHandler}
      * @param cbHandler a callback handler
      * @param saslOptions the sasl options
+     * @param closeHandler a close handler
      * @return the management client channel strategy
      * @throws IOException
      */
@@ -79,8 +80,9 @@ public abstract class ManagementClientChannelStrategy implements Closeable {
                                                    final ManagementMessageHandler handler,
                                                    final CallbackHandler cbHandler,
                                                    final Map<String, String> saslOptions,
-                                                   final SSLContext sslContext) throws IOException {
-        return new Establishing(DEFAULT_CHANNEL_SERVICE_TYPE, setup, saslOptions, cbHandler, sslContext, handler);
+                                                   final SSLContext sslContext,
+                                                   final CloseHandler<Channel> closeHandler) throws IOException {
+        return new Establishing(DEFAULT_CHANNEL_SERVICE_TYPE, setup, saslOptions, cbHandler, sslContext, handler, closeHandler);
     }
 
     /**
@@ -95,12 +97,12 @@ public abstract class ManagementClientChannelStrategy implements Closeable {
         }
 
         @Override
-        public Channel getChannel() throws IOException {
+        public Channel getChannel() {
             return channel;
         }
 
         @Override
-        public void close() throws IOException {
+        public void close() {
             // closing is not our responsibility
         }
     }
@@ -117,17 +119,20 @@ public abstract class ManagementClientChannelStrategy implements Closeable {
         private final SSLContext sslContext;
         private final Channel.Receiver receiver;
         private final ProtocolChannelClient setup;
+        private final CloseHandler<Channel> closeHandlerDelegate;
 
         volatile Connection connection;
         volatile Channel channel;
 
         public Establishing(final String channelName, final ProtocolChannelClient setup, final Map<String, String> saslOptions,
-                            final CallbackHandler callbackHandler, final SSLContext sslContext, final ManagementMessageHandler handler) {
+                            final CallbackHandler callbackHandler, final SSLContext sslContext, final ManagementMessageHandler handler,
+                            final CloseHandler<Channel> closeHandler) {
             this.channelName = channelName;
             this.saslOptions = saslOptions;
             this.sslContext = sslContext;
             this.setup = setup;
             this.callbackHandler = callbackHandler;
+            this.closeHandlerDelegate = closeHandler;
             // Basic management channel receiver, which delegates messages to a {@code ManagementMessageHandler}
             // Additionally legacy bye-bye messages result in resetting the current channel
             this.receiver = new ManagementChannelReceiver() {
@@ -174,6 +179,9 @@ public abstract class ManagementClientChannelStrategy implements Closeable {
                                         channel = null;
                                     }
                                 }
+                                if(closeHandlerDelegate != null) {
+                                    closeHandlerDelegate.handleClose(closed, exception);
+                                }
                             }
                         });
                         channel.receiveMessage(receiver);
@@ -198,7 +206,7 @@ public abstract class ManagementClientChannelStrategy implements Closeable {
         }
 
         @Override
-        public void close() throws IOException {
+        public void close() {
             StreamUtils.safeClose(channel);
             StreamUtils.safeClose(connection);
         }
