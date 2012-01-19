@@ -182,7 +182,6 @@ public abstract class ArquillianService<C extends ArquillianConfig> {
                             ServiceController<?> parentController = serviceContainer.getService(parentName);
                             DeploymentUnit depUnit = (DeploymentUnit) parentController.getValue();
                             C arqConfig = processDeployment(depUnit);
-//                            C arqConfig = ArquillianConfigBuilder.processDeployment(arqService, depUnit);
                             if (arqConfig != null) {
                                 log.infof("Arquillian deployment detected: %s", arqConfig);
                                 ServiceBuilder<C> builder = arqConfig.buildService(serviceTarget, serviceController);
