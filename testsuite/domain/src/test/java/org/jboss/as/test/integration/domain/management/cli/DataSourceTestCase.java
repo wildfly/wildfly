@@ -43,27 +43,27 @@ import org.junit.Test;
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
 public class DataSourceTestCase extends AbstractCliTestBase {
-    
+
     private static String[] profileNames;
-    
+
     private static final String[][] DS_PROPS = new String[][] {
         {"idle-timeout-minutes", "5"}
     };
-    
+
     @BeforeClass
-    public static void before() throws Exception {      
+    public static void before() throws Exception {
         AbstractCliTestBase.initCLI();
-    }    
-    
+    }
+
     @AfterClass
     public static void after() throws Exception {
         AbstractCliTestBase.closeCLI();
     }
-    
+
     @Before
     public void init() {
          profileNames = CLITestSuite.serverProfiles.keySet().toArray(new String[] {});
-    }    
+    }
 
     @Test
     public void testDataSource() throws Exception {
@@ -73,16 +73,16 @@ public class DataSourceTestCase extends AbstractCliTestBase {
     }
 
     @Test
-    public void testXaDataSource() throws Exception {        
+    public void testXaDataSource() throws Exception {
         testAddXaDataSource();
         testModifyXaDataSource();
-        testRemoveXaDataSource();         
+        testRemoveXaDataSource();
     }
 
     private void testAddDataSource() throws Exception {
 
         // add data source
-        cli.sendLine("data-source add --profile=" + profileNames[0] + " --jndi-name=java:jboss/datasources/TestDS --driver-name=h2 --connection-url=jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
+        cli.sendLine("data-source add --profile=" + profileNames[0] + " --name=java:jboss/datasources/TestDS --driver-name=h2 --connection-url=jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
 
         // check the data source is listed
         cli.sendLine("cd /profile=" + profileNames[0] + "/subsystem=datasources/data-source");
@@ -98,7 +98,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
     private void testRemoveDataSource() throws Exception {
 
         // remove data source
-        cli.sendLine("data-source remove --profile=" + profileNames[0] + " --jndi-name=java:jboss/datasources/TestDS");
+        cli.sendLine("data-source remove --profile=" + profileNames[0] + " --name=java:jboss/datasources/TestDS");
 
         //check the data source is not listed
         cli.sendLine("cd /profile=" + profileNames[0] + "/subsystem=datasources/data-source");
@@ -109,7 +109,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
     }
 
     private void testModifyDataSource() throws Exception {
-        StringBuilder cmd = new StringBuilder("data-source --profile=" + profileNames[0] + " --jndi-name=java:jboss/datasources/TestDS");
+        StringBuilder cmd = new StringBuilder("data-source --profile=" + profileNames[0] + " --name=java:jboss/datasources/TestDS");
         for (String[] props : DS_PROPS) {
             cmd.append(" --");
             cmd.append(props[0]);
@@ -119,20 +119,20 @@ public class DataSourceTestCase extends AbstractCliTestBase {
         cli.sendLine(cmd.toString());
 
         // check that datasource was modified
-        cli.sendLine("/profile=" + profileNames[0] + "/subsystem=datasources/data-source=java\\:jboss\\/datasources\\/TestDS:read-resource(recursive=true)");       
+        cli.sendLine("/profile=" + profileNames[0] + "/subsystem=datasources/data-source=java\\:jboss\\/datasources\\/TestDS:read-resource(recursive=true)");
         CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         assertTrue(result.isIsOutcomeSuccess());
         assertTrue(result.getResult() instanceof Map);
         Map dsProps = (Map) result.getResult();
         for (String[] props : DS_PROPS) assertTrue(dsProps.get(props[0]).equals(props[1]));
 
-    }    
+    }
 
     private void testAddXaDataSource() throws Exception {
 
         // add data source
-        cli.sendLine("xa-data-source add --profile=" + profileNames[0] + 
-                " --jndi-name=java:jboss/datasources/TestXADS --driver-name=h2");
+        cli.sendLine("xa-data-source add --profile=" + profileNames[0] +
+                " --name=java:jboss/datasources/TestXADS --driver-name=h2");
 
         //check the data source is listed
         cli.sendLine("cd /profile=" + profileNames[0] + "/subsystem=datasources/xa-data-source");
@@ -143,7 +143,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
     }
 
     private void testModifyXaDataSource() throws Exception {
-        StringBuilder cmd = new StringBuilder("xa-data-source --profile=" + profileNames[0] + " --jndi-name=java:jboss/datasources/TestXADS");
+        StringBuilder cmd = new StringBuilder("xa-data-source --profile=" + profileNames[0] + " --name=java:jboss/datasources/TestXADS");
         for (String[] props : DS_PROPS) {
             cmd.append(" --");
             cmd.append(props[0]);
@@ -153,19 +153,19 @@ public class DataSourceTestCase extends AbstractCliTestBase {
         cli.sendLine(cmd.toString());
 
         // check that datasource was modified
-        cli.sendLine("/profile=" + profileNames[0] + "/subsystem=datasources/xa-data-source=java\\:jboss\\/datasources\\/TestXADS:read-resource(recursive=true)");       
+        cli.sendLine("/profile=" + profileNames[0] + "/subsystem=datasources/xa-data-source=java\\:jboss\\/datasources\\/TestXADS:read-resource(recursive=true)");
         CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         assertTrue(result.isIsOutcomeSuccess());
         assertTrue(result.getResult() instanceof Map);
         Map dsProps = (Map) result.getResult();
         for (String[] props : DS_PROPS) assertTrue(dsProps.get(props[0]).equals(props[1]));
 
-    }    
-    
+    }
+
     private void testRemoveXaDataSource() throws Exception {
 
         // remove data source
-        cli.sendLine("xa-data-source remove  --profile=" + profileNames[0] + " --jndi-name=java:jboss/datasources/TestXADS");
+        cli.sendLine("xa-data-source remove  --profile=" + profileNames[0] + " --name=java:jboss/datasources/TestXADS");
 
         //check the data source is not listed
         cli.sendLine("cd /profile=" + profileNames[0] + "/subsystem=datasources/xa-data-source");
