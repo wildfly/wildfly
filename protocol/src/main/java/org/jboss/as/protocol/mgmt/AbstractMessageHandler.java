@@ -25,9 +25,8 @@ package org.jboss.as.protocol.mgmt;
 import java.io.DataInput;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -37,7 +36,6 @@ import org.jboss.as.protocol.ProtocolLogger;
 import org.jboss.as.protocol.ProtocolMessages;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.remoting3.Channel;
-import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.MessageOutputStream;
 import org.jboss.threads.AsyncFuture;
 import org.xnio.Cancellable;
@@ -51,7 +49,7 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
 
     private final ExecutorService executorService;
     private final AtomicInteger requestID = new AtomicInteger();
-    private final Map<Integer, ActiveRequest> requests = Collections.synchronizedMap(new HashMap<Integer, ActiveRequest>());
+    private final Map<Integer, ActiveRequest> requests = new ConcurrentHashMap<Integer, ActiveRequest>(16, 0.75f, Runtime.getRuntime().availableProcessors());
 
     protected AbstractMessageHandler(final ExecutorService executorService) {
         super(executorService);
@@ -146,7 +144,7 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
     protected AsyncFuture<T> executeRequest(final ManagementRequest<T, A> request, final Channel channel, final ActiveOperation<T, A> support) {
         assert support != null;
         final Integer requestId = this.requestID.incrementAndGet();
-        final ActiveRequest ar = new ActiveRequest(support, request);
+        final ActiveRequest ar = new ActiveRequest(support, request, channel);
         requests.put(requestId, ar);
         final ManagementRequestHeader header = new ManagementRequestHeader(ManagementProtocol.VERSION, requestId, support.getOperationId(), request.getOperationType());
         final ActiveOperation.ResultHandler<T> resultHandler = support.getResultHandler();
@@ -171,10 +169,6 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
                 @Override
                 public ManagementProtocolHeader getRequestHeader() {
                     return header;
-                }
-
-                private ExecutorService getExecutor() {
-                    return executorService;
                 }
 
                 @Override
@@ -202,18 +196,9 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
                 }
             });
 
-            channel.addCloseHandler(new CloseHandler<Channel>() {
-                @Override
-                public void handleClose(Channel closed, IOException e) {
-                    if (channel == closed) {
-                        IOException failure = e == null ? new IOException("Channel closed") : e;
-                        resultHandler.failed(failure);
-                    }
-                }
-            });
-
         } catch (Exception e) {
             resultHandler.failed(e);
+            requests.remove(requestId);
         }
         return support.getResult();
     }
@@ -253,10 +238,6 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
                 @Override
                 public ManagementProtocolHeader getRequestHeader() {
                     return header;
-                }
-
-                private ExecutorService getExecutor() {
-                    return executorService;
                 }
 
                 @Override
@@ -315,6 +296,42 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
     @Override
     public boolean awaitCompletion(long timeout, TimeUnit unit) throws InterruptedException {
         return super.awaitCompletion(timeout, unit);
+    }
+
+    /**
+     * Receive a notification that the channel was closed.
+     *
+     * This is used for the {@link ManagementClientChannelStrategy.Establishing} since it might use multiple channels.
+     *
+     * @param closed the closed resource
+     * @param e the exception which occurred during close, if any
+     */
+    protected void handleChannelClosed(final Channel closed, final IOException e) {
+        for(final Map.Entry<Integer, ActiveRequest> requestEntry : requests.entrySet()) {
+            final ActiveRequest request = requestEntry.getValue();
+            if(request.channel == closed) {
+                final IOException failure = e == null ? new IOException("Channel closed") : e;
+                request.context.getResultHandler().failed(failure);
+                requests.remove(requestEntry.getKey());
+            }
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected ActiveOperation<T, A> removeActiveOperation(Integer id) {
+        final ActiveOperation<T, A> removed = super.removeActiveOperation(id);
+        if(removed != null) {
+            for(final Map.Entry<Integer, ActiveRequest> requestEntry : requests.entrySet()) {
+                final ActiveRequest request = requestEntry.getValue();
+                if(request.context == removed) {
+                    requests.remove(requestEntry.getKey());
+                }
+            }
+        }
+        return removed;
     }
 
     /**
@@ -385,12 +402,14 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
 
     private class ActiveRequest {
 
+        private final Channel channel;
         private final ActiveOperation<T, A> context;
         private final ManagementRequestHandler<T, A> handler;
 
-        ActiveRequest(ActiveOperation<T, A> context, ManagementRequestHandler<T, A> handler) {
+        ActiveRequest(ActiveOperation<T, A> context, ManagementRequestHandler<T, A> handler, Channel channel) {
             this.context = context;
             this.handler = handler;
+            this.channel = channel;
         }
     }
 

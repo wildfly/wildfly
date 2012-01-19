@@ -72,7 +72,7 @@ class ActiveOperationSupport<T, A> {
     };
 
     private final Executor executor;
-    private final ConcurrentMap<Integer, ActiveOperationImpl<T, A>> activeRequests = new ConcurrentHashMap<Integer, ActiveOperationImpl<T, A>>();
+    private final ConcurrentMap<Integer, ActiveOperationImpl<T, A>> activeRequests = new ConcurrentHashMap<Integer, ActiveOperationImpl<T, A>> (16, 0.75f, Runtime.getRuntime().availableProcessors());
     private final ManagementBatchIdManager operationIdManager = new ManagementBatchIdManager.DefaultManagementBatchIdManager();
 
     private final ReentrantLock lock = new ReentrantLock();
@@ -178,7 +178,7 @@ class ActiveOperationSupport<T, A> {
      * @param id the operation id
      * @return the removed active operation, {@code null} if there was no registered operation
      */
-    private ActiveOperation<T, A> removeActiveOperation(final Integer id) {
+    protected ActiveOperation<T, A> removeActiveOperation(final Integer id) {
         lock.lock(); try {
             final ActiveOperation<T, A> removed = activeRequests.remove(id);
             if(removed != null) {
@@ -195,12 +195,13 @@ class ActiveOperationSupport<T, A> {
     /**
      * Cancel all currently active operations.
      */
-    protected void cancelAllActiveOperations() {
-        final List<ActiveOperationImpl<T, A>> operations = new ArrayList<ActiveOperationImpl<T, A>>();
+    protected List<Integer> cancelAllActiveOperations() {
+        final List<Integer> operations = new ArrayList<Integer>();
         for(final ActiveOperationImpl<T, A> activeOperation : activeRequests.values()) {
             activeOperation.asyncCancel(false);
-            operations.add(activeOperation);
+            operations.add(activeOperation.getOperationId());
         }
+        return operations;
     }
 
     /**

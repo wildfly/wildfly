@@ -256,6 +256,14 @@ public abstract class AbstractModelControllerClient extends AbstractMessageHandl
         return new DelegatingCancellableAsyncFuture(super.executeRequest(request, getChannel(), support), support.getOperationId());
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void handleChannelClosed(final Channel channel, final IOException e) {
+        super.handleChannelClosed(channel, e);
+    }
+
     static class OperationExecutionContext implements ActiveOperation.CompletedCallback<ModelNode> {
 
         private final Operation operation;
@@ -415,6 +423,5 @@ public abstract class AbstractModelControllerClient extends AbstractMessageHandl
             }
         }
     }
-
 
 }
