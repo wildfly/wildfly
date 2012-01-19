@@ -38,7 +38,7 @@ public class DataSourceStatisticsListener extends AbstractServiceListener<Object
                 int jdbcStatsSize = jdbcStats.getNames().size();
                 int poolStatsSize = poolStats.getNames().size();
                 if (jdbcStatsSize > 0 || poolStatsSize > 0) {
-                    ManagementResourceRegistration subRegistration = registration.registerOverrideModel(dsName, DataSourcesSubsystemProviders.OVERRIDE_DS_DESC);
+                    ManagementResourceRegistration subRegistration = registration.isAllowsOverride() ? registration.registerOverrideModel(dsName, DataSourcesSubsystemProviders.OVERRIDE_DS_DESC) : registration;
 
                     if (jdbcStatsSize > 0) {
                         ManagementResourceRegistration jdbcRegistration = subRegistration.registerSubModel(PathElement.pathElement("statistics", "jdbc"), new StatisticsDescriptionProvider(DataSourcesSubsystemProviders.RESOURCE_NAME, "statistics", jdbcStats));

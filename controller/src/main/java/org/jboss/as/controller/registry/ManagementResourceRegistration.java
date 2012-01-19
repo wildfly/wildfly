@@ -102,7 +102,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
     /**
      * Gets whether this registration will always throw an exception if
      * {@link #registerOverrideModel(String, OverrideDescriptionProvider)} is invoked. An exception will always
-     * be thrown for root resource registrations, {@link PathElement#WILDCARD_VALUE wildcard registrations}, or
+     * be thrown for root resource registrations, {@link PathElement#WILDCARD_VALUE non-wildcard registrations}, or
      * {@link #isRemote() remote registrations}.
      *
      * @return {@code true} if an exception will not always be thrown; {@code false} if it will

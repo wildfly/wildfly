@@ -73,7 +73,7 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
 
     @Override
     public boolean isAllowsOverride() {
-        return !isRemote() && parent != null && !PathElement.WILDCARD_VALUE.equals(valueString);
+        return !isRemote() && parent != null && PathElement.WILDCARD_VALUE.equals(valueString);
     }
 
     @Override

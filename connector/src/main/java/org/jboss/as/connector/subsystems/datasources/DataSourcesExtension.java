@@ -281,11 +281,11 @@ public class DataSourcesExtension implements Extension {
             }
         }
         if (registerRuntimeOnly) {
-            registerDeploymentsModel(registerRuntimeOnly, registration);
+            registerDeploymentsModel(registration);
         }
     }
 
-    private void registerDeploymentsModel(final boolean registerRuntimeOnly, final SubsystemRegistration registration) {
+    private void registerDeploymentsModel(final SubsystemRegistration registration) {
         ResourceDefinition deploymentsDef = new SimpleResourceDefinition(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME),
                 getResourceDescriptionResolver("deployed"));
         final ManagementResourceRegistration deploymentsRegistration = registration.registerDeploymentModel(deploymentsDef);

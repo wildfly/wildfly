@@ -357,20 +357,6 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
     private ManagementResourceRegistration getRegistration(final boolean xa, final DeploymentUnit unit) {
         final Resource root = unit.getAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE);
         synchronized (root) {
-            ManagementResourceRegistration registration = unit.getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT);
-            if (registration.isAllowsOverride()) {
-                registration = registration.registerOverrideModel(unit.getName(), new OverrideDescriptionProvider() {
-                    @Override
-                    public Map<String, ModelNode> getAttributeOverrideDescriptions(Locale locale) {
-                        return Collections.emptyMap();
-                    }
-
-                    @Override
-                    public Map<String, ModelNode> getChildTypeOverrideDescriptions(Locale locale) {
-                        return Collections.emptyMap();
-                    }
-                });
-            }
             final PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, DataSourcesExtension.SUBSYSTEM_NAME));
             getOrCreate(root, subsystemAddress);
             final  PathAddress address;
@@ -379,7 +365,8 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
             } else {
                 address = subsystemAddress.append(PathElement.pathElement(DATA_SOURCE));
             }
-            final ManagementResourceRegistration subModel = registration.getSubModel(address);
+            ManagementResourceRegistration registration = unit.getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT);
+            ManagementResourceRegistration subModel = registration.getSubModel(address);
             if (subModel == null) {
                 throw new IllegalStateException(address.toString());
             }
