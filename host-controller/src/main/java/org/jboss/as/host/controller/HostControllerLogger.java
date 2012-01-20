@@ -327,4 +327,19 @@ public interface HostControllerLogger extends BasicLogger {
     @LogMessage(level = Level.INFO)
     @Message(id = 10926, value = "Unregistering server %s")
     void unregisteringServer(String name);
+
+    /**
+     * Informal log message indicating the local host registered at the remote domain controller.
+     */
+    @LogMessage(level = Level.INFO)
+    @Message(id = 10927, value =  "Registered at domain controller")
+    void registeredAtRemoteHostController();
+
+    /**
+     * Informal log message indicating the local host unregistered at the remote domain controller.
+     */
+    @LogMessage(level = Level.INFO)
+    @Message(id = 10928, value =  "Unregistered at domain controller")
+    void unregisteredAtRemoteHostController();
+
 }

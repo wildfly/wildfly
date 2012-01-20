@@ -192,15 +192,6 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     }
 
     private synchronized void connect() {
-//        if (this.channelClient != null) {
-//            try {
-//                new UnregisterModelControllerRequest().executeForResult(executor, ManagementClientChannelStrategy.create(channel));
-//            } catch (Exception e) {
-//            }
-//
-//            this.channelClient.close();
-//            this.channelClient = null;
-//        }
 
         // txOperationHandler = new TransactionalModelControllerOperationHandler(executor, controller);
         ProtocolChannelClient client;
@@ -210,7 +201,6 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         configuration.setEndpointName("endpoint");
         configuration.setUriScheme("remote");
 
-        this.handler = new TransactionalModelControllerOperationHandler(controller, executor);
         final Connection connection;
         try {
             configuration.setUri(new URI("remote://" + host.getHostAddress() + ":" + port));
@@ -218,6 +208,8 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
+        this.handler = new TransactionalModelControllerOperationHandler(controller, executor);
 
         try {
             CallbackHandler handler = null;
@@ -256,7 +248,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             }
             throw new IllegalStateException(error.getErrorMessage());
         }
-
+        HostControllerLogger.ROOT_LOGGER.registeredAtRemoteHostController();
     }
 
     /** {@inheritDoc} */
@@ -267,6 +259,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         try {
             new UnregisterModelControllerRequest().executeForResult(handler, channel, null);
             registered.set(false);
+            HostControllerLogger.ROOT_LOGGER.unregisteredAtRemoteHostController();
         } catch (Exception e) {
             ROOT_LOGGER.debugf(e, "Error unregistering from master");
         }
