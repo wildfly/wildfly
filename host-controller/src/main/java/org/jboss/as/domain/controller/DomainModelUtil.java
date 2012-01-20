@@ -264,7 +264,7 @@ public class DomainModelUtil {
         serverGroups.registerOperationHandler(REMOVE, ServerGroupRemoveHandler.INSTANCE, ServerGroupRemoveHandler.INSTANCE, false);
         serverGroups.registerReadWriteAttribute(SOCKET_BINDING_GROUP, null, WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE, Storage.CONFIGURATION);
         serverGroups.registerReadWriteAttribute(SOCKET_BINDING_PORT_OFFSET, null, new IntRangeValidatingHandler(0, true), Storage.CONFIGURATION);
-        serverGroups.registerReadWriteAttribute(PROFILE, null, new ServerGroupProfileWriteAttributeHandler(root, hostControllerInfo), Storage.CONFIGURATION);
+        serverGroups.registerReadWriteAttribute(PROFILE, null, ServerGroupProfileWriteAttributeHandler.INSTANCE, Storage.CONFIGURATION);
         DomainServerLifecycleHandlers.registerServerGroupHandlers(serverGroups);
 
 

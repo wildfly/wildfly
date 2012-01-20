@@ -48,6 +48,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.domain.controller.operations.ResolveExpressionOnDomainHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentFullReplaceHandler;
+import org.jboss.as.server.operations.ServerRestartRequiredHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -351,6 +352,12 @@ public class ServerOperationResolver {
             serverOp.get(RUNTIME_NAME).set(domainDeployment.get(RUNTIME_NAME));
             serverOp.get(CONTENT).set(domainDeployment.require(CONTENT));
             result = Collections.singletonMap(servers, serverOp);
+        } else if (ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION.equals(operation.require(OP).asString())) {
+            if (PROFILE.equals(operation.get(NAME).asString())) {
+                String groupName = address.getElement(0).getValue();
+                Set<ServerIdentity> servers = getServersForGroup(groupName, host, localHostName, serverProxies);
+                return getServerRestartRequiredOperations(servers);
+            }
         }
 
         if (result == null) {
@@ -377,7 +384,6 @@ public class ServerOperationResolver {
             final Set<ServerIdentity> allServers = getAllRunningServers(host, localHostName, serverProxies);
             result = Collections.singletonMap(allServers, serverOp);
         }
-
         if (result == null) {
             result = Collections.emptyMap();
         }
@@ -633,6 +639,7 @@ public class ServerOperationResolver {
                 ServerIdentity serverId = getServerIdentity(serverName, host);
                 serverOp = getServerSystemPropertyOperation(operation, propName, serverId, Level.SERVER, domain,  host);
             }
+
         }
         else {
             // TODO - deal with "add", "remove" and changing "auto-start" attribute
@@ -649,6 +656,14 @@ public class ServerOperationResolver {
         }
         return result;
     }
+
+    private Map<Set<ServerIdentity>, ModelNode> getServerRestartRequiredOperations(Set<ServerIdentity> servers){
+        ModelNode op = new ModelNode();
+        op.get(OP).set(ServerRestartRequiredHandler.OPERATION_NAME);
+        op.get(OP_ADDR).setEmptyList();
+        return Collections.singletonMap(servers, op);
+    }
+
 
     private ServerIdentity getServerIdentity(String serverName, ModelNode host) {
         ModelNode serverNode = host.get(SERVER_CONFIG, serverName);

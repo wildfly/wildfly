@@ -33,7 +33,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers.StringLengthValidatingHandler;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
-import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.host.controller.HostControllerMessages;
 import org.jboss.as.server.operations.ServerRestartRequiredHandler;
 import org.jboss.dmr.ModelNode;
@@ -45,11 +44,9 @@ import org.jboss.dmr.ModelNode;
 public class ServerConfigGroupWriteAttributeHandler extends StringLengthValidatingHandler {
 
     private final ImmutableManagementResourceRegistration rootResourceRegistration;
-    private final LocalHostControllerInfo localHostControllerInfo;
 
-    public ServerConfigGroupWriteAttributeHandler(final ImmutableManagementResourceRegistration rootResourceRegistration, final LocalHostControllerInfo localHostControllerInfo) {
+    public ServerConfigGroupWriteAttributeHandler(final ImmutableManagementResourceRegistration rootResourceRegistration) {
         super(1, false);
-        this.localHostControllerInfo = localHostControllerInfo;
         this.rootResourceRegistration = rootResourceRegistration;
     }
 
