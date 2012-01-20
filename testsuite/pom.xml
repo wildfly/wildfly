@@ -106,7 +106,8 @@
         <jvm.args.security>${jvm.args.securityManager} ${jvm.args.securityPolicy}</jvm.args.security>
         
         <!-- JaCoCo - Code coverage (-Dcoverage). -->
-        <jvm.args.jacoco>-javaagent:${jbossas.ts.dir}/tools/jacoco/jacocoagent.jar=destfile=${basedir}/target/jacoco.exec,includes=${jboss.home}/modules/**/*,excludes=${basedir}/target/classes/**/*,append=true,output=file</jvm.args.jacoco>
+        <!--jvm.args.jacoco>-javaagent:${jbossas.ts.dir}/tools/jacoco/jacocoagent.jar=destfile=${basedir}/target/jacoco.exec,includes=${jboss.home}/modules/**/*,excludes=${basedir}/target/classes/**/*,append=true,output=file</jvm.args.jacoco>-->
+        <jvm.args.jacoco>-javaagent:${jbossas.ts.dir}/target/jacoco-jars/agent/jacocoagent.jar=destfile=${basedir}/target/jacoco.exec,includes=${jboss.home}/modules/**/*,excludes=${basedir}/target/classes/**/*,append=true,output=file</jvm.args.jacoco>
         
         <!-- Timeout ratios. 100 will leave the timeout as it was coded. -->
         <timeout.ratio.fsio>100</timeout.ratio.fsio>
@@ -584,22 +585,28 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-dependency-plugin</artifactId>
                         <executions>
-                            <execution><id>ts.jacoco.dep</id>
-                                <inherited>false</inherited>
-                                <goals><goal>copy</goal></goals>
-                                <phase>process-test-resources</phase>
+                            <!-- Copy the ant tasks jar. Needed for ts.jacoco.report-ant . -->
+                            <execution> <id>ts.jacoco.dep.ant</id> <goals><goal>copy</goal></goals> <phase>process-test-resources</phase> <inherited>false</inherited>
                                 <configuration>
                                     <artifactItems>
-                                        <artifactItem>
-                                            <groupId>org.jacoco</groupId>
-                                            <artifactId>org.jacoco.ant</artifactId>
-                                            <version>${version.jacoco.plugin}</version>
-                                        </artifactItem>
+                                        <artifactItem><groupId>org.jacoco</groupId><artifactId>org.jacoco.ant</artifactId><version>${version.jacoco.plugin}</version></artifactItem>
                                     </artifactItems>
-                                    <outputDirectory>${basedir}/target/jacoco-jars</outputDirectory>
                                     <stripVersion>true</stripVersion>
+                                    <outputDirectory>${basedir}/target/jacoco-jars</outputDirectory>
                                 </configuration>
                             </execution>
+                            <!-- Copy the agent jar. Needed for ${jvm.args.jacoco} to have this jar on known path.
+                                 If the ts.jacoco-prepare worked and really put the value into the property, this might go away. -->
+                            <execution> <id>ts.jacoco.dep.agent</id> <goals><goal>unpack</goal></goals> <phase>process-test-resources</phase> <inherited>false</inherited>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem><groupId>org.jacoco</groupId><artifactId>org.jacoco.agent</artifactId><version>${version.jacoco.plugin}</version></artifactItem>
+                                    </artifactItems>
+                                    <stripVersion>true</stripVersion>
+                                    <outputDirectory>${basedir}/target/jacoco-jars/agent</outputDirectory>
+                                </configuration>
+                            </execution>
+
                         </executions>
                     </plugin>
                     <!-- Ant plugin. -->
