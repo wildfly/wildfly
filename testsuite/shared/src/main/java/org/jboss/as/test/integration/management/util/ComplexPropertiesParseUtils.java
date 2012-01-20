@@ -218,22 +218,12 @@ public class ComplexPropertiesParseUtils {
      * TODO: not implemented jet in DMR
      */
     public static void addExtensionProperties(ModelNode operation){
-        /*
+      
         
-        operation.get("reauth-plugin-properties","Property").set("A");
-        operation.get("valid-connection-checker-properties","Property").set("B");
-        operation.get("stale-connect,roperties","Property").set("C");
-        operation.get("exception-sorter-properties","Property").set("D");
-         */
-        /*final ModelNode sourcePropertiesAddress = address.clone();
-        sourcePropertiesAddress.add("reauth-plugin-properties", "Property");
-        sourcePropertiesAddress.protect();
-        final ModelNode sourcePropertyOperation = new ModelNode();
-        sourcePropertyOperation.get(OP).set("add");
-        sourcePropertyOperation.get(OP_ADDR).set(sourcePropertiesAddress);
-        sourcePropertyOperation.get("value").set("A");
-
-        execute(sourcePropertyOperation);*/
+        operation.get("reauth-plugin-properties","name").set("Property1");
+        operation.get("valid-connection-checker-properties","name").set("Property2");
+        operation.get("stale-connection-checker-properties","name").set("Property3");
+        operation.get("exception-sorter-properties","name").set("Property4");
 
     }
     /**

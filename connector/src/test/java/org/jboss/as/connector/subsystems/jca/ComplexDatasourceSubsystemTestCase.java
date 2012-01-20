@@ -28,6 +28,7 @@ import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Properties;
@@ -40,10 +41,8 @@ import static org.jboss.as.connector.subsystems.jca.ParseUtils.xaDsProperties;
  *
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
+//@Ignore
 public class ComplexDatasourceSubsystemTestCase extends AbstractSubsystemTest {
-
-    private static final String LAUNCH_TYPE = "launch-type";
-    private static final String TYPE_STANDALONE = "STANDALONE";
 
     public ComplexDatasourceSubsystemTestCase() {
         super(DataSourcesExtension.SUBSYSTEM_NAME, new DataSourcesExtension());
@@ -74,13 +73,23 @@ public class ComplexDatasourceSubsystemTestCase extends AbstractSubsystemTest {
         ModelNode modelDs=model.get("subsystem", "datasources","data-source",complexDs+"_Pool");
         checkModelParams(modelDs,params);
         Assert.assertEquals(modelDs.asString(),"UTF-8",modelDs.get("connection-properties","char.encoding","value").asString());
-
+        Assert.assertEquals(modelDs.asString(),"Property2",modelDs.get("valid-connection-checker-properties","name").asString());
+        Assert.assertEquals(modelDs.asString(),"Property4",modelDs.get("exception-sorter-properties","name").asString());
+        Assert.assertEquals(modelDs.asString(),"Property3",modelDs.get("stale-connection-checker-properties","name").asString());
+        Assert.assertEquals(modelDs.asString(),"Property1",modelDs.get("reauth-plugin-properties","name").asString());
+        
         final String complexXaDs = "complexXaDs";
         final String complexXaDsJndi = "java:jboss/xa-datasources/" + complexXaDs;
         params=xaDsProperties(complexXaDsJndi);
         ModelNode modelXaDs=model.get("subsystem", "datasources","xa-data-source",complexXaDs+"_Pool");
         checkModelParams(modelXaDs,params);
         Assert.assertEquals(modelXaDs.asString(),"jdbc:h2:mem:test",modelXaDs.get("xa-datasource-properties","URL","value").asString());
+        Assert.assertEquals(modelXaDs.asString(),"Property2",modelXaDs.get("valid-connection-checker-properties","name").asString());
+        Assert.assertEquals(modelXaDs.asString(),"Property4",modelXaDs.get("exception-sorter-properties","name").asString());
+        Assert.assertEquals(modelXaDs.asString(),"Property3",modelXaDs.get("stale-connection-checker-properties","name").asString());
+        Assert.assertEquals(modelXaDs.asString(),"Property1",modelXaDs.get("reauth-plugin-properties","name").asString());
+        Assert.assertEquals(modelXaDs.asString(),"Property5",modelXaDs.get("recovery-plugin-properties","name").asString());
+        Assert.assertEquals(modelXaDs.asString(),"Property6",modelXaDs.get("recovery-plugin-properties","name1").asString());
 
         //Marshal the xml to see that it is the same as before
         String marshalled = services.getPersistedSubsystemXml();
