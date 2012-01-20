@@ -116,9 +116,9 @@ import org.jboss.as.host.controller.operations.RemoteDomainControllerAddHandler;
 import org.jboss.as.host.controller.operations.RemoteDomainControllerRemoveHandler;
 import org.jboss.as.host.controller.operations.ResolveExpressionOnHostHandler;
 import org.jboss.as.host.controller.operations.ServerAddHandler;
-import org.jboss.as.host.controller.operations.ServerConfigGroupWriteAttributeHandler;
 import org.jboss.as.host.controller.operations.ServerRemoveHandler;
 import org.jboss.as.host.controller.operations.ServerRestartHandler;
+import org.jboss.as.host.controller.operations.ServerRestartRequiredServerConfigWriteAttributeHandler;
 import org.jboss.as.host.controller.operations.ServerStartHandler;
 import org.jboss.as.host.controller.operations.ServerStatusHandler;
 import org.jboss.as.host.controller.operations.ServerStopHandler;
@@ -323,11 +323,11 @@ public class HostModelUtil {
         servers.registerOperationHandler(ServerAddHandler.OPERATION_NAME, ServerAddHandler.INSTANCE, ServerAddHandler.INSTANCE, false);
         servers.registerOperationHandler(ServerRemoveHandler.OPERATION_NAME, ServerRemoveHandler.INSTANCE, ServerRemoveHandler.INSTANCE, false);
         servers.registerReadWriteAttribute(AUTO_START, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN), Storage.CONFIGURATION);
-        servers.registerReadWriteAttribute(SOCKET_BINDING_GROUP, null, WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE, Storage.CONFIGURATION);
-        servers.registerReadWriteAttribute(SOCKET_BINDING_PORT_OFFSET, null, new WriteAttributeHandlers.IntRangeValidatingHandler(0, true), Storage.CONFIGURATION);
+        servers.registerReadWriteAttribute(SOCKET_BINDING_GROUP, null, ServerRestartRequiredServerConfigWriteAttributeHandler.SOCKET_BINDING_GROUP_INSTANCE, Storage.CONFIGURATION);
+        servers.registerReadWriteAttribute(SOCKET_BINDING_PORT_OFFSET, null, ServerRestartRequiredServerConfigWriteAttributeHandler.SOCKET_BINDING_PORT_OFFSET_INSTANCE, Storage.CONFIGURATION);
         servers.registerReadWriteAttribute(PRIORITY, null, new WriteAttributeHandlers.IntRangeValidatingHandler(0), Storage.CONFIGURATION);
         servers.registerReadWriteAttribute(CPU_AFFINITY, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1), Storage.CONFIGURATION);
-        servers.registerReadWriteAttribute(GROUP, null, ServerConfigGroupWriteAttributeHandler.INSTANCE, Storage.CONFIGURATION);
+        servers.registerReadWriteAttribute(GROUP, null, ServerRestartRequiredServerConfigWriteAttributeHandler.GROUP_INSTANCE, Storage.CONFIGURATION);
 
         // Register server runtime operation handlers
         servers.registerMetric(ServerStatusHandler.ATTRIBUTE_NAME, new ServerStatusHandler(serverInventory));
