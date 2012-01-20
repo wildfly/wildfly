@@ -57,14 +57,12 @@ public class ReloadRequiredServerTestCase extends AbstractOperationTestCase {
         final Resource profileConfig = Resource.Factory.create();
         operationContext.root.registerChild(PathElement.pathElement(PROFILE, "some-profile"), profileConfig);
 
-        operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")));
-
         final ModelNode operation = new ModelNode();
         operation.get(OP_ADDR).set(pa.toModelNode());
         operation.get(NAME).set(PROFILE);
         operation.get(VALUE).set("some-profile");
 
-        new ServerGroupProfileWriteAttributeHandler(RESOURCE_REGISTRATION, HOST_INFO).execute(operationContext, operation);
+        ServerGroupProfileWriteAttributeHandler.INSTANCE.execute(operationContext, operation);
 
         operationContext.verify();
     }
@@ -86,7 +84,7 @@ public class ReloadRequiredServerTestCase extends AbstractOperationTestCase {
         operation.get(NAME).set(PROFILE);
         operation.get(VALUE).set("old");
 
-        new ServerGroupProfileWriteAttributeHandler(RESOURCE_REGISTRATION, HOST_INFO).execute(operationContext, operation);
+        ServerGroupProfileWriteAttributeHandler.INSTANCE.execute(operationContext, operation);
 
         operationContext.verify();
     }
@@ -105,7 +103,7 @@ public class ReloadRequiredServerTestCase extends AbstractOperationTestCase {
         operation.get(NAME).set(PROFILE);
         operation.get(VALUE).set("does-not-exist");
 
-        new ServerGroupProfileWriteAttributeHandler(RESOURCE_REGISTRATION, HOST_INFO).execute(operationContext, operation);
+        ServerGroupProfileWriteAttributeHandler.INSTANCE.execute(operationContext, operation);
 
         operationContext.verify();
     }
@@ -126,7 +124,7 @@ public class ReloadRequiredServerTestCase extends AbstractOperationTestCase {
         operation.get(NAME).set(GROUP);
         operation.get(VALUE).set("new-group");
 
-        new ServerConfigGroupWriteAttributeHandler(RESOURCE_REGISTRATION, HOST_INFO).execute(operationContext, operation);
+        new ServerConfigGroupWriteAttributeHandler(RESOURCE_REGISTRATION).execute(operationContext, operation);
 
         operationContext.verify();
     }
@@ -142,7 +140,7 @@ public class ReloadRequiredServerTestCase extends AbstractOperationTestCase {
         operation.get(NAME).set(GROUP);
         operation.get(VALUE).set("group-one");
 
-        new ServerConfigGroupWriteAttributeHandler(RESOURCE_REGISTRATION, HOST_INFO).execute(operationContext, operation);
+        new ServerConfigGroupWriteAttributeHandler(RESOURCE_REGISTRATION).execute(operationContext, operation);
 
         operationContext.verify();
     }
@@ -157,7 +155,7 @@ public class ReloadRequiredServerTestCase extends AbstractOperationTestCase {
         operation.get(NAME).set(GROUP);
         operation.get(VALUE).set("bad-group");
 
-        new ServerConfigGroupWriteAttributeHandler(RESOURCE_REGISTRATION, HOST_INFO).execute(operationContext, operation);
+        new ServerConfigGroupWriteAttributeHandler(RESOURCE_REGISTRATION).execute(operationContext, operation);
     }
 
 }
