@@ -548,7 +548,7 @@
                     <plugin>
                         <groupId>org.jacoco</groupId>
                         <artifactId>jacoco-maven-plugin</artifactId>
-                        <version>0.5.5.201112152213</version>
+                        <version>${version.jacoco.plugin}</version>
                         <executions>
                             <execution><id>ts.jacoco-prepare</id>
                                 <phase>process-test-classes</phase>
@@ -568,8 +568,9 @@
                                     <propertyName>jvm.args.jacoco</propertyName>
                                 </configuration>
                             </execution>
+                            <!-- Doesn't work currently - waiting for JaCoCo to fix this. -->
                             <execution><id>ts.jacoco.report</id>
-                                <phase>post-integration-test</phase>
+                                <phase>none</phase> <!-- post-integration-test -->
                                 <goals><goal>report</goal></goals>
                                 <configuration>
                                     <dataFile>target/jacoco.exec</dataFile>
@@ -578,11 +579,35 @@
                             </execution>
                         </executions>
                     </plugin>
-                    <!-- DEBUG -->
+                    <!-- Copy JaCoCo jars to have them for the Ant plugin. -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution><id>ts.jacoco.dep</id>
+                                <inherited>false</inherited>
+                                <goals><goal>copy</goal></goals>
+                                <phase>process-test-resources</phase>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>org.jacoco</groupId>
+                                            <artifactId>org.jacoco.ant</artifactId>
+                                            <version>${version.jacoco.plugin}</version>
+                                        </artifactItem>
+                                    </artifactItems>
+                                    <outputDirectory>${basedir}/target/jacoco-jars</outputDirectory>
+                                    <stripVersion>true</stripVersion>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- Ant plugin. -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions>
+                            <!-- DEBUG -->
                             <execution>
                                 <id>ts.jacoco.debug</id>
                                 <phase>post-integration-test</phase>
@@ -590,11 +615,61 @@
                                 <inherited>false</inherited>
                                 <configuration>
                                     <target>
-                                        <echo>${jvm.args.jacoco}</echo>
+                                        <echo>Jacoco argline: ${jvm.args.jacoco}</echo>
+                                        <echo>Jacoco jar: ${basedir}/target/jacoco-jars/org.jacoco.ant.jar</echo>
+                                    </target>
+                                </configuration>
+                            </execution>
+                            <!-- Must be run using Ant due to https://sourceforge.net/tracker/?func=detail&aid=3474708&group_id=177969&atid=883354 -->
+                            <execution>
+                                <id>ts.jacoco.report-ant</id>
+                                <phase>post-integration-test</phase>
+                                <goals><goal>run</goal></goals>
+                                <inherited>false</inherited>
+                                <configuration>
+                                    <!--
+                                    <taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml">
+                                        <classpath path=""/>
+                                    </taskdef>
+                                    -->
+                                    <target>
+                                        <taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml" classpathref="${maven.plugin.classpath}">
+                                            <classpath path="${basedir}/target/jacoco-jars/org.jacoco.ant.jar">
+                                                <!--<path location="${basedir}/target/jacoco-jars/org.jacoco.ant.jar"/>-->
+                                            </classpath>
+                                        </taskdef>
+                                        
+                                        <jacoco:report>
+                                            <executiondata>
+                                                <file file="${basedir}/target/jacoco.exec"/>
+                                            </executiondata>
+                                            <structure name="AS 7 project">
+                                                <classfiles>
+                                                    <fileset dir="${jboss.dist}">
+                                                        <include name="**/*.class"/>
+                                                        <include name="**/*.jar"/>
+                                                    </fileset>
+                                                </classfiles>
+                                                <sourcefiles encoding="UTF-8">
+                                                    <fileset dir="${jbossas.project.dir}">
+                                                        <include name="**/*.java"/>
+                                                        <exclude name="testsuite/**/*.java"/>
+                                                    </fileset>
+                                                </sourcefiles>
+                                            </structure>
+                                            <html destdir="report"/>
+                                        </jacoco:report>                                        
                                     </target>
                                 </configuration>
                             </execution>
                         </executions>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.jacoco</groupId>
+                                <artifactId>org.jacoco.ant</artifactId>
+                                <version>${version.jacoco.plugin}</version>
+                            </dependency>
+                        </dependencies>
                     </plugin>
                 </plugins>
             </build>
