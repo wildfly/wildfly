@@ -196,10 +196,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         // txOperationHandler = new TransactionalModelControllerOperationHandler(executor, controller);
         ProtocolChannelClient client;
         ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
-        //Reusing the endpoint here after a disconnect does not seem to work once something has gone down, so try our own
-        //configuration.setEndpoint(endpointInjector.getValue());
-        configuration.setEndpointName("endpoint");
-        configuration.setUriScheme("remote");
+        configuration.setEndpoint(endpointInjector.getValue());
 
         final Connection connection;
         try {
