@@ -20,10 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.logging.loggers;
+package org.jboss.as.logging.handlers;
 
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.logging.handlers.LoggerHandlerRemove;
 import org.jboss.as.logging.util.LogServices;
 
 /**

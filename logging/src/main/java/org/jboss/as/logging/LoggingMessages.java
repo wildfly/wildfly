@@ -128,6 +128,28 @@ public interface LoggingMessages {
     String handlerAlreadyDefined(String name);
 
     /**
+     * A message indicating the handler is attached to the handlers.
+     *
+     * @param handlerName the name of tha attached handler.
+     * @param handlers    a collection of the handler names.
+     *
+     * @return the message.
+     */
+    @Message(value = "Handler %s is attached to the following handlers and cannot be removed; %s")
+    String handlerAttachedToHandlers(String handlerName, Collection<String> handlers);
+
+    /**
+     * A message indicating the handler is attached to the loggers.
+     *
+     * @param handlerName the name of tha attached handler.
+     * @param loggers     a collection of the logger names.
+     *
+     * @return the message.
+     */
+    @Message(value = "Handler %s is attached to the following loggers and cannot be removed; %s")
+    String handlerAttachedToLoggers(String handlerName, Collection<String> loggers);
+
+    /**
      * A message indicating the handler, represented by the {@code name} parameter, was not found.
      *
      * @param name the handler name.

@@ -49,6 +49,7 @@ import org.jboss.as.logging.handlers.AbstractLogHandlerWriteAttributeHandler;
 import org.jboss.as.logging.handlers.HandlerDisable;
 import org.jboss.as.logging.handlers.HandlerEnable;
 import org.jboss.as.logging.handlers.HandlerLevelChange;
+import org.jboss.as.logging.handlers.LoggerFileHandlerRemove;
 import org.jboss.as.logging.handlers.LoggerHandlerRemove;
 import org.jboss.as.logging.handlers.async.AsyncHandlerAdd;
 import org.jboss.as.logging.handlers.async.AsyncHandlerAssignSubhandler;
@@ -74,7 +75,6 @@ import org.jboss.as.logging.handlers.file.SizeRotatingHandlerWriteAttributeHandl
 import org.jboss.as.logging.loggers.AbstractLoggerWriteAttributeHandler;
 import org.jboss.as.logging.loggers.LoggerAdd;
 import org.jboss.as.logging.loggers.LoggerAssignHandler;
-import org.jboss.as.logging.loggers.LoggerFileHandlerRemove;
 import org.jboss.as.logging.loggers.LoggerLevelChange;
 import org.jboss.as.logging.loggers.LoggerRemove;
 import org.jboss.as.logging.loggers.LoggerUnassignHandler;

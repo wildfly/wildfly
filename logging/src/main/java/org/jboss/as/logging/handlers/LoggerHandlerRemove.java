@@ -23,17 +23,27 @@
 package org.jboss.as.logging.handlers;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Handler;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.registry.Resource.Tools;
+import org.jboss.as.logging.CommonAttributes;
+import org.jboss.as.logging.LoggingExtension;
+import org.jboss.as.logging.LoggingMessages;
 import org.jboss.as.logging.util.LogServices;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
-
-import java.util.logging.Handler;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -44,9 +54,11 @@ public class LoggerHandlerRemove extends AbstractRemoveStepHandler {
     public static final LoggerHandlerRemove INSTANCE = new LoggerHandlerRemove();
 
     @Override
-    protected final void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
+    protected final void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
+        // Make sure the handler isn't attached
+        checkHandler(context, name);
         final ServiceName serviceName = LogServices.handlerName(name);
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(true);
         @SuppressWarnings("unchecked")
@@ -69,6 +81,68 @@ public class LoggerHandlerRemove extends AbstractRemoveStepHandler {
      */
     protected void removeAdditionalServices(final OperationContext context, final String name) {
 
+    }
+
+    /**
+     * Checks that the handler is not attached to any loggers or {@link org.jboss.logmanager.handlers.AsyncHandler
+     * AsynHandler's}.
+     *
+     * @param context     the context used to find the attached handlers.
+     * @param handlerName the name of the handler.
+     *
+     * @throws OperationFailedException if the handler is attached to a logger or{@link org.jboss.logmanager.handlers.AsyncHandler}.
+     */
+    static void checkHandler(final OperationContext context, final String handlerName) throws OperationFailedException {
+        final Resource root = context.getRootResource();
+        final ModelNode rootNode = Tools.readModel(root);
+        final ModelNode subsystem = rootNode.get(SUBSYSTEM, LoggingExtension.SUBSYSTEM_NAME);
+
+        final List<String> attached = new ArrayList<String>();
+
+        // Check the root logger
+        final ModelNode rootLogger = subsystem.get(CommonAttributes.ROOT_LOGGER, CommonAttributes.ROOT_LOGGER_NAME);
+        if (rootLogger.isDefined() && rootLogger.hasDefined(CommonAttributes.HANDLERS.getName())) {
+            final ModelNode handlers = rootLogger.get(CommonAttributes.HANDLERS.getName());
+            for (ModelNode handler : handlers.asList()) {
+                if (handlerName.equals(handler.asString())) {
+                    attached.add(CommonAttributes.ROOT_LOGGER_NAME);
+                }
+            }
+        }
+
+        // Check the loggers
+        final ModelNode loggers = subsystem.get(CommonAttributes.LOGGER);
+        for (Property logger : loggers.asPropertyList()) {
+            if (logger.getValue().hasDefined(CommonAttributes.HANDLERS.getName())) {
+                final ModelNode handlers = logger.getValue().get(CommonAttributes.HANDLERS.getName());
+                for (ModelNode handler : handlers.asList()) {
+                    if (handlerName.equals(handler.asString())) {
+                        attached.add(logger.getName());
+                    }
+                }
+            }
+        }
+
+        if (!attached.isEmpty()) {
+            throw new OperationFailedException(LoggingMessages.MESSAGES.handlerAttachedToLoggers(handlerName, attached));
+        }
+
+        // Check Async handlers
+        final ModelNode asyncHandlers = subsystem.get(CommonAttributes.ASYNC_HANDLER);
+        for (Property asyncHandler : asyncHandlers.asPropertyList()) {
+            if (asyncHandler.getValue().hasDefined(CommonAttributes.SUBHANDLERS.getName())) {
+                final ModelNode subhandlers = asyncHandler.getValue().get(CommonAttributes.SUBHANDLERS.getName());
+                for (ModelNode handler : subhandlers.asList()) {
+                    if (handlerName.equals(handler.asString())) {
+                        attached.add(asyncHandler.getName());
+                    }
+                }
+            }
+        }
+
+        if (!attached.isEmpty()) {
+            throw new OperationFailedException(LoggingMessages.MESSAGES.handlerAttachedToHandlers(handlerName, attached));
+        }
     }
 
 }
