@@ -121,7 +121,6 @@ public class InterceptorOrder {
     }
 
     public static final class View {
-        public static final int EJB_EXCEPTION_LOGGING_INTERCEPTOR = 0x000;
         public static final int TCCL_INTERCEPTOR = 0x001;
         public static final int INVOCATION_TYPE = 0x005;
         public static final int EE_SETUP = 0x010;
@@ -129,7 +128,8 @@ public class InterceptorOrder {
         public static final int JNDI_NAMESPACE_INTERCEPTOR = 0x050;
         public static final int NOT_BUSINESS_METHOD_EXCEPTION = 0x100;
         public static final int REMOTE_EXCEPTION_TRANSFORMER = 0x200;
-        public static final int INVALID_METHOD_EXCEPTION = 0x201;
+        public static final int EJB_EXCEPTION_LOGGING_INTERCEPTOR = 0x210;
+        public static final int INVALID_METHOD_EXCEPTION = 0x230;
         public static final int SECURITY_CONTEXT = 0x250;
         public static final int EJB_SECURITY_AUTHORIZATION_INTERCEPTOR = 0x300;
         public static final int INVOCATION_CONTEXT_INTERCEPTOR = 0x400;

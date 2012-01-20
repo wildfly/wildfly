@@ -42,7 +42,6 @@ import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanEjbCreateMethod
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanIdentityInterceptorFactory;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanIsIdenticalInterceptorFactory;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanPrimaryKeyInterceptor;
-import org.jboss.as.ejb3.component.interceptors.GetHomeInterceptorFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
@@ -74,24 +73,19 @@ public class EntityBeanObjectViewConfigurator implements ViewConfigurator {
         for (final Method method : configuration.getProxyFactory().getCachedMethods()) {
 
             if (method.getName().equals("getPrimaryKey") && method.getParameterTypes().length == 0) {
-
                 configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
                 configuration.addViewInterceptor(method, EntityBeanInterceptors.GET_PRIMARY_KEY, InterceptorOrder.View.COMPONENT_DISPATCHER);
             } else if (method.getName().equals("remove") && method.getParameterTypes().length == 0) {
-
                 configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
                 Method remove = resolveRemoveMethod(componentConfiguration.getComponentClass(), index, componentConfiguration.getComponentName());
                 configuration.addViewInterceptor(method, getEjbRemoveInterceptorFactory(remove), InterceptorOrder.View.COMPONENT_DISPATCHER);
             } else if (method.getName().equals("isIdentical") && method.getParameterTypes().length == 1 &&
                     (method.getParameterTypes()[0] == EJBLocalObject.class || method.getParameterTypes()[0] == EJBObject.class)) {
-
                 configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
                 configuration.addViewInterceptor(method, EntityBeanIsIdenticalInterceptorFactory.INSTANCE, InterceptorOrder.View.COMPONENT_DISPATCHER);
-
             } else if (method.getName().equals("getEJBLocalHome") && method.getParameterTypes().length == 0) {
-
                 configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
-                final GetHomeInterceptorFactory factory = new GetHomeInterceptorFactory();
+                final EntityGetHomeInterceptorFactory factory = new EntityGetHomeInterceptorFactory();
                 configuration.addViewInterceptor(method, factory, InterceptorOrder.View.COMPONENT_DISPATCHER);
                 final EntityBeanComponentDescription entityBeanComponentDescription = (EntityBeanComponentDescription) componentConfiguration.getComponentDescription();
                 componentConfiguration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
@@ -104,7 +98,7 @@ public class EntityBeanObjectViewConfigurator implements ViewConfigurator {
             } else if (method.getName().equals("getEJBHome") && method.getParameterTypes().length == 0) {
 
                 configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
-                final GetHomeInterceptorFactory factory = new GetHomeInterceptorFactory();
+                final EntityGetHomeInterceptorFactory factory = new EntityGetHomeInterceptorFactory();
                 configuration.addViewInterceptor(method, factory, InterceptorOrder.View.COMPONENT_DISPATCHER);
                 final EntityBeanComponentDescription entityBeanComponentDescription = (EntityBeanComponentDescription) componentConfiguration.getComponentDescription();
                 componentConfiguration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {

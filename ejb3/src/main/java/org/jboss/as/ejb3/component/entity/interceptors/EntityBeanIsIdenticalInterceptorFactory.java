@@ -25,8 +25,10 @@ package org.jboss.as.ejb3.component.entity.interceptors;
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 
+import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
+import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
@@ -62,15 +64,20 @@ public class EntityBeanIsIdenticalInterceptorFactory implements InterceptorFacto
 
         @Override
         public Object processInvocation(final InterceptorContext context) throws Exception {
-            final Object primaryKey = context.getPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY);
-            final Object other = context.getParameters()[0];
-            if(!componentView.getViewClass().isAssignableFrom(other.getClass())) {
-                return false;
-            }
-            if (context.getMethod().getParameterTypes()[0].equals(EJBLocalObject.class)) {
-                return ((EJBLocalObject) other).getPrimaryKey().equals(primaryKey);
-            } else {
-                return ((EJBObject) other).getPrimaryKey().equals(primaryKey);
+            final EntityBeanComponentInstance instance = (EntityBeanComponentInstance) context.getPrivateData(ComponentInstance.class);
+            try {
+                final Object primaryKey = context.getPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY);
+                final Object other = context.getParameters()[0];
+                if (!componentView.getViewClass().isAssignableFrom(other.getClass())) {
+                    return false;
+                }
+                if (context.getMethod().getParameterTypes()[0].equals(EJBLocalObject.class)) {
+                    return ((EJBLocalObject) other).getPrimaryKey().equals(primaryKey);
+                } else {
+                    return ((EJBObject) other).getPrimaryKey().equals(primaryKey);
+                }
+            } finally {
+                instance.getComponent().getCache().release(instance, true);
             }
         }
     }

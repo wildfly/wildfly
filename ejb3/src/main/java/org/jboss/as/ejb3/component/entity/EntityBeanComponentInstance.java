@@ -245,6 +245,9 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
         return synchronizeRegistered;
     }
 
+    protected void clearPrimaryKey() {
+        this.primaryKey = null;
+    }
 
     /**
      * Remove all timers for this entity bean. This method is transactional, so if the current TX is rolled back

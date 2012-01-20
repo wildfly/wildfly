@@ -84,17 +84,20 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
                     ROOT_LOGGER.trace("Acquired lock: " + lock + " for entity bean instance: " + instance + " during invocation: " + context);
                 }
 
-                //we need to check again
-                if (instance.isRemoved() || instance.isDiscarded()) {
-                    final Object primaryKey = context.getPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY);
-                    throw MESSAGES.instaceWasRemoved(component.getComponentName(), primaryKey);
+                if (context.getPrivateData(InternalInvocationMarker.class) == null) {
+                    if (instance.isRemoved() || instance.isDiscarded()) {
+                        final Object primaryKey = context.getPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY);
+                        component.getCache().release(instance, true);
+                        lock.unlock();
+                        throw MESSAGES.instaceWasRemoved(component.getComponentName(), primaryKey);
+                    }
                 }
+
                 Object currentTransactionKey = null;
                 try {
                     // get the key to current transaction associated with this thread
                     currentTransactionKey = transactionSynchronizationRegistry.getTransactionKey();
                     if (!instance.isSynchronizeRegistered()) {
-                        component.getCache().reference(instance);
                         // if this entity instance is already associated with a different transaction, then it's an error
 
                         // if the thread is currently associated with a tx, then register a tx synchronization
@@ -123,6 +126,7 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
                         instance.store();
                         releaseInstance(instance, true);
                     } else if (!syncRegistered) {
+                        component.getCache().release(instance, true);
                         lock.unlock();
                     }
                 }
@@ -177,7 +181,7 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
                 synchronized (threadLock) {
                     //invoke the EJB store method within the transaction
                     try {
-                        if (!componentInstance.isRemoved() && !componentInstance.isDiscarded()) {
+                        if (!componentInstance.isRemoved() && !componentInstance.isDiscarded() && componentInstance.getPrimaryKey() != null) {
                             componentInstance.store();
                         }
                     } catch (Throwable t) {

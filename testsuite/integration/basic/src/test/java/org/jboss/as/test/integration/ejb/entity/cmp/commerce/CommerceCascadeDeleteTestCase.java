@@ -22,6 +22,7 @@
 package org.jboss.as.test.integration.ejb.entity.cmp.commerce;
 
 import java.util.Iterator;
+
 import javax.ejb.ObjectNotFoundException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -30,16 +31,17 @@ import org.jboss.as.test.integration.ejb.entity.cmp.CmpTestRunner;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.junit.Assert.fail;
+
 @RunWith(CmpTestRunner.class)
-public class CascadeDeleteTestCase extends AbstractCmpTest {
+public class CommerceCascadeDeleteTestCase extends AbstractCmpTest {
     @Deployment
     public static Archive<?> deploy() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "cmp-commerce.jar");
-        jar.addPackage(CascadeDeleteTestCase.class.getPackage());
+        jar.addPackage(CommerceCascadeDeleteTestCase.class.getPackage());
         jar.addAsManifestResource("ejb/entity/cmp/commerce/ejb-jar.xml", "ejb-jar.xml");
         jar.addAsManifestResource("ejb/entity/cmp/commerce/jbosscmp-jdbc.xml", "jbosscmp-jdbc.xml");
         AbstractCmpTest.addDeploymentAssets(jar);

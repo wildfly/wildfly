@@ -93,13 +93,17 @@ public class EntityBeanRemoteViewInstanceFactory implements ViewInstanceFactory 
         //note that we do not release it back to the pool
         //the cache will do that when it is expired or removed
         entityBeanComponent.getCache().create(instance);
+        boolean synchronizationRegistered = false;
+        boolean exception = false;
 
+        try {
         invokeEjbPostCreate(contextData, ejbPostCreate, instance, params);
 
         //if a transaction is active we register a sync
         //and if the transaction is rolled back we release the instance back into the pool
 
         final TransactionSynchronizationRegistry transactionSynchronizationRegistry = entityBeanComponent.getTransactionSynchronizationRegistry();
+
         if (transactionSynchronizationRegistry.getTransactionKey() != null) {
             transactionSynchronizationRegistry.registerInterposedSynchronization(new Synchronization() {
                 @Override
@@ -109,12 +113,19 @@ public class EntityBeanRemoteViewInstanceFactory implements ViewInstanceFactory 
 
                 @Override
                 public void afterCompletion(final int status) {
-                    if (status != Status.STATUS_COMMITTED) {
-                        //if the transaction is rolled back we release the instance back into the pool
-                        entityBeanComponent.releaseEntityBeanInstance(instance);
-                    }
+                    entityBeanComponent.getCache().release(instance, status == Status.STATUS_COMMITTED);
                 }
             });
+            synchronizationRegistered = true;
+        }
+        } catch (Exception e) {
+            entityBeanComponent.getCache().release(instance, false);
+            exception = true;
+            throw e;
+        } finally {
+            if (!synchronizationRegistered && !exception) {
+                entityBeanComponent.getCache().release(instance, true);
+            }
         }
         return primaryKey;
     }

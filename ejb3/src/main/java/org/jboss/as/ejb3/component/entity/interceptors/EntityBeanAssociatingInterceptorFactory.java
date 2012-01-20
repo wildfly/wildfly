@@ -69,6 +69,7 @@ public class EntityBeanAssociatingInterceptorFactory implements InterceptorFacto
                     instance = component.getCache().get(primaryKey);
 
                     if (instance.isRemoved()) {
+                        component.getCache().release(instance, true);
                         throw MESSAGES.instaceWasRemoved(component.getComponentName(), primaryKey);
                     }
                 } catch (javax.ejb.NoSuchEntityException e) {
