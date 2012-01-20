@@ -37,10 +37,16 @@ public class EJBBoundPoolParser extends AbstractEJBBoundMetaDataParser<EJBBoundP
 
     public static final String NAMESPACE_URI = "urn:ejb-pool:1.0";
 
+    private static final String ROOT_ELEMENT_POOL = "pool";
     private static final String ELEMENT_BEAN_INSTANCE_POOL_REF = "bean-instance-pool-ref";
 
     @Override
     public EJBBoundPoolMetaData parse(final XMLStreamReader reader) throws XMLStreamException {
+        final String element = reader.getLocalName();
+        // we only parse <pool> (root) element
+        if (!ROOT_ELEMENT_POOL.equals(element)) {
+            throw unexpectedElement(reader);
+        }
         final EJBBoundPoolMetaData ejbBoundPoolMetaData = new EJBBoundPoolMetaData();
         this.processElements(ejbBoundPoolMetaData, reader);
         return ejbBoundPoolMetaData;

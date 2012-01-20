@@ -2018,6 +2018,6 @@ public interface EjbMessages {
      * @param ejbName The EJB name
      * @return an {@link IllegalArgumentException} for the exception
      */
-    @Message(id = 14528, value = "Pool name cannot be empty string for bean %s")
+    @Message(id = 14557, value = "Pool name cannot be empty string for bean %s")
     IllegalArgumentException poolNameCannotBeEmptyString(final String ejbName);
 }

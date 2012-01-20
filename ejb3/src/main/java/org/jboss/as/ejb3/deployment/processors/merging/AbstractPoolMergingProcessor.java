@@ -34,7 +34,7 @@ import org.jboss.as.ejb3.pool.EJBBoundPoolMetaData;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-import org.jboss.ejb3.annotation.ResourceAdapter;
+import org.jboss.ejb3.annotation.Pool;
 import org.jboss.metadata.ejb.spec.AssemblyDescriptorMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 
@@ -57,12 +57,12 @@ public abstract class AbstractPoolMergingProcessor<T extends EJBComponentDescrip
         if (clazz == null) {
             return;
         }
-        final ClassAnnotationInformation<ResourceAdapter, String> resourceAdaptor = clazz.getAnnotationInformation(ResourceAdapter.class);
-        if (resourceAdaptor == null) {
+        final ClassAnnotationInformation<Pool, String> pool = clazz.getAnnotationInformation(Pool.class);
+        if (pool == null) {
             return;
         }
-        if (!resourceAdaptor.getClassLevelAnnotations().isEmpty()) {
-            final String poolName = resourceAdaptor.getClassLevelAnnotations().get(0);
+        if (!pool.getClassLevelAnnotations().isEmpty()) {
+            final String poolName = pool.getClassLevelAnnotations().get(0);
             if (poolName == null || poolName.trim().isEmpty()) {
                 throw EjbMessages.MESSAGES.poolNameCannotBeEmptyString(description.getEJBName());
             }
