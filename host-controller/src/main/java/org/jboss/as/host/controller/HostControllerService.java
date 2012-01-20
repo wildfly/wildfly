@@ -142,6 +142,8 @@ public class HostControllerService implements Service<AsyncFuture<ServiceContain
         // Install required path services. (Only install those identified as required)
         AbsolutePathService.addService(HostControllerEnvironment.HOME_DIR, environment.getHomeDir().getAbsolutePath(), serviceTarget);
         AbsolutePathService.addService(HostControllerEnvironment.DOMAIN_CONFIG_DIR, environment.getDomainConfigurationDir().getAbsolutePath(), serviceTarget);
+        AbsolutePathService.addService(HostControllerEnvironment.DOMAIN_DATA_DIR, environment.getDomainDataDir().getAbsolutePath(), serviceTarget);
+        AbsolutePathService.addService(HostControllerEnvironment.DOMAIN_LOG_DIR, environment.getDomainLogDir().getAbsolutePath(), serviceTarget);
         AbsolutePathService.addService(HostControllerEnvironment.DOMAIN_TEMP_DIR, environment.getDomainTempDir().getAbsolutePath(), serviceTarget);
         AbsolutePathService.addService(HostControllerEnvironment.CONTROLLER_TEMP_DIR, environment.getDomainTempDir().getAbsolutePath(), serviceTarget);
 

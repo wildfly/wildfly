@@ -225,11 +225,11 @@ class ModelCombiner implements ManagedServerBootConfiguration {
             command.add(sb.toString());
         }
 
-        command.add("-Dorg.jboss.boot.log.file=" + environment.getDomainBaseDir().getAbsolutePath() + "/servers/" + serverName + "/log/boot.log");
+        command.add("-Dorg.jboss.boot.log.file=" + getAbsolutePath(environment.getDomainServersDir(), serverName, "log", "boot.log"));
         // TODO: make this better
         String loggingConfiguration = System.getProperty("logging.configuration");
         if (loggingConfiguration == null) {
-            loggingConfiguration = "file:" + environment.getDomainConfigurationDir().getAbsolutePath() + "/logging.properties";
+            loggingConfiguration = "file:" + getAbsolutePath(environment.getDomainConfigurationDir(), "logging.properties");
         }
         command.add("-Dlogging.configuration=" + loggingConfiguration);
         command.add("-jar");
@@ -531,4 +531,13 @@ class ModelCombiner implements ManagedServerBootConfiguration {
     private ModelNode pathAddress(PathElement...elements) {
         return PathAddress.pathAddress(elements).toModelNode();
     }
+
+    static String getAbsolutePath(final File root, final String... paths) {
+        File path = root;
+        for(String segment : paths) {
+            path = new File(path, segment);
+        }
+        return path.getAbsolutePath();
+    }
+
 }
