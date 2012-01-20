@@ -71,6 +71,9 @@
                                     <target>
                                         <property name="tests.resources.dir" value="${basedir}/../src/test/resources"/>
                                         <property name="tests.output.dir" value="${project.build.directory}"/>
+                                        <copy file="${basedir}/src/test/config/standalone.xml"
+                                              tofile="${basedir}/target/jbossas/standalone/configuration/standalone.xml"
+                                              overwrite="true"/>
                                     </target>
                                 </configuration>
                             </execution>
