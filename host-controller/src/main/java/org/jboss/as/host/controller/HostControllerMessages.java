@@ -540,12 +540,22 @@ public interface HostControllerMessages {
     /**
      * Creates an exception indicating no server group could be found with the given name
      *
-     * @param groupName the profile name
+     * @param groupName the group name
      *
      * @return an {@link OperationFailedException} for the error.
      */
-    @Message(id = 10987, value = "No server group called: %s")
+    @Message(id = 10987, value = "No server-group called: %s")
     OperationFailedException noServerGroupCalled(String groupName);
+
+    /**
+     * Creates an exception indicating no server group could be found with the given name
+     *
+     * @param groupName the socket binding group name
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 10988, value = "No socket-binding-group called: %s")
+    OperationFailedException noSocketBindingGroupCalled(String groupName);
 
     /**
      * Creates an exception indicating that a write-attribute call passed
@@ -555,6 +565,6 @@ public interface HostControllerMessages {
      *
      * @return an {@link OperationFailedException} for the error.
      */
-    @Message(id = 10988, value = "Atribute value was the same as the exisiting one: %s")
+    @Message(id = 10989, value = "Atribute value was the same as the exisiting one: %s")
     OperationFailedException writeAttributeNotChanged(String attributeValue);
 }

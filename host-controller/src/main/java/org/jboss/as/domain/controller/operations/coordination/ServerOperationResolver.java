@@ -20,6 +20,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
@@ -643,7 +644,8 @@ public class ServerOperationResolver {
         else if (address.size() == 1) {
             // TODO - deal with "add", "remove" and changing "auto-start" attribute
             if (ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION.equals(operation.require(OP).asString())) {
-                if (GROUP.equals(operation.get(NAME).asString())) {
+                final String attr = operation.get(NAME).asString();
+                if (GROUP.equals(attr) || SOCKET_BINDING_GROUP.equals(attr) || SOCKET_BINDING_PORT_OFFSET.equals(attr)) {
                     final String serverName = address.getElement(0).getValue();
                     final String group = host.get(address.getLastElement().getKey(), address.getLastElement().getValue(), GROUP).toString();
                     final ServerIdentity id = new ServerIdentity(localHostName, group, serverName);
