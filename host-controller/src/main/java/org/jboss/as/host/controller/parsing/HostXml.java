@@ -208,7 +208,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
                     final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                     switch (attribute) {
                         case NAME: {
-                            hostName = value;
+                            hostName = new HostIdentifier(value).toString();
                             break;
                         }
                         default:
@@ -306,7 +306,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
                     final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                     switch (attribute) {
                         case NAME: {
-                            hostName = value;
+                            hostName = new HostIdentifier(value).toString();
                             break;
                         }
                         default:
