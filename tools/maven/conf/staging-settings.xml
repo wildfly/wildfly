@@ -156,6 +156,12 @@ under the License.
       <url>http://my.repository.com/repo/path</url>
     </mirror>
      -->
+   <mirror> 
+      <id>jboss-staging-repository-group</id> 
+      <mirrorOf>*</mirrorOf> 
+      <name>JBoss.org Staging Repository Group</name> 
+      <url>https://repository.jboss.org/nexus/content/groups/staging/</url> 
+    </mirror>
   </mirrors>
   
   <!-- profiles
