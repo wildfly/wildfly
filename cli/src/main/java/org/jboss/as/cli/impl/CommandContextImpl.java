@@ -201,6 +201,9 @@ class CommandContextImpl implements CommandContext {
 
     private List<CliEventListener> listeners = new ArrayList<CliEventListener>();
 
+    /** the value of this variable will be used as the exit code of the vm, it is reset by every command/operation executed */
+    private int exitCode;
+
     /**
      * Version mode - only used when --version is called from the command line.
      *
@@ -309,6 +312,10 @@ class CommandContextImpl implements CommandContext {
         cmdRegistry.registerHandler(rolloutPlan, "rollout-plan");
     }
 
+    public int getExitCode() {
+        return exitCode;
+    }
+
     /**
      * Initialise the SSLContext and associated TrustManager for this CommandContext.
      *
@@ -387,12 +394,11 @@ class CommandContextImpl implements CommandContext {
     }
 
     void processLine(String line) {
-        if (line.isEmpty()) {
-            return;
-        }
-        if (line.charAt(0) == '#') {
+        if (line.isEmpty() || line.charAt(0) == '#') {
             return; // ignore comments
         }
+
+        exitCode = 0;
         if (isOperation(line)) {
 
             ModelNode request;
@@ -400,7 +406,7 @@ class CommandContextImpl implements CommandContext {
                 resetArgs(line);
                 request = parsedCmd.toOperationRequest(this);
             } catch (CommandFormatException e) {
-                printLine(e.getLocalizedMessage());
+                error(e.getLocalizedMessage());
                 return;
             }
 
@@ -425,7 +431,7 @@ class CommandContextImpl implements CommandContext {
             try {
                 resetArgs(line);
             } catch (CommandFormatException e1) {
-                printLine(e1.getLocalizedMessage());
+                error(e1.getLocalizedMessage());
                 return;
             }
 
@@ -434,7 +440,7 @@ class CommandContextImpl implements CommandContext {
             if (handler != null) {
                 if (isBatchMode() && handler.isBatchMode()) {
                     if (!(handler instanceof OperationCommand)) {
-                        printLine("The command is not allowed in a batch.");
+                        error("The command is not allowed in a batch.");
                     } else {
                         try {
                             ModelNode request = ((OperationCommand) handler).buildRequest(this);
@@ -443,14 +449,14 @@ class CommandContextImpl implements CommandContext {
                             batch.add(batchedCmd);
                             printLine("#" + batch.size() + " " + batchedCmd.getCommand());
                         } catch (CommandFormatException e) {
-                            printLine("Failed to add to batch: " + e.getLocalizedMessage());
+                            error("Failed to add to batch: " + e.getLocalizedMessage());
                         }
                     }
                 } else {
                     try {
                         handler.handle(this);
                     } catch (CommandFormatException e) {
-                        printLine(e.getLocalizedMessage());
+                        error(e.getLocalizedMessage());
                     }
                 }
 
@@ -460,7 +466,7 @@ class CommandContextImpl implements CommandContext {
                 } catch (CommandFormatException e) {
                 }
             } else {
-                printLine("Unexpected command '" + line + "'. Type 'help' for the list of supported commands.");
+                error("Unexpected command '" + line + "'. Type 'help --commands' for the list of supported commands.");
             }
         }
     }
@@ -502,6 +508,17 @@ class CommandContextImpl implements CommandContext {
         } else { // non-interactive mode
             System.out.println(message);
         }
+    }
+
+    @Override
+    public void error(String message, int code) {
+        this.exitCode = code;
+        printLine(message);
+    }
+
+    @Override
+    public void error(String message) {
+        error(message, 1);
     }
 
     private String readLine(String prompt, boolean password, boolean disableHistory) throws IOException {
@@ -609,10 +626,10 @@ class CommandContextImpl implements CommandContext {
                         newClient = tempClient;
                         break;
                     case CONNECTION_FAILURE:
-                        printLine("The controller is not available at " + host + ":" + port);
+                        error("The controller is not available at " + host + ":" + port);
                         break;
                     case AUTHENTICATION_FAILURE:
-                        printLine("Unable to authenticate against controller at " + host + ":" + port);
+                        error("Unable to authenticate against controller at " + host + ":" + port);
                         break;
                     case SSL_FAILURE:
                         try {
@@ -620,7 +637,7 @@ class CommandContextImpl implements CommandContext {
                         } catch (IOException ignored) {
                         }
                         if (retry == false) {
-                            printLine("Unable to negotiate SSL connection with controller at " + host + ":" + port);
+                            error("Unable to negotiate SSL connection with controller at " + host + ":" + port);
                         }
                         break;
                 }
@@ -635,10 +652,10 @@ class CommandContextImpl implements CommandContext {
                     this.controllerPort = port;
 
                     List<String> nodeTypes = Util.getNodeTypes(newClient, new DefaultOperationRequestAddress());
-                    domainMode = nodeTypes.contains("server-group");
+                    domainMode = nodeTypes.contains(Util.SERVER_GROUP);
                 }
             } catch (UnknownHostException e) {
-                printLine("Failed to resolve host '" + host + "': " + e.getLocalizedMessage());
+                error("Failed to resolve host '" + host + "': " + e.getLocalizedMessage());
             }
         } while (retry);
     }
@@ -653,7 +670,7 @@ class CommandContextImpl implements CommandContext {
         if (trustManager == null || (lastChain = trustManager.getLastFailedCertificateChain()) == null) {
             return false;
         }
-        printLine("Unable to connect due to unrecognised server certificate");
+        error("Unable to connect due to unrecognised server certificate");
         for (Certificate current : lastChain) {
             if (current instanceof X509Certificate) {
                 X509Certificate x509Current = (X509Certificate) current;
@@ -949,7 +966,7 @@ class CommandContextImpl implements CommandContext {
         try {
             writer = new FileWriter(filePath, false);
         } catch (IOException e) {
-            printLine(e.getLocalizedMessage());
+            error(e.getLocalizedMessage());
             return;
         }
         this.outputTarget = new BufferedWriter(writer);
@@ -1063,7 +1080,7 @@ class CommandContextImpl implements CommandContext {
                     DigestHashCallback dhc = (DigestHashCallback) current;
                     dhc.setHexHash(digest);
                 } else {
-                    printLine("Unexpected Callback " + current.getClass().getName());
+                    error("Unexpected Callback " + current.getClass().getName());
                     throw new UnsupportedCallbackException(current);
                 }
             }
@@ -1239,5 +1256,4 @@ class CommandContextImpl implements CommandContext {
         }
 
     }
-
 }

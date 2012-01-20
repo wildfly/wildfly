@@ -54,7 +54,7 @@ public class BatchListHandler extends CommandHandlerWithHelp {
     protected void doHandle(CommandContext ctx) {
         BatchManager batchManager = ctx.getBatchManager();
         if(!batchManager.isBatchActive()) {
-            ctx.printLine("No active batch.");
+            ctx.error("No active batch.");
             return;
         }
         Batch activeBatch = batchManager.getActiveBatch();

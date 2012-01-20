@@ -53,7 +53,7 @@ public class BatchHoldbackHandler extends CommandHandlerWithHelp {
 
         BatchManager batchManager = ctx.getBatchManager();
         if(!batchManager.isBatchActive()) {
-            ctx.printLine("No active batch to holdback.");
+            ctx.error("No active batch to holdback.");
             return;
         }
 
@@ -64,12 +64,12 @@ public class BatchHoldbackHandler extends CommandHandlerWithHelp {
         }
 
         if(batchManager.isHeldback(name)) {
-            ctx.printLine("There already is " + (name == null ? "unnamed" : "'" + name + "'") + " batch held back.");
+            ctx.error("There already is " + (name == null ? "unnamed" : "'" + name + "'") + " batch held back.");
             return;
         }
 
         if(!batchManager.holdbackActiveBatch(name)) {
-            ctx.printLine("Failed to holdback the batch.");
+            ctx.error("Failed to holdback the batch.");
         }
     }
 }

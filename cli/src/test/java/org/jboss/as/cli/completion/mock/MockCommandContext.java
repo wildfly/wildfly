@@ -59,6 +59,8 @@ public class MockCommandContext implements CommandContext {
 
     private DefaultCallbackHandler parsedCmd = new DefaultCallbackHandler();
 
+    private int exitCode;
+
     public void parseCommandLine(String buffer) throws CommandFormatException {
         try {
             parsedCmd.parse(prefix, buffer);
@@ -268,5 +270,21 @@ public class MockCommandContext implements CommandContext {
     @Override
     public CliConfig getConfig() {
         return config;
+    }
+
+    @Override
+    public void error(String message, int code) {
+        exitCode = code;
+        printLine(message);
+    }
+
+    @Override
+    public void error(String message) {
+        error(message, 1);
+    }
+
+    @Override
+    public int getExitCode() {
+        return exitCode;
     }
 }

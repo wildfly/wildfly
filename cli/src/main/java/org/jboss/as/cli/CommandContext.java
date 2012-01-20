@@ -70,6 +70,20 @@ public interface CommandContext {
     void printColumns(Collection<String> col);
 
     /**
+     * Prints an error message to the CLI's output and passes the error code
+     * which in non-interactive mode will be used as the program's exit code.
+     * @param message the error message
+     * @param code the error code (should be greater than 0)
+     */
+    void error(String message, int code);
+
+    /**
+     * This method invokes error(message, 1).
+     * @param message the error message
+     */
+    void error(String message);
+
+    /**
      * Clears the screen.
      */
     void clearScreen();
@@ -227,4 +241,10 @@ public interface CommandContext {
      * @param listener  the listener
      */
     void addEventListener(CliEventListener listener);
+
+    /**
+     * Returns value that should be used as the exit code of the JVM process.
+     * @return  JVM exit code
+     */
+    int getExitCode();
 }

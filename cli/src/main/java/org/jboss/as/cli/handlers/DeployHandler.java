@@ -236,11 +236,11 @@ public class DeployHandler extends BatchModeCommandHandler {
         if(path != null) {
             f = new File(path);
             if(!f.exists()) {
-                ctx.printLine("Path " + f.getAbsolutePath() + " doesn't exist.");
+                ctx.error("Path " + f.getAbsolutePath() + " doesn't exist.");
                 return;
             }
             if(f.isDirectory()) {
-                ctx.printLine(f.getAbsolutePath() + " is a directory.");
+                ctx.error(f.getAbsolutePath() + " is a directory.");
                 return;
             }
         } else {
@@ -250,7 +250,7 @@ public class DeployHandler extends BatchModeCommandHandler {
         String name = this.name.getValue(args);
         if(name == null) {
             if(f == null) {
-                ctx.printLine("Either path or --name is requied.");
+                ctx.error("Either path or --name is requied.");
                 return;
             }
             name = f.getName();
@@ -265,11 +265,11 @@ public class DeployHandler extends BatchModeCommandHandler {
 
         if(force) {
             if(f == null) {
-                ctx.printLine(this.force.getFullName() + " requires a filesystem path of the deployment to be added to the deployment repository.");
+                ctx.error(this.force.getFullName() + " requires a filesystem path of the deployment to be added to the deployment repository.");
                 return;
             }
             if(disabled || serverGroups != null || allServerGroups) {
-                ctx.printLine(this.force.getFullName() +
+                ctx.error(this.force.getFullName() +
                         " only replaces the content in the deployment repository and can't be used in combination with any of " +
                         this.disabled.getFullName() + ", " + this.serverGroups.getFullName() + " or " + this.allServerGroups.getFullName() + '.');
                 return;
@@ -289,18 +289,18 @@ public class DeployHandler extends BatchModeCommandHandler {
 
         if(disabled) {
             if(f == null) {
-                ctx.printLine(this.disabled.getFullName() + " requires a filesystem path of the deployment to be added to the deployment repository.");
+                ctx.error(this.disabled.getFullName() + " requires a filesystem path of the deployment to be added to the deployment repository.");
                 return;
             }
 
             if(serverGroups != null || allServerGroups) {
-                ctx.printLine(this.serverGroups.getFullName() + " and " + this.allServerGroups.getFullName() +
+                ctx.error(this.serverGroups.getFullName() + " and " + this.allServerGroups.getFullName() +
                         " can't be used in combination with " + this.disabled.getFullName() + '.');
                 return;
             }
 
             if(Util.isDeploymentInRepository(name, client)) {
-                ctx.printLine("'" + name + "' already exists in the deployment repository (use " +
+                ctx.error("'" + name + "' already exists in the deployment repository (use " +
                 this.force.getFullName() + " to replace the existing content in the repository).");
                 return;
             }
@@ -318,12 +318,12 @@ public class DeployHandler extends BatchModeCommandHandler {
             final List<String> sgList;
             if(allServerGroups) {
                 if(serverGroups != null) {
-                    ctx.printLine(this.serverGroups.getFullName() + " can't appear in the same command with " + this.allServerGroups.getFullName());
+                    ctx.error(this.serverGroups.getFullName() + " can't appear in the same command with " + this.allServerGroups.getFullName());
                     return;
                 }
                 sgList = Util.getServerGroups(client);
                 if(sgList.isEmpty()) {
-                    ctx.printLine("No server group is available.");
+                    ctx.error("No server group is available.");
                     return;
                 }
             } else if(serverGroups == null) {
@@ -333,12 +333,12 @@ public class DeployHandler extends BatchModeCommandHandler {
                     buf.append(this.disabled.getFullName()).append(", ");
                 }
                 buf.append(this.allServerGroups.getFullName() + " or " + this.serverGroups.getFullName() + " is missing.");
-                ctx.printLine(buf.toString());
+                ctx.error(buf.toString());
                 return;
             } else {
                 sgList = Arrays.asList(serverGroups.split(","));
                 if(sgList.isEmpty()) {
-                    ctx.printLine("Couldn't locate server group name in '" + this.serverGroups.getFullName() + "=" + serverGroups + "'.");
+                    ctx.error("Couldn't locate server group name in '" + this.serverGroups.getFullName() + "=" + serverGroups + "'.");
                     return;
                 }
             }
@@ -355,7 +355,7 @@ public class DeployHandler extends BatchModeCommandHandler {
             }
         } else {
             if(serverGroups != null || allServerGroups) {
-                ctx.printLine(this.serverGroups.getFullName() + " and " + this.allServerGroups.getFullName() +
+                ctx.error(this.serverGroups.getFullName() + " and " + this.allServerGroups.getFullName() +
                         " can't appear in standalone mode.");
                 return;
             }
@@ -366,7 +366,7 @@ public class DeployHandler extends BatchModeCommandHandler {
 
         if(f != null) {
             if(Util.isDeploymentInRepository(name, client)) {
-                ctx.printLine("'" + name + "' already exists in the deployment repository (use " +
+                ctx.error("'" + name + "' already exists in the deployment repository (use " +
                 this.force.getFullName() + " to replace the existing content in the repository).");
                 return;
             }
@@ -379,18 +379,18 @@ public class DeployHandler extends BatchModeCommandHandler {
             execute(ctx, request, f);
             return;
         } else if(!Util.isDeploymentInRepository(name, client)) {
-            ctx.printLine("'" + name + "' is not found among the registered deployments.");
+            ctx.error("'" + name + "' is not found among the registered deployments.");
             return;
         }
 
         try {
             final ModelNode result = client.execute(deployRequest);
             if (!Util.isSuccess(result)) {
-                ctx.printLine(Util.getFailureDescription(result));
+                ctx.error(Util.getFailureDescription(result));
                 return;
             }
         } catch (Exception e) {
-            ctx.printLine("Failed to deploy: " + e.getLocalizedMessage());
+            ctx.error("Failed to deploy: " + e.getLocalizedMessage());
             return;
         }
     }
@@ -581,13 +581,13 @@ public class DeployHandler extends BatchModeCommandHandler {
             request.get(Util.CONTENT).get(0).get(Util.INPUT_STREAM_INDEX).set(0);
             result = ctx.getModelControllerClient().execute(op.build());
         } catch (Exception e) {
-            ctx.printLine("Failed to add the deployment content to the repository: " + e.getLocalizedMessage());
+            ctx.error("Failed to add the deployment content to the repository: " + e.getLocalizedMessage());
             return;
         } finally {
             StreamUtils.safeClose(is);
         }
         if (!Util.isSuccess(result)) {
-            ctx.printLine(Util.getFailureDescription(result));
+            ctx.error(Util.getFailureDescription(result));
             return;
         }
     }
@@ -663,7 +663,7 @@ public class DeployHandler extends BatchModeCommandHandler {
                 table.nextRow();
             }
         }
-        ctx.printLine(table.toString());
+        ctx.error(table.toString());
     }
 
     protected ModelNode getDeploymentDescriptions(CommandContext ctx, List<String> names) throws CommandFormatException {

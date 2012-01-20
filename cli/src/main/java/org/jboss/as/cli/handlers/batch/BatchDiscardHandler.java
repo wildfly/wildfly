@@ -50,7 +50,7 @@ public class BatchDiscardHandler extends CommandHandlerWithHelp {
 
         boolean result = ctx.getBatchManager().discardActiveBatch();
         if(!result) {
-            ctx.printLine("There is no active batch to discard.");
+            ctx.error("There is no active batch to discard.");
         }
     }
 
