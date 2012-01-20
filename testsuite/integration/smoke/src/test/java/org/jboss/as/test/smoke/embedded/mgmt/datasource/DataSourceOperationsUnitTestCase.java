@@ -69,6 +69,7 @@ import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperati
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+
 public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
     @Deployment
@@ -409,7 +410,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
      * @throws Exception
      */
     @Test
-    @Ignore("AS7-3173")
+    
     public void DisableAndReEnableXaDs() throws Exception {
         final String dsName = "XaDsNameDisEn";
         final String jndiDsName = "XaJndiDsNameDisEn";
@@ -599,6 +600,13 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
         ModelNode rightChild=findNodeWithProperty(newList,"jndi-name",complexDsJndi);
 
         Assert.assertTrue("node:"+rightChild.asString()+";\nparams"+params,checkModelParams(rightChild, params));
+        
+        Assert.assertEquals(rightChild.asString(),"Property2",rightChild.get("valid-connection-checker-properties","name").asString());
+        Assert.assertEquals(rightChild.asString(),"Property4",rightChild.get("exception-sorter-properties","name").asString());
+        Assert.assertEquals(rightChild.asString(),"Property3",rightChild.get("stale-connection-checker-properties","name").asString());
+        Assert.assertEquals(rightChild.asString(),"Property1",rightChild.get("reauth-plugin-properties","name").asString());
+
+        Assert.assertNotNull("connection-properties not propagated ",findNodeWithProperty(newList,"value","UTF-8"));
 
     }
     /**
@@ -624,10 +632,10 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
         Properties params=xaDsProperties(complexXaDsJndi);
         setOperationParams(operation, params);
         addExtensionProperties(operation);
+        operation.get("recovery-plugin-properties","name").set("Property5");
+        operation.get("recovery-plugin-properties","name1").set("Property6");
 
-        /* TODO: Properties for Extension type parameters not implemented in DRM
-         * operation.get("recovery-plugin-properties","Property").set("A");
-         */
+
         executeOperation(operation);
 
         final ModelNode xaDatasourcePropertiesAddress = address.clone();
@@ -649,7 +657,15 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
         ModelNode rightChild=findNodeWithProperty(newList,"jndi-name",complexXaDsJndi);
 
         Assert.assertTrue("node:"+rightChild.asString()+";\nparams"+params,checkModelParams(rightChild, params));
+        
+        Assert.assertEquals(rightChild.asString(),"Property2",rightChild.get("valid-connection-checker-properties","name").asString());
+        Assert.assertEquals(rightChild.asString(),"Property4",rightChild.get("exception-sorter-properties","name").asString());
+        Assert.assertEquals(rightChild.asString(),"Property3",rightChild.get("stale-connection-checker-properties","name").asString());
+        Assert.assertEquals(rightChild.asString(),"Property1",rightChild.get("reauth-plugin-properties","name").asString());
+        Assert.assertEquals(rightChild.asString(),"Property5",rightChild.get("recovery-plugin-properties","name").asString());
+        Assert.assertEquals(rightChild.asString(),"Property6",rightChild.get("recovery-plugin-properties","name1").asString());
 
+        Assert.assertNotNull("xa-datasource-properties not propagated ",findNodeWithProperty(newList,"value","jdbc:h2:mem:test"));
     }
 
 

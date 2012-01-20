@@ -1,21 +1,5 @@
         <subsystem xmlns="urn:jboss:domain:datasources:1.0">
             <datasources>
-                <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="H2DS" enabled="true">
-                    <connection-url>
-                        jdbc:h2:mem:test;DB_CLOSE_DELAY=-1
-                    </connection-url>
-                    <driver>
-                        h2
-                    </driver>
-                    <security>
-                        <user-name>
-                            sa
-                        </user-name>
-                        <password>
-                            sa
-                        </password>
-                    </security>
-                </datasource>
                 <datasource jndi-name="java:jboss/datasources/complexDs" pool-name="complexDs_Pool" jta="false" use-java-context="true" spy="false" use-ccm="true">
                     <connection-url>
                         jdbc:h2:mem:test;DB_CLOSE_DELAY=-1
@@ -72,10 +56,12 @@
                             HsqlDbRealm
                         </security-domain>
                         <reauth-plugin class-name="someClass1">
+                        <config-property name="name">Property1</config-property>
 			</reauth-plugin>
                     </security>
                     <validation>
                         <valid-connection-checker class-name="someClass2">
+                        <config-property name="name">Property2</config-property>
 			</valid-connection-checker>
                         <check-valid-connection-sql>
                             select 1
@@ -93,8 +79,10 @@
                             true
                         </use-fast-fail>
                         <stale-connection-checker class-name="someClass3">
+                        <config-property name="name">Property3</config-property>
 			</stale-connection-checker>
                         <exception-sorter class-name="someClass4">
+                        <config-property name="name">Property4</config-property>
 			</exception-sorter>
                     </validation>
                     <timeout>
@@ -183,6 +171,7 @@
                             HsqlDbRealm
                         </security-domain>
                         <reauth-plugin class-name="someClass1">
+                        <config-property name="name">Property1</config-property>
 			</reauth-plugin>
                     </security>
                     <recovery no-recovery="false">
@@ -198,10 +187,13 @@
                             </security-domain>
                         </recover-credential>
                         <recover-plugin class-name="someClass5">
+                        <config-property name="name">Property5</config-property>
+                        <config-property name="name1">Property6</config-property>
 			</recover-plugin>
                     </recovery>
                     <validation>
                         <valid-connection-checker class-name="someClass2">
+                        <config-property name="name">Property2</config-property>
 			</valid-connection-checker>
                         <check-valid-connection-sql>
                             select 1
@@ -219,8 +211,10 @@
                             true
                         </use-fast-fail>
                         <stale-connection-checker class-name="someClass3">
+                        <config-property name="name">Property3</config-property>
 			</stale-connection-checker>
                         <exception-sorter class-name="someClass4">
+                        <config-property name="name">Property4</config-property>
 			</exception-sorter>
                     </validation>
                     <timeout>
