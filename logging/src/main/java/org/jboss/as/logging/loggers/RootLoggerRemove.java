@@ -29,6 +29,7 @@ import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER_NAME;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.logging.CommonAttributes;
 import org.jboss.as.logging.util.LogServices;
 import org.jboss.dmr.ModelNode;
 
@@ -45,13 +46,15 @@ public class RootLoggerRemove extends AbstractRemoveStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        if (model.hasDefined(CommonAttributes.HANDLERS.getName())) {
+            for (ModelNode handler : model.get(CommonAttributes.HANDLERS.getName()).asList()) {
+                context.removeService(LogServices.loggerHandlerName(ROOT_LOGGER_NAME, handler.asString()));
+            }
+        }
         context.removeService(LogServices.ROOT_LOGGER);
-        final ModelNode rootLogger = operation.get(ROOT_LOGGER);
-        LoggerUnassignHandler.removeHandlers(HANDLERS, rootLogger, context, ROOT_LOGGER_NAME);
     }
 
     @Override
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        RootLoggerAdd.INSTANCE.performRuntime(context, operation, model, null, null);
     }
 }
