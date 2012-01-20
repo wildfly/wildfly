@@ -93,7 +93,7 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
     }
 
     @Override
-    public void destroy() {
+    protected void preDestroy() {
         try {
             invokeUnsetEntityContext();
         } catch (RemoteException e) {
@@ -101,7 +101,6 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        super.destroy();
     }
 
     protected void invokeUnsetEntityContext() throws Exception {
