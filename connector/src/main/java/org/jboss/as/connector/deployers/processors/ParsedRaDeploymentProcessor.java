@@ -157,63 +157,64 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                     .addDependency(ConnectorServices.IDLE_REMOVER_SERVICE)
                     .addDependency(ConnectorServices.CONNECTION_VALIDATOR_SERVICE)
                     .addDependency(NamingService.SERVICE_NAME);
-            builder.addListener(new AbstractServiceListener<Object>() {
-                public void transition(final ServiceController<? extends Object> controller,
-                                       final ServiceController.Transition transition) {
-                    switch (transition) {
-                        case STARTING_to_UP: {
+            if (registration != null) {
+                builder.addListener(new AbstractServiceListener<Object>() {
+                    public void transition(final ServiceController<? extends Object> controller,
+                            final ServiceController.Transition transition) {
+                        switch (transition) {
+                            case STARTING_to_UP: {
 
-                            CommonDeployment deploymentMD = ((ResourceAdapterDeploymentService) controller.getService()).getRaDeployment();
+                                CommonDeployment deploymentMD = ((ResourceAdapterDeploymentService) controller.getService()).getRaDeployment();
 
-                            if (deploymentMD.getConnectionManagers() != null && deploymentMD.getConnectionManagers()[0].getPool() != null) {
-                                StatisticsPlugin poolStats = deploymentMD.getConnectionManagers()[0].getPool().getStatistics();
-                                if (poolStats.getNames().size() != 0) {
-                                    DescriptionProvider statsResourceDescriptionProvider = new StatisticsDescriptionProvider(ResourceAdaptersSubsystemProviders.RESOURCE_NAME, "statistics", poolStats);
-                                    PathElement pe = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ResourceAdaptersExtension.SUBSYSTEM_NAME);
-                                    ManagementResourceRegistration overrideRegistration = registration;
-                                    //when you are in deploy you have a registration pointing to deployment=*
-                                    //when you are in re-deploy it points to specific deploymentUnit
-                                    if (registration.isAllowsOverride()) {
-                                        overrideRegistration = registration.registerOverrideModel(deploymentUnit.getName(), new OverrideDescriptionProvider() {
-                                            @Override
-                                            public Map<String, ModelNode> getAttributeOverrideDescriptions(Locale locale) {
-                                                return Collections.emptyMap();
-                                            }
+                                if (deploymentMD.getConnectionManagers() != null && deploymentMD.getConnectionManagers()[0].getPool() != null) {
+                                    StatisticsPlugin poolStats = deploymentMD.getConnectionManagers()[0].getPool().getStatistics();
+                                    if (poolStats.getNames().size() != 0) {
+                                        DescriptionProvider statsResourceDescriptionProvider = new StatisticsDescriptionProvider(ResourceAdaptersSubsystemProviders.RESOURCE_NAME, "statistics", poolStats);
+                                        PathElement pe = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ResourceAdaptersExtension.SUBSYSTEM_NAME);
+                                        ManagementResourceRegistration overrideRegistration = registration;
+                                        //when you are in deploy you have a registration pointing to deployment=*
+                                        //when you are in re-deploy it points to specific deploymentUnit
+                                        if (registration.isAllowsOverride()) {
+                                            overrideRegistration = registration.registerOverrideModel(deploymentUnit.getName(), new OverrideDescriptionProvider() {
+                                                @Override
+                                                public Map<String, ModelNode> getAttributeOverrideDescriptions(Locale locale) {
+                                                    return Collections.emptyMap();
+                                                }
 
-                                            @Override
-                                            public Map<String, ModelNode> getChildTypeOverrideDescriptions(Locale locale) {
-                                                return Collections.emptyMap();
-                                            }
-                                        });
-                                    }
-
-                                    if (overrideRegistration.getSubModel(PathAddress.pathAddress(pe)) == null) {
-                                        ManagementResourceRegistration subRegistration = overrideRegistration.registerSubModel(pe, statsResourceDescriptionProvider);
-                                        for (String statName : poolStats.getNames()) {
-                                            subRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
+                                                @Override
+                                                public Map<String, ModelNode> getChildTypeOverrideDescriptions(Locale locale) {
+                                                    return Collections.emptyMap();
+                                                }
+                                            });
                                         }
-                                        subRegistration.registerOperationHandler("clear-statistics", new ClearStatisticsHandler(poolStats), ResourceAdaptersSubsystemProviders.CLEAR_STATISTICS_DESC, false);
+
+                                        if (overrideRegistration.getSubModel(PathAddress.pathAddress(pe)) == null) {
+                                            ManagementResourceRegistration subRegistration = overrideRegistration.registerSubModel(pe, statsResourceDescriptionProvider);
+                                            for (String statName : poolStats.getNames()) {
+                                                subRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
+                                            }
+                                            subRegistration.registerOperationHandler("clear-statistics", new ClearStatisticsHandler(poolStats), ResourceAdaptersSubsystemProviders.CLEAR_STATISTICS_DESC, false);
+                                        }
                                     }
                                 }
+                                break;
+
                             }
-                            break;
+                            case UP_to_STOP_REQUESTED: {
+
+                                PathElement pe = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ResourceAdaptersExtension.SUBSYSTEM_NAME);
+                                ManagementResourceRegistration overrideRegistration = registration.getOverrideModel(deploymentUnit.getName());
+                                if (overrideRegistration.getSubModel(PathAddress.pathAddress(pe)) != null) {
+                                    overrideRegistration.unregisterSubModel(pe);
+                                }
+                                break;
+
+                            }
 
                         }
-                        case UP_to_STOP_REQUESTED: {
-
-                            PathElement pe = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ResourceAdaptersExtension.SUBSYSTEM_NAME);
-                            ManagementResourceRegistration overrideRegistration = registration.getOverrideModel(deploymentUnit.getName());
-                            if (overrideRegistration.getSubModel(PathAddress.pathAddress(pe)) != null) {
-                                overrideRegistration.unregisterSubModel(pe);
-                            }
-                            break;
-
-                        }
-
                     }
-                }
-            });
-
+                });
+            }
 
             builder.setInitialMode(Mode.ACTIVE).install();
         } catch (Throwable t) {
