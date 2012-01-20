@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.msc.service.ServiceController;
@@ -54,7 +55,8 @@ public class SubDeploymentProcessor implements DeploymentUnitProcessor {
                 }
                 final Resource resource = DeploymentModelUtils.createSubDeployment(childRoot.getRootName(), deploymentUnit);
                 final ImmutableManagementResourceRegistration registration = deploymentUnit.getAttachment(DeploymentModelUtils.REGISTRATION_ATTACHMENT);
-                final SubDeploymentUnitService service = new SubDeploymentUnitService(childRoot, deploymentUnit, registration, resource, serviceVerificationHandler);
+                final ManagementResourceRegistration mutableRegistration =  deploymentUnit.getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT);
+                final SubDeploymentUnitService service = new SubDeploymentUnitService(childRoot, deploymentUnit, registration, mutableRegistration, resource, serviceVerificationHandler);
 
                 final ResourceRoot parentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
                 final String relativePath = childRoot.getRoot().getPathNameRelativeTo(parentRoot.getRoot());
