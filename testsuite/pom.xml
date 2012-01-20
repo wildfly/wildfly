@@ -643,7 +643,8 @@
                                             <classpath path="${basedir}/target/jacoco-jars/org.jacoco.ant.jar"/>
                                         </taskdef>
                                         -->
-                                        
+                                        <echo>Creating JaCoCo test coverage reports...</echo>
+                                        <mkdir dir="${basedir}/target/coverage-report"/>
                                         <report>
                                             <executiondata>
                                                 <fileset dir="${basedir}">
@@ -672,7 +673,9 @@
                                                     </fileset>
                                                 </sourcefiles>
                                             </structure>
-                                            <html destdir="${basedir}/target/coverage-report"/>
+                                            <html destdir ="${basedir}/target/coverage-report/html"/>
+                                            <xml  destfile="${basedir}/target/coverage-report/coverage-report.xml"/>
+                                            <csv  destfile="${basedir}/target/coverage-report/coverage-report.csv"/>
                                         </report>                                        
                                     </target>
                                 </configuration>
