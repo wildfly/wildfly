@@ -19,28 +19,25 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.smoke.embedded.deployment.rar.AS7_1452;
+package org.jboss.as.test.smoke.embedded.deployment.rar.configproperty;
 
 import java.io.Serializable;
 
 import javax.resource.Referenceable;
+import javax.resource.ResourceException;
 
 /**
- * ConfigPropertyAdminObjectInterface
+ * ConfigPropertyConnectionFactory
  *
  * @version $Revision: $
  */
-public interface ConfigPropertyAdminObjectInterface extends Referenceable, Serializable
+public interface ConfigPropertyConnectionFactory extends Serializable, Referenceable
 {
    /**
-    * Set property
-    * @param property The value
+    * Get connection from factory
+    *
+    * @return ConfigPropertyConnection instance
+    * @exception javax.resource.ResourceException Thrown if a connection can't be obtained
     */
-   public void setProperty(String property);
-
-   /**
-    * Get property
-    * @return The value
-    */
-   public String getProperty();
+   public ConfigPropertyConnection getConnection() throws ResourceException;
 }

@@ -19,31 +19,42 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.smoke.embedded.deployment.rar.AS7_1452;
+package org.jboss.as.test.smoke.embedded.deployment.rar.configproperty;
 
-import javax.resource.ResourceException;
-import javax.resource.spi.ActivationSpec;
-import javax.resource.spi.BootstrapContext;
+import java.io.Serializable;
+
+import javax.naming.NamingException;
+import javax.naming.Reference;
+import javax.resource.Referenceable;
 import javax.resource.spi.ResourceAdapter;
-import javax.resource.spi.ResourceAdapterInternalException;
-import javax.resource.spi.endpoint.MessageEndpointFactory;
-import javax.transaction.xa.XAResource;
+import javax.resource.spi.ResourceAdapterAssociation;
 
 /**
- * ConfigPropertyResourceAdapter
+ * ConfigPropertyAdminObjectImpl
  *
  * @version $Revision: $
  */
-public class ConfigPropertyResourceAdapter implements ResourceAdapter
+public class ConfigPropertyAdminObjectImpl implements ConfigPropertyAdminObjectInterface,
+        ResourceAdapterAssociation, Referenceable, Serializable
 {
+   /** Serial version uid */
+   private static final long serialVersionUID = 1L;
+
+   /** The resource adapter */
+   private ResourceAdapter ra;
+
+   /** Reference */
+   private Reference reference;
+
    /** property */
    private String property;
 
    /**
     * Default constructor
     */
-   public ConfigPropertyResourceAdapter()
+   public ConfigPropertyAdminObjectImpl()
    {
+
    }
 
    /**
@@ -65,58 +76,46 @@ public class ConfigPropertyResourceAdapter implements ResourceAdapter
    }
 
    /**
-    * This is called during the activation of a message endpoint.
+    * Get the resource adapter
     *
-    * @param endpointFactory A message endpoint factory instance.
-    * @param spec An activation spec JavaBean instance.
-    * @throws javax.resource.ResourceException generic exception
+    * @return The handle
     */
-   public void endpointActivation(MessageEndpointFactory endpointFactory,
-      ActivationSpec spec) throws ResourceException
+   public ResourceAdapter getResourceAdapter()
    {
+      return ra;
    }
 
    /**
-    * This is called when a message endpoint is deactivated.
+    * Set the resource adapter
     *
-    * @param endpointFactory A message endpoint factory instance.
-    * @param spec An activation spec JavaBean instance.
+    * @param ra The handle
     */
-   public void endpointDeactivation(MessageEndpointFactory endpointFactory,
-      ActivationSpec spec)
+   public void setResourceAdapter(ResourceAdapter ra)
    {
+      this.ra = ra;
    }
 
    /**
-    * This is called when a resource adapter instance is bootstrapped.
+    * Get the Reference instance.
     *
-    * @param ctx A bootstrap context containing references
-    * @throws javax.resource.spi.ResourceAdapterInternalException indicates bootstrap failure.
+    * @return Reference instance
+    * @exception javax.naming.NamingException Thrown if a reference can't be obtained
     */
-   public void start(BootstrapContext ctx)
-      throws ResourceAdapterInternalException
+   @Override
+   public Reference getReference() throws NamingException
    {
+      return reference;
    }
 
    /**
-    * This is called when a resource adapter instance is undeployed or
-    * during application server shutdown.
-    */
-   public void stop()
-   {
-   }
-
-   /**
-    * This method is called by the application server during crash recovery.
+    * Set the Reference instance.
     *
-    * @param specs An array of ActivationSpec JavaBeans
-    * @throws javax.resource.ResourceException generic exception
-    * @return An array of XAResource objects
+    * @param reference A Reference instance
     */
-   public XAResource[] getXAResources(ActivationSpec[] specs)
-      throws ResourceException
+   @Override
+   public void setReference(Reference reference)
    {
-      return null;
+      this.reference = reference;
    }
 
    /**
@@ -146,9 +145,9 @@ public class ConfigPropertyResourceAdapter implements ResourceAdapter
          return false;
       if (other == this)
          return true;
-      if (!(other instanceof ConfigPropertyResourceAdapter))
+      if (!(other instanceof ConfigPropertyAdminObjectImpl))
          return false;
-      ConfigPropertyResourceAdapter obj = (ConfigPropertyResourceAdapter)other;
+      ConfigPropertyAdminObjectImpl obj = (ConfigPropertyAdminObjectImpl)other;
       boolean result = true;
       if (result)
       {
