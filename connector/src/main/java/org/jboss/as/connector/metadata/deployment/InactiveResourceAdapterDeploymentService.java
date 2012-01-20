@@ -79,7 +79,7 @@ public final class InactiveResourceAdapterDeploymentService implements
      */
     @Override
     public void start(StartContext context) throws StartException {
-        ROOT_LOGGER.infof("starting Inactive:" + value.toString());
+        ROOT_LOGGER.debugf("starting Inactive:" + value.toString());
     }
 
     /**

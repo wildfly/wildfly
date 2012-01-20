@@ -438,5 +438,5 @@ public interface ConnectorMessages {
      * @return an {@link IllegalStateException} for the error.
      */
     @Message(id = 10467, value = "Unknown operation %s")
-
+    IllegalStateException unknownOperation(String attributeName);
 }
