@@ -258,15 +258,15 @@ class Constants {
 
     static SimpleAttributeDefinition EXCEPTIONSORTERCLASSNAME = new SimpleAttributeDefinition(EXCEPTIONSORTERCLASSNAME_NAME, org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition EXCEPTIONSORTER_PROPERTIES = new SimpleAttributeDefinition(EXCEPTIONSORTER_PROPERTIES_NAME, org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition EXCEPTIONSORTER_PROPERTIES = new SimpleAttributeDefinition(EXCEPTIONSORTER_PROPERTIES_NAME, org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.OBJECT, true, true, MeasurementUnit.NONE);
 
     static SimpleAttributeDefinition STALECONNECTIONCHECKERCLASSNAME = new SimpleAttributeDefinition(STALECONNECTIONCHECKERCLASSNAME_NAME, org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition STALECONNECTIONCHECKER_PROPERTIES = new SimpleAttributeDefinition(STALECONNECTIONCHECKER_PROPERTIES_NAME, org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition STALECONNECTIONCHECKER_PROPERTIES = new SimpleAttributeDefinition(STALECONNECTIONCHECKER_PROPERTIES_NAME, org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.OBJECT, true, true, MeasurementUnit.NONE);
 
     static SimpleAttributeDefinition VALIDCONNECTIONCHECKERCLASSNAME = new SimpleAttributeDefinition(VALIDCONNECTIONCHECKERCLASSNAME_NAME, org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition VALIDCONNECTIONCHECKER_PROPERTIES = new SimpleAttributeDefinition(VALIDCONNECTIONCHECKER_PROPERTIES_NAME, org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition VALIDCONNECTIONCHECKER_PROPERTIES = new SimpleAttributeDefinition(VALIDCONNECTIONCHECKER_PROPERTIES_NAME, org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.OBJECT, true, true, MeasurementUnit.NONE);
 
 
     static SimpleAttributeDefinition VALIDATEONMATCH = new SimpleAttributeDefinition(VALIDATEONMATCH_NAME, Validation.Tag.VALIDATE_ON_MATCH.getLocalName(),new ModelNode().set(Defaults.VALIDATE_ON_MATCH), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
@@ -291,7 +291,7 @@ class Constants {
 
     static SimpleAttributeDefinition REAUTHPLUGIN_CLASSNAME = new SimpleAttributeDefinition(REAUTHPLUGIN_CLASSNAME_NAME, org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition REAUTHPLUGIN_PROPERTIES = new SimpleAttributeDefinition(REAUTHPLUGIN_PROPERTIES_NAME, org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition REAUTHPLUGIN_PROPERTIES = new SimpleAttributeDefinition(REAUTHPLUGIN_PROPERTIES_NAME, org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.OBJECT, true, true, MeasurementUnit.NONE);
 
     static SimpleAttributeDefinition RECOVERY_USERNAME = new SimpleAttributeDefinition(RECOVERY_USERNAME_NAME, Credential.Tag.USER_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
@@ -301,7 +301,7 @@ class Constants {
 
     static SimpleAttributeDefinition RECOVERLUGIN_CLASSNAME = new SimpleAttributeDefinition(RECOVER_PLUGIN_CLASSNAME_NAME, org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition RECOVERLUGIN_PROPERTIES = new SimpleAttributeDefinition(RECOVER_PLUGIN_PROPERTIES_NAME, org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition RECOVERLUGIN_PROPERTIES = new SimpleAttributeDefinition(RECOVER_PLUGIN_PROPERTIES_NAME, org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.OBJECT, true, true, MeasurementUnit.NONE);
 
     static SimpleAttributeDefinition NO_RECOVERY = new SimpleAttributeDefinition(NO_RECOVERY_NAME, Recovery.Attribute.NO_RECOVERY.getLocalName(),  new ModelNode(), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
 
