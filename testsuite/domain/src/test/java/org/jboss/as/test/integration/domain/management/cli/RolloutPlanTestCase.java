@@ -21,11 +21,19 @@
  */
 package org.jboss.as.test.integration.domain.management.cli;
 
-import java.util.Set;
+import java.io.File;
+import java.net.URL;
+import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
+import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.domain.management.util.RolloutPlanBuilder;
 import org.jboss.as.test.integration.domain.suites.CLITestSuite;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
-import org.jboss.dmr.ModelNode;
+import org.jboss.as.test.integration.management.util.SimpleServlet;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -37,8 +45,18 @@ import org.junit.Assert;
  */
 public class RolloutPlanTestCase extends AbstractCliTestBase {        
     
+    private static WebArchive war;
+    private static File warFile;            
+    
     @BeforeClass
     public static void before() throws Exception {      
+        war = ShrinkWrap.create(WebArchive.class, "RolloutPlanTestCase.war");
+        war.addClass(RolloutPlanTestServlet.class);
+        war.addClass(RolloutPlanSCListener.class);
+        String tempDir = System.getProperty("java.io.tmpdir");
+        warFile = new File(tempDir + File.separator + "RolloutPlanTestCase.war");
+        new ZipExporterImpl(war).exportTo(warFile, true);
+
         AbstractCliTestBase.initCLI();
     }    
     
@@ -50,7 +68,10 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
     @Test
     public void testRolloutPlan() throws Exception {
         addRolloutPlan();
-        testRolloutPlanDeployment();
+        
+        
+        // Ignored - AS7-3821 testRolloutPlanDeployment();
+        
         removeRolloutPlan();
     }
     
@@ -87,6 +108,45 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
     }
     
     private void testRolloutPlanDeployment() throws Exception {
-        // TODO unimplemented, add when ready
+        
+        // deploy using prepared rollout plan
+        cli.sendLine("deploy " + warFile.getAbsolutePath() + " --all-server-groups --headers={rolout id=testPlan}");
+        cli.waitForPrompt(WAIT_TIMEOUT);
+        
+        // check that the apps were deployed in correct order
+        // get application deployment times from servers
+        long mainOneTime = Long.valueOf(checkURL("main-one", false));
+        long mainThreeTime = Long.valueOf(checkURL("main-three", false));
+        long otherTwoTime = Long.valueOf(checkURL("other-two", false));
+        
+        Assert.assertTrue(mainOneTime < otherTwoTime);
+        Assert.assertTrue(mainThreeTime < otherTwoTime);
+
     }
+    
+    private String checkURL(String server, boolean shouldFail) throws Exception {
+        String address = CLITestSuite.hostAddresses.get(getServerHost(server));
+        Integer portOffset = CLITestSuite.portOffsets.get(server);
+        
+        URL url = new URL("http", address, 8080 + portOffset, "/RolloutPlanTestCase/RolloutServlet");
+        boolean failed = false;
+        String response = null;
+        try {
+            response = HttpRequest.get(url.toString(), 10, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            failed = true;
+            if (!shouldFail) throw new Exception("Http request failed.", e);
+        }                
+        if (shouldFail) Assert.assertTrue(failed);
+        return response;
+        
+    }
+    
+    private String getServerHost(String server) {
+        for(Entry<String, String[]> hostEntry : CLITestSuite.hostServers.entrySet()) {
+            for (String hostServer : hostEntry.getValue()) if (hostServer.equals(server)) return hostEntry.getKey();
+        }
+        return null;
+    }
+    
 }
