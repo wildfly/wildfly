@@ -91,7 +91,8 @@ if [ "x$SERVER_SET" = "x" ]; then
     if [ "x$HAS_HOTSPOT" != "x" -o "x$HAS_OPENJDK" != "x" ]; then
         # MacOS does not support -server flag
         if [ "$darwin" != "true" ]; then
-            JAVA_OPTS="-server $JAVA_OPTS"
+            PROCESS_CONTROLLER_JAVA_OPTS="-server $PROCESS_CONTROLLER_JAVA_OPTS"
+            HOST_CONTROLLER_JAVA_OPTS="-server $HOST_CONTROLLER_JAVA_OPTS"
             JVM_OPTVERSION="-server $JVM_OPTVERSION"
         fi
     fi
