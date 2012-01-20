@@ -610,6 +610,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
 
     static ModelNode parseSso(XMLExtendedStreamReader reader) throws XMLStreamException {
         final ModelNode sso = new ModelNode();
+        sso.setEmptyObject();
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
