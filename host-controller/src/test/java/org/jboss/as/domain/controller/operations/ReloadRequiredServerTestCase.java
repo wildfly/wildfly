@@ -67,7 +67,7 @@ public class ReloadRequiredServerTestCase extends AbstractOperationTestCase {
         operationContext.verify();
     }
 
-    @Test
+    @Test(expected=OperationFailedException.class)
     public void testChangeServerGroupProfileNoChange() throws Exception {
         PathAddress pa = PathAddress.pathAddress(PathElement.pathElement(SERVER_GROUP, "group-one"));
         final MockOperationContext operationContext = getOperationContext(pa);
@@ -85,8 +85,6 @@ public class ReloadRequiredServerTestCase extends AbstractOperationTestCase {
         operation.get(VALUE).set("old");
 
         ServerGroupProfileWriteAttributeHandler.INSTANCE.execute(operationContext, operation);
-
-        operationContext.verify();
     }
 
     @Test(expected=OperationFailedException.class)
