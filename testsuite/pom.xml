@@ -568,7 +568,7 @@
                                     <propertyName>jvm.args.jacoco</propertyName>
                                 </configuration>
                             </execution>
-                            <!-- Doesn't work currently - waiting for JaCoCo to fix this. -->
+                            <!-- Doesn't work currently - waiting for JaCoCo to fix this. Moved to the Ant plugin execution. -->
                             <execution><id>ts.jacoco.report</id>
                                 <phase>none</phase> <!-- post-integration-test -->
                                 <goals><goal>report</goal></goals>
@@ -623,23 +623,21 @@
                             <!-- Must be run using Ant due to https://sourceforge.net/tracker/?func=detail&aid=3474708&group_id=177969&atid=883354 -->
                             <execution>
                                 <id>ts.jacoco.report-ant</id>
-                                <phase>post-integration-test</phase>
+                                <phase>site</phase> <!-- post-integration-test -->
                                 <goals><goal>run</goal></goals>
                                 <inherited>false</inherited>
                                 <configuration>
-                                    <!--
-                                    <taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml">
-                                        <classpath path=""/>
-                                    </taskdef>
-                                    -->
                                     <target>
-                                        <taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml" classpathref="${maven.plugin.classpath}">
-                                            <classpath path="${basedir}/target/jacoco-jars/org.jacoco.ant.jar">
-                                                <!--<path location="${basedir}/target/jacoco-jars/org.jacoco.ant.jar"/>-->
-                                            </classpath>
+                                        <taskdef name="report" classname="org.jacoco.ant.ReportTask">
+                                            <classpath path="${basedir}/target/jacoco-jars/org.jacoco.ant.jar"/>
                                         </taskdef>
+                                        <!--
+                                        <taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml" classpathref="maven.plugin.classpath">
+                                            <classpath path="${basedir}/target/jacoco-jars/org.jacoco.ant.jar"/>
+                                        </taskdef>
+                                        -->
                                         
-                                        <jacoco:report>
+                                        <report>
                                             <executiondata>
                                                 <file file="${basedir}/target/jacoco.exec"/>
                                             </executiondata>
@@ -658,7 +656,7 @@
                                                 </sourcefiles>
                                             </structure>
                                             <html destdir="report"/>
-                                        </jacoco:report>                                        
+                                        </report>                                        
                                     </target>
                                 </configuration>
                             </execution>
