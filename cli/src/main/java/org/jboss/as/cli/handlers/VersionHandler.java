@@ -99,7 +99,7 @@ public class VersionHandler implements CommandHandler {
                 }
                 buf.append('\n');
             } catch (IOException e) {
-                ctx.printLine("Failed to get the AS release info: " + e.getLocalizedMessage());
+                ctx.error("Failed to get the AS release info: " + e.getLocalizedMessage());
                 e.printStackTrace();
             }
         }

@@ -182,12 +182,12 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
         try {
             request = buildRequest(ctx);
         } catch (CommandFormatException e1) {
-            ctx.printLine(e1.getLocalizedMessage());
+            ctx.error(e1.getLocalizedMessage());
             return;
         }
 
         if(request == null) {
-            ctx.printLine("Operation request wasn't built.");
+            ctx.error("Operation request wasn't built.");
             return;
         }
 
@@ -196,7 +196,7 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
         try {
             response = client.execute(request);
         } catch (Exception e) {
-            ctx.printLine("Failed to perform operation: " + e.getLocalizedMessage());
+            ctx.error("Failed to perform operation: " + e.getLocalizedMessage());
             return;
         }
         handleResponse(ctx, response, Util.COMPOSITE.equals(request.get(Util.OPERATION).asString()));
@@ -204,7 +204,7 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
 
     protected void handleResponse(CommandContext ctx, ModelNode response, boolean composite) {
         if (!Util.isSuccess(response)) {
-            ctx.printLine(Util.getFailureDescription(response));
+            ctx.error(Util.getFailureDescription(response));
             return;
         }
     }

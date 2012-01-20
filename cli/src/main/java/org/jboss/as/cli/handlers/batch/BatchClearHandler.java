@@ -52,7 +52,7 @@ public class BatchClearHandler extends CommandHandlerWithHelp {
 
         Batch batch = ctx.getBatchManager().getActiveBatch();
         if(batch == null) {
-            ctx.printLine("No active batch.");
+            ctx.error("No active batch.");
             return;
         }
         batch.clear();

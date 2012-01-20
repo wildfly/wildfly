@@ -55,25 +55,25 @@ public class BatchMoveLineHandler extends CommandHandlerWithHelp {
 
         BatchManager batchManager = ctx.getBatchManager();
         if(!batchManager.isBatchActive()) {
-            ctx.printLine("No active batch.");
+            ctx.error("No active batch.");
             return;
         }
 
         Batch batch = batchManager.getActiveBatch();
         final int batchSize = batch.size();
         if(batchSize == 0) {
-            ctx.printLine("The batch is empty.");
+            ctx.error("The batch is empty.");
             return;
         }
 
         List<String> arguments = ctx.getParsedCommandLine().getOtherProperties();
         if(arguments.isEmpty()) {
-            ctx.printLine("Missing line number.");
+            ctx.error("Missing line number.");
             return;
         }
 
         if(arguments.size() != 2) {
-            ctx.printLine("Expected two arguments but received: " + arguments);
+            ctx.error("Expected two arguments but received: " + arguments);
             return;
         }
 
@@ -82,12 +82,12 @@ public class BatchMoveLineHandler extends CommandHandlerWithHelp {
         try {
             lineNumber = Integer.parseInt(intStr);
         } catch(NumberFormatException e) {
-            ctx.printLine("Failed to parse line number '" + intStr + "': " + e.getLocalizedMessage());
+            ctx.error("Failed to parse line number '" + intStr + "': " + e.getLocalizedMessage());
             return;
         }
 
         if(lineNumber < 1 || lineNumber > batchSize) {
-            ctx.printLine(lineNumber + " isn't in range [1.." + batchSize + "].");
+            ctx.error(lineNumber + " isn't in range [1.." + batchSize + "].");
             return;
         }
 
@@ -96,12 +96,12 @@ public class BatchMoveLineHandler extends CommandHandlerWithHelp {
         try {
             toLineNumber = Integer.parseInt(intStr);
         } catch(NumberFormatException e) {
-            ctx.printLine("Failed to parse line number '" + intStr + "': " + e.getLocalizedMessage());
+            ctx.error("Failed to parse line number '" + intStr + "': " + e.getLocalizedMessage());
             return;
         }
 
         if(toLineNumber < 1 || toLineNumber > batchSize) {
-            ctx.printLine(toLineNumber + " isn't in range [1.." + batchSize + "].");
+            ctx.error(toLineNumber + " isn't in range [1.." + batchSize + "].");
             return;
         }
 

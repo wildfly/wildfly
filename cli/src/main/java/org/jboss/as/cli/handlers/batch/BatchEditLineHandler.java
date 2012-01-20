@@ -128,20 +128,20 @@ public class BatchEditLineHandler extends CommandHandlerWithHelp {
 
         BatchManager batchManager = ctx.getBatchManager();
         if(!batchManager.isBatchActive()) {
-            ctx.printLine("No active batch.");
+            ctx.error("No active batch.");
             return;
         }
 
         Batch batch = batchManager.getActiveBatch();
         final int batchSize = batch.size();
         if(batchSize == 0) {
-            ctx.printLine("The batch is empty.");
+            ctx.error("The batch is empty.");
             return;
         }
 
         String argsStr = ctx.getArgumentsString();
         if(argsStr == null) {
-            ctx.printLine("Missing line number.");
+            ctx.error("Missing line number.");
             return;
         }
 
@@ -154,7 +154,7 @@ public class BatchEditLineHandler extends CommandHandlerWithHelp {
         }
 
         if(i == argsStr.length()) {
-            ctx.printLine("Missing the new command line after the index.");
+            ctx.error("Missing the new command line after the index.");
             return;
         }
 
@@ -163,18 +163,18 @@ public class BatchEditLineHandler extends CommandHandlerWithHelp {
         try {
             lineNumber = Integer.parseInt(intStr);
         } catch(NumberFormatException e) {
-            ctx.printLine("Failed to parse line number '" + intStr + "': " + e.getLocalizedMessage());
+            ctx.error("Failed to parse line number '" + intStr + "': " + e.getLocalizedMessage());
             return;
         }
 
         if(lineNumber < 1 || lineNumber > batchSize) {
-            ctx.printLine(lineNumber + " isn't in range [1.." + batchSize + "].");
+            ctx.error(lineNumber + " isn't in range [1.." + batchSize + "].");
             return;
         }
 
         String editedLine = argsStr.substring(i).trim();
         if(editedLine.length() == 0) {
-            ctx.printLine("Missing the new command line after the index.");
+            ctx.error("Missing the new command line after the index.");
             return;
         }
 
@@ -189,7 +189,7 @@ public class BatchEditLineHandler extends CommandHandlerWithHelp {
             batch.set(lineNumber - 1, newCmd);
             ctx.printLine("#" + lineNumber + " " + newCmd.getCommand());
         } catch (CommandFormatException e) {
-            ctx.printLine("Failed to process command line '" + editedLine + "': " + e.getLocalizedMessage());
+            ctx.error("Failed to process command line '" + editedLine + "': " + e.getLocalizedMessage());
         }
     }
 

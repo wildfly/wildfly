@@ -57,7 +57,7 @@ public class ConnectHandler extends CommandHandlerWithHelp {
 
         if(!args.isEmpty()) {
             if(args.size() != 1) {
-                ctx.printLine("The command expects only one argument but got " + args);
+                ctx.error("The command expects only one argument but got " + args);
                 return;
             }
             final String arg = args.get(0);
@@ -95,12 +95,12 @@ public class ConnectHandler extends CommandHandlerWithHelp {
                 try {
                     port = Integer.parseInt(portStr);
                 } catch(NumberFormatException e) {
-                    ctx.printLine("The port must be a valid non-negative integer: '" + args + "'");
+                    ctx.error("The port must be a valid non-negative integer: '" + args + "'");
                     return;
                 }
 
                 if(port < 0) {
-                    ctx.printLine("The port must be a valid non-negative integer: '" + args + "'");
+                    ctx.error("The port must be a valid non-negative integer: '" + args + "'");
                     return;
                 }
             }

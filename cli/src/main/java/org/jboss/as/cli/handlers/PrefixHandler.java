@@ -62,7 +62,7 @@ public class PrefixHandler extends CommandHandlerWithHelp {
         try {
             ctx.getCommandLineParser().parse(ctx.getArgumentsString(), handler);
         } catch (CommandFormatException e) {
-            ctx.printLine(e.getLocalizedMessage());
+            ctx.error(e.getLocalizedMessage());
         }
     }
 }
