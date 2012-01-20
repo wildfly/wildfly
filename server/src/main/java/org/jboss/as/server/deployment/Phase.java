@@ -318,6 +318,8 @@ public enum Phase {
     public static final int POST_MODULE_EJB_HOME_MERGE                  = 0x0401;
     public static final int POST_MODULE_EJB_DD_METHOD_RESOLUTION        = 0x0402;
     public static final int POST_MODULE_EJB_TIMER_METADATA_MERGE        = 0x0506;
+    public static final int POST_MODULE_EJB_SLSB_POOL_NAME_MERGE        = 0x0507;
+    public static final int POST_MODULE_EJB_MDB_POOL_NAME_MERGE         = 0x0508;
     public static final int POST_MODULE_EJB_DD_INTERCEPTORS             = 0x0600;
     public static final int POST_MODULE_EJB_TIMER_SERVICE               = 0x0601;
     public static final int POST_MODULE_EJB_TRANSACTION_MANAGEMENT      = 0x0602;

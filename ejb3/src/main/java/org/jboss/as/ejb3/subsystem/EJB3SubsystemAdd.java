@@ -77,6 +77,7 @@ import org.jboss.as.ejb3.deployment.processors.merging.EjbConcurrencyMergingProc
 import org.jboss.as.ejb3.deployment.processors.merging.EjbDependsOnMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.HomeViewMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.InitMethodMergingProcessor;
+import org.jboss.as.ejb3.deployment.processors.merging.MessageDrivenBeanPoolMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.MethodPermissionsMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.RemoveMethodMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.ResourceAdaptorMergingProcessor;
@@ -87,6 +88,7 @@ import org.jboss.as.ejb3.deployment.processors.merging.SessionBeanMergingProcess
 import org.jboss.as.ejb3.deployment.processors.merging.SessionSynchronizationMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.StartupMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.StatefulTimeoutMergingProcessor;
+import org.jboss.as.ejb3.deployment.processors.merging.StatelessSessionBeanPoolMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.TransactionAttributeMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.TransactionManagementMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.security.JaccEjbDeploymentProcessor;
@@ -235,6 +237,8 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                     processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_LOCAL_HOME, new SessionBeanHomeProcessor());
                     processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_CLUSTERED, new ClusteredMergingProcessor());
                     processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_CACHE, new CacheMergingProcessor());
+                    processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_SLSB_POOL_NAME_MERGE, new StatelessSessionBeanPoolMergingProcessor());
+                    processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_MDB_POOL_NAME_MERGE, new MessageDrivenBeanPoolMergingProcessor());
 
                     processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_DEPENDS_ON_ANNOTATION, new EjbDependsOnMergingProcessor());
                     processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_DEPLOYMENT_REPOSITORY, new DeploymentRepositoryProcessor());
