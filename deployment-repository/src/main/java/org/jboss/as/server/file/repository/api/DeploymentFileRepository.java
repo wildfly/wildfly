@@ -32,7 +32,7 @@ public interface DeploymentFileRepository {
     /**
      * Get the files associated with a given deployment.
      *
-     * @param deploymentHash the hash of the deploymentUnit
+     * @param deploymentHash the hash of the deployment content
 
      * @return the files associated with the deployment, or <code>null</code> if it is not found
      */
@@ -42,7 +42,7 @@ public interface DeploymentFileRepository {
      * Gets the directory under which files associated with a given deployment
      * would be found.
      *
-     * @param deploymentHash the hash of the deploymentUnit
+     * @param deploymentHash the hash of the deployment content
 
      * @return the directory. Will not be <code>null</code>, even if the
      *         deployment is unknown
@@ -52,7 +52,7 @@ public interface DeploymentFileRepository {
     /**
      * Deletes a deployment from the local file system
      *
-     * @param deploymentHash the hash of the deployment unit
+     * @param deploymentHash the hash of the deployment content
      */
     void deleteDeployment(byte[] deploymentHash);
 

@@ -29,7 +29,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.vfs.VirtualFile;
 
 /**
- * Repository for deployment content.
+ * Repository for deployment content and other managed content.
  *
  * @author John Bailey
  */

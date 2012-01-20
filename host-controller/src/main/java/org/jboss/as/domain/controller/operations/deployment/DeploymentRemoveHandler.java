@@ -54,10 +54,8 @@ public abstract class DeploymentRemoveHandler implements OperationStepHandler, D
 
     public static final String OPERATION_NAME = REMOVE;
 
-    private static final String DEPLOYMENT_HASHES = "DEPLOYMENT_HASHES";
-
     /** Constructor for a slave Host Controller */
-    protected DeploymentRemoveHandler() {
+    private DeploymentRemoveHandler() {
     }
 
     public static DeploymentRemoveHandler createForSlave(DeploymentFileRepository fileRepository) {

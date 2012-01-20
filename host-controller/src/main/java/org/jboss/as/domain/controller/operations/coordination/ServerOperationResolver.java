@@ -139,12 +139,10 @@ public class ServerOperationResolver {
 
     private final String localHostName;
     private final Map<String,ProxyController> serverProxies;
-    private final ContentRepository contentRepository;
 
-    public ServerOperationResolver(final String localHostName, final ContentRepository contentRepository, final Map<String,ProxyController> serverProxies) {
+    public ServerOperationResolver(final String localHostName, final Map<String, ProxyController> serverProxies) {
         this.localHostName = localHostName;
         this.serverProxies = serverProxies;
-        this.contentRepository = contentRepository;
     }
 
     public Map<Set<ServerIdentity>, ModelNode> getServerOperations(ModelNode operation, PathAddress address, ModelNode domain, ModelNode host) {

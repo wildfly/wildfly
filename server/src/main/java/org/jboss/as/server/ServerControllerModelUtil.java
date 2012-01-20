@@ -194,7 +194,9 @@ public class ServerControllerModelUtil {
                                       final ExtensionRegistry extensionRegistry,
                                       final boolean parallelBoot,
                                       final DeploymentFileRepository remoteFileRepository) {
-        boolean isDomain = serverEnvironment == null ? true : serverEnvironment.getLaunchType() == LaunchType.DOMAIN;
+
+        boolean isDomain = serverEnvironment == null || serverEnvironment.getLaunchType() == LaunchType.DOMAIN;
+
         // Build up the core model registry
         root.registerReadWriteAttribute(NAME, null, new StringLengthValidatingHandler(1), AttributeAccess.Storage.CONFIGURATION);
         if (serverEnvironment != null && serverEnvironment.getLaunchType() == ServerEnvironment.LaunchType.DOMAIN) {
@@ -265,7 +267,7 @@ public class ServerControllerModelUtil {
         if (serverEnvironment != null) {
             // Reload op -- does not work on a domain mode server
             if (serverEnvironment.getLaunchType() != ServerEnvironment.LaunchType.DOMAIN)  {
-                ProcessReloadHandler reloadHandler = new ProcessReloadHandler(Services.JBOSS_AS, runningModeControl, ServerDescriptions.getResourceDescriptionResolver("server"));
+                ProcessReloadHandler reloadHandler = new ProcessReloadHandler<RunningModeControl>(Services.JBOSS_AS, runningModeControl, ServerDescriptions.getResourceDescriptionResolver("server"));
                 root.registerOperationHandler(ProcessReloadHandler.OPERATION_NAME, reloadHandler, reloadHandler);
             }
 
@@ -332,8 +334,8 @@ public class ServerControllerModelUtil {
 
         // Deployments
         ManagementResourceRegistration deployments = root.registerSubModel(PathElement.pathElement(DEPLOYMENT), ServerDescriptionProviders.DEPLOYMENT_PROVIDER);
-        DeploymentAddHandler dah = serverEnvironment == null || serverEnvironment.getLaunchType() == LaunchType.DOMAIN ?
-                DeploymentAddHandler.createForDomainServer(contentRepository, remoteFileRepository) : DeploymentAddHandler.createForStandalone(contentRepository);
+        DeploymentAddHandler dah = isDomain ? DeploymentAddHandler.createForDomainServer(contentRepository, remoteFileRepository)
+                                            : DeploymentAddHandler.createForStandalone(contentRepository);
         deployments.registerOperationHandler(DeploymentAddHandler.OPERATION_NAME, dah, dah, false);
         DeploymentRemoveHandler dremh = new DeploymentRemoveHandler(contentRepository);
         deployments.registerOperationHandler(DeploymentRemoveHandler.OPERATION_NAME, dremh, dremh, false);

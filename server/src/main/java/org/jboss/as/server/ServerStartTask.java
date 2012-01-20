@@ -65,7 +65,8 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
     private final ServerEnvironment providedEnvironment;
 
 
-    public ServerStartTask(final String hostControllerName, final String serverName, final int portOffset, final List<ServiceActivator> startServices, final List<ModelNode> updates) {
+    public ServerStartTask(final String hostControllerName, final String serverName, final int portOffset,
+                           final List<ServiceActivator> startServices, final List<ModelNode> updates) {
         if (serverName == null || serverName.length() == 0) {
             throw new IllegalArgumentException("Server name \"" + serverName + "\" is invalid; cannot be null or blank");
         }
@@ -83,7 +84,6 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         properties.setProperty(ServerEnvironment.HOME_DIR, home);
         String serverBaseDir = SecurityActions.getSystemProperty("jboss.domain.servers.dir") + File.separatorChar + serverName;
         properties.setProperty(ServerEnvironment.SERVER_BASE_DIR, serverBaseDir);
-        properties.setProperty(ServerEnvironment.SERVER_DEPLOY_DIR, serverBaseDir + File.separatorChar + "content");
         properties.setProperty(ServerEnvironment.CONTROLLER_TEMP_DIR, SecurityActions.getSystemProperty("jboss.domain.temp.dir"));
 
         ProductConfig productConfig = new ProductConfig(Module.getBootModuleLoader(), home);
