@@ -547,4 +547,14 @@ public interface HostControllerMessages {
     @Message(id = 10987, value = "No server group called: %s")
     OperationFailedException noServerGroupCalled(String groupName);
 
+    /**
+     * Creates an exception indicating that a write-attribute call passed
+     * in the exisiting value
+     *
+     * @param attributeValue the attribute value
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 10988, value = "Atribute value was the same as the exisiting one: %s")
+    OperationFailedException writeAttributeNotChanged(String attributeValue);
 }

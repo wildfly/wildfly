@@ -95,6 +95,7 @@ public class OperationCoordinatorStepHandler {
         if (!localHostControllerInfo.isMasterDomainController()
                 && (routing.isRouteToMaster() || !routing.isLocalOnly(localHostControllerInfo.getLocalHostName()))) {
             // We cannot handle this ourselves
+            System.out.println("--- route to master");
             routetoMasterDomainController(context, operation);
         }
         else if (routing.getSingleHost() != null && !localHostControllerInfo.getLocalHostName().equals(routing.getSingleHost())) {
@@ -103,15 +104,18 @@ public class OperationCoordinatorStepHandler {
             }
             // Possibly a two step operation, but not coordinated by this host. Execute direct and let the remote HC
             // coordinate any two step process (if there is one)
+            System.out.println("Single host");
             executeDirect(context, operation);
         }
         else if (!routing.isTwoStep()) {
             // It's a domain level op (probably a read) that does not require bringing in other hosts or servers
+            System.out.println("Not two step");
             executeDirect(context, operation);
         }
         else {
             // Else we are responsible for coordinating a two-phase op
             // -- apply to DomainController models across domain and then push to servers
+            System.out.println("two phase");
             executeTwoPhaseOperation(context, operation, routing);
         }
 

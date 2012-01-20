@@ -327,7 +327,7 @@ public class HostModelUtil {
         servers.registerReadWriteAttribute(SOCKET_BINDING_PORT_OFFSET, null, new WriteAttributeHandlers.IntRangeValidatingHandler(0, true), Storage.CONFIGURATION);
         servers.registerReadWriteAttribute(PRIORITY, null, new WriteAttributeHandlers.IntRangeValidatingHandler(0), Storage.CONFIGURATION);
         servers.registerReadWriteAttribute(CPU_AFFINITY, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1), Storage.CONFIGURATION);
-        servers.registerReadWriteAttribute(GROUP, null, new ServerConfigGroupWriteAttributeHandler(root, hostControllerInfo), Storage.CONFIGURATION);
+        servers.registerReadWriteAttribute(GROUP, null, ServerConfigGroupWriteAttributeHandler.INSTANCE, Storage.CONFIGURATION);
 
         // Register server runtime operation handlers
         servers.registerMetric(ServerStatusHandler.ATTRIBUTE_NAME, new ServerStatusHandler(serverInventory));
