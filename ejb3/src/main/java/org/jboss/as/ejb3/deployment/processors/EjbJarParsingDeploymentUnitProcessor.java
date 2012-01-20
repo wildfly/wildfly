@@ -40,6 +40,7 @@ import org.jboss.as.ejb3.clustering.EJBBoundClusteringMetaDataParser;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
+import org.jboss.as.ejb3.pool.EJBBoundPoolParser;
 import org.jboss.as.ejb3.resourceadapterbinding.parser.EJBBoundResourceAdapterBindingMetaDataParser;
 import org.jboss.as.ejb3.security.parser.EJBBoundSecurityMetaDataParser;
 import org.jboss.as.ejb3.security.parser.SecurityRoleMetaDataParser;
@@ -271,6 +272,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
             parsers.put("urn:resource-adapter-binding", new EJBBoundResourceAdapterBindingMetaDataParser());
             parsers.put("urn:iiop", new IIOPMetaDataParser());
             parsers.put("urn:trans-timeout", new TransactionTimeoutMetaDataParser());
+            parsers.put(EJBBoundPoolParser.NAMESPACE_URI, new EJBBoundPoolParser());
             final JBossEjb3MetaDataParser parser = new JBossEjb3MetaDataParser(parsers);
             final EjbJarMetaData ejbJarMetaData = parser.parse(reader, dtdInfo);
             return ejbJarMetaData;

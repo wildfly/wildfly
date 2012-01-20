@@ -253,7 +253,8 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         public void configureDependency(ServiceBuilder<?> serviceBuilder, Service<Component> service) throws DeploymentUnitProcessingException {
             final MessageDrivenComponentCreateService mdbComponentCreateService = (MessageDrivenComponentCreateService) service;
             final String poolName = this.mdbComponentDescription.getPoolConfigName();
-            // if no pool name has been explicitly set, then inject the optional "default mdb pool config"
+            // if no pool name has been explicitly set, then inject the *optional* "default mdb pool config"
+            // If the default mdb pool config itself is not configured, then pooling is disabled for the bean
             if (poolName == null) {
                 serviceBuilder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, PoolConfigService.DEFAULT_MDB_POOL_CONFIG_SERVICE_NAME,
                         PoolConfig.class, mdbComponentCreateService.getPoolConfigInjector());

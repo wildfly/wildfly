@@ -187,7 +187,8 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
         public void configureDependency(ServiceBuilder<?> serviceBuilder, Service<Component> service) throws DeploymentUnitProcessingException {
             final StatelessSessionComponentCreateService statelessSessionComponentService = (StatelessSessionComponentCreateService) service;
             final String poolName = this.statelessComponentDescription.getPoolConfigName();
-            // if no pool name has been explicitly set, then inject the optional "default slsb pool config"
+            // if no pool name has been explicitly set, then inject the *optional* "default slsb pool config".
+            // If the default slsb pool config itself is not configured, then the pooling is disabled for the bean
             if (poolName == null) {
                 serviceBuilder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, PoolConfigService.DEFAULT_SLSB_POOL_CONFIG_SERVICE_NAME,
                         PoolConfig.class, statelessSessionComponentService.getPoolConfigInjector());

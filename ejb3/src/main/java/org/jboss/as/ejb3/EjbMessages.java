@@ -2012,4 +2012,12 @@ public interface EjbMessages {
     @Message(id = 14556, value = "No GroupMembershipNotifier registered by the name of %s")
     IllegalArgumentException groupMembershipNotifierNotRegistered(final String groupName);
 
+    /**
+     * Creates and returns an exception indicating that the pool name configured for a bean cannot be an empty string
+     *
+     * @param ejbName The EJB name
+     * @return an {@link IllegalArgumentException} for the exception
+     */
+    @Message(id = 14528, value = "Pool name cannot be empty string for bean %s")
+    IllegalArgumentException poolNameCannotBeEmptyString(final String ejbName);
 }
