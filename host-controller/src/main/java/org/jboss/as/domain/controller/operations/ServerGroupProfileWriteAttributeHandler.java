@@ -48,17 +48,14 @@ public class ServerGroupProfileWriteAttributeHandler extends StringLengthValidat
     @Override
     protected void modelChanged(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue,
             ModelNode currentValue) throws OperationFailedException {
-        if (!newValue.equals(currentValue)) {
-            validateProfileName(context, newValue.asString());
+        if (newValue.equals(currentValue)) {
+            throw DomainControllerMessages.MESSAGES.writeAttributeNotChanged(newValue.asString());
         }
-
-        context.completeStep();
-    }
-
-    private void validateProfileName(final OperationContext context, final String profileName) throws OperationFailedException {
-        final Resource profile = context.getOriginalRootResource().getChild(PathElement.pathElement(PROFILE, profileName));
+        final Resource profile = context.getOriginalRootResource().getChild(PathElement.pathElement(PROFILE, newValue.asString()));
         if (profile == null) {
-            throw DomainControllerMessages.MESSAGES.noProfileCalled(profileName);
+            throw DomainControllerMessages.MESSAGES.noProfileCalled(newValue.asString());
         }
+
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 }
