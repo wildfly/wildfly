@@ -84,7 +84,7 @@ public class VaultResourceDefinition extends SimpleResourceDefinition {
             String vaultClass = null;
             ModelNode vaultNode = operation;
             vaultClass = vaultNode.get(Constants.CODE).asString();
-            List<ModelNode> vaultOptionList = vaultNode.get(Constants.VAULT_OPTION).asList();
+            List<ModelNode> vaultOptionList = vaultNode.get(Constants.VAULT_OPTIONS).asList();
             if (vaultOptionList != null) {
                 for (ModelNode vaultOptionNode : vaultOptionList) {
                     Property vaultProp = vaultOptionNode.asProperty();
