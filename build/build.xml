@@ -28,7 +28,46 @@
 
     <target name="base" depends="clean-target, modules-minimalistic, copy-files, make-dirs"/>
 
-    <target name="configure-standalone" depends="configure-standalone-with-osgi,configure-standalone-without-osgi"/>
+    <target name="configure-domain" depends="configure-domain-with-osgi,configure-domain-without-osgi">
+        <copy todir="${output.dir}">
+            <fileset dir="src/main/resources">
+                <include name="domain/**"/>
+                <exclude name="domain/configuration/domain.xml"/>
+            </fileset>
+        </copy>
+        <!-- These files contain digested passwords, which should not be visible to external users -->
+        <chmod perm="600" file="${output.dir}/domain/configuration/mgmt-users.properties"/>
+    </target>
+
+    <target name="configure-domain-with-osgi" unless="disable-osgi">
+        <xslt destdir="${output.dir}/domain/configuration"
+              style="src/main/resources/transformations/enable-osgi.xsl"
+              useimplicitfileset="false">
+            <fileset dir="src/main/resources">
+                <include name="domain/configuration/domain.xml"/>
+            </fileset>
+            <mapper type="flatten"/>
+        </xslt>
+    </target>
+
+    <target name="configure-domain-without-osgi" if="disable-osgi">
+        <copy todir="${output.dir}">
+            <fileset dir="src/main/resources">
+                <include name="domain/configuration/domain.xml"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="configure-standalone" depends="configure-standalone-with-osgi,configure-standalone-without-osgi">
+        <copy todir="${output.dir}">
+            <fileset dir="src/main/resources">
+                <include name="standalone/configuration/**.properties"/>
+                <include name="standalone/deployments/**"/>
+            </fileset>
+        </copy>
+        <!-- These files contain digested passwords, which should not be visible to external users -->
+        <chmod perm="600" file="${output.dir}/standalone/configuration/mgmt-users.properties"/>
+    </target>
 
     <target name="configure-standalone-with-osgi" unless="disable-osgi">
         <xslt destdir="${output.dir}/standalone/configuration"
@@ -58,9 +97,6 @@
                 <include name="appclient/**"/>
                 <include name="bin/**"/>
                 <include name="docs/**"/>
-                <include name="domain/**"/>
-                <include name="standalone/configuration/**.properties"/>
-                <include name="standalone/deployments/**"/>
                 <include name="welcome-content/**"/>
             </fileset>
         </copy>
@@ -69,9 +105,6 @@
                 <include name="**/*.sh"/>
             </fileset>
         </chmod>
-        <!-- These files contain digested passwords, which should not be visible to external users -->
-        <chmod perm="600" file="${output.dir}/domain/configuration/mgmt-users.properties"/>
-        <chmod perm="600" file="${output.dir}/standalone/configuration/mgmt-users.properties"/>
     </target>
 
     <target name="copy-standalone" description="Copy all standard configurations" depends="configure-standalone"/>
@@ -1231,5 +1264,5 @@
         <delete file="maven-ant-tasks.jar"/>
     </target>
 
-    <target name="all" depends="base, copy-standalone, modules, bundles, create-ext-content"/>
+    <target name="all" depends="base, copy-standalone, configure-domain, modules, bundles, create-ext-content"/>
 </project>
