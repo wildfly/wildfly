@@ -49,6 +49,8 @@ public class ServerGroupProfileWriteAttributeHandler extends StringLengthValidat
     protected void modelChanged(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue,
             ModelNode currentValue) throws OperationFailedException {
         if (newValue.equals(currentValue)) {
+            //If we don't throw this exception here the ServerOperationHandler won't know something went wrong
+            //and will put the server into restart-required although nothing changed
             throw DomainControllerMessages.MESSAGES.writeAttributeNotChanged(newValue.asString());
         }
         final Resource profile = context.getOriginalRootResource().getChild(PathElement.pathElement(PROFILE, newValue.asString()));

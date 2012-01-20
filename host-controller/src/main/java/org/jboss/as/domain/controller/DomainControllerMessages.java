@@ -534,4 +534,15 @@ public interface DomainControllerMessages {
     @Message(id = 10875, value = "No profile called: %s")
     OperationFailedException noProfileCalled(String profile);
 
+    /**
+     * Creates an exception indicating that a write-attribute call passed
+     * in the exisiting value
+     *
+     * @param attributeValue the attribute value
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 10874, value = "Atribute value was the same as the exisiting one: %s")
+    OperationFailedException writeAttributeNotChanged(String attributeValue);
+
 }

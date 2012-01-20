@@ -146,7 +146,6 @@ public class ServerOperationResolver {
     }
 
     public Map<Set<ServerIdentity>, ModelNode> getServerOperations(ModelNode operation, PathAddress address, ModelNode domain, ModelNode host) {
-
         if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {
             HOST_CONTROLLER_LOGGER.tracef("Resolving %s", operation);
         }
@@ -641,8 +640,17 @@ public class ServerOperationResolver {
             }
 
         }
-        else {
+        else if (address.size() == 1) {
             // TODO - deal with "add", "remove" and changing "auto-start" attribute
+            if (ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION.equals(operation.require(OP).asString())) {
+                if (GROUP.equals(operation.get(NAME).asString())) {
+                    final String serverName = address.getElement(0).getValue();
+                    final String group = host.get(address.getLastElement().getKey(), address.getLastElement().getValue(), GROUP).toString();
+                    final ServerIdentity id = new ServerIdentity(localHostName, group, serverName);
+                    result = getServerRestartRequiredOperations(Collections.singleton(id));
+                    return result;
+                }
+           }
         }
 
         if (serverOp == null) {

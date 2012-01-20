@@ -26,7 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
@@ -115,20 +114,16 @@ public class ReloadRequiredServerTestCase extends AbstractOperationTestCase {
         serverConfig.getModel().get(PROFILE).set("whatever");
         operationContext.root.registerChild(PathElement.pathElement(SERVER_GROUP, "new-group"), serverConfig);
 
-        operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")));
-
         final ModelNode operation = new ModelNode();
         operation.get(OP_ADDR).set(pa.toModelNode());
         operation.get(NAME).set(GROUP);
         operation.get(VALUE).set("new-group");
 
-        new ServerConfigGroupWriteAttributeHandler(RESOURCE_REGISTRATION).execute(operationContext, operation);
-
-        operationContext.verify();
+        ServerConfigGroupWriteAttributeHandler.INSTANCE.execute(operationContext, operation);
     }
 
 
-    @Test
+    @Test(expected=OperationFailedException.class)
     public void testChangeServerConfigGroupNoChange() throws Exception {
         PathAddress pa = PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER_CONFIG, "server-one"));
         final MockOperationContext operationContext = getOperationContext(pa);
@@ -138,9 +133,7 @@ public class ReloadRequiredServerTestCase extends AbstractOperationTestCase {
         operation.get(NAME).set(GROUP);
         operation.get(VALUE).set("group-one");
 
-        new ServerConfigGroupWriteAttributeHandler(RESOURCE_REGISTRATION).execute(operationContext, operation);
-
-        operationContext.verify();
+        ServerConfigGroupWriteAttributeHandler.INSTANCE.execute(operationContext, operation);
     }
 
     @Test(expected=OperationFailedException.class)
@@ -153,7 +146,7 @@ public class ReloadRequiredServerTestCase extends AbstractOperationTestCase {
         operation.get(NAME).set(GROUP);
         operation.get(VALUE).set("bad-group");
 
-        new ServerConfigGroupWriteAttributeHandler(RESOURCE_REGISTRATION).execute(operationContext, operation);
+        ServerConfigGroupWriteAttributeHandler.INSTANCE.execute(operationContext, operation);
     }
 
 }

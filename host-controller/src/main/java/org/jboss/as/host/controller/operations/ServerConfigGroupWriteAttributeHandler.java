@@ -21,60 +21,42 @@
 */
 package org.jboss.as.host.controller.operations;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers.StringLengthValidatingHandler;
-import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.host.controller.HostControllerMessages;
-import org.jboss.as.server.operations.ServerRestartRequiredHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
+ * Writes the group attribute of a server group and validates the new value. ServerOperationResolver is responsible for
+ * putting the affected server in the restart-required state.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class ServerConfigGroupWriteAttributeHandler extends StringLengthValidatingHandler {
 
-    private final ImmutableManagementResourceRegistration rootResourceRegistration;
+    public static final ServerConfigGroupWriteAttributeHandler INSTANCE = new ServerConfigGroupWriteAttributeHandler();
 
-    public ServerConfigGroupWriteAttributeHandler(final ImmutableManagementResourceRegistration rootResourceRegistration) {
+    public ServerConfigGroupWriteAttributeHandler() {
         super(1, false);
-        this.rootResourceRegistration = rootResourceRegistration;
     }
 
     @Override
     protected void modelChanged(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue,
             ModelNode currentValue) throws OperationFailedException {
 
-        if (!newValue.equals(currentValue)) {
-            validateGroupName(context, newValue.asString());
-
-            PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-            assert address.size() == 2 : "Expected length of 2, was " + address.size();
-            PathAddress serverAddress = PathAddress.pathAddress(address.getElement(0), PathElement.pathElement(SERVER, address.getElement(1).getValue()));
-
-            final OperationStepHandler handler = rootResourceRegistration.getOperationHandler(serverAddress, ServerRestartRequiredHandler.OPERATION_NAME);
-            final ModelNode op = new ModelNode();
-            op.get(OP).set(ServerRestartRequiredHandler.OPERATION_NAME);
-            op.get(OP_ADDR).set(serverAddress.toModelNode());
-
-            context.addStep(op, handler, OperationContext.Stage.IMMEDIATE);
+        if (newValue.equals(currentValue)) {
+            //If we don't throw this exception here the ServerOperationHandler won't know something went wrong
+            //and will put the server into restart-required although nothing changed
+            throw HostControllerMessages.MESSAGES.writeAttributeNotChanged(newValue.asString());
         }
 
-        context.completeStep();
-    }
-
-    private void validateGroupName(final OperationContext context, final String groupName) throws OperationFailedException {
-        if (context.getOriginalRootResource().getChild(PathElement.pathElement(SERVER_GROUP, groupName)) == null) {
-            throw HostControllerMessages.MESSAGES.noServerGroupCalled(groupName);
+        if (context.getOriginalRootResource().getChild(PathElement.pathElement(SERVER_GROUP, newValue.asString())) == null) {
+            throw HostControllerMessages.MESSAGES.noServerGroupCalled(newValue.asString());
         }
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 }
