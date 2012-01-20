@@ -646,13 +646,23 @@
                                         
                                         <report>
                                             <executiondata>
-                                                <file file="${basedir}/target/jacoco.exec"/>
+                                                <fileset dir="${basedir}">
+                                                    <include name="**/target/jacoco.exec"/>
+                                                </fileset>
                                             </executiondata>
                                             <structure name="AS 7 project">
                                                 <classfiles>
-                                                    <fileset dir="${jboss.dist}">
-                                                        <include name="**/*.class"/>
+                                                    <fileset dir="${jboss.dist}/modules">
                                                         <include name="**/*.jar"/>
+                                                        <!-- We have 2.x in main. -->
+                                                        <exclude name="com/sun/jsf-impl/1.*/**/*"/>
+                                                        <!--  AS7-3383 - com/sun/codemodel vs. /1.0/com/sun/codemodel -->
+                                                        <exclude name="com/sun/xml/**/*"/>
+                                                        <exclude name="javax/faces/api/1.2/**/*"/>
+                                                        <!-- AS7-3390 -->
+                                                        <exclude name="org/apache/commons/beanutils/**/*"/>
+                                                        <!-- AS7-3389 -->
+                                                        <exclude name="org/python/jython/standalone/**/*"/>
                                                     </fileset>
                                                 </classfiles>
                                                 <sourcefiles encoding="UTF-8">
@@ -662,7 +672,7 @@
                                                     </fileset>
                                                 </sourcefiles>
                                             </structure>
-                                            <html destdir="report"/>
+                                            <html destdir="${basedir}/target/coverage-report"/>
                                         </report>                                        
                                     </target>
                                 </configuration>
