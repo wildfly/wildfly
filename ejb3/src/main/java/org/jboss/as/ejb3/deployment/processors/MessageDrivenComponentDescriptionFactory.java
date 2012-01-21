@@ -22,14 +22,14 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
-import static org.jboss.as.ejb3.deployment.processors.ViewInterfaces.getPotentialViewInterfaces;
+import java.lang.reflect.Modifier;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
 
 import javax.ejb.MessageDriven;
 import javax.jms.MessageListener;
-import java.lang.reflect.Modifier;
-import java.util.Collection;
-import java.util.Properties;
-import java.util.Set;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -58,6 +58,8 @@ import org.jboss.metadata.ejb.spec.MessageDrivenBeanMetaData;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
+
+import static org.jboss.as.ejb3.deployment.processors.ViewInterfaces.getPotentialViewInterfaces;
 
 /**
  * User: jpai
@@ -161,10 +163,10 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
         if (value != null)
             return value.asClass().name().toString();
         final ClassInfo beanClass = (ClassInfo) messageBeanAnnotation.target();
-        final Set<DotName> interfaces = getPotentialViewInterfaces(beanClass);
+        final Set<DotName> interfaces = new HashSet<DotName>(getPotentialViewInterfaces(beanClass));
         // check super class(es) of the bean
         DotName superClassDotName = beanClass.superName();
-        while (superClassDotName != null && !superClassDotName.toString().equals(Object.class.getName())) {
+        while (interfaces.isEmpty() && superClassDotName != null && !superClassDotName.toString().equals(Object.class.getName())) {
             final ClassInfo superClass = compositeIndex.getClassByName(superClassDotName);
             if (superClass == null) {
                 break;
