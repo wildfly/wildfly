@@ -111,7 +111,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
 
         String defaultCache = model.require(ModelKeys.DEFAULT_CACHE).asString();
 
-        boolean hasTransport = model.hasDefined(ModelKeys.SINGLETON) && model.get(ModelKeys.SINGLETON).hasDefined(ModelKeys.TRANSPORT);
+        boolean hasTransport = model.hasDefined(ModelKeys.TRANSPORT) && model.get(ModelKeys.TRANSPORT).hasDefined(ModelKeys.TRANSPORT_NAME);
         Transport transportConfig = hasTransport ? new Transport() : null;
         EmbeddedCacheManagerDependencies dependencies = new EmbeddedCacheManagerDependencies(transportConfig);
 
@@ -146,7 +146,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
 
         if (hasTransport) {
             String stack = null;
-            ModelNode transport = model.get(ModelKeys.SINGLETON, ModelKeys.TRANSPORT);
+            ModelNode transport = model.get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
             if (transport.hasDefined(ModelKeys.STACK)) {
                 stack = transport.get(ModelKeys.STACK).asString();
             }

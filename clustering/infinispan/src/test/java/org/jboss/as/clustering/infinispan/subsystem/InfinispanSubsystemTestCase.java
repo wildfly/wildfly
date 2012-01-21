@@ -57,8 +57,6 @@ public class InfinispanSubsystemTestCase extends ClusteringSubsystemTest {
         super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension(), xmlFile);
         this.xmlFile = xmlFile ;
         this.operations = operations ;
-
-        System.out.println("xmlFile = " + xmlFile + ", operations = " + operations);
     }
 
     @Parameters

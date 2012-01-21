@@ -55,7 +55,7 @@ public class InfinispanExtension implements Extension {
     private static final PathElement invalidationCachePath = PathElement.pathElement(ModelKeys.INVALIDATION_CACHE);
     private static final PathElement replicatedCachePath = PathElement.pathElement(ModelKeys.REPLICATED_CACHE);
     private static final PathElement distributedCachePath = PathElement.pathElement(ModelKeys.DISTRIBUTED_CACHE);
-    private static final PathElement transportPath = PathElement.pathElement(ModelKeys.SINGLETON, ModelKeys.TRANSPORT);
+    private static final PathElement transportPath = PathElement.pathElement(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
 
     private static final PathElement lockingPath = PathElement.pathElement(ModelKeys.SINGLETON, ModelKeys.LOCKING);
     private static final PathElement transactionPath = PathElement.pathElement(ModelKeys.SINGLETON, ModelKeys.TRANSACTION);
