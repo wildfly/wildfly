@@ -212,7 +212,7 @@ public class InfinispanDescriptions {
         }
         // children
         addCommonCacheChildren("infinispan.cache", cache, resources);
-        addStateTransferCacheChildren("infinispan.cache", cache, resources);
+        addStateTransferCacheChildren("infinispan.replicated-cache", cache, resources);
         return cache ;
     }
 
@@ -223,12 +223,7 @@ public class InfinispanDescriptions {
         addCommonCacheAddRequestProperties("infinispan.cache", op, resources);
         addCommonClusteredCacheAddRequestProperties("infinispan.clustered-cache", op, resources);
         // nested resource initialization
-        String keyPrefix = "infinispan.replicated-cache.state-transfer" ;
-        ModelNode requestProperties = op.get(ModelDescriptionConstants.REQUEST_PROPERTIES);
-        ModelNode stateTransfer = addNode(requestProperties, ModelKeys.STATE_TRANSFER, resources.getString(keyPrefix), ModelType.OBJECT, false).get(ModelDescriptionConstants.VALUE_TYPE);
-        for (AttributeDefinition attr : CommonAttributes.STATE_TRANSFER_ATTRIBUTES) {
-            addAttributeDescription(attr, resources, keyPrefix, stateTransfer);
-        }
+        STATE_TRANSFER_OBJECT.addOperationParameterDescription(resources, "infinispan.replicated-cache", op);
         return op;
     }
 
@@ -242,7 +237,7 @@ public class InfinispanDescriptions {
         }
         // children
         addCommonCacheChildren("infinispan.cache", cache, resources);
-        addStateTransferCacheChildren("infinispan.cache", cache, resources);
+        addStateTransferCacheChildren("infinispan.replicated-cache", cache, resources);
         return cache ;
     }
 
@@ -255,12 +250,8 @@ public class InfinispanDescriptions {
         for (AttributeDefinition attr : CommonAttributes.DISTRIBUTED_CACHE_ATTRIBUTES) {
             attr.addOperationParameterDescription(resources, "infinispan.distributed-cache", op);
         }
-        String keyPrefix = "infinispan.replicated-cache.state-transfer" ;
-        ModelNode requestProperties = op.get(ModelDescriptionConstants.REQUEST_PROPERTIES);
-        ModelNode stateTransfer = addNode(requestProperties, ModelKeys.STATE_TRANSFER, resources.getString(keyPrefix), ModelType.OBJECT, false).get(ModelDescriptionConstants.VALUE_TYPE);
-        for (AttributeDefinition attr : CommonAttributes.STATE_TRANSFER_ATTRIBUTES) {
-            addAttributeDescription(attr, resources, keyPrefix, stateTransfer);
-        }
+        // nested resource initialization
+        STATE_TRANSFER_OBJECT.addOperationParameterDescription(resources, "infinispan.replicated-cache", op);
         return op;
     }
 
@@ -499,17 +490,12 @@ public class InfinispanDescriptions {
 
     private static void addStateTransferCacheChildren(String keyPrefix, ModelNode description, ResourceBundle resources) {
         // information about its child "singleton=*"
-        description.get(CHILDREN, ModelKeys.SINGLETON, DESCRIPTION).set(resources.getString(keyPrefix+".singleton"));
-        description.get(CHILDREN, ModelKeys.SINGLETON, MIN_OCCURS).set(0);
-        description.get(CHILDREN, ModelKeys.SINGLETON, MAX_OCCURS).set(1);
-        description.get(CHILDREN, ModelKeys.SINGLETON, ALLOWED).setEmptyList();
-        description.get(CHILDREN, ModelKeys.SINGLETON, ALLOWED).add("state-transfer");
-        description.get(CHILDREN, ModelKeys.SINGLETON, MODEL_DESCRIPTION);
-    }
-
-    private static void addRehashingCacheChildren(String keyPrefix, ModelNode description, ResourceBundle resources) {
-        // information about its child "singleton=*"
-        description.get(CHILDREN, ModelKeys.SINGLETON, ALLOWED).add("rehashing");
+        description.get(CHILDREN, ModelKeys.STATE_TRANSFER, DESCRIPTION).set(resources.getString(keyPrefix+".state-transfer"));
+        description.get(CHILDREN, ModelKeys.STATE_TRANSFER, MIN_OCCURS).set(0);
+        description.get(CHILDREN, ModelKeys.STATE_TRANSFER, MAX_OCCURS).set(1);
+        description.get(CHILDREN, ModelKeys.STATE_TRANSFER, ALLOWED).setEmptyList();
+        description.get(CHILDREN, ModelKeys.STATE_TRANSFER, ALLOWED).add(ModelKeys.STATE_TRANSFER_NAME);
+        description.get(CHILDREN, ModelKeys.STATE_TRANSFER, MODEL_DESCRIPTION);
     }
 
     /**

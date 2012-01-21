@@ -180,14 +180,12 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
      */
     private void addSharedStateCacheConfigCommands(Property cache, ModelNode address, ModelNode result) throws OperationFailedException {
 
-        if (cache.getValue().hasDefined(ModelKeys.SINGLETON)) {
-            // command to recreate the state transfer configuration
-            if (cache.getValue().get(ModelKeys.SINGLETON, ModelKeys.STATE_TRANSFER).isDefined()) {
-                ModelNode stateTransfer = cache.getValue().get(ModelKeys.SINGLETON, ModelKeys.STATE_TRANSFER);
-                ModelNode stateTransferAddress = address.clone();
-                stateTransferAddress.add(ModelKeys.SINGLETON, ModelKeys.STATE_TRANSFER);
-                result.add(CacheConfigOperationHandlers.createOperation(CommonAttributes.STATE_TRANSFER_ATTRIBUTES, stateTransferAddress, stateTransfer));
-            }
+        // command to recreate the state transfer configuration
+        if (cache.getValue().get(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME).isDefined()) {
+            ModelNode stateTransfer = cache.getValue().get(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME);
+            ModelNode stateTransferAddress = address.clone();
+            stateTransferAddress.add(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME);
+            result.add(CacheConfigOperationHandlers.createOperation(CommonAttributes.STATE_TRANSFER_ATTRIBUTES, stateTransferAddress, stateTransfer));
         }
     }
 
