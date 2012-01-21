@@ -502,7 +502,7 @@ public class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<List<M
 
         // ModelNode for the rehashing add operation
         ModelNode rehashingAddress = cache.get(ModelDescriptionConstants.OP_ADDR).clone() ;
-        rehashingAddress.add(ModelKeys.SINGLETON, ModelKeys.STATE_TRANSFER) ;
+        rehashingAddress.add(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME) ;
         rehashingAddress.protect();
         ModelNode rehashing = Util.getEmptyOperation(ModelDescriptionConstants.ADD, rehashingAddress);
 
@@ -531,7 +531,7 @@ public class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<List<M
     private void parseStateTransfer(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
         // ModelNode for the state transfer add operation
         ModelNode stateTransferAddress = cache.get(ModelDescriptionConstants.OP_ADDR).clone() ;
-        stateTransferAddress.add(ModelKeys.SINGLETON,ModelKeys.STATE_TRANSFER) ;
+        stateTransferAddress.add(ModelKeys.STATE_TRANSFER,ModelKeys.STATE_TRANSFER_NAME) ;
         stateTransferAddress.protect();
         ModelNode stateTransfer = Util.getEmptyOperation(ModelDescriptionConstants.ADD, stateTransferAddress);
 

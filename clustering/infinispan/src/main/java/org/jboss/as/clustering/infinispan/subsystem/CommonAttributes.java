@@ -163,4 +163,9 @@ public interface CommonAttributes {
             setAllowNull(true).
             setSuffix("expiration").
             build();
+    ObjectTypeAttributeDefinition STATE_TRANSFER_OBJECT = ObjectTypeAttributeDefinition.
+            Builder.of(ModelKeys.STATE_TRANSFER, STATE_TRANSFER_ATTRIBUTES).
+            setAllowNull(true).
+            setSuffix("state-transfer").
+            build();
 }

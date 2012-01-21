@@ -414,9 +414,11 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
                 builder.expiration().wakeUpInterval(expiration.get(ModelKeys.INTERVAL).asLong());
             }
         }
+
+        /*
         // state transfer is a child resource
-        if (cache.hasDefined(ModelKeys.SINGLETON) && cache.get(ModelKeys.SINGLETON, ModelKeys.STATE_TRANSFER).isDefined()) {
-            ModelNode stateTransfer = cache.get(ModelKeys.SINGLETON, ModelKeys.STATE_TRANSFER);
+        if (cache.hasDefined(ModelKeys.STATE_TRANSFER) && cache.get(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME).isDefined()) {
+            ModelNode stateTransfer = cache.get(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME);
             if (stateTransfer.hasDefined(ModelKeys.ENABLED)) {
                 builder.clustering().stateTransfer().fetchInMemoryState(stateTransfer.get(ModelKeys.ENABLED).asBoolean());
             }
@@ -427,7 +429,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
                 builder.clustering().stateTransfer().chunkSize(stateTransfer.get(ModelKeys.CHUNK_SIZE).asInt());
             }
         }
-
+        */
         String storeKey = this.findStoreKey(cache);
         if (storeKey != null) {
             ModelNode store = cache.get(storeKey);
