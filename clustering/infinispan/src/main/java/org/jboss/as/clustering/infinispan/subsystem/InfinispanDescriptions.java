@@ -98,10 +98,7 @@ public class InfinispanDescriptions {
         for (AttributeDefinition attr : CommonAttributes.CACHE_CONTAINER_ATTRIBUTES) {
             attr.addResourceAttributeDescription(resources, keyPrefix, container);
         }
-        // need to add value type until we replace with a ListAttribute
-        ALIASES.addResourceAttributeDescription(resources, keyPrefix, container).
-                get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
-        // information about its child "singleton=transport"
+        // information about its child "transport=TRANSPORT"
         container.get(CHILDREN, ModelKeys.TRANSPORT, DESCRIPTION).set(resources.getString(keyPrefix + ".transport"));
         container.get(CHILDREN, ModelKeys.TRANSPORT, MIN_OCCURS).set(0);
         container.get(CHILDREN, ModelKeys.TRANSPORT, MAX_OCCURS).set(1);
@@ -215,7 +212,7 @@ public class InfinispanDescriptions {
         }
         // children
         addCommonCacheChildren("infinispan.cache", cache, resources);
-        addStateTransferCacheChildren("infinispan-cache", cache, resources);
+        addStateTransferCacheChildren("infinispan.cache", cache, resources);
         return cache ;
     }
 
@@ -245,7 +242,7 @@ public class InfinispanDescriptions {
         }
         // children
         addCommonCacheChildren("infinispan.cache", cache, resources);
-        addStateTransferCacheChildren("infinispan-cache", cache, resources);
+        addStateTransferCacheChildren("infinispan.cache", cache, resources);
         return cache ;
     }
 
@@ -470,18 +467,44 @@ public class InfinispanDescriptions {
     }
 
     private static void addCommonCacheChildren(String keyPrefix, ModelNode description, ResourceBundle resources) {
+        // information about its child "locking=LOCKING"
+        description.get(CHILDREN, ModelKeys.LOCKING, DESCRIPTION).set(resources.getString(keyPrefix+".locking"));
+        description.get(CHILDREN, ModelKeys.LOCKING, MIN_OCCURS).set(0);
+        description.get(CHILDREN, ModelKeys.LOCKING, MAX_OCCURS).set(1);
+        description.get(CHILDREN, ModelKeys.LOCKING, ALLOWED).setEmptyList();
+        description.get(CHILDREN, ModelKeys.LOCKING, ALLOWED).add(ModelKeys.LOCKING_NAME);
+        description.get(CHILDREN, ModelKeys.LOCKING, MODEL_DESCRIPTION);
+        // information about its child "transaction=TRANSACTION"
+        description.get(CHILDREN, ModelKeys.TRANSACTION, DESCRIPTION).set(resources.getString(keyPrefix+".transaction"));
+        description.get(CHILDREN, ModelKeys.TRANSACTION, MIN_OCCURS).set(0);
+        description.get(CHILDREN, ModelKeys.TRANSACTION, MAX_OCCURS).set(1);
+        description.get(CHILDREN, ModelKeys.TRANSACTION, ALLOWED).setEmptyList();
+        description.get(CHILDREN, ModelKeys.TRANSACTION, ALLOWED).add(ModelKeys.TRANSACTION_NAME);
+        description.get(CHILDREN, ModelKeys.TRANSACTION, MODEL_DESCRIPTION);
+        // information about its child "eviction=EVICTION"
+        description.get(CHILDREN, ModelKeys.EVICTION, DESCRIPTION).set(resources.getString(keyPrefix+".eviction"));
+        description.get(CHILDREN, ModelKeys.EVICTION, MIN_OCCURS).set(0);
+        description.get(CHILDREN, ModelKeys.EVICTION, MAX_OCCURS).set(1);
+        description.get(CHILDREN, ModelKeys.EVICTION, ALLOWED).setEmptyList();
+        description.get(CHILDREN, ModelKeys.EVICTION, ALLOWED).add(ModelKeys.EVICTION_NAME);
+        description.get(CHILDREN, ModelKeys.EVICTION, MODEL_DESCRIPTION);
+        // information about its child "expiration=EXPIRATION"
+        description.get(CHILDREN, ModelKeys.EXPIRATION, DESCRIPTION).set(resources.getString(keyPrefix+".expiration"));
+        description.get(CHILDREN, ModelKeys.EXPIRATION, MIN_OCCURS).set(0);
+        description.get(CHILDREN, ModelKeys.EXPIRATION, MAX_OCCURS).set(1);
+        description.get(CHILDREN, ModelKeys.EXPIRATION, ALLOWED).setEmptyList();
+        description.get(CHILDREN, ModelKeys.EXPIRATION, ALLOWED).add(ModelKeys.EXPIRATION_NAME);
+        description.get(CHILDREN, ModelKeys.EXPIRATION, MODEL_DESCRIPTION);
+     }
+
+    private static void addStateTransferCacheChildren(String keyPrefix, ModelNode description, ResourceBundle resources) {
         // information about its child "singleton=*"
         description.get(CHILDREN, ModelKeys.SINGLETON, DESCRIPTION).set(resources.getString(keyPrefix+".singleton"));
         description.get(CHILDREN, ModelKeys.SINGLETON, MIN_OCCURS).set(0);
         description.get(CHILDREN, ModelKeys.SINGLETON, MAX_OCCURS).set(1);
         description.get(CHILDREN, ModelKeys.SINGLETON, ALLOWED).setEmptyList();
-        description.get(CHILDREN, ModelKeys.SINGLETON, ALLOWED).add("locking").add("transaction").add("eviction").add("expiration");
-        description.get(CHILDREN, ModelKeys.SINGLETON, MODEL_DESCRIPTION);
-    }
-
-    private static void addStateTransferCacheChildren(String keyPrefix, ModelNode description, ResourceBundle resources) {
-        // information about its child "singleton=*"
         description.get(CHILDREN, ModelKeys.SINGLETON, ALLOWED).add("state-transfer");
+        description.get(CHILDREN, ModelKeys.SINGLETON, MODEL_DESCRIPTION);
     }
 
     private static void addRehashingCacheChildren(String keyPrefix, ModelNode description, ResourceBundle resources) {
@@ -502,31 +525,12 @@ public class InfinispanDescriptions {
         BATCHING.addOperationParameterDescription(resources, keyPrefix, operation);
         INDEXING.addOperationParameterDescription(resources, keyPrefix, operation);
 
+        LOCKING_OBJECT.addOperationParameterDescription(resources, keyPrefix , operation) ;
+        TRANSACTION_OBJECT.addOperationParameterDescription(resources, keyPrefix , operation) ;
+        EVICTION_OBJECT.addOperationParameterDescription(resources, keyPrefix , operation) ;
+        EXPIRATION_OBJECT.addOperationParameterDescription(resources, keyPrefix , operation) ;
+
         ModelNode requestProperties = operation.get(ModelDescriptionConstants.REQUEST_PROPERTIES);
-        String lockingPrefix = keyPrefix + "." + "locking" ;
-        ModelNode locking = addNode(requestProperties, ModelKeys.LOCKING, resources.getString(lockingPrefix), ModelType.OBJECT, false).get(ModelDescriptionConstants.VALUE_TYPE);
-        for (AttributeDefinition attr : CommonAttributes.LOCKING_ATTRIBUTES) {
-            addAttributeDescription(attr, resources, lockingPrefix, locking);
-        }
-
-        String transactionPrefix = keyPrefix + "." + "transaction" ;
-        ModelNode transaction = addNode(requestProperties, ModelKeys.TRANSACTION, resources.getString(transactionPrefix), ModelType.OBJECT, false).get(ModelDescriptionConstants.VALUE_TYPE);
-        for (AttributeDefinition attr : CommonAttributes.TRANSACTION_ATTRIBUTES) {
-            addAttributeDescription(attr, resources, transactionPrefix, transaction);
-        }
-
-        String evictionPrefix = keyPrefix + "." + "eviction" ;
-        ModelNode eviction = addNode(requestProperties, ModelKeys.EVICTION, resources.getString(evictionPrefix), ModelType.OBJECT, false).get(ModelDescriptionConstants.VALUE_TYPE);
-        for (AttributeDefinition attr : CommonAttributes.EVICTION_ATTRIBUTES) {
-            addAttributeDescription(attr, resources, evictionPrefix, eviction);
-        }
-
-        String expirationPrefix = keyPrefix + ".expiration" ;
-        ModelNode expiration = addNode(requestProperties, ModelKeys.EXPIRATION, resources.getString(expirationPrefix), ModelType.OBJECT, false).get(ModelDescriptionConstants.VALUE_TYPE);
-        for (AttributeDefinition attr : CommonAttributes.EXPIRATION_ATTRIBUTES) {
-            addAttributeDescription(attr, resources, expirationPrefix, expiration);
-         }
-
         String storePrefix = keyPrefix + "." + "store" ;
         ModelNode store = addNode(requestProperties, ModelKeys.STORE, resources.getString(storePrefix), ModelType.OBJECT, false).get(ModelDescriptionConstants.VALUE_TYPE);
         for (AttributeDefinition attr : CommonAttributes.STORE_ATTRIBUTES) {
