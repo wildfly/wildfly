@@ -342,8 +342,8 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         }
 
         // locking is a child resource
-        if (cache.hasDefined(ModelKeys.SINGLETON) && cache.get(ModelKeys.SINGLETON, ModelKeys.LOCKING).isDefined()) {
-            ModelNode locking = cache.get(ModelKeys.SINGLETON, ModelKeys.LOCKING);
+        if (cache.hasDefined(ModelKeys.LOCKING) && cache.get(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME).isDefined()) {
+            ModelNode locking = cache.get(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME);
             if (locking.hasDefined(ModelKeys.ISOLATION)) {
                 builder.locking().isolationLevel(IsolationLevel.valueOf(locking.get(ModelKeys.ISOLATION).asString()));
             }
@@ -361,8 +361,8 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         TransactionMode txMode = TransactionMode.NONE;
         LockingMode lockingMode = LockingMode.OPTIMISTIC;
         // locking is a child resource
-        if (cache.hasDefined(ModelKeys.SINGLETON) && cache.get(ModelKeys.SINGLETON, ModelKeys.TRANSACTION).isDefined()) {
-            ModelNode transaction = cache.get(ModelKeys.SINGLETON, ModelKeys.TRANSACTION);
+        if (cache.hasDefined(ModelKeys.TRANSACTION) && cache.get(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME).isDefined()) {
+            ModelNode transaction = cache.get(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME);
             if (transaction.hasDefined(ModelKeys.STOP_TIMEOUT)) {
                 builder.transaction().cacheStopTimeout(transaction.get(ModelKeys.STOP_TIMEOUT).asLong());
             }
@@ -391,8 +391,8 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
             }
         }
         // eviction is a child resource
-        if (cache.hasDefined(ModelKeys.SINGLETON) && cache.get(ModelKeys.SINGLETON, ModelKeys.EVICTION).isDefined()) {
-            ModelNode eviction = cache.get(ModelKeys.SINGLETON, ModelKeys.EVICTION);
+        if (cache.hasDefined(ModelKeys.EVICTION) && cache.get(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME).isDefined()) {
+            ModelNode eviction = cache.get(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME);
 
             if (eviction.hasDefined(ModelKeys.STRATEGY)) {
                 builder.eviction().strategy(EvictionStrategy.valueOf(eviction.get(ModelKeys.STRATEGY).asString()));
@@ -402,8 +402,8 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
             }
         }
         // expiration is a child resource
-        if (cache.hasDefined(ModelKeys.SINGLETON) && cache.get(ModelKeys.SINGLETON, ModelKeys.EXPIRATION).isDefined()) {
-            ModelNode expiration = cache.get(ModelKeys.SINGLETON, ModelKeys.EXPIRATION);
+        if (cache.hasDefined(ModelKeys.EXPIRATION) && cache.get(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME).isDefined()) {
+            ModelNode expiration = cache.get(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME);
             if (expiration.hasDefined(ModelKeys.MAX_IDLE)) {
                 builder.expiration().maxIdle(expiration.get(ModelKeys.MAX_IDLE).asLong());
             }

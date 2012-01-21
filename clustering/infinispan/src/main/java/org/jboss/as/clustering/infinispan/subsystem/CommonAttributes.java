@@ -142,4 +142,25 @@ public interface CommonAttributes {
             setAllowNull(true).
             setSuffix("transport").
             build();
+
+    ObjectTypeAttributeDefinition LOCKING_OBJECT = ObjectTypeAttributeDefinition.
+            Builder.of(ModelKeys.LOCKING, LOCKING_ATTRIBUTES).
+            setAllowNull(true).
+            setSuffix("locking").
+            build();
+    ObjectTypeAttributeDefinition TRANSACTION_OBJECT = ObjectTypeAttributeDefinition.
+            Builder.of(ModelKeys.TRANSACTION, TRANSACTION_ATTRIBUTES).
+            setAllowNull(true).
+            setSuffix("transaction").
+            build();
+    ObjectTypeAttributeDefinition EVICTION_OBJECT = ObjectTypeAttributeDefinition.
+            Builder.of(ModelKeys.EVICTION, EVICTION_ATTRIBUTES).
+            setAllowNull(true).
+            setSuffix("eviction").
+            build();
+    ObjectTypeAttributeDefinition EXPIRATION_OBJECT = ObjectTypeAttributeDefinition.
+            Builder.of(ModelKeys.EXPIRATION, EXPIRATION_ATTRIBUTES).
+            setAllowNull(true).
+            setSuffix("expiration").
+            build();
 }

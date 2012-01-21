@@ -121,53 +121,49 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                     this.writeOptional(writer, Attribute.INDEXING, cache, ModelKeys.INDEXING);
                     this.writeOptional(writer, Attribute.JNDI_NAME, cache, ModelKeys.JNDI_NAME);
 
-                    // all child elements can be governed by this
-                    if (cache.hasDefined(ModelKeys.SINGLETON)) {
+                    if (cache.get(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME).isDefined()) {
+                        writer.writeStartElement(Element.LOCKING.getLocalName());
+                        ModelNode locking = cache.get(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME);
+                        this.writeOptional(writer, Attribute.ISOLATION, locking, ModelKeys.ISOLATION);
+                        this.writeOptional(writer, Attribute.STRIPING, locking, ModelKeys.STRIPING);
+                        this.writeOptional(writer, Attribute.ACQUIRE_TIMEOUT, locking, ModelKeys.ACQUIRE_TIMEOUT);
+                        this.writeOptional(writer, Attribute.CONCURRENCY_LEVEL, locking, ModelKeys.CONCURRENCY_LEVEL);
+                        writer.writeEndElement();
+                    }
 
-                        if (cache.get(ModelKeys.SINGLETON, ModelKeys.LOCKING).isDefined()) {
-                            writer.writeStartElement(Element.LOCKING.getLocalName());
-                            ModelNode locking = cache.get(ModelKeys.SINGLETON, ModelKeys.LOCKING);
-                            this.writeOptional(writer, Attribute.ISOLATION, locking, ModelKeys.ISOLATION);
-                            this.writeOptional(writer, Attribute.STRIPING, locking, ModelKeys.STRIPING);
-                            this.writeOptional(writer, Attribute.ACQUIRE_TIMEOUT, locking, ModelKeys.ACQUIRE_TIMEOUT);
-                            this.writeOptional(writer, Attribute.CONCURRENCY_LEVEL, locking, ModelKeys.CONCURRENCY_LEVEL);
-                            writer.writeEndElement();
-                        }
+                    if (cache.get(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME).isDefined()) {
+                        writer.writeStartElement(Element.TRANSACTION.getLocalName());
+                        ModelNode transaction = cache.get(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME);
+                        this.writeOptional(writer, Attribute.STOP_TIMEOUT, transaction, ModelKeys.STOP_TIMEOUT);
+                        this.writeOptional(writer, Attribute.MODE, transaction, ModelKeys.MODE);
+                        this.writeOptional(writer, Attribute.LOCKING, transaction, ModelKeys.LOCKING);
+                        writer.writeEndElement();
+                    }
 
-                        if (cache.get(ModelKeys.SINGLETON, ModelKeys.TRANSACTION).isDefined()) {
-                            writer.writeStartElement(Element.TRANSACTION.getLocalName());
-                            ModelNode transaction = cache.get(ModelKeys.SINGLETON, ModelKeys.TRANSACTION);
-                            this.writeOptional(writer, Attribute.STOP_TIMEOUT, transaction, ModelKeys.STOP_TIMEOUT);
-                            this.writeOptional(writer, Attribute.MODE, transaction, ModelKeys.MODE);
-                            this.writeOptional(writer, Attribute.LOCKING, transaction, ModelKeys.LOCKING);
-                            writer.writeEndElement();
-                        }
+                    if (cache.get(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME).isDefined()) {
+                        writer.writeStartElement(Element.EVICTION.getLocalName());
+                        ModelNode eviction = cache.get(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME);
+                        this.writeOptional(writer, Attribute.STRATEGY, eviction, ModelKeys.STRATEGY);
+                        this.writeOptional(writer, Attribute.MAX_ENTRIES, eviction, ModelKeys.MAX_ENTRIES);
+                        writer.writeEndElement();
+                    }
 
-                        if (cache.get(ModelKeys.SINGLETON, ModelKeys.EVICTION).isDefined()) {
-                            writer.writeStartElement(Element.EVICTION.getLocalName());
-                            ModelNode eviction = cache.get(ModelKeys.SINGLETON, ModelKeys.EVICTION);
-                            this.writeOptional(writer, Attribute.STRATEGY, eviction, ModelKeys.STRATEGY);
-                            this.writeOptional(writer, Attribute.MAX_ENTRIES, eviction, ModelKeys.MAX_ENTRIES);
-                            writer.writeEndElement();
-                        }
+                    if (cache.get(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME).isDefined()) {
+                        writer.writeStartElement(Element.EXPIRATION.getLocalName());
+                        ModelNode expiration = cache.get(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME);
+                        this.writeOptional(writer, Attribute.MAX_IDLE, expiration, ModelKeys.MAX_IDLE);
+                        this.writeOptional(writer, Attribute.LIFESPAN, expiration, ModelKeys.LIFESPAN);
+                        this.writeOptional(writer, Attribute.INTERVAL, expiration, ModelKeys.INTERVAL);
+                        writer.writeEndElement();
+                    }
 
-                        if (cache.get(ModelKeys.SINGLETON, ModelKeys.EXPIRATION).isDefined()) {
-                            writer.writeStartElement(Element.EXPIRATION.getLocalName());
-                            ModelNode expiration = cache.get(ModelKeys.SINGLETON, ModelKeys.EXPIRATION);
-                            this.writeOptional(writer, Attribute.MAX_IDLE, expiration, ModelKeys.MAX_IDLE);
-                            this.writeOptional(writer, Attribute.LIFESPAN, expiration, ModelKeys.LIFESPAN);
-                            this.writeOptional(writer, Attribute.INTERVAL, expiration, ModelKeys.INTERVAL);
-                            writer.writeEndElement();
-                        }
-
-                        if (cache.get(ModelKeys.SINGLETON, ModelKeys.STATE_TRANSFER).isDefined()) {
-                            ModelNode stateTransfer = cache.get(ModelKeys.SINGLETON, ModelKeys.STATE_TRANSFER);
-                            writer.writeStartElement(Element.STATE_TRANSFER.getLocalName());
-                            this.writeOptional(writer, Attribute.ENABLED, stateTransfer, ModelKeys.ENABLED);
-                            this.writeOptional(writer, Attribute.TIMEOUT, stateTransfer, ModelKeys.TIMEOUT);
-                            this.writeOptional(writer, Attribute.CHUNK_SIZE, stateTransfer, ModelKeys.CHUNK_SIZE);
-                            writer.writeEndElement();
-                        }
+                    if (cache.get(ModelKeys.SINGLETON, ModelKeys.STATE_TRANSFER).isDefined()) {
+                        ModelNode stateTransfer = cache.get(ModelKeys.SINGLETON, ModelKeys.STATE_TRANSFER);
+                        writer.writeStartElement(Element.STATE_TRANSFER.getLocalName());
+                        this.writeOptional(writer, Attribute.ENABLED, stateTransfer, ModelKeys.ENABLED);
+                        this.writeOptional(writer, Attribute.TIMEOUT, stateTransfer, ModelKeys.TIMEOUT);
+                        this.writeOptional(writer, Attribute.CHUNK_SIZE, stateTransfer, ModelKeys.CHUNK_SIZE);
+                        writer.writeEndElement();
                     }
 
                     if (cache.hasDefined(ModelKeys.STORE)) {

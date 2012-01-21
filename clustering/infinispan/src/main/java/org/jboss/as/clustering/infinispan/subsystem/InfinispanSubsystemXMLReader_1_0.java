@@ -564,7 +564,7 @@ public class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<List<M
 
         // ModelNode for the cache add operation
         ModelNode lockingAddress = cache.get(ModelDescriptionConstants.OP_ADDR).clone() ;
-        lockingAddress.add(ModelKeys.SINGLETON,ModelKeys.LOCKING) ;
+        lockingAddress.add(ModelKeys.LOCKING,ModelKeys.LOCKING_NAME) ;
         lockingAddress.protect();
         ModelNode locking = Util.getEmptyOperation(ModelDescriptionConstants.ADD, lockingAddress);
 
@@ -606,7 +606,7 @@ public class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<List<M
 
         // ModelNode for the transaction add operation
         ModelNode transactionAddress = cache.get(ModelDescriptionConstants.OP_ADDR).clone() ;
-        transactionAddress.add(ModelKeys.SINGLETON,ModelKeys.TRANSACTION) ;
+        transactionAddress.add(ModelKeys.TRANSACTION,ModelKeys.TRANSACTION_NAME) ;
         transactionAddress.protect();
         ModelNode transaction = Util.getEmptyOperation(ModelDescriptionConstants.ADD, transactionAddress);
 
@@ -650,7 +650,7 @@ public class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<List<M
     private void parseEviction(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
         // ModelNode for the eviction add operation
         ModelNode evictionAddress = cache.get(ModelDescriptionConstants.OP_ADDR).clone() ;
-        evictionAddress.add(ModelKeys.SINGLETON,ModelKeys.EVICTION) ;
+        evictionAddress.add(ModelKeys.EVICTION,ModelKeys.EVICTION_NAME) ;
         evictionAddress.protect();
         ModelNode eviction = Util.getEmptyOperation(ModelDescriptionConstants.ADD, evictionAddress);
 
@@ -688,7 +688,7 @@ public class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<List<M
 
         // ModelNode for the expiration add operation
         ModelNode expirationAddress = cache.get(ModelDescriptionConstants.OP_ADDR).clone() ;
-        expirationAddress.add(ModelKeys.SINGLETON,ModelKeys.EXPIRATION) ;
+        expirationAddress.add(ModelKeys.EXPIRATION,ModelKeys.EXPIRATION_NAME) ;
         expirationAddress.protect();
         ModelNode expiration = Util.getEmptyOperation(ModelDescriptionConstants.ADD, expirationAddress);
 
