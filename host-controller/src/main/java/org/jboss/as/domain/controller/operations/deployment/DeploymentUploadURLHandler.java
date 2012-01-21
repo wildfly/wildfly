@@ -24,7 +24,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.server.deployment.repository.api.ContentRepository;
+import org.jboss.as.repository.ContentRepository;
 import org.jboss.dmr.ModelNode;
 
 import java.io.IOException;

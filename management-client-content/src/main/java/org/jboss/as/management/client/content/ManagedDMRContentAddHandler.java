@@ -22,8 +22,6 @@
 
 package org.jboss.as.management.client.content;
 
-import static org.jboss.as.management.client.content.ManagedDMRContentTypeResourceDefinition.HASH;
-
 import java.util.Locale;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -36,7 +34,6 @@ import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 
 /**

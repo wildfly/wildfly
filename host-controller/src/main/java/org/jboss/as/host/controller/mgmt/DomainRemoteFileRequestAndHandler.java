@@ -21,7 +21,7 @@
 */
 package org.jboss.as.host.controller.mgmt;
 
-import org.jboss.as.server.file.repository.impl.RemoteFileRequestAndHandler;
+import org.jboss.as.repository.RemoteFileRequestAndHandler;
 
 /**
  *

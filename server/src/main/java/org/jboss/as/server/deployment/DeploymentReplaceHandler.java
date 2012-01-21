@@ -28,6 +28,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PAT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLACE_DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_REPLACE;
+
+import org.jboss.as.repository.ContentRepository;
+import org.jboss.as.repository.DeploymentFileRepository;
 import org.jboss.as.server.ServerMessages;
 import static org.jboss.as.server.deployment.AbstractDeploymentHandler.createFailureException;
 import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getContents;
@@ -46,8 +49,6 @@ import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.server.deployment.repository.api.ContentRepository;
-import org.jboss.as.server.file.repository.api.DeploymentFileRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 

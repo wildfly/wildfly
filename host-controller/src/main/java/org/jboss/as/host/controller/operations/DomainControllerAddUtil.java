@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.server.file.repository.api.HostFileRepository;
+import org.jboss.as.repository.HostFileRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;

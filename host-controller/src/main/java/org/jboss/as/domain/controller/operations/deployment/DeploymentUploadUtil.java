@@ -17,7 +17,7 @@ import java.net.URL;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.server.deployment.repository.api.ContentRepository;
+import org.jboss.as.repository.ContentRepository;
 import org.jboss.dmr.ModelNode;
 
 /**

@@ -28,7 +28,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.server.deployment.repository.api.ContentRepository;
+import org.jboss.as.repository.ContentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.vfs.VirtualFile;
 import org.junit.Ignore;

@@ -48,7 +48,6 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.domain.controller.operations.ResolveExpressionOnDomainHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentFullReplaceHandler;
-import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 

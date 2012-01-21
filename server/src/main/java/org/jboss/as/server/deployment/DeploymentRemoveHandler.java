@@ -39,9 +39,9 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.controller.descriptions.ServerDescriptions;
-import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 

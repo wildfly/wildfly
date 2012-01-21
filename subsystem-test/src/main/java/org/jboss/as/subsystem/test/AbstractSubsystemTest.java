@@ -26,7 +26,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
@@ -53,7 +52,6 @@ import javax.xml.stream.XMLStreamReader;
 
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
-
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CompositeOperationHandler;
@@ -97,7 +95,6 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.DeployerChainAddHandler;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
-import org.jboss.as.server.deployment.repository.impl.ContentRepositoryImpl;
 import org.jboss.as.server.operations.RootResourceHack;
 import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationFailure;
@@ -1038,35 +1035,6 @@ public abstract class AbstractSubsystemTest {
         }
 
     };
-
-    private static class TestContentRepository extends ContentRepositoryImpl {
-
-        private TestContentRepository(File repoRoot) {
-            // FIXME TestContentRepository constructor
-            super(repoRoot);
-        }
-
-        public static TestContentRepository createTestContentRepository() {
-            File file = new File("target/content-repository");
-            if (file.exists()) {
-                cleanFiles(file);
-            }
-            file.mkdirs();
-            return new TestContentRepository(file);
-        }
-
-        private static void cleanFiles(File file) {
-            if (file.isDirectory()) {
-                for (String name : file.list()) {
-                    File current = new File(file, name);
-                    if (current.isDirectory()) {
-                        cleanFiles(current);
-                    }
-                }
-            }
-            file.delete();
-        }
-    }
 
     private static class RootResourceGrabber implements OperationStepHandler, DescriptionProvider {
         static String NAME = "grab-root-resource";

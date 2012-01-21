@@ -76,7 +76,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.management.client.content.ManagedDMRContentTypeResource;
 import org.jboss.as.network.NetworkInterfaceBinding;
-import org.jboss.as.server.deployment.repository.api.ContentRepository;
+import org.jboss.as.repository.ContentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;

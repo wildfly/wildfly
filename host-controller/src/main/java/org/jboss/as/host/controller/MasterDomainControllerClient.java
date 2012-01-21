@@ -5,7 +5,7 @@ package org.jboss.as.host.controller;
 
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.domain.controller.DomainController;
-import org.jboss.as.server.file.repository.api.HostFileRepository;
+import org.jboss.as.repository.HostFileRepository;
 import org.jboss.msc.service.ServiceName;
 
 /**

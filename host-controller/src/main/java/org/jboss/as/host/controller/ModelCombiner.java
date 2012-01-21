@@ -52,7 +52,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import java.io.File;
-import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -77,8 +76,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.host.controller.ManagedServer.ManagedServerBootConfiguration;
 import org.jboss.as.process.DefaultJvmUtils;
-import org.jboss.as.server.file.repository.api.HostFileRepository;
-import org.jboss.as.server.jmx.PluggableMBeanServer;
+import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.server.services.net.BindingGroupAddHandler;
 import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingAddHandler;
 import org.jboss.as.server.services.net.RemoteDestinationOutboundSocketBindingAddHandler;

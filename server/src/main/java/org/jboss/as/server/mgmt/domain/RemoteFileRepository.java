@@ -26,8 +26,8 @@ import static org.jboss.as.server.ServerMessages.MESSAGES;
 import java.io.File;
 
 import org.jboss.as.controller.HashUtil;
-import org.jboss.as.server.file.repository.api.DeploymentFileRepository;
-import org.jboss.as.server.file.repository.impl.LocalDeploymentFileRepository;
+import org.jboss.as.repository.DeploymentFileRepository;
+import org.jboss.as.repository.LocalDeploymentFileRepository;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;

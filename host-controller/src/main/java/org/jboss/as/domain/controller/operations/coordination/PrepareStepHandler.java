@@ -40,7 +40,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
-import org.jboss.as.server.deployment.repository.api.ContentRepository;
+import org.jboss.as.repository.ContentRepository;
 import org.jboss.dmr.ModelNode;
 
 /**

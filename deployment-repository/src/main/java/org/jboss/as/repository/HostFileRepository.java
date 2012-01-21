@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server.file.repository.api;
+package org.jboss.as.repository;
 
 import java.io.File;
 

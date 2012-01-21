@@ -40,7 +40,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.server.file.repository.api.HostFileRepository;
+import org.jboss.as.repository.HostFileRepository;
 import org.jboss.dmr.ModelNode;
 
 /**

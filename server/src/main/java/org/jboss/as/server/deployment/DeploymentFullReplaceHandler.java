@@ -60,9 +60,9 @@ import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.repository.ContentRepository;
+import org.jboss.as.repository.DeploymentFileRepository;
 import org.jboss.as.server.ServerMessages;
-import org.jboss.as.server.deployment.repository.api.ContentRepository;
-import org.jboss.as.server.file.repository.api.DeploymentFileRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 

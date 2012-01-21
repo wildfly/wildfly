@@ -22,12 +22,7 @@
 
 package org.jboss.as.domain.controller;
 
-import java.net.SocketException;
-import java.net.UnknownHostException;
-
 import org.jboss.as.controller.ControlledProcessState;
-import org.jboss.as.network.NetworkInterfaceBinding;
-import org.jboss.as.server.deployment.repository.api.ContentRepository;
 
 /**
  * Core information about the local host controller.

@@ -39,9 +39,9 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.descriptions.DomainRootDescription;
+import org.jboss.as.repository.ContentRepository;
+import org.jboss.as.repository.DeploymentFileRepository;
 import org.jboss.as.server.deployment.DeploymentUtils;
-import org.jboss.as.server.deployment.repository.api.ContentRepository;
-import org.jboss.as.server.file.repository.api.DeploymentFileRepository;
 import org.jboss.dmr.ModelNode;
 
 /**

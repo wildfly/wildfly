@@ -23,7 +23,7 @@
 package org.jboss.as.domain.controller;
 
 import org.jboss.as.controller.ProxyController;
-import org.jboss.as.server.file.repository.api.HostFileRepository;
+import org.jboss.as.repository.HostFileRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
