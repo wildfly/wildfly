@@ -47,9 +47,11 @@ public class ModelKeys {
     static final String ENABLED = "enabled";
     static final String ENTRY_TABLE = "entry-table";
     static final String EVICTION = "eviction";
+    static final String EVICTION_NAME = "EVICTION";
     static final String EVICTION_EXECUTOR = "eviction-executor";
     static final String EXECUTOR = "executor";
     static final String EXPIRATION = "expiration";
+    static final String EXPIRATION_NAME = "EXPIRATION";
     static final String FETCH_SIZE = "fetch-size";
     static final String FETCH_STATE = "fetch-state";
     static final String FILE_STORE = "file-store";
@@ -66,6 +68,7 @@ public class ModelKeys {
     static final String LOCAL_CACHE = "local-cache";
     static final String LOCK_TIMEOUT = "lock-timeout";
     static final String LOCKING = "locking";
+    static final String LOCKING_NAME = "LOCKING";
     static final String MACHINE = "machine";
     static final String MAX_ENTRIES = "max-entries";
     static final String MAX_IDLE = "max-idle";
@@ -103,6 +106,7 @@ public class ModelKeys {
     static final String TIMEOUT = "timeout";
     static final String TIMESTAMP_COLUMN = "timestamp-column";
     static final String TRANSACTION = "transaction";
+    static final String TRANSACTION_NAME = "TRANSACTION";
     static final String TRANSPORT = "transport";
     static final String TRANSPORT_NAME = "TRANSPORT";
     static final String TYPE = "type";

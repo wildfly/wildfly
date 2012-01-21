@@ -140,35 +140,33 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
      */
     private void addCacheConfigCommands(Property cache, ModelNode address, ModelNode result) throws OperationFailedException {
 
-        if (cache.getValue().hasDefined(ModelKeys.SINGLETON)) {
-            // command to recreate the locking configuration
-            if (cache.getValue().get(ModelKeys.SINGLETON, ModelKeys.LOCKING).isDefined()) {
-                ModelNode locking = cache.getValue().get(ModelKeys.SINGLETON, ModelKeys.LOCKING);
-                ModelNode lockingAddress = address.clone();
-                lockingAddress.add(ModelKeys.SINGLETON, ModelKeys.LOCKING);
-                result.add(CacheConfigOperationHandlers.createOperation(CommonAttributes.LOCKING_ATTRIBUTES, lockingAddress, locking));
-            }
-            // command to recreate the transaction configuration
-            if (cache.getValue().get(ModelKeys.SINGLETON, ModelKeys.TRANSACTION).isDefined()) {
-                ModelNode transaction = cache.getValue().get(ModelKeys.SINGLETON, ModelKeys.TRANSACTION);
-                ModelNode transactionAddress = address.clone();
-                transactionAddress.add(ModelKeys.SINGLETON, ModelKeys.TRANSACTION);
-                result.add(CacheConfigOperationHandlers.createOperation(CommonAttributes.TRANSACTION_ATTRIBUTES, transactionAddress, transaction));
-            }
-            // command to recreate the eviction configuration
-            if (cache.getValue().get(ModelKeys.SINGLETON, ModelKeys.EVICTION).isDefined()) {
-                ModelNode eviction = cache.getValue().get(ModelKeys.SINGLETON, ModelKeys.EVICTION);
-                ModelNode evictionAddress = address.clone();
-                evictionAddress.add(ModelKeys.SINGLETON, ModelKeys.EVICTION);
-                result.add(CacheConfigOperationHandlers.createOperation(CommonAttributes.EVICTION_ATTRIBUTES, evictionAddress, eviction));
-            }
-            // command to recreate the expiration configuration
-            if (cache.getValue().get(ModelKeys.SINGLETON, ModelKeys.EXPIRATION).isDefined()) {
-                ModelNode expiration = cache.getValue().get(ModelKeys.SINGLETON, ModelKeys.EXPIRATION);
-                ModelNode expirationAddress = address.clone();
-                expirationAddress.add(ModelKeys.SINGLETON, ModelKeys.EXPIRATION);
-                result.add(CacheConfigOperationHandlers.createOperation(CommonAttributes.EXPIRATION_ATTRIBUTES, expirationAddress, expiration));
-            }
+        // command to recreate the locking configuration
+        if (cache.getValue().get(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME).isDefined()) {
+            ModelNode locking = cache.getValue().get(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME);
+            ModelNode lockingAddress = address.clone();
+            lockingAddress.add(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME);
+            result.add(CacheConfigOperationHandlers.createOperation(CommonAttributes.LOCKING_ATTRIBUTES, lockingAddress, locking));
+        }
+        // command to recreate the transaction configuration
+        if (cache.getValue().get(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME).isDefined()) {
+            ModelNode transaction = cache.getValue().get(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME);
+            ModelNode transactionAddress = address.clone();
+            transactionAddress.add(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME);
+            result.add(CacheConfigOperationHandlers.createOperation(CommonAttributes.TRANSACTION_ATTRIBUTES, transactionAddress, transaction));
+        }
+        // command to recreate the eviction configuration
+        if (cache.getValue().get(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME).isDefined()) {
+            ModelNode eviction = cache.getValue().get(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME);
+            ModelNode evictionAddress = address.clone();
+            evictionAddress.add(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME);
+            result.add(CacheConfigOperationHandlers.createOperation(CommonAttributes.EVICTION_ATTRIBUTES, evictionAddress, eviction));
+        }
+        // command to recreate the expiration configuration
+        if (cache.getValue().get(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME).isDefined()) {
+            ModelNode expiration = cache.getValue().get(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME);
+            ModelNode expirationAddress = address.clone();
+            expirationAddress.add(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME);
+            result.add(CacheConfigOperationHandlers.createOperation(CommonAttributes.EXPIRATION_ATTRIBUTES, expirationAddress, expiration));
         }
     }
 
