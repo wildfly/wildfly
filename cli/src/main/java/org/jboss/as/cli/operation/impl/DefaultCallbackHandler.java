@@ -575,7 +575,6 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
                 header.addTo(ctx, headersNode);
             }
         }
-
         return request;
     }
 

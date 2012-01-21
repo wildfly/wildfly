@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.jboss.as.cli.ArgumentValueConverter;
 import org.jboss.as.cli.CliEvent;
 import org.jboss.as.cli.CliEventListener;
 import org.jboss.as.cli.CommandArgument;
@@ -34,12 +35,14 @@ import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.OperationCommand;
 import org.jboss.as.cli.Util;
+import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.RequestParameterArgument;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.CommandLineParser;
 import org.jboss.as.cli.operation.OperationRequestAddress.Node;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
+import org.jboss.as.cli.operation.impl.RolloutPlanCompleter;
 import org.jboss.as.cli.parsing.ParserUtil;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
@@ -56,6 +59,16 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
     private boolean dependsOnProfile;
     private Boolean addressAvailable;
     private String requiredType;
+
+    protected ArgumentWithValue headers = new ArgumentWithValue(this, RolloutPlanCompleter.INSTANCE, ArgumentValueConverter.ROLLOUT_PLAN, "--headers") {
+        @Override
+        public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
+            if(!ctx.isDomainMode()) {
+                return false;
+            }
+            return super.canAppearNext(ctx);
+        }
+    };
 
     public BaseOperationCommand(CommandContext ctx, String command, boolean connectionRequired) {
         super(command, connectionRequired);
@@ -190,6 +203,7 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
             ctx.error("Operation request wasn't built.");
             return;
         }
+        addHeaders(ctx, request);
 
         ModelControllerClient client = ctx.getModelControllerClient();
         final ModelNode response;
@@ -200,6 +214,20 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
             return;
         }
         handleResponse(ctx, response, Util.COMPOSITE.equals(request.get(Util.OPERATION).asString()));
+    }
+
+    protected void addHeaders(CommandContext ctx, ModelNode request) throws CommandFormatException {
+        if(!headers.isPresent(ctx.getParsedCommandLine())) {
+            return;
+        }
+        if(!ctx.isDomainMode()) {
+            ctx.error(headers.getFullName() + " is allowed only in the domain mode.");
+            return;
+        }
+        final String headersValue = headers.getValue(ctx.getParsedCommandLine());
+        final ModelNode headersNode = headers.getValueConverter().fromString(headersValue);
+        final ModelNode opHeaders = request.get(Util.OPERATION_HEADERS);
+        opHeaders.set(headersNode);
     }
 
     protected void handleResponse(CommandContext ctx, ModelNode response, boolean composite) {
