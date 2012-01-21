@@ -205,7 +205,7 @@ public class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<List<M
 
         // setup the transport address
         ModelNode transportAddress = containerAddress.clone() ;
-        transportAddress.add(ModelKeys.SINGLETON, ModelKeys.TRANSPORT);
+        transportAddress.add(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
         transportAddress.protect() ;
         transport.get(ModelDescriptionConstants.OP_ADDR).set(transportAddress);
 

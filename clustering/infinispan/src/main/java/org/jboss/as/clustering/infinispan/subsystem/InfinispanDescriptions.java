@@ -102,11 +102,11 @@ public class InfinispanDescriptions {
         ALIASES.addResourceAttributeDescription(resources, keyPrefix, container).
                 get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
         // information about its child "singleton=transport"
-        container.get(CHILDREN, ModelKeys.SINGLETON, DESCRIPTION).set(resources.getString(keyPrefix + ".singleton"));
-        container.get(CHILDREN, ModelKeys.SINGLETON, MIN_OCCURS).set(0);
-        container.get(CHILDREN, ModelKeys.SINGLETON, MAX_OCCURS).set(1);
-        container.get(CHILDREN, ModelKeys.SINGLETON, ALLOWED).setEmptyList().add("transport");
-        container.get(CHILDREN, ModelKeys.SINGLETON, MODEL_DESCRIPTION);
+        container.get(CHILDREN, ModelKeys.TRANSPORT, DESCRIPTION).set(resources.getString(keyPrefix + ".transport"));
+        container.get(CHILDREN, ModelKeys.TRANSPORT, MIN_OCCURS).set(0);
+        container.get(CHILDREN, ModelKeys.TRANSPORT, MAX_OCCURS).set(1);
+        container.get(CHILDREN, ModelKeys.TRANSPORT, ALLOWED).setEmptyList().add(ModelKeys.TRANSPORT_NAME);
+        container.get(CHILDREN, ModelKeys.TRANSPORT, MODEL_DESCRIPTION);
         // information about its child "local-cache"
         container.get(CHILDREN, ModelKeys.LOCAL_CACHE, DESCRIPTION).set(resources.getString(keyPrefix + ".local-cache"));
         container.get(CHILDREN, ModelKeys.LOCAL_CACHE, MIN_OCCURS).set(0);
@@ -138,9 +138,6 @@ public class InfinispanDescriptions {
         for (AttributeDefinition attr : CommonAttributes.CACHE_CONTAINER_ATTRIBUTES) {
             attr.addOperationParameterDescription(resources, "infinispan.container", op);
         }
-        // need to add value type until we replace with a ListAttribute
-        ALIASES.addOperationParameterDescription(resources, "infinispan.container", op).
-                get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
         return op;
     }
 
@@ -196,7 +193,6 @@ public class InfinispanDescriptions {
         }
         // children
         addCommonCacheChildren("infinispan.cache", cache, resources);
-        addStateTransferCacheChildren("infinispan-cache", cache, resources);
         return cache ;
      }
 

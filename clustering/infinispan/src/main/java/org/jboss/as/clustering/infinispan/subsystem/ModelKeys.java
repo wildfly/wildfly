@@ -104,6 +104,7 @@ public class ModelKeys {
     static final String TIMESTAMP_COLUMN = "timestamp-column";
     static final String TRANSACTION = "transaction";
     static final String TRANSPORT = "transport";
+    static final String TRANSPORT_NAME = "TRANSPORT";
     static final String TYPE = "type";
     static final String VIRTUAL_NODES = "virtual-nodes";
     static final String WAIT = "wait";

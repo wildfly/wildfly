@@ -88,6 +88,7 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
                             result.add(ReplicatedCacheAdd.createOperation(cacheAddress, cache.getValue()));
 
                             addCacheConfigCommands(cache, cacheAddress, result);
+                            addSharedStateCacheConfigCommands(cache, cacheAddress, result);
                         }
                     // add commands for distributed caches
                     } else if (cacheTypeList.getName().equals(ModelKeys.DISTRIBUTED_CACHE)) {
@@ -97,6 +98,7 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
                             result.add(DistributedCacheAdd.createOperation(cacheAddress, cache.getValue()));
 
                             addCacheConfigCommands(cache, cacheAddress, result);
+                            addSharedStateCacheConfigCommands(cache, cacheAddress, result);
                         }
                     }
                 }
@@ -117,12 +119,12 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
     private void addCacheContainerConfigCommands(Property container, ModelNode address, ModelNode result) throws OperationFailedException {
 
         // add operation to create the transport for the container
-        if (container.getValue().hasDefined(ModelKeys.SINGLETON)) {
+        if (container.getValue().hasDefined(ModelKeys.TRANSPORT)) {
             // command to recreate the transport configuration
-            if (container.getValue().get(ModelKeys.SINGLETON, ModelKeys.TRANSPORT).isDefined()) {
-                ModelNode transport = container.getValue().get(ModelKeys.SINGLETON, ModelKeys.TRANSPORT);
+            if (container.getValue().get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME).isDefined()) {
+                ModelNode transport = container.getValue().get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
                 ModelNode transportAddress = address.clone() ;
-                transportAddress.add(ModelKeys.SINGLETON, ModelKeys.TRANSPORT) ;
+                transportAddress.add(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME) ;
                 result.add(TransportAdd.createOperation(transportAddress, transport));
             }
         }
@@ -167,6 +169,20 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
                 expirationAddress.add(ModelKeys.SINGLETON, ModelKeys.EXPIRATION);
                 result.add(CacheConfigOperationHandlers.createOperation(CommonAttributes.EXPIRATION_ATTRIBUTES, expirationAddress, expiration));
             }
+        }
+    }
+
+    /**
+     * Creates commands to recreate existing cache configuration elements
+     *
+     * @param cache  the cache Property containing the configuration elements
+     * @param address the cache address
+     * @param result  the list of operations
+     * @throws OperationFailedException
+     */
+    private void addSharedStateCacheConfigCommands(Property cache, ModelNode address, ModelNode result) throws OperationFailedException {
+
+        if (cache.getValue().hasDefined(ModelKeys.SINGLETON)) {
             // command to recreate the state transfer configuration
             if (cache.getValue().get(ModelKeys.SINGLETON, ModelKeys.STATE_TRANSFER).isDefined()) {
                 ModelNode stateTransfer = cache.getValue().get(ModelKeys.SINGLETON, ModelKeys.STATE_TRANSFER);
@@ -176,4 +192,5 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
             }
         }
     }
+
 }

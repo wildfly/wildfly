@@ -22,7 +22,9 @@ public interface CommonAttributes {
     SimpleAttributeDefinition ACQUIRE_TIMEOUT = new SimpleAttributeDefinition(ModelKeys.ACQUIRE_TIMEOUT,
             new ModelNode().set(longDefault), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
     SimpleAttributeDefinition ALIAS = new SimpleAttributeDefinition(ModelKeys.ALIAS, ModelType.STRING, true);
-    SimpleAttributeDefinition ALIASES = new SimpleAttributeDefinition(ModelKeys.ALIASES, ModelType.LIST, true);
+    SimpleListAttributeDefinition ALIASES = SimpleListAttributeDefinition.Builder.of(ModelKeys.ALIASES, ALIAS).
+            setAllowNull(true).
+            build();
     SimpleAttributeDefinition BATCH_SIZE = new SimpleAttributeDefinition(ModelKeys.BATCH_SIZE,
             new ModelNode().set(intDefault), ModelType.INT, true);
     SimpleAttributeDefinition BATCHING = new SimpleAttributeDefinition(ModelKeys.BATCHING,
@@ -77,6 +79,9 @@ public interface CommonAttributes {
     SimpleAttributeDefinition PRELOAD = new SimpleAttributeDefinition(ModelKeys.PRELOAD,
             new ModelNode().set(booleanDefault), ModelType.BOOLEAN,  true);
     SimpleAttributeDefinition PROPERTY = new SimpleAttributeDefinition(ModelKeys.PROPERTY, ModelType.LIST, true);
+//    SimpleListAttributeDefinition PROPERTIES = SimpleListAttributeDefinition.Builder.of(ModelKeys.PROPERTIES, PROPERTY).
+//            setAllowNull(true).
+//            build();
     SimpleAttributeDefinition PURGE = new SimpleAttributeDefinition(ModelKeys.PURGE,
             new ModelNode().set(booleanDefault), ModelType.BOOLEAN,  true);
     SimpleAttributeDefinition QUEUE_FLUSH_INTERVAL = new SimpleAttributeDefinition(ModelKeys.QUEUE_FLUSH_INTERVAL,
@@ -92,7 +97,7 @@ public interface CommonAttributes {
     SimpleAttributeDefinition SHARED = new SimpleAttributeDefinition(ModelKeys.SHARED,
             new ModelNode().set(booleanDefault), ModelType.BOOLEAN,  true);
     SimpleAttributeDefinition SINGLETON = new SimpleAttributeDefinition(ModelKeys.SINGLETON,
-            new ModelNode().set(booleanDefault), ModelType.BOOLEAN,  true);
+            new ModelNode().set(booleanDefault), ModelType.BOOLEAN, true);
     SimpleAttributeDefinition SITE = new SimpleAttributeDefinition(ModelKeys.SITE, ModelType.STRING, true);
     SimpleAttributeDefinition SOCKET_TIMEOUT = new SimpleAttributeDefinition(ModelKeys.SOCKET_TIMEOUT,
             new ModelNode().set(longDefault), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
@@ -130,4 +135,11 @@ public interface CommonAttributes {
     AttributeDefinition[] REMOTE_ATTRIBUTES = { /* REMOTE_SERVER */ };
 
     AttributeDefinition[] STATE_TRANSFER_ATTRIBUTES = { ENABLED, TIMEOUT, CHUNK_SIZE };
+
+    // complex attribute definitions (helpers for now to create descriptions)
+    ObjectTypeAttributeDefinition TRANSPORT_OBJECT = ObjectTypeAttributeDefinition.
+            Builder.of(ModelKeys.TRANSPORT, TRANSPORT_ATTRIBUTES).
+            setAllowNull(true).
+            setSuffix("transport").
+            build();
 }
