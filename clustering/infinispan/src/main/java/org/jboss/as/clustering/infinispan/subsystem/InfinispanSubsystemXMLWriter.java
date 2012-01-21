@@ -68,9 +68,9 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                 this.writeOptional(writer, Attribute.EVICTION_EXECUTOR, container, ModelKeys.EVICTION_EXECUTOR);
                 this.writeOptional(writer, Attribute.REPLICATION_QUEUE_EXECUTOR, container, ModelKeys.REPLICATION_QUEUE_EXECUTOR);
 
-                if (container.hasDefined(ModelKeys.SINGLETON)) {
+                if (container.hasDefined(ModelKeys.TRANSPORT)) {
                     writer.writeStartElement(Element.TRANSPORT.getLocalName());
-                    ModelNode transport = container.get(ModelKeys.SINGLETON, ModelKeys.TRANSPORT);
+                    ModelNode transport = container.get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
                     this.writeOptional(writer, Attribute.STACK, transport, ModelKeys.STACK);
                     this.writeOptional(writer, Attribute.EXECUTOR, transport, ModelKeys.EXECUTOR);
                     this.writeOptional(writer, Attribute.LOCK_TIMEOUT, transport, ModelKeys.LOCK_TIMEOUT);
