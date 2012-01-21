@@ -22,12 +22,10 @@
 
 package org.jboss.as.server.deployment.repository.impl;
 
-import org.jboss.as.server.deployment.repository.api.MountType;
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
-import org.jboss.msc.service.StartException;
 
 /**
  * Date: 05.11.2011
@@ -74,21 +72,13 @@ interface DeploymentRepositoryMessages {
     IllegalStateException directoryNotWritable(String path);
 
     /**
-     * Creates an exception indicating a failure to create a temp file provider.
-     *
-     * @return a {@link StartException} for the error.
-     */
-    @Message(id = 14923, value = "Failed to create temp file provider")
-    StartException failedCreatingTempProvider();
-
-    /**
      * Creates an exception indicating the path, represented by the {@code path} parameter, is not a directory.
      *
      * @param path the path name.
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14924, value = "%s is not a directory")
+    @Message(id = 14923, value = "%s is not a directory")
     IllegalStateException notADirectory(String path);
 
     /**
@@ -98,9 +88,6 @@ interface DeploymentRepositoryMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14925, value = "%s is null")
+    @Message(id = 14924, value = "%s is null")
     IllegalArgumentException nullVar(String name);
-
-    @Message(id = 14926, value = "Unknown mount type %s")
-    IllegalArgumentException unknownMountType(MountType mountType);
 }

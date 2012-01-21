@@ -1,4 +1,4 @@
-package org.jboss.as.server.deployment.repository.api;
+package org.jboss.as.server.deployment;
 
 /**
  * @author Stuart Douglas

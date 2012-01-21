@@ -22,6 +22,26 @@
 
 package org.jboss.as.server.deployment.scanner;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.server.deployment.scanner.DeploymentScannerLogger.ROOT_LOGGER;
+import static org.jboss.as.server.deployment.scanner.DeploymentScannerMessages.MESSAGES;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileFilter;
@@ -55,32 +75,10 @@ import org.jboss.as.server.deployment.DeploymentFullReplaceHandler;
 import org.jboss.as.server.deployment.DeploymentRedeployHandler;
 import org.jboss.as.server.deployment.DeploymentRemoveHandler;
 import org.jboss.as.server.deployment.DeploymentUndeployHandler;
-import org.jboss.as.server.deployment.repository.api.ContentRepository;
-import org.jboss.as.server.deployment.repository.api.ServerDeploymentRepository;
 import org.jboss.as.server.deployment.scanner.ZipCompletionScanner.NonScannableZipException;
 import org.jboss.as.server.deployment.scanner.api.DeploymentScanner;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.server.deployment.scanner.DeploymentScannerLogger.ROOT_LOGGER;
-import static org.jboss.as.server.deployment.scanner.DeploymentScannerMessages.MESSAGES;
 
 /**
  * Service that monitors the filesystem for deployment content and if found deploys it.
@@ -131,8 +129,6 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
     private final ScheduledExecutorService scheduledExecutor;
     private final ModelControllerClient controllerClient;
-    private final ServerDeploymentRepository deploymentRepository;
-    private final ContentRepository contentRepository;
 
     private FileFilter filter = new ExtensibleFilter();
     private volatile boolean autoDeployZip;
@@ -160,20 +156,13 @@ class FileSystemDeploymentService implements DeploymentScanner {
     private final DeploymentScanRunnable scanRunnable = new DeploymentScanRunnable();
 
     FileSystemDeploymentService(final String relativeTo, final File deploymentDir, final File relativeToDir,
-                                final ModelControllerClient controllerClient, final ScheduledExecutorService scheduledExecutor,
-                                final ServerDeploymentRepository deploymentRepository, final ContentRepository contentRepository)
+                                final ModelControllerClient controllerClient, final ScheduledExecutorService scheduledExecutor)
             throws OperationFailedException {
-        if (contentRepository == null) {
-            throw MESSAGES.nullVar("contentRepository");
-        }
         if (scheduledExecutor == null) {
             throw MESSAGES.nullVar("scheduledExecutor");
         }
         if (controllerClient == null) {
             throw MESSAGES.nullVar("controllerClient");
-        }
-        if (deploymentRepository == null) {
-            throw MESSAGES.nullVar("deploymentRepository");
         }
         if (deploymentDir == null) {
             throw MESSAGES.nullVar("deploymentDir");
@@ -191,8 +180,6 @@ class FileSystemDeploymentService implements DeploymentScanner {
         this.deploymentDir = deploymentDir;
         this.controllerClient = controllerClient;
         this.scheduledExecutor = scheduledExecutor;
-        this.deploymentRepository = deploymentRepository;
-        this.contentRepository = contentRepository;
 
         if (relativeToDir != null) {
             String fullDir = deploymentDir.getAbsolutePath();

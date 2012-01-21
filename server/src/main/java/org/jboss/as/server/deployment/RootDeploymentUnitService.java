@@ -26,7 +26,6 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.server.deployment.repository.api.ServerDeploymentRepository;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.value.InjectedValue;
@@ -38,7 +37,7 @@ import org.jboss.vfs.VirtualFile;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 final class RootDeploymentUnitService extends AbstractDeploymentUnitService {
-    private final InjectedValue<ServerDeploymentRepository> serverDeploymentRepositoryInjector = new InjectedValue<ServerDeploymentRepository>();
+    private final InjectedValue<DeploymentMountProvider> serverDeploymentRepositoryInjector = new InjectedValue<DeploymentMountProvider>();
     private final String name;
     private final String managementName;
     final InjectedValue<VirtualFile> contentsInjector = new InjectedValue<VirtualFile>();
@@ -86,7 +85,7 @@ final class RootDeploymentUnitService extends AbstractDeploymentUnitService {
         return deploymentUnit;
     }
 
-    Injector<ServerDeploymentRepository> getServerDeploymentRepositoryInjector() {
+    Injector<DeploymentMountProvider> getServerDeploymentRepositoryInjector() {
         return serverDeploymentRepositoryInjector;
     }
 }

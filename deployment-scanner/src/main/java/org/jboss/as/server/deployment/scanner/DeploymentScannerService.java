@@ -32,8 +32,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.server.Services;
-import org.jboss.as.server.deployment.repository.api.ContentRepository;
-import org.jboss.as.server.deployment.repository.api.ServerDeploymentRepository;
 import org.jboss.as.server.deployment.scanner.api.DeploymentScanner;
 import org.jboss.as.server.services.path.AbsolutePathService;
 import org.jboss.as.server.services.path.RelativePathService;
@@ -76,8 +74,6 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
     private final InjectedValue<String> relativePathValue = new InjectedValue<String>();
     private final InjectedValue<String> pathValue = new InjectedValue<String>();
     private final InjectedValue<ModelController> controllerValue = new InjectedValue<ModelController>();
-    private final InjectedValue<ServerDeploymentRepository> deploymentRepositoryValue = new InjectedValue<ServerDeploymentRepository>();
-    private final InjectedValue<ContentRepository> contentRepositoryValue = new InjectedValue<ContentRepository>();
     private final InjectedValue<ScheduledExecutorService> scheduledExecutorValue = new InjectedValue<ScheduledExecutorService>();
 
     public static ServiceName getServiceName(String repositoryName) {
@@ -117,8 +113,6 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
         ServiceBuilder builder = serviceTarget.addService(serviceName, service)
                 .addDependency(pathService, String.class, service.pathValue)
                 .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, service.controllerValue)
-                .addDependency(ServerDeploymentRepository.SERVICE_NAME, ServerDeploymentRepository.class, service.deploymentRepositoryValue)
-                .addDependency(ContentRepository.SERVICE_NAME, ContentRepository.class, service.contentRepositoryValue)
                 .addDependency(org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT_CHAINS)
                 .addInjection(service.scheduledExecutorValue, scheduledExecutorService);
         if (relativePathService != null) {
@@ -154,7 +148,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
             final String pathName = pathValue.getValue();
             final String relativePathName = relativePathValue.getOptionalValue();
             final File relativePath = relativePathName != null ? new File(relativePathName) : null;
-            final FileSystemDeploymentService scanner = new FileSystemDeploymentService(relativeTo, new File(pathName), relativePath, controllerValue.getValue().createClient(scheduledExecutorValue.getValue()), scheduledExecutorValue.getValue(), deploymentRepositoryValue.getValue(), contentRepositoryValue.getValue());
+            final FileSystemDeploymentService scanner = new FileSystemDeploymentService(relativeTo, new File(pathName), relativePath, controllerValue.getValue().createClient(scheduledExecutorValue.getValue()), scheduledExecutorValue.getValue());
             scanner.setScanInterval(unit.toMillis(interval));
             scanner.setAutoDeployExplodedContent(autoDeployExploded);
             scanner.setAutoDeployZippedContent(autoDeployZipped);

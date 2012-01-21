@@ -31,6 +31,7 @@ import java.util.List;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.MountType;
 import org.jboss.as.server.services.security.VaultReaderException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Cause;
@@ -323,5 +324,16 @@ public interface ServerMessages {
 
     @Message(id = 15841, value = "Only 'hash' is allowed for deployment full replacement for a domain mode server: %s")
     IllegalStateException onlyHashAllowedForDeploymentFullReplaceInDomainServer(ModelNode contentItemNode);
+
+    @Message(id = 15842, value = "Unknown mount type %s")
+    IllegalArgumentException unknownMountType(MountType mountType);
+
+    /**
+     * Creates an exception indicating a failure to create a temp file provider.
+     *
+     * @return a {@link StartException} for the error.
+     */
+    @Message(id = 15843, value = "Failed to create temp file provider")
+    StartException failedCreatingTempProvider();
 
 }

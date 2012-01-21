@@ -50,6 +50,7 @@ import org.jboss.as.platform.mbean.PlatformMBeanConstants;
 import org.jboss.as.platform.mbean.RootPlatformMBeanResource;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
 import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentMountProvider;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -80,7 +81,6 @@ import org.jboss.as.server.deployment.module.SubDeploymentDependencyProcessor;
 import org.jboss.as.server.deployment.module.descriptor.DeploymentStructureDescriptorParser;
 import org.jboss.as.server.deployment.reflect.InstallReflectionIndexProcessor;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
-import org.jboss.as.server.deployment.repository.api.ServerDeploymentRepository;
 import org.jboss.as.server.deployment.service.ServiceActivatorDependencyProcessor;
 import org.jboss.as.server.deployment.service.ServiceActivatorProcessor;
 import org.jboss.as.server.mgmt.domain.RemoteFileRepository;
@@ -106,7 +106,7 @@ import org.jboss.threads.JBossThreadFactory;
  */
 public final class ServerService extends AbstractControllerService {
 
-    private final InjectedValue<ServerDeploymentRepository> injectedDeploymentRepository = new InjectedValue<ServerDeploymentRepository>();
+    private final InjectedValue<DeploymentMountProvider> injectedDeploymentRepository = new InjectedValue<DeploymentMountProvider>();
     private final InjectedValue<ContentRepository> injectedContentRepository = new InjectedValue<ContentRepository>();
     private final InjectedValue<ServiceModuleLoader> injectedModuleLoader = new InjectedValue<ServiceModuleLoader>();
 
@@ -167,7 +167,7 @@ public final class ServerService extends AbstractControllerService {
                                   final RunningModeControl runningModeControl, final AbstractVaultReader vaultReader, final RemoteFileRepository remoteFileRepository) {
         ServerService service = new ServerService(configuration, processState, null, bootstrapListener, runningModeControl, vaultReader, remoteFileRepository);
         ServiceBuilder<?> serviceBuilder = serviceTarget.addService(Services.JBOSS_SERVER_CONTROLLER, service);
-        serviceBuilder.addDependency(ServerDeploymentRepository.SERVICE_NAME,ServerDeploymentRepository.class, service.injectedDeploymentRepository);
+        serviceBuilder.addDependency(DeploymentMountProvider.SERVICE_NAME,DeploymentMountProvider.class, service.injectedDeploymentRepository);
         serviceBuilder.addDependency(ContentRepository.SERVICE_NAME, ContentRepository.class, service.injectedContentRepository);
         serviceBuilder.addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, service.injectedModuleLoader);
         serviceBuilder.addDependency(Services.JBOSS_EXTERNAL_MODULE_SERVICE, ExternalModuleService.class,

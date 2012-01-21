@@ -36,8 +36,8 @@ import java.util.TreeSet;
 
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.RunningModeControl;
+import org.jboss.as.server.deployment.DeploymentMountProvider;
 import org.jboss.as.server.deployment.repository.impl.ContentRepositoryImpl;
-import org.jboss.as.server.deployment.repository.impl.ServerDeploymentRepositoryImpl;
 import org.jboss.as.server.mgmt.domain.RemoteFileRepository;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
 import org.jboss.as.server.moduleservice.ModuleIndexService;
@@ -131,8 +131,8 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         serviceTarget.addListener(ServiceListener.Inheritance.ALL, bootstrapListener);
         myController.addListener(bootstrapListener);
         RemoteFileRepository remoteFileRepository = standalone ? null : RemoteFileRepository.addService(serviceTarget, serverEnvironment.getServerDeployDir());
-        ContentRepositoryImpl contentRepository = ContentRepositoryImpl.addService(serviceTarget, serverEnvironment.getServerDeployDir());
-        ServerDeploymentRepositoryImpl.addService(serviceTarget, contentRepository);
+        ContentRepositoryImpl.addService(serviceTarget, serverEnvironment.getServerDeployDir());
+        DeploymentMountProvider.Factory.addService(serviceTarget);
         ServiceModuleLoader.addService(serviceTarget, configuration);
         ExternalModuleService.addService(serviceTarget);
         ModuleIndexService.addService(serviceTarget);
