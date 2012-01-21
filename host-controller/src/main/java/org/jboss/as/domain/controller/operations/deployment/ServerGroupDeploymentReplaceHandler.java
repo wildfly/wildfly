@@ -70,7 +70,7 @@ public class ServerGroupDeploymentReplaceHandler implements OperationStepHandler
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return DeploymentDescription.getDeployDeploymentOperation(locale);
+        return DeploymentDescription.getReplaceDeploymentOperation(locale);
     }
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
