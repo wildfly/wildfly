@@ -203,7 +203,7 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
             return null;
         }
 
-        if (allowPassByReference && target.isAssignableFrom(object.getClass())) {
+        if (allowPassByReference && (target.isPrimitive() || target.isAssignableFrom(object.getClass()))) {
             return object;
         }
         return clone(cloner, object);
