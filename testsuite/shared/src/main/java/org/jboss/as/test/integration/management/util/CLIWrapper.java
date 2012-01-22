@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.management.util;
 
-import static org.jboss.as.arquillian.container.Authentication.PASSWORD;
-import static org.jboss.as.arquillian.container.Authentication.USERNAME;
+import static org.jboss.as.arquillian.container.Authentication.password;
+import static org.jboss.as.arquillian.container.Authentication.username;
 
 
 import java.io.BufferedReader;
@@ -388,8 +388,8 @@ public class CLIWrapper implements Runnable {
                 + " -jar " + asDist + "/jboss-modules.jar"
                 + " -mp " + asDist + "/modules"
                 + " org.jboss.as.cli"
-                + " --user=" + USERNAME
-                + " --password=" + PASSWORD;
+                + " --user=" + username
+                + " --password=" + password;
         return cliCommand;
     }
 

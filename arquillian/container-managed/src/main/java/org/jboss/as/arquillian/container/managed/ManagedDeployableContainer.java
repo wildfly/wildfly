@@ -16,8 +16,8 @@
  */
 package org.jboss.as.arquillian.container.managed;
 
-import static org.jboss.as.arquillian.container.Authentication.PASSWORD;
-import static org.jboss.as.arquillian.container.Authentication.USERNAME;
+import static org.jboss.as.arquillian.container.Authentication.password;
+import static org.jboss.as.arquillian.container.Authentication.username;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -281,7 +281,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             }
             FileOutputStream fos = new FileOutputStream(usersFile);
             PrintWriter pw = new PrintWriter(fos);
-            pw.println(USERNAME + "=" + new UsernamePasswordHashUtil().generateHashedHexURP(USERNAME, "ManagementRealm", PASSWORD.toCharArray()));
+            pw.println(username + "=" + new UsernamePasswordHashUtil().generateHashedHexURP(username, "ManagementRealm", password.toCharArray()));
             pw.close();
             fos.close();
         }

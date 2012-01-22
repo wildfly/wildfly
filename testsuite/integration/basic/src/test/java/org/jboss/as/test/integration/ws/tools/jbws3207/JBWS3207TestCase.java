@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.ws.tools.jbws3207;
 
-import static org.jboss.as.arquillian.container.Authentication.PASSWORD;
-import static org.jboss.as.arquillian.container.Authentication.USERNAME;
+import static org.jboss.as.arquillian.container.Authentication.password;
+import static org.jboss.as.arquillian.container.Authentication.username;
 import static org.jboss.as.protocol.StreamUtils.safeClose;
 import static org.junit.Assert.assertTrue;
 
@@ -59,8 +59,8 @@ public class JBWS3207TestCase {
 
     @BeforeClass
     public static void setProperties() {
-        System.setProperty("jbossws.deployer.authentication.username", USERNAME);
-        System.setProperty("jbossws.deployer.authentication.password", PASSWORD);
+        System.setProperty("jbossws.deployer.authentication.username", username);
+        System.setProperty("jbossws.deployer.authentication.password", password);
     }
 
     @AfterClass
