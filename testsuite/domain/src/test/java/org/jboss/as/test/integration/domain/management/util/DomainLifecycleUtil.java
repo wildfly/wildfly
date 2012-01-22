@@ -18,8 +18,8 @@
  */
 package org.jboss.as.test.integration.domain.management.util;
 
-import static org.jboss.as.arquillian.container.Authentication.PASSWORD;
-import static org.jboss.as.arquillian.container.Authentication.USERNAME;
+import static org.jboss.as.arquillian.container.Authentication.password;
+import static org.jboss.as.arquillian.container.Authentication.username;
 import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 
 import java.io.BufferedInputStream;
@@ -115,7 +115,7 @@ public class DomainLifecycleUtil {
             File usersFile = new File(domainPath + "/configuration/mgmt-users.properties");
             FileOutputStream fos = new FileOutputStream(usersFile);
             PrintWriter pw = new PrintWriter(fos);
-            pw.println(USERNAME + "=" + new UsernamePasswordHashUtil().generateHashedHexURP(USERNAME, "ManagementRealm", PASSWORD.toCharArray()));
+            pw.println(username + "=" + new UsernamePasswordHashUtil().generateHashedHexURP(username, "ManagementRealm", password.toCharArray()));
             pw.println("slave=" + new UsernamePasswordHashUtil().generateHashedHexURP("slave", "ManagementRealm", "slave_user_password".toCharArray()));
             pw.close();
             fos.close();

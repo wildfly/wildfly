@@ -33,8 +33,8 @@ import java.net.PasswordAuthentication;
  */
 public class Authentication {
 
-    public static String USERNAME = "testUser";
-    public static String PASSWORD = "test_user_password";
+    public static String username = "testUser";
+    public static String password = "test_user_password";
 
     public static CallbackHandler getCallbackHandler() {
         return new CallbackHandler() {
@@ -43,10 +43,10 @@ public class Authentication {
                 for (Callback current : callbacks) {
                     if (current instanceof NameCallback) {
                         NameCallback ncb = (NameCallback) current;
-                        ncb.setName(USERNAME);
+                        ncb.setName(username);
                     } else if (current instanceof PasswordCallback) {
                         PasswordCallback pcb = (PasswordCallback) current;
-                        pcb.setPassword(PASSWORD.toCharArray());
+                        pcb.setPassword(password.toCharArray());
                     } else if (current instanceof RealmCallback) {
                         RealmCallback rcb = (RealmCallback) current;
                         rcb.setText(rcb.getDefaultText());
@@ -63,7 +63,7 @@ public class Authentication {
 
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(USERNAME, PASSWORD.toCharArray());
+                return new PasswordAuthentication(username, password.toCharArray());
             }
         };
     }

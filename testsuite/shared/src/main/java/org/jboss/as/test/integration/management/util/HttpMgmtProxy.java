@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.management.util;
 
-import static org.jboss.as.arquillian.container.Authentication.PASSWORD;
-import static org.jboss.as.arquillian.container.Authentication.USERNAME;
+import static org.jboss.as.arquillian.container.Authentication.password;
+import static org.jboss.as.arquillian.container.Authentication.username;
 
 import java.net.URL;
 
@@ -53,7 +53,7 @@ public class HttpMgmtProxy {
     public HttpMgmtProxy(URL mgmtURL) {
         this.url = mgmtURL;
         DefaultHttpClient httpClient = new DefaultHttpClient();
-        UsernamePasswordCredentials creds = new UsernamePasswordCredentials(USERNAME, PASSWORD);
+        UsernamePasswordCredentials creds = new UsernamePasswordCredentials(username, password);
         httpClient.getCredentialsProvider().setCredentials(new AuthScope(url.getHost(), url.getPort(), "ManagementRealm"), creds);
         this.httpClient = httpClient;
     }

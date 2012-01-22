@@ -67,8 +67,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.jar.JarOutputStream;
 
-import static org.jboss.as.arquillian.container.Authentication.PASSWORD;
-import static org.jboss.as.arquillian.container.Authentication.USERNAME;
+import static org.jboss.as.arquillian.container.Authentication.password;
+import static org.jboss.as.arquillian.container.Authentication.username;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -167,7 +167,7 @@ public class EnterpriseDeploymentTestCase {
     @Test
     public void testListAvailableModules() throws Exception {
         String uri = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7&serverHost=127.0.0.1&serverPort=9999";
-        DeploymentManager manager = getDeploymentManager(uri, USERNAME, PASSWORD);
+        DeploymentManager manager = getDeploymentManager(uri, username, password);
         Target[] targets = manager.getTargets();
         TargetModuleID[] modules = manager.getAvailableModules(ModuleType.EAR, targets);
         assertNull(modules);
@@ -239,7 +239,7 @@ public class EnterpriseDeploymentTestCase {
     @Test
     public void testListAvailableModulesWrongHost() throws Exception {
         String uri = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7&serverHost=wrongHost";
-        DeploymentManager manager = getDeploymentManager(uri, USERNAME, PASSWORD);
+        DeploymentManager manager = getDeploymentManager(uri, username, password);
         Target[] targets = manager.getTargets();
         try {
             manager.getAvailableModules(ModuleType.EAR, targets);
@@ -252,7 +252,7 @@ public class EnterpriseDeploymentTestCase {
     @Test
     public void testListAvailableModulesWrongPort() throws Exception {
         String uri = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7&serverPort=9876";
-        DeploymentManager manager = getDeploymentManager(uri, USERNAME, PASSWORD);
+        DeploymentManager manager = getDeploymentManager(uri, username, password);
         Target[] targets = manager.getTargets();
         try {
             manager.getAvailableModules(ModuleType.EAR, targets);
@@ -263,7 +263,7 @@ public class EnterpriseDeploymentTestCase {
     }
 
     private DeploymentManager getDeploymentManager() throws Exception {
-        return getDeploymentManager(USERNAME, PASSWORD);
+        return getDeploymentManager(username, password);
     }
 
     private DeploymentManager getDeploymentManager(String username, String password) throws Exception {

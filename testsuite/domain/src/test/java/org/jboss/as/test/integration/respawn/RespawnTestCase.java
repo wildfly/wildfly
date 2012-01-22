@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.respawn;
 
-import static org.jboss.as.arquillian.container.Authentication.PASSWORD;
-import static org.jboss.as.arquillian.container.Authentication.USERNAME;
+import static org.jboss.as.arquillian.container.Authentication.password;
+import static org.jboss.as.arquillian.container.Authentication.username;
 import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MASTER;
@@ -128,7 +128,7 @@ public class RespawnTestCase {
         File usersFile = new File(domainConfigDir, "mgmt-users.properties");
         FileOutputStream fos = new FileOutputStream(usersFile);
         PrintWriter pw = new PrintWriter(fos);
-        pw.println(USERNAME + "=" + new UsernamePasswordHashUtil().generateHashedHexURP(USERNAME, "ManagementRealm", PASSWORD.toCharArray()));
+        pw.println(username + "=" + new UsernamePasswordHashUtil().generateHashedHexURP(username, "ManagementRealm", password.toCharArray()));
         pw.println("slave=" + new UsernamePasswordHashUtil().generateHashedHexURP("slave", "ManagementRealm", "slave_user_password".toCharArray()));
         pw.close();
         fos.close();
