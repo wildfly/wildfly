@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.ejb.interceptor.invocationcontext;
 
 import javax.annotation.PostConstruct;
 import javax.interceptor.AroundInvoke;
-import javax.interceptor.AroundTimeout;
 import javax.interceptor.InvocationContext;
 
 import org.jboss.logging.Logger;
@@ -40,9 +39,7 @@ public class MethodInterceptor {
         String ret = InvocationContextChecker.checkBeanInterceptorContext(ctx, "Class", "Method");
         return ret + ctx.proceed();
     }
-    
-    @AroundTimeout
-    // FIXME: it should be possible to define around-timer in xml descriptor
+
     Object interceptTimeout(InvocationContext ctx) throws Exception {
         String ret = InvocationContextChecker.checkTimeoutInterceptorContext(ctx, "Class", "Method");
         TimeoutBean.interceptorResults += ret;

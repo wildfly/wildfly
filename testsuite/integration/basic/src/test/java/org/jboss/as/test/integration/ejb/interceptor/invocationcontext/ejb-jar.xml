@@ -5,23 +5,25 @@
          version="3.1">
 
     <interceptors>
-      <interceptor>
-         <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.invocationcontext.DefaultInterceptor</interceptor-class>
-      </interceptor>
-      <interceptor>
-         <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.defaultinterceptor.MethodTimerInterceptor</interceptor-class>
-         <!-- 
-         <around-timeout>
-         	<method-name>intercept</method-name>
-         </around-timeout>
-          -->
-      </interceptor>
-	</interceptors>      
+        <interceptor>
+            <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.invocationcontext.DefaultInterceptor
+            </interceptor-class>
+        </interceptor>
+        <interceptor>
+            <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.invocationcontext.MethodInterceptor
+            </interceptor-class>
+
+            <around-timeout>
+                <method-name>interceptTimeout</method-name>
+            </around-timeout>
+        </interceptor>
+    </interceptors>
 
     <assembly-descriptor>
         <interceptor-binding>
             <ejb-name>*</ejb-name>
-            <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.invocationcontext.DefaultInterceptor</interceptor-class>
+            <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.invocationcontext.DefaultInterceptor
+            </interceptor-class>
         </interceptor-binding>
     </assembly-descriptor>
 

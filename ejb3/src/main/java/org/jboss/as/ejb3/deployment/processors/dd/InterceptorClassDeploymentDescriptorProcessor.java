@@ -36,6 +36,8 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.metadata.ejb.spec.AroundInvokeMetaData;
 import org.jboss.metadata.ejb.spec.AroundInvokesMetaData;
+import org.jboss.metadata.ejb.spec.AroundTimeoutMetaData;
+import org.jboss.metadata.ejb.spec.AroundTimeoutsMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.metadata.ejb.spec.InterceptorMetaData;
 import org.jboss.metadata.javaee.spec.LifecycleCallbackMetaData;
@@ -74,6 +76,21 @@ public class InterceptorClassDeploymentDescriptorProcessor implements Deployment
                         eeModuleDescription.addInterceptorMethodOverride(interceptorClassName, builder.build());
                     } else {
                         eeModuleDescription.addInterceptorMethodOverride(aroundInvoke.getClassName(), builder.build());
+                    }
+                }
+            }
+
+            AroundTimeoutsMetaData aroundTimeouts = interceptor.getAroundTimeouts();
+            if (aroundTimeouts != null) {
+                for (AroundTimeoutMetaData arountTimeout : aroundTimeouts) {
+                    final InterceptorClassDescription.Builder builder = InterceptorClassDescription.builder();
+                    String methodName = arountTimeout.getMethodName();
+                    MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(Object.class, methodName, InvocationContext.class);
+                    builder.setAroundTimeout(methodIdentifier);
+                    if (arountTimeout.getClassName() == null || arountTimeout.getClassName().isEmpty()) {
+                        eeModuleDescription.addInterceptorMethodOverride(interceptorClassName, builder.build());
+                    } else {
+                        eeModuleDescription.addInterceptorMethodOverride(arountTimeout.getClassName(), builder.build());
                     }
                 }
             }
