@@ -81,6 +81,11 @@
             <artifactId>jboss-as-arquillian-container-managed</artifactId>
             <version>${version.arquillian_as7}</version>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>compile</scope>
+        </dependency>
 
     </dependencies>
     
