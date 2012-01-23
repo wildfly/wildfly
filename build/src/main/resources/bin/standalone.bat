@@ -15,7 +15,7 @@ if "%OS%" == "Windows_NT" (
 )
 
 rem Read an optional configuration file.
-if "x%STANDALONE_CONF%" == "x" (   
+if "x%STANDALONE_CONF%" == "x" (
    set "STANDALONE_CONF=%DIRNAME%standalone.conf.bat"
 )
 if exist "%STANDALONE_CONF%" (
@@ -30,7 +30,7 @@ set "RESOLVED_JBOSS_HOME=%CD%"
 popd
 
 if "x%JBOSS_HOME%" == "x" (
-  set "JBOSS_HOME=%RESOLVED_JBOSS_HOME%" 
+  set "JBOSS_HOME=%RESOLVED_JBOSS_HOME%"
 )
 
 pushd "%JBOSS_HOME%"
@@ -108,6 +108,19 @@ if "x%JBOSS_MODULEPATH%" == "x" (
   set  "JBOSS_MODULEPATH=%JBOSS_HOME%\modules"
 )
 
+rem Set the standalone base dir
+if "x%JBOSS_BASE_DIR%" == "x" (
+  set  "JBOSS_BASE_DIR=%JBOSS_HOME%\standalone"
+)
+rem Set the standalone log dir
+if "x%JBOSS_LOG_DIR%" == "x" (
+  set  "JBOSS_LOG_DIR=%JBOSS_BASE_DIR%\log"
+)
+rem Set the standalone configuration dir
+if "x%JBOSS_CONFIG_DIR%" == "x" (
+  set  "JBOSS_CONFIG_DIR=%JBOSS_BASE_DIR%/configuration"
+)
+
 echo ===============================================================================
 echo.
 echo   JBoss Bootstrap Environment
@@ -123,8 +136,8 @@ echo.
 
 :RESTART
 "%JAVA%" %JAVA_OPTS% ^
- "-Dorg.jboss.boot.log.file=%JBOSS_HOME%\standalone\log\boot.log" ^
- "-Dlogging.configuration=file:%JBOSS_HOME%/standalone/configuration/logging.properties" ^
+ "-Dorg.jboss.boot.log.file=%JBOSS_LOG_DIR%\boot.log" ^
+ "-Dlogging.configuration=file:%JBOSS_CONFIG_DIR%/logging.properties" ^
     -jar "%JBOSS_HOME%\jboss-modules.jar" ^
     -mp "%JBOSS_MODULEPATH%" ^
     -jaxpmodule "javax.xml.jaxp-provider" ^
