@@ -79,7 +79,6 @@ public class PrepareStepHandler  implements OperationStepHandler {
             // Pass direct requests for the server through whether they come from the master or not
             executeDirect(context, operation);
         } else {
-            System.out.println("Executing with coordinator handler: " + operation);
             coordinatorHandler.execute(context, operation);
         }
     }

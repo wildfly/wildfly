@@ -556,15 +556,4 @@ public interface HostControllerMessages {
      */
     @Message(id = 10988, value = "No socket-binding-group called: %s")
     OperationFailedException noSocketBindingGroupCalled(String groupName);
-
-    /**
-     * Creates an exception indicating that a write-attribute call passed
-     * in the exisiting value
-     *
-     * @param attributeValue the attribute value
-     *
-     * @return an {@link OperationFailedException} for the error.
-     */
-    @Message(id = 10989, value = "Atribute value was the same as the exisiting one: %s")
-    OperationFailedException writeAttributeNotChanged(String attributeValue);
 }

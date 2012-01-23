@@ -41,6 +41,7 @@ import java.util.Set;
 
 import junit.framework.Assert;
 
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -80,19 +81,17 @@ public class ReloadRequiredServerTestCase extends AbstractOperationTestCase {
         operation.get(VALUE).set("some-profile");
 
         ServerGroupProfileWriteAttributeHandler.INSTANCE.execute(operationContext, operation);
-
-        operationContext.verify();
-
-        checkServerOperationResolver(operation, pa);
+        Assert.assertNull(operationContext.getAttachment(ServerOperationResolver.DONT_PROPAGATE_TO_SERVERS_ATTACHMENT));
+        checkServerOperationResolver(operationContext, operation, pa, true);
     }
 
-    @Test(expected=OperationFailedException.class)
+    @Test
     public void testChangeServerGroupProfileNoChange() throws Exception {
         PathAddress pa = PathAddress.pathAddress(PathElement.pathElement(SERVER_GROUP, "group-one"));
         final MockOperationContext operationContext = getOperationContext(pa);
 
         final Resource serverConfig = Resource.Factory.create();
-        serverConfig.getModel().get(PROFILE).set("old");
+        serverConfig.getModel().get(PROFILE).set("some-profile");
         operationContext.root.registerChild(PathElement.pathElement(SERVER_GROUP, "group-one"), serverConfig);
 
         final Resource profileConfig = Resource.Factory.create();
@@ -102,13 +101,15 @@ public class ReloadRequiredServerTestCase extends AbstractOperationTestCase {
         operation.get(OP_ADDR).set(pa.toModelNode());
         operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
         operation.get(NAME).set(PROFILE);
-        operation.get(VALUE).set("old");
+        operation.get(VALUE).set("some-profile");
 
         ServerGroupProfileWriteAttributeHandler.INSTANCE.execute(operationContext, operation);
+        Assert.assertTrue(operationContext.getAttachment(ServerOperationResolver.DONT_PROPAGATE_TO_SERVERS_ATTACHMENT));
+        checkServerOperationResolver(operationContext, operation, pa, false);
     }
 
     @Test(expected=OperationFailedException.class)
-    public void testChangeServerGroupInvalidProfileNoChange() throws Exception {
+    public void testChangeServerGroupInvalidProfile() throws Exception {
         PathAddress pa = PathAddress.pathAddress(PathElement.pathElement(SERVER_GROUP, "group-one"));
         final MockOperationContext operationContext = getOperationContext(pa);
 
@@ -143,17 +144,19 @@ public class ReloadRequiredServerTestCase extends AbstractOperationTestCase {
         operation.get(VALUE).set("new-group");
 
         ServerRestartRequiredServerConfigWriteAttributeHandler.GROUP_INSTANCE.execute(operationContext, operation);
-
-        operationContext.verify();
-
-        checkServerOperationResolver(operation, pa);
+        Assert.assertNull(operationContext.getAttachment(ServerOperationResolver.DONT_PROPAGATE_TO_SERVERS_ATTACHMENT));
+        checkServerOperationResolver(operationContext, operation, pa, true);
     }
 
 
-    @Test(expected=OperationFailedException.class)
+    @Test
     public void testChangeServerConfigGroupNoChange() throws Exception {
         PathAddress pa = PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER_CONFIG, "server-one"));
         final MockOperationContext operationContext = getOperationContext(pa);
+
+        final Resource serverConfig = Resource.Factory.create();
+        serverConfig.getModel().get(PROFILE).set("whatever");
+        operationContext.root.registerChild(PathElement.pathElement(SERVER_GROUP, "group-one"), serverConfig);
 
         final ModelNode operation = new ModelNode();
         operation.get(OP_ADDR).set(pa.toModelNode());
@@ -162,6 +165,8 @@ public class ReloadRequiredServerTestCase extends AbstractOperationTestCase {
         operation.get(VALUE).set("group-one");
 
         ServerRestartRequiredServerConfigWriteAttributeHandler.GROUP_INSTANCE.execute(operationContext, operation);
+        Assert.assertTrue(operationContext.getAttachment(ServerOperationResolver.DONT_PROPAGATE_TO_SERVERS_ATTACHMENT));
+        checkServerOperationResolver(operationContext, operation, pa, false);
     }
 
     @Test(expected=OperationFailedException.class)
@@ -196,14 +201,12 @@ public class ReloadRequiredServerTestCase extends AbstractOperationTestCase {
         operation.get(VALUE).set("new-group");
 
         ServerRestartRequiredServerConfigWriteAttributeHandler.SOCKET_BINDING_GROUP_INSTANCE.execute(operationContext, operation);
-
-        operationContext.verify();
-
-        checkServerOperationResolver(operation, pa);
+        Assert.assertNull(operationContext.getAttachment(ServerOperationResolver.DONT_PROPAGATE_TO_SERVERS_ATTACHMENT));
+        checkServerOperationResolver(operationContext, operation, pa, true);
     }
 
 
-    @Test(expected=OperationFailedException.class)
+    @Test
     public void testChangeServerConfigSocketBindingGroupNoChange() throws Exception {
         PathAddress pa = PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER_CONFIG, "server-one"));
         final MockOperationContext operationContext = getOperationContext(pa);
@@ -220,6 +223,8 @@ public class ReloadRequiredServerTestCase extends AbstractOperationTestCase {
         operation.get(VALUE).set("old-group");
 
         ServerRestartRequiredServerConfigWriteAttributeHandler.SOCKET_BINDING_GROUP_INSTANCE.execute(operationContext, operation);
+        Assert.assertTrue(operationContext.getAttachment(ServerOperationResolver.DONT_PROPAGATE_TO_SERVERS_ATTACHMENT));
+        checkServerOperationResolver(operationContext, operation, pa, false);
     }
 
     @Test(expected=OperationFailedException.class)
@@ -254,14 +259,12 @@ public class ReloadRequiredServerTestCase extends AbstractOperationTestCase {
         operation.get(VALUE).set(10);
 
         ServerRestartRequiredServerConfigWriteAttributeHandler.SOCKET_BINDING_PORT_OFFSET_INSTANCE.execute(operationContext, operation);
-
-        operationContext.verify();
-
-        checkServerOperationResolver(operation, pa);
+        Assert.assertNull(operationContext.getAttachment(ServerOperationResolver.DONT_PROPAGATE_TO_SERVERS_ATTACHMENT));
+        checkServerOperationResolver(operationContext, operation, pa, true);
     }
 
 
-    @Test(expected=OperationFailedException.class)
+    @Test
     public void testChangeServerConfigSocketBindingPortOffsetNoChange() throws Exception {
         PathAddress pa = PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER_CONFIG, "server-one"));
         final MockOperationContext operationContext = getOperationContext(pa);
@@ -275,6 +278,8 @@ public class ReloadRequiredServerTestCase extends AbstractOperationTestCase {
         operation.get(VALUE).set(10);
 
         ServerRestartRequiredServerConfigWriteAttributeHandler.SOCKET_BINDING_PORT_OFFSET_INSTANCE.execute(operationContext, operation);
+        Assert.assertTrue(operationContext.getAttachment(ServerOperationResolver.DONT_PROPAGATE_TO_SERVERS_ATTACHMENT));
+        checkServerOperationResolver(operationContext, operation, pa, false);
     }
 
     @Test(expected=OperationFailedException.class)
@@ -293,7 +298,7 @@ public class ReloadRequiredServerTestCase extends AbstractOperationTestCase {
         ServerRestartRequiredServerConfigWriteAttributeHandler.SOCKET_BINDING_PORT_OFFSET_INSTANCE.execute(operationContext, operation);
     }
 
-    private void checkServerOperationResolver(ModelNode operation, PathAddress address) {
+    private void checkServerOperationResolver(OperationContext context, ModelNode operation, PathAddress address, boolean expectServerOps) {
         Map<String, ProxyController> serverProxies = new HashMap<String, ProxyController>();
         serverProxies.put("server-one", new MockServerProxy());
         serverProxies.put("server-two", new MockServerProxy());
@@ -307,19 +312,23 @@ public class ReloadRequiredServerTestCase extends AbstractOperationTestCase {
         host.get(SERVER_CONFIG, "server-three", GROUP).set("nope");
 
 
-        Map<Set<ServerIdentity>, ModelNode> serverOps = resolver.getServerOperations(operation, address, domain, host);
-        Assert.assertEquals(1, serverOps.size());
-        Set<ServerIdentity> ids = serverOps.entrySet().iterator().next().getKey();
-        Assert.assertEquals(1, ids.size());
+        Map<Set<ServerIdentity>, ModelNode> serverOps = resolver.getServerOperations(context, operation, address, domain, host);
+        if (expectServerOps) {
+            Assert.assertEquals(1, serverOps.size());
+            Set<ServerIdentity> ids = serverOps.entrySet().iterator().next().getKey();
+            Assert.assertEquals(1, ids.size());
 
-        ServerIdentity expected = new ServerIdentity("localhost", "group-one","server-one");
-        assertEquals(expected, ids.iterator().next());
+            ServerIdentity expected = new ServerIdentity("localhost", "group-one","server-one");
+            assertEquals(expected, ids.iterator().next());
 
-        ModelNode expectedOp = new ModelNode();
+            ModelNode expectedOp = new ModelNode();
 
-        expectedOp.get(OP).set(ServerRestartRequiredHandler.OPERATION_NAME);
-        expectedOp.get(OP_ADDR).setEmptyList();
-        Assert.assertEquals(expectedOp, serverOps.get(ids));
+            expectedOp.get(OP).set(ServerRestartRequiredHandler.OPERATION_NAME);
+            expectedOp.get(OP_ADDR).setEmptyList();
+            Assert.assertEquals(expectedOp, serverOps.get(ids));
+        } else {
+            Assert.assertEquals(0, serverOps.size());
+        }
     }
 
     private class MockServerProxy implements ProxyController {

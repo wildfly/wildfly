@@ -38,6 +38,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationContext.AttachmentKey;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -60,6 +62,8 @@ import org.jboss.dmr.Property;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class ServerOperationResolver {
+
+    public static AttachmentKey<Boolean> DONT_PROPAGATE_TO_SERVERS_ATTACHMENT = AttachmentKey.create(Boolean.class);
 
     private enum DomainKey {
 
@@ -146,10 +150,16 @@ public class ServerOperationResolver {
         this.serverProxies = serverProxies;
     }
 
-    public Map<Set<ServerIdentity>, ModelNode> getServerOperations(ModelNode operation, PathAddress address, ModelNode domain, ModelNode host) {
+    public Map<Set<ServerIdentity>, ModelNode> getServerOperations(OperationContext context, ModelNode operation, PathAddress address, ModelNode domain, ModelNode host) {
         if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {
             HOST_CONTROLLER_LOGGER.tracef("Resolving %s", operation);
         }
+
+        Boolean dontPropagate = context.getAttachment(DONT_PROPAGATE_TO_SERVERS_ATTACHMENT);
+        if (dontPropagate != null && dontPropagate.booleanValue() == true) {
+            return Collections.emptyMap();
+        }
+
         if (address.size() == 0) {
             return resolveDomainRootOperation(operation, domain, host);
         }
