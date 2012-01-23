@@ -22,6 +22,8 @@
 
 package org.jboss.as.web.deployment.jsf;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -108,11 +110,11 @@ public class JsfAnnotationProcessor implements DeploymentUnitProcessor {
                     try {
                         annotatedClass = classLoader.loadClass(className.toString());
                     } catch (ClassNotFoundException e) {
-                        throw new DeploymentUnitProcessingException("Failed to load annotated class " + className);
+                        throw new DeploymentUnitProcessingException(MESSAGES.classLoadingFailed(className));
                     }
                     discoveredClasses.add(annotatedClass);
                 } else {
-                    throw new DeploymentUnitProcessingException("Annotation " + annotation + " is only allowed on classes.  Found on " + target);
+                    throw new DeploymentUnitProcessingException(MESSAGES.invalidAnnotationLocation(annotation, target));
                 }
             }
         }

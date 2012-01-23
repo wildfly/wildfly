@@ -26,13 +26,13 @@ import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
-import org.jboss.as.web.deployment.JsfVersionMarker;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
+import org.jboss.vfs.VirtualFile;
 
 /**
  * Date: 05.11.2011
@@ -100,5 +100,53 @@ public interface WebLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 18210, value = "Registering web context: %s")
     void registerWebapp(String webappPath);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 18211, value = "Could not load JSF managed bean class: %s")
+    void managedBeanLoadFail(String managedBean);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 18212, value = "JSF managed bean class %s has no default constructor")
+    void managedBeanNoDefaultConstructor(String managedBean);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 18213, value = "Failed to parse %s, managed beans defined in this file will not be available")
+    void managedBeansConfigParseFailed(VirtualFile facesConfig);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 18214, value = "Error during login/password authenticate")
+    void authenticateError(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 18215, value = "Error during certificate authenticate")
+    void authenticateErrorCert(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 18216, value = "Error during digest authenticate")
+    void authenticateErrorDigest(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 18217, value = "Error obtaining authorization helper")
+    void noAuthorizationHelper(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 18218, value = "Exception in obtaining server authentication manager")
+    void noServerAuthenticationManager(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 18219, value = "JASPI validation for unprotected request context %s failed")
+    void failJASPIValidation(String path);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 18220, value = "Caught Exception: %s")
+    void unsupportedEncoding(String encoding);
+
+    @LogMessage(level = WARN)
+    @Message(id = 18221, value = "Error forwarding to login page: %s")
+    void errorForwardingToLoginPage(String encoding);
+
+    @LogMessage(level = WARN)
+    @Message(id = 18222, value = "Error forwarding to error page: %s")
+    void errorForwardingToErrorPage(String encoding);
 
 }

@@ -21,6 +21,8 @@
  */
 package org.jboss.as.web.deployment.jsf;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 import com.sun.faces.spi.DiscoverableInjectionProvider;
 import com.sun.faces.spi.InjectionProviderException;
 import org.jboss.as.web.deployment.WebInjectionContainer;
@@ -41,7 +43,7 @@ public class JsfInjectionProvider extends DiscoverableInjectionProvider {
     public JsfInjectionProvider() {
         this.container = injectionContainer.get();
         if (this.container == null) {
-            throw new IllegalStateException("Thread local injection container not set");
+            throw MESSAGES.noThreadLocalInjectionContainer();
         }
     }
 
@@ -55,9 +57,9 @@ public class JsfInjectionProvider extends DiscoverableInjectionProvider {
         try {
             container.destroyInstance(managedBean);
         } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
+            throw MESSAGES.instanceDestructionFailed(e);
         } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
+            throw MESSAGES.instanceDestructionFailed(e);
         }
     }
 
@@ -66,11 +68,11 @@ public class JsfInjectionProvider extends DiscoverableInjectionProvider {
         try {
             container.newInstance(managedBean);
         } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
+            throw MESSAGES.instanceCreationFailed(e);
         } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
+            throw MESSAGES.instanceCreationFailed(e);
         } catch (NamingException e) {
-            throw new RuntimeException(e);
+            throw MESSAGES.instanceCreationFailed(e);
         }
     }
 

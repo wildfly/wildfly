@@ -22,6 +22,8 @@
 
 package org.jboss.as.web.deployment.helpers;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 import java.io.File;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -177,7 +179,7 @@ public class AliasDirContext extends BaseDirContext {
         if (result.dirContext != null) {
             return result.dirContext.lookup(result.aliasName);
         }
-        throw new NameNotFoundException(sm.getString("resources.notFound", name));
+        throw new NameNotFoundException(MESSAGES.resourceNotFound(name));
     }
 
     public Object lookup(Name name) throws NamingException {
@@ -197,7 +199,7 @@ public class AliasDirContext extends BaseDirContext {
         if (result.dirContext != null) {
             return result.dirContext.list(result.aliasName);
         }
-        throw new NameNotFoundException(sm.getString("resources.notFound", name));
+        throw new NameNotFoundException(MESSAGES.resourceNotFound(name));
     }
 
     public NamingEnumeration list(Name name) throws NamingException {
@@ -209,7 +211,7 @@ public class AliasDirContext extends BaseDirContext {
         if (result.dirContext != null) {
             return result.dirContext.listBindings(result.aliasName);
         }
-        throw new NameNotFoundException(sm.getString("resources.notFound", name));
+        throw new NameNotFoundException(MESSAGES.resourceNotFound(name));
     }
 
     public NamingEnumeration listBindings(Name name) throws NamingException {
@@ -234,7 +236,7 @@ public class AliasDirContext extends BaseDirContext {
         if (result.dirContext != null) {
             return result.dirContext.getAttributes(result.aliasName, attrIds);
         }
-        throw new NameNotFoundException(sm.getString("resources.notFound", name));
+        throw new NameNotFoundException(MESSAGES.resourceNotFound(name));
     }
 
     public Attributes getAttributes(Name name, String[] attrIds) throws NamingException {

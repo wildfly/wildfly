@@ -22,6 +22,8 @@
 
 package org.jboss.as.web.security;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 import org.jboss.security.RunAs;
 import org.jboss.security.RunAsIdentity;
 import org.jboss.security.SecurityContext;
@@ -53,7 +55,7 @@ class SecurityActions {
                 try {
                     return SecurityContextFactory.createSecurityContext(domain);
                 } catch (Exception e) {
-                    throw new RuntimeException(e);
+                    throw MESSAGES.failToCreateSecurityContext(e);
                 }
             }
         });
@@ -112,7 +114,7 @@ class SecurityActions {
             public Void run() {
                 SecurityContext sc = getSecurityContext();
                 if (sc == null)
-                    throw new IllegalStateException("SecurityContext is null");
+                    throw MESSAGES.noSecurityContext();
                 sc.setOutgoingRunAs(principal);
                 return null;
             }
@@ -131,7 +133,7 @@ class SecurityActions {
             public RunAs run() {
                 SecurityContext sc = getSecurityContext();
                 if (sc == null)
-                    throw new IllegalStateException("SecurityContext is null");
+                    throw MESSAGES.noSecurityContext();
                 RunAs principal = sc.getOutgoingRunAs();
                 sc.setOutgoingRunAs(null);
                 return principal;

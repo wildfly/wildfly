@@ -23,6 +23,8 @@
 package org.jboss.as.web;
 
 import org.jboss.jandex.AnnotationTarget;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
@@ -161,5 +163,53 @@ public interface WebMessages {
 
     @Message(id = 18040, value = "Failed to start context")
     String startContextFailed();
+
+    @Message(id = 18041, value = "Servlet components must have exactly one view: %s")
+    RuntimeException servletsMustHaveOneView(String componentName);
+
+    @Message(id = 18042, value = "Not implemented")
+    String notImplemented();
+
+    @Message(id = 18043, value = "%s has the wrong component type, it cannot be used as a web component")
+    RuntimeException wrongComponentType(String clazz);
+
+    @Message(id = 18044, value = "Resource not found: %s")
+    String resourceNotFound(String resourceName);
+
+    @Message(id = 18045, value = "Failed to load annotated class: %s")
+    String classLoadingFailed(DotName clazz);
+
+    @Message(id = 18046, value = "Annotation %s in class %s is only allowed on classes")
+    String invalidAnnotationLocation(Object annotation, AnnotationTarget classInfo);
+
+    @Message(id = 18047, value = "Thread local injection container not set")
+    IllegalStateException noThreadLocalInjectionContainer();
+
+    @Message(id = 18048, value = "Instance creation failed")
+    RuntimeException instanceCreationFailed(@Cause Throwable t);
+
+    @Message(id = 18049, value = "Instance destruction failed")
+    RuntimeException instanceDestructionFailed(@Cause Throwable t);
+
+    @Message(id = 18050, value = "@ManagedBean is only allowed at class level %s")
+    String invalidManagedBeanAnnotation(AnnotationTarget target);
+
+    @Message(id = 18051, value = "Authentication Manager has not been set")
+    IllegalStateException noAuthenticationManager();
+
+    @Message(id = 18052, value = "Authorization Manager has not been set")
+    IllegalStateException noAuthorizationManager();
+
+    @Message(id = 18053, value = "No security context found")
+    IllegalStateException noSecurityContext();
+
+    @Message(id = 18054, value = "Principal class %s is not a subclass of GenericPrincipal")
+    IllegalStateException illegalPrincipalType(Class<?> clazz);
+
+    @Message(id = 18055, value = "Security context creation failed")
+    RuntimeException failToCreateSecurityContext(@Cause Throwable t);
+
+    @Message(id = 18056, value = "Catalina Context is null while creating JACC permissions")
+    IllegalStateException noCatalinaContextForJacc();
 
 }

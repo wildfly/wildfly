@@ -22,6 +22,8 @@
 
 package org.jboss.as.web.deployment.component;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEApplicationClasses;
@@ -115,7 +117,7 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
                 //this will generally be a managed bean, but it could also be an EJB
                 //TODO: make sure the component is a managed bean
                 if (!(description.getViews().size() == 1)) {
-                    throw new RuntimeException(clazz + " has the wrong component type, is cannot be used as a web component");
+                    throw MESSAGES.wrongComponentType(clazz);
                 }
                 ManagedBeanComponentInstantiator instantiator = new ManagedBeanComponentInstantiator(deploymentUnit, description);
                 webComponents.put(clazz, instantiator);
