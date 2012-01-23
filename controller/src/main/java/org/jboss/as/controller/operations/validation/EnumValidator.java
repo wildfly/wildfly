@@ -26,9 +26,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
-import com.sun.tools.internal.xjc.reader.xmlschema.bindinfo.EnumMemberMode;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
