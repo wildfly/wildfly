@@ -23,6 +23,7 @@ package org.jboss.as.cli.operation.impl;
 
 import java.util.Iterator;
 
+import org.jboss.as.cli.Util;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.OperationRequestAddress.Node;
@@ -59,7 +60,7 @@ public class DefaultOperationRequestBuilder implements OperationRequestBuilder {
      */
     public ModelNode buildRequest() throws OperationFormatException {
 
-        ModelNode address = request.get("address");
+        ModelNode address = request.get(Util.ADDRESS);
         if(prefix.isEmpty()) {
             address.setEmptyList();
         } else {

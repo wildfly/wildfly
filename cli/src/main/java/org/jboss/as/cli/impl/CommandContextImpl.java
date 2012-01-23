@@ -82,6 +82,7 @@ import org.jboss.as.cli.handlers.ClearScreenHandler;
 import org.jboss.as.cli.handlers.CommandCommandHandler;
 import org.jboss.as.cli.handlers.ConnectHandler;
 import org.jboss.as.cli.handlers.DeployHandler;
+import org.jboss.as.cli.handlers.DeploymentInfoHandler;
 import org.jboss.as.cli.handlers.GenericTypeOperationHandler;
 import org.jboss.as.cli.handlers.HelpHandler;
 import org.jboss.as.cli.handlers.HistoryHandler;
@@ -253,17 +254,24 @@ class CommandContextImpl implements CommandContext {
     }
 
     private void initCommands() {
-        cmdRegistry.registerHandler(new HelpHandler(), "help", "h");
-        cmdRegistry.registerHandler(new QuitHandler(), "quit", "q", "exit");
-        cmdRegistry.registerHandler(new ConnectHandler(), "connect");
         cmdRegistry.registerHandler(new PrefixHandler(), "cd", "cn");
         cmdRegistry.registerHandler(new ClearScreenHandler(), "clear", "cls");
-        cmdRegistry.registerHandler(new LsHandler(), "ls");
+        cmdRegistry.registerHandler(new CommandCommandHandler(cmdRegistry), "command");
+        cmdRegistry.registerHandler(new ConnectHandler(), "connect");
+        cmdRegistry.registerHandler(new HelpHandler(), "help", "h");
         cmdRegistry.registerHandler(new HistoryHandler(), "history");
+        cmdRegistry.registerHandler(new LsHandler(), "ls");
+        cmdRegistry.registerHandler(new PrintWorkingNodeHandler(), "pwd", "pwn");
+        cmdRegistry.registerHandler(new QuitHandler(), "quit", "q", "exit");
+        cmdRegistry.registerHandler(new ReadAttributeHandler(this), "read-attribute");
+        cmdRegistry.registerHandler(new VersionHandler(), "version");
+
+        // deployment
         cmdRegistry.registerHandler(new DeployHandler(this), "deploy");
         cmdRegistry.registerHandler(new UndeployHandler(this), "undeploy");
-        cmdRegistry.registerHandler(new PrintWorkingNodeHandler(), "pwd", "pwn");
+        cmdRegistry.registerHandler(new DeploymentInfoHandler(this), "deployment-info");
 
+        // batch commands
         cmdRegistry.registerHandler(new BatchHandler(), "batch");
         cmdRegistry.registerHandler(new BatchDiscardHandler(), "discard-batch");
         cmdRegistry.registerHandler(new BatchListHandler(), "list-batch");
@@ -274,16 +282,10 @@ class CommandContextImpl implements CommandContext {
         cmdRegistry.registerHandler(new BatchMoveLineHandler(), "move-batch-line");
         cmdRegistry.registerHandler(new BatchEditLineHandler(), "edit-batch-line");
 
-        cmdRegistry.registerHandler(new VersionHandler(), "version");
-
-        cmdRegistry.registerHandler(new CommandCommandHandler(cmdRegistry), "command");
-
-        cmdRegistry.registerHandler(new ReadAttributeHandler(this), "read-attribute");
-
         // data-source
         cmdRegistry.registerHandler(new GenericTypeOperationHandler(this, "/subsystem=datasources/data-source", null), "data-source");
         cmdRegistry.registerHandler(new GenericTypeOperationHandler(this, "/subsystem=datasources/xa-data-source", null), "xa-data-source");
-        // supported but hidden from the tab-completion
+        // deprecated and hidden from the tab-completion
         cmdRegistry.registerHandler(new DataSourceAddHandler(this), false, "add-data-source");
         cmdRegistry.registerHandler(new DataSourceModifyHandler(this), false, "modify-data-source");
         cmdRegistry.registerHandler(new DataSourceRemoveHandler(this), false, "remove-data-source");
@@ -295,7 +297,7 @@ class CommandContextImpl implements CommandContext {
         cmdRegistry.registerHandler(new GenericTypeOperationHandler(this, "/subsystem=messaging/hornetq-server=default/jms-queue", "queue-address"), "jms-queue");
         cmdRegistry.registerHandler(new GenericTypeOperationHandler(this, "/subsystem=messaging/hornetq-server=default/jms-topic", "topic-address"), "jms-topic");
         cmdRegistry.registerHandler(new GenericTypeOperationHandler(this, "/subsystem=messaging/hornetq-server=default/connection-factory", null), "connection-factory");
-        // supported but hidden from the tab-completion
+        // deprecated and hidden from the tab-completion
         cmdRegistry.registerHandler(new JmsQueueAddHandler(this), false, "add-jms-queue");
         cmdRegistry.registerHandler(new JmsQueueRemoveHandler(this), false, "remove-jms-queue");
         cmdRegistry.registerHandler(new JmsTopicAddHandler(this), false, "add-jms-topic");
@@ -306,6 +308,7 @@ class CommandContextImpl implements CommandContext {
         cmdRegistry.registerHandler(new CreateJmsResourceHandler(this), false, "create-jms-resource");
         cmdRegistry.registerHandler(new DeleteJmsResourceHandler(this), false, "delete-jms-resource");
 
+        // rollout plan
         final GenericTypeOperationHandler rolloutPlan = new GenericTypeOperationHandler(this, "/management-client-content=rollout-plans/rollout-plan", null);
         rolloutPlan.addValueConverter("content", ArgumentValueConverter.ROLLOUT_PLAN);
         rolloutPlan.addValueCompleter("content", RolloutPlanCompleter.INSTANCE);
