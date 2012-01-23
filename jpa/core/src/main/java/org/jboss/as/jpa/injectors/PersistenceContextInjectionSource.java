@@ -152,7 +152,7 @@ public class PersistenceContextInjectionSource extends InjectionSource {
                 EntityManager entityManager1 = SFSBCallStack.findPersistenceContext(unitName, sfsbxpcMap);
                 if (entityManager1 == null) {
                     entityManager1 = emf.createEntityManager(properties);
-                    entityManager = new ExtendedEntityManager(unitName, entityManager1, SFSBXPCMap.getApplicationDeploymentBagKeyName(deploymentUnit));
+                    entityManager = new ExtendedEntityManager(unitName, entityManager1);
                     if (JPA_LOGGER.isDebugEnabled())
                         JPA_LOGGER.debugf("created new ExtendedEntityManager for unit name=%s", unitName);
 

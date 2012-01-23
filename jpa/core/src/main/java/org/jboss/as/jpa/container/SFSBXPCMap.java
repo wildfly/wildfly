@@ -29,24 +29,22 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.persistence.EntityManager;
 
 import org.jboss.as.jpa.ejb3.SFSBContextHandleImpl;
+import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.jpa.spi.SFSBContextHandle;
+import org.jboss.as.jpa.util.JPAServiceNames;
+import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * For stateful session bean life cycle management and tracking XPC Inheritance.
@@ -63,18 +61,6 @@ public class SFSBXPCMap {
 
     public static final AttachmentKey<SFSBXPCMap> ATTACHMENT_KEY = AttachmentKey.create(SFSBXPCMap.class);
 
-    // When the DU_REF_TO_APPLICATION is garbage collected at undeploy time, the perDeploymentBag will be deleted also.
-
-    public static final AttachmentKey<PerApplicationKeyWrapper> DU_REF_TO_APPLICATION = AttachmentKey.create(PerApplicationKeyWrapper.class);
-
-    /**
-     * A separate map instance per deployment unit is kept to avoid leaking the application classes.
-     * if this becomes a bottleneck, look at using ConcurrentReferenceHashMap instead.
-     *
-     */
-    private static Map<PerApplicationKeyWrapper, WeakReference<SFSBXPCMap>> perDeploymentBag =
-        Collections.synchronizedMap(
-        new WeakHashMap<PerApplicationKeyWrapper, WeakReference<SFSBXPCMap>>());
     /**
      * Track the XPCs used by each stateful session bean.
      */
@@ -132,7 +118,7 @@ public class SFSBXPCMap {
         }
 
         if (!(xpc instanceof ExtendedEntityManager)) {
-            throw MESSAGES.parameterMustBeAbstractEntityManager("XPC");
+            throw MESSAGES.parameterMustBeExtendedEntityManager(xpc.getClass().getName());
         }
 
         List<EntityManager> store = deferToPostConstruct.get();
@@ -158,7 +144,7 @@ public class SFSBXPCMap {
      */
     public void register(SFSBContextHandle beanContextHandle, EntityManager entityManager) {
         if (!(entityManager instanceof ExtendedEntityManager)) {
-            throw MESSAGES.parameterMustBeAbstractEntityManager("XPC");
+            throw MESSAGES.parameterMustBeExtendedEntityManager(entityManager.getClass().getName());
         }
         Set<ExtendedEntityManager> xpcSet = contextToXPCMap.get(beanContextHandle);
         if (xpcSet == null) {
@@ -230,50 +216,27 @@ public class SFSBXPCMap {
         SFSBXPCMap sfsbMap = top.getAttachment(SFSBXPCMap.ATTACHMENT_KEY);
         if (sfsbMap == null) {
             synchronized (top) {
-                // deployment unit needs a strong reference to the perApplicationKeyWrapper
-                // when the application undeploys the strong reference to perApplicationKeyWrapper will be gone
-                // and the perApplicationKeyWrapper entries for that application will be garbage collected.
-                PerApplicationKeyWrapper perApplicationKeyWrapper = top.getAttachment(SFSBXPCMap.DU_REF_TO_APPLICATION);
-                if ( perApplicationKeyWrapper == null) {
-                    perApplicationKeyWrapper = new PerApplicationKeyWrapper(getApplicationDeploymentBagKeyName(top));
-                    top.putAttachment(SFSBXPCMap.DU_REF_TO_APPLICATION,
-                        perApplicationKeyWrapper);
-                }
-
 
                 sfsbMap = top.getAttachment(SFSBXPCMap.ATTACHMENT_KEY);
                 if (sfsbMap == null) {
                     top.putAttachment(SFSBXPCMap.ATTACHMENT_KEY, sfsbMap = new SFSBXPCMap());
-                // keep a (per application) weak reference to the SFSBXPCMap that can be looked up
-                // without having the DU
-                perDeploymentBag.put(
-                   perApplicationKeyWrapper,
-                   new WeakReference<SFSBXPCMap>(sfsbMap));
                 }
             }
         }
         return sfsbMap;
     }
 
+
     /**
      * Get a SFSBXPCMap that is shared over the top level deployment
      *
-     * @param deploymentBagKeyName
+     * @param scopedPuName
      * @return
      */
-    public static SFSBXPCMap getXpcMap(final String deploymentBagKeyName) {
-        WeakReference<SFSBXPCMap> result = perDeploymentBag.get(new PerApplicationKeyWrapper(deploymentBagKeyName));
-        return result.get();    // its an internal error if result is null
-    }
-
-    /**
-     * return a string that identifies the top level application
-     * @param deploymentUnit
-     * @return
-     */
-    public static String getApplicationDeploymentBagKeyName(final DeploymentUnit deploymentUnit) {
-        final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-        return deploymentRoot.getRoot().getName();
+    public static SFSBXPCMap getXpcMap(final String scopedPuName) {
+        final ServiceController<?> controller = CurrentServiceContainer.getServiceContainer().getService(JPAServiceNames.getPUServiceName(scopedPuName));
+        final PersistenceUnitServiceImpl persistenceUnitService = (PersistenceUnitServiceImpl)controller.getService();
+        return persistenceUnitService.getSfsbxpcMap();
     }
 
     /**
@@ -281,15 +244,15 @@ public class SFSBXPCMap {
      *
      * @param out
      * @param extendedEntityManager
-     * @param deploymentBagKeyName
+     * @param puScopedName
      */
-    protected static void delegateWriteObject(ObjectOutputStream out, ExtendedEntityManager extendedEntityManager, String deploymentBagKeyName) throws
+    protected static void delegateWriteObject(ObjectOutputStream out, ExtendedEntityManager extendedEntityManager, String puScopedName) throws
         IOException {
 
         boolean isPassivating = false;  // TODO: AS7-3388 need a way for ejb3 to tell me when we are cluster replicating
                                         //       versus passivating a stateful bean.
 
-        SFSBXPCMap sfsbxpcMap = SFSBXPCMap.getXpcMap(deploymentBagKeyName);
+        SFSBXPCMap sfsbxpcMap = SFSBXPCMap.getXpcMap(puScopedName);
         List<SFSBContextHandle> sfsbList = sfsbxpcMap.getSFSBList(extendedEntityManager);
         ROOT_LOGGER.tracef("starting serializing of %d SFSBXPCMap entries", sfsbList.size());
         out.writeInt(sfsbList.size());  // write the count of SFSBContextHandle that reference extendedEntityManager
@@ -331,13 +294,13 @@ public class SFSBXPCMap {
      *
      * @param in
      * @param extendedEntityManager
-     * @param deploymentBagKeyName
+     * @param puScopedName
      * @throws IOException
      */
-    protected static void delegateReadObject(ObjectInputStream in, ExtendedEntityManager extendedEntityManager, String deploymentBagKeyName) throws
+    protected static void delegateReadObject(ObjectInputStream in, ExtendedEntityManager extendedEntityManager, String puScopedName) throws
         IOException {
 
-        SFSBXPCMap sfsbxpcMap = SFSBXPCMap.getXpcMap(deploymentBagKeyName);
+        SFSBXPCMap sfsbxpcMap = SFSBXPCMap.getXpcMap(puScopedName);
         int sfsbContextHandleCount = in.readInt();
         ROOT_LOGGER.tracef("starting deserializing of %d SFSBXPCMap entries", sfsbContextHandleCount);
         ArrayList sfsbList = new ArrayList<SFSBContextHandle>();
@@ -364,30 +327,4 @@ public class SFSBXPCMap {
 
     }
 
-
-    private static class PerApplicationKeyWrapper {
-        final String deploymentBagKeyName;
-
-        PerApplicationKeyWrapper(String deploymentBagKeyName) {
-            this.deploymentBagKeyName = deploymentBagKeyName;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            PerApplicationKeyWrapper that = (PerApplicationKeyWrapper) o;
-
-            if (deploymentBagKeyName != null ? !deploymentBagKeyName.equals(that.deploymentBagKeyName) : that.deploymentBagKeyName != null)
-                return false;
-
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            return deploymentBagKeyName != null ? deploymentBagKeyName.hashCode() : 0;
-        }
-    }
 }

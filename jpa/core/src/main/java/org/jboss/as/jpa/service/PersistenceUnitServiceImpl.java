@@ -31,6 +31,7 @@ import javax.persistence.spi.PersistenceProvider;
 import javax.sql.DataSource;
 
 import org.jboss.as.jpa.classloader.TempClassLoaderFactoryImpl;
+import org.jboss.as.jpa.container.SFSBXPCMap;
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.as.jpa.spi.PersistenceUnitService;
