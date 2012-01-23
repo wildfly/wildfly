@@ -94,6 +94,14 @@ public class ServerEnvironment implements Serializable {
     public static final String MODULES_DIR = "jboss.modules.dir";
 
     /**
+     * Constant that holds the name of the environment property for specifying the directory from which JBoss will read OSGi bundles.
+     *
+     * <p>
+     * Defaults to <tt><em>HOME_DIR</em>/bundles</tt>/
+     */
+    public static final String BUNDLES_DIR = "jboss.bundles.dir";
+
+    /**
      * VFS module identifier
      */
     public static final String VFS_MODULE_IDENTIFIER = "org.jboss.vfs";
@@ -208,6 +216,7 @@ public class ServerEnvironment implements Serializable {
 
     private final File homeDir;
     private final File modulesDir;
+    private final File bundlesDir;
     private final File serverBaseDir;
     private final File serverConfigurationDir;
     private final ConfigurationFile serverConfigurationFile;
@@ -307,6 +316,12 @@ public class ServerEnvironment implements Serializable {
             tmp = new File(homeDir, "modules");
         }
         modulesDir = tmp;
+
+        tmp = getFileFromProperty(BUNDLES_DIR, props);
+        if (tmp == null) {
+            tmp = new File(homeDir, "bundles");
+        }
+        bundlesDir = tmp;
 
         tmp = getFileFromProperty(SERVER_BASE_DIR, props);
         if (tmp == null) {
@@ -451,6 +466,10 @@ public class ServerEnvironment implements Serializable {
 
     public File getModulesDir() {
         return modulesDir;
+    }
+
+    public File getBundlesDir() {
+        return bundlesDir;
     }
 
     public File getServerBaseDir() {
