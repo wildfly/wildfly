@@ -22,17 +22,6 @@
 
 package org.jboss.as.osgi.service;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.net.URL;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.concurrent.atomic.AtomicLong;
-
 import org.jboss.as.osgi.parser.SubsystemState;
 import org.jboss.as.osgi.parser.SubsystemState.ChangeEvent;
 import org.jboss.as.osgi.parser.SubsystemState.ChangeType;
@@ -60,11 +49,22 @@ import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.metadata.OSGiMetaData;
 import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
 import org.jboss.osgi.spi.util.BundleInfo;
-import org.jboss.osgi.vfs.AbstractVFS;
-import org.jboss.osgi.vfs.VirtualFile;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
 import org.osgi.service.startlevel.StartLevel;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 
 import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
@@ -163,22 +163,22 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
         Integer startLevel = moduleMetaData.getStartLevel();
 
         // Attempt to install bundle from the bundles hirarchy
-        File modulesFile = getRepositoryEntry(bundlesDir, identifier);
+        File modulesFile = ModuleIdentityArtifactProvider.getRepositoryEntry(bundlesDir, identifier);
         if (modulesFile != null) {
             URL url = modulesFile.toURI().toURL();
             return installBundleFromURL(bundleManager, url, startLevel);
         }
 
-        // Attempt to install bundle from the modules hirarchy
-        modulesFile = getRepositoryEntry(modulesDir, identifier);
+        /* Attempt to install bundle from the modules hirarchy
+        modulesFile = ModuleIdentityArtifactProvider.getRepositoryEntry(modulesDir, identifier);
         if (modulesFile != null) {
             URL url = modulesFile.toURI().toURL();
             VirtualFile virtualFile = AbstractVFS.toVirtualFile(url);
             if (BundleInfo.isValidBundle(virtualFile)) {
-                ROOT_LOGGER.foundOsgiBundle(modulesFile);
                 return installBundleFromURL(bundleManager, url, startLevel);
             }
         }
+        */
 
         // Register module with the OSGi layer
         ModuleLoader moduleLoader = Module.getBootModuleLoader();
@@ -198,7 +198,6 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
 
     void startBundle(final ServiceContainer serviceContainer, ServiceName serviceName, OSGiCapability moduleMetaData) {
         if (moduleMetaData.getStartLevel() != null) {
-            @SuppressWarnings("unchecked")
             ServiceController<Bundle> controller = (ServiceController<Bundle>) serviceContainer.getRequiredService(serviceName);
             Bundle bundle = controller.getValue();
             StartLevel startLevel = injectedStartLevel.getValue();
@@ -216,47 +215,26 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
         return this;
     }
 
-    /**
-     * Get file for the singe jar that corresponds to the given identifier
-     */
-    private File getRepositoryEntry(File rootDir, ModuleIdentifier identifier) throws IOException {
-
-        String identifierPath = identifier.getName().replace('.', '/') + "/" + identifier.getSlot();
-        File entryDir = new File(rootDir + "/" + identifierPath);
-        if (entryDir.isDirectory() == false) {
-            ROOT_LOGGER.debugf("Cannot obtain directory: %s", entryDir);
-            return null;
-        }
-
-        String[] files = entryDir.list(new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                return name.endsWith(".jar");
-            }
-        });
-        if (files.length == 0) {
-            ROOT_LOGGER.debugf("Cannot find jar in: %s", entryDir);
-            return null;
-        }
-        if (files.length > 1) {
-            ROOT_LOGGER.debugf("Multiple jars in: %s", entryDir);
-            return null;
-        }
-
-        File entryFile = new File(entryDir + "/" + files[0]);
-        if (entryFile.exists() == false) {
-            ROOT_LOGGER.debugf("File does not exist: %s", entryFile);
-            return null;
-        }
-
-        return entryFile;
-    }
 
     private OSGiMetaData getModuleMetadata(Module module) throws IOException {
+
+        URL manifestURL = module.getClassLoader().getResource(JarFile.MANIFEST_NAME);
+        if (manifestURL != null) {
+            InputStream input = manifestURL.openStream();
+            try {
+                Manifest manifest = new Manifest(input);
+                if (BundleInfo.isValidBundleManifest(manifest)) {
+                    return OSGiMetaDataBuilder.load(manifest);
+                }
+            } finally {
+                input.close();
+            }
+        }
         final File modulesDir = injectedEnvironment.getValue().getModulesDir();
         final ModuleIdentifier identifier = module.getIdentifier();
 
-        String identifierPath = identifier.getName().replace('.', '/') + "/" + identifier.getSlot();
-        File entryFile = new File(modulesDir + "/" + identifierPath + "/jbosgi-xservice.properties");
+        String identifierPath = identifier.getName().replace('.', File.separatorChar) + File.separator + identifier.getSlot();
+        File entryFile = new File(modulesDir + File.separator + identifierPath + File.separator + "jbosgi-xservice.properties");
         if (entryFile.exists() == false) {
             ROOT_LOGGER.debugf("Cannot obtain OSGi metadata file: %s", entryFile);
             return null;

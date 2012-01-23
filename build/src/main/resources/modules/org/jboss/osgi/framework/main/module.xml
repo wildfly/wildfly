@@ -35,9 +35,7 @@
         <module name="org.jboss.logging"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc" export="true"/>
-        <module name="org.jboss.osgi.deployment" export="true"/>
         <module name="org.jboss.osgi.spi" export="true"/>
-        <module name="org.jboss.osgi.resolver" export="true"/>
         <module name="org.jboss.osgi.vfs" export="true"/>
         <module name="org.jboss.vfs"/>
         <module name="org.osgi.core" export="true"/>

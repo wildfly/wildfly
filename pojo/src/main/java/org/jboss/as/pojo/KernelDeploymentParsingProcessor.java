@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.jar.Manifest;
 
 /**
  * DeploymentUnitProcessor responsible for parsing a jboss-beans.xml
@@ -77,6 +78,8 @@ public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit unit = phaseContext.getDeploymentUnit();
+        if (unit.hasAttachment(Attachments.OSGI_MANIFEST))
+            return;
         final VirtualFile deploymentRoot = unit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         parseDescriptors(unit, deploymentRoot);
         final List<ResourceRoot> resourceRoots = unit.getAttachmentList(Attachments.RESOURCE_ROOTS);
