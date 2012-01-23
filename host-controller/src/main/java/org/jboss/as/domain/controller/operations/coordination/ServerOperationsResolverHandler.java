@@ -78,7 +78,7 @@ public class ServerOperationsResolverHandler implements OperationStepHandler {
     }
 
     @Override
-    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
 
         // Read out what was added by any MODEL/RUNTIME/VERIFY handlers and publish it to the overall context
         if (context.hasResult()) {
@@ -95,7 +95,7 @@ public class ServerOperationsResolverHandler implements OperationStepHandler {
 
                 @Override
                 public Map<Set<ServerIdentity>, ModelNode> getServerOperations(ModelNode domainOp, PathAddress address) {
-                    return ServerOperationsResolverHandler.this.getServerOperations(domainOp, address, domainModel, domainModel.get(HOST).get(localHostName));
+                    return ServerOperationsResolverHandler.this.getServerOperations(context, domainOp, address, domainModel, domainModel.get(HOST).get(localHostName));
                 }
             };
 
@@ -118,7 +118,7 @@ public class ServerOperationsResolverHandler implements OperationStepHandler {
         context.completeStep();
     }
 
-    private Map<Set<ServerIdentity>, ModelNode> getServerOperations(ModelNode domainOp, PathAddress domainOpAddress, ModelNode domainModel, ModelNode hostModel) {
+    private Map<Set<ServerIdentity>, ModelNode> getServerOperations(OperationContext context, ModelNode domainOp, PathAddress domainOpAddress, ModelNode domainModel, ModelNode hostModel) {
         Map<Set<ServerIdentity>, ModelNode> result = null;
         final PathAddress relativeAddress = domainOpAddress.subAddress(originalAddress.size());
         Set<OperationEntry.Flag> flags = originalRegistration.getOperationFlags(relativeAddress, domainOp.require(OP).asString());
@@ -126,7 +126,7 @@ public class ServerOperationsResolverHandler implements OperationStepHandler {
             result = Collections.emptyMap();
         }
         if (result == null) {
-            result = resolver.getServerOperations(domainOp, domainOpAddress, domainModel, hostModel);
+            result = resolver.getServerOperations(context, domainOp, domainOpAddress, domainModel, hostModel);
         }
         return result;
     }

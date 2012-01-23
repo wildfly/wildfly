@@ -29,6 +29,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers.StringLengthValidatingHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.DomainControllerMessages;
+import org.jboss.as.domain.controller.operations.coordination.ServerOperationResolver;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -49,9 +50,8 @@ public class ServerGroupProfileWriteAttributeHandler extends StringLengthValidat
     protected void modelChanged(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue,
             ModelNode currentValue) throws OperationFailedException {
         if (newValue.equals(currentValue)) {
-            //If we don't throw this exception here the ServerOperationHandler won't know something went wrong
-            //and will put the server into restart-required although nothing changed
-            throw DomainControllerMessages.MESSAGES.writeAttributeNotChanged(newValue.asString());
+            //Set an attachment to avoid propagation to the servers, we don't want them to go into restart-required if nothing changed
+            context.attach(ServerOperationResolver.DONT_PROPAGATE_TO_SERVERS_ATTACHMENT, true);
         }
         final Resource profile = context.getOriginalRootResource().getChild(PathElement.pathElement(PROFILE, newValue.asString()));
         if (profile == null) {

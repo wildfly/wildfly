@@ -31,6 +31,7 @@ import org.jboss.as.controller.operations.global.WriteAttributeHandlers.WriteAtt
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.domain.controller.operations.coordination.ServerOperationResolver;
 import org.jboss.as.host.controller.HostControllerMessages;
 import org.jboss.dmr.ModelNode;
 
@@ -56,11 +57,11 @@ public abstract class ServerRestartRequiredServerConfigWriteAttributeHandler ext
     protected void modelChanged(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue,
             ModelNode currentValue) throws OperationFailedException {
         if (newValue.equals(currentValue)) {
-            //If we don't throw this exception here the ServerOperationHandler won't know something went wrong
-            //and will put the server into restart-required although nothing changed
-            throw HostControllerMessages.MESSAGES.writeAttributeNotChanged(newValue.asString());
+            //Set an attachment to avoid propagation to the servers, we don't want them to go into restart-required if nothing changed
+            context.attach(ServerOperationResolver.DONT_PROPAGATE_TO_SERVERS_ATTACHMENT, true);
         }
         validateReferencedNewValueExisits(context, newValue);
+
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
@@ -73,7 +74,8 @@ public abstract class ServerRestartRequiredServerConfigWriteAttributeHandler ext
 
         @Override
         protected void validateReferencedNewValueExisits(OperationContext context, ModelNode value) throws OperationFailedException{
-            if (context.getOriginalRootResource().getChild(PathElement.pathElement(SERVER_GROUP, value.asString())) == null) {
+            //Don't do this on boot since the domain model is not populated yet
+            if (!context.isBooting() && context.getRootResource().getChild(PathElement.pathElement(SERVER_GROUP, value.asString())) == null) {
                 throw HostControllerMessages.MESSAGES.noServerGroupCalled(value.asString());
             }
         }
@@ -86,7 +88,8 @@ public abstract class ServerRestartRequiredServerConfigWriteAttributeHandler ext
 
         @Override
         protected void validateReferencedNewValueExisits(OperationContext context, ModelNode value) throws OperationFailedException{
-            if (context.getOriginalRootResource().getChild(PathElement.pathElement(SOCKET_BINDING_GROUP, value.asString())) == null) {
+            //Don't do this on boot since the domain model is not populated yet
+            if (!context.isBooting() && context.getRootResource().getChild(PathElement.pathElement(SOCKET_BINDING_GROUP, value.asString())) == null) {
                 throw HostControllerMessages.MESSAGES.noSocketBindingGroupCalled(value.asString());
             }
         }

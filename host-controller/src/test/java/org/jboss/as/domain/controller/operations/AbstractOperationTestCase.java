@@ -42,6 +42,7 @@ import java.io.InputStream;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -159,6 +160,8 @@ public abstract class AbstractOperationTestCase {
         private final boolean booting;
         private final PathAddress operationAddress;
         private Set<PathAddress> expectedSteps = new HashSet<PathAddress>();
+        private final Map<AttachmentKey<?>, Object> valueAttachments = new HashMap<AttachmentKey<?>, Object>();
+
 
         private MockOperationContext(final Resource root, final boolean booting, final PathAddress operationAddress) {
             this.root = root;
@@ -419,22 +422,22 @@ public abstract class AbstractOperationTestCase {
 
         @Override
          public <V> V getAttachment(final AttachmentKey<V> key) {
-            return null;
+            return key.cast(valueAttachments.get(key));
         }
 
         @Override
         public <V> V attach(final AttachmentKey<V> key, final V value) {
-            return null;
+            return key.cast(valueAttachments.put(key, value));
         }
 
         @Override
         public <V> V attachIfAbsent(final AttachmentKey<V> key, final V value) {
-            return null;
+            return key.cast(valueAttachments.put(key, value));
         }
 
         @Override
         public <V> V detach(final AttachmentKey<V> key) {
-            return null;
+            return key.cast(valueAttachments.get(key));
         }
 
         @Override
