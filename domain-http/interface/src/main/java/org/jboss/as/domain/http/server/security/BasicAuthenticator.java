@@ -107,7 +107,7 @@ public class BasicAuthenticator extends org.jboss.com.sun.net.httpserver.BasicAu
     }
 
     // TODO - Will do something cleaner with collections.
-    public static boolean requiredCallbacksSupported(Class[] callbacks) {
+    public static boolean requiredCallbacksSupported(Class<Callback>[] callbacks) {
         if (contains(NameCallback.class,callbacks) == false) {
             return false;
         }
@@ -118,8 +118,8 @@ public class BasicAuthenticator extends org.jboss.com.sun.net.httpserver.BasicAu
         return true;
     }
 
-    private static boolean contains(Class clazz, Class[] classes) {
-        for (Class current : classes) {
+    private static boolean contains(Class clazz, Class<Callback>[] classes) {
+        for (Class<Callback> current : classes) {
             if (current.equals(clazz)) {
                 return true;
             }
