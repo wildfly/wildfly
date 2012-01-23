@@ -21,28 +21,34 @@
  */
 package org.jboss.as.modcluster;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLElementReader;
 
 /**
  * @author Jean-Frederic Clere
+ * @author Paul Ferraro
  */
 public enum Namespace {
-
     // must be first
-    UNKNOWN(null),
+    UNKNOWN(0, 0, null),
 
-    MODCLUSTER("urn:jboss:domain:modcluster:1.0");
-
+    MODCLUSTER_1_0(1, 0, new ModClusterSubsystemXMLReader_1_0()),
+    ;
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = MODCLUSTER;
+    public static final Namespace CURRENT = MODCLUSTER_1_0;
 
-    private final String name;
+    private final int major;
+    private final int minor;
+    private final XMLElementReader<List<ModelNode>> reader;
 
-    Namespace(final String name) {
-        this.name = name;
+    private Namespace(int major, int minor, XMLElementReader<List<ModelNode>> reader) {
+        this.major = major;
+        this.minor = minor;
+        this.reader = reader;
     }
 
     /**
@@ -50,25 +56,19 @@ public enum Namespace {
      *
      * @return the URI
      */
-    public String getUriString() {
-        return name;
+    public String getUri() {
+        return "urn:jboss:domain:" + ModClusterExtension.SUBSYSTEM_NAME + ":" + major + "." + minor;
     }
 
-    private static final Map<String, Namespace> MAP;
-
-    static {
-        final Map<String, Namespace> map = new HashMap<String, Namespace>();
-        for (Namespace namespace : values()) {
-            final String name = namespace.getUriString();
-            if (name != null)
-                map.put(name, namespace);
-        }
-        MAP = map;
+    public int getMajorVersion() {
+        return this.major;
     }
 
-    public static Namespace forUri(String uri) {
-        final Namespace element = MAP.get(uri);
-        return element == null ? UNKNOWN : element;
+    public int getMinorVersion() {
+        return this.minor;
     }
 
+    public XMLElementReader<List<ModelNode>> getXMLReader() {
+        return this.reader;
+    }
 }

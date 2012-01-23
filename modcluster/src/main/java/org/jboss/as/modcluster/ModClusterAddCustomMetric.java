@@ -53,7 +53,7 @@ public class ModClusterAddCustomMetric implements OperationStepHandler, Descript
 
         // TODO AS7-3194 no reason this can't run on the Host Controller; it just updates the model
         // TODO AS7-3194 this does not update the runtime! The server needs to be marked reload-required
-        if (context.getType() == OperationContext.Type.SERVER) {
+        if (context.getProcessType().isServer()) {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
