@@ -22,6 +22,8 @@
 
 package org.jboss.as.web.deployment.helpers;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -86,7 +88,7 @@ public class VFSDirContext extends BaseDirContext {
             return this;
         VirtualFile entry = treeLookup(name);
         if (entry == null)
-            throw new NamingException(sm.getString("resources.notFound", name));
+            throw new NamingException(MESSAGES.resourceNotFound(name.toString()));
 
         if (entry.isDirectory()) {
             return new VFSDirContext(entry);
@@ -113,7 +115,7 @@ public class VFSDirContext extends BaseDirContext {
         }
         VirtualFile entry = treeLookup(name);
         if (entry == null)
-            throw new NamingException(sm.getString("resources.notFound", name));
+            throw new NamingException(MESSAGES.resourceNotFound(name.toString()));
 
         return new NamingContextEnumeration(list(entry).iterator());
     }
@@ -128,7 +130,7 @@ public class VFSDirContext extends BaseDirContext {
         }
         VirtualFile entry = treeLookup(name);
         if (entry == null)
-            throw new NamingException(sm.getString("resources.notFound", name));
+            throw new NamingException(MESSAGES.resourceNotFound(name.toString()));
 
         return new NamingContextBindingsEnumeration(list(entry).iterator(), this);
     }
@@ -159,7 +161,7 @@ public class VFSDirContext extends BaseDirContext {
             entry = treeLookup(name);
         }
         if (entry == null)
-            throw new NamingException(sm.getString("resources.notFound", name));
+            throw new NamingException(MESSAGES.resourceNotFound(name.toString()));
 
         ResourceAttributes attrs = new ResourceAttributes();
         attrs.setCreationDate(new Date(entry.getLastModified()));

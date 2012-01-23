@@ -38,7 +38,6 @@ import org.apache.catalina.startup.ContextConfig;
 import org.apache.tomcat.InstanceManager;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
 import org.jboss.as.web.deployment.WebCtxLoader;
-import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -54,7 +53,6 @@ import org.jboss.msc.value.InjectedValue;
  */
 class WelcomeContextService implements Service<Context> {
 
-    private static final Logger log = Logger.getLogger("org.jboss.web");
     private final StandardContext context;
     private final InjectedValue<String> pathInjector = new InjectedValue<String>();
     private final InjectedValue<VirtualHost> hostInjector = new InjectedValue<VirtualHost>();

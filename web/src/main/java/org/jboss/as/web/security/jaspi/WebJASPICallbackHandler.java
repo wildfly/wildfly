@@ -22,7 +22,7 @@
 
 package org.jboss.as.web.security.jaspi;
 
-import org.jboss.logging.Logger;
+import org.jboss.as.web.WebLogger;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -42,8 +42,6 @@ import java.io.IOException;
  */
 @SuppressWarnings("unused")
 public class WebJASPICallbackHandler implements CallbackHandler {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.web.security");
 
     private CallerPrincipalCallback callerPrincipalCallback;
 
@@ -72,7 +70,7 @@ public class WebJASPICallbackHandler implements CallbackHandler {
                     this.groupPrincipalCallback = new GroupPrincipalCallback(groupCallback.getSubject(),
                             groupCallback.getGroups());
                 } else
-                    log.tracef("Callback %s not supported", callback.getClass().getCanonicalName());
+                    WebLogger.WEB_SECURITY_LOGGER.tracef("Callback %s not supported", callback.getClass().getCanonicalName());
             }
         }
     }

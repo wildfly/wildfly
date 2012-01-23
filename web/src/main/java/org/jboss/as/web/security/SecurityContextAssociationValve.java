@@ -37,6 +37,7 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.valves.ValveBase;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.web.WebLogger;
 import org.jboss.as.web.deployment.WarMetaData;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.javaee.jboss.RunAsIdentityMetaData;
@@ -57,8 +58,6 @@ import org.jboss.security.SecurityUtil;
  * @author Anil.Saldhana@jboss.org
  */
 public class SecurityContextAssociationValve extends ValveBase {
-
-    private static final Logger log = Logger.getLogger(SecurityContextAssociationValve.class);
 
     private final DeploymentUnit deploymentUnit;
 
@@ -82,7 +81,7 @@ public class SecurityContextAssociationValve extends ValveBase {
         JBossGenericPrincipal principal = null;
         HttpSession hsession = request.getSession(false);
 
-        log.tracef("Begin invoke, caller=" + caller);
+        WebLogger.WEB_SECURITY_LOGGER.tracef("Begin invoke, caller=" + caller);
 
         boolean createdSecurityContext = false;
         SecurityContext sc = SecurityActions.getSecurityContext();
@@ -104,7 +103,7 @@ public class SecurityContextAssociationValve extends ValveBase {
                     RunAsIdentityMetaData identity = metaData.getRunAsIdentity(name);
                     RunAsIdentity runAsIdentity = null;
                     if (identity != null) {
-                        log.tracef(name + ", runAs: " + identity);
+                        WebLogger.WEB_SECURITY_LOGGER.tracef(name + ", runAs: " + identity);
                         runAsIdentity = new RunAsIdentity(identity.getRoleName(), identity.getPrincipalName(),
                                 identity.getRunAsRoles());
                     }
@@ -138,7 +137,7 @@ public class SecurityContextAssociationValve extends ValveBase {
 
                 // If there is a caller use this as the identity to propagate
                 if (principal != null) {
-                    log.tracef("Restoring principal info from cache");
+                    WebLogger.WEB_SECURITY_LOGGER.tracef("Restoring principal info from cache");
                     if (createdSecurityContext) {
                         sc.getUtil().createSubjectInfo(principal.getUserPrincipal(), principal.getCredentials(),
                                 principal.getSubject());
@@ -146,7 +145,7 @@ public class SecurityContextAssociationValve extends ValveBase {
                 }
             } catch (Throwable e) {
                 //TODO:decide whether to log this as info or warn
-                log.debug("Failed to determine servlet", e);
+                WebLogger.WEB_SECURITY_LOGGER.debug("Failed to determine servlet", e);
             }
             // set JACC contextID
             PolicyContext.setContextID(deploymentUnit.getName());
@@ -157,7 +156,7 @@ public class SecurityContextAssociationValve extends ValveBase {
                 SecurityActions.popRunAsIdentity();
             }
         } finally {
-            log.tracef("End invoke, caller=" + caller);
+            WebLogger.WEB_SECURITY_LOGGER.tracef("End invoke, caller=" + caller);
             SecurityActions.clearSecurityContext();
             SecurityRolesAssociation.setSecurityRoles(null);
             PolicyContext.setContextID(null);

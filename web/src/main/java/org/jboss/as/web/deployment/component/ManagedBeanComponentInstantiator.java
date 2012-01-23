@@ -21,6 +21,8 @@
  */
 package org.jboss.as.web.deployment.component;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.ViewDescription;
@@ -50,7 +52,7 @@ public class ManagedBeanComponentInstantiator implements ComponentInstantiator {
         serviceRegistry = deploymentUnit.getServiceRegistry();
         serviceNames.add(baseName.append("START"));
         if(componentDescription.getViews() == null || componentDescription.getViews().size() != 1) {
-            throw new RuntimeException("Servlet components must have exactly one view: " + componentDescription.getComponentName());
+            throw MESSAGES.servletsMustHaveOneView(componentDescription.getComponentName());
         }
         ViewDescription view = componentDescription.getViews().iterator().next();
         String viewClassName = view.getViewClassName();
@@ -69,7 +71,7 @@ public class ManagedBeanComponentInstantiator implements ComponentInstantiator {
 
             }
         }
-        throw new RuntimeException("Not yet implemented");
+        throw new IllegalStateException(MESSAGES.notImplemented());
         //return viewServiceServiceController.getValue().getReference();
     }
 
@@ -80,7 +82,7 @@ public class ManagedBeanComponentInstantiator implements ComponentInstantiator {
 
     @Override
     public ManagedReference initializeInstance(final Object instance) {
-        throw new UnsupportedOperationException("Not Implemented");
+        throw new UnsupportedOperationException(MESSAGES.notImplemented());
     }
 
 

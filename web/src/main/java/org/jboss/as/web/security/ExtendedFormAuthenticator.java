@@ -32,7 +32,7 @@ import org.apache.catalina.authenticator.Constants;
 import org.apache.catalina.authenticator.FormAuthenticator;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.deploy.LoginConfig;
-import org.jboss.logging.Logger;
+import org.jboss.as.web.WebLogger;
 
 /**
  * An extension of the form authenticator that associates the j_username with the session under the attribute name j_username
@@ -48,8 +48,6 @@ public class ExtendedFormAuthenticator extends FormAuthenticator {
     public static final String LOGIN_EXCEPTION = "j_exception";
 
     public static final String DID_POPULATE = "did_populate";
-
-    private static final Logger log = Logger.getLogger(ExtendedFormAuthenticator.class);
 
     private boolean includePassword;
 
@@ -109,7 +107,7 @@ public class ExtendedFormAuthenticator extends FormAuthenticator {
      */
     @Override
     protected void forwardToErrorPage(Request request, HttpServletResponse response, LoginConfig config) throws IOException {
-        log.tracef("forwardToErrorPage");
+        WebLogger.WEB_SECURITY_LOGGER.tracef("forwardToErrorPage");
         populateSession(request);
         super.forwardToErrorPage(request, response, config);
         SecurityActions.clearAuthException();
@@ -124,7 +122,7 @@ public class ExtendedFormAuthenticator extends FormAuthenticator {
      */
     @Override
     protected void forwardToLoginPage(Request request, HttpServletResponse response, LoginConfig config) throws IOException {
-        log.tracef("forwardToLoginPage");
+        WebLogger.WEB_SECURITY_LOGGER.tracef("forwardToLoginPage");
         populateSession(request);
         super.forwardToLoginPage(request, response, config);
     }
@@ -142,30 +140,30 @@ public class ExtendedFormAuthenticator extends FormAuthenticator {
         if (session != null) {
             HttpSession httpSession = session.getSession();
 
-            log.tracef("SessionID: " + httpSession.getId());
+            WebLogger.WEB_SECURITY_LOGGER.tracef("SessionID: " + httpSession.getId());
 
             // store username.
             String username = request.getParameter(Constants.FORM_USERNAME);
-            log.tracef("Setting " + Constants.FORM_USERNAME + " = " + username);
+            WebLogger.WEB_SECURITY_LOGGER.tracef("Setting " + Constants.FORM_USERNAME + " = " + username);
             httpSession.setAttribute(Constants.FORM_USERNAME, username);
 
             // store password if requested.
             if (includePassword) {
                 String password = request.getParameter(Constants.FORM_PASSWORD);
                 String displayPassword = (password == null ? " = null" : " = --hidden--");
-                log.tracef("Setting " + Constants.FORM_PASSWORD + displayPassword);
+                WebLogger.WEB_SECURITY_LOGGER.tracef("Setting " + Constants.FORM_PASSWORD + displayPassword);
                 httpSession.setAttribute(Constants.FORM_PASSWORD, password);
             }
 
             // store SecurityAssociation context exception.
             Throwable t = SecurityActions.getAuthException();
-            log.tracef("Setting " + LOGIN_EXCEPTION + " = " + t);
+            WebLogger.WEB_SECURITY_LOGGER.tracef("Setting " + LOGIN_EXCEPTION + " = " + t);
             httpSession.setAttribute(LOGIN_EXCEPTION, t);
 
             // finally, set a note so we do not do this again.
             session.setNote(DID_POPULATE, Boolean.TRUE);
         } else {
-            log.tracef("No Session to store login parameters in");
+            WebLogger.WEB_SECURITY_LOGGER.tracef("No Session to store login parameters in");
         }
     }
 

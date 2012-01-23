@@ -22,6 +22,8 @@
 
 package org.jboss.as.web.security;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -82,7 +84,7 @@ public class WarJaccService extends JaccService<WarMetaData> {
     @Override
     public void createPermissions(WarMetaData metaData, PolicyConfiguration pc) throws PolicyContextException {
         if (context == null) {
-            throw new IllegalStateException("Catalina Context is null while creating JACC permissions");
+            throw MESSAGES.noCatalinaContextForJacc();
         }
         HashMap<String, PatternInfo> patternMap = qualifyURLPatterns(context);
         log.debugf("Qualified url patterns: " + patternMap);

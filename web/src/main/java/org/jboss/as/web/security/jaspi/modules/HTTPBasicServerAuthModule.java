@@ -177,7 +177,7 @@ public class HTTPBasicServerAuthModule extends WebServerAuthModule {
 
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
         } catch (IOException e) {
-            log.errorf("Caught Exception: %s", e.getLocalizedMessage());
+            // Ignore IOException here (client disconnect)
         }
 
         return AuthStatus.FAILURE;
