@@ -629,7 +629,6 @@ public class DeploymentManagementTestCase {
     }
 
     @Test
-    @Ignore("AS7-895")
     public void testManagedFullReplaceUnmanaged() throws Exception {
         // Establish the deployment
         testUnmanagedExplodedDeployment();
