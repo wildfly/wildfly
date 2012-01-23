@@ -36,9 +36,11 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.ws.common.management.DefaultEndpointRegistry;
 import org.jboss.ws.common.management.ManagedEndpointRegistry;
+import org.jboss.wsf.spi.SPIProvider;
+import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.management.EndpointRegistry;
+import org.jboss.wsf.spi.management.EndpointRegistryFactory;
 
 /**
  * The service for the endpoint registry
@@ -50,12 +52,10 @@ public final class EndpointRegistryService implements Service<EndpointRegistry> 
 
     private static final ServiceName MBEAN_SERVER_NAME = ServiceName.JBOSS.append("mbean", "server");
     private static final EndpointRegistryService INSTANCE = new EndpointRegistryService();
-
-    private volatile EndpointRegistry registry;
     private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
+    private volatile EndpointRegistry registry;
 
     private EndpointRegistryService() {
-        // forbidden inheritance
     }
 
     @Override
@@ -65,12 +65,11 @@ public final class EndpointRegistryService implements Service<EndpointRegistry> 
 
     @Override
     public void start(final StartContext context) throws StartException {
-        if (injectedMBeanServer.getValue() != null) {
-            final ManagedEndpointRegistry managedEndpointRegistry = new ManagedEndpointRegistry();
+        final SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
+        registry = spiProvider.getSPI(EndpointRegistryFactory.class).getEndpointRegistry();
+        if (injectedMBeanServer.getValue() != null && registry instanceof ManagedEndpointRegistry) {
+            final ManagedEndpointRegistry managedEndpointRegistry = (ManagedEndpointRegistry)registry;
             managedEndpointRegistry.setMbeanServer(injectedMBeanServer.getValue());
-            registry = managedEndpointRegistry;
-        } else {
-            registry = new DefaultEndpointRegistry();
         }
     }
 
