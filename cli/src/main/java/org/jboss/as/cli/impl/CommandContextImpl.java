@@ -79,6 +79,7 @@ import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.batch.BatchedCommand;
 import org.jboss.as.cli.batch.impl.DefaultBatchManager;
 import org.jboss.as.cli.batch.impl.DefaultBatchedCommand;
+import org.jboss.as.cli.handlers.ArchiveHandler;
 import org.jboss.as.cli.handlers.ClearScreenHandler;
 import org.jboss.as.cli.handlers.CommandCommandHandler;
 import org.jboss.as.cli.handlers.ConnectHandler;
@@ -312,6 +313,9 @@ class CommandContextImpl implements CommandContext {
         rolloutPlan.addValueConverter("content", ArgumentValueConverter.ROLLOUT_PLAN);
         rolloutPlan.addValueCompleter("content", RolloutPlanCompleter.INSTANCE);
         cmdRegistry.registerHandler(rolloutPlan, "rollout-plan");
+
+        // supported but hidden from tab-completion until stable implementation
+        cmdRegistry.registerHandler(new ArchiveHandler(this), false, "archive");
     }
 
     public int getExitCode() {
