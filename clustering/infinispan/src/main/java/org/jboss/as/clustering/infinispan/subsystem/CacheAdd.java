@@ -415,21 +415,6 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
             }
         }
 
-        /*
-        // state transfer is a child resource
-        if (cache.hasDefined(ModelKeys.STATE_TRANSFER) && cache.get(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME).isDefined()) {
-            ModelNode stateTransfer = cache.get(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME);
-            if (stateTransfer.hasDefined(ModelKeys.ENABLED)) {
-                builder.clustering().stateTransfer().fetchInMemoryState(stateTransfer.get(ModelKeys.ENABLED).asBoolean());
-            }
-            if (stateTransfer.hasDefined(ModelKeys.TIMEOUT)) {
-                builder.clustering().stateTransfer().timeout(stateTransfer.get(ModelKeys.TIMEOUT).asLong());
-            }
-            if (stateTransfer.hasDefined(ModelKeys.CHUNK_SIZE)) {
-                builder.clustering().stateTransfer().chunkSize(stateTransfer.get(ModelKeys.CHUNK_SIZE).asInt());
-            }
-        }
-        */
         String storeKey = this.findStoreKey(cache);
         if (storeKey != null) {
             ModelNode store = cache.get(storeKey);
@@ -462,8 +447,8 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
 
     private void buildCacheStore(LoaderConfigurationBuilder builder, String name, ModelNode store, String storeKey, List<Dependency<?>> dependencies) {
         final Properties properties = new TypedProperties();
-        if (store.hasDefined(ModelKeys.PROPERTY)) {
-            for (Property property : store.get(ModelKeys.PROPERTY).asPropertyList()) {
+        if (store.hasDefined(ModelKeys.PROPERTIES)) {
+            for (Property property : store.get(ModelKeys.PROPERTIES).asPropertyList()) {
                 String propertyName = property.getName();
                 String propertyValue = property.getValue().asString();
                 properties.setProperty(propertyName, propertyValue);
@@ -495,7 +480,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
             properties.setProperty("connectionFactoryClass", ManagedConnectionFactory.class.getName());
         } else if (storeKey.equals(ModelKeys.REMOTE_STORE)) {
             builder.cacheLoader(new RemoteCacheStore());
-            for(ModelNode server : store.require(ModelKeys.REMOTE_SERVER).asList()) {
+            for(ModelNode server : store.require(ModelKeys.REMOTE_SERVERS).asList()) {
                 String outboundSocketBinding = server.get(ModelKeys.OUTBOUND_SOCKET_BINDING).asString();
                 Injector<OutboundSocketBinding> injector = new SimpleInjector<OutboundSocketBinding>() {
                     @Override

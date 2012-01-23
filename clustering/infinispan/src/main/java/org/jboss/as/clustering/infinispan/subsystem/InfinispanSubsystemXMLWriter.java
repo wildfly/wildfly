@@ -204,7 +204,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                         this.writeOptional(writer, Attribute.TCP_NO_DELAY, store, ModelKeys.TCP_NO_DELAY);
                         this.writeStoreAttributes(writer, store);
                         this.writeStoreProperties(writer, store);
-                        for (ModelNode remoteServer: store.get(ModelKeys.REMOTE_SERVER).asList()) {
+                        for (ModelNode remoteServer: store.get(ModelKeys.REMOTE_SERVERS).asList()) {
                             writer.writeStartElement(Element.REMOTE_SERVER.getLocalName());
                             writer.writeAttribute(Attribute.OUTBOUND_SOCKET_BINDING.getLocalName(), remoteServer.get(ModelKeys.OUTBOUND_SOCKET_BINDING).asString());
                             writer.writeEndElement();
@@ -288,8 +288,8 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
     }
 
     private void writeStoreProperties(XMLExtendedStreamWriter writer, ModelNode store) throws XMLStreamException {
-        if (store.hasDefined(ModelKeys.PROPERTY)) {
-            for (Property property: store.get(ModelKeys.PROPERTY).asPropertyList()) {
+        if (store.hasDefined(ModelKeys.PROPERTIES)) {
+            for (Property property: store.get(ModelKeys.PROPERTIES).asPropertyList()) {
                 writer.writeStartElement(Element.PROPERTY.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
                 writer.writeCharacters(property.getValue().asString());

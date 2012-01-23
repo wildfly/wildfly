@@ -511,6 +511,8 @@ public class InfinispanDescriptions {
         BATCHING.addOperationParameterDescription(resources, keyPrefix, operation);
         INDEXING.addOperationParameterDescription(resources, keyPrefix, operation);
 
+        // these really need to be removed - we never pass such OBJECTs as parameters to add
+        // as they are now defined as child resources
         LOCKING_OBJECT.addOperationParameterDescription(resources, keyPrefix , operation) ;
         TRANSACTION_OBJECT.addOperationParameterDescription(resources, keyPrefix , operation) ;
         EVICTION_OBJECT.addOperationParameterDescription(resources, keyPrefix , operation) ;
@@ -523,7 +525,7 @@ public class InfinispanDescriptions {
             addAttributeDescription(attr, resources, storePrefix, store);
         }
         // property needs value type
-        addAttributeDescription(PROPERTY, resources, storePrefix, store).get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.PROPERTY);
+        addAttributeDescription(CommonAttributes.PROPERTIES, resources, storePrefix, store).get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.PROPERTY);
 
         String fileStorePrefix = keyPrefix + "." + "file-store" ;
         ModelNode fileStore = addNode(requestProperties, ModelKeys.FILE_STORE, resources.getString(fileStorePrefix), ModelType.OBJECT, false).get(ModelDescriptionConstants.VALUE_TYPE);
@@ -531,7 +533,7 @@ public class InfinispanDescriptions {
             addAttributeDescription(attr, resources, storePrefix, fileStore);
         }
         // property needs value type
-        addAttributeDescription(PROPERTY, resources, storePrefix, fileStore).get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.PROPERTY);
+        addAttributeDescription(CommonAttributes.PROPERTIES, resources, storePrefix, fileStore).get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.PROPERTY);
         addAttributeDescription(RELATIVE_TO, resources, fileStorePrefix, fileStore);
         addAttributeDescription(PATH, resources, fileStorePrefix, fileStore);
 
@@ -541,7 +543,7 @@ public class InfinispanDescriptions {
             addAttributeDescription(attr, resources, storePrefix, jdbcStore);
         }
         // property needs value type
-        addAttributeDescription(PROPERTY, resources, storePrefix, jdbcStore).get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.PROPERTY);
+        addAttributeDescription(CommonAttributes.PROPERTIES, resources, storePrefix, jdbcStore).get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.PROPERTY);
         addAttributeDescription(DATA_SOURCE, resources, jdbcStorePrefix, jdbcStore);
 
         String remoteStorePrefix = keyPrefix + ".remote-store" ;
@@ -550,8 +552,8 @@ public class InfinispanDescriptions {
             addAttributeDescription(attr, resources, storePrefix, remoteStore);
         }
         // property needs value type
-        addAttributeDescription(PROPERTY, resources, storePrefix, remoteStore).get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.PROPERTY);
-        addAttributeDescription(REMOTE_SERVER, resources, remoteStorePrefix, remoteStore).get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
+        addAttributeDescription(CommonAttributes.PROPERTIES, resources, storePrefix, remoteStore).get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.PROPERTY);
+        addAttributeDescription(REMOTE_SERVERS, resources, remoteStorePrefix, remoteStore).get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
     }
 
     /**

@@ -788,7 +788,7 @@ public class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<List<M
             Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case REMOTE_SERVER: {
-                    this.parseRemoteServer(reader, store.get(ModelKeys.REMOTE_SERVER).add());
+                    this.parseRemoteServer(reader, store.get(ModelKeys.REMOTE_SERVERS).add());
                     break;
                 }
                 default: {
@@ -797,7 +797,7 @@ public class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<List<M
             }
         }
 
-        if (!store.hasDefined(ModelKeys.REMOTE_SERVER)) {
+        if (!store.hasDefined(ModelKeys.REMOTE_SERVERS)) {
             throw ParseUtils.missingRequired(reader, Collections.singleton(Element.REMOTE_SERVER));
         }
     }
@@ -983,7 +983,7 @@ public class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<List<M
                     throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
                 }
                 String value = reader.getElementText();
-                node.get(ModelKeys.PROPERTY).add(property, value);
+                node.get(ModelKeys.PROPERTIES).add(property, value);
                 break;
             }
             default: {
