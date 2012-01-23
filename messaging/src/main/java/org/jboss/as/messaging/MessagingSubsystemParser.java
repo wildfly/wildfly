@@ -1877,7 +1877,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         final String localName = element.getLocalName();
         if(node.has(localName)) {
             final String path = node.get(localName).has(PATH.getName()) ? node.get(localName, PATH.getName()).asString() : null;
-            final String relativeTo = node.get(localName).has(RELATIVE_TO.getName()) ? node.get(localName, RELATIVE_TO.getName()).asString() : null;
+            final String relativeTo = node.get(localName).hasDefined(RELATIVE_TO.getName()) ? node.get(localName, RELATIVE_TO.getName()).asString() : null;
             if(path != null || relativeTo != null) {
                 writer.writeEmptyElement(localName);
                 if(path != null) writer.writeAttribute(PATH.getName(), path);

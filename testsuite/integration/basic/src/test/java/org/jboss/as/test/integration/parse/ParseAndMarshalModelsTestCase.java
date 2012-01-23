@@ -217,7 +217,7 @@ public class ParseAndMarshalModelsTestCase {
         standaloneXmlTest(getExampleConfigFile("standalone-xts.xml"));
     }
 
-    @Test @Ignore("AS7-2901")
+    @Test
     public void testStandaloneHornetqColocatedXml() throws Exception {
         standaloneXmlTest(getExampleConfigFile("standalone-hornetq-colocated.xml"));
     }
