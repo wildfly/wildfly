@@ -31,6 +31,7 @@ import java.util.concurrent.Executor;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
+import javax.security.auth.callback.Callback;
 
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.domain.http.server.security.BasicAuthenticator;
@@ -113,7 +114,7 @@ public class ManagementHttpServer {
 
         if (securityRealm != null) {
             DomainCallbackHandler callbackHandler = securityRealm.getCallbackHandler();
-            Class[] supportedCallbacks = callbackHandler.getSupportedCallbacks();
+            Class<Callback>[] supportedCallbacks = callbackHandler.getSupportedCallbacks();
             if (DigestAuthenticator.requiredCallbacksSupported(supportedCallbacks)) {
                 auth = new DigestAuthenticator(callbackHandler, securityRealm.getName(), contains(DigestHashCallback.class,
                         supportedCallbacks));

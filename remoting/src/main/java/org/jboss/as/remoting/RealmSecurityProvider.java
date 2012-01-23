@@ -32,6 +32,8 @@ import static org.xnio.Options.SSL_CLIENT_AUTH_MODE;
 import static org.xnio.SslClientAuthMode.REQUESTED;
 
 import java.io.IOException;
+import java.security.Principal;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -48,7 +50,9 @@ import javax.security.sasl.RealmCallback;
 
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.remoting3.Remoting;
+import org.jboss.remoting3.security.AuthorizingCallbackHandler;
 import org.jboss.remoting3.security.ServerAuthenticationProvider;
+import org.jboss.remoting3.security.UserInfo;
 import org.jboss.sasl.callback.DigestHashCallback;
 import org.jboss.sasl.callback.VerifyPasswordCallback;
 import org.xnio.OptionMap;
@@ -155,8 +159,30 @@ public class RealmSecurityProvider implements RemotingSecurityProvider {
         return new ServerAuthenticationProvider() {
 
             @Override
-            public CallbackHandler getCallbackHandler(String mechanismName) {
-                return RealmSecurityProvider.this.getCallbackHandler(mechanismName);
+            public AuthorizingCallbackHandler getCallbackHandler(String mechanismName) {
+                final CallbackHandler cbh = RealmSecurityProvider.this.getCallbackHandler(mechanismName);
+                if (cbh instanceof AuthorizingCallbackHandler) {
+                    return (AuthorizingCallbackHandler) cbh;
+                } else {
+                    return new AuthorizingCallbackHandler() {
+
+                        @Override
+                        public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+                            cbh.handle(callbacks);
+                        }
+
+                        @Override
+                        public UserInfo createUserInfo(final Collection<Principal> remotingPrincipals) {
+                            return new UserInfo() {
+
+                                @Override
+                                public Collection<Principal> getPrincipals() {
+                                    return remotingPrincipals;
+                                }
+                            };
+                        }
+                    };
+                }
             }
         };
     }
@@ -306,7 +332,7 @@ public class RealmSecurityProvider implements RemotingSecurityProvider {
             return false;
         }
 
-        Class[] callbacks = realm.getCallbackHandler().getSupportedCallbacks();
+        Class<Callback>[] callbacks = realm.getCallbackHandler().getSupportedCallbacks();
         if (contains(NameCallback.class, callbacks) == false) {
             return false;
         }
@@ -329,7 +355,7 @@ public class RealmSecurityProvider implements RemotingSecurityProvider {
             return false;
         }
 
-        Class[] callbacks = realm.getCallbackHandler().getSupportedCallbacks();
+        Class<Callback>[] callbacks = realm.getCallbackHandler().getSupportedCallbacks();
         if (contains(NameCallback.class, callbacks) == false) {
             return false;
         }
@@ -343,8 +369,8 @@ public class RealmSecurityProvider implements RemotingSecurityProvider {
         return true;
     }
 
-    private static boolean contains(Class clazz, Class[] classes) {
-        for (Class current : classes) {
+    private static boolean contains(Class clazz, Class<Callback>[] classes) {
+        for (Class<Callback> current : classes) {
             if (current.equals(clazz)) {
                 return true;
             }
