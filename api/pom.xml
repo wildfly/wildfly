@@ -142,36 +142,16 @@
      <artifactId>jboss-modules</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.jboss.osgi.resolver</groupId>
-      <artifactId>jbosgi-resolver-api</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.jboss.osgi.resolver</groupId>
-          <artifactId>jbosgi-resolver-spi</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.jboss.osgi.spi</groupId>
-          <artifactId>jbosgi-spi</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.osgi.deployment</groupId>
-      <artifactId>jbosgi-deployment</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.jboss.osgi.spi</groupId>
-          <artifactId>jbosgi-spi</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
       <groupId>org.osgi</groupId>
       <artifactId>org.osgi.core</artifactId>
     </dependency>
     <dependency>
       <groupId>org.osgi</groupId>
       <artifactId>org.osgi.compendium</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.enterprise</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jboss.osgi.framework</groupId>

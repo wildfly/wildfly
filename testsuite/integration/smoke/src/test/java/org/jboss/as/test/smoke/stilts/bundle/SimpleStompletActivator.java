@@ -17,18 +17,28 @@
 package org.jboss.as.test.smoke.stilts.bundle;
 
 
-import static org.jboss.as.test.smoke.stilts.bundle.SimpleStomplet.DESTINATION_QUEUE_ONE;
+import org.jboss.logging.Logger;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.osgi.repository.RepositoryConstants;
+import org.jboss.osgi.repository.RepositoryRequirementBuilder;
+import org.jboss.osgi.repository.XRepository;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleActivator;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
+import org.osgi.framework.ServiceReference;
+import org.osgi.framework.ServiceRegistration;
+import org.osgi.framework.resource.Capability;
+import org.osgi.framework.resource.Requirement;
+import org.osgi.service.packageadmin.PackageAdmin;
+import org.osgi.service.repository.Repository;
+import org.projectodd.stilts.stomplet.Stomplet;
 
+import java.net.URL;
 import java.util.Dictionary;
 import java.util.Hashtable;
 
-import org.jboss.logging.Logger;
-import org.osgi.framework.BundleActivator;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
-import org.osgi.framework.ServiceRegistration;
-import org.osgi.service.startlevel.StartLevel;
-import org.projectodd.stilts.stomplet.Stomplet;
+import static org.jboss.as.test.smoke.stilts.bundle.SimpleStomplet.DESTINATION_QUEUE_ONE;
 
 
 /**
@@ -47,10 +57,7 @@ public class SimpleStompletActivator implements BundleActivator {
     public void start(BundleContext context) throws Exception {
         log.infof("start: %s", context);
 
-        // Set the framework start level such that the stomplet server bundle is activated
-        ServiceReference sref = context.getServiceReference(StartLevel.class.getName());
-        StartLevel startLevel = (StartLevel) context.getService(sref);
-        startLevel.setStartLevel(2);
+        provideStiltsServer(context);
 
         Dictionary<String, String> props = new Hashtable<String, String>();
         props.put("destinationPattern", DESTINATION_QUEUE_ONE);
@@ -62,5 +69,28 @@ public class SimpleStompletActivator implements BundleActivator {
         log.infof("stop: %s", context);
         if (registration != null)
             registration.unregister();
+    }
+
+    private void provideStiltsServer(BundleContext context) throws BundleException {
+        ServiceReference sref = context.getServiceReference(PackageAdmin.class.getName());
+        PackageAdmin padmin = (PackageAdmin) context.getService(sref);
+        if (padmin.getBundles("stilts-stomplet-server-bundle", null) == null) {
+            installSupportBundle(context, ModuleIdentifier.create("org.jboss.netty"));
+            installSupportBundle(context, ModuleIdentifier.create("org.projectodd.stilts")).start();
+        }
+    }
+
+    private Bundle installSupportBundle(BundleContext context, ModuleIdentifier moduleid) throws BundleException {
+        XRepository repository = (XRepository) getRepository(context);
+        RepositoryRequirementBuilder builder = repository.getRequirementBuilder();
+        Requirement req = builder.createArtifactRequirement(moduleid);
+        Capability cap = repository.findProviders(req).iterator().next();
+        URL location = (URL) cap.getAttributes().get(RepositoryConstants.CONTENT_URL);
+        return context.installBundle(location.toExternalForm());
+    }
+
+    private Repository getRepository(BundleContext context) {
+        ServiceReference sref = context.getServiceReference(Repository.class.getName());
+        return (Repository) context.getService(sref);
     }
 }

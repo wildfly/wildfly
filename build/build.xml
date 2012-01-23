@@ -938,19 +938,17 @@
             <maven-resource group="org.jboss.netty" artifact="netty"/>
         </module-def>
 
-        <module-def name="org.jboss.osgi.deployment">
-            <maven-resource group="org.jboss.osgi.deployment" artifact="jbosgi-deployment"/>
-        </module-def>
-
         <module-def name="org.jboss.osgi.framework">
+            <maven-resource group="org.jboss.osgi.deployment" artifact="jbosgi-deployment"/>
             <maven-resource group="org.jboss.osgi.framework" artifact="jbosgi-framework-core"/>
-        </module-def>
-
-        <module-def name="org.jboss.osgi.resolver">
             <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-api"/>
             <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-spi"/>
             <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-felix"/>
             <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-metadata"/>
+        </module-def>
+
+        <module-def name="org.jboss.osgi.repository.api">
+            <maven-resource group="org.jboss.osgi.repository" artifact="jbosgi-repository-api"/>
         </module-def>
 
         <module-def name="org.jboss.osgi.spi">

@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.as.test.integration.osgi.repository;
+package org.jboss.as.test.smoke.osgi;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.osgi.repository.RequirementBuilder;
+import org.jboss.osgi.repository.MavenCoordinates;
+import org.jboss.osgi.repository.RepositoryRequirementBuilder;
 import org.jboss.osgi.repository.XRepository;
 import org.jboss.osgi.resolver.v2.XCapability;
 import org.jboss.osgi.resolver.v2.XIdentityCapability;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
-import org.jboss.osgi.testing.OSGiTestHelper;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -53,7 +53,7 @@ import static org.junit.Assert.assertNotNull;
  * @since 19-Jan-2012
  */
 @RunWith(Arquillian.class)
-public class RepositoryBundleTestCase {
+public class SimpleRepositoryTestCase {
 
     @Inject
     public BundleContext context;
@@ -78,14 +78,10 @@ public class RepositoryBundleTestCase {
     @Test
     public void testRepositoryService() throws Exception {
 
-        // Get the service reference
-        ServiceReference sref = context.getServiceReference(Repository.class.getName());
-        Repository repo = (Repository) context.getService(sref);
-        assertNotNull("Repository not null", repo);
-
-        XRepository xrepo = (XRepository) repo;
-        RequirementBuilder reqbuilder = xrepo.getRequirementBuilder();
-        Requirement req = reqbuilder.createArtifactRequirement("org.apache.felix:org.apache.felix.eventadmin:1.2.6");
+        XRepository xrepo = (XRepository) getRepository();
+        RepositoryRequirementBuilder reqbuilder = xrepo.getRequirementBuilder();
+        MavenCoordinates coordinates = MavenCoordinates.parse("org.apache.felix:org.apache.felix.eventadmin:1.2.6");
+        Requirement req = reqbuilder.createArtifactRequirement(coordinates);
         assertNotNull("Requirement not null", req);
 
         Collection<Capability> caps = xrepo.findProviders(req);
@@ -99,7 +95,7 @@ public class RepositoryBundleTestCase {
             try {
                 bundle.start();
                 assertBundleState(Bundle.ACTIVE, bundle.getState());
-                sref = context.getServiceReference("org.osgi.service.event.EventAdmin");
+                ServiceReference sref = context.getServiceReference("org.osgi.service.event.EventAdmin");
                 assertNotNull("EventAdmin service not null", sref);
             } finally {
                 bundle.uninstall();
@@ -107,5 +103,10 @@ public class RepositoryBundleTestCase {
         } finally {
             content.close();
         }
+    }
+
+    private Repository getRepository() {
+        ServiceReference sref = context.getServiceReference(Repository.class.getName());
+        return (Repository) context.getService(sref);
     }
 }

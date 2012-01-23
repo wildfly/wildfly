@@ -83,6 +83,21 @@ import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceReference;
 
+import javax.management.MBeanServer;
+import java.io.File;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
+
+import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
+import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
+import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_MODULES;
+import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_MODULES_EXTRA;
+import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_PACKAGES;
+import static org.jboss.osgi.framework.Constants.JBOSGI_PREFIX;
+
 /**
  * Service responsible for creating and managing the life-cycle of the OSGi Framework.
  *
@@ -101,7 +116,6 @@ public class FrameworkBootstrapService implements Service<Void> {
     private final InjectedValue<SocketBinding> httpServerPortBinding = new InjectedValue<SocketBinding>();
 
     public static ServiceController<?> addService(final ServiceTarget target, final ServiceListener<Object>... listeners) {
-        final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
         FrameworkBootstrapService service = new FrameworkBootstrapService();
         ServiceBuilder<?> builder = target.addService(FRAMEWORK_BOOTSTRAP, service);
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedEnvironment);
@@ -134,6 +148,7 @@ public class FrameworkBootstrapService implements Service<Void> {
             AutoInstallIntegration.addService(target);
             FrameworkModuleIntegration.addService(target, props);
             ModuleLoaderIntegration.addService(target);
+            ModuleIdentityArtifactProvider.addService(target);
             SystemServicesIntegration.addService(target);
 
             // Configure the {@link Framework} builder
@@ -215,7 +230,6 @@ public class FrameworkBootstrapService implements Service<Void> {
             sysPackages.add("org.jboss.as.osgi.service;version=7.0");
             sysPackages.add("org.jboss.logging;version=3.0.0");
             sysPackages.add("org.jboss.osgi.deployment.interceptor;version=1.0");
-            sysPackages.add("org.jboss.osgi.spi.capability;version=1.0");
             sysPackages.add("org.jboss.osgi.spi.util;version=1.0");
             sysPackages.add("org.jboss.osgi.testing;version=1.0");
             sysPackages.add("org.jboss.osgi.vfs;version=1.0");
