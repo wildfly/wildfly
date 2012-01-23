@@ -330,7 +330,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
                             parseThreadPools(reader, operations);
                             break;
                         }
-                         case IIOP: {
+                        case IIOP: {
                             parseIIOP(reader, operations);
                             break;
                         }
@@ -384,10 +384,11 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
             writer.writeEndElement();
         }
     }
+
     /**
      * Writes out the <entity-bean> element and its nested elements
      *
-     * @param writer       XML writer
+     * @param writer          XML writer
      * @param entityModelNode The <mdb> element {@link org.jboss.dmr.ModelNode}
      * @throws javax.xml.stream.XMLStreamException
      *
@@ -621,8 +622,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
         operations.add(EJB3IIOPAdd.create(enableByDefault, useQualifiedName));
     }
 
-    private ModelNode parseMDB(final XMLExtendedStreamReader reader, List<ModelNode> operations, final ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
-        ModelNode mdbModelNode = new ModelNode();
+    private void parseMDB(final XMLExtendedStreamReader reader, List<ModelNode> operations, final ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
         // no attributes expected
         requireNoAttributes(reader);
 
@@ -650,12 +650,10 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
                 ejb3SubsystemAddOperation.get(EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME).set(defaultRAName);
             }
         }
-        return mdbModelNode;
 
     }
 
-    private ModelNode parseEntityBean(final XMLExtendedStreamReader reader, List<ModelNode> operations, final ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
-        ModelNode mdbModelNode = new ModelNode();
+    private void parseEntityBean(final XMLExtendedStreamReader reader, List<ModelNode> operations, final ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
         // no attributes expected
         requireNoAttributes(reader);
 
@@ -676,14 +674,6 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
                 }
             }
         }
-        // if the resource-adapter-ref *hasn't* been explicitly specified, then default it to hornetq-ra
-        if (!ejb3SubsystemAddOperation.hasDefined(EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME)) {
-            final ModelNode defaultRAName = EJB3SubsystemRootResourceDefinition.DEFAULT_RESOURCE_ADAPTER_NAME.getDefaultValue();
-            if (defaultRAName != null) {
-                ejb3SubsystemAddOperation.get(EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME).set(defaultRAName);
-            }
-        }
-        return mdbModelNode;
 
     }
 
@@ -897,7 +887,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
                     break;
                 }
                 case ALIASES: {
-                    for (String alias: reader.getListAttributeValue(i)) {
+                    for (String alias : reader.getListAttributeValue(i)) {
                         aliases.add(CacheFactoryResourceDefinition.ALIASES.parse(alias, reader).asString());
                     }
                     break;
@@ -1228,7 +1218,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
         }
         if (!aliases.isEmpty()) {
             ModelNode aliasModel = operation.get(ALIASES).setEmptyList();
-            for (String alias: aliases) {
+            for (String alias : aliases) {
                 aliasModel.add(alias);
             }
         }
