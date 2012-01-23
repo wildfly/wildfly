@@ -219,13 +219,28 @@ public class JMXExtension implements Extension {
         }
 
         private ModelNode parseRemoteConnector(final XMLExtendedStreamReader reader) throws XMLStreamException {
-            // Require no content
-            ParseUtils.requireNoAttributes(reader);
-            ParseUtils.requireNoContent(reader);
+
             final ModelNode connector = new ModelNode();
             connector.get(OP).set(ADD);
             connector.get(OP_ADDR).add(SUBSYSTEM).add(JMX);
             connector.get(OP_ADDR).add(REMOTING_CONNECTOR).add(CommonAttributes.JMX);
+
+            int count = reader.getAttributeCount();
+            for (int i = 0; i < count; i++) {
+                final String value = reader.getAttributeValue(i);
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case USE_MANAGEMENT_ENDPOINT: {
+                        RemotingConnectorResource.USE_MANAGEMENT_ENDPOINT.parseAndSetParameter(value, connector, reader);
+                        break;
+                    }
+                    default: {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+
+            ParseUtils.requireNoContent(reader);
             return connector;
         }
 
@@ -250,6 +265,8 @@ public class JMXExtension implements Extension {
             }
             if (node.hasDefined(CommonAttributes.REMOTING_CONNECTOR)) {
                 writer.writeStartElement(Element.REMOTING_CONNECTOR.getLocalName());
+                final ModelNode resourceModel = node.get(CommonAttributes.REMOTING_CONNECTOR).get(CommonAttributes.JMX);
+                RemotingConnectorResource.USE_MANAGEMENT_ENDPOINT.marshallAsAttribute(resourceModel, writer);
                 writer.writeEndElement();
             }
             writer.writeEndElement();

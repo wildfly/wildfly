@@ -120,7 +120,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         //Parse the subsystem xml into operations
         String subsystemXml =
                 "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
-                "    <remoting-connector />" +
+                "    <remoting-connector use-management-endpoint=\"false\" />" +
                 "</subsystem>";
         List<ModelNode> operations = super.parse(subsystemXml);
 
