@@ -63,7 +63,7 @@ class ModClusterSubsystemDescriptions {
         node.get(DESCRIPTION).set(bundle.getString("modcluster"));
         node.get(HEAD_COMMENT_ALLOWED).set(true);
         node.get(TAIL_COMMENT_ALLOWED).set(true);
-        node.get(NAMESPACE).set(Namespace.MODCLUSTER.getUriString());
+        node.get(NAMESPACE).set(Namespace.CURRENT.getUri());
 
         node.get(CHILDREN, CommonAttributes.MOD_CLUSTER_CONFIG, DESCRIPTION).set(bundle.getString("modcluster.configuration"));
         node.get(CHILDREN, CommonAttributes.MOD_CLUSTER_CONFIG, MODEL_DESCRIPTION).setEmptyObject();
@@ -366,12 +366,12 @@ class ModClusterSubsystemDescriptions {
         node.get(type, CommonAttributes.ADVERTISE_SOCKET, REQUIRED).set(false);
         node.get(type, CommonAttributes.ADVERTISE_SOCKET,  DEFAULT).set("224.0.1.105:23364");
 
-        node.get(type, CommonAttributes.PROXY_LIST, TYPE).set(ModelType.STRING);
+        node.get(type, CommonAttributes.PROXY_LIST, TYPE).set(ModelType.EXPRESSION);
         node.get(type, CommonAttributes.PROXY_LIST, DESCRIPTION).set(bundle.getString("modcluster.configuration.proxy-list"));
         node.get(type, CommonAttributes.PROXY_LIST, REQUIRED).set(false);
         node.get(type, CommonAttributes.PROXY_LIST,  DEFAULT).set("");
 
-        node.get(type, CommonAttributes.PROXY_URL, TYPE).set(ModelType.STRING);
+        node.get(type, CommonAttributes.PROXY_URL, TYPE).set(ModelType.EXPRESSION);
         node.get(type, CommonAttributes.PROXY_URL, DESCRIPTION).set(bundle.getString("modcluster.configuration.proxy-url"));
         node.get(type, CommonAttributes.PROXY_URL, REQUIRED).set(false);
         node.get(type, CommonAttributes.PROXY_LIST,  DEFAULT).set("/");
@@ -381,11 +381,11 @@ class ModClusterSubsystemDescriptions {
         node.get(type, CommonAttributes.ADVERTISE, REQUIRED).set(false);
         node.get(type, CommonAttributes.ADVERTISE, DEFAULT).set(true);
 
-        node.get(type, CommonAttributes.ADVERTISE_SECURITY_KEY, TYPE).set(ModelType.STRING);
+        node.get(type, CommonAttributes.ADVERTISE_SECURITY_KEY, TYPE).set(ModelType.EXPRESSION);
         node.get(type, CommonAttributes.ADVERTISE_SECURITY_KEY, DESCRIPTION).set(bundle.getString("modcluster.configuration.advertise-security-key"));
         node.get(type, CommonAttributes.ADVERTISE_SECURITY_KEY, REQUIRED).set(false);
 
-        node.get(type, CommonAttributes.EXCLUDED_CONTEXTS, TYPE).set(ModelType.STRING);
+        node.get(type, CommonAttributes.EXCLUDED_CONTEXTS, TYPE).set(ModelType.EXPRESSION);
         node.get(type, CommonAttributes.EXCLUDED_CONTEXTS, DESCRIPTION).set(bundle.getString("modcluster.configuration.excluded-contexts"));
         node.get(type, CommonAttributes.EXCLUDED_CONTEXTS, REQUIRED).set(false);
         node.get(type, CommonAttributes.EXCLUDED_CONTEXTS, DEFAULT).set("ROOT,admin-console,invoker,jbossws,jmx-console,juddi,web-console");
@@ -474,7 +474,7 @@ class ModClusterSubsystemDescriptions {
         node.get(type, CommonAttributes.BALANCER, DEFAULT).set("mycluster");
 
         // That is the loadBalancingGroup :-(
-        node.get(type, CommonAttributes.DOMAIN, TYPE).set(ModelType.STRING);
+        node.get(type, CommonAttributes.DOMAIN, TYPE).set(ModelType.EXPRESSION);
         node.get(type, CommonAttributes.DOMAIN, DESCRIPTION).set(bundle.getString("modcluster.configuration.domain"));
         node.get(type, CommonAttributes.DOMAIN, REQUIRED).set(false);
 
@@ -492,12 +492,12 @@ class ModClusterSubsystemDescriptions {
         node.get(type, CommonAttributes.KEY_ALIAS, DESCRIPTION).set(bundle.getString("modcluster.configuration.ssl.key-alias"));
         node.get(type, CommonAttributes.KEY_ALIAS, REQUIRED).set(false);
 
-        node.get(type, CommonAttributes.PASSWORD, TYPE).set(ModelType.STRING);
+        node.get(type, CommonAttributes.PASSWORD, TYPE).set(ModelType.EXPRESSION);
         node.get(type, CommonAttributes.PASSWORD, DESCRIPTION).set(bundle.getString("modcluster.configuration.ssl.password"));
         node.get(type, CommonAttributes.PASSWORD, REQUIRED).set(false);
         node.get(type, CommonAttributes.PASSWORD, DEFAULT).set("changeit");
 
-        node.get(type, CommonAttributes.CERTIFICATE_KEY_FILE, TYPE).set(ModelType.STRING);
+        node.get(type, CommonAttributes.CERTIFICATE_KEY_FILE, TYPE).set(ModelType.EXPRESSION);
         node.get(type, CommonAttributes.CERTIFICATE_KEY_FILE, DESCRIPTION).set(bundle.getString("modcluster.configuration.ssl.certificate-key-file"));
         node.get(type, CommonAttributes.CERTIFICATE_KEY_FILE, REQUIRED).set(false);
         node.get(type, CommonAttributes.CERTIFICATE_KEY_FILE, DEFAULT).set("${user.home}/.keystore");
@@ -511,7 +511,7 @@ class ModClusterSubsystemDescriptions {
         node.get(type, CommonAttributes.PROTOCOL, REQUIRED).set(false);
         node.get(type, CommonAttributes.PROTOCOL, DEFAULT).set("TLS");
 
-        node.get(type, CommonAttributes.CA_CERTIFICATE_FILE, TYPE).set(ModelType.STRING);
+        node.get(type, CommonAttributes.CA_CERTIFICATE_FILE, TYPE).set(ModelType.EXPRESSION);
         node.get(type, CommonAttributes.CA_CERTIFICATE_FILE, DESCRIPTION).set(bundle.getString("modcluster.configuration.ssl.ca-certificate-file"));
         node.get(type, CommonAttributes.CA_CERTIFICATE_FILE, REQUIRED).set(false);
 

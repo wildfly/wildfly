@@ -32,10 +32,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
-
-import org.apache.tomcat.util.modeler.Registry;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jboss.as.web.WebServer;
@@ -46,14 +42,6 @@ import org.jboss.modcluster.load.LoadBalanceFactorProvider;
 import org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProvider;
 import org.jboss.modcluster.load.impl.SimpleLoadBalanceFactorProvider;
 import org.jboss.modcluster.load.metric.LoadMetric;
-import org.jboss.modcluster.load.metric.impl.ActiveSessionsLoadMetric;
-import org.jboss.modcluster.load.metric.impl.AverageSystemLoadMetric;
-import org.jboss.modcluster.load.metric.impl.BusyConnectorsLoadMetric;
-import org.jboss.modcluster.load.metric.impl.HeapMemoryUsageLoadMetric;
-import org.jboss.modcluster.load.metric.impl.ReceiveTrafficLoadMetric;
-import org.jboss.modcluster.load.metric.impl.RequestCountLoadMetric;
-import org.jboss.modcluster.load.metric.impl.SendTrafficLoadMetric;
-import org.jboss.modcluster.load.metric.impl.SystemMemoryUsageLoadMetric;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -261,10 +249,6 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         return this;
     }
 
-    MBeanServer getMBeanServer() {
-        return Registry.getRegistry(null, null).getMBeanServer();
-    }
-
     private void addLoadMetrics(Set<LoadMetric> metrics, ModelNode nodes) {
         for (ModelNode node: nodes.asList()) {
             double capacity = node.get(CommonAttributes.CAPACITY).asDouble(LoadMetric.DEFAULT_CAPACITY);
@@ -272,34 +256,12 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
             Class<? extends LoadMetric> loadMetricClass = null;
             if (node.hasDefined(CommonAttributes.TYPE)) {
                 String type = node.get(CommonAttributes.TYPE).asString();
-                //  SourcedLoadMetric
-                if (type.equals("cpu"))
-                    loadMetricClass = AverageSystemLoadMetric.class;
-                if (type.equals("mem"))
-                    loadMetricClass = SystemMemoryUsageLoadMetric.class;
-                if (type.equals("heap"))
-                    loadMetricClass = HeapMemoryUsageLoadMetric.class;
-
-                // MBeanAttributeLoadMetric...
-                if (type.equals("sessions"))
-                    loadMetricClass = ActiveSessionsLoadMetric.class;
-                if (type.equals("receive-traffic"))
-                    loadMetricClass = ReceiveTrafficLoadMetric.class;
-                if (type.equals("send-traffic"))
-                    loadMetricClass = SendTrafficLoadMetric.class;
-                if (type.equals("requests"))
-                    loadMetricClass = RequestCountLoadMetric.class;
-
-                // MBeanAttributeRatioLoadMetric
-                // TODO: possible to do that?
-                // if (type.equals("connection-pool"))
-                //    loadMetricClass = ConnectionPoolUsageLoadMetric.class;
-                if (type.equals("busyness"))
-                    loadMetricClass = BusyConnectorsLoadMetric.class;
+                LoadMetricEnum metric = LoadMetricEnum.forType(type);
+                loadMetricClass = (metric != null) ? metric.getLoadMetricClass() : null;
             } else {
                 String className = node.get(CommonAttributes.CLASS).asString();
                 try {
-                    loadMetricClass = (Class<? extends LoadMetric>) this.getClass().getClassLoader().loadClass(className);
+                    loadMetricClass = this.getClass().getClassLoader().loadClass(className).asSubclass(LoadMetric.class);
                 } catch (ClassNotFoundException e) {
                     ROOT_LOGGER.errorAddingMetrics(e);
                 }
@@ -330,21 +292,6 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
 
     public Injector<SocketBindingManager> getBindingManager() {
         return bindingManager;
-    }
-
-    Registry getRegistry() {
-        return Registry.getRegistry(null, null);
-    }
-    void registerObject(MBeanServer mbeanServer, String name, Object obj, String classname) {
-        if (mbeanServer != null) {
-            ObjectName objectName;
-            try {
-                objectName = new ObjectName(name);
-                getRegistry().registerComponent(obj, objectName, classname);
-            } catch (Exception e) {
-                return;
-            }
-        }
     }
 
     @Override
