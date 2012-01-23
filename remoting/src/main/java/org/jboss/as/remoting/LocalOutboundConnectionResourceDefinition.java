@@ -48,7 +48,7 @@ class LocalOutboundConnectionResourceDefinition extends AbstractOutboundConnecti
 
     private LocalOutboundConnectionResourceDefinition() {
         super(ADDRESS, RemotingExtension.getResourceDescriptionResolver(CommonAttributes.LOCAL_OUTBOUND_CONNECTION),
-                LocalOutboundConnectionAdd.INSTANCE, OutboundConnectionRemoveHandler.INSTANCE);
+                LocalOutboundConnectionAdd.INSTANCE, LocalOutboundConnectionRemoveHandler.INSTANCE);
     }
 
     @Override
