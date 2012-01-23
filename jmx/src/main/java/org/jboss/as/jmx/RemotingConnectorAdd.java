@@ -32,6 +32,8 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
+import static org.jboss.as.jmx.CommonAttributes.USE_MANAGMENT_ENDPOINT;
+
 /**
  * @author Stuart Douglas
  */
@@ -44,19 +46,27 @@ class RemotingConnectorAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        if(operation.hasDefined(USE_MANAGMENT_ENDPOINT)) {
+            RemotingConnectorResource.USE_MANAGEMENT_ENDPOINT.validateAndSet(operation, model);
+        }
     }
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
             ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
             throws OperationFailedException {
-        launchServices(context, verificationHandler, newControllers);
+        boolean useManagementEndpoint = true;
+        if(model.hasDefined(USE_MANAGMENT_ENDPOINT)) {
+             useManagementEndpoint = RemotingConnectorResource.USE_MANAGEMENT_ENDPOINT.resolveModelAttribute(context, model).asBoolean();
+        }
+
+        launchServices(context, verificationHandler, newControllers, useManagementEndpoint);
     }
 
-    void launchServices(OperationContext context, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    void launchServices(OperationContext context, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers, boolean useManagementEndpoint) {
 
         final ServiceTarget target = context.getServiceTarget();
-        ServiceController<?> controller = RemotingConnectorService.addService(target, verificationHandler);
+        ServiceController<?> controller = RemotingConnectorService.addService(target, verificationHandler, useManagementEndpoint);
         if (newControllers != null) {
             newControllers.add(controller);
         }
