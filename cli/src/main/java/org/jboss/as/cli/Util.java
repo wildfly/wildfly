@@ -45,6 +45,7 @@ public class Util {
     public static final String ATTRIBUTES = "attributes";
     public static final String BYTES = "bytes";
     public static final String CHILDREN = "children";
+    public static final String CHILD_TYPE = "child-type";
     public static final String COMPOSITE = "composite";
     public static final String CONCURRENT_GROUPS = "concurrent-groups";
     public static final String CONTENT = "content";
@@ -88,6 +89,7 @@ public class Util {
     public static final String RESTART_REQUIRED = "restart-required";
     public static final String RESULT = "result";
     public static final String ROLLBACK_ACROSS_GROUPS = "rollback-across-groups";
+    public static final String ROLLBACK_ON_RUNTIME_FAILURE = "rollback-on-runtime-failure";
     public static final String ROLLING_TO_SERVERS = "rolling-to-servers";
     public static final String ROLLOUT_PLAN = "rollout-plan";
     public static final String ROLLOUT_PLANS = "rollout-plans";
@@ -245,9 +247,9 @@ public class Util {
             DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
             ModelNode request;
             try {
-                builder.setOperationName("read-children-names");
-                builder.addNode("server-group", serverGroup);
-                builder.addProperty("child-type", "deployment");
+                builder.setOperationName(Util.READ_CHILDREN_NAMES);
+                builder.addNode(Util.SERVER_GROUP, serverGroup);
+                builder.addProperty("child-type", Util.DEPLOYMENT);
                 request = builder.buildRequest();
             } catch (OperationFormatException e) {
                 throw new IllegalStateException("Failed to build operation", e);
