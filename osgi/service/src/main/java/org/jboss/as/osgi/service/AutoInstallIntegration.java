@@ -116,8 +116,9 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
             final ServiceContainer serviceContainer = serviceController.getServiceContainer();
             serviceTarget = context.getChildTarget();
 
-            modulesDir = injectedEnvironment.getValue().getModulesDir();
-            bundlesDir = new File(modulesDir.getPath() + "/../bundles").getCanonicalFile();
+            ServerEnvironment serverEnvironment = injectedEnvironment.getValue();
+            modulesDir = serverEnvironment.getModulesDir();
+            bundlesDir = serverEnvironment.getBundlesDir();
 
             if (bundlesDir.isDirectory() == false)
                 throw MESSAGES.cannotFindBundleDir(bundlesDir);
