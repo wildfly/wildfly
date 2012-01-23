@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
+import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_NAME;
 import static org.jboss.as.messaging.CommonAttributes.LOCAL;
 import static org.jboss.as.messaging.CommonAttributes.LOCAL_TX;
 import static org.jboss.as.messaging.CommonAttributes.NONE;
@@ -123,11 +124,13 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
 
         List<String> connectors = getConnectors(operation);
 
+        String discoveryGroupName = getDiscoveryGroup(operation);
+
         List<PooledConnectionFactoryConfigProperties> adapterParams = getAdapterParams(operation);
 
         final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
         ServiceName hornetQResourceAdapterService = JMSServices.getPooledConnectionFactoryBaseServiceName(hqServiceName).append(name);
-        PooledConnectionFactoryService resourceAdapterService = new PooledConnectionFactoryService(name, connectors, adapterParams, jndiName, txSupport);
+        PooledConnectionFactoryService resourceAdapterService = new PooledConnectionFactoryService(name, connectors, discoveryGroupName, adapterParams, jndiName, txSupport);
         ServiceBuilder serviceBuilder = serviceTarget
                 .addService(hornetQResourceAdapterService, resourceAdapterService)
                 .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, resourceAdapterService.getTransactionManager())
@@ -147,15 +150,25 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
         return connectorNames;
     }
 
+    static String getDiscoveryGroup(final ModelNode operation) {
+        if(operation.hasDefined(DISCOVERY_GROUP_NAME.getName())) {
+            return operation.get(DISCOVERY_GROUP_NAME.getName()).asString();
+        }
+        return null;
+    }
     static List<PooledConnectionFactoryConfigProperties> getAdapterParams(ModelNode operation) {
         List<PooledConnectionFactoryConfigProperties> configs = new ArrayList<PooledConnectionFactoryConfigProperties>();
         for (JMSServices.PooledCFAttribute nodeAttribute : JMSServices.POOLED_CONNECTION_FACTORY_METHOD_ATTRS)
         {
-            if(operation.hasDefined(nodeAttribute.getName())) {
+            if(operation.hasDefined(nodeAttribute.getName()) && !ADAPTER_PARAMS_IGNORE.contains(nodeAttribute.getName())) {
                 String value = operation.get(nodeAttribute.getName()).asString();
                 configs.add(new PooledConnectionFactoryConfigProperties(nodeAttribute.getMethodName(), value, nodeAttribute.getClassType()));
             }
         }
         return configs;
+    }
+    static List<String> ADAPTER_PARAMS_IGNORE = new ArrayList<String>();
+    static {
+        ADAPTER_PARAMS_IGNORE.add(DISCOVERY_GROUP_NAME.getName());
     }
 }
