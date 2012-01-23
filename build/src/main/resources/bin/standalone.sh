@@ -116,6 +116,38 @@ if [ "x$JBOSS_MODULEPATH" = "x" ]; then
     JBOSS_MODULEPATH="$JBOSS_HOME/modules"
 fi
 
+if $linux; then
+    # consolidate the server and command line opts
+    SERVER_OPTS="$JAVA_OPTS $@"
+    # process the standalone options
+    for var in $SERVER_OPTS
+    do
+       case $var in
+         -Djboss.server.base.dir=*)
+              JBOSS_BASE_DIR=`readlink -m ${var#*=}`
+              ;;
+         -Djboss.server.log.dir=*)
+              JBOSS_LOG_DIR=`readlink -m ${var#*=}`
+              ;;
+         -Djboss.server.config.dir=*)
+              JBOSS_CONFIG_DIR=`readlink -m ${var#*=}`
+              ;;
+       esac
+    done
+fi
+# determine the default base dir, if not set
+if [ "x$JBOSS_BASE_DIR" = "x" ]; then
+   JBOSS_BASE_DIR="$JBOSS_HOME/standalone"
+fi
+# determine the default log dir, if not set
+if [ "x$JBOSS_LOG_DIR" = "x" ]; then
+   JBOSS_LOG_DIR="$JBOSS_BASE_DIR/log"
+fi
+# determine the default configuration dir, if not set
+if [ "x$JBOSS_CONFIG_DIR" = "x" ]; then
+   JBOSS_CONFIG_DIR="$JBOSS_BASE_DIR/configuration"
+fi
+
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
     JBOSS_HOME=`cygpath --path --windows "$JBOSS_HOME"`
@@ -143,8 +175,8 @@ while true; do
    if [ "x$LAUNCH_JBOSS_IN_BACKGROUND" = "x" ]; then
       # Execute the JVM in the foreground
       eval \"$JAVA\" -D\"[Standalone]\" $JAVA_OPTS \
-         \"-Dorg.jboss.boot.log.file=$JBOSS_HOME/standalone/log/boot.log\" \
-         \"-Dlogging.configuration=file:$JBOSS_HOME/standalone/configuration/logging.properties\" \
+         \"-Dorg.jboss.boot.log.file=$JBOSS_LOG_DIR/boot.log\" \
+         \"-Dlogging.configuration=file:$JBOSS_CONFIG_DIR/logging.properties\" \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"${JBOSS_MODULEPATH}\" \
          -jaxpmodule "javax.xml.jaxp-provider" \
@@ -155,8 +187,8 @@ while true; do
    else
       # Execute the JVM in the background
       eval \"$JAVA\" -D\"[Standalone]\" $JAVA_OPTS \
-         \"-Dorg.jboss.boot.log.file=$JBOSS_HOME/standalone/log/boot.log\" \
-         \"-Dlogging.configuration=file:$JBOSS_HOME/standalone/configuration/logging.properties\" \
+         \"-Dorg.jboss.boot.log.file=$JBOSS_LOG_DIR/boot.log\" \
+         \"-Dlogging.configuration=file:$JBOSS_CONFIG_DIR/logging.properties\" \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"${JBOSS_MODULEPATH}\" \
          -jaxpmodule "javax.xml.jaxp-provider" \
