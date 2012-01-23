@@ -50,9 +50,11 @@ public interface Registry<K, V> {
 
     Map<K, V> getEntries();
 
-    Map<K, V> locate(Object key);
-
     Map.Entry<K, V> getLocalEntry();
 
+    Map.Entry<K, V> getRemoteEntry(Object address);
+
     String getName();
+
+    void refreshLocalEntry();
 }

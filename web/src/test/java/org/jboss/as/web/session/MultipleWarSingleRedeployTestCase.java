@@ -31,7 +31,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.infinispan.manager.CacheContainer;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.web.session.mocks.BasicRequestHandler;
 import org.jboss.as.web.session.mocks.SetAttributesRequestHandler;
 import org.jboss.logging.Logger;
@@ -164,7 +164,7 @@ public class MultipleWarSingleRedeployTestCase extends InfinispanCacheContainerT
         }
     }
 
-    protected DistributableSessionManager<?> startManager(String warname, CacheContainer cacheContainer) throws Exception {
+    protected DistributableSessionManager<?> startManager(String warname, EmbeddedCacheManager cacheContainer) throws Exception {
         JBossWebMetaData metadata = SessionTestUtil.createWebMetaData(getReplicationGranularity(), getReplicationTrigger(), true, 30);
         DistributableSessionManager<?> manager = SessionTestUtil.createManager(metadata, warname, 100, cacheContainer, null);
         manager.start();

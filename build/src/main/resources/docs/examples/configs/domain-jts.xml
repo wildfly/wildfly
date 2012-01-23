@@ -465,6 +465,7 @@
                     <distributed-cache name="dist" mode="ASYNC" batching="true">
                         <file-store/>
                     </distributed-cache>
+                    <replicated-cache name="sso" mode="SYNC" batching="true"/>
                 </cache-container>
                 <cache-container name="ejb" aliases="sfsb sfsb-cache" default-cache="repl">
                     <transport lock-timeout="60000"/>
@@ -526,8 +527,6 @@
                     <protocol type="UFC"/>
                     <protocol type="MFC"/>
                     <protocol type="FRAG2"/>
-                    <protocol type="pbcast.STATE_TRANSFER"/>
-                    <protocol type="pbcast.FLUSH"/>
                 </stack>
                 <stack name="tcp">
                     <transport type="TCP" socket-binding="jgroups-tcp" diagnostics-socket-binding="jgroups-diagnostics"/>
@@ -544,8 +543,6 @@
                     <protocol type="UFC"/>
                     <protocol type="MFC"/>
                     <protocol type="FRAG2"/>
-                    <protocol type="pbcast.STATE_TRANSFER"/>
-                    <protocol type="pbcast.FLUSH"/>
                 </stack>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jmx:1.1">

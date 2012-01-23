@@ -35,7 +35,6 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -639,7 +638,6 @@ public class InfinispanDescriptions {
         description.get(CHILDREN, ModelKeys.STATE_TRANSFER, MODEL_DESCRIPTION);
     }
 
-<<<<<<< HEAD
     private static void addCacheStorePropertyCacheChildren(String keyPrefix, ModelNode description, ResourceBundle resources) {
         // child properties
         description.get(CHILDREN, ModelKeys.PROPERTY, DESCRIPTION).set(resources.getString(keyPrefix + ".property"));
@@ -648,8 +646,6 @@ public class InfinispanDescriptions {
         description.get(CHILDREN, ModelKeys.PROPERTY, MODEL_DESCRIPTION);
     }
 
-=======
->>>>>>> AS7-3386 Infinispan subsystem need support for eagerly starting cache
     /**
      * Add the set of request parameters which are common to all cache add operations.
      *
@@ -678,33 +674,5 @@ public class InfinispanDescriptions {
             attr.addOperationParameterDescription(resources, keyPrefix, operation);
         }
         // addNode(requestProperties, ModelKeys.MODE, resources.getString(keyPrefix+".mode"), ModelType.STRING, true);
-    }
-
-    private static ModelNode addNode(ModelNode parent, String attribute, String description, ModelType type, boolean required) {
-       ModelNode node = parent.get(attribute);
-       node.get(ModelDescriptionConstants.DESCRIPTION).set(description);
-       node.get(ModelDescriptionConstants.TYPE).set(type);
-       node.get(ModelDescriptionConstants.REQUIRED).set(required);
-
-       return node;
-    }
-
-    /**
-     * Add an attribute description to an arbitrary node (and not just REQUEST_PROPERTIES or ATTRIBUTES .
-     *
-     * @param attribute  the attribute definition defining the attribute
-     * @param bundle
-     * @param prefix the resource prefix of the attribute
-     * @param model the ModelNode to add the description to
-     *
-     * @return the ModelNode added
-     */
-    private static ModelNode addAttributeDescription(AttributeDefinition attribute, ResourceBundle bundle, String prefix, ModelNode model) {
-       ModelNode node = model.get(attribute.getName());
-       node.get(ModelDescriptionConstants.DESCRIPTION).set(bundle.getString(prefix + "." + attribute.getName()));
-       node.get(ModelDescriptionConstants.TYPE).set(attribute.getType());
-       node.get(ModelDescriptionConstants.REQUIRED).set(attribute.isRequired(model));
-
-       return node;
     }
 }

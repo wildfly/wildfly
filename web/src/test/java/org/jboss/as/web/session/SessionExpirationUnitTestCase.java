@@ -22,12 +22,14 @@
 
 package org.jboss.as.web.session;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.util.Random;
 
 import org.apache.catalina.Session;
 import org.infinispan.manager.CacheContainer;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.junit.After;
@@ -47,7 +49,7 @@ public class SessionExpirationUnitTestCase {
     private static long testCount = System.currentTimeMillis();
 
     private JGroupsSystemPropertySupport jgroupsSupport;
-    private CacheContainer[] cacheContainers = new CacheContainer[2];
+    private EmbeddedCacheManager[] cacheContainers = new EmbeddedCacheManager[2];
     private DistributableSessionManager<?>[] managers = new DistributableSessionManager[cacheContainers.length];
 
     @Before

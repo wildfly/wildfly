@@ -24,9 +24,9 @@ package org.jboss.as.clustering.ejb3.cache.backing.infinispan;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
@@ -37,6 +37,7 @@ import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryPassivated;
 import org.infinispan.notifications.cachelistener.event.CacheEntryActivatedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryPassivatedEvent;
+import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.MarshalledValue;
 import org.jboss.as.clustering.MarshalledValueFactory;
 import org.jboss.as.clustering.infinispan.invoker.BatchOperation;
@@ -124,17 +125,18 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
 
     @Override
     public Affinity getWeakAffinity(K key) {
-        String local = this.registry.getLocalEntry().getKey();
         if (!this.hasAffinity(key)) {
             // Locate nodes on which the cache entry will reside
-            Set<String> nodes = this.registry.locate(key).keySet();
-            // Local address shouldn't be here, but check anyway
-            if (!nodes.contains(local)) {
+            List<Address> addresses = this.cache.getAdvancedCache().getDistributionManager().locate(key);
+            if (!addresses.contains(this.cache.getCacheManager().getAddress())) {
                 // Otherwise choose random node from hash targets
-                return new NodeAffinity(new ArrayList<String>(nodes).get(this.random.nextInt(nodes.size())));
+                Map.Entry<String, ?> entry = this.registry.getRemoteEntry(addresses.get(random.nextInt(addresses.size())));
+                if (entry != null) {
+                    return new NodeAffinity(entry.getKey());
+                }
             }
         }
-        return new NodeAffinity(local);
+        return new NodeAffinity(this.registry.getLocalEntry().getKey());
     }
 
     @Override

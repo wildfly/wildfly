@@ -228,13 +228,9 @@ public class ConcurrentFailoverRequestsTestCase {
                 Request request = SessionTestUtil.setupRequest(manager, sessionId);
                 startingGun.countDown();
                 startingGun.await();
-                System.out.println("started");
 
                 SessionTestUtil.invokeRequest(pipelineHead, request);
                 this.checkedAttributes = getHandler.getCheckedAttributes();
-                if (this.checkedAttributes != null) {
-                    System.out.println(this.checkedAttributes.keySet());
-                }
             } catch (Exception e) {
                 e.printStackTrace(System.err);
             } finally {

@@ -29,7 +29,7 @@ import java.util.Random;
 
 import org.apache.catalina.Manager;
 import org.apache.catalina.Session;
-import org.infinispan.manager.CacheContainer;
+import org.infinispan.Cache;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.junit.After;
@@ -64,34 +64,43 @@ public class SessionCountUnitTestCase {
     @After
     public void tearDown() throws Exception {
         try {
-            // Restore any system properties we set in setUp
-            if (jgroupsSupport != null) {
-                jgroupsSupport.restoreProperties();
-            }
-
-            for (DistributableSessionManager<?> manager : managers) {
-                if (manager != null) {
-                    try {
-                        manager.stop();
-                    } catch (Throwable e) {
-                        e.printStackTrace(System.err);
+            try {
+                // Restore any system properties we set in setUp
+                if (jgroupsSupport != null) {
+                    jgroupsSupport.restoreProperties();
+                }
+    
+                for (DistributableSessionManager<?> manager : managers) {
+                    if (manager != null) {
+                        try {
+                            manager.stop();
+                        } catch (Throwable e) {
+                            e.printStackTrace(System.err);
+                        }
                     }
                 }
-            }
-
-            for (CacheContainer cacheContainer : cacheContainers) {
-                if (cacheContainer != null) {
-                    try {
-                        cacheContainer.stop();
-                    } catch (Throwable e) {
-                        e.printStackTrace(System.err);
+    
+                for (EmbeddedCacheManager cacheContainer : cacheContainers) {
+                    if ((cacheContainer != null) && cacheContainer.getStatus().stopAllowed()) {
+                        try {
+                            cacheContainer.stop();
+                        } catch (Throwable e) {
+                            e.printStackTrace(System.err);
+                        }
                     }
                 }
+            } finally {
+                if (tempDir != null) {
+                    SessionTestUtil.cleanFilesystem(tempDir);
+                }
+                String[] files = new File(tempDir).list();
+                if (files != null) {
+                    System.out.println(java.util.Arrays.asList(files));
+                }
             }
-        } finally {
-            if (tempDir != null) {
-                SessionTestUtil.cleanFilesystem(tempDir);
-            }
+        } catch (Throwable e) {
+            e.printStackTrace(System.err);
+            throw new Exception(e);
         }
     }
 
@@ -155,6 +164,7 @@ public class SessionCountUnitTestCase {
         assertEquals("Correct max idle time", 1, managers[0].getPassivationMaxIdleTime());
         assertEquals("Correct min idle time", -1, managers[0].getPassivationMinIdleTime());
 
+//        this.dump("1", "2");
         // Set up a session
         Session sess1 = createAndUseSession(managers[0], "1", true, true);
 
@@ -261,6 +271,8 @@ public class SessionCountUnitTestCase {
             assertEquals("Correct max inactive interval", 1, managers[i].getMaxInactiveInterval());
         }
 
+        SessionTestUtil.blockUntilViewsReceived(cacheContainers, 10000);
+
         // Set up a session
         Session session = createAndUseSession(managers[0], "1", true, true);
 
@@ -309,6 +321,8 @@ public class SessionCountUnitTestCase {
             assertEquals("Correct max idle time", 1, managers[i].getPassivationMaxIdleTime());
             assertEquals("Correct min idle time", -1, managers[i].getPassivationMinIdleTime());
         }
+
+        SessionTestUtil.blockUntilViewsReceived(cacheContainers, 10000);
 
         // Set up a session
         createAndUseSession(managers[0], "1", true, true);
@@ -363,6 +377,8 @@ public class SessionCountUnitTestCase {
             assertEquals("Correct min idle time", 1, managers[i].getPassivationMinIdleTime());
         }
 
+        SessionTestUtil.blockUntilViewsReceived(cacheContainers, 10000);
+
         // Set up a session
         createAndUseSession(managers[0], "1", true, true);
 
@@ -416,6 +432,8 @@ public class SessionCountUnitTestCase {
             assertEquals("Correct max idle time", 3, managers[i].getPassivationMaxIdleTime());
             assertEquals("Correct min idle time", 1, managers[i].getPassivationMinIdleTime());
         }
+        
+        SessionTestUtil.blockUntilViewsReceived(cacheContainers, 10000);
 
         // Set up a session
         createAndUseSession(managers[0], "1", true, true);
@@ -448,7 +466,6 @@ public class SessionCountUnitTestCase {
     }
 
     @Test
-    @org.junit.Ignore
     public void testStandaloneRedeploy() throws Exception {
         System.out.println("Enter testStandaloneRedeploy");
 
@@ -535,7 +552,6 @@ public class SessionCountUnitTestCase {
     }
 
     @Test
-    @org.junit.Ignore
     public void testReplicatedRedeploy() throws Exception {
         System.out.println("Enter testReplicatedRedeploy");
 
@@ -550,7 +566,6 @@ public class SessionCountUnitTestCase {
     }
 
     @Test
-    @org.junit.Ignore
     public void testReplicatedRestart() throws Exception {
         System.out.println("Enter testReplicatedRestart");
 
@@ -690,7 +705,6 @@ public class SessionCountUnitTestCase {
     }
 
     @Test
-    @org.junit.Ignore
     public void testTotalReplicatedRedeploy() throws Exception {
         System.out.println("Enter testTotalReplicatedRedeploy");
 
@@ -720,6 +734,7 @@ public class SessionCountUnitTestCase {
 
     private Session createAndUseSession(DistributableSessionManager<?> manager, String id, boolean canCreate, boolean access)
             throws Exception {
+        
         // Shift to Manager interface when we simulate Tomcat
         Manager mgr = manager;
         Session sess = mgr.findSession(id);

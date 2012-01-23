@@ -67,7 +67,7 @@ public class JBossWebParsingDeploymentProcessor implements DeploymentUnitProcess
                 XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
                 warMetaData.setJbossWebMetaData(JBossWebMetaDataParser.parse(xmlReader));
             } catch (XMLStreamException e) {
-                throw new DeploymentUnitProcessingException(MESSAGES.failToParseXMLDescriptor(jbossWebXml, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber()));
+                throw new DeploymentUnitProcessingException(MESSAGES.failToParseXMLDescriptor(jbossWebXml, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber()), e);
             } catch (IOException e) {
                 throw new DeploymentUnitProcessingException(MESSAGES.failToParseXMLDescriptor(jbossWebXml), e);
             } finally {

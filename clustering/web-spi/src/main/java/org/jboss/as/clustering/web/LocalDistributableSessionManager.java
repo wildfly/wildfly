@@ -40,6 +40,10 @@ public interface LocalDistributableSessionManager {
      */
     String getName();
 
+    String getHostName();
+
+    String getContextName();
+
     /**
      * Returns the name of the session manager's engine. The engine name should be the consistent on all nodes.
      * @return an engine name.

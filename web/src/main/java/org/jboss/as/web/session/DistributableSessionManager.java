@@ -74,7 +74,6 @@ import org.jboss.metadata.web.jboss.ReplicationConfig;
 import org.jboss.metadata.web.jboss.ReplicationGranularity;
 import org.jboss.metadata.web.jboss.ReplicationTrigger;
 import org.jboss.metadata.web.jboss.SnapshotMode;
-import org.jboss.util.loading.ContextClassLoaderSwitcher;
 
 /**
  * @author Paul Ferraro
@@ -83,13 +82,12 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
     private static final String info = "DistributableSessionManager/1.0";
 
     private static final int TOTAL_PERMITS = Integer.MAX_VALUE;
-    @SuppressWarnings("unchecked")
-    private static ContextClassLoaderSwitcher switcher = (ContextClassLoaderSwitcher) AccessController.doPrivileged(ContextClassLoaderSwitcher.INSTANTIATOR);
 
     private final String name;
+    private final String hostName;
+    private final String contextName;
     private final DistributedCacheManager<O> distributedCacheManager;
 
-    private ClassLoader tcl;
     private SnapshotManager snapshotManager;
 
     private final ReplicationConfig replicationConfig;
@@ -126,7 +124,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
     /** Sessions that have been created but not yet loaded. Used to ensure concurrent threads trying to load the same session */
     private final ConcurrentMap<String, ClusteredSession<O>> embryonicSessions = new ConcurrentHashMap<String, ClusteredSession<O>>();
 
-    public DistributableSessionManager(DistributedCacheManagerFactory factory, Container host, JBossWebMetaData metaData) throws ClusteringNotSupportedException {
+    public DistributableSessionManager(DistributedCacheManagerFactory factory, Context context, JBossWebMetaData metaData) throws ClusteringNotSupportedException {
         super(metaData);
 
         PassivationConfig passivationConfig = metaData.getPassivationConfig();
@@ -141,7 +139,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
         this.replicationConfig = (config != null) ? config : new ReplicationConfig();
 
         if (this.replicationConfig.getReplicationGranularity() == ReplicationGranularity.FIELD) {
-            throw new IllegalArgumentException("FIELD replication-granularity is no longer supported");
+            this.replicationConfig.setReplicationGranularity(ReplicationGranularity.SESSION);
         }
 
         Integer interval = this.replicationConfig.getMaxUnreplicatedInterval();
@@ -149,9 +147,21 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
 
         this.notificationPolicy = this.createClusteredSessionNotificationPolicy();
 
-        String hostName = host.getName();
-        this.name = String.format("//%s/%s", (hostName == null) ? "localhost" : hostName, metaData.getContextRoot());
+        String host = context.getParent().getName();
+        this.hostName = (host == null) ? "localhost" : host;
+        this.contextName = context.getName();
+        this.name = String.format("//%s/%s", this.hostName, this.contextName);
         this.distributedCacheManager = factory.getDistributedCacheManager(this);
+    }
+
+    @Override
+    public String getHostName() {
+        return this.hostName;
+    }
+
+    @Override
+    public String getContextName() {
+        return this.contextName;
     }
 
     @Override
@@ -171,8 +181,6 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
         // Start the DistributedCacheManager
         // Will need to pass the classloader that is associated with this
         // web app so de-serialization will work correctly.
-        this.tcl = super.getContainer().getLoader().getClassLoader();
-
         try {
             this.distributedCacheManager.start();
 
@@ -432,9 +440,6 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
 
         this.distributedCacheManager.stop();
 
-        // Don't leak the classloader
-        this.tcl = null;
-
         this.snapshotManager.stop();
         this.snapshotManager = null;
 
@@ -659,7 +664,6 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
         String realId = this.parse(id).getKey();
         // Find it from the local store first
         ClusteredSession<O> session = cast(this.sessions.get(realId));
-
         // If we didn't find it locally, only check the distributed cache
         // if we haven't previously handled this session id on this request.
         // If we handled it previously but it's no longer local, that means
@@ -1042,7 +1046,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
 
     @Override
     public ClassLoader getApplicationClassLoader() {
-        return this.tcl;
+        return this.getContainer().getLoader().getClassLoader();
     }
 
     @Override
@@ -1080,9 +1084,6 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
                                        // we have already removed session
             boolean localOnly = true; // Don't pass attr removals to cache
 
-            // Ensure the correct TCL is in place
-            // BES 2008/11/27 Why?
-            ContextClassLoaderSwitcher.SwitchContext context = switcher.getSwitchContext(this.tcl);
             try {
                 // Don't track this invalidation is if it were from a request
                 SessionInvalidationTracker.suspend();
@@ -1093,8 +1094,6 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
 
                 // Remove any stats for this session
                 this.getReplicationStatistics().removeStats(realId);
-
-                context.reset();
             }
         }
     }

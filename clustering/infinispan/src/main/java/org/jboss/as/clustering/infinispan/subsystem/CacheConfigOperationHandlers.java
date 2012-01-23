@@ -5,7 +5,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import javax.naming.Context;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;

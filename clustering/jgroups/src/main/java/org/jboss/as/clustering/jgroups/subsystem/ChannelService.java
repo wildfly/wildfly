@@ -8,6 +8,9 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.Value;
 import org.jgroups.Channel;
+import org.jgroups.protocols.pbcast.STATE;
+import org.jgroups.protocols.pbcast.STATE_SOCK;
+import org.jgroups.protocols.pbcast.STATE_TRANSFER;
 
 public class ChannelService implements Service<Channel> {
 
@@ -35,7 +38,11 @@ public class ChannelService implements Service<Channel> {
     public void start(StartContext arg0) throws StartException {
         try {
             this.channel = this.factory.getValue().createChannel(this.id);
-            this.channel.connect(this.id, null, 0);
+            if (this.channel.getProtocolStack().findProtocol(STATE_TRANSFER.class, STATE.class, STATE_SOCK.class) != null) {
+                this.channel.connect(this.id, null, 0);
+            } else {
+                this.channel.connect(this.id);
+            }
         } catch (Exception e) {
             throw new StartException(e);
         }
