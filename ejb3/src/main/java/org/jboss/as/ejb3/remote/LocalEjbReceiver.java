@@ -48,7 +48,6 @@ import org.jboss.ejb.client.EJBReceiverInvocationContext;
 import org.jboss.ejb.client.EntityEJBLocator;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.StatefulEJBLocator;
-import org.jboss.ejb.client.TransactionID;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.marshalling.cloner.ClassLoaderClassCloner;
 import org.jboss.marshalling.cloner.ClonerConfiguration;
@@ -62,8 +61,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -235,36 +232,6 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
         } catch (IllegalArgumentException iae) {
             return false;
         }
-    }
-
-    @Override
-    protected int sendPrepare(EJBReceiverContext context, TransactionID transactionID) throws XAException {
-        // send a XA_OK since a local receiver doesn't have to do anything more
-        return XAResource.XA_OK;
-    }
-
-    @Override
-    protected void sendCommit(EJBReceiverContext context, TransactionID transactionID, boolean onePhase) throws XAException {
-        // no-op, since a local ejb receiver doesn't have to do anything more.
-        return;
-    }
-
-    @Override
-    protected void sendRollback(EJBReceiverContext context, TransactionID transactionID) throws XAException {
-        // no-op, since a local ejb receiver doesn't have to do anything more.
-        return;
-    }
-
-    @Override
-    protected void sendForget(EJBReceiverContext context, TransactionID transactionID) throws XAException {
-        // no-op, since a local ejb receiver doesn't have to do anything more.
-        return;
-    }
-
-    @Override
-    protected void beforeCompletion(EJBReceiverContext context, TransactionID transactionID) {
-        // no-op, since a local ejb receiver doesn't have to do anything more.
-        return;
     }
 
     private EjbDeploymentInformation findBean(final String appName, final String moduleName, final String distinctName, final String beanName) {
