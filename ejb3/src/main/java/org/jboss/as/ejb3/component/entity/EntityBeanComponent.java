@@ -95,10 +95,10 @@ public class EntityBeanComponent extends EJBComponent {
         optimisticLocking = ejbComponentCreateService.getOptimisticLocking();
         final PoolConfig poolConfig = ejbComponentCreateService.getPoolConfig();
         if (poolConfig == null) {
-            ROOT_LOGGER.debug("Pooling is disabled for Stateless EJB " + ejbComponentCreateService.getComponentName());
+            ROOT_LOGGER.debug("Pooling is disabled for entity bean " + ejbComponentCreateService.getComponentName());
             this.pool = null;
         } else {
-            ROOT_LOGGER.debug("Using pool config " + poolConfig + " to create pool for Stateless EJB " + ejbComponentCreateService.getComponentName());
+            ROOT_LOGGER.debug("Using pool config " + poolConfig + " to create pool for entity bean " + ejbComponentCreateService.getComponentName());
             this.pool = poolConfig.createPool(factory);
         }
         this.cache = createEntityCache(ejbComponentCreateService);

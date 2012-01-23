@@ -258,7 +258,7 @@ public class EntityBeanComponentDescription extends EJBComponentDescription {
         public void configureDependency(ServiceBuilder<?> serviceBuilder, Service<Component> service) throws DeploymentUnitProcessingException {
             final EntityBeanComponentCreateService entityBeanComponentCreateService = (EntityBeanComponentCreateService) service;
             final String poolName = this.entityComponentDescription.getPoolConfigName();
-            // if no pool name has been explicitly set, then inject the optional "default slsb pool config"
+            // if no pool name has been explicitly set, then inject the optional "default entity bean pool config"
             if (poolName == null) {
                 serviceBuilder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, PoolConfigService.DEFAULT_ENTITY_POOL_CONFIG_SERVICE_NAME,
                         PoolConfig.class, entityBeanComponentCreateService.getPoolConfigInjector());
