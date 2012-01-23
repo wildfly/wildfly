@@ -76,6 +76,11 @@
                 <xs:documentation></xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="start" type="tns:controller-mode" default="LAZY">
+            <xs:annotation>
+                <xs:documentation>Should this cache container be started on server startup, or lazily when requested by a service or deployment.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
         <xs:attribute name="listener-executor" type="xs:string">
             <xs:annotation>
                 <xs:documentation>Defines the executor used for asynchronous cache listener notifications.</xs:documentation>

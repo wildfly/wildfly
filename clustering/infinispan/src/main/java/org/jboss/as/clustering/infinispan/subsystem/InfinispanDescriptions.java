@@ -639,6 +639,7 @@ public class InfinispanDescriptions {
         description.get(CHILDREN, ModelKeys.STATE_TRANSFER, MODEL_DESCRIPTION);
     }
 
+<<<<<<< HEAD
     private static void addCacheStorePropertyCacheChildren(String keyPrefix, ModelNode description, ResourceBundle resources) {
         // child properties
         description.get(CHILDREN, ModelKeys.PROPERTY, DESCRIPTION).set(resources.getString(keyPrefix + ".property"));
@@ -647,6 +648,8 @@ public class InfinispanDescriptions {
         description.get(CHILDREN, ModelKeys.PROPERTY, MODEL_DESCRIPTION);
     }
 
+=======
+>>>>>>> AS7-3386 Infinispan subsystem need support for eagerly starting cache
     /**
      * Add the set of request parameters which are common to all cache add operations.
      *

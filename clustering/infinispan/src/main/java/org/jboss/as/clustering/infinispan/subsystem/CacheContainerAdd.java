@@ -85,6 +85,9 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         if (source.hasDefined(ModelKeys.JNDI_NAME)) {
             target.get(ModelKeys.JNDI_NAME).set(source.get(ModelKeys.JNDI_NAME));
         }
+        if (source.hasDefined(ModelKeys.START)) {
+            target.get(ModelKeys.START).set(source.get(ModelKeys.START));
+        }
         if (source.hasDefined(ModelKeys.LISTENER_EXECUTOR)) {
             target.get(ModelKeys.LISTENER_EXECUTOR).set(source.get(ModelKeys.LISTENER_EXECUTOR));
         }
@@ -124,12 +127,14 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
             }
         }
 
+        ServiceController.Mode initialMode = model.hasDefined(ModelKeys.START) ? StartMode.valueOf(model.get(ModelKeys.START).asString()).getMode() : ServiceController.Mode.ON_DEMAND;
+
         ServiceTarget target = context.getServiceTarget();
         ServiceName serviceName = EmbeddedCacheManagerService.getServiceName(name);
         ServiceBuilder<EmbeddedCacheManager> containerBuilder = target.addService(serviceName, new EmbeddedCacheManagerService(name, defaultCache, dependencies))
                 .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, dependencies.getMBeanServerInjector())
                 .addAliases(aliases)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .setInitialMode(initialMode)
         ;
 
         String jndiName = (model.hasDefined(ModelKeys.JNDI_NAME) ? InfinispanJndiName.toJndiName(model.get(ModelKeys.JNDI_NAME).asString()) : InfinispanJndiName.defaultCacheContainerJndiName(name)).getAbsoluteName();
@@ -140,7 +145,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
                 .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiName))
                 .addDependency(serviceName, CacheContainer.class, new ManagedReferenceInjector<CacheContainer>(binder.getManagedObjectInjector()))
                 .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binder.getNamingStoreInjector())
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .setInitialMode(initialMode)
         ;
         newControllers.add(binderBuilder.install());
 

@@ -260,7 +260,7 @@ public class CacheConfigOperationHandlers {
      * @param context the operation context
      */
     static void reloadRequiredStep(final OperationContext context) {
-        if(context.getType() == OperationContext.Type.SERVER) {
+        if (context.getProcessType().isServer()) {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {

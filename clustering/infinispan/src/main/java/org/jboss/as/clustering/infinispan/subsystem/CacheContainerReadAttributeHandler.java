@@ -5,7 +5,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -18,9 +17,6 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-import org.jboss.logging.Logger;
-
 
 /**
  * Attribute handler for cache-container resource.
@@ -28,8 +24,6 @@ import org.jboss.logging.Logger;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
 public class CacheContainerReadAttributeHandler implements OperationStepHandler {
-
-    private static final Logger log = Logger.getLogger(CacheContainerReadAttributeHandler.class.getPackage().getName());
 
     public static final CacheContainerReadAttributeHandler INSTANCE = new CacheContainerReadAttributeHandler();
 
@@ -65,8 +59,6 @@ public class CacheContainerReadAttributeHandler implements OperationStepHandler 
 
         final ModelNode submodel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
         final ModelNode currentValue = submodel.get(attributeName).clone();
-
-        final AttributeDefinition attributeDefinition = getAttributeDefinition(attributeName);
 
         context.getResult().set(currentValue);
 
