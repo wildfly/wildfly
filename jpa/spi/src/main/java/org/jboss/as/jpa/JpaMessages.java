@@ -22,6 +22,15 @@
 
 package org.jboss.as.jpa;
 
+import java.io.IOException;
+import java.io.NotSerializableException;
+import java.net.URLConnection;
+
+import javax.ejb.EJBException;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceException;
+import javax.persistence.TransactionRequiredException;
+
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.InterceptorContext;
@@ -32,16 +41,6 @@ import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.vfs.VirtualFile;
-
-import javax.ejb.EJBException;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceException;
-import javax.persistence.TransactionRequiredException;
-
-import java.io.IOException;
-import java.io.NotSerializableException;
-import java.net.URLConnection;
-import java.util.Collection;
 
 /**
  * Date: 07.06.2011
@@ -474,14 +473,13 @@ public interface JpaMessages {
     String objectAlreadyDefined(Class<?> cls, Object previous);
 
     /**
-     * Creates an exception indicating the parameter must be a {@link org.jboss.as.jpa.container.AbstractEntityManager}
-     * so that the metadata can be retrieved.
+     * Creates an exception indicating the parameter must be a ExtendedEntityManager
      *
-     * @param parameterName the parameter name.
+     * @param gotClass
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 11465, value = "Internal error, %s needs to be a AbstractEntityManager so that we can get metadata")
-    RuntimeException parameterMustBeAbstractEntityManager(String parameterName);
+    @Message(id = 11465, value = "Internal error, expected parameter of type ExtendedEntityManager but instead got %s")
+    RuntimeException parameterMustBeExtendedEntityManager(String gotClass);
 
     /**
      * Creates an exception indicating the persistence provider could not be found.

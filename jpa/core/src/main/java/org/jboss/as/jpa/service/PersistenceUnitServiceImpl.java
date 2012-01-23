@@ -30,6 +30,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.spi.PersistenceProvider;
 import javax.sql.DataSource;
 
+import org.jboss.as.jpa.container.SFSBXPCMap;
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.as.jpa.spi.PersistenceUnitService;
@@ -62,13 +63,16 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
     private final PersistenceProviderAdaptor persistenceProviderAdaptor;
     private final PersistenceProvider persistenceProvider;
     private final PersistenceUnitMetadata pu;
+    private final SFSBXPCMap sfsbxpcMap;
 
     private volatile EntityManagerFactory entityManagerFactory;
 
-    public PersistenceUnitServiceImpl(final PersistenceUnitMetadata pu, final PersistenceProviderAdaptor persistenceProviderAdaptor, final PersistenceProvider persistenceProvider) {
+    public PersistenceUnitServiceImpl(final PersistenceUnitMetadata pu, final PersistenceProviderAdaptor persistenceProviderAdaptor,
+                                      final PersistenceProvider persistenceProvider, final SFSBXPCMap sfsbxpcMap) {
         this.pu = pu;
         this.persistenceProviderAdaptor = persistenceProviderAdaptor;
         this.persistenceProvider = persistenceProvider;
+        this.sfsbxpcMap = sfsbxpcMap;
     }
 
     @Override
@@ -164,5 +168,10 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
             }
         }
     }
+
+    public SFSBXPCMap getSfsbxpcMap() {
+        return sfsbxpcMap;
+    }
+
 
 }

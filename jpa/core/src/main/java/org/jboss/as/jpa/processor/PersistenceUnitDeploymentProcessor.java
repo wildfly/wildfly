@@ -53,6 +53,7 @@ import org.jboss.as.jpa.classloader.TempClassLoaderFactoryImpl;
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceProviderDeploymentHolder;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
+import org.jboss.as.jpa.container.SFSBXPCMap;
 import org.jboss.as.jpa.persistenceprovider.PersistenceProviderLoader;
 import org.jboss.as.jpa.service.JPAService;
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
@@ -121,7 +122,8 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
     }
 
     @Override
-    public void undeploy(DeploymentUnit context) {
+    public void undeploy(DeploymentUnit du) {
+
     }
 
     private void handleJarDeployment(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -227,6 +229,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
 
         if (puList.size() > 0) {
             final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+            SFSBXPCMap sfsbxpcMap = SFSBXPCMap.getXpcMap(deploymentUnit);  // get shared (deployment level) SFSBXPCMap
             final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
             final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
             final Collection<ComponentDescription> components = eeModuleDescription.getComponentDescriptions();
@@ -274,7 +277,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                             provider = lookupProvider(pu);
                         }
 
-                        final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(pu, adaptor, provider);
+                        final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(pu, adaptor, provider, sfsbxpcMap);
 
                         // add persistence provider specific properties
                         adaptor.addProviderProperties(properties, pu);
