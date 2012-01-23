@@ -42,6 +42,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -189,6 +190,7 @@ public class EJBClientDescriptorTestCase {
      * @throws Exception
      */
     @Test
+    @Ignore // EJBCLIENT-18
     @OperateOnDeployment("local-and-remote-receviers-config")
     public void testLocalAndRemoteReceiversClientConfig() throws Exception {
         final RemoteEcho remoteEcho = (RemoteEcho) context.lookup("ejb:" + APP_NAME + "/" + MODULE_NAME_THREE + "/" + DISTINCT_NAME
