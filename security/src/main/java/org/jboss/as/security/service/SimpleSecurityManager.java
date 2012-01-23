@@ -219,12 +219,20 @@ public class SimpleSecurityManager {
         RunAs currentRunAs = current.getIncomingRunAs();
         boolean trusted = currentRunAs != null && currentRunAs instanceof RunAsIdentity;
 
-        // TODO - Set unauthenticated identity if no auth to occur
         if (trusted == false) {
+            /*
+             * We should only be switching to a context based on an identity from the Remoting connection
+             * if we don't already have a trusted identity - this allows for beans to reauthenticate as a
+             * different identity.
+             */
             if (RemotingContext.isSet()) {
                 // In this case the principal and credential will not have been set to set some random values.
                 SecurityContextUtil util = current.getUtil();
 
+                // TODO AS7-2999 - At this point if we have the JAAS subject we should be using it here.
+
+                // TODO - We need to ensure this can not be abused but at the same time don't really
+                //        want to be filling the cache with unique UUIDs.
                 Principal p = new SimplePrincipal(UUID.randomUUID().toString());
                 String credential = UUID.randomUUID().toString();
 

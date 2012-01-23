@@ -26,6 +26,7 @@ import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 import java.io.IOException;
 
+import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
@@ -102,7 +103,10 @@ public class JaasCallbackHandler implements Service<DomainCallbackHandler>, Doma
         final char[] password = verifyPasswordCallback.getPassword().toCharArray();
 
         try {
-            LoginContext ctx = new LoginContext(name, new CallbackHandler() {
+            // TODO - Make this step more pluggable to better integrate with the security subsytem caches whilst
+            //        at the same time not actually adding any mandatory dependencies.
+            Subject subject = new Subject();
+            LoginContext ctx = new LoginContext(name, subject, new CallbackHandler() {
 
                 public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
                     for (Callback current : callbacks) {
