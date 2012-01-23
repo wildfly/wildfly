@@ -22,16 +22,12 @@
 
 package org.jboss.as.connector.subsystems.jca;
 
-import com.sun.tools.hat.internal.model.Root;
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.jca.Version;
-import org.jboss.jca.core.api.bootstrap.CloneableBootstrapContext;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 
 import static org.jboss.as.connector.ConnectorLogger.ROOT_LOGGER;
 
