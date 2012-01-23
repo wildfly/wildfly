@@ -64,7 +64,7 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
      * By default transient fields are not serialized but can be manually (de)serialized in readObject/writeObject.
      * Just make sure you think about whether the newly added field should be serialized.
      */
-    private static final long serialVersionUID = 432436L;
+    private static final long serialVersionUID = 432437L;
 
     /**
      * EntityManager obtained from the persistence provider that represents the XPC.
@@ -76,11 +76,6 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
      */
     private String puScopedName;
 
-    /**
-     * application deployment unique name that is used to get the SFSBXPCMap associated with the current app deployment
-     */
-    String deploymentBagKeyName;
-
     private transient boolean isInTx;
 
     /**
@@ -88,10 +83,9 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
      */
     private final ExtendedEntityManagerKey ID = ExtendedEntityManagerKey.extendedEntityManagerID();
 
-    public ExtendedEntityManager(final String puScopedName, final EntityManager underlyingEntityManager, String deploymentBagKeyName) {
+    public ExtendedEntityManager(final String puScopedName, final EntityManager underlyingEntityManager) {
         this.underlyingEntityManager = underlyingEntityManager;
         this.puScopedName = puScopedName;
-        this.deploymentBagKeyName = deploymentBagKeyName;
     }
 
     /**
@@ -176,17 +170,16 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
      */
     @Override
     public boolean equals(Object otherObject) {
-        if (this == otherObject)
-            return true;
+        if (this == otherObject) return true;
+        if (otherObject == null || getClass() != otherObject.getClass()) return false;
 
-        if (otherObject == null || ! (otherObject instanceof ExtendedEntityManagerKey))
-            return false;
+        ExtendedEntityManager that = (ExtendedEntityManager) otherObject;
 
-        ExtendedEntityManagerKey that = (ExtendedEntityManagerKey) otherObject;
+        if (!ID.equals(that.ID)) return false;
 
-        return !(ID != null ? !ID.equals(that) : that != null);
-
+        return true;
     }
+
 
     @Override
     public int hashCode() {
@@ -200,23 +193,23 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
 
 
     private void writeObject(java.io.ObjectOutputStream out) throws IOException {
-        ROOT_LOGGER.tracef("starting serializing extended persistence context for PU '%s', deploymentKey '%s'", puScopedName, deploymentBagKeyName);
+        ROOT_LOGGER.tracef("starting serializing extended persistence context for PU '%s'", puScopedName);
 
         // write all non-transient fields
         out.defaultWriteObject();
 
-        SFSBXPCMap.delegateWriteObject(out, this, deploymentBagKeyName);
+        SFSBXPCMap.delegateWriteObject(out, this, puScopedName);
 
-        ROOT_LOGGER.tracef("finished serializing extended persistence context for PU '%s', deploymentKey '%s'", puScopedName, deploymentBagKeyName);
+        ROOT_LOGGER.tracef("finished serializing extended persistence context for PU '%s'", puScopedName);
     }
 
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         ROOT_LOGGER.tracef("starting deserialization of extended persistence context");
         // read all non-transient fields
         in.defaultReadObject();
-        SFSBXPCMap.delegateReadObject(in, this, deploymentBagKeyName);
+        SFSBXPCMap.delegateReadObject(in, this, puScopedName);
 
-        ROOT_LOGGER.tracef("finished deserialization of extended persistence context for PU '%s', deploymentKey '%s'", puScopedName, deploymentBagKeyName);
+        ROOT_LOGGER.tracef("finished deserialization of extended persistence context for PU '%s'", puScopedName);
     }
 
 
