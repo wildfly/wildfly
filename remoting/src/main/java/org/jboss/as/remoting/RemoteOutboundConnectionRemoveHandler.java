@@ -25,21 +25,32 @@ package org.jboss.as.remoting;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author Jaikiran Pai
  */
-class OutboundConnectionRemoveHandler extends AbstractRemoveStepHandler {
+class RemoteOutboundConnectionRemoveHandler extends AbstractRemoveStepHandler {
 
-    static final OutboundConnectionRemoveHandler INSTANCE = new OutboundConnectionRemoveHandler();
+    static final RemoteOutboundConnectionRemoveHandler INSTANCE = new RemoteOutboundConnectionRemoveHandler();
 
-    private OutboundConnectionRemoveHandler() {
+    private RemoteOutboundConnectionRemoveHandler() {
 
     }
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        // TODO: Implement
+        final String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
+        final ServiceName serviceName = AbstractOutboundConnectionService.OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(name);
+        context.removeService(serviceName);
+    }
+
+    @Override
+    protected void recoverServices(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        final String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
+        RemoteOutboundConnectionAdd.INSTANCE.installRuntimeService(context, name, model, null);
     }
 }
