@@ -81,8 +81,13 @@ public class DefaultEmbeddedCacheManager extends AbstractDelegatingEmbeddedCache
     private final String defaultCache;
 
     @SuppressWarnings("deprecation")
-    public DefaultEmbeddedCacheManager(GlobalConfiguration config, String defaultCache) {
-        this(new DefaultCacheManager(adapt(config), false), defaultCache);
+    public DefaultEmbeddedCacheManager(GlobalConfiguration global, String defaultCache) {
+        this(new DefaultCacheManager(adapt(global), false), defaultCache);
+    }
+
+    @SuppressWarnings("deprecation")
+    public DefaultEmbeddedCacheManager(GlobalConfiguration global, Configuration config, String defaultCache) {
+        this(new DefaultCacheManager(adapt(global), LegacyConfigurationAdaptor.adapt(config), false), defaultCache);
     }
 
     public DefaultEmbeddedCacheManager(EmbeddedCacheManager container, String defaultCache) {
@@ -110,13 +115,23 @@ public class DefaultEmbeddedCacheManager extends AbstractDelegatingEmbeddedCache
         return this.cm.defineConfiguration(this.getCacheName(cacheName), this.getCacheName(templateCacheName), configurationOverride);
     }
 
+
     /**
-     * {@inheritDoc}
-     * @see org.infinispan.manager.EmbeddedCacheManager#defineConfiguration(String, org.infinispan.configuration.cache.Configuration)
+     * Workaround for ISPN-1775
      */
+    @SuppressWarnings("deprecation")
     @Override
     public Configuration defineConfiguration(String cacheName, Configuration configuration) {
-        return this.cm.defineConfiguration(this.getCacheName(cacheName), configuration);
+        this.cm.defineConfiguration(this.getCacheName(cacheName), LegacyConfigurationAdaptor.adapt(configuration));
+        return configuration;
+    }
+
+    /**
+     * Workaround for ISPN-1775
+     */
+    @Override
+    public Configuration getDefaultCacheConfiguration() {
+        return LegacyConfigurationAdaptor.adapt(this.getDefaultConfiguration());
     }
 
     /**
@@ -243,6 +258,11 @@ public class DefaultEmbeddedCacheManager extends AbstractDelegatingEmbeddedCache
         @Override
         protected AdvancedCache<K, V> wrap(AdvancedCache<K, V> cache) {
             return new DelegatingCache<K, V>(cache);
+        }
+
+        @Override
+        public Configuration getCacheConfiguration() {
+            return LegacyConfigurationAdaptor.adapt(this.getConfiguration());
         }
 
         @Override
