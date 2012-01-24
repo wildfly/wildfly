@@ -566,25 +566,26 @@
                 <dependency>
                     <groupId>org.codehaus.jackson</groupId>
                     <artifactId>jackson-core-asl</artifactId>
-                    <version>${version.org.codehaus.jackson}</version>
                 </dependency>
 
                 <dependency>
                     <groupId>org.codehaus.jackson</groupId>
                     <artifactId>jackson-mapper-asl</artifactId>
-                    <version>${version.org.codehaus.jackson}</version>
                 </dependency>
 
                 <dependency>
                     <groupId>org.codehaus.jackson</groupId>
                     <artifactId>jackson-jaxrs</artifactId>
-                    <version>${version.org.codehaus.jackson}</version>
                 </dependency>
 
                 <dependency>
                     <groupId>org.codehaus.jackson</groupId>
                     <artifactId>jackson-xc</artifactId>
-                    <version>${version.org.codehaus.jackson}</version>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.codehaus.jettison</groupId>
+                    <artifactId>jettison</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1147,7 +1148,7 @@
                     <artifactId>remoting-jmx</artifactId>
                 </dependency>
 
-                <dependency>                
+                <dependency>
                     <groupId>org.jboss</groupId>
                     <artifactId>jboss-remote-naming</artifactId>
                 </dependency>
@@ -1184,12 +1185,22 @@
 
                 <dependency>
                     <groupId>org.jboss.resteasy</groupId>
+                    <artifactId>resteasy-jettison-provider</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.resteasy</groupId>
                     <artifactId>resteasy-jsapi</artifactId>
                 </dependency>
 
                 <dependency>
                     <groupId>org.jboss.resteasy</groupId>
                     <artifactId>resteasy-multipart-provider</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.resteasy</groupId>
+                    <artifactId>resteasy-yaml-provider</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1484,6 +1495,21 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.picketbox</groupId>
+                    <artifactId>picketbox</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.picketbox</groupId>
+                    <artifactId>picketbox-commons</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.picketbox</groupId>
+                    <artifactId>picketbox-infinispan</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.python</groupId>
                     <artifactId>jython-standalone</artifactId>
                 </dependency>
@@ -1509,18 +1535,8 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.picketbox</groupId>
-                    <artifactId>picketbox</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.picketbox</groupId>
-                    <artifactId>picketbox-commons</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.picketbox</groupId>
-                    <artifactId>picketbox-infinispan</artifactId>
+                    <groupId>org.yaml</groupId>
+                    <artifactId>snakeyaml</artifactId>
                 </dependency>
 
                 <dependency>

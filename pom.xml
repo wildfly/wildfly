@@ -125,6 +125,7 @@
         <version.org.apache.xerces>2.9.1-jbossas-1</version.org.apache.xerces>
         <version.org.apache.xml-resolver>1.2</version.org.apache.xml-resolver>
         <version.org.codehaus.jackson>1.9.2</version.org.codehaus.jackson>
+        <version.org.codehaus.jettison>1.3.1</version.org.codehaus.jettison>
         <version.org.codehaus.woodstox.stax2-api>3.1.1</version.org.codehaus.woodstox.stax2-api>
         <version.org.codehaus.woodstox.woodstox-core-asl>4.1.1</version.org.codehaus.woodstox.woodstox-core-asl>
         <version.org.hibernate>4.0.1.Final</version.org.hibernate>
@@ -236,6 +237,7 @@
         <version.org.slf4j>1.6.1</version.org.slf4j>
         <version.org.testng>6.1.1</version.org.testng>
         <version.org.w3c.css.sac>1.3</version.org.w3c.css.sac>
+        <version.org.yaml.snakeyaml>1.8</version.org.yaml.snakeyaml>
         <version.osgi>4.2.0</version.osgi>
         <version.sun.jaxb>2.2</version.sun.jaxb>
         <version.sun.saaj-impl>1.3.16-jbossorg-1</version.sun.saaj-impl>
@@ -2922,6 +2924,12 @@
             </dependency>
 
             <dependency>
+                <groupId>org.codehaus.jettison</groupId>
+                <artifactId>jettison</artifactId>
+                <version>${version.org.codehaus.jettison}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.codehaus.woodstox</groupId>
                 <artifactId>woodstox-core-asl</artifactId>
                 <version>${version.org.codehaus.woodstox.woodstox-core-asl}</version>
@@ -4465,6 +4473,12 @@
 
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-jettison-provider</artifactId>
+                <version>${version.org.jboss.resteasy}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-jsapi</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
                 <exclusions>
@@ -4479,6 +4493,19 @@
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-multipart-provider</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-yaml-provider</artifactId>
+                <version>${version.org.jboss.resteasy}</version>
+
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.yaml</groupId>
+                        <artifactId>snakeyaml</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -5750,6 +5777,12 @@
                 <groupId>org.w3c.css</groupId>
                 <artifactId>sac</artifactId>
                 <version>${version.org.w3c.css.sac}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.yaml</groupId>
+                <artifactId>snakeyaml</artifactId>
+                <version>${version.org.yaml.snakeyaml}</version>
             </dependency>
 
             <dependency>
