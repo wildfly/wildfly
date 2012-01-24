@@ -24,8 +24,10 @@ package org.jboss.as.cli.batch.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.as.cli.Util;
 import org.jboss.as.cli.batch.Batch;
 import org.jboss.as.cli.batch.BatchedCommand;
+import org.jboss.dmr.ModelNode;
 
 /**
  *
@@ -93,5 +95,17 @@ public class DefaultBatch implements Batch {
             commands.set(i, commands.get(i + step));
         }
         commands.set(newIndex, cmd);
+    }
+
+    @Override
+    public ModelNode toRequest() {
+        final ModelNode composite = new ModelNode();
+        composite.get(Util.OPERATION).set(Util.COMPOSITE);
+        composite.get(Util.ADDRESS).setEmptyList();
+        final ModelNode steps = composite.get(Util.STEPS);
+        for(BatchedCommand cmd : commands) {
+            steps.add(cmd.getRequest());
+        }
+        return composite;
     }
 }

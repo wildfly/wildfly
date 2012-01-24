@@ -247,4 +247,16 @@ public interface CommandContext {
      * @return  JVM exit code
      */
     int getExitCode();
+
+    /**
+     * Executes the command or operation. Or, if the context is in the batch mode
+     * and the command is allowed in the batch, adds the command (or operation) to the
+     * currently active batch.
+     * NOTE: errors are not handled by this method, they won't affect the exit code or
+     * even be logged. Error handling is the responsibility of the caller.
+     *
+     * @param line  command or operation to handle
+     * @throws CommandFormatException  in case there was an error handling the command or operation
+     */
+    void handle(String line) throws CommandLineException;
 }
