@@ -107,7 +107,7 @@
         
         <!-- JaCoCo - Code coverage (-Dcoverage). -->
         <!--jvm.args.jacoco>-javaagent:${jbossas.ts.dir}/tools/jacoco/jacocoagent.jar=destfile=${basedir}/target/jacoco.exec,includes=${jboss.home}/modules/**/*,excludes=${basedir}/target/classes/**/*,append=true,output=file</jvm.args.jacoco>-->
-        <jvm.args.jacoco>-javaagent:${jbossas.ts.dir}/target/jacoco-jars/agent/jacocoagent.jar=destfile=${basedir}/target/jacoco.exec,includes=${jboss.home}/modules/**/*,excludes=${basedir}/target/classes/**/*,append=true,output=file</jvm.args.jacoco>
+        <jvm.args.jacoco>-javaagent:${jbossas.ts.dir}/target/jacoco-jars/agent/jacocoagent.jar=destfile=${basedir}/target/jacoco.exec,includes=*,excludes=org.jboss.as.test.*,append=true,output=file</jvm.args.jacoco>
         
         <!-- Timeout ratios. 100 will leave the timeout as it was coded. -->
         <timeout.ratio.fsio>100</timeout.ratio.fsio>
@@ -557,12 +557,12 @@
                                 <configuration>
                                     <append>true</append>
                                     <destFile>target/jacoco.exec</destFile>
-                                    <!--
                                     <includes>
-                                        <include>${jboss.home}/modules/**/*</include>
+                                        <include>*</include>
                                     </includes>
+                                    <!--
                                     <excludes>
-                                        <exclude>${basedir}/target/classes/**/*</exclude>
+                                        <exclude>org.jboss.as.test.*</exclude>
                                     </excludes>
                                     -->
                                     <output>file</output>
