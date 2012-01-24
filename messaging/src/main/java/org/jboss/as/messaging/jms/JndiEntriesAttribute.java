@@ -22,15 +22,14 @@
 
 package org.jboss.as.messaging.jms;
 
-import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Set;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -104,10 +103,10 @@ public class JndiEntriesAttribute extends ListAttributeDefinition {
         node.get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
     }
 
-    static String[] getJndiBindings(final ModelNode node) {
-        if (node.hasDefined(ENTRIES.getName())) {
+    public static String[] getJndiBindings(final ModelNode node) {
+        if (node.isDefined()) {
             final Set<String> bindings = new HashSet<String>();
-            for (final ModelNode entry : node.get(ENTRIES.getName()).asList()) {
+            for (final ModelNode entry : node.asList()) {
                 bindings.add(entry.asString());
             }
             return bindings.toArray(new String[bindings.size()]);

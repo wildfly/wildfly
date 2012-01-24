@@ -49,6 +49,7 @@
         <module name="org.jboss.ironjacamar.api"/>
         <module name="org.jboss.as.connector" />
         <module name="org.jboss.as.security"/>
+        <module name="org.jboss.vfs"/>
         <module name="org.picketbox"/>
         <module name="org.jboss.jboss-transaction-spi"/>
     </dependencies>
