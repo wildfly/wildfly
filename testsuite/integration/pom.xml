@@ -11,7 +11,7 @@
     </parent>
 
     <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-testsuite-integration-agg</artifactId>
+    <artifactId>jboss-as-ts-integ</artifactId>
     <packaging>pom</packaging>
     <version>7.1.1.Final-SNAPSHOT</version>
 
@@ -164,44 +164,23 @@
             </plugin>
             
             
-            <!-- Copy JBoss AS to target/jbossas. -->
+            <!-- Resources plugin. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions combine.children="append">
-                    <!-- First, make a copy for this module. -->
+                    <!-- Copy users and roles config from shared resources. -->
                     <execution>
-                        <inherited>false</inherited>
-                        <id>ts.copy-jbossas</id>
+                        <id>ts.config-as.copy-mgmt-users</id>
                         <phase>generate-test-resources</phase>
                         <goals><goal>copy-resources</goal></goals>
                         <configuration>
-                            <outputDirectory>${basedir}/target/jbossas</outputDirectory>
+                            <outputDirectory>${basedir}/target/jbossas/standalone/configuration</outputDirectory>
                             <overwrite>true</overwrite>
                             <resources>
                                 <resource>
-                                    <directory>${jboss.home}</directory>
-                                    <!-- Modules and bundles not copied as they are read-only (see Surefire props). -->
-                                    <excludes>
-                                        <exclude>modules/</exclude>
-                                        <exclude>bundles/</exclude>
-                                    </excludes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                    <!-- Copy this copy into submodules. -->
-                    <execution>
-                        <inherited>true</inherited>
-                        <id>ts.copy-jbossas.groups</id>
-                        <phase>generate-test-resources</phase>
-                        <goals><goal>copy-resources</goal></goals>
-                        <configuration>
-                            <outputDirectory>${basedir}/target/jbossas</outputDirectory>
-                            <overwrite>true</overwrite>
-                            <resources>
-                                <resource>
-                                    <directory>${basedir}/../target/jbossas</directory>
+                                    <directory>../shared/src/main/resources</directory>
+                                    <includes><include>*.properties</include></includes>
                                 </resource>
                             </resources>
                         </configuration>
@@ -217,7 +196,7 @@
                 <configuration>
                     <skipTests>${ts.skipTests}</skipTests>
                     <!-- Prevent test and server output appearing in console. -->
-                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                     <enableAssertions>true</enableAssertions>
                     <!--<basedir>${jbossas.ts.integ.dir}</basedir>  <!- - "The base directory of the project being tested." Sets ${basedir}. -->
                     <workingDirectory>${basedir}/target/workdir</workingDirectory> <!-- Work in submodule's own dir. -->

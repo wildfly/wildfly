@@ -98,6 +98,9 @@
         <jvm.args.securityManager></jvm.args.securityManager>
         <jvm.args.securityPolicy></jvm.args.securityPolicy>
         <jvm.args.security>${jvm.args.securityManager} ${jvm.args.securityPolicy}</jvm.args.security>
+        
+        <!-- Logging config -->
+        <testLogToFile>true</testLogToFile>
 
         <!-- Timeout ratios. 100 will leave the timeout as it was coded. -->
         <timeout.ratio.fsio>100</timeout.ratio.fsio>
@@ -124,6 +127,7 @@
         <!-- Common surefire properties. -->
         <surefire.memory.args>-Xmx512m -XX:MaxPermSize=256m</surefire.memory.args>
         <surefire.jpda.args></surefire.jpda.args>
+        <as.debug.port>8787</as.debug.port>
         <surefire.system.args>${surefire.memory.args} ${surefire.jpda.args} -Djboss.dist=${jboss.dist}</surefire.system.args>
         <surefire.forked.process.timeout>900</surefire.forked.process.timeout>
         <surefire.test.failure.ignore>false</surefire.test.failure.ignore>
@@ -264,6 +268,8 @@
                 <configuration>
                     <compilerArgument>-Djava.endorsed.dirs=${project.build.directory}/endorsed</compilerArgument>
                 </configuration>
+                <!-- Don't compile src/main/java - nothing to do. -->
+                <executions><execution><id>default-compile</id><phase>none</phase></execution></executions>
             </plugin>
 
             <!--
@@ -274,8 +280,10 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions combine.children="append">
+                    <!-- Copy AS from ${jboss.home} to testsuite/target/jbossas -->
                     <execution>
-                        <id>build-jbossas.server</id>
+                        <id>ts.copy-jbossas.from-dist</id>
+                        <inherited>false</inherited>
                         <phase>generate-test-resources</phase>
                         <goals><goal>copy-resources</goal></goals>
                         <configuration>
@@ -292,6 +300,27 @@
                             </resources>
                         </configuration>
                     </execution>
+                    <!-- Copy that AS  ../target/jbossas into current_submodule/target/jbossas . This is executed recursively in submodules. -->
+                    <execution>
+                        <id>ts.copy-jbossas.groups</id>
+                        <inherited>true</inherited>
+                        <phase>generate-test-resources</phase>
+                        <goals><goal>copy-resources</goal></goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/jbossas</outputDirectory>
+                            <overwrite>true</overwrite>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/../target/jbossas</directory>
+                                    <excludes>
+                                        <exclude>standalone/data</exclude>
+                                        <exclude>standalone/log</exclude>
+                                        <exclude>standalone/tmp</exclude>
+                                    </excludes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
 
@@ -303,12 +332,13 @@
                 <artifactId>xml-maven-plugin</artifactId>
                 <executions combine.children="append">
                     <execution>
-                        <id>update-ip-addresses-jbossas.server</id>
+                        <id>ts.config-as.ip</id>
                         <phase>process-test-resources</phase>
                         <goals><goal>transform</goal></goals>
                         <inherited>false</inherited>
                         <configuration>
                             <transformationSets>
+                                <!-- IPs. -->
                                 <transformationSet>
                                     <dir>${basedir}/target/jbossas/standalone/configuration</dir>
                                     <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
@@ -317,20 +347,46 @@
                                         <include>standalone*.xml</include>
                                     </includes>
                                     <parameters>
-                                        <parameter>
-                                            <name>managementIPAddress</name>
-                                            <value>${node0}</value>
-                                        </parameter>
-                                        <parameter>
-                                            <name>publicIPAddress</name>
-                                            <value>${node0}</value>
-                                        </parameter>
+                                        <parameter><name>managementIPAddress</name><value>${node0}</value></parameter>
+                                        <parameter><name>publicIPAddress</name><value>${node0}</value></parameter>
+                                        <parameter><name>udpMcastAddress</name><value>${udpGroup}</value></parameter><!-- Only somewhere - TODO. -->
                                     </parameters>
                                 </transformationSet>
+                                <!-- JMS destinations. -->
+                                <transformationSet>
+                                    <dir>${basedir}/target/jbossas/standalone/configuration</dir>
+                                    <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
+                                    <stylesheet>${xslt.scripts.dir}/addJmsDestinations.xsl</stylesheet>
+                                    <includes>
+                                        <include>standalone*.xml</include>
+                                    </includes>
+                                    <parameters>
+                                        <parameter><name>queueName</name><value>testQueue</value></parameter>
+                                        <parameter><name>topicName</name><value>testTopic</value></parameter>
+                                    </parameters>
+                                </transformationSet>
+                                <!-- Datasource. -->
+                                <!-- Not needed, done in ds.profile .
+                                <transformationSet>
+                                    <dir      >${basedir}/target/jbossas/standalone/configuration</dir>
+                                    <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
+                                    <stylesheet>${xslt.scripts.dir}/changeDatabase.xsl</stylesheet>
+                                    <includes>
+                                        <include>standalone*.xml</include>
+                                    </includes>
+                                    <parameters>
+                                        <parameter><name>ds.jdbc.driver.jar</name><value>${ds.jdbc.driver.jar}</value></parameter>
+                                        <parameter><name>ds.jdbc.url</name><value>${ds.jdbc.url}</value></parameter>
+                                        <parameter><name>ds.jdbc.user</name><value>${ds.jdbc.user}</value></parameter>
+                                        <parameter><name>ds.jdbc.pass</name><value>${ds.jdbc.pass}</value></parameter>
+                                    </parameters>
+                                </transformationSet>
+                                -->
                             </transformationSets>
                         </configuration>
                     </execution>
                 </executions>
+                <!--
                 <dependencies>
                     <dependency>
                         <groupId>net.sf.saxon</groupId>
@@ -338,6 +394,7 @@
                         <version>${version.saxon}</version>
                     </dependency>
                 </dependencies>
+                -->
             </plugin>
 
             <!--
@@ -351,7 +408,7 @@
                     <failIfNoTests>false</failIfNoTests>
                     <!-- don't halt the all test executions if a test fails -->
                     <testFailureIgnore>${surefire.test.failure.ignore}</testFailureIgnore>
-                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                     <systemPropertyVariables>
                         <jboss.options>${surefire.system.args}</jboss.options>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
@@ -424,6 +481,13 @@
                 </dependencies>
             </plugin>
 
+            <!-- Don't create jars - nothing to do. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions><execution><id>default-jar</id><phase>none</phase></execution></executions>
+            </plugin>
+
             <!-- Don't create source jars - nothing to do. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -436,6 +500,13 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <executions><execution><id>check-style</id><phase>none</phase></execution></executions>
+            </plugin>
+            
+            <!-- Don't install - nothing to do. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <executions><execution><id>default-install</id><phase>none</phase></execution></executions>
             </plugin>
 
         </plugins>
@@ -462,6 +533,34 @@
         </profile>
 
         <profile>
+            <id>integ.module.profile</id>
+            <activation><property><name>integ.module</name></property></activation>
+            <modules>
+                <module>integration</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>integ-basic.module.profile</id>
+            <activation><property><name>ts.basic</name></property></activation>
+            <modules><module>integration</module></modules>
+        </profile>
+        <profile>
+            <id>integ-clust.module.profile</id>
+            <activation><property><name>ts.clust</name></property></activation>
+            <modules><module>integration</module></modules>
+        </profile>
+        <profile>
+            <id>integ-iiop.module.profile</id>
+            <activation><property><name>ts.iiop</name></property></activation>
+            <modules><module>integration</module></modules>
+        </profile>
+        <profile>
+            <id>integ-xts.module.profile</id>
+            <activation><property><name>ts.xts</name></property></activation>
+            <modules><module>integration</module></modules>
+        </profile>
+
+        <profile>
             <id>benchmark.module.profile</id>
             <activation><property><name>benchmark.module</name></property></activation>
             <modules><module>benchmark</module></modules>
@@ -472,41 +571,51 @@
             <activation><property><name>compat.module</name></property></activation>
             <modules><module>compat</module></modules>
         </profile>
+        <profile>
+            <id>compat_.module.profile</id>
+            <activation><property><name>ts.compat</name></property></activation>
+            <modules><module>compat</module></modules>
+        </profile>
 
         <profile>
             <id>domain.module.profile</id>
             <activation><property><name>domain.module</name></property></activation>
             <modules><module>domain</module></modules>
         </profile>
-
-        <!-- Included by default.
         <profile>
-            <id>integration.module.profile</id>
-            <activation><property><name>integration.module</name></property></activation>
-            <modules><module>integration</module></modules>
+            <id>domain_.module.profile</id>
+            <activation><property><name>ts.domain</name></property></activation>
+            <modules><module>domain</module></modules>
         </profile>
-        -->
 
         <profile>
             <id>stress.module.profile</id>
             <activation><property><name>stress.module</name></property></activation>
             <modules><module>stress</module></modules>
         </profile>
+        <profile>
+            <id>stress_.module.profile</id>
+            <activation><property><name>ts.stress</name></property></activation>
+            <modules><module>stress</module></modules>
+        </profile>
 
 
 
         <!--
-          Debugging profiles
+          Debugging profiles.
         -->
         <profile>
             <id>jpda.profile</id>
-            <activation>
-                <property>
-                    <name>jpda</name>
-                </property>
-            </activation>
+            <activation><property><name>jpda</name></property></activation>
             <properties>
-                <surefire.jpda.args>-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y</surefire.jpda.args>
+                <surefire.jpda.args>-Xrunjdwp:transport=dt_socket,address=${as.debug.port},server=y,suspend=y</surefire.jpda.args>
+            </properties>
+        </profile>
+        <profile>
+            <id>debug.profile</id>
+            <activation><property><name>debug</name></property></activation>
+            <properties>
+                <surefire.jpda.args>-Xrunjdwp:transport=dt_socket,address=${as.debug.port},server=y,suspend=y</surefire.jpda.args>
             </properties>
         </profile>
 
@@ -543,25 +652,31 @@
 
 
         <!--
-          Database profiles
-          - here we define profiles used to configure default databases
-          - changing the default database involves:
-            - including a dependency for the database driver
-            - changing the server configuration file
-            - deploying the driver via the server's deployments directory
-          - for example, to change the default database from H2 to MySQL 5.1, use -Dds=mysql51
+          Database config profiles.
+          Changing the default database involves:
+            * Adding a dependency for the database driver.
+            * Changing the server configuration file.
+            * Deploying the driver via the server's deployments directory.
+            
+          DEFAULT DATASOURCE implementation note:
+            There are two ways:
+            *  Leaving the default DS as distributed in AS, or
+            *  Having a default set of properties and executing DS config even without -Dds=... specified.
+            Currently it's the 2nd.
+            Changing to 1st would need moving DS transformation from ts.config-as.ip-and-ds to this profile.
+            
+          Usage:
+             mvn clean install -rf testsuite -Dds=mysql51
+             
+          See: https://community.jboss.org/wiki/DataSourceConfigurationInAS7
         -->
 
         <profile>
             <!--
-                general profile used to help orchestrate database changes
+                Profile used to perform database related changes.
             -->
             <id>ds.profile</id>
-            <activation>
-                <property>
-                    <name>ds</name>
-                </property>
-            </activation>
+            <activation><property><name>ds</name></property></activation>
             <dependencies>
                 <dependency>
                     <groupId>jdbcdrivers</groupId>
@@ -577,17 +692,15 @@
             </repositories>
             <build>
                 <plugins>
-                    <!-- copy the JDBC driver which needs to be installed -->
+                    <!-- Copy the JDBC driver to target/jdbcDrivers. -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-dependency-plugin</artifactId>
                         <executions combine.children="append">
                             <execution>
-                                <id>copy-jdbc-jars.database</id>
-                                <goals>
-                                    <goal>copy</goal>
-                                </goals>
-                                <!-- binds to process-sources -->
+                                <id>ts.config-as.db.copy-jdbc-jars</id>
+                                <goals><goal>copy</goal></goals>
+                                <phase>process-sources</phase>
                                 <inherited>true</inherited>
                                 <configuration>
                                     <artifactItems>
@@ -605,12 +718,12 @@
                         </executions>
                     </plugin>
                     <plugin>
-                        <!-- replace the default datasource in server configurations (target/jbossas) -->
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>xml-maven-plugin</artifactId>
                         <executions combine.children="append">
+                            <!-- Replace ExampleDS datasource in server configurations (target/jbossas). -->
                             <execution>
-                                <id>update-datasource.server</id>
+                                <id>ts.config-as.db.change-datasource</id>
                                 <phase>process-test-resources</phase>
                                 <goals><goal>transform</goal></goals>
                                 <inherited>false</inherited>
@@ -624,39 +737,20 @@
                                                 <include>standalone*.xml</include>
                                             </includes>
                                             <parameters>
-                                                <parameter>
-                                                    <name>ds.jdbc.driver.jar</name>
-                                                    <value>${ds.jdbc.driver.jar}</value>
-                                                </parameter>
-                                                <parameter>
-                                                    <name>ds.jdbc.url</name>
-                                                    <value>${ds.jdbc.url}</value>
-                                                </parameter>
-                                                <parameter>
-                                                    <name>ds.jdbc.user</name>
-                                                    <value>${ds.jdbc.user}</value>
-                                                </parameter>
-                                                <parameter>
-                                                    <name>ds.jdbc.pass</name>
-                                                    <value>${ds.jdbc.pass}</value>
-                                                </parameter>
+                                                <parameter><name>ds.jdbc.driver.jar</name><value>${ds.jdbc.driver.jar}</value></parameter>
+                                                <parameter><name>ds.jdbc.url</name><value>${ds.jdbc.url}</value></parameter>
+                                                <parameter><name>ds.jdbc.user</name><value>${ds.jdbc.user}</value></parameter>
+                                                <parameter><name>ds.jdbc.pass</name><value>${ds.jdbc.pass}</value></parameter>
                                             </parameters>
                                         </transformationSet>
                                     </transformationSets>
                                 </configuration>
                             </execution>
                         </executions>
-                        <dependencies>
-                            <dependency>
-                                <groupId>net.sf.saxon</groupId>
-                                <artifactId>saxon</artifactId>
-                                <version>${version.saxon}</version>
-                            </dependency>
-                        </dependencies>
                     </plugin>
 
                     <!--
-                        Deploy the jdbc driver by copying to the deployments directory.
+                        Deploy the JDBC driver by copying to the deployments directory.
                     -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
@@ -686,18 +780,40 @@
             </build>
         </profile>
 
+        <!-- Database properties profiles. -->
+        
+        <!-- H2 - http://www.h2database.com/html/features.html#database_url -->
         <profile>
-            <!-- specific profile for database changes  -->
+            <id>h2.profile</id>
+            <activation><property><name>ds</name><value>h2</value></property></activation>
+            <properties>
+                <ds.db>h2</ds.db>
+                <ds.jdbc.driver>org.h2.Driver</ds.jdbc.driver>
+                <ds.jdbc.driver-xa>org.h2.jdbcx.JdbcDataSource</ds.jdbc.driver-xa>
+                <ds.jdbc.url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</ds.jdbc.url>
+                <ds.jdbc.driver.version>1.3.159</ds.jdbc.driver.version>
+            </properties>
+        </profile>
+        <profile>  <!-- We need "OR" but Maven's activation system doesn't support any evaluation :/ -->
+            <id>h2_.profile</id>
+            <activation><property><name>!ds</name></property></activation>
+            <properties>
+                <ds.db>h2</ds.db>
+                <ds.jdbc.driver>org.h2.Driver</ds.jdbc.driver>
+                <ds.jdbc.driver-xa>org.h2.jdbcx.JdbcDataSource</ds.jdbc.driver-xa>
+                <ds.jdbc.url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</ds.jdbc.url>
+                <ds.jdbc.driver.version>1.3.159</ds.jdbc.driver.version>
+            </properties>
+        </profile>
+        
+        <!-- MySQL 5.1 -->
+        <profile>
             <id>mysql51.profile</id>
-            <activation>
-                <property>
-                    <name>ds</name>
-                    <value>mysql51</value>
-                </property>
-            </activation>
+            <activation><property><name>ds</name><value>mysql51</value></property></activation>
             <properties>
                 <ds.db>mysql</ds.db>
                 <ds.jdbc.driver>com.mysql.jdbc.Driver</ds.jdbc.driver>
+                <ds.jdbc.driver-xa>com.mysql.jdbc.jdbc2.optional.MysqlXADataSource</ds.jdbc.driver-xa>
                 <ds.jdbc.url>jdbc:mysql://localhost:3306/test</ds.jdbc.url>
                 <ds.jdbc.driver.version>5.1.17</ds.jdbc.driver.version>
             </properties>

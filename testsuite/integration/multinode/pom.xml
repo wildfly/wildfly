@@ -6,7 +6,7 @@
 
     <parent>
         <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-testsuite-integration-agg</artifactId>
+        <artifactId>jboss-as-ts-integ</artifactId>
         <version>7.1.1.Final-SNAPSHOT</version>
     </parent>
 
@@ -14,7 +14,7 @@
     <!-- ************************* Multi-node Integration Tests *************************** -->
     <!-- ********************************************************************************** -->
     <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-testsuite-integration-multinode</artifactId>
+    <artifactId>jboss-as-ts-integ-multinode</artifactId>
     <version>7.1.1.Final-SNAPSHOT</version>
 
     <name>JBoss AS Test Suite: Integration - Multinode Tests</name>
@@ -78,7 +78,7 @@
                                 <configuration>
                                     <target>
                                         <!-- Build the UDP server configs in target. -->
-                                        <ant antfile="${basedir}/../src/test/scripts/multinode-build.xml">
+                                        <ant antfile="${jbossas.ts.integ.dir}/src/test/scripts/multinode-build.xml">
                                             <target name="build-multinode"/>
                                         </ant>
                                     </target>
