@@ -40,9 +40,15 @@ public class RuntimeExpressionResolver extends ExpressionResolverImpl {
     protected void resolvePluggableExpression(ModelNode node) {
         String expression = node.asString();
         if (expression.length() > 3) {
-            expression = expression.substring(2, expression.length() -2);
-            if (vaultReader != null && vaultReader.isVaultFormat(expression)) {
-                node.set(vaultReader.retrieveFromVault(expression));
+            //If we are working on a direct string value that is of the vault format
+            if(vaultReader != null && vaultReader.isVaultFormat(expression)) {
+                 node.set(vaultReader.retrieveFromVault(expression));
+            }
+            else {
+                expression = expression.substring(2, expression.length() -2);
+                if (vaultReader != null && vaultReader.isVaultFormat(expression)) {
+                   node.set(vaultReader.retrieveFromVault(expression));
+                }
             }
         }
     }
