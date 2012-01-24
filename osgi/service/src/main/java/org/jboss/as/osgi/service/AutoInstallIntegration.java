@@ -58,7 +58,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
@@ -84,7 +86,6 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
     final InjectedValue<SubsystemState> injectedSubsystemState = new InjectedValue<SubsystemState>();
     ServiceController<?> serviceController;
 
-    private File modulesDir;
     private File bundlesDir;
     private ServiceTarget serviceTarget;
     private final AtomicLong updateServiceIdCounter = new AtomicLong();
@@ -117,7 +118,6 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
             serviceTarget = context.getChildTarget();
 
             ServerEnvironment serverEnvironment = injectedEnvironment.getValue();
-            modulesDir = serverEnvironment.getModulesDir();
             bundlesDir = serverEnvironment.getBundlesDir();
 
             if (bundlesDir.isDirectory() == false)
@@ -125,7 +125,12 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
 
             injectedSubsystemState.getValue().addObserver(this);
 
-            for (OSGiCapability moduleMetaData : injectedSubsystemState.getValue().getCapabilities()) {
+            List<OSGiCapability> configcaps = new ArrayList<OSGiCapability>();
+            configcaps.add(new OSGiCapability(ModuleIdentifier.create("javax.api"), null));
+            configcaps.add(new OSGiCapability(ModuleIdentifier.create("org.osgi.enterprise"), null));
+            configcaps.add(new OSGiCapability(ModuleIdentifier.create("org.jboss.osgi.repository.api"), null));
+            configcaps.addAll(injectedSubsystemState.getValue().getCapabilities());
+            for (OSGiCapability moduleMetaData : configcaps) {
                 ServiceName serviceName = installModule(bundleManager, moduleMetaData);
                 pendingServices.put(serviceName, moduleMetaData);
             }
@@ -168,17 +173,6 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
             URL url = modulesFile.toURI().toURL();
             return installBundleFromURL(bundleManager, url, startLevel);
         }
-
-        /* Attempt to install bundle from the modules hirarchy
-        modulesFile = ModuleIdentityArtifactProvider.getRepositoryEntry(modulesDir, identifier);
-        if (modulesFile != null) {
-            URL url = modulesFile.toURI().toURL();
-            VirtualFile virtualFile = AbstractVFS.toVirtualFile(url);
-            if (BundleInfo.isValidBundle(virtualFile)) {
-                return installBundleFromURL(bundleManager, url, startLevel);
-            }
-        }
-        */
 
         // Register module with the OSGi layer
         ModuleLoader moduleLoader = Module.getBootModuleLoader();
