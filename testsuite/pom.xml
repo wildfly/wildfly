@@ -560,11 +560,9 @@
                                     <includes>
                                         <include>*</include>
                                     </includes>
-                                    <!--
                                     <excludes>
                                         <exclude>org.jboss.as.test.*</exclude>
                                     </excludes>
-                                    -->
                                     <output>file</output>
                                     <propertyName>jvm.args.jacoco</propertyName>
                                 </configuration>
