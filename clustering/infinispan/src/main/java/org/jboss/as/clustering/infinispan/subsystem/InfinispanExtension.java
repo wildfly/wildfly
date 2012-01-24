@@ -62,7 +62,11 @@ public class InfinispanExtension implements Extension {
     private static final PathElement evictionPath = PathElement.pathElement(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME);
     private static final PathElement expirationPath = PathElement.pathElement(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME);
     private static final PathElement stateTransferPath = PathElement.pathElement(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME);
+    private static final PathElement storePath = PathElement.pathElement(ModelKeys.STORE, ModelKeys.STORE_NAME);
     private static final PathElement storePropertyPath = PathElement.pathElement(ModelKeys.PROPERTY);
+    private static final PathElement fileStorePath = PathElement.pathElement(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME);
+    private static final PathElement jdbcStorePath = PathElement.pathElement(ModelKeys.JDBC_STORE, ModelKeys.JDBC_STORE_NAME);
+    private static final PathElement remoteStorePath = PathElement.pathElement(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME);
 
     /**
      * {@inheritDoc}
@@ -156,6 +160,34 @@ public class InfinispanExtension implements Extension {
         expiration.registerOperationHandler(ADD, CacheConfigOperationHandlers.EXPIRATION_ADD, InfinispanSubsystemProviders.EXPIRATION_ADD);
         expiration.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.EXPIRATION_REMOVE);
         CacheConfigOperationHandlers.LOCKING_ATTR.registerAttributes(expiration);
+
+        // register the store=STORE handlers
+        final ManagementResourceRegistration store = resource.registerSubModel(storePath, InfinispanSubsystemProviders.STORE);
+        store.registerOperationHandler(ADD, CacheConfigOperationHandlers.STORE_ADD, InfinispanSubsystemProviders.STORE_ADD);
+        store.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.STORE_REMOVE);
+        CacheConfigOperationHandlers.STORE_ATTR.registerAttributes(store);
+        createPropertyRegistration(store);
+
+        // register the file-store=FILE_STORE handlers
+        final ManagementResourceRegistration fileStore = resource.registerSubModel(fileStorePath, InfinispanSubsystemProviders.FILE_STORE);
+        fileStore.registerOperationHandler(ADD, CacheConfigOperationHandlers.FILE_STORE_ADD, InfinispanSubsystemProviders.FILE_STORE_ADD);
+        fileStore.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.STORE_REMOVE);
+        CacheConfigOperationHandlers.FILE_STORE_ATTR.registerAttributes(fileStore);
+        createPropertyRegistration(fileStore);
+
+        // register the jdbc-store=JDBC_STORE handlers
+        final ManagementResourceRegistration jdbcStore = resource.registerSubModel(jdbcStorePath, InfinispanSubsystemProviders.JDBC_STORE);
+        jdbcStore.registerOperationHandler(ADD, CacheConfigOperationHandlers.JDBC_STORE_ADD, InfinispanSubsystemProviders.JDBC_STORE_ADD);
+        jdbcStore.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.STORE_REMOVE);
+        CacheConfigOperationHandlers.JDBC_STORE_ATTR.registerAttributes(jdbcStore);
+        createPropertyRegistration(jdbcStore);
+
+        // register the remote-store=REMOTE_STORE handlers
+        final ManagementResourceRegistration remoteStore = resource.registerSubModel(remoteStorePath, InfinispanSubsystemProviders.REMOTE_STORE);
+        remoteStore.registerOperationHandler(ADD, CacheConfigOperationHandlers.REMOTE_STORE_ADD, InfinispanSubsystemProviders.REMOTE_STORE_ADD);
+        remoteStore.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.STORE_REMOVE);
+        CacheConfigOperationHandlers.REMOTE_STORE_ATTR.registerAttributes(remoteStore);
+        createPropertyRegistration(remoteStore);
     }
 
     private void registerSharedStateCacheAttributeHandlers(ManagementResourceRegistration resource) {

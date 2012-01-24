@@ -28,6 +28,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -87,10 +89,14 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
 
     protected void addValueTypeDescription(final ModelNode node, final String prefix, final ResourceBundle bundle) {
         for (AttributeDefinition valueType : valueTypes) {
+            // get the value type description of the attribute
             final ModelNode valueTypeDesc = getValueTypeDescription(valueType, false);
             final String p = (prefix == null || prefix.isEmpty()) ? suffix : String.format("%s.%s", prefix, suffix);
+            // get the text description of the attribute
             valueTypeDesc.get(DESCRIPTION).set(valueType.getAttributeTextDescription(bundle, p));
+            // set it as one of our value types, and return the value
             final ModelNode childType = node.get(VALUE_TYPE, valueType.getName()).set(valueTypeDesc);
+            // if it is of type OBJECT itself (add its nested descriptions)
             if (valueType instanceof ObjectTypeAttributeDefinition) {
                 ObjectTypeAttributeDefinition.class.cast(valueType).addValueTypeDescription(childType, prefix, bundle);
             }
@@ -176,6 +182,7 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
                 }
             }
         }
+
         return result;
     }
 
@@ -198,6 +205,16 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
 
         public static Builder of(final String name, final AttributeDefinition... valueTypes) {
             return new Builder(name, valueTypes);
+        }
+
+        public static Builder of(final String name, final AttributeDefinition[] valueTypes, final AttributeDefinition[] moreValueTypes) {
+
+            ArrayList<AttributeDefinition> list = new ArrayList<AttributeDefinition>(Arrays.asList(valueTypes)) ;
+            list.addAll(Arrays.asList(moreValueTypes));
+            AttributeDefinition[] allValueTypes = new AttributeDefinition[list.size()];
+            list.toArray(allValueTypes);
+
+            return new Builder(name, allValueTypes);
         }
 
         public ObjectTypeAttributeDefinition build() {

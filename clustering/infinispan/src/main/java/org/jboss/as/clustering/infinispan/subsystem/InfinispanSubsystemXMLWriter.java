@@ -166,17 +166,16 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                         writer.writeEndElement();
                     }
 
-                    if (cache.hasDefined(ModelKeys.STORE)) {
-                        ModelNode store = cache.get(ModelKeys.STORE);
+                    if (cache.get(ModelKeys.STORE, ModelKeys.STORE_NAME).isDefined()) {
+                        ModelNode store = cache.get(ModelKeys.STORE, ModelKeys.STORE_NAME);
                         writer.writeStartElement(Element.STORE.getLocalName());
                         this.writeRequired(writer, Attribute.CLASS, store, ModelKeys.CLASS);
                         this.writeStoreAttributes(writer, store);
                         this.writeStoreProperties(writer, store);
                         writer.writeEndElement();
                     }
-
-                    if (cache.hasDefined(ModelKeys.FILE_STORE)) {
-                        ModelNode store = cache.get(ModelKeys.FILE_STORE);
+                    else if (cache.get(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME).isDefined()) {
+                        ModelNode store = cache.get(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME);
                         writer.writeStartElement(Element.FILE_STORE.getLocalName());
                         this.writeOptional(writer, Attribute.RELATIVE_TO, store, ModelKeys.RELATIVE_TO);
                         this.writeOptional(writer, Attribute.PATH, store, ModelKeys.PATH);
@@ -184,9 +183,8 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                         this.writeStoreProperties(writer, store);
                         writer.writeEndElement();
                     }
-
-                    if (cache.hasDefined(ModelKeys.JDBC_STORE)) {
-                        ModelNode store = cache.get(ModelKeys.JDBC_STORE);
+                    else if (cache.get(ModelKeys.JDBC_STORE, ModelKeys.JDBC_STORE_NAME).isDefined()) {
+                        ModelNode store = cache.get(ModelKeys.JDBC_STORE, ModelKeys.JDBC_STORE_NAME);
                         writer.writeStartElement(Element.JDBC_STORE.getLocalName());
                         this.writeRequired(writer, Attribute.DATASOURCE, store, ModelKeys.DATASOURCE);
                         this.writeStoreAttributes(writer, store);
@@ -195,9 +193,8 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                         this.writeJDBCStoreTable(writer, Element.ENTRY_TABLE, store, ModelKeys.ENTRY_TABLE);
                         writer.writeEndElement();
                     }
-
-                    if (cache.hasDefined(ModelKeys.REMOTE_STORE)) {
-                        ModelNode store = cache.get(ModelKeys.REMOTE_STORE);
+                    else if (cache.get(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME).isDefined()) {
+                        ModelNode store = cache.get(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME);
                         writer.writeStartElement(Element.REMOTE_STORE.getLocalName());
                         this.writeOptional(writer, Attribute.CACHE, store, ModelKeys.CACHE);
                         this.writeOptional(writer, Attribute.SOCKET_TIMEOUT, store, ModelKeys.SOCKET_TIMEOUT);

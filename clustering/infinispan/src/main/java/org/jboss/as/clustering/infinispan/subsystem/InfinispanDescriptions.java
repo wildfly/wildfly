@@ -22,14 +22,14 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.*;
+import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.BATCHING;
+import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.DEFAULT_CACHE_CONTAINER;
+import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.INDEXING;
 import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.NAME;
-import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.PATH;
-import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.RELATIVE_TO;
 import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.START;
+import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.STATE_TRANSFER_OBJECT;
 import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -419,6 +419,41 @@ public class InfinispanDescriptions {
         return op;
     }
 
+    // cache store element
+    static ModelNode getCacheStoreDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        final ModelNode store = createDescription(resources, "infinispan.cache.store");
+        for (AttributeDefinition attr : CommonAttributes.COMMON_STORE_ATTRIBUTES) {
+            attr.addResourceAttributeDescription(resources, "infinispan.cache.store", store);
+        }
+        for (AttributeDefinition attr : CommonAttributes.STORE_ATTRIBUTES) {
+            attr.addResourceAttributeDescription(resources, "infinispan.cache.store", store);
+        }
+        addCacheStorePropertyCacheChildren("infinispan.cache.store", store, resources);
+        return store ;
+    }
+
+    static ModelNode getCacheStoreAddDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        final ModelNode op = createOperationDescription(ADD, resources, "infinispan.cache.store.add");
+        for (AttributeDefinition attr : CommonAttributes.COMMON_STORE_ATTRIBUTES) {
+            attr.addOperationParameterDescription(resources, "infinispan.cache.store", op);
+        }
+        for (AttributeDefinition attr : CommonAttributes.STORE_ATTRIBUTES) {
+            attr.addOperationParameterDescription(resources, "infinispan.cache.store", op);
+        }
+        return op;
+    }
+
+    static ModelNode getCacheStoreRemoveDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        final ModelNode op = createOperationDescription(REMOVE, resources, "infinispan.cache.store.remove");
+        op.get(REQUEST_PROPERTIES).setEmptyObject();
+        return op;
+    }
+
+
+    // cache store property element
     static ModelNode getCacheStorePropertyDescription(Locale locale) {
         ResourceBundle resources = getResources(locale);
         final ModelNode storeProperty = createDescription(resources, "infinispan.cache.store.property");
@@ -437,6 +472,84 @@ public class InfinispanDescriptions {
         ResourceBundle resources = getResources(locale);
         final ModelNode op = createOperationDescription(REMOVE, resources, "infinispan.cache.store.property.remove");
         op.get(REQUEST_PROPERTIES).setEmptyObject();
+        return op;
+    }
+
+    // cache file store element
+    static ModelNode getFileCacheStoreDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        final ModelNode store = createDescription(resources, "infinispan.cache.store");
+        for (AttributeDefinition attr : CommonAttributes.COMMON_STORE_ATTRIBUTES) {
+            attr.addResourceAttributeDescription(resources, "infinispan.cache.store", store);
+        }
+        for (AttributeDefinition attr : CommonAttributes.FILE_STORE_ATTRIBUTES) {
+            attr.addResourceAttributeDescription(resources, "infinispan.cache.file-store", store);
+        }
+        addCacheStorePropertyCacheChildren("infinispan.cache.store", store, resources);
+        return store ;
+    }
+
+    static ModelNode getFileCacheStoreAddDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        final ModelNode op = createOperationDescription(ADD, resources, "infinispan.cache.store.add");
+        for (AttributeDefinition attr : CommonAttributes.COMMON_STORE_ATTRIBUTES) {
+            attr.addOperationParameterDescription(resources, "infinispan.cache.store", op);
+        }
+        for (AttributeDefinition attr : CommonAttributes.FILE_STORE_ATTRIBUTES) {
+            attr.addOperationParameterDescription(resources, "infinispan.cache.file-store", op);
+        }
+        return op;
+    }
+
+    // cache jdbc store element
+    static ModelNode getJdbcCacheStoreDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        final ModelNode store = createDescription(resources, "infinispan.cache.store");
+        for (AttributeDefinition attr : CommonAttributes.COMMON_STORE_ATTRIBUTES) {
+            attr.addResourceAttributeDescription(resources, "infinispan.cache.store", store);
+        }
+        for (AttributeDefinition attr : CommonAttributes.JDBC_STORE_ATTRIBUTES) {
+            attr.addResourceAttributeDescription(resources, "infinispan.cache.jdbc-store", store);
+        }
+        addCacheStorePropertyCacheChildren("infinispan.cache.store", store, resources);
+        return store ;
+    }
+
+    static ModelNode getJdbcCacheStoreAddDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        final ModelNode op = createOperationDescription(ADD, resources, "infinispan.cache.store.add");
+        for (AttributeDefinition attr : CommonAttributes.COMMON_STORE_ATTRIBUTES) {
+            attr.addOperationParameterDescription(resources, "infinispan.cache.store", op);
+        }
+        for (AttributeDefinition attr : CommonAttributes.JDBC_STORE_ATTRIBUTES) {
+            attr.addOperationParameterDescription(resources, "infinispan.cache.jdbc-store", op);
+        }
+        return op;
+    }
+
+    // cache remote store element
+    static ModelNode getRemoteCacheStoreDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        final ModelNode store = createDescription(resources, "infinispan.cache.store");
+        for (AttributeDefinition attr : CommonAttributes.COMMON_STORE_ATTRIBUTES) {
+            attr.addResourceAttributeDescription(resources, "infinispan.cache.store", store);
+        }
+        for (AttributeDefinition attr : CommonAttributes.REMOTE_STORE_ATTRIBUTES) {
+            attr.addResourceAttributeDescription(resources, "infinispan.cache.remote-store", store);
+        }
+        addCacheStorePropertyCacheChildren("infinispan.cache.store", store, resources);
+        return store ;
+    }
+
+    static ModelNode getRemoteCacheStoreAddDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        final ModelNode op = createOperationDescription(ADD, resources, "infinispan.cache.store.add");
+        for (AttributeDefinition attr : CommonAttributes.COMMON_STORE_ATTRIBUTES) {
+            attr.addOperationParameterDescription(resources, "infinispan.cache.store", op);
+        }
+        for (AttributeDefinition attr : CommonAttributes.REMOTE_STORE_ATTRIBUTES) {
+            attr.addOperationParameterDescription(resources, "infinispan.cache.remote-store", op);
+        }
         return op;
     }
 
@@ -486,6 +599,34 @@ public class InfinispanDescriptions {
         description.get(CHILDREN, ModelKeys.EXPIRATION, ALLOWED).setEmptyList();
         description.get(CHILDREN, ModelKeys.EXPIRATION, ALLOWED).add(ModelKeys.EXPIRATION_NAME);
         description.get(CHILDREN, ModelKeys.EXPIRATION, MODEL_DESCRIPTION);
+        // information about its child "store=STORE"
+        description.get(CHILDREN, ModelKeys.STORE, DESCRIPTION).set(resources.getString(keyPrefix+".store"));
+        description.get(CHILDREN, ModelKeys.STORE, MIN_OCCURS).set(0);
+        description.get(CHILDREN, ModelKeys.STORE, MAX_OCCURS).set(1);
+        description.get(CHILDREN, ModelKeys.STORE, ALLOWED).setEmptyList();
+        description.get(CHILDREN, ModelKeys.STORE, ALLOWED).add(ModelKeys.STORE_NAME);
+        description.get(CHILDREN, ModelKeys.STORE, MODEL_DESCRIPTION);
+        // information about its child "file-store=FILE_STORE"
+        description.get(CHILDREN, ModelKeys.FILE_STORE, DESCRIPTION).set(resources.getString(keyPrefix+".file-store"));
+        description.get(CHILDREN, ModelKeys.FILE_STORE, MIN_OCCURS).set(0);
+        description.get(CHILDREN, ModelKeys.FILE_STORE, MAX_OCCURS).set(1);
+        description.get(CHILDREN, ModelKeys.FILE_STORE, ALLOWED).setEmptyList();
+        description.get(CHILDREN, ModelKeys.FILE_STORE, ALLOWED).add(ModelKeys.FILE_STORE_NAME);
+        description.get(CHILDREN, ModelKeys.FILE_STORE, MODEL_DESCRIPTION);
+        // information about its child "jdbc-store=JDBC_STORE"
+        description.get(CHILDREN, ModelKeys.JDBC_STORE, DESCRIPTION).set(resources.getString(keyPrefix+".jdbc-store"));
+        description.get(CHILDREN, ModelKeys.JDBC_STORE, MIN_OCCURS).set(0);
+        description.get(CHILDREN, ModelKeys.JDBC_STORE, MAX_OCCURS).set(1);
+        description.get(CHILDREN, ModelKeys.JDBC_STORE, ALLOWED).setEmptyList();
+        description.get(CHILDREN, ModelKeys.JDBC_STORE, ALLOWED).add(ModelKeys.JDBC_STORE_NAME);
+        description.get(CHILDREN, ModelKeys.JDBC_STORE, MODEL_DESCRIPTION);
+        // information about its child "remote-store=REMOTE_STORE"
+        description.get(CHILDREN, ModelKeys.REMOTE_STORE, DESCRIPTION).set(resources.getString(keyPrefix+".remote-store"));
+        description.get(CHILDREN, ModelKeys.REMOTE_STORE, MIN_OCCURS).set(0);
+        description.get(CHILDREN, ModelKeys.REMOTE_STORE, MAX_OCCURS).set(1);
+        description.get(CHILDREN, ModelKeys.REMOTE_STORE, ALLOWED).setEmptyList();
+        description.get(CHILDREN, ModelKeys.REMOTE_STORE, ALLOWED).add(ModelKeys.REMOTE_STORE_NAME);
+        description.get(CHILDREN, ModelKeys.REMOTE_STORE, MODEL_DESCRIPTION);
      }
 
     private static void addStateTransferCacheChildren(String keyPrefix, ModelNode description, ResourceBundle resources) {
@@ -496,6 +637,14 @@ public class InfinispanDescriptions {
         description.get(CHILDREN, ModelKeys.STATE_TRANSFER, ALLOWED).setEmptyList();
         description.get(CHILDREN, ModelKeys.STATE_TRANSFER, ALLOWED).add(ModelKeys.STATE_TRANSFER_NAME);
         description.get(CHILDREN, ModelKeys.STATE_TRANSFER, MODEL_DESCRIPTION);
+    }
+
+    private static void addCacheStorePropertyCacheChildren(String keyPrefix, ModelNode description, ResourceBundle resources) {
+        // child properties
+        description.get(CHILDREN, ModelKeys.PROPERTY, DESCRIPTION).set(resources.getString(keyPrefix + ".property"));
+        description.get(CHILDREN, ModelKeys.PROPERTY, MIN_OCCURS).set(0);
+        description.get(CHILDREN, ModelKeys.PROPERTY, MAX_OCCURS).set(1);
+        description.get(CHILDREN, ModelKeys.PROPERTY, MODEL_DESCRIPTION);
     }
 
     /**
@@ -511,49 +660,6 @@ public class InfinispanDescriptions {
         BATCHING.addOperationParameterDescription(resources, keyPrefix, operation);
         INDEXING.addOperationParameterDescription(resources, keyPrefix, operation);
 
-        // these really need to be removed - we never pass such OBJECTs as parameters to add
-        // as they are now defined as child resources
-        LOCKING_OBJECT.addOperationParameterDescription(resources, keyPrefix , operation) ;
-        TRANSACTION_OBJECT.addOperationParameterDescription(resources, keyPrefix , operation) ;
-        EVICTION_OBJECT.addOperationParameterDescription(resources, keyPrefix , operation) ;
-        EXPIRATION_OBJECT.addOperationParameterDescription(resources, keyPrefix , operation) ;
-
-        ModelNode requestProperties = operation.get(ModelDescriptionConstants.REQUEST_PROPERTIES);
-        String storePrefix = keyPrefix + "." + "store" ;
-        ModelNode store = addNode(requestProperties, ModelKeys.STORE, resources.getString(storePrefix), ModelType.OBJECT, false).get(ModelDescriptionConstants.VALUE_TYPE);
-        for (AttributeDefinition attr : CommonAttributes.STORE_ATTRIBUTES) {
-            addAttributeDescription(attr, resources, storePrefix, store);
-        }
-        // property needs value type
-        addAttributeDescription(CommonAttributes.PROPERTIES, resources, storePrefix, store).get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.PROPERTY);
-
-        String fileStorePrefix = keyPrefix + "." + "file-store" ;
-        ModelNode fileStore = addNode(requestProperties, ModelKeys.FILE_STORE, resources.getString(fileStorePrefix), ModelType.OBJECT, false).get(ModelDescriptionConstants.VALUE_TYPE);
-        for (AttributeDefinition attr : CommonAttributes.STORE_ATTRIBUTES) {
-            addAttributeDescription(attr, resources, storePrefix, fileStore);
-        }
-        // property needs value type
-        addAttributeDescription(CommonAttributes.PROPERTIES, resources, storePrefix, fileStore).get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.PROPERTY);
-        addAttributeDescription(RELATIVE_TO, resources, fileStorePrefix, fileStore);
-        addAttributeDescription(PATH, resources, fileStorePrefix, fileStore);
-
-        String jdbcStorePrefix = keyPrefix + ".jdbc-store" ;
-        ModelNode jdbcStore = addNode(requestProperties, ModelKeys.JDBC_STORE, resources.getString(jdbcStorePrefix), ModelType.OBJECT, false).get(ModelDescriptionConstants.VALUE_TYPE);
-        for (AttributeDefinition attr : CommonAttributes.STORE_ATTRIBUTES) {
-            addAttributeDescription(attr, resources, storePrefix, jdbcStore);
-        }
-        // property needs value type
-        addAttributeDescription(CommonAttributes.PROPERTIES, resources, storePrefix, jdbcStore).get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.PROPERTY);
-        addAttributeDescription(DATA_SOURCE, resources, jdbcStorePrefix, jdbcStore);
-
-        String remoteStorePrefix = keyPrefix + ".remote-store" ;
-        ModelNode remoteStore = addNode(requestProperties, ModelKeys.REMOTE_STORE, resources.getString(remoteStorePrefix), ModelType.OBJECT, false).get(ModelDescriptionConstants.VALUE_TYPE);
-        for (AttributeDefinition attr : CommonAttributes.STORE_ATTRIBUTES) {
-            addAttributeDescription(attr, resources, storePrefix, remoteStore);
-        }
-        // property needs value type
-        addAttributeDescription(CommonAttributes.PROPERTIES, resources, storePrefix, remoteStore).get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.PROPERTY);
-        addAttributeDescription(REMOTE_SERVERS, resources, remoteStorePrefix, remoteStore).get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
     }
 
     /**

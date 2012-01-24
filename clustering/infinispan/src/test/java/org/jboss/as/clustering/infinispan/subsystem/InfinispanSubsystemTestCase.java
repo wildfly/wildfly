@@ -61,7 +61,7 @@ public class InfinispanSubsystemTestCase extends ClusteringSubsystemTest {
 
     @Parameters
     public static Collection<Object[]> data() {
-     Object[][] data = new Object[][] { { "subsystem-infinispan_1_0.xml", 27 }, { "subsystem-infinispan_1_1.xml", 27 } };
+      Object[][] data = new Object[][] { { "subsystem-infinispan_1_0.xml", 31 }, { "subsystem-infinispan_1_1.xml", 31 } };
       return Arrays.asList(data);
     }
 
@@ -80,8 +80,8 @@ public class InfinispanSubsystemTestCase extends ClusteringSubsystemTest {
        // Parse the subsystem xml into operations
        List<ModelNode> operations = super.parse(getSubsystemXml());
 
-       /*
        // print the operations
+       /*
        System.out.println("List of operations");
        for (ModelNode op : operations) {
            System.out.println("operation = " + op.toString());
@@ -99,7 +99,6 @@ public class InfinispanSubsystemTestCase extends ClusteringSubsystemTest {
        PathElement element = addr.getElement(0);
        Assert.assertEquals(SUBSYSTEM, element.getKey());
        Assert.assertEquals(getMainSubsystemName(), element.getValue());
-
     }
 
     /**
@@ -113,7 +112,7 @@ public class InfinispanSubsystemTestCase extends ClusteringSubsystemTest {
        // Read the whole model and make sure it looks as expected
        ModelNode model = services.readWholeModel();
 
-        // System.out.println("model = " + model.asString());
+       // System.out.println("model = " + model.asString());
 
        Assert.assertTrue(model.get(SUBSYSTEM).hasDefined(getMainSubsystemName()));
     }
