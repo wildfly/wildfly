@@ -16,8 +16,9 @@
  */
 package org.jboss.as.arquillian.container.managed;
 
-import static org.jboss.as.arquillian.container.Authentication.password;
-import static org.jboss.as.arquillian.container.Authentication.username;
+import org.jboss.arquillian.container.spi.client.container.LifecycleException;
+import org.jboss.as.arquillian.container.CommonDeployableContainer;
+import org.jboss.sasl.util.UsernamePasswordHashUtil;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -33,9 +34,8 @@ import java.util.List;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
-import org.jboss.arquillian.container.spi.client.container.LifecycleException;
-import org.jboss.as.arquillian.container.CommonDeployableContainer;
-import org.jboss.sasl.util.UsernamePasswordHashUtil;
+import static org.jboss.as.arquillian.container.Authentication.password;
+import static org.jboss.as.arquillian.container.Authentication.username;
 
 /**
  * JBossAsManagedContainer
@@ -72,8 +72,8 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
     protected void startInternal() throws LifecycleException {
         ManagedContainerConfiguration config = getContainerConfiguration();
 
-        if(isServerRunning()) {
-            if(config.isAllowConnectingToRunningServer()) {
+        if (isServerRunning()) {
+            if (config.isAllowConnectingToRunningServer()) {
                 return;
             } else {
                 failDueToRunning();
@@ -82,12 +82,19 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
 
         try {
             final String jbossHomeDir = config.getJbossHome();
-            final String modulePath;
-            if(config.getModulePath() != null && !config.getModulePath().isEmpty()) {
-                modulePath = config.getModulePath();
-            } else {
-               modulePath = jbossHomeDir + File.separatorChar + "modules";
+            String modulesPath = config.getModulePath();
+            if (modulesPath == null || modulesPath.isEmpty()) {
+                modulesPath = jbossHomeDir + File.separatorChar + "modules";
             }
+            File modulesDir = new File(modulesPath);
+            if (modulesDir.isDirectory() == false)
+                throw new IllegalStateException("Cannot find: " + modulesDir);
+
+            String bundlesPath = modulesDir.getParent() + File.separator + "bundles";
+            File bundlesDir = new File(bundlesPath);
+            if (bundlesDir.isDirectory() == false)
+                throw new IllegalStateException("Cannot find: " + bundlesDir);
+
             final String additionalJavaOpts = config.getJavaVmArguments();
 
             File modulesJar = new File(jbossHomeDir + File.separatorChar + "jboss-modules.jar");
@@ -108,18 +115,19 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
                 }
             }
 
-            if(config.isEnableAssertions()) {
+            if (config.isEnableAssertions()) {
                 cmd.add("-ea");
             }
 
             cmd.add("-Djboss.home.dir=" + jbossHomeDir);
             cmd.add("-Dorg.jboss.boot.log.file=" + jbossHomeDir + "/standalone/log/boot.log");
             cmd.add("-Dlogging.configuration=file:" + jbossHomeDir + CONFIG_PATH + "logging.properties");
-            cmd.add("-Djboss.modules.dir=" + modulePath);
+            cmd.add("-Djboss.modules.dir=" + modulesDir.getCanonicalPath());
+            cmd.add("-Djboss.bundles.dir=" + bundlesDir.getCanonicalPath());
             cmd.add("-jar");
             cmd.add(modulesJar.getAbsolutePath());
             cmd.add("-mp");
-            cmd.add(modulePath);
+            cmd.add(modulesPath);
             cmd.add("-jaxpmodule");
             cmd.add("javax.xml.jaxp-provider");
             cmd.add("org.jboss.as.standalone");
@@ -158,7 +166,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
                         break;
                     Thread.sleep(sleep);
                     timeout -= sleep;
-                    sleep = Math.max(sleep/2, 100);
+                    sleep = Math.max(sleep / 2, 100);
                 }
             }
             if (!serverAvailable) {
@@ -185,8 +193,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             }
         } catch (Exception e) {
             throw new LifecycleException("Could not stop container", e);
-        }
-        finally {
+        } finally {
             removeTempAuthConfigurationIfAuthNotDefined();
         }
     }
@@ -270,10 +277,10 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
 
         File usersFile = new File(jbossHomeDir + CONFIG_PATH + MGMT_USERS_FILE);
 
-        if(config.getUsername() == null) {
+        if (config.getUsername() == null) {
             File tmpUsersFile = new File(jbossHomeDir + CONFIG_PATH + MGMT_USERS_TMP_FILE);
-            if(usersFile.exists()) {
-                if(!usersFile.renameTo(tmpUsersFile)) {
+            if (usersFile.exists()) {
+                if (!usersFile.renameTo(tmpUsersFile)) {
                     throw new IllegalStateException("Could not rename " + usersFile + " to " + tmpUsersFile + ". " +
                             "Unable to start server with custom security. " +
                             "Please setup a management user manually and provide username/password in the Arquillian configuration.");
@@ -290,7 +297,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
     private void removeTempAuthConfigurationIfAuthNotDefined() {
         final String jbossHomeDir = getContainerConfiguration().getJbossHome();
         File tmpUsersFile = new File(jbossHomeDir, CONFIG_PATH + MGMT_USERS_TMP_FILE);
-        if(tmpUsersFile.exists() && getContainerConfiguration().getUsername() == null) {
+        if (tmpUsersFile.exists() && getContainerConfiguration().getUsername() == null) {
             File usersFile = new File(jbossHomeDir, CONFIG_PATH + MGMT_USERS_FILE);
             tmpUsersFile.renameTo(usersFile);
         }
