@@ -25,6 +25,7 @@ package org.jboss.as.controller.registry;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -179,7 +180,14 @@ class BasicResource implements Resource {
     @Override
     public Resource clone() {
         final Resource clone = new BasicResource();
-        clone.writeModel(model);
+        for (;;) {
+            try {
+                clone.writeModel(model);
+                break;
+            } catch (ConcurrentModificationException ignore) {
+                // TODO horrible hack :(
+            }
+        }
         for(final String childType : getChildTypes()) {
             for(final ResourceEntry child : getChildren(childType)) {
                 clone.registerChild(child.getPathElement(), child.clone());
