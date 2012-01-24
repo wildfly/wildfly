@@ -1,5 +1,8 @@
 package org.jboss.as.modcluster.test;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.Closeable;
@@ -9,7 +12,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,27 +19,17 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamReader;
-import javax.xml.stream.XMLStreamWriter;
-
-import junit.framework.Assert;
-import junit.framework.TestCase;
 
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.modcluster.ModClusterSubsystemElementParser;
+import org.jboss.as.modcluster.ModClusterSubsystemXMLWriter;
 import org.jboss.as.modcluster.Namespace;
 import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementWriter;
-// import org.jboss.staxmapper.XMLExtendedStreamWriterFactory;
-// import org.jboss.staxmapper.FormattingXMLStreamWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.staxmapper.XMLMapper;
 import org.junit.Test;
 
 // Test mod_cluster parser
-
-public class ParseAndMarshalModelsTestCase extends TestCase {
-
-    private ModClusterSubsystemElementParser parser = new ModClusterSubsystemElementParser();
+public class ParseAndMarshalModelsTestCase {
 
     @Test
     public void testStandaloneXml() throws Exception {
@@ -71,13 +63,13 @@ public class ParseAndMarshalModelsTestCase extends TestCase {
     private File getOriginalFile(String name) {
         File f = new File(".").getAbsoluteFile();
         f = new File(f, "src");
-        Assert.assertTrue(f.exists());
+        assertTrue(f.exists());
         f = new File(f, "test");
-        Assert.assertTrue(f.exists());
+        assertTrue(f.exists());
         f = new File(f, "resources");
-        Assert.assertTrue(f.exists());
+        assertTrue(f.exists());
         f = new File(f, name);
-        Assert.assertTrue(f.exists());
+        assertTrue(f.exists());
         return f;
 }
 
@@ -115,7 +107,7 @@ public class ParseAndMarshalModelsTestCase extends TestCase {
         final List<ModelNode> operations = new ArrayList<ModelNode>();
 
         XMLMapper mapper = XMLMapper.Factory.create();
-        mapper.registerRootElement(new QName(Namespace.CURRENT.getUriString(), "subsystem"), this.parser);
+        mapper.registerRootElement(new QName(Namespace.CURRENT.getUri(), "subsystem"), Namespace.CURRENT.getXMLReader());
 
         XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new FileInputStream(file));
         mapper.parseDocument(operations, reader);
@@ -131,7 +123,7 @@ public class ParseAndMarshalModelsTestCase extends TestCase {
         XMLExtendedStreamWriter streamWriter = new FormattingXMLStreamWriter( XMLOutputFactory.newInstance().createXMLStreamWriter((new FileOutputStream(file))));
         SubsystemMarshallingContext context = new SubsystemMarshallingContext(config, streamWriter);
 
-        mapper.deparseDocument((XMLElementWriter<?>) this.parser, context, streamWriter);
+        mapper.deparseDocument(new ModClusterSubsystemXMLWriter(), context, streamWriter);
         streamWriter.close();
         return ret;
     }

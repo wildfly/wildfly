@@ -27,6 +27,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
 
+import java.util.List;
+
 import javax.xml.stream.XMLStreamConstants;
 
 import org.jboss.as.controller.Extension;
@@ -45,6 +47,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.staxmapper.XMLElementReader;
 
 /**
  * Domain extension used to initialize the mod_cluster subsystem element handlers.
@@ -56,9 +59,7 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
     public static final String SUBSYSTEM_NAME = "modcluster";
 
     private static final PathElement sslConfigurationPath = PathElement.pathElement(CommonAttributes.SSL, CommonAttributes.CONFIGURATION);
-    private static final PathElement  ConfigurationPath = PathElement.pathElement(CommonAttributes.MOD_CLUSTER_CONFIG);
-
-    final ModClusterSubsystemElementParser parser = new ModClusterSubsystemElementParser();
+    private static final PathElement configurationPath = PathElement.pathElement(CommonAttributes.MOD_CLUSTER_CONFIG);
 
     /** {@inheritDoc} */
     @Override
@@ -66,7 +67,7 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
 
         ROOT_LOGGER.debugf("Activating Mod_cluster Extension");
 
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, Namespace.CURRENT.getMajorVersion(), Namespace.CURRENT.getMinorVersion());
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(ModClusterSubsystemDescriptionProviders.SUBSYSTEM);
         registration.registerOperationHandler(ModelDescriptionConstants.ADD, ModClusterSubsystemAdd.INSTANCE, ModClusterSubsystemAdd.INSTANCE, false);
         registration.registerOperationHandler(ModelDescriptionConstants.REMOVE, ModClusterSubsystemRemove.INSTANCE, ModClusterSubsystemRemove.INSTANCE, false);
@@ -96,7 +97,7 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
             registration.registerOperationHandler("stop-context", ModClusterStopContext.INSTANCE, ModClusterStopContext.INSTANCE, false);
         }
 
-        final ManagementResourceRegistration configuration = registration.registerSubModel(ConfigurationPath, ModClusterSubsystemDescriptionProviders.CONFIGURATION);
+        final ManagementResourceRegistration configuration = registration.registerSubModel(configurationPath, ModClusterSubsystemDescriptionProviders.CONFIGURATION);
         final ManagementResourceRegistration ssl = configuration.registerSubModel(sslConfigurationPath, ModClusterSubsystemDescriptionProviders.SSL);
 
         // Attributes. (standard)
@@ -147,7 +148,7 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         registration.registerOperationHandler("remove-metric", ModClusterRemoveMetric.INSTANCE, ModClusterRemoveMetric.INSTANCE, false);
         registration.registerOperationHandler("remove-custom-metric", ModClusterRemoveCustomMetric.INSTANCE, ModClusterRemoveCustomMetric.INSTANCE, false);
 
-        subsystem.registerXMLElementWriter(parser);
+        subsystem.registerXMLElementWriter(new ModClusterSubsystemXMLWriter());
     }
 
     public static class WriteDynamicLoadProviderOperationHandler implements OperationStepHandler {
@@ -196,6 +197,11 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CURRENT.getUriString(), parser);
+        for (Namespace namespace: Namespace.values()) {
+            XMLElementReader<List<ModelNode>> reader = namespace.getXMLReader();
+            if (reader != null) {
+                context.setSubsystemXmlMapping(SUBSYSTEM_NAME, namespace.getUri(), namespace.getXMLReader());
+            }
+        }
     }
 }

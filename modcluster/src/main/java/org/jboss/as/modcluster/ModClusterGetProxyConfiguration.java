@@ -48,7 +48,7 @@ public class ModClusterGetProxyConfiguration implements OperationStepHandler, De
     @Override
     public void execute(OperationContext context, ModelNode operation)
             throws OperationFailedException {
-        if (context.getType() == OperationContext.Type.SERVER) {
+        if (context.getProcessType().isServer()) {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {

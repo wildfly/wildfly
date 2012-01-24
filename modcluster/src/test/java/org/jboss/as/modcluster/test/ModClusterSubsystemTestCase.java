@@ -53,7 +53,7 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
     protected String getSubsystemXml(String configId) throws IOException {
         return readResource(configId);
     }
-
+/*
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
         return new AdditionalInitialization(){
@@ -64,7 +64,7 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         };
     }
-
+*/
     @Override
     protected Set<PathAddress> getIgnoredChildResourcesForRemovalTest() {
         return Collections.singleton(
