@@ -27,19 +27,15 @@ import java.net.InetAddress;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import javax.jms.Queue;
-import javax.jms.Topic;
-import javax.naming.InitialContext;
-
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentActionResult;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
-import org.jboss.as.test.integration.deployment.xml.datasource.DeployedXmlDataSourceTestCase;
+import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -50,38 +46,39 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 
 /**
- * Test deployment of -jms.xml files
+ * Test deployment of -ds.xml files
  *
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
-public class DeployedXmlJmsTestCase {
+@RunAsClient
+public class DeployedXmlJMSManagementTestCase {
 
 
+    private static ModelControllerClient client;
     private static ServerDeploymentManager manager;
     public static final String TEST_JMS_XML = "test-jms.xml";
 
     @Deployment
     public static Archive<?> deploy() {
-        return ShrinkWrap.create(JavaArchive.class, "testDsXmlDeployment.jar")
-                .addPackage(DeployedXmlDataSourceTestCase.class.getPackage())
-                .addAsManifestResource(DeployedXmlDataSourceTestCase.class.getPackage(), "MANIFEST.MF", "MANIFEST.MF");
+        return ShrinkWrap.create(JavaArchive.class, "testJMSXmlDeployment.jar")
+                .addPackage(DeployedXmlJMSManagementTestCase.class.getPackage())
+                .addAsManifestResource(DeployedXmlJMSManagementTestCase.class.getPackage(), "MANIFEST.MF", "MANIFEST.MF");
     }
 
-    @ArquillianResource
-    private InitialContext initialContext;
-
-    private static ModelControllerClient client;
-
     @BeforeClass
-    public static void deployJms() throws Throwable {
+    public static void deployDatasource() throws Throwable {
         try {
             client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
             manager = ServerDeploymentManager.Factory.create(client);
-            final String packageName = DeployedXmlJmsTestCase.class.getPackage().getName().replace(".", "/");
-            final DeploymentPlan plan = manager.newDeploymentPlan().add(DeployedXmlJmsTestCase.class.getResource("/" + packageName + "/" + TEST_JMS_XML)).andDeploy().build();
+            final String packageName = DeployedXmlJMSManagementTestCase.class.getPackage().getName().replace(".", "/");
+            final DeploymentPlan plan = manager.newDeploymentPlan().add(DeployedXmlJMSManagementTestCase.class.getResource("/" + packageName + "/" + TEST_JMS_XML)).andDeploy().build();
             final Future<ServerDeploymentPlanResult> future = manager.execute(plan);
             final ServerDeploymentPlanResult result = future.get(20, TimeUnit.SECONDS);
             final ServerDeploymentActionResult actionResult = result.getDeploymentActionResult(plan.getId());
@@ -98,7 +95,7 @@ public class DeployedXmlJmsTestCase {
     }
 
     @AfterClass
-    public static void undeployJms() throws IOException {
+    public static void undeployDatasource() throws IOException {
         if (client != null) {
             final DeploymentPlan undeployPlan = manager.newDeploymentPlan().undeploy(TEST_JMS_XML).andRemoveUndeployed().build();
             manager.execute(undeployPlan);
@@ -109,16 +106,36 @@ public class DeployedXmlJmsTestCase {
     }
 
     @Test
-    public void testDeployedQueue() throws Throwable {
-        final Queue queue = (Queue) initialContext.lookup("java:/queue1");
-        Assert.assertNotNull(queue);
+    public void testDeployedQueueInManagementModel() throws IOException {
+        final ModelNode address = new ModelNode();
+        address.add("deployment", TEST_JMS_XML);
+        address.add("subsystem", "messaging");
+        address.add("hornetq-server", "default");
+        address.add("jms-queue", "queue1");
+        address.protect();
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set("read-attribute");
+        operation.get(OP_ADDR).set(address);
+        operation.get(NAME).set("durable");
+        ModelNode result = client.execute(operation);
+        Assert.assertEquals(true, result.get(RESULT).asBoolean());
     }
 
     @Test
-    public void testDeployedTopic() throws Throwable {
-        final Topic topic = (Topic) initialContext.lookup("java:/topic1");
-        Assert.assertNotNull(topic);
+    public void testDeployedTopicInManagementModel() throws IOException {
+        final ModelNode address = new ModelNode();
+        address.add("deployment", TEST_JMS_XML);
+        address.add("subsystem", "messaging");
+        address.add("hornetq-server", "default");
+        address.add("jms-topic", "topic1");
+        address.protect();
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set("read-attribute");
+        operation.get(OP_ADDR).set(address);
+        operation.get(NAME).set("entries");
+        ModelNode result = client.execute(operation);
+        Assert.assertEquals("java:/topic1", result.get(RESULT).asList().get(0).asString());
     }
-
-
 }

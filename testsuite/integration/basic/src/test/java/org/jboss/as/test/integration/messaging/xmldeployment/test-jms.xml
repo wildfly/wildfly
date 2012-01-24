@@ -4,6 +4,7 @@
         <jms-destinations>
             <jms-queue name="queue1">
                 <entry name="java:/queue1"/>
+                <durable>true</durable>
             </jms-queue>
             <jms-topic name="topic1">
                 <entry name="java:/topic1"/>
