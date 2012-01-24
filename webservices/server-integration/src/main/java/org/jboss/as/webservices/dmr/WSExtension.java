@@ -104,25 +104,25 @@ public final class WSExtension implements Extension {
         endpointConfigProperty.registerReadOnlyAttribute(VALUE, null, Storage.CONFIGURATION);
         // ws endpoint configuration pre handlers
         final ManagementResourceRegistration preHandlerChain = endpointConfig.registerSubModel(preHandlerChainPath, WSSubsystemProviders.ENDPOINT_CONFIG_PRE_HANDLER_CHAIN_DESCRIPTION);
-        preHandlerChain.registerOperationHandler(ADD, EndpointConfigHandlerChainAdd.INSTANCE, WSSubsystemProviders.ENDPOINT_CONFIG_PRE_HANDLER_CHAIN_ADD_DESCRIPTION, false); // TODO: wrong handler
-        // TODO: implement handlerChain remove operation handler
+        preHandlerChain.registerOperationHandler(ADD, EndpointConfigHandlerChainAdd.INSTANCE, WSSubsystemProviders.ENDPOINT_CONFIG_PRE_HANDLER_CHAIN_ADD_DESCRIPTION, false);
+        preHandlerChain.registerOperationHandler(REMOVE, EndpointConfigHandlerChainRemove.INSTANCE, WSSubsystemProviders.ENDPOINT_CONFIG_PRE_HANDLER_CHAIN_REMOVE_DESCRIPTION, false);
         preHandlerChain.registerReadOnlyAttribute(PROTOCOL_BINDINGS, null, Storage.CONFIGURATION);
         preHandlerChain.registerReadOnlyAttribute(PORT_NAME_PATTERN, null, Storage.CONFIGURATION);
         preHandlerChain.registerReadOnlyAttribute(SERVICE_NAME_PATTERN, null, Storage.CONFIGURATION);
         final ManagementResourceRegistration preHandler = preHandlerChain.registerSubModel(handlerPath, WSSubsystemProviders.ENDPOINT_CONFIG_HANDLER_DESCRIPTION);
         preHandler.registerOperationHandler(ADD, EndpointConfigHandlerAdd.INSTANCE, WSSubsystemProviders.ENDPOINT_CONFIG_HANDLER_ADD_DESCRIPTION, false);
-        // TODO: implement handler remove operation handler
+        preHandler.registerOperationHandler(REMOVE, EndpointConfigHandlerRemove.INSTANCE, WSSubsystemProviders.ENDPOINT_CONFIG_HANDLER_REMOVE_DESCRIPTION, false);
         preHandler.registerReadOnlyAttribute(HANDLER_CLASS, null, Storage.CONFIGURATION);
         // ws endpoint configuration post handlers
         final ManagementResourceRegistration postHandlerChain = endpointConfig.registerSubModel(postHandlerChainPath, WSSubsystemProviders.ENDPOINT_CONFIG_POST_HANDLER_CHAIN_DESCRIPTION);
-        postHandlerChain.registerOperationHandler(ADD, EndpointConfigHandlerChainAdd.INSTANCE, WSSubsystemProviders.ENDPOINT_CONFIG_POST_HANDLER_CHAIN_ADD_DESCRIPTION, false); // TODO: wrong handler
-        // TODO: implement handlerChain remove operation handler
+        postHandlerChain.registerOperationHandler(ADD, EndpointConfigHandlerChainAdd.INSTANCE, WSSubsystemProviders.ENDPOINT_CONFIG_POST_HANDLER_CHAIN_ADD_DESCRIPTION, false);
+        postHandlerChain.registerOperationHandler(REMOVE, EndpointConfigHandlerChainRemove.INSTANCE, WSSubsystemProviders.ENDPOINT_CONFIG_POST_HANDLER_CHAIN_REMOVE_DESCRIPTION, false);
         postHandlerChain.registerReadOnlyAttribute(PROTOCOL_BINDINGS, null, Storage.CONFIGURATION);
         postHandlerChain.registerReadOnlyAttribute(PORT_NAME_PATTERN, null, Storage.CONFIGURATION);
         postHandlerChain.registerReadOnlyAttribute(SERVICE_NAME_PATTERN, null, Storage.CONFIGURATION);
         final ManagementResourceRegistration postHandler = postHandlerChain.registerSubModel(handlerPath, WSSubsystemProviders.ENDPOINT_CONFIG_HANDLER_DESCRIPTION);
         postHandler.registerOperationHandler(ADD, EndpointConfigHandlerAdd.INSTANCE, WSSubsystemProviders.ENDPOINT_CONFIG_HANDLER_ADD_DESCRIPTION, false);
-        // TODO: implement handler remove operation handler
+        postHandler.registerOperationHandler(REMOVE, EndpointConfigHandlerRemove.INSTANCE, WSSubsystemProviders.ENDPOINT_CONFIG_HANDLER_REMOVE_DESCRIPTION, false);
         postHandler.registerReadOnlyAttribute(HANDLER_CLASS, null, Storage.CONFIGURATION);
 
         if (registerRuntimeOnly) {

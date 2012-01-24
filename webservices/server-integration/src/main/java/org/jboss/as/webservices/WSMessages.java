@@ -162,4 +162,10 @@ public interface WSMessages {
 
     @Message(id = 15588, value = "Cannot add new handler chain of type %s with id %s. This id is already used in config %s for another chain.")
     OperationFailedException multipleHandlerChainsWithSameId(String chainType, String handlerChainId, String configId);
+
+    @Message(id = 15589, value = "Endpoint config %s: %s handler chain with id %s doesn't exist")
+    OperationFailedException missingHandlerChain(String configName, String handlerChainType, String handlerChainId);
+
+    @Message(id = 15590, value = "Endpoint config %s, %s handler chain %s: doesn't contain handler with name %s")
+    OperationFailedException missingHandler(String configName, String handlerChainType, String handlerChainId, String handlerName);
 }
