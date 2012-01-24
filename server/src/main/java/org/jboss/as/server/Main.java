@@ -29,6 +29,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
+import java.util.StringTokenizer;
 
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.process.CommandLineConstants;
@@ -51,6 +52,7 @@ import org.jboss.stdio.StdioContext;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author John Bailey
  * @author Brian Stansberry
+ * @author Anil Saldhana
  */
 public final class Main {
 
@@ -218,6 +220,11 @@ public final class Main {
                     SecurityActions.setSystemProperty(ServerEnvironment.JBOSS_DEFAULT_MULTICAST_ADDRESS, value);
                 } else if (CommandLineConstants.ADMIN_ONLY.equals(arg)) {
                     runningMode = RunningMode.ADMIN_ONLY;
+                } else if (arg.startsWith(CommandLineConstants.SECURITY_PROP)) {
+                    //Value can be a comma separated key value pair
+                    //Drop the first 2 characters
+                    String token = arg.substring(2);
+                    processSecurityProperties(token);
                 } else {
                     System.err.printf(ServerMessages.MESSAGES.invalidCommandLineOption(arg));
                     usage();
@@ -289,5 +296,23 @@ public final class Main {
         }
 
         return url;
+    }
+
+    private static void processSecurityProperties(String secProperties){
+        StringTokenizer tokens = new StringTokenizer(secProperties, ",");
+        while(tokens != null && tokens.hasMoreTokens()){
+            String token = tokens.nextToken();
+
+            int idx = token.indexOf('=');
+            if (idx == token.length() - 1) {
+                System.err.printf(ServerMessages.MESSAGES.valueExpectedForCommandLineOption(secProperties));
+                System.err.println();
+                usage();
+                return;
+            }
+            String value = token.substring(idx + 1);
+            String key = token.substring(0, idx);
+            SecurityActions.setSecurityProperty(key, value);
+        }
     }
 }
