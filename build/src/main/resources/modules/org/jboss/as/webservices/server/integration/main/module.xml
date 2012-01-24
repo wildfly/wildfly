@@ -61,7 +61,8 @@
           </exports>
         </module>
         <module name="org.jboss.ws.cxf.jbossws-cxf-server" services="export" export="true"/>
-        <module name="org.apache.cxf" services="export" export="true">
+        <!-- Do not import services from cxf module direclty, those need to come from jbossws -->
+        <module name="org.apache.cxf" export="true">
           <imports>
             <include path="META-INF/cxf"/>
             <include path="META-INF"/>

@@ -41,7 +41,8 @@
         <module name="org.jboss.ws.spi" />
         <module name="org.jboss.ws.common" />
         <module name="org.jboss.ws.cxf.jbossws-cxf-factories" services="import"/>
-        <module name="org.apache.cxf" services="import">
+        <!-- do not import services from cxf, those need to come from jbossws -->
+        <module name="org.apache.cxf">
           <imports>
             <include path="META-INF/cxf"/> <!-- required to also pull in the bus extensions from META-INF -->
             <include path="META-INF/"/>
