@@ -44,16 +44,18 @@ import org.jboss.as.messaging.jms.ConnectionFactoryRemove;
 import org.jboss.as.messaging.jms.ConnectionFactoryWriteAttributeHandler;
 import org.jboss.as.messaging.jms.JMSQueueAdd;
 import org.jboss.as.messaging.jms.JMSQueueAddJndiHandler;
+import org.jboss.as.messaging.jms.JMSQueueConfigurationRuntimeHandler;
+import org.jboss.as.messaging.jms.JMSQueueConfigurationWriteHandler;
 import org.jboss.as.messaging.jms.JMSQueueControlHandler;
+import org.jboss.as.messaging.jms.JMSQueueReadAttributeHandler;
 import org.jboss.as.messaging.jms.JMSQueueRemove;
 import org.jboss.as.messaging.jms.JMSTopicAdd;
 import org.jboss.as.messaging.jms.JMSTopicAddJndiHandler;
+import org.jboss.as.messaging.jms.JMSTopicConfigurationRuntimeHandler;
 import org.jboss.as.messaging.jms.JMSTopicConfigurationWriteHandler;
 import org.jboss.as.messaging.jms.JMSTopicControlHandler;
 import org.jboss.as.messaging.jms.JMSTopicReadAttributeHandler;
 import org.jboss.as.messaging.jms.JMSTopicRemove;
-import org.jboss.as.messaging.jms.JmsQueueConfigurationWriteHandler;
-import org.jboss.as.messaging.jms.JmsQueueReadAttributeHandler;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryAdd;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryRemove;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryWriteAttributeHandler;
@@ -283,10 +285,10 @@ public class MessagingExtension implements Extension {
         final ManagementResourceRegistration queues = serverRegistration.registerSubModel(JMS_QUEUE_PATH, MessagingSubsystemProviders.JMS_QUEUE_RESOURCE);
         queues.registerOperationHandler(ADD, JMSQueueAdd.INSTANCE, JMSQueueAdd.INSTANCE, false);
         queues.registerOperationHandler(REMOVE, JMSQueueRemove.INSTANCE, JMSQueueRemove.INSTANCE, false);
-        JmsQueueConfigurationWriteHandler.INSTANCE.registerAttributes(queues, registerRuntimeOnly);
+        JMSQueueConfigurationWriteHandler.INSTANCE.registerAttributes(queues, registerRuntimeOnly);
         JMSQueueAddJndiHandler.INSTANCE.registerOperation(queues);
         if (registerRuntimeOnly) {
-            JmsQueueReadAttributeHandler.INSTANCE.registerAttributes(queues);
+            JMSQueueReadAttributeHandler.INSTANCE.registerAttributes(queues);
             JMSQueueControlHandler.INSTANCE.registerOperations(queues);
         }
         // setExpiryAddress, setDeadLetterAddress  -- no -- just toggle the 'queue-address', make this a mutable attr of address-setting
@@ -321,13 +323,15 @@ public class MessagingExtension implements Extension {
 
             // JMS Queues
             final ManagementResourceRegistration deploymentQueue = serverModel.registerSubModel(JMS_QUEUE_PATH, MessagingSubsystemProviders.JMS_QUEUE_RESOURCE);
-            JmsQueueReadAttributeHandler.INSTANCE.registerAttributes(deploymentQueue);
+            JMSQueueReadAttributeHandler.INSTANCE.registerAttributes(deploymentQueue);
             JMSQueueControlHandler.INSTANCE.registerOperations(deploymentQueue);
+            JMSQueueConfigurationRuntimeHandler.INSTANCE.registerAttributes(deploymentQueue);
 
             // topics
             final ManagementResourceRegistration deploymentTopics = serverModel.registerSubModel(TOPIC_PATH, MessagingSubsystemProviders.JMS_TOPIC_RESOURCE);
             JMSTopicReadAttributeHandler.INSTANCE.registerAttributes(deploymentTopics);
             JMSTopicControlHandler.INSTANCE.registerOperations(deploymentTopics);
+            JMSTopicConfigurationRuntimeHandler.INSTANCE.registerAttributes(deploymentTopics);
 
         }
     }
