@@ -276,6 +276,7 @@ public enum Phase {
     public static final int PARSE_WEB_INITIALIZE_IN_ORDER               = 0x3C00;
     public static final int PARSE_EAR_MESSAGE_DESTINATIONS              = 0x3D00;
     public static final int PARSE_DSXML_DEPLOYMENT                      = 0x3E00;
+    public static final int PARSE_MESSAGING_XML_RESOURCES               = 0x3F00;
 
     // DEPENDENCIES
     public static final int DEPENDENCIES_EJB                            = 0x0000;
@@ -417,6 +418,7 @@ public enum Phase {
     public static final int INSTALL_EJB_MANAGEMENT_RESOURCES            = 0x1F00;
     public static final int INSTALL_APPLICATION_CLIENT                  = 0x2000;
     public static final int INSTALL_DSXML_DEPLOYMENT                    = 0x2010;
+    public static final int INSTALL_MESSAGING_XML_RESOURCES             = 0x2011;
 
     // CLEANUP
     public static final int CLEANUP_REFLECTION_INDEX                    = 0x0100;

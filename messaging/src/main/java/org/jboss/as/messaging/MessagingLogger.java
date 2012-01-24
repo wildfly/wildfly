@@ -22,10 +22,6 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.INFO;
-import static org.jboss.logging.Logger.Level.WARN;
-
 import org.jboss.as.controller.PathAddress;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
@@ -33,6 +29,10 @@ import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
+
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * Date: 10.06.2011
@@ -120,4 +120,10 @@ public interface MessagingLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 11605, value = "Unbound messaging object to jndi name %s")
     void unboundJndiName(String jndiName);
+
+    /**
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 11606, value = "Could not close file %s")
+    void couldNotCloseFile(String file, @Cause Throwable cause);
 }
