@@ -36,6 +36,7 @@ import javax.xml.stream.XMLStreamReader;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
+import org.jboss.as.ejb3.cache.EJBBoundCacheParser;
 import org.jboss.as.ejb3.clustering.EJBBoundClusteringMetaDataParser;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
@@ -273,6 +274,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
             parsers.put("urn:iiop", new IIOPMetaDataParser());
             parsers.put("urn:trans-timeout", new TransactionTimeoutMetaDataParser());
             parsers.put(EJBBoundPoolParser.NAMESPACE_URI, new EJBBoundPoolParser());
+            parsers.put(EJBBoundCacheParser.NAMESPACE_URI, new EJBBoundCacheParser());
             final JBossEjb3MetaDataParser parser = new JBossEjb3MetaDataParser(parsers);
             final EjbJarMetaData ejbJarMetaData = parser.parse(reader, dtdInfo);
             return ejbJarMetaData;
