@@ -1425,7 +1425,7 @@ public interface ControllerMessages {
      * @return a {@link CancellationException} for the error.
      */
     @Message("Operation cancelled asynchronously")
-    CancellationException operationCancelledAsynchronously();
+    OperationCancellationException operationCancelledAsynchronously();
 
     /**
      * A message indicating the operation handler failed.

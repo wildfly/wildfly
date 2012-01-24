@@ -234,11 +234,11 @@ public class ServerControllerModelUtil {
         root.registerOperationHandler(DeploymentUploadURLHandler.OPERATION_NAME, duuh, duuh, false);
         DeploymentUploadStreamAttachmentHandler dush = new DeploymentUploadStreamAttachmentHandler(contentRepository);
         root.registerOperationHandler(DeploymentUploadStreamAttachmentHandler.OPERATION_NAME, dush, dush, false);
-        final DeploymentReplaceHandler drh = serverEnvironment == null || serverEnvironment.getLaunchType() == LaunchType.DOMAIN ?
-                DeploymentReplaceHandler.createForDomainServer(contentRepository, remoteFileRepository) : DeploymentReplaceHandler.createForStandalone(contentRepository);
+        final DeploymentReplaceHandler drh = isDomain ? DeploymentReplaceHandler.createForDomainServer(contentRepository, remoteFileRepository)
+                                                      : DeploymentReplaceHandler.createForStandalone(contentRepository);
         root.registerOperationHandler(DeploymentReplaceHandler.OPERATION_NAME, drh, drh, false);
-        DeploymentFullReplaceHandler dfrh = serverEnvironment == null || serverEnvironment.getLaunchType() == LaunchType.DOMAIN ?
-                DeploymentFullReplaceHandler.createForDomainServer(contentRepository, remoteFileRepository) : DeploymentFullReplaceHandler.createForStandalone(contentRepository);
+        DeploymentFullReplaceHandler dfrh = isDomain ? DeploymentFullReplaceHandler.createForDomainServer(contentRepository, remoteFileRepository)
+                                                     : DeploymentFullReplaceHandler.createForStandalone(contentRepository);
         root.registerOperationHandler(DeploymentFullReplaceHandler.OPERATION_NAME, dfrh, dfrh, false);
 
         SnapshotDeleteHandler snapshotDelete = new SnapshotDeleteHandler(extensibleConfigurationPersister);
