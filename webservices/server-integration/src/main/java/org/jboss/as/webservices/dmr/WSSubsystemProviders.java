@@ -51,12 +51,12 @@ import static org.jboss.as.webservices.dmr.Constants.FEATURE;
 import static org.jboss.as.webservices.dmr.Constants.HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.HANDLER_CLASS;
 import static org.jboss.as.webservices.dmr.Constants.MODIFY_WSDL_ADDRESS;
+import static org.jboss.as.webservices.dmr.Constants.PORT_NAME_PATTERN;
 import static org.jboss.as.webservices.dmr.Constants.POST_HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PRE_HANDLER_CHAIN;
-import static org.jboss.as.webservices.dmr.Constants.PROTOCOL_BINDINGS;
-import static org.jboss.as.webservices.dmr.Constants.PORT_NAME_PATTERN;
-import static org.jboss.as.webservices.dmr.Constants.SERVICE_NAME_PATTERN;
 import static org.jboss.as.webservices.dmr.Constants.PROPERTY;
+import static org.jboss.as.webservices.dmr.Constants.PROTOCOL_BINDINGS;
+import static org.jboss.as.webservices.dmr.Constants.SERVICE_NAME_PATTERN;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_HOST;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_PORT;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_SECURE_PORT;
@@ -76,9 +76,6 @@ import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
-// TODO: split providers?
-// TODO: review REQUIRED - should be present only on operations?
-// TODO: review NILLABLE
 /**
  * Deployment model providers.
  *
@@ -148,31 +145,31 @@ final class WSSubsystemProviders {
         }
     };
 
-    static final DescriptionProvider ENDPOINT_CONFIG_FEATURE_DESCRIPTION = new DescriptionProvider() {
+    static final DescriptionProvider FEATURE_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
             return Descriptions.getEndpointConfigFeatureDescription(locale);
         }
     };
 
-    static final DescriptionProvider ENDPOINT_CONFIG_PROPERTY_DESCRIPTION = new DescriptionProvider() {
+    static final DescriptionProvider PROPERTY_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
             return Descriptions.getEndpointConfigPropertyDescription(locale);
         }
     };
 
-    static final DescriptionProvider ENDPOINT_CONFIG_PRE_HANDLER_CHAIN_DESCRIPTION = new DescriptionProvider() {
+    static final DescriptionProvider PRE_HANDLER_CHAIN_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
             return Descriptions.getEndpointConfigHandlerChainDescription(locale, "endpoint.config.pre.handler.chain");
         }
     };
 
-    static final DescriptionProvider ENDPOINT_CONFIG_HANDLER_DESCRIPTION = new DescriptionProvider() {
+    static final DescriptionProvider HANDLER_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
             return Descriptions.getEndpointConfigHandlerDescription(locale);
         }
     };
 
-    static final DescriptionProvider ENDPOINT_CONFIG_POST_HANDLER_CHAIN_DESCRIPTION = new DescriptionProvider() {
+    static final DescriptionProvider POST_HANDLER_CHAIN_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
             return Descriptions.getEndpointConfigHandlerChainDescription(locale, "endpoint.config.post.handler.chain");
         }
@@ -184,49 +181,49 @@ final class WSSubsystemProviders {
         }
     };
 
-    static final DescriptionProvider ENDPOINT_CONFIG_FEATURE_ADD_DESCRIPTION = new DescriptionProvider() {
+    static final DescriptionProvider FEATURE_ADD_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
             return Descriptions.getEndpointConfigFeatureAddDescription(locale);
         }
     };
 
-    static final DescriptionProvider ENDPOINT_CONFIG_PROPERTY_ADD_DESCRIPTION = new DescriptionProvider() {
+    static final DescriptionProvider PROPERTY_ADD_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
             return Descriptions.getEndpointConfigPropertyAddDescription(locale);
         }
     };
 
-    static final DescriptionProvider ENDPOINT_CONFIG_PRE_HANDLER_CHAIN_ADD_DESCRIPTION = new DescriptionProvider() {
+    static final DescriptionProvider PRE_HANDLER_CHAIN_ADD_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
             return Descriptions.getEndpointConfigHandlerChainAddDescription(locale, "endpoint.config.pre.handler.chain");
         }
     };
 
-    static final DescriptionProvider ENDPOINT_CONFIG_PRE_HANDLER_CHAIN_REMOVE_DESCRIPTION = new DescriptionProvider() {
+    static final DescriptionProvider PRE_HANDLER_CHAIN_REMOVE_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
             return Descriptions.getEndpointConfigHandlerChainRemoveDescription(locale, "endpoint.config.pre.handler.chain");
         }
     };
 
-    static final DescriptionProvider ENDPOINT_CONFIG_HANDLER_ADD_DESCRIPTION = new DescriptionProvider() {
+    static final DescriptionProvider HANDLER_ADD_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
             return Descriptions.getEndpointConfigHandlerAddDescription(locale);
         }
     };
 
-    static final DescriptionProvider ENDPOINT_CONFIG_HANDLER_REMOVE_DESCRIPTION = new DescriptionProvider() {
+    static final DescriptionProvider HANDLER_REMOVE_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
             return Descriptions.getEndpointConfigHandlerRemoveDescription(locale);
         }
     };
 
-    static final DescriptionProvider ENDPOINT_CONFIG_POST_HANDLER_CHAIN_ADD_DESCRIPTION = new DescriptionProvider() {
+    static final DescriptionProvider POST_HANDLER_CHAIN_ADD_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
             return Descriptions.getEndpointConfigHandlerChainAddDescription(locale, "endpoint.config.post.handler.chain");
         }
     };
 
-    static final DescriptionProvider ENDPOINT_CONFIG_POST_HANDLER_CHAIN_REMOVE_DESCRIPTION = new DescriptionProvider() {
+    static final DescriptionProvider POST_HANDLER_CHAIN_REMOVE_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
             return Descriptions.getEndpointConfigHandlerChainRemoveDescription(locale, "endpoint.config.post.handler.chain");
         }
@@ -238,13 +235,13 @@ final class WSSubsystemProviders {
         }
     };
 
-    static final DescriptionProvider ENDPOINT_CONFIG_FEATURE_REMOVE_DESCRIPTION = new DescriptionProvider() {
+    static final DescriptionProvider FEATURE_REMOVE_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
             return Descriptions.getEndpointConfigFeatureRemoveDescription(locale);
         }
     };
 
-    static final DescriptionProvider ENDPOINT_CONFIG_PROPERTY_REMOVE_DESCRIPTION = new DescriptionProvider() {
+    static final DescriptionProvider PROPERTY_REMOVE_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
             return Descriptions.getEndpointConfigPropertyRemoveDescription(locale);
         }
@@ -304,22 +301,27 @@ final class WSSubsystemProviders {
             operation.get(REQUEST_PROPERTIES, ENDPOINT_NAME, DESCRIPTION).set(bundle.getString("endpoint.name"));
             operation.get(REQUEST_PROPERTIES, ENDPOINT_NAME, TYPE).set(ModelType.STRING);
             operation.get(REQUEST_PROPERTIES, ENDPOINT_NAME, REQUIRED).set(true);
+            operation.get(REQUEST_PROPERTIES, ENDPOINT_NAME, NILLABLE).set(false);
 
             operation.get(REQUEST_PROPERTIES, ENDPOINT_CONTEXT, DESCRIPTION).set(bundle.getString("endpoint.context"));
             operation.get(REQUEST_PROPERTIES, ENDPOINT_CONTEXT, TYPE).set(ModelType.STRING);
             operation.get(REQUEST_PROPERTIES, ENDPOINT_CONTEXT, REQUIRED).set(true);
+            operation.get(REQUEST_PROPERTIES, ENDPOINT_CONTEXT, NILLABLE).set(false);
 
             operation.get(REQUEST_PROPERTIES, ENDPOINT_CLASS, DESCRIPTION).set(bundle.getString("endpoint.class"));
             operation.get(REQUEST_PROPERTIES, ENDPOINT_CLASS, TYPE).set(ModelType.STRING);
-            operation.get(REQUEST_PROPERTIES, ENDPOINT_CLASS, REQUIRED).set(false);
+            operation.get(REQUEST_PROPERTIES, ENDPOINT_CLASS, REQUIRED).set(true);
+            operation.get(REQUEST_PROPERTIES, ENDPOINT_CLASS, NILLABLE).set(false);
 
             operation.get(REQUEST_PROPERTIES, ENDPOINT_TYPE, DESCRIPTION).set(bundle.getString("endpoint.type"));
             operation.get(REQUEST_PROPERTIES, ENDPOINT_TYPE, TYPE).set(ModelType.STRING);
-            operation.get(REQUEST_PROPERTIES, ENDPOINT_TYPE, REQUIRED).set(false);
+            operation.get(REQUEST_PROPERTIES, ENDPOINT_TYPE, REQUIRED).set(true);
+            operation.get(REQUEST_PROPERTIES, ENDPOINT_TYPE, NILLABLE).set(false);
 
             operation.get(REQUEST_PROPERTIES, ENDPOINT_WSDL, DESCRIPTION).set(bundle.getString("endpoint.wsdl"));
             operation.get(REQUEST_PROPERTIES, ENDPOINT_WSDL, TYPE).set(ModelType.STRING);
-            operation.get(REQUEST_PROPERTIES, ENDPOINT_WSDL, REQUIRED).set(false);
+            operation.get(REQUEST_PROPERTIES, ENDPOINT_WSDL, REQUIRED).set(true);
+            operation.get(REQUEST_PROPERTIES, ENDPOINT_WSDL, NILLABLE).set(false);
 
             operation.get(REPLY_PROPERTIES).setEmptyObject();
 
@@ -336,13 +338,14 @@ final class WSSubsystemProviders {
             operation.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("endpoint.name"));
             operation.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
             operation.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
+            operation.get(REQUEST_PROPERTIES, NAME, NILLABLE).set(false);
 
             operation.get(REPLY_PROPERTIES).setEmptyObject();
 
             return operation;
         }
 
-        static ModelNode getDeploymentDescription(Locale locale) {
+        static ModelNode getDeploymentDescription(final Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
             final ModelNode node = new ModelNode();
 
@@ -368,50 +371,62 @@ final class WSSubsystemProviders {
             node.get(ATTRIBUTES, ENDPOINT_NAME, DESCRIPTION).set(bundle.getString("endpoint.name"));
             node.get(ATTRIBUTES, ENDPOINT_NAME, TYPE).set(ModelType.STRING);
             node.get(ATTRIBUTES, ENDPOINT_NAME, REQUIRED).set(true);
+            node.get(ATTRIBUTES, ENDPOINT_NAME, NILLABLE).set(false);
 
             node.get(ATTRIBUTES, ENDPOINT_CONTEXT, DESCRIPTION).set(bundle.getString("endpoint.context"));
             node.get(ATTRIBUTES, ENDPOINT_CONTEXT, TYPE).set(ModelType.STRING);
             node.get(ATTRIBUTES, ENDPOINT_CONTEXT, REQUIRED).set(true);
+            node.get(ATTRIBUTES, ENDPOINT_CONTEXT, NILLABLE).set(false);
 
             node.get(ATTRIBUTES, ENDPOINT_CLASS, DESCRIPTION).set(bundle.getString("endpoint.class"));
             node.get(ATTRIBUTES, ENDPOINT_CLASS, TYPE).set(ModelType.STRING);
-            node.get(ATTRIBUTES, ENDPOINT_CLASS, REQUIRED).set(false);
+            node.get(ATTRIBUTES, ENDPOINT_CLASS, REQUIRED).set(true);
+            node.get(ATTRIBUTES, ENDPOINT_CLASS, NILLABLE).set(false);
 
             node.get(ATTRIBUTES, ENDPOINT_TYPE, DESCRIPTION).set(bundle.getString("endpoint.type"));
             node.get(ATTRIBUTES, ENDPOINT_TYPE, TYPE).set(ModelType.STRING);
-            node.get(ATTRIBUTES, ENDPOINT_TYPE, REQUIRED).set(false);
+            node.get(ATTRIBUTES, ENDPOINT_TYPE, REQUIRED).set(true);
+            node.get(ATTRIBUTES, ENDPOINT_TYPE, NILLABLE).set(false);
 
             node.get(ATTRIBUTES, ENDPOINT_WSDL, DESCRIPTION).set(bundle.getString("endpoint.wsdl"));
             node.get(ATTRIBUTES, ENDPOINT_WSDL, TYPE).set(ModelType.STRING);
-            node.get(ATTRIBUTES, ENDPOINT_WSDL, REQUIRED).set(false);
+            node.get(ATTRIBUTES, ENDPOINT_WSDL, REQUIRED).set(true);
+            node.get(ATTRIBUTES, ENDPOINT_WSDL, NILLABLE).set(false);
 
             node.get(ATTRIBUTES, AVERAGE_PROCESSING_TIME, DESCRIPTION).set(bundle.getString("average.processing.time"));
             node.get(ATTRIBUTES, AVERAGE_PROCESSING_TIME, TYPE).set(ModelType.INT);
             node.get(ATTRIBUTES, AVERAGE_PROCESSING_TIME, REQUIRED).set(false);
+            node.get(ATTRIBUTES, AVERAGE_PROCESSING_TIME, NILLABLE).set(true);
 
             node.get(ATTRIBUTES, MIN_PROCESSING_TIME, DESCRIPTION).set(bundle.getString("min.processing.time"));
             node.get(ATTRIBUTES, MIN_PROCESSING_TIME, TYPE).set(ModelType.INT);
             node.get(ATTRIBUTES, MIN_PROCESSING_TIME, REQUIRED).set(false);
+            node.get(ATTRIBUTES, MIN_PROCESSING_TIME, NILLABLE).set(true);
 
             node.get(ATTRIBUTES, MAX_PROCESSING_TIME, DESCRIPTION).set(bundle.getString("max.processing.time"));
             node.get(ATTRIBUTES, MAX_PROCESSING_TIME, TYPE).set(ModelType.INT);
             node.get(ATTRIBUTES, MAX_PROCESSING_TIME, REQUIRED).set(false);
+            node.get(ATTRIBUTES, MAX_PROCESSING_TIME, NILLABLE).set(true);
 
             node.get(ATTRIBUTES, TOTAL_PROCESSING_TIME, DESCRIPTION).set(bundle.getString("total.processing.time"));
             node.get(ATTRIBUTES, TOTAL_PROCESSING_TIME, TYPE).set(ModelType.INT);
             node.get(ATTRIBUTES, TOTAL_PROCESSING_TIME, REQUIRED).set(false);
+            node.get(ATTRIBUTES, TOTAL_PROCESSING_TIME, NILLABLE).set(true);
 
             node.get(ATTRIBUTES, REQUEST_COUNT, DESCRIPTION).set(bundle.getString("request.count"));
             node.get(ATTRIBUTES, REQUEST_COUNT, TYPE).set(ModelType.INT);
             node.get(ATTRIBUTES, REQUEST_COUNT, REQUIRED).set(false);
+            node.get(ATTRIBUTES, REQUEST_COUNT, NILLABLE).set(true);
 
             node.get(ATTRIBUTES, RESPONSE_COUNT, DESCRIPTION).set(bundle.getString("response.count"));
             node.get(ATTRIBUTES, RESPONSE_COUNT, TYPE).set(ModelType.INT);
             node.get(ATTRIBUTES, RESPONSE_COUNT, REQUIRED).set(false);
+            node.get(ATTRIBUTES, RESPONSE_COUNT, NILLABLE).set(true);
 
             node.get(ATTRIBUTES, FAULT_COUNT, DESCRIPTION).set(bundle.getString("fault.count"));
             node.get(ATTRIBUTES, FAULT_COUNT, TYPE).set(ModelType.INT);
             node.get(ATTRIBUTES, FAULT_COUNT, REQUIRED).set(false);
+            node.get(ATTRIBUTES, FAULT_COUNT, NILLABLE).set(true);
 
             return node;
         }
@@ -426,19 +441,15 @@ final class WSSubsystemProviders {
 
             node.get(CHILDREN, PRE_HANDLER_CHAIN, DESCRIPTION).set(bundle.getString("endpoint.config.pre.handler.chain"));
             node.get(CHILDREN, PRE_HANDLER_CHAIN, REQUIRED).set(false);
-            node.get(CHILDREN, PRE_HANDLER_CHAIN, NILLABLE).set(true);
 
             node.get(CHILDREN, POST_HANDLER_CHAIN, DESCRIPTION).set(bundle.getString("endpoint.config.post.handler.chain"));
             node.get(CHILDREN, POST_HANDLER_CHAIN, REQUIRED).set(false);
-            node.get(CHILDREN, POST_HANDLER_CHAIN, NILLABLE).set(true);
 
             node.get(CHILDREN, PROPERTY, DESCRIPTION).set(bundle.getString("endpoint.config.property"));
             node.get(CHILDREN, PROPERTY, REQUIRED).set(false);
-            node.get(CHILDREN, POST_HANDLER_CHAIN, NILLABLE).set(true);
 
             node.get(CHILDREN, FEATURE, DESCRIPTION).set(bundle.getString("endpoint.config.feature"));
             node.get(CHILDREN, FEATURE, REQUIRED).set(false);
-            node.get(CHILDREN, POST_HANDLER_CHAIN, NILLABLE).set(true);
 
             return node;
         }
@@ -454,14 +465,17 @@ final class WSSubsystemProviders {
             node.get(ATTRIBUTES, PROTOCOL_BINDINGS, TYPE).set(ModelType.STRING);
             node.get(ATTRIBUTES, PROTOCOL_BINDINGS, DESCRIPTION).set(bundle.getString("protocol.binding"));
             node.get(ATTRIBUTES, PROTOCOL_BINDINGS, REQUIRED).set(false);
+            node.get(ATTRIBUTES, PROTOCOL_BINDINGS, NILLABLE).set(true);
 
             node.get(ATTRIBUTES, PORT_NAME_PATTERN, TYPE).set(ModelType.STRING);
             node.get(ATTRIBUTES, PORT_NAME_PATTERN, DESCRIPTION).set(bundle.getString("portname.pattern"));
             node.get(ATTRIBUTES, PORT_NAME_PATTERN, REQUIRED).set(false);
+            node.get(ATTRIBUTES, PORT_NAME_PATTERN, NILLABLE).set(true);
 
             node.get(ATTRIBUTES, SERVICE_NAME_PATTERN, TYPE).set(ModelType.STRING);
             node.get(ATTRIBUTES, SERVICE_NAME_PATTERN, DESCRIPTION).set(bundle.getString("servicename.pattern"));
             node.get(ATTRIBUTES, SERVICE_NAME_PATTERN, REQUIRED).set(false);
+            node.get(ATTRIBUTES, SERVICE_NAME_PATTERN, NILLABLE).set(true);
 
             node.get(CHILDREN, HANDLER_CHAIN, DESCRIPTION).set(bundle.getString(handlerChainName));
             node.get(CHILDREN, HANDLER_CHAIN, REQUIRED).set(false);
@@ -480,6 +494,7 @@ final class WSSubsystemProviders {
             node.get(ATTRIBUTES, HANDLER_CLASS, TYPE).set(ModelType.STRING);
             node.get(ATTRIBUTES, HANDLER_CLASS, DESCRIPTION).set(bundle.getString("handler.class"));
             node.get(ATTRIBUTES, HANDLER_CLASS, REQUIRED).set(true);
+            node.get(ATTRIBUTES, HANDLER_CLASS, NILLABLE).set(false);
 
             return node;
         }
@@ -506,6 +521,7 @@ final class WSSubsystemProviders {
             node.get(ATTRIBUTES, VALUE, TYPE).set(ModelType.STRING);
             node.get(ATTRIBUTES, VALUE, DESCRIPTION).set(bundle.getString("endpoint.config.property.value"));
             node.get(ATTRIBUTES, VALUE, REQUIRED).set(false);
+            node.get(ATTRIBUTES, VALUE, NILLABLE).set(true);
 
             return node;
         }
@@ -538,6 +554,7 @@ final class WSSubsystemProviders {
             node.get(REQUEST_PROPERTIES, VALUE, TYPE).set(ModelType.STRING);
             node.get(REQUEST_PROPERTIES, VALUE, DESCRIPTION).set(bundle.getString("endpoint.config.property.value"));
             node.get(REQUEST_PROPERTIES, VALUE, REQUIRED).set(false);
+            node.get(REQUEST_PROPERTIES, VALUE, NILLABLE).set(true);
             node.get(REPLY_PROPERTIES).setEmptyObject();
             return node;
         }
@@ -643,19 +660,23 @@ final class WSSubsystemProviders {
 
             op.get(REQUEST_PROPERTIES, MODIFY_WSDL_ADDRESS, DESCRIPTION).set(bundle.getString("modify.wsdl.address"));
             op.get(REQUEST_PROPERTIES, MODIFY_WSDL_ADDRESS, TYPE).set(ModelType.BOOLEAN);
-            op.get(REQUEST_PROPERTIES, MODIFY_WSDL_ADDRESS, REQUIRED).set(true);
+            op.get(REQUEST_PROPERTIES, MODIFY_WSDL_ADDRESS, REQUIRED).set(false);
+            op.get(REQUEST_PROPERTIES, MODIFY_WSDL_ADDRESS, NILLABLE).set(true);
 
             op.get(REQUEST_PROPERTIES, WSDL_HOST, DESCRIPTION).set(bundle.getString("wsdl.host"));
             op.get(REQUEST_PROPERTIES, WSDL_HOST, TYPE).set(ModelType.STRING);
-            op.get(REQUEST_PROPERTIES, WSDL_HOST, REQUIRED).set(true);
+            op.get(REQUEST_PROPERTIES, WSDL_HOST, REQUIRED).set(false);
+            op.get(REQUEST_PROPERTIES, WSDL_HOST, NILLABLE).set(false);
 
             op.get(REQUEST_PROPERTIES, WSDL_PORT, DESCRIPTION).set(bundle.getString("wsdl.port"));
             op.get(REQUEST_PROPERTIES, WSDL_PORT, TYPE).set(ModelType.INT);
             op.get(REQUEST_PROPERTIES, WSDL_PORT, REQUIRED).set(false);
+            op.get(REQUEST_PROPERTIES, WSDL_PORT, NILLABLE).set(false);
 
             op.get(REQUEST_PROPERTIES, WSDL_SECURE_PORT, DESCRIPTION).set(bundle.getString("wsdl.secure.port"));
             op.get(REQUEST_PROPERTIES, WSDL_SECURE_PORT, TYPE).set(ModelType.INT);
             op.get(REQUEST_PROPERTIES, WSDL_SECURE_PORT, REQUIRED).set(false);
+            op.get(REQUEST_PROPERTIES, WSDL_SECURE_PORT, NILLABLE).set(false);
 
             op.get(REPLY_PROPERTIES).setEmptyObject();
 

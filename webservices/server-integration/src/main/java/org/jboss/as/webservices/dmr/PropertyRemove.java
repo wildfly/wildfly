@@ -23,39 +23,40 @@ package org.jboss.as.webservices.dmr;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.webservices.WSMessages.MESSAGES;
+import static org.jboss.as.webservices.dmr.PackageUtils.getServerConfig;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.wsf.spi.management.ServerConfig;
 import org.jboss.wsf.spi.metadata.config.EndpointConfig;
-import org.jboss.wsf.spi.metadata.config.Feature;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-final class EndpointConfigFeatureRemove extends AbstractRemoveStepHandler {
+final class PropertyRemove extends AbstractRemoveStepHandler {
 
-    static final EndpointConfigFeatureRemove INSTANCE = new EndpointConfigFeatureRemove();
+    static final PropertyRemove INSTANCE = new PropertyRemove();
 
-    private EndpointConfigFeatureRemove() {}
+    private PropertyRemove() {
+        // forbidden instantiation
+    }
 
     @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        final ServiceController<?> configService = context.getServiceRegistry(true).getService(WSServices.CONFIG_SERVICE);
-        if (configService != null) {
+        final ServerConfig config = getServerConfig(context);
+        if (config != null) {
             final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-            final String featureName = address.getElement(address.size() - 1).getValue();
+            final String propertyName = address.getElement(address.size() - 1).getValue();
             final String configName = address.getElement(address.size() - 2).getValue();
-            final ServerConfig config = (ServerConfig) configService.getValue();
             for (final EndpointConfig endpointConfig : config.getEndpointConfigs()) {
                 if (configName.equals(endpointConfig.getConfigName())) {
-                    endpointConfig.setFeature(new Feature(featureName), false);
-                    context.restartRequired();
+                    if (endpointConfig.getProperties().containsKey(propertyName)) {
+                        endpointConfig.getProperties().remove(propertyName);
+                        context.restartRequired();
+                    }
                     return;
                 }
             }
@@ -65,7 +66,7 @@ final class EndpointConfigFeatureRemove extends AbstractRemoveStepHandler {
 
     @Override
     protected void recoverServices(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        EndpointConfigFeatureAdd.INSTANCE.performRuntime(context, operation, model, null, null);
+        FeatureAdd.INSTANCE.performRuntime(context, operation, model, null, null);
     }
 
 }

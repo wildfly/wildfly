@@ -31,7 +31,6 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -246,8 +245,6 @@ final class WebservicesSubsystemParser implements XMLStreamConstants, XMLElement
 
     private void readEndpointConfig(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> operationList) throws XMLStreamException {
         String configName = null;
-        ModelNode preHandlers = null;
-        ModelNode postHandlers = null;
 
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.nextTag() != END_ELEMENT) {

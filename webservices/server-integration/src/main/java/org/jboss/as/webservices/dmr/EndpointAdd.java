@@ -40,11 +40,11 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-final class WSEndpointAdd extends AbstractAddStepHandler {
+final class EndpointAdd extends AbstractAddStepHandler {
 
-    static final WSEndpointAdd INSTANCE = new WSEndpointAdd();
+    static final EndpointAdd INSTANCE = new EndpointAdd();
 
-    private WSEndpointAdd() {
+    private EndpointAdd() {
         // forbidden instantiation
     }
 
