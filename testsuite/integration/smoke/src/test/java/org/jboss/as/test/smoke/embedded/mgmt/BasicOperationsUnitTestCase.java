@@ -23,10 +23,16 @@
 package org.jboss.as.test.smoke.embedded.mgmt;
 
 import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY_ADDRESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY_IPV4_ADDRESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY_IPV6_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -37,8 +43,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE_DEPTH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
@@ -54,6 +62,8 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
@@ -249,13 +259,62 @@ public class BasicOperationsUnitTestCase {
         Assert.assertTrue(result.asInt() >= 0);
     }
 
+    @Test
     public void testReadAttributeChild() throws IOException {
         final ModelNode address = new ModelNode();
         address.add("subsystem", "deployment-scanner");
 
         final ModelNode operation = createReadAttributeOperation(address, "scanner");
         final ModelNode result = getModelControllerClient().execute(operation);
-        Assert.assertEquals(FAILED, result.get(OUTCOME));
+        Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
+    }
+
+    @Test
+    public void testInterfaceAdd() throws IOException {
+
+        final ModelNode base = new ModelNode();
+        base.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+        base.get(OP_ADDR).add(INTERFACE, "test");
+        base.protect();
+
+        final ModelNode add = base.clone();
+        add.get(OP).set(ADD);
+        add.get(ANY_ADDRESS).set(true);
+        // Add interface
+        execute(add);
+
+        final ModelNode any = base.clone();
+        any.get(NAME).set(ANY_ADDRESS);
+        any.get(VALUE).set(false);
+
+        final ModelNode any6 = base.clone();
+        any6.get(NAME).set(ANY_IPV6_ADDRESS) ;
+        any6.get(VALUE).set(false);
+
+        final ModelNode any4 = base.clone();
+        any4.get(NAME).set(ANY_IPV4_ADDRESS);
+        any4.get(VALUE).set(true);
+
+        final ModelNode composite = new ModelNode();
+        composite.get(OP).set(COMPOSITE);
+        composite.get(OP_ADDR).setEmptyList();
+
+        composite.get(STEPS).add(any);
+        composite.get(STEPS).add(any6);
+        composite.get(STEPS).add(any4);
+
+        execute(composite);
+
+        // Remove interface
+        final ModelNode remove = base.clone();
+        remove.get(OP).set(REMOVE);
+        execute(remove);
+    }
+
+    protected ModelNode execute(final ModelNode operation) throws IOException {
+        final ModelNode result = getModelControllerClient().execute(operation);
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
+        return result;
     }
 
     static void assertSuccessful(final ModelNode result) {

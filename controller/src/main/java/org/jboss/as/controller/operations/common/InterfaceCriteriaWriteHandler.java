@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import org.jboss.dmr.ModelType;
 
 /**
  * Interface criteria write-attribute {@code OperationHandler}
@@ -80,7 +81,7 @@ public final class InterfaceCriteriaWriteHandler implements OperationStepHandler
         model.get(name).set(value);
         context.reloadRequired();
         // Verify the model in a later step
-        context.addStep(VERIFY_HANDLER, OperationContext.Stage.VERIFY);
+        context.addStep(VERIFY_HANDLER, OperationContext.Stage.MODEL);
         if (context.completeStep() != OperationContext.ResultAction.KEEP) {
             context.revertReloadRequired();
         }
@@ -99,6 +100,10 @@ public final class InterfaceCriteriaWriteHandler implements OperationStepHandler
                     throw new OperationFailedException(new ModelNode().set(MESSAGES.required(attributeName)));
                 }
                 if(has) {
+                    // Just ignore 'false'
+                    if(definition.getType() == ModelType.BOOLEAN && ! model.get(attributeName).asBoolean()) {
+                        continue;
+                    }
                     if(! isAllowed(definition, model)) {
                         // TODO probably move this into AttributeDefinition
                         String[] alts = definition.getAlternatives();
@@ -124,7 +129,7 @@ public final class InterfaceCriteriaWriteHandler implements OperationStepHandler
 
         boolean isRequired(final AttributeDefinition def, final ModelNode model) {
             final boolean required = ! def.isAllowNull();
-            return required ? ! hasAlternative(def.getAlternatives(), model) : required;
+            return required ? ! hasAlternative(def.getAlternatives(), model, true) : required;
         }
 
         boolean isAllowed(final AttributeDefinition def, final ModelNode model) {
@@ -132,6 +137,9 @@ public final class InterfaceCriteriaWriteHandler implements OperationStepHandler
             if(alternatives != null) {
                 for(final String alternative : alternatives) {
                     if(model.hasDefined(alternative)) {
+                        if(ATTRIBUTES.get(alternative).getType() == ModelType.BOOLEAN) {
+                            return ! model.get(alternative).asBoolean();
+                        }
                         return false;
                     }
                 }
@@ -139,10 +147,15 @@ public final class InterfaceCriteriaWriteHandler implements OperationStepHandler
             return true;
         }
 
-        boolean hasAlternative(final String[] alternatives,  ModelNode operationObject) {
+        boolean hasAlternative(final String[] alternatives,  ModelNode operationObject, boolean ignoreBoolean) {
             if(alternatives != null) {
                 for(final String alternative : alternatives) {
                     if(operationObject.hasDefined(alternative)) {
+                        if(ignoreBoolean) {
+                            if(operationObject.get(alternative).getType() == ModelType.BOOLEAN) {
+                                return operationObject.get(alternative).asBoolean();
+                            }
+                        }
                         return true;
                     }
                 }
