@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,30 +22,23 @@
 
 package org.jboss.as.webservices.dmr;
 
-import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.webservices.util.WSServices;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.wsf.spi.management.ServerConfig;
 
 /**
- * Removes WS endpoint from webservices subsystem model.
- *
- * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @author <a href="mailto:opalka.richard@gmail.com">Richard Opalka</a>
  */
-final class WSEndpointRemove extends AbstractRemoveStepHandler {
+final class PackageUtils {
 
-    static final WSEndpointRemove INSTANCE = new WSEndpointRemove();
-
-    private WSEndpointRemove() {
+    private PackageUtils() {
         // forbidden instantiation
     }
 
-    /*
-    * if (context.getRuntimeContext() != null) {
-    * context.getRuntimeContext().setRuntimeTask(new RuntimeTask() { public
-    * void execute(RuntimeTaskContext context) throws
-    * OperationFailedException { final ServiceController<?> controller =
-    * context.getServiceRegistry()
-    * .getService(ThreadsServices.threadFactoryName(name)); if (controller
-    * != null) { controller.setMode(ServiceController.Mode.REMOVE); }
-    * resultHandler.handleResultComplete(); } }); } else {
-    * resultHandler.handleResultComplete(); }
-    */
+    static ServerConfig getServerConfig(final OperationContext context) {
+        final ServiceController<?> configService = context.getServiceRegistry(true).getService(WSServices.CONFIG_SERVICE);
+        return configService != null ? (ServerConfig)configService.getValue() : null;
+    }
+
 }

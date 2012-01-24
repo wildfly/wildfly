@@ -22,6 +22,7 @@
 package org.jboss.as.webservices.dmr;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.webservices.dmr.PackageUtils.getServerConfig;
 
 import java.util.List;
 
@@ -30,7 +31,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.wsf.spi.management.ServerConfig;
@@ -44,7 +44,9 @@ final class EndpointConfigAdd extends AbstractAddStepHandler {
 
     static final EndpointConfigAdd INSTANCE = new EndpointConfigAdd();
 
-    private EndpointConfigAdd() {}
+    private EndpointConfigAdd() {
+        // forbidden instantiation
+    }
 
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
@@ -53,16 +55,17 @@ final class EndpointConfigAdd extends AbstractAddStepHandler {
 
     @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
-        // TODO: providy utility method to do this lookup
-        final ServiceController<?> configService = context.getServiceRegistry(true).getService(WSServices.CONFIG_SERVICE);
-        if (configService != null) {
+        final ServerConfig config = getServerConfig(context);
+        if (config != null) {
             final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             final String name = address.getLastElement().getValue();
 
-            ServerConfig config = (ServerConfig) configService.getValue();
             EndpointConfig endpointConfig = new EndpointConfig();
             endpointConfig.setConfigName(name);
             config.addEndpointConfig(endpointConfig);
+            if (!context.isBooting()) {
+                context.restartRequired();
+            }
         }
     }
 
