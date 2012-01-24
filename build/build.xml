@@ -991,6 +991,10 @@
             <maven-resource group="org.jboss.resteasy" artifact="resteasy-multipart-provider" jandex="true"/>
         </module-def>
 
+        <module-def name="org.jboss.resteasy.resteasy-yaml-provider">
+            <maven-resource group="org.jboss.resteasy" artifact="resteasy-yaml-provider" jandex="true"/>
+        </module-def>
+
         <module-def name="org.jboss.security.negotiation">
             <maven-resource group="org.jboss.security" artifact="jboss-negotiation"/>
         </module-def>
@@ -1111,6 +1115,12 @@
             <maven-resource group="org.picketlink" artifact="picketlink-trust-jbossws"/>
         </module-def>
 
+        <module-def name="org.picketbox">
+            <maven-resource group="org.picketbox" artifact="picketbox"/>
+            <maven-resource group="org.picketbox" artifact="picketbox-infinispan"/>
+            <maven-resource group="org.picketbox" artifact="picketbox-commons"/>
+        </module-def>
+
         <module-def name="org.python.jython.standalone">
             <maven-resource group="org.python" artifact="jython-standalone"/>
         </module-def>
@@ -1139,10 +1149,8 @@
             <maven-resource group="org.w3c.css" artifact="sac"/>
         </module-def>
 
-        <module-def name="org.picketbox">
-            <maven-resource group="org.picketbox" artifact="picketbox"/>
-            <maven-resource group="org.picketbox" artifact="picketbox-infinispan"/>
-            <maven-resource group="org.picketbox" artifact="picketbox-commons"/>
+        <module-def name="org.yaml.snakeyaml">
+            <maven-resource group="org.yaml" artifact="snakeyaml"/>
         </module-def>
 
         <module-def name="javax.wsdl4j.api">

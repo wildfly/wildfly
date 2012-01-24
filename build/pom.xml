@@ -1147,7 +1147,7 @@
                     <artifactId>remoting-jmx</artifactId>
                 </dependency>
 
-                <dependency>                
+                <dependency>
                     <groupId>org.jboss</groupId>
                     <artifactId>jboss-remote-naming</artifactId>
                 </dependency>
@@ -1190,6 +1190,11 @@
                 <dependency>
                     <groupId>org.jboss.resteasy</groupId>
                     <artifactId>resteasy-multipart-provider</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.resteasy</groupId>
+                    <artifactId>resteasy-yaml-provider</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1484,6 +1489,21 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.picketbox</groupId>
+                    <artifactId>picketbox</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.picketbox</groupId>
+                    <artifactId>picketbox-commons</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.picketbox</groupId>
+                    <artifactId>picketbox-infinispan</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.python</groupId>
                     <artifactId>jython-standalone</artifactId>
                 </dependency>
@@ -1509,18 +1529,8 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.picketbox</groupId>
-                    <artifactId>picketbox</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.picketbox</groupId>
-                    <artifactId>picketbox-commons</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.picketbox</groupId>
-                    <artifactId>picketbox-infinispan</artifactId>
+                    <groupId>org.yaml</groupId>
+                    <artifactId>snakeyaml</artifactId>
                 </dependency>
 
                 <dependency>
