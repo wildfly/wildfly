@@ -53,6 +53,7 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
         // create the hook for children
         model.get(CommonAttributes.HORNETQ_SERVER);
     }
+
     @Override
     protected void performBoottime(final OperationContext context, ModelNode operation, final ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         context.addStep(new AbstractDeploymentChainStep() {
