@@ -29,6 +29,7 @@ public interface CommonAttributes {
             new ModelNode().set(intDefault), ModelType.INT, true);
     SimpleAttributeDefinition BATCHING = new SimpleAttributeDefinition(ModelKeys.BATCHING,
             new ModelNode().set(booleanDefault), ModelType.BOOLEAN,  true);
+    SimpleAttributeDefinition CACHE = new SimpleAttributeDefinition(ModelKeys.CACHE, ModelType.STRING, true);
     SimpleAttributeDefinition CHUNK_SIZE = new SimpleAttributeDefinition(ModelKeys.CHUNK_SIZE,
             new ModelNode().set(intDefault), ModelType.INT,  true);
     SimpleAttributeDefinition CLASS = new SimpleAttributeDefinition(ModelKeys.CLASS, ModelType.STRING, true);
@@ -69,7 +70,6 @@ public interface CommonAttributes {
     SimpleAttributeDefinition MODE = new SimpleAttributeDefinition(ModelKeys.MODE, ModelType.STRING, true);
     SimpleAttributeDefinition NAME = new SimpleAttributeDefinition(ModelKeys.NAME, ModelType.STRING, true);
     // namespace String
-    SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING = new SimpleAttributeDefinition(ModelKeys.OUTBOUND_SOCKET_BINDING, ModelType.STRING, true);
     SimpleAttributeDefinition OWNERS = new SimpleAttributeDefinition(ModelKeys.OWNERS,
             new ModelNode().set(intDefault), ModelType.INT, true);
     SimpleAttributeDefinition PASSIVATION = new SimpleAttributeDefinition(ModelKeys.PASSIVATION,
@@ -128,9 +128,6 @@ public interface CommonAttributes {
     AttributeDefinition[] TRANSACTION_ATTRIBUTES = { MODE, STOP_TIMEOUT, EAGER_LOCKING  };
     AttributeDefinition[] EVICTION_ATTRIBUTES = { STRATEGY, MAX_ENTRIES };
     AttributeDefinition[] EXPIRATION_ATTRIBUTES = { MAX_IDLE, LIFESPAN, INTERVAL };
-    AttributeDefinition[] STORE_ATTRIBUTES = { SHARED, PRELOAD, PASSIVATION, FETCH_STATE, PURGE, SINGLETON, PROPERTY};
-    AttributeDefinition[] FILE_STORE_ATTRIBUTES = { RELATIVE_TO, PATH };
-
     AttributeDefinition[] STATE_TRANSFER_ATTRIBUTES = { ENABLED, TIMEOUT, CHUNK_SIZE };
 
     // complex attribute definitions (helpers for now to create descriptions)
@@ -166,40 +163,49 @@ public interface CommonAttributes {
             setSuffix("state-transfer").
             build();
 
+    // jdbc store
     SimpleAttributeDefinition COLUMN_NAME = new SimpleAttributeDefinition("name", ModelType.STRING, true);
     SimpleAttributeDefinition COLUMN_TYPE = new SimpleAttributeDefinition("type", ModelType.STRING, true);
     ObjectTypeAttributeDefinition ID_COLUMN = ObjectTypeAttributeDefinition.
             Builder.of("id-column", COLUMN_NAME, COLUMN_TYPE).
             setAllowNull(true).
-            setSuffix("id-column").
+            setSuffix("column").
             build();
     ObjectTypeAttributeDefinition DATA_COLUMN = ObjectTypeAttributeDefinition.
             Builder.of("data-column", COLUMN_NAME, COLUMN_TYPE).
             setAllowNull(true).
-            setSuffix("data-column").
+            setSuffix("column").
             build();
     ObjectTypeAttributeDefinition TIMESTAMP_COLUMN = ObjectTypeAttributeDefinition.
             Builder.of("timestamp-column", COLUMN_NAME, COLUMN_TYPE).
             setAllowNull(true).
-            setSuffix("timestamp-column").
+            setSuffix("column").
             build();
     ObjectTypeAttributeDefinition ENTRY_TABLE = ObjectTypeAttributeDefinition.
-            Builder.of("entry-table", ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN).
+            Builder.of("entry-table", PREFIX, BATCH_SIZE, FETCH_SIZE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN).
             setAllowNull(true).
-            setSuffix("entry-table").
+            setSuffix("table").
             build();
     ObjectTypeAttributeDefinition BUCKET_TABLE = ObjectTypeAttributeDefinition.
-            Builder.of("bucket-table", ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN).
+            Builder.of("bucket-table", PREFIX, BATCH_SIZE, FETCH_SIZE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN).
             setAllowNull(true).
-            setSuffix("bucket-table").
+            setSuffix("table").
             build();
 
-    SimpleAttributeDefinition REMOTE_SERVER = new SimpleAttributeDefinition(ModelKeys.REMOTE_SERVER, ModelType.STRING, true);
-    SimpleListAttributeDefinition REMOTE_SERVERS = SimpleListAttributeDefinition.Builder.of(ModelKeys.REMOTE_SERVERS, REMOTE_SERVER).
+    // remote store
+    SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING = new SimpleAttributeDefinition("outbound-socket-binding", ModelType.STRING, true);
+    ObjectTypeAttributeDefinition REMOTE_SERVER = ObjectTypeAttributeDefinition.
+            Builder.of(ModelKeys.REMOTE_SERVER, OUTBOUND_SOCKET_BINDING).
+            setAllowNull(true).
+            setSuffix("remote-server").
+            build();
+    ObjectListAttributeDefinition REMOTE_SERVERS = ObjectListAttributeDefinition.Builder.of(ModelKeys.REMOTE_SERVERS, REMOTE_SERVER).
             setAllowNull(true).
             build();
 
+    AttributeDefinition[] COMMON_STORE_ATTRIBUTES = { SHARED, PRELOAD, PASSIVATION, FETCH_STATE, PURGE, SINGLETON, PROPERTIES};
+    AttributeDefinition[] STORE_ATTRIBUTES = { CLASS };
+    AttributeDefinition[] FILE_STORE_ATTRIBUTES = { RELATIVE_TO, PATH };
     AttributeDefinition[] JDBC_STORE_ATTRIBUTES = { DATA_SOURCE, ENTRY_TABLE, BUCKET_TABLE };
-    AttributeDefinition[] REMOTE_STORE_ATTRIBUTES = { REMOTE_SERVERS };
-
+    AttributeDefinition[] REMOTE_STORE_ATTRIBUTES = { CACHE, TCP_NO_DELAY, SOCKET_TIMEOUT, REMOTE_SERVERS };
 }

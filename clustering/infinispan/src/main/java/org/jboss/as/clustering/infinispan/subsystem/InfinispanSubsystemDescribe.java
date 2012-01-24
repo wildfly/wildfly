@@ -168,6 +168,38 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
             expirationAddress.add(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME);
             result.add(CacheConfigOperationHandlers.createOperation(CommonAttributes.EXPIRATION_ATTRIBUTES, expirationAddress, expiration));
         }
+
+        // command to recreate the cache store configuration
+        if (cache.getValue().get(ModelKeys.STORE, ModelKeys.STORE_NAME).isDefined()) {
+            ModelNode store = cache.getValue().get(ModelKeys.STORE, ModelKeys.STORE_NAME);
+            ModelNode storeAddress = address.clone();
+            storeAddress.add(ModelKeys.STORE, ModelKeys.STORE_NAME);
+            result.add(CacheConfigOperationHandlers.createStoreOperation(CommonAttributes.COMMON_STORE_ATTRIBUTES, storeAddress, store,
+                    CommonAttributes.STORE_ATTRIBUTES));
+        }
+        else if (cache.getValue().get(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME).isDefined()) {
+            ModelNode store = cache.getValue().get(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME);
+            ModelNode storeAddress = address.clone();
+            storeAddress.add(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME);
+            result.add(CacheConfigOperationHandlers.createStoreOperation(CommonAttributes.COMMON_STORE_ATTRIBUTES, storeAddress, store,
+                    CommonAttributes.FILE_STORE_ATTRIBUTES));
+        }
+        else if (cache.getValue().get(ModelKeys.JDBC_STORE, ModelKeys.JDBC_STORE_NAME).isDefined()) {
+            ModelNode store = cache.getValue().get(ModelKeys.JDBC_STORE, ModelKeys.JDBC_STORE_NAME);
+            ModelNode storeAddress = address.clone();
+            storeAddress.add(ModelKeys.JDBC_STORE, ModelKeys.JDBC_STORE_NAME);
+            result.add(CacheConfigOperationHandlers.createStoreOperation(CommonAttributes.COMMON_STORE_ATTRIBUTES, storeAddress, store,
+                    CommonAttributes.JDBC_STORE_ATTRIBUTES));
+        }
+        else if (cache.getValue().get(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME).isDefined()) {
+            ModelNode store = cache.getValue().get(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME);
+            ModelNode storeAddress = address.clone();
+            storeAddress.add(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME);
+            result.add(CacheConfigOperationHandlers.createStoreOperation(CommonAttributes.COMMON_STORE_ATTRIBUTES, storeAddress, store,
+                    CommonAttributes.REMOTE_STORE_ATTRIBUTES));
+        }
+
+
     }
 
     /**

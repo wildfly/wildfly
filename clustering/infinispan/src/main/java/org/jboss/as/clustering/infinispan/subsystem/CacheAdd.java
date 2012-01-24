@@ -283,27 +283,13 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         if (fromModel.hasDefined(ModelKeys.JNDI_NAME)) {
             toModel.get(ModelKeys.JNDI_NAME).set(fromModel.get(ModelKeys.JNDI_NAME));
         }
-        // child elements
-
-        if (fromModel.hasDefined(ModelKeys.STORE)) {
-            toModel.get(ModelKeys.STORE).set(fromModel.get(ModelKeys.STORE));
-        }
-        if (fromModel.hasDefined(ModelKeys.FILE_STORE)) {
-            toModel.get(ModelKeys.FILE_STORE).set(fromModel.get(ModelKeys.FILE_STORE));
-        }
-        if (fromModel.hasDefined(ModelKeys.JDBC_STORE)) {
-            toModel.get(ModelKeys.JDBC_STORE).set(fromModel.get(ModelKeys.JDBC_STORE));
-        }
-        if (fromModel.hasDefined(ModelKeys.REMOTE_STORE)) {
-            toModel.get(ModelKeys.REMOTE_STORE).set(fromModel.get(ModelKeys.REMOTE_STORE));
-        }
     }
 
     /**
      * Create a Configuration object initialized from the operation ModelNode
      *
      * @param cache ModelNode representing cache configuration
-     * @param configuration Configuration object to add data to
+     * @param builder ConfigurationBuilder object to add data to
      * @return initialised Configuration object
      */
     void processModelNode(ModelNode cache, ConfigurationBuilder builder, List<Dependency<?>> dependencies) {
@@ -417,7 +403,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
 
         String storeKey = this.findStoreKey(cache);
         if (storeKey != null) {
-            ModelNode store = cache.get(storeKey);
+            ModelNode store = this.getStoreModelNode(cache);
             builder.loaders()
                     .shared(store.hasDefined(ModelKeys.SHARED) ? store.get(ModelKeys.SHARED).asBoolean() : false)
                     .preload(store.hasDefined(ModelKeys.PRELOAD) ? store.get(ModelKeys.PRELOAD).asBoolean() : false)
@@ -444,6 +430,20 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         }
         return null;
     }
+
+    private ModelNode getStoreModelNode(ModelNode cache) {
+        if (cache.hasDefined(ModelKeys.STORE)) {
+            return cache.get(ModelKeys.STORE, ModelKeys.STORE_NAME);
+        } else if (cache.hasDefined(ModelKeys.FILE_STORE)) {
+            return cache.get(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME);
+        } else if (cache.hasDefined(ModelKeys.JDBC_STORE)) {
+            return cache.get(ModelKeys.JDBC_STORE, ModelKeys.JDBC_STORE_NAME);
+        } else if (cache.hasDefined(ModelKeys.REMOTE_STORE)) {
+            return cache.get(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME);
+        }
+        return null;
+    }
+
 
     private void buildCacheStore(LoaderConfigurationBuilder builder, String name, ModelNode store, String storeKey, List<Dependency<?>> dependencies) {
         final Properties properties = new TypedProperties();

@@ -55,12 +55,14 @@ public class ModelKeys {
     static final String FETCH_SIZE = "fetch-size";
     static final String FETCH_STATE = "fetch-state";
     static final String FILE_STORE = "file-store";
+    static final String FILE_STORE_NAME = "FILE_STORE";
     static final String ID_COLUMN = "id-column";
     static final String INDEXING = "indexing";
     static final String INTERVAL = "interval";
     static final String INVALIDATION_CACHE = "invalidation-cache";
     static final String ISOLATION = "isolation";
     static final String JDBC_STORE = "jdbc-store";
+    static final String JDBC_STORE_NAME = "JDBC_STORE";
     static final String JNDI_NAME = "jndi-name";
     static final String L1_LIFESPAN = "l1-lifespan";
     static final String LIFESPAN = "lifespan";
@@ -89,6 +91,7 @@ public class ModelKeys {
     static final String RELATIVE_TO = "relative-to";
     static final String REMOTE_SERVER = "remote-server";
     static final String REMOTE_SERVERS = "remote-servers";
+    static final String REMOTE_STORE_NAME = "REMOTE_STORE";
     static final String REMOTE_STORE = "remote-store";
     static final String REMOTE_TIMEOUT = "remote-timeout";
     static final String REPLICATED_CACHE = "replicated-cache";
@@ -103,6 +106,7 @@ public class ModelKeys {
     static final String STATE_TRANSFER_NAME = "STATE_TRANSFER";
     static final String STOP_TIMEOUT = "stop-timeout";
     static final String STORE = "store";
+    static final String STORE_NAME = "STORE";
     static final String STRATEGY = "strategy";
     static final String STRIPING = "striping";
     static final String TCP_NO_DELAY = "tcp-no-delay";
