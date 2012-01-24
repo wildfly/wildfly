@@ -7,19 +7,19 @@
     <servlet>
         <servlet-name>TG_MIXED_servlet</servlet-name>
         <description>Test servlet mixed</description>
-        <servlet-class>org.jboss.as.test.integration.web.security.tg.TransportGuaranteeAnnotatedServlet</servlet-class>
+        <servlet-class>org.jboss.as.test.integration.web.security.tg.TransportGuaranteeMixedServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
 
     <servlet-mapping>
         <servlet-name>TG_MIXED_servlet</servlet-name>
-        <url-pattern>/tgmixed/srv</url-pattern>
+        <url-pattern>/tg_mixed_override/srv/*</url-pattern>
     </servlet-mapping>
 
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>sec</web-resource-name>
-            <url-pattern>/tgmixed/*</url-pattern>
+            <url-pattern>/tg_mixed_override/*</url-pattern>
             <http-method>GET</http-method>
             <http-method>POST</http-method>
         </web-resource-collection>
@@ -27,7 +27,7 @@
             <role-name>gooduser</role-name>
         </auth-constraint>
         <user-data-constraint>
-            <transport-guarantee>NONE</transport-guarantee>
+            <transport-guarantee>CONFIDENTIAL</transport-guarantee>
         </user-data-constraint>
     </security-constraint>
 

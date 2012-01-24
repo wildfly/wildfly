@@ -136,7 +136,7 @@ public class TransportGuaranteeTestCase {
 
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         WebArchive war = ShrinkWrap.create(WebArchive.class, TG_MIXED + WAR);
-        war.addClass(TransportGuaranteeAnnotatedServlet.class);
+        war.addClass(TransportGuaranteeMixedServlet.class);
 
         war.addAsResource(tccl.getResource("web/sec/tg/users.properties"), "users.properties");
         war.addAsResource(tccl.getResource("web/sec/tg/roles.properties"), "roles.properties");
@@ -265,7 +265,7 @@ public class TransportGuaranteeTestCase {
               null,
               "anil",
               "anil");
-        Assert.assertFalse("Not secure transport on URL has to be prevented, but was not", result);
+        Assert.assertFalse("Non secure transport on URL has to be prevented, but was not", result);
 
     }
 
@@ -288,7 +288,7 @@ public class TransportGuaranteeTestCase {
               null,
               "anil",
               "anil");
-        Assert.assertFalse("Not secure transport on URL has to be prevented, but was not", result);
+        Assert.assertFalse("Non secure transport on URL has to be prevented, but was not", result);
 
 
     }
@@ -298,22 +298,24 @@ public class TransportGuaranteeTestCase {
     @Ignore("AS7-3415")
     public void testTransportGuaranteedMixed() throws Exception {
 
-        String testURLContext = "/" + TG_MIXED + "/tgmixed/srv";
+        String testURLContext = "/" + TG_MIXED
+              + "/tg_mixed_override/srv" ;
 
         boolean result = checkGetURL(
               httpsTestURL + testURLContext,
               "TransportGuaranteedGet",
               "anil",
               "anil");
-        Assert.assertTrue("Response expected, overridden TG option set to NONE, so https has to work", result);
+        Assert.assertTrue("Not expected response", result);
 
 
         result = checkGetURL(
               httpTestURL + testURLContext,
-              "TransportGuaranteedGet",
+              null,
               "anil",
               "anil");
-        Assert.assertTrue("Response expected, overridden TG option set to NONE", result);
+        Assert.assertFalse("Non secure transport on URL has to be prevented, but was not", result);
+
 
     }
 
