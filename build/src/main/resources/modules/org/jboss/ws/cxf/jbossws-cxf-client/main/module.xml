@@ -43,7 +43,8 @@
         <module name="org.jboss.ws.jaxws-client" export="true" services="export" />
         <!--  JBossWS configuration of Apache CXF -->
         <module name="org.jboss.ws.cxf.jbossws-cxf-factories" services="export" />
-        <module name="org.apache.cxf" export="true" services="export" />
+        <!-- Apache CXF - do not import services, those need to come from JBossWS -->
+        <module name="org.apache.cxf" export="true" />
         <module name="org.jboss.ws.cxf.jbossws-cxf-transports-httpserver" export="true" services="export" />
         <module name="org.jboss.jaxbintros" export="true"/>
     </dependencies>
