@@ -386,7 +386,9 @@ final class WebservicesSubsystemParser implements XMLStreamConstants, XMLElement
                 throw unexpectedAttribute(reader, i);
             }
         }
-        if (handlerChainId == null) throw new RuntimeException();
+        if (handlerChainId == null) {
+            handlerChainId = "auto-generated-" + System.currentTimeMillis();
+        }
         String protocolBindings = null;
         String portNamePattern = null;
         String serviceNamePattern = null;
