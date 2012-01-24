@@ -76,6 +76,7 @@ import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
+// TODO: split providers?
 // TODO: review REQUIRED - should be present only on operations?
 // TODO: review NILLABLE
 /**
@@ -201,15 +202,33 @@ final class WSSubsystemProviders {
         }
     };
 
+    static final DescriptionProvider ENDPOINT_CONFIG_PRE_HANDLER_CHAIN_REMOVE_DESCRIPTION = new DescriptionProvider() {
+        public ModelNode getModelDescription(final Locale locale) {
+            return Descriptions.getEndpointConfigHandlerChainRemoveDescription(locale, "endpoint.config.pre.handler.chain");
+        }
+    };
+
     static final DescriptionProvider ENDPOINT_CONFIG_HANDLER_ADD_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
             return Descriptions.getEndpointConfigHandlerAddDescription(locale);
         }
     };
 
+    static final DescriptionProvider ENDPOINT_CONFIG_HANDLER_REMOVE_DESCRIPTION = new DescriptionProvider() {
+        public ModelNode getModelDescription(final Locale locale) {
+            return Descriptions.getEndpointConfigHandlerRemoveDescription(locale);
+        }
+    };
+
     static final DescriptionProvider ENDPOINT_CONFIG_POST_HANDLER_CHAIN_ADD_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
             return Descriptions.getEndpointConfigHandlerChainAddDescription(locale, "endpoint.config.post.handler.chain");
+        }
+    };
+
+    static final DescriptionProvider ENDPOINT_CONFIG_POST_HANDLER_CHAIN_REMOVE_DESCRIPTION = new DescriptionProvider() {
+        public ModelNode getModelDescription(final Locale locale) {
+            return Descriptions.getEndpointConfigHandlerChainRemoveDescription(locale, "endpoint.config.post.handler.chain");
         }
     };
 
@@ -421,25 +440,6 @@ final class WSSubsystemProviders {
             node.get(CHILDREN, FEATURE, REQUIRED).set(false);
             node.get(CHILDREN, POST_HANDLER_CHAIN, NILLABLE).set(true);
 
-            // TODO: rewrite the following commented out code
-            /*
-            node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, TYPE).set(ModelType.STRING);
-            node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, DESCRIPTION).set(bundle.getString("handler.name"));
-            node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, REQUIRED).set(true);
-
-            node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, TYPE).set(ModelType.STRING);
-            node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, DESCRIPTION).set(bundle.getString("handler.class"));
-            node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, REQUIRED).set(true);
-
-            node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, TYPE).set(ModelType.STRING);
-            node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, DESCRIPTION).set(bundle.getString("handler.name"));
-            node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, REQUIRED).set(true);
-
-            node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, TYPE).set(ModelType.STRING);
-            node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, DESCRIPTION).set(bundle.getString("handler.class"));
-            node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, REQUIRED).set(true);
-            */
-
             return node;
         }
 
@@ -568,6 +568,16 @@ final class WSSubsystemProviders {
             return node;
         }
 
+        static ModelNode getEndpointConfigHandlerChainRemoveDescription(final Locale locale, final String handlerChainName) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode node = new ModelNode();
+            node.get(OPERATION_NAME).set(REMOVE);
+            node.get(DESCRIPTION).set(bundle.getString(handlerChainName));
+            node.get(REQUEST_PROPERTIES).setEmptyObject();
+            node.get(REPLY_PROPERTIES).setEmptyObject();
+            return node;
+        }
+
         static ModelNode getEndpointConfigHandlerAddDescription(final Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
             final ModelNode node = new ModelNode();
@@ -581,6 +591,16 @@ final class WSSubsystemProviders {
 
             node.get(REPLY_PROPERTIES).setEmptyObject();
 
+            return node;
+        }
+
+        static ModelNode getEndpointConfigHandlerRemoveDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode node = new ModelNode();
+            node.get(OPERATION_NAME).set(REMOVE);
+            node.get(DESCRIPTION).set(bundle.getString("handler.name"));
+            node.get(REQUEST_PROPERTIES).setEmptyObject();
+            node.get(REPLY_PROPERTIES).setEmptyObject();
             return node;
         }
 

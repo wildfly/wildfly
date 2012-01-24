@@ -44,10 +44,8 @@ final class EndpointConfigRemove extends AbstractRemoveStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-
-        ServiceController<?> configService = context.getServiceRegistry(true).getService(WSServices.CONFIG_SERVICE);
+        final ServiceController<?> configService = context.getServiceRegistry(true).getService(WSServices.CONFIG_SERVICE);
         if (configService != null) {
-
             final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             final String name = address.getLastElement().getValue();
 
@@ -60,6 +58,7 @@ final class EndpointConfigRemove extends AbstractRemoveStepHandler {
             }
             if (target != null) {
                 config.getEndpointConfigs().remove(target);
+                context.restartRequired();
             }
         }
     }

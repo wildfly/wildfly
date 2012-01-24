@@ -23,49 +23,39 @@ package org.jboss.as.webservices.dmr;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.webservices.WSMessages.MESSAGES;
-import static org.jboss.as.webservices.dmr.Constants.HANDLER_CLASS;
 import static org.jboss.as.webservices.dmr.Constants.POST_HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PRE_HANDLER_CHAIN;
-import static org.jboss.as.webservices.dmr.Constants.PROTOCOL_BINDINGS;
-import static org.jboss.as.webservices.dmr.Constants.SERVICE_NAME_PATTERN;
 
-import java.util.LinkedList;
 import java.util.List;
 
-import javax.xml.namespace.QName;
-
-import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.wsf.spi.management.ServerConfig;
 import org.jboss.wsf.spi.metadata.config.EndpointConfig;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainMetaData;
-import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-final class EndpointConfigHandlerAdd extends AbstractAddStepHandler {
+final class EndpointConfigHandlerChainRemove extends AbstractRemoveStepHandler {
 
-    static final EndpointConfigHandlerAdd INSTANCE = new EndpointConfigHandlerAdd();
+    static final EndpointConfigHandlerChainRemove INSTANCE = new EndpointConfigHandlerChainRemove();
 
-    private EndpointConfigHandlerAdd() {}
+    private EndpointConfigHandlerChainRemove() {}
 
     @Override
-    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
         final ServiceController<?> configService = context.getServiceRegistry(true).getService(WSServices.CONFIG_SERVICE);
         if (configService != null) {
             final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-            final String configName = address.getElement(address.size() - 3).getValue();
-            final String handlerChainType = address.getElement(address.size() - 2).getKey();
-            final String handlerChainId = address.getElement(address.size() - 2).getValue();
-            final String handlerName = address.getElement(address.size() - 1).getValue();
-            final String handlerClass = operation.require(HANDLER_CLASS).asString();
+            final String configName = address.getElement(address.size() - 2).getValue();
+            final String handlerChainType = address.getElement(address.size() - 1).getKey();
+            final String handlerChainId = address.getElement(address.size() - 1).getValue();
             final ServerConfig config = (ServerConfig) configService.getValue();
             for (final EndpointConfig endpointConfig : config.getEndpointConfigs()) {
                 if (configName.equals(endpointConfig.getConfigName())) {
@@ -79,15 +69,10 @@ final class EndpointConfigHandlerAdd extends AbstractAddStepHandler {
                     }
                     final UnifiedHandlerChainMetaData handlerChain = getChain(handlerChains, handlerChainId);
                     if (handlerChain == null) {
-                        throw MESSAGES.multipleHandlerChainsWithSameId(handlerChainType, handlerChainId, configName);
+                        throw MESSAGES.missingHandlerChain(configName, handlerChainType, handlerChainId);
                     }
-                    final UnifiedHandlerMetaData handler = new UnifiedHandlerMetaData();
-                    handler.setHandlerName(handlerName);
-                    handler.setHandlerClass(handlerClass);
-                    handlerChain.addHandler(handler);
-                    if (!context.isBooting()) {
-                        context.restartRequired();
-                    }
+                    handlerChains.remove(handlerChain);
+                    context.restartRequired();
                     return;
                 }
             }
@@ -102,13 +87,6 @@ final class EndpointConfigHandlerAdd extends AbstractAddStepHandler {
             }
         }
         return null;
-    }
-
-    @Override
-    protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        if (operation.hasDefined(HANDLER_CLASS)) {
-            model.get(HANDLER_CLASS).set(operation.get(HANDLER_CLASS));
-        }
     }
 
 }
