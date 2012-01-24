@@ -29,6 +29,7 @@ import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandHistory;
 import org.jboss.as.cli.CommandLineCompleter;
+import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.batch.BatchedCommand;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
@@ -286,5 +287,10 @@ public class MockCommandContext implements CommandContext {
     @Override
     public int getExitCode() {
         return exitCode;
+    }
+
+    @Override
+    public void handle(String line) throws CommandLineException {
+        // TODO Auto-generated method stub
     }
 }

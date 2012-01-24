@@ -69,6 +69,7 @@ import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandHandler;
 import org.jboss.as.cli.CommandHistory;
 import org.jboss.as.cli.CommandLineCompleter;
+import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.CommandRegistry;
 import org.jboss.as.cli.OperationCommand;
 import org.jboss.as.cli.SSLConfig;
@@ -130,6 +131,7 @@ import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
 import org.jboss.as.cli.operation.impl.DefaultPrefixFormatter;
 import org.jboss.as.cli.operation.impl.RolloutPlanCompleter;
+import org.jboss.as.cli.parsing.operation.OperationFormat;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
@@ -141,11 +143,6 @@ import org.jboss.sasl.util.HexConverter;
  * @author Alexey Loubyansky
  */
 class CommandContextImpl implements CommandContext {
-
-    static boolean isOperation(String line) {
-        char firstChar = line.charAt(0);
-        return firstChar == '.' || firstChar == ':' || firstChar == '/' || line.startsWith("..") || line.startsWith(".type");
-    }
 
     /** the cli configuration */
     private final CliConfig config;
@@ -396,22 +393,15 @@ class CommandContextImpl implements CommandContext {
         return terminate;
     }
 
-    void processLine(String line) {
+    @Override
+    public void handle(String line) throws CommandLineException {
         if (line.isEmpty() || line.charAt(0) == '#') {
             return; // ignore comments
         }
 
-        exitCode = 0;
-        if (isOperation(line)) {
-
-            ModelNode request;
-            try {
-                resetArgs(line);
-                request = parsedCmd.toOperationRequest(this);
-            } catch (CommandFormatException e) {
-                error(e.getLocalizedMessage());
-                return;
-            }
+        resetArgs(line);
+        if (parsedCmd.getFormat() == OperationFormat.INSTANCE) {
+            final ModelNode request = parsedCmd.toOperationRequest(this);
 
             if (isBatchMode()) {
                 StringBuilder op = new StringBuilder();
@@ -431,19 +421,12 @@ class CommandContextImpl implements CommandContext {
             }
 
         } else {
-            try {
-                resetArgs(line);
-            } catch (CommandFormatException e1) {
-                error(e1.getLocalizedMessage());
-                return;
-            }
-
             final String cmdName = parsedCmd.getOperationName();
             CommandHandler handler = cmdRegistry.getCommandHandler(cmdName.toLowerCase());
             if (handler != null) {
                 if (isBatchMode() && handler.isBatchMode()) {
                     if (!(handler instanceof OperationCommand)) {
-                        error("The command is not allowed in a batch.");
+                        throw new CommandLineException("The command is not allowed in a batch.");
                     } else {
                         try {
                             ModelNode request = ((OperationCommand) handler).buildRequest(this);
@@ -452,25 +435,24 @@ class CommandContextImpl implements CommandContext {
                             batch.add(batchedCmd);
                             printLine("#" + batch.size() + " " + batchedCmd.getCommand());
                         } catch (CommandFormatException e) {
-                            error("Failed to add to batch: " + e.getLocalizedMessage());
+                            throw new CommandFormatException("Failed to add to batch '" + line + "'", e);
                         }
                     }
                 } else {
-                    try {
-                        handler.handle(this);
-                    } catch (CommandFormatException e) {
-                        error(e.getLocalizedMessage());
-                    }
-                }
-
-                // TODO this doesn't make sense
-                try {
-                    resetArgs(null);
-                } catch (CommandFormatException e) {
+                    handler.handle(this);
                 }
             } else {
-                error("Unexpected command '" + line + "'. Type 'help --commands' for the list of supported commands.");
+                throw new CommandLineException("Unexpected command '" + line + "'. Type 'help --commands' for the list of supported commands.");
             }
+        }
+    }
+
+    void processLine(String line) {
+        exitCode = 0;
+        try {
+            handle(line);
+        } catch (CommandLineException e) {
+            error(e.getLocalizedMessage());
         }
     }
 
@@ -904,7 +886,7 @@ class CommandContextImpl implements CommandContext {
             throw e;
         }
 
-        if (isOperation(line)) {
+        if (parsedCmd.getFormat() == OperationFormat.INSTANCE) {
             try {
                 ModelNode request = this.parsedCmd.toOperationRequest(this);
                 StringBuilder op = new StringBuilder();
@@ -920,12 +902,12 @@ class CommandContextImpl implements CommandContext {
         if (handler == null) {
             throw new OperationFormatException("No command handler for '" + parsedCmd.getOperationName() + "'.");
         }
-        if (!(handler instanceof OperationCommand)) {
+        if (!handler.isBatchMode()) {
             throw new OperationFormatException("The command is not allowed in a batch.");
         }
 
         try {
-            ModelNode request = ((OperationCommand) handler).buildRequest(this);
+            final ModelNode request = ((OperationCommand) handler).buildRequest(this);
             return new DefaultBatchedCommand(line, request);
         } finally {
             this.parsedCmd = originalParsedArguments;

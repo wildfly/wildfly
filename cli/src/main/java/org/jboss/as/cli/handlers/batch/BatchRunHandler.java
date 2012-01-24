@@ -55,13 +55,13 @@ public class BatchRunHandler extends CommandHandlerWithHelp {
     @Override
     protected void doHandle(CommandContext ctx) {
 
-        BatchManager batchManager = ctx.getBatchManager();
+        final BatchManager batchManager = ctx.getBatchManager();
         if(!batchManager.isBatchActive()) {
             ctx.error("No active batch.");
             return;
         }
 
-        Batch batch = batchManager.getActiveBatch();
+        final Batch batch = batchManager.getActiveBatch();
         List<BatchedCommand> currentBatch = batch.getCommands();
         if(currentBatch.isEmpty()) {
             ctx.error("The batch is empty.");
@@ -69,15 +69,7 @@ public class BatchRunHandler extends CommandHandlerWithHelp {
             return;
         }
 
-        ModelNode composite = new ModelNode();
-        composite.get(Util.OPERATION).set(Util.COMPOSITE);
-        composite.get(Util.ADDRESS).setEmptyList();
-        ModelNode steps = composite.get(Util.STEPS);
-
-        for(BatchedCommand cmd : currentBatch) {
-            steps.add(cmd.getRequest());
-        }
-
+        final ModelNode composite = batch.toRequest();
         try {
             ModelNode result = ctx.getModelControllerClient().execute(composite);
             if(Util.isSuccess(result)) {
