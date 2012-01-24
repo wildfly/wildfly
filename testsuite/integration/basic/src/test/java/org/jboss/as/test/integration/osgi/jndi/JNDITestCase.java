@@ -23,14 +23,21 @@ package org.jboss.as.test.integration.osgi.jndi;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.InputStream;
+import java.util.Dictionary;
+import java.util.Hashtable;
 
 import javax.inject.Inject;
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import javax.naming.Name;
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingException;
 import javax.naming.spi.InitialContextFactory;
 import javax.naming.spi.InitialContextFactoryBuilder;
+import javax.naming.spi.ObjectFactory;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -43,6 +50,7 @@ import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
+import org.osgi.framework.ServiceRegistration;
 
 /**
  * A test that deployes a bundle that exercises the {@link InitialContext}
@@ -99,8 +107,73 @@ public class JNDITestCase {
         assertNotNull("Lookup not null", lookup);
     }
 
+    @Test
+    public void testObjectFactoryOSGiService() throws Exception {
+        InitialContext ictx = new InitialContext();
+
+        try {
+            ictx.lookup("testscheme:testing/123");
+        } catch (NameNotFoundException nnfe) {
+            // good
+        }
+
+        ObjectFactory of = new TestObjectFactory();
+
+        BundleContext context = bundle.getBundleContext();
+        Dictionary<String, Object> props = new Hashtable<String, Object>();
+        props.put("osgi.jndi.url.scheme", new String [] {"testscheme"});
+        ServiceRegistration reg = context.registerService(ObjectFactory.class.getName(), of, props);
+
+        boolean found = false;
+        int i=0;
+        while(i < 20) {
+            try {
+                assertEquals("Gotcha!", ictx.lookup("testscheme:testing/123"));
+                found = true;
+                break;
+            } catch (NameNotFoundException nnfe) {
+                // try again, functionality is enabled asynchronously so it might arrive in a bit
+            }
+            i++;
+            Thread.sleep(100);
+        }
+        assertTrue(found);
+
+        // Unregister the service, this should get rid of the URL handler in JNDI
+        reg.unregister();
+
+        boolean gone = false;
+        int j=0;
+        while (j < 20) {
+            try {
+                ictx.lookup("testscheme:testing/123");
+                // functionality is removed asynchronously, try again
+            } catch (NameNotFoundException nnfe) {
+                gone = true;
+                break;
+            }
+
+            j++;
+            Thread.sleep(100);
+        }
+        assertTrue(gone);
+    }
+
     private InitialContext getInitialContext(BundleContext context) {
         ServiceReference sref = context.getServiceReference(InitialContext.class.getName());
         return (InitialContext) context.getService(sref);
+    }
+
+    public class TestObjectFactory implements ObjectFactory {
+
+        @Override
+        public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception {
+            return new InitialContext(new Hashtable<String, Object>()) {
+                @Override
+                public Object lookup(Name name) throws NamingException {
+                    return "Gotcha!";
+                }
+            };
+        }
     }
 }

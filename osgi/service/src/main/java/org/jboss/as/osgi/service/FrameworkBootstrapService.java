@@ -22,7 +22,29 @@
 
 package org.jboss.as.osgi.service;
 
+import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
+import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
+import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_MODULES;
+import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_MODULES_EXTRA;
+import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_PACKAGES;
+import static org.jboss.osgi.framework.Constants.JBOSGI_PREFIX;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.management.MBeanServer;
+import javax.naming.spi.ObjectFactory;
+
 import org.jboss.as.jmx.MBeanServerService;
+import org.jboss.as.naming.InitialContext;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.osgi.parser.SubsystemState;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
@@ -57,23 +79,9 @@ import org.jboss.osgi.framework.internal.FrameworkBuilder;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
-
-import javax.management.MBeanServer;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
-import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
-import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_MODULES;
-import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_MODULES_EXTRA;
-import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_PACKAGES;
-import static org.jboss.osgi.framework.Constants.JBOSGI_PREFIX;
+import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceEvent;
+import org.osgi.framework.ServiceReference;
 
 /**
  * Service responsible for creating and managing the life-cycle of the OSGi Framework.
@@ -229,6 +237,7 @@ public class FrameworkBootstrapService implements Service<Void> {
         private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
         private final InjectedValue<BundleContext> injectedBundleContext = new InjectedValue<BundleContext>();
         private ServiceContainer serviceContainer;
+        private JNDIServiceListener jndiServiceListener;
 
         public static ServiceController<?> addService(final ServiceTarget target) {
             SystemServicesIntegration service = new SystemServicesIntegration();
@@ -248,10 +257,20 @@ public class FrameworkBootstrapService implements Service<Void> {
             ServiceController<?> controller = context.getController();
             ROOT_LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
             serviceContainer = context.getController().getServiceContainer();
+
+            jndiServiceListener = new JNDIServiceListener(injectedBundleContext.getValue());
+            try {
+                injectedBundleContext.getValue().addServiceListener(jndiServiceListener,
+                        "(" + Constants.OBJECTCLASS + "=" + ObjectFactory.class.getName() + ")");
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
+            }
         }
 
         @Override
         public void stop(StopContext context) {
+            injectedBundleContext.getValue().removeServiceListener(jndiServiceListener);
+
             ServiceController<?> controller = context.getController();
             ROOT_LOGGER.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
         }
@@ -359,6 +378,67 @@ public class FrameworkBootstrapService implements Service<Void> {
             } catch (ModuleLoadException ex) {
                 throw new IllegalStateException(ex);
             }
+        }
+    }
+
+    // This listener registers OSGi Services that are registered under javax.naming.spi.ObjectFactory with the AS7 naming system.
+    private static class JNDIServiceListener implements org.osgi.framework.ServiceListener {
+        private static final String OSGI_JNDI_URL_SCHEME = "osgi.jndi.url.scheme";
+        private final BundleContext bundleContext;
+
+        public JNDIServiceListener(BundleContext bundleContext) {
+            this.bundleContext = bundleContext;
+
+            try {
+                // Register the pre-existing services
+                ServiceReference[] refs = bundleContext.getServiceReferences(ObjectFactory.class.getName(), null);
+                if (refs != null) {
+                    for (ServiceReference ref : refs) {
+                        handleJNDIRegistration(ref, true);
+                    }
+                }
+            } catch (InvalidSyntaxException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+
+        @Override
+        public void serviceChanged(ServiceEvent event) {
+            ServiceReference ref = event.getServiceReference();
+            switch (event.getType()) {
+            case ServiceEvent.REGISTERED:
+                handleJNDIRegistration(ref, true);
+                break;
+            case ServiceEvent.UNREGISTERING:
+                handleJNDIRegistration(ref, false);
+                break;
+            }
+        }
+
+        private void handleJNDIRegistration(ServiceReference ref, boolean register) {
+            String[] objClasses = (String[]) ref.getProperty(Constants.OBJECTCLASS);
+            for (String objClass : objClasses) {
+                if (ObjectFactory.class.getName().equals(objClass)) {
+                    for (String scheme : getStringPlusProperty(ref.getProperty(OSGI_JNDI_URL_SCHEME))) {
+                        if (register)
+                            InitialContext.addUrlContextFactory(scheme, (ObjectFactory) bundleContext.getService(ref));
+                        else
+                            InitialContext.removeUrlContextFactory(scheme, (ObjectFactory) bundleContext.getService(ref));
+                    }
+                }
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        private static Collection<String> getStringPlusProperty(Object property) {
+            if (property instanceof Collection) {
+                return (Collection<String>) property;
+            } else if (property instanceof String[]) {
+                return Arrays.asList((String[]) property);
+            } else if (property instanceof String) {
+                return Collections.singleton((String) property);
+            }
+            return Collections.emptyList();
         }
     }
 }
