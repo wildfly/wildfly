@@ -295,7 +295,6 @@ public class TransportGuaranteeTestCase {
 
 
     @Test
-    @Ignore("AS7-3415")
     public void testTransportGuaranteedMixed() throws Exception {
 
         String testURLContext = "/" + TG_MIXED
