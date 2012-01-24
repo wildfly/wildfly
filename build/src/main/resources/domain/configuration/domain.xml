@@ -333,7 +333,7 @@
                 <endpoint-config>
                     <jaxwsconfig:config-name>Recording-Endpoint-Config</jaxwsconfig:config-name>
                     <jaxwsconfig:pre-handler-chains>
-                        <javaee:handler-chain xmlns="http://java.sun.com/xml/ns/javaee">
+                        <javaee:handler-chain xmlns="http://java.sun.com/xml/ns/javaee" id="recording-handlers">
                             <javaee:protocol-bindings>##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM</javaee:protocol-bindings>
                             <javaee:handler>
                                 <javaee:handler-name>RecordingHandler</javaee:handler-name>
@@ -717,7 +717,7 @@
                 <endpoint-config>
                     <jaxwsconfig:config-name>Recording-Endpoint-Config</jaxwsconfig:config-name>
                     <jaxwsconfig:pre-handler-chains>
-                        <javaee:handler-chain xmlns="http://java.sun.com/xml/ns/javaee">
+                        <javaee:handler-chain xmlns="http://java.sun.com/xml/ns/javaee" id="recording-handlers-ha-profile">
                             <javaee:protocol-bindings>##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM</javaee:protocol-bindings>
                             <javaee:handler>
                                 <javaee:handler-name>RecordingHandler</javaee:handler-name>
