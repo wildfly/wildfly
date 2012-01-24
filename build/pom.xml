@@ -566,25 +566,26 @@
                 <dependency>
                     <groupId>org.codehaus.jackson</groupId>
                     <artifactId>jackson-core-asl</artifactId>
-                    <version>${version.org.codehaus.jackson}</version>
                 </dependency>
 
                 <dependency>
                     <groupId>org.codehaus.jackson</groupId>
                     <artifactId>jackson-mapper-asl</artifactId>
-                    <version>${version.org.codehaus.jackson}</version>
                 </dependency>
 
                 <dependency>
                     <groupId>org.codehaus.jackson</groupId>
                     <artifactId>jackson-jaxrs</artifactId>
-                    <version>${version.org.codehaus.jackson}</version>
                 </dependency>
 
                 <dependency>
                     <groupId>org.codehaus.jackson</groupId>
                     <artifactId>jackson-xc</artifactId>
-                    <version>${version.org.codehaus.jackson}</version>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.codehaus.jettison</groupId>
+                    <artifactId>jettison</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1180,6 +1181,11 @@
                 <dependency>
                     <groupId>org.jboss.resteasy</groupId>
                     <artifactId>resteasy-jaxb-provider</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.resteasy</groupId>
+                    <artifactId>resteasy-jettison-provider</artifactId>
                 </dependency>
 
                 <dependency>

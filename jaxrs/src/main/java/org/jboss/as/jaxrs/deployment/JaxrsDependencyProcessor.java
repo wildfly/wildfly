@@ -46,6 +46,7 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
     public static ModuleIdentifier RESTEASY_JAXRS = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jaxrs");
     public static ModuleIdentifier RESTEASY_JAXB = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jaxb-provider");
     public static ModuleIdentifier RESTEASY_JACKSON = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jackson-provider");
+    public static ModuleIdentifier RESTEASY_JETTISON = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jettison-provider");
     public static ModuleIdentifier RESTEASY_JSAPI = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jsapi");
     public static ModuleIdentifier RESTEASY_MULTIPART = ModuleIdentifier.create("org.jboss.resteasy.resteasy-multipart-provider");
     public static ModuleIdentifier RESTEASY_YAML = ModuleIdentifier.create("org.jboss.resteasy.resteasy-yaml-provider");
@@ -72,6 +73,7 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
         addDepdenency(moduleSpecification, moduleLoader, RESTEASY_JAXRS);
         addDepdenency(moduleSpecification, moduleLoader, RESTEASY_JAXB);
         addDepdenency(moduleSpecification, moduleLoader, RESTEASY_JACKSON);
+        addDepdenency(moduleSpecification, moduleLoader, RESTEASY_JETTISON);
         addDepdenency(moduleSpecification, moduleLoader, RESTEASY_JSAPI);
         addDepdenency(moduleSpecification, moduleLoader, RESTEASY_MULTIPART);
         addDepdenency(moduleSpecification, moduleLoader, RESTEASY_YAML);

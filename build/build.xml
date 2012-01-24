@@ -574,6 +574,10 @@
             <maven-resource group="org.codehaus.jackson" artifact="jackson-xc" />
         </module-def>
 
+        <module-def name="org.codehaus.jettison">
+            <maven-resource group="org.codehaus.jettison" artifact="jettison" />
+        </module-def>
+
         <module-def name="org.hibernate">
             <maven-resource group="org.hibernate" artifact="hibernate-core" />
             <maven-resource group="org.hibernate.common" artifact="hibernate-commons-annotations" />
@@ -976,6 +980,10 @@
 
         <module-def name="org.jboss.resteasy.resteasy-jaxb-provider">
             <maven-resource group="org.jboss.resteasy" artifact="resteasy-jaxb-provider" jandex="true"/>
+        </module-def>
+
+        <module-def name="org.jboss.resteasy.resteasy-jettison-provider">
+            <maven-resource group="org.jboss.resteasy" artifact="resteasy-jettison-provider" jandex="true"/>
         </module-def>
 
         <module-def name="org.jboss.resteasy.resteasy-jaxrs">
