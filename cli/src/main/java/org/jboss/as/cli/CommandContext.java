@@ -21,6 +21,7 @@
  */
 package org.jboss.as.cli;
 
+import java.io.File;
 import java.util.Collection;
 
 import org.jboss.as.cli.batch.BatchManager;
@@ -259,4 +260,16 @@ public interface CommandContext {
      * @throws CommandFormatException  in case there was an error handling the command or operation
      */
     void handle(String line) throws CommandLineException;
+
+    /**
+     * Returns current default filesystem directory.
+     * @return  current default filesystem directory.
+     */
+    File getCurrentDir();
+
+    /**
+     * Changes the current default filesystem directory to the argument.
+     * @param dir  the new default directory
+     */
+    void setCurrentDir(File dir);
 }

@@ -202,6 +202,8 @@ class CommandContextImpl implements CommandContext {
     /** the value of this variable will be used as the exit code of the vm, it is reset by every command/operation executed */
     private int exitCode;
 
+    private File currentDir = new File("");
+
     /**
      * Version mode - only used when --version is called from the command line.
      *
@@ -643,6 +645,19 @@ class CommandContextImpl implements CommandContext {
                 error("Failed to resolve host '" + host + "': " + e.getLocalizedMessage());
             }
         } while (retry);
+    }
+
+    @Override
+    public File getCurrentDir() {
+        return currentDir;
+    }
+
+    @Override
+    public void setCurrentDir(File dir) {
+        if(dir == null) {
+            throw new IllegalArgumentException("dir is null");
+        }
+        this.currentDir = dir;
     }
 
     /**

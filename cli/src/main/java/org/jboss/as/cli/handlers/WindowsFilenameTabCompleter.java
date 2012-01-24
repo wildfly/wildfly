@@ -33,9 +33,12 @@ import org.jboss.as.cli.Util;
  */
 public class WindowsFilenameTabCompleter extends FilenameTabCompleter {
 
-   public static final WindowsFilenameTabCompleter INSTANCE = new WindowsFilenameTabCompleter();
 
-   /* (non-Javadoc)
+   public WindowsFilenameTabCompleter(CommandContext ctx) {
+        super(ctx);
+    }
+
+/* (non-Javadoc)
     * @see org.jboss.as.cli.CommandLineCompleter#complete(org.jboss.as.cli.CommandContext,
     * java.lang.String, int, java.util.List)
     */
