@@ -21,6 +21,7 @@
  */
 package org.jboss.as.cli.completion.mock;
 
+import java.io.File;
 import java.util.Collection;
 
 import org.jboss.as.cli.CliConfig;
@@ -61,6 +62,8 @@ public class MockCommandContext implements CommandContext {
     private DefaultCallbackHandler parsedCmd = new DefaultCallbackHandler();
 
     private int exitCode;
+
+    private File curDir = new File("");
 
     public void parseCommandLine(String buffer) throws CommandFormatException {
         try {
@@ -292,5 +295,18 @@ public class MockCommandContext implements CommandContext {
     @Override
     public void handle(String line) throws CommandLineException {
         // TODO Auto-generated method stub
+    }
+
+    @Override
+    public File getCurrentDir() {
+        return curDir;
+    }
+
+    @Override
+    public void setCurrentDir(File dir) {
+        if(dir == null) {
+            throw new IllegalArgumentException("dir is null");
+        }
+        this.curDir = dir;
     }
 }

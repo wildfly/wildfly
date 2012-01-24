@@ -70,7 +70,7 @@ public class DeployHandler extends BatchModeCommandHandler {
         l = new ArgumentWithoutValue(this, "-l");
         l.setExclusive(true);
 
-        final FilenameTabCompleter pathCompleter = Util.isWindows() ? WindowsFilenameTabCompleter.INSTANCE : DefaultFilenameTabCompleter.INSTANCE;
+        final FilenameTabCompleter pathCompleter = Util.isWindows() ? new WindowsFilenameTabCompleter(ctx) : new DefaultFilenameTabCompleter(ctx);
         path = new ArgumentWithValue(this, pathCompleter, 0, "--path") {
             @Override
             public String getValue(ParsedCommandLine args) {

@@ -24,6 +24,7 @@ package org.jboss.as.cli.handlers;
 import java.io.File;
 import java.util.List;
 
+import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandLineCompleter;
 
 /**
@@ -31,6 +32,15 @@ import org.jboss.as.cli.CommandLineCompleter;
  * @author Alexey Loubyansky
  */
 public abstract class FilenameTabCompleter implements CommandLineCompleter {
+
+    private final CommandContext ctx;
+
+    public FilenameTabCompleter(CommandContext ctx) {
+        if(ctx == null) {
+            throw new IllegalArgumentException("ctx is null");
+        }
+        this.ctx = ctx;
+    }
 
     protected abstract boolean startsWithRoot(String path);
 
@@ -59,7 +69,7 @@ public abstract class FilenameTabCompleter implements CommandLineCompleter {
             translated = new File(System.getProperty("user.home"))
                     .getParentFile().getAbsolutePath();
         } else if (!startsWithRoot(path)) {
-            translated = new File("").getAbsolutePath() + File.separator + path;
+            translated = ctx.getCurrentDir().getAbsolutePath() + File.separator + path;
         } else {
             translated = path;
         }
