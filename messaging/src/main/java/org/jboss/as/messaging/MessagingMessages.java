@@ -27,6 +27,7 @@ import java.util.Collection;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.dmr.ModelType;
 import org.jboss.logging.Cause;
@@ -447,6 +448,13 @@ public interface MessagingMessages {
     @Message(id = 11665, value = "No HornetQ Server is available under name %s")
     OperationFailedException hornetQServerNotInstalled(String name);
 
+
     @Message(id = 11666, value = "Could not parse file %s")
     DeploymentUnitProcessingException couldNotParseDeployment(final String file, @Cause Throwable cause);
+
+    @Message(id = 11667, value = "Handler cannot handle operation %s")
+    IllegalStateException operationNotValid(final String operation);
+
+    @Message(id = 11668, value = "No message destination registered at address %s")
+    String noDestinationRegisteredForAddress(final PathAddress address);
 }

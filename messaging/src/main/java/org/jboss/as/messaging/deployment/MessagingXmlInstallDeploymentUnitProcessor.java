@@ -9,6 +9,8 @@ import org.jboss.as.messaging.MessagingExtension;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.as.messaging.jms.JMSQueueAdd;
 import org.jboss.as.messaging.jms.JMSTopicAdd;
+import org.jboss.as.messaging.jms.JMSQueueConfigurationRuntimeHandler;
+import org.jboss.as.messaging.jms.JMSTopicConfigurationRuntimeHandler;
 import org.jboss.as.messaging.jms.JndiEntriesAttribute;
 import org.jboss.as.server.deployment.DeploymentModelUtils;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -56,6 +58,8 @@ public class MessagingXmlInstallDeploymentUnitProcessor implements DeploymentUni
             deploymentUnit.createDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, serverElement);
             PathAddress registration = PathAddress.pathAddress(serverElement, destination);
             createDeploymentSubModel(registration, deploymentUnit);
+
+            JMSTopicConfigurationRuntimeHandler.INSTANCE.registerDestination(topic.getServer(), topic.getName(), topic.getDestination());
         }
 
         for (final JmsDestination queue : parseResult.getQueues()) {
@@ -78,8 +82,27 @@ public class MessagingXmlInstallDeploymentUnitProcessor implements DeploymentUni
             deploymentUnit.createDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, serverElement);
             PathAddress registration = PathAddress.pathAddress(serverElement, dest);
             createDeploymentSubModel(registration, deploymentUnit);
+            JMSQueueConfigurationRuntimeHandler.INSTANCE.registerDestination(queue.getServer(), queue.getName(), destination);
         }
     }
+
+
+    @Override
+    public void undeploy(final DeploymentUnit context) {
+        final ParseResult parseResult = context.getAttachment(MessagingAttachments.PARSE_RESULT);
+        if (parseResult == null) {
+            return;
+        }
+
+        for (final JmsDestination topic : parseResult.getTopics()) {
+            JMSTopicConfigurationRuntimeHandler.INSTANCE.unregisterDestination(topic.getServer(), topic.getName());
+        }
+
+        for (final JmsDestination queue : parseResult.getQueues()) {
+            JMSQueueConfigurationRuntimeHandler.INSTANCE.unregisterDestination(queue.getServer(), queue.getName());
+        }
+    }
+
 
 
     static ManagementResourceRegistration createDeploymentSubModel(final PathAddress address, final DeploymentUnit unit) {
@@ -112,12 +135,6 @@ public class MessagingXmlInstallDeploymentUnitProcessor implements DeploymentUni
             }
         }
         return current;
-    }
-
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-
     }
 
 }
