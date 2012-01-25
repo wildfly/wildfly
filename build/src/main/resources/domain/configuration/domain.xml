@@ -298,6 +298,14 @@
                             <login-module code="UsersRoles" flag="required"/>
                         </authentication>
                     </security-domain>
+                    <security-domain name="messaging" cache-type="default">
+                        <authentication>
+                            <login-module code="UsersRoles" flag="required">
+                                <module-option name="usersProperties" value="${jboss.domain.config.dir}/messaging-users.properties"/>
+                                <module-option name="rolesProperties" value="${jboss.domain.config.dir}/messaging-roles.properties"/>
+                            </login-module>
+                        </authentication>
+                    </security-domain>
                 </security-domains>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:threads:1.0"/>
@@ -659,6 +667,14 @@
                     <security-domain name="other">
                         <authentication>
                             <login-module code="UsersRoles" flag="required"/>
+                        </authentication>
+                    </security-domain>
+                    <security-domain name="messaging" cache-type="default">
+                        <authentication>
+                            <login-module code="UsersRoles" flag="required">
+                                <module-option name="usersProperties" value="${jboss.domain.config.dir}/messaging-users.properties"/>
+                                <module-option name="rolesProperties" value="${jboss.domain.config.dir}/messaging-roles.properties"/>
+                            </login-module>
                         </authentication>
                     </security-domain>
                 </security-domains>
