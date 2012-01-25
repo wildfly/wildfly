@@ -29,7 +29,6 @@ import java.util.Random;
 
 import org.apache.catalina.Manager;
 import org.apache.catalina.Session;
-import org.infinispan.Cache;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.junit.After;

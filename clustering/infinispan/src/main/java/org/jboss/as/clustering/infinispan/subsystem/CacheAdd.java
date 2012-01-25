@@ -85,7 +85,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
             Configuration defaultConfig = holder.getDefaultConfigurationBuilder().build();
             Map<CacheMode, Configuration> map = new EnumMap<CacheMode, Configuration>(CacheMode.class);
             map.put(defaultConfig.clustering().cacheMode(), defaultConfig);
-            for (ConfigurationBuilder builder: holder.getConfigurationBuilders()) {
+            for (ConfigurationBuilder builder: holder.getNamedConfigurationBuilders().values()) {
                 Configuration config = builder.build();
                 map.put(config.clustering().cacheMode(), config);
             }
@@ -193,7 +193,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         Configuration config = builder.build();
         if (config.invocationBatching().enabled()) {
             cacheConfigurationDependencies.getTransactionManagerInjector().inject(BatchModeTransactionManager.getInstance());
-        } else if (config.transaction().transactionalCache()) {
+        } else if (config.transaction().transactionMode() == org.infinispan.transaction.TransactionMode.TRANSACTIONAL) {
             configBuilder.addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class, cacheConfigurationDependencies.getTransactionManagerInjector());
             if (config.transaction().useSynchronization()) {
                 configBuilder.addDependency(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY, TransactionSynchronizationRegistry.class, cacheConfigurationDependencies.getTransactionSynchronizationRegistryInjector());

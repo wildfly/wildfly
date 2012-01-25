@@ -85,11 +85,12 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
         Configuration config = this.config.getValue();
 
         if (!config.invocationBatching().enabled()) {
-            throw new ClusteringNotSupportedException(MESSAGES.failedToConfigureWebApp(container.getCacheManagerConfiguration().globalJmxStatistics().cacheManagerName(), config.name()));
+            ServiceName cacheServiceName = this.getCacheServiceName(manager.getReplicationConfig());
+            throw new ClusteringNotSupportedException(MESSAGES.failedToConfigureWebApp(cacheServiceName.getParent().getSimpleName(), cacheServiceName.getSimpleName()));
         }
 
         String name = manager.getName();
-        ConfigurationBuilder builder = new ConfigurationBuilder().read(config).name(name);
+        ConfigurationBuilder builder = new ConfigurationBuilder().read(config);
         builder.storeAsBinary().enable().storeKeysAsBinary(false).storeValuesAsBinary(true);
         container.defineConfiguration(name, builder.build());
 
@@ -102,36 +103,37 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
 
     @Override
     public boolean addDependencies(ServiceTarget target, ServiceBuilder<?> builder, JBossWebMetaData metaData) {
-        ServiceName baseServiceName = EmbeddedCacheManagerService.getServiceName(null);
-        ReplicationConfig config = metaData.getReplicationConfig();
-        String cacheName = (config != null) ? config.getCacheName() : null;
-        ServiceName serviceName = ServiceName.parse((cacheName != null) ? cacheName : DEFAULT_CACHE_CONTAINER);
-        if (!baseServiceName.isParentOf(serviceName)) {
-            serviceName = baseServiceName.append(serviceName);
-        }
-        if (serviceName.length() < 4) {
-            serviceName = serviceName.append(CacheContainer.DEFAULT_CACHE_NAME);
-        }
-        if (CurrentServiceContainer.getServiceContainer().getService(serviceName) == null) {
+        ServiceName cacheServiceName = this.getCacheServiceName(metaData.getReplicationConfig());
+        if (CurrentServiceContainer.getServiceContainer().getService(cacheServiceName) == null) {
             return false;
         }
-        ServiceName containerServiceName = serviceName.getParent();
+        ServiceName containerServiceName = cacheServiceName.getParent();
         String container = containerServiceName.getSimpleName();
         ServiceName lockManagerServiceName = SharedLocalYieldingClusterLockManagerService.getServiceName(container);
-        ServiceName registryServiceName = serviceName.append("registry");
+        ServiceName registryServiceName = cacheServiceName.append("registry");
         synchronized (this) {
             if (CurrentServiceContainer.getServiceContainer().getService(lockManagerServiceName) == null) {
                 new CoreGroupCommunicationServiceService(SCOPE_ID).build(target, container).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
                 new SharedLocalYieldingClusterLockManagerService(container).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
             }
         }
-        new RegistryService<String, Void>(this.registryEntryProvider).build(target, registryServiceName, serviceName).install();
+        new RegistryService<String, Void>(this.registryEntryProvider).build(target, registryServiceName, cacheServiceName).install();
 
         builder.addDependency(containerServiceName, EmbeddedCacheManager.class, this.container);
-        builder.addDependency(CacheConfigurationService.getServiceName(container, serviceName.getSimpleName()), Configuration.class, this.config);
+        builder.addDependency(CacheConfigurationService.getServiceName(container, cacheServiceName.getSimpleName()), Configuration.class, this.config);
         builder.addDependency(registryServiceName, Registry.class, this.registry);
         builder.addDependency(SharedLocalYieldingClusterLockManagerService.getServiceName(container), SharedLocalYieldingClusterLockManager.class, this.lockManager);
         return true;
+    }
+
+    private ServiceName getCacheServiceName(ReplicationConfig config) {
+        ServiceName baseServiceName = EmbeddedCacheManagerService.getServiceName(null);
+        String cacheName = (config != null) ? config.getCacheName() : null;
+        ServiceName serviceName = ServiceName.parse((cacheName != null) ? cacheName : DEFAULT_CACHE_CONTAINER);
+        if (!baseServiceName.isParentOf(serviceName)) {
+            serviceName = baseServiceName.append(serviceName);
+        }
+        return (serviceName.length() < 4) ? serviceName.append(CacheContainer.DEFAULT_CACHE_NAME) : serviceName;
     }
 
     public Injector<EmbeddedCacheManager> getCacheContainerInjector() {

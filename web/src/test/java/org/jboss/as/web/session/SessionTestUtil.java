@@ -48,8 +48,8 @@ import org.apache.catalina.core.StandardContext;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.FileCacheStoreConfigurationBuilder.FsyncMode;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
-import org.infinispan.loaders.file.FileCacheStore;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
@@ -270,10 +270,9 @@ public class SessionTestUtil {
                     .passivation(true)
                     .preload(false)
 //                    .preload(!purgeCacheLoader)
-                    .addCacheLoader()
-                            .cacheLoader(new FileCacheStore())
-                            .addProperty("location", passivationDir)
-                            .addProperty("fsyncMode", "perWrite")
+                    .addFileCacheStore()
+                            .location(passivationDir)
+                            .fsyncMode(FsyncMode.PER_WRITE)
                             .fetchPersistentState(mode.isReplicated())
                             .purgeOnStartup(purgeCacheLoader)
                             .purgeSynchronously(true)
