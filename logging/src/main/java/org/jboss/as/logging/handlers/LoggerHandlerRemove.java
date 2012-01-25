@@ -33,11 +33,18 @@ import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.registry.Resource.Tools;
 import org.jboss.as.logging.CommonAttributes;
 import org.jboss.as.logging.LoggingExtension;
 import org.jboss.as.logging.LoggingMessages;
+import org.jboss.as.logging.handlers.async.AsyncHandlerAdd;
+import org.jboss.as.logging.handlers.console.ConsoleHandlerAdd;
+import org.jboss.as.logging.handlers.custom.CustomHandlerAdd;
+import org.jboss.as.logging.handlers.file.FileHandlerAdd;
+import org.jboss.as.logging.handlers.file.PeriodicRotatingFileHandlerAdd;
+import org.jboss.as.logging.handlers.file.SizeRotatingFileHandlerAdd;
 import org.jboss.as.logging.util.LogServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -49,9 +56,49 @@ import org.jboss.msc.service.ServiceRegistry;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Emanuel Muckenhuber
  */
-public class LoggerHandlerRemove extends AbstractRemoveStepHandler {
+public abstract class LoggerHandlerRemove extends AbstractRemoveStepHandler {
 
-    public static final LoggerHandlerRemove INSTANCE = new LoggerHandlerRemove();
+    public static final LoggerHandlerRemove ASYNC = new LoggerHandlerRemove() {
+        @Override
+        protected void recoverService(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> controllers) throws OperationFailedException {
+            AsyncHandlerAdd.INSTANCE.performRuntime(context, operation, model, verificationHandler, controllers);
+        }
+    };
+
+    public static final LoggerHandlerRemove CONSOLE = new LoggerHandlerRemove() {
+        @Override
+        protected void recoverService(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> controllers) throws OperationFailedException {
+            ConsoleHandlerAdd.INSTANCE.performRuntime(context, operation, model, verificationHandler, controllers);
+        }
+    };
+
+    public static final LoggerHandlerRemove CUSTOM = new LoggerHandlerRemove() {
+        @Override
+        protected void recoverService(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> controllers) throws OperationFailedException {
+            CustomHandlerAdd.INSTANCE.performRuntime(context, operation, model, verificationHandler, controllers);
+        }
+    };
+
+    public static final LoggerHandlerRemove FILE = new LoggerFileHandlerRemove() {
+        @Override
+        protected void recoverService(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> controllers) throws OperationFailedException {
+            FileHandlerAdd.INSTANCE.performRuntime(context, operation, model, verificationHandler, controllers);
+        }
+    };
+
+    public static final LoggerHandlerRemove PERIODIC_ROTATING_FILE = new LoggerFileHandlerRemove() {
+        @Override
+        protected void recoverService(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> controllers) throws OperationFailedException {
+            PeriodicRotatingFileHandlerAdd.INSTANCE.performRuntime(context, operation, model, verificationHandler, controllers);
+        }
+    };
+
+    public static final LoggerHandlerRemove SIZE_ROTATING_FILE = new LoggerFileHandlerRemove() {
+        @Override
+        protected void recoverService(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> controllers) throws OperationFailedException {
+            SizeRotatingFileHandlerAdd.INSTANCE.performRuntime(context, operation, model, verificationHandler, controllers);
+        }
+    };
 
     @Override
     protected final void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
@@ -69,9 +116,15 @@ public class LoggerHandlerRemove extends AbstractRemoveStepHandler {
     }
 
     @Override
-    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
-        // TODO:  RE-ADD SERVICES
+    protected final void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
+        final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
+        recoverService(context, operation, model, verificationHandler, controllers);
     }
+
+    protected abstract void recoverService(final OperationContext context, final ModelNode operation, final ModelNode model,
+                                           final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> controllers)
+            throws OperationFailedException;
 
     /**
      * Removes any additional services.
@@ -142,6 +195,17 @@ public class LoggerHandlerRemove extends AbstractRemoveStepHandler {
 
         if (!attached.isEmpty()) {
             throw new OperationFailedException(LoggingMessages.MESSAGES.handlerAttachedToHandlers(handlerName, attached));
+        }
+    }
+
+
+
+    private abstract static class LoggerFileHandlerRemove extends LoggerHandlerRemove {
+
+
+        @Override
+        protected void removeAdditionalServices(final OperationContext context, final String name) {
+            context.removeService(LogServices.handlerFileName(name));
         }
     }
 
