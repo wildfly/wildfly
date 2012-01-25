@@ -893,7 +893,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 ssl.get(KEY_ALIAS).set(value);
                 break;
             case PASSWORD:
-                ssl.get(PASSWORD).set(value);
+                ssl.get(PASSWORD).setExpression(value);
                 break;
             case CERTIFICATE_KEY_FILE:
                 ssl.get(CERTIFICATE_KEY_FILE).set(value);
