@@ -28,17 +28,5 @@ import javax.ejb.Local;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 @Local
-public interface Session30BusinessLocal /* extends Session30 */ {
-    // FIXME: AS7-3006 - there should not be a need to define the methods here whe they're inherited from Session30    
-    void hello() ;  
-
-    void goodbye();
-
-    String access(TestObject o);
-
-    TestObject createTestObject();
-
-    boolean checkEqPointer(TestObject to);
-
-    WarTestObject getWarTestObject();
+public interface Session30BusinessLocal extends Session30 {
 }
