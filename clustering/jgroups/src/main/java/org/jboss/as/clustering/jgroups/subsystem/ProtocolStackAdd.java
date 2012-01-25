@@ -76,9 +76,9 @@ public class ProtocolStackAdd extends AbstractAddStepHandler implements Descript
 
     private static void populate(ModelNode source, ModelNode target) {
         target.get(ModelKeys.TRANSPORT).set(source.require(ModelKeys.TRANSPORT));
-        if (source.hasDefined(ModelKeys.PROTOCOL)) {
-            ModelNode protocols = target.get(ModelKeys.PROTOCOL);
-            for (ModelNode protocol : source.get(ModelKeys.PROTOCOL).asList()) {
+        if (source.hasDefined(ModelKeys.PROTOCOLS)) {
+            ModelNode protocols = target.get(ModelKeys.PROTOCOLS);
+            for (ModelNode protocol : source.get(ModelKeys.PROTOCOLS).asList()) {
                 protocols.add(protocol);
             }
         }
@@ -130,7 +130,7 @@ public class ProtocolStackAdd extends AbstractAddStepHandler implements Descript
         if (transport.hasDefined(ModelKeys.THREAD_FACTORY)) {
             builder.addDependency(ThreadsServices.threadFactoryName(transport.get(ModelKeys.THREAD_FACTORY).asString()), ThreadFactory.class, transportConfig.getThreadFactoryInjector());
         }
-        for (ModelNode protocol : operation.get(ModelKeys.PROTOCOL).asList()) {
+        for (ModelNode protocol : operation.get(ModelKeys.PROTOCOLS).asList()) {
             Protocol protocolConfig = new Protocol(protocol.require(ModelKeys.TYPE).asString());
             build(builder, protocol, protocolConfig);
             stackConfig.getProtocols().add(protocolConfig);
@@ -143,8 +143,8 @@ public class ProtocolStackAdd extends AbstractAddStepHandler implements Descript
     private void build(ServiceBuilder<ChannelFactory> builder, ModelNode protocol, Protocol protocolConfig) {
         this.addSocketBindingDependency(builder, protocol, ModelKeys.SOCKET_BINDING, protocolConfig.getSocketBindingInjector());
         Map<String, String> properties = protocolConfig.getProperties();
-        if (protocol.hasDefined(ModelKeys.PROPERTY)) {
-            for (Property property : protocol.get(ModelKeys.PROPERTY).asPropertyList()) {
+        if (protocol.hasDefined(ModelKeys.PROPERTIES)) {
+            for (Property property : protocol.get(ModelKeys.PROPERTIES).asPropertyList()) {
                 properties.put(property.getName(), property.getValue().asString());
             }
         }

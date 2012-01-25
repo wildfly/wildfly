@@ -33,7 +33,9 @@ class ModelKeys {
     static final String NAME = "name";
     static final String OOB_EXECUTOR = "oob-executor";
     static final String PROPERTY = "property";
+    static final String PROPERTIES = "properties";
     static final String PROTOCOL = "protocol";
+    static final String PROTOCOLS = "protocols";
     static final String RACK = "rack";
     static final String SHARED = "shared";
     static final String SITE = "site";

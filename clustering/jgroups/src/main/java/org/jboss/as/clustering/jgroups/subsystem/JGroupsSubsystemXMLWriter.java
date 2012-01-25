@@ -51,8 +51,8 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
                 writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
                 ModelNode stack = property.getValue();
                 this.writeProtocol(writer, stack.get(ModelKeys.TRANSPORT), Element.TRANSPORT);
-                if (stack.hasDefined(ModelKeys.PROTOCOL)) {
-                    for (ModelNode protocol: stack.get(ModelKeys.PROTOCOL).asList()) {
+                if (stack.hasDefined(ModelKeys.PROTOCOLS)) {
+                    for (ModelNode protocol: stack.get(ModelKeys.PROTOCOLS).asList()) {
                         this.writeProtocol(writer, protocol, Element.PROTOCOL);
                     }
                 }
@@ -75,8 +75,8 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
         this.writeOptional(writer, Attribute.MACHINE, protocol, ModelKeys.MACHINE);
         this.writeOptional(writer, Attribute.RACK, protocol, ModelKeys.RACK);
         this.writeOptional(writer, Attribute.SITE, protocol, ModelKeys.SITE);
-        if (protocol.has(ModelKeys.PROPERTY)) {
-            for (Property property: protocol.get(ModelKeys.PROPERTY).asPropertyList()) {
+        if (protocol.has(ModelKeys.PROPERTIES)) {
+            for (Property property: protocol.get(ModelKeys.PROPERTIES).asPropertyList()) {
                 writer.writeStartElement(Element.PROPERTY.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
                 writer.writeCharacters(property.getValue().asString());
