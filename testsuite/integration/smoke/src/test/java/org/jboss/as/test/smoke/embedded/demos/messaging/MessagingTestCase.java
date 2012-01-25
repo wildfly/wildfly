@@ -91,7 +91,7 @@ public class MessagingTestCase {
 
         //Create a queue
         ClientSession coreSession = sf.createSession(false, true, true);
-        coreSession.createQueue(QUEUE_EXAMPLE_QUEUE, QUEUE_EXAMPLE_QUEUE, true);
+        coreSession.createQueue(QUEUE_EXAMPLE_QUEUE, QUEUE_EXAMPLE_QUEUE, false);
         coreSession.close();
 
         session = sf.createSession();
