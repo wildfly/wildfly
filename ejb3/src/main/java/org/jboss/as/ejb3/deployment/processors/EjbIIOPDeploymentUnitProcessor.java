@@ -38,6 +38,7 @@ import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
@@ -66,7 +67,6 @@ import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.as.txn.service.TxnServices;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.ejb.jboss.IIOPMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.modules.Module;
@@ -80,8 +80,6 @@ import org.omg.PortableServer.POA;
  * This is the DUP that sets up IIOP for EJB's
  */
 public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
-
-    private static final Logger logger = Logger.getLogger(EjbIIOPDeploymentUnitProcessor.class);
 
     private final IIOPSettingsService settingsService;
 
@@ -131,7 +129,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
                         // has been enabled by default in the EJB3 subsystem.
                         if (iiopMetaData != null || settingsService.isEnabledByDefault()) {
                             processEjb(ejbComponentDescription, classIndex, deploymentReflectionIndex, module,
-                                phaseContext.getServiceTarget(), iiopMetaData);
+                                    phaseContext.getServiceTarget(), iiopMetaData);
                         }
                     }
                 }
@@ -184,26 +182,27 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
         final AttributeAnalysis[] remoteAttrs = remoteInterfaceAnalysis.getAttributes();
         for (int i = 0; i < remoteAttrs.length; i++) {
             final OperationAnalysis op = remoteAttrs[i].getAccessorAnalysis();
-
-            logger.debug("    " + op.getJavaName() + "\n                " + op.getIDLName());
-            //translate to the deployment reflection index method
-            //TODO: this needs to be fixed so it just returns the correct method
-            final Method method = translateMethod(deploymentReflectionIndex, op);
-
-            beanMethodMap.put(op.getIDLName(), new SkeletonStrategy(method));
-            final OperationAnalysis setop = remoteAttrs[i].getMutatorAnalysis();
-            if (setop != null) {
-                logger.debug("    " + setop.getJavaName() + "\n                " + setop.getIDLName());
+            if (op != null) {
+                EjbLogger.ROOT_LOGGER.debug("    " + op.getJavaName() + "\n                " + op.getIDLName());
                 //translate to the deployment reflection index method
                 //TODO: this needs to be fixed so it just returns the correct method
-                final Method realSetmethod = translateMethod(deploymentReflectionIndex, setop);
-                beanMethodMap.put(setop.getIDLName(), new SkeletonStrategy(realSetmethod));
+                final Method method = translateMethod(deploymentReflectionIndex, op);
+
+                beanMethodMap.put(op.getIDLName(), new SkeletonStrategy(method));
+                final OperationAnalysis setop = remoteAttrs[i].getMutatorAnalysis();
+                if (setop != null) {
+                    EjbLogger.ROOT_LOGGER.debug("    " + setop.getJavaName() + "\n                " + setop.getIDLName());
+                    //translate to the deployment reflection index method
+                    //TODO: this needs to be fixed so it just returns the correct method
+                    final Method realSetmethod = translateMethod(deploymentReflectionIndex, setop);
+                    beanMethodMap.put(setop.getIDLName(), new SkeletonStrategy(realSetmethod));
+                }
             }
         }
 
         final OperationAnalysis[] ops = remoteInterfaceAnalysis.getOperations();
         for (int i = 0; i < ops.length; i++) {
-            logger.debug("    " + ops[i].getJavaName() + "\n                " + ops[i].getIDLName());
+            EjbLogger.ROOT_LOGGER.debug("    " + ops[i].getJavaName() + "\n                " + ops[i].getIDLName());
             beanMethodMap.put(ops[i].getIDLName(), new SkeletonStrategy(translateMethod(deploymentReflectionIndex, ops[i])));
         }
 
@@ -224,18 +223,20 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
         final AttributeAnalysis[] attrs = homeInterfaceAnalysis.getAttributes();
         for (int i = 0; i < attrs.length; i++) {
             final OperationAnalysis op = attrs[i].getAccessorAnalysis();
-            logger.debug("    " + op.getJavaName() + "\n                " + op.getIDLName());
-            homeMethodMap.put(op.getIDLName(), new SkeletonStrategy(translateMethod(deploymentReflectionIndex, op)));
-            final OperationAnalysis setop = attrs[i].getMutatorAnalysis();
-            if (setop != null) {
-                logger.debug("    " + setop.getJavaName() + "\n                " + setop.getIDLName());
-                homeMethodMap.put(setop.getIDLName(), new SkeletonStrategy(translateMethod(deploymentReflectionIndex, setop)));
+            if (op != null) {
+                EjbLogger.ROOT_LOGGER.debug("    " + op.getJavaName() + "\n                " + op.getIDLName());
+                homeMethodMap.put(op.getIDLName(), new SkeletonStrategy(translateMethod(deploymentReflectionIndex, op)));
+                final OperationAnalysis setop = attrs[i].getMutatorAnalysis();
+                if (setop != null) {
+                    EjbLogger.ROOT_LOGGER.debug("    " + setop.getJavaName() + "\n                " + setop.getIDLName());
+                    homeMethodMap.put(setop.getIDLName(), new SkeletonStrategy(translateMethod(deploymentReflectionIndex, setop)));
+                }
             }
         }
 
         final OperationAnalysis[] homeops = homeInterfaceAnalysis.getOperations();
         for (int i = 0; i < homeops.length; i++) {
-            logger.debug("    " + homeops[i].getJavaName() + "\n                " + homeops[i].getIDLName());
+            EjbLogger.ROOT_LOGGER.debug("    " + homeops[i].getJavaName() + "\n                " + homeops[i].getIDLName());
             homeMethodMap.put(homeops[i].getIDLName(), new SkeletonStrategy(translateMethod(deploymentReflectionIndex, homeops[i])));
         }
 
