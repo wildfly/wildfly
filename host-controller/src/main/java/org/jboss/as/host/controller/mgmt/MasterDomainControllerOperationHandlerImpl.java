@@ -110,6 +110,11 @@ public class MasterDomainControllerOperationHandlerImpl extends ManagementChanne
                 proxyHandler.handleMessage(channel, input, header);
             }
 
+        } else if (type == ManagementProtocol.TYPE_RESPONSE) {
+            if(proxyHandler != null) {
+                // the proxy is the only one requiring responses
+                proxyHandler.handleMessage(channel, input, header);
+            }
         }
     }
 

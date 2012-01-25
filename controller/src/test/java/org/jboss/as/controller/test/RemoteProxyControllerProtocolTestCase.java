@@ -19,10 +19,13 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.controller;
+package org.jboss.as.controller.test;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
+import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
@@ -92,7 +95,7 @@ public class RemoteProxyControllerProtocolTestCase {
     public void testOperationMessageHandler() throws Exception {
         final MockModelController controller = new MockModelController() {
             @Override
-            public ModelNode execute(ModelNode operation, OperationMessageHandler handler, OperationTransactionControl control, OperationAttachments attachments) {
+            public ModelNode execute(ModelNode operation, OperationMessageHandler handler, ModelController.OperationTransactionControl control, OperationAttachments attachments) {
                 this.operation = operation;
                 handler.handleReport(MessageSeverity.INFO, "Test1");
                 handler.handleReport(MessageSeverity.INFO, "Test2");
@@ -371,6 +374,45 @@ public class RemoteProxyControllerProtocolTestCase {
     }
 
     @Test
+    public void testFailAfterPrepare() throws Exception {
+        final ModelNode node = new ModelNode();
+        final ModelController controller = new MockModelController() {
+            @Override
+            public ModelNode execute(ModelNode operation, OperationMessageHandler handler, OperationTransactionControl control, OperationAttachments attachments) {
+                control.operationPrepared(new OperationTransaction() {
+                    @Override
+                    public void commit() {
+                        //
+                    }
+
+                    @Override
+                    public void rollback() {
+                        //
+                    }
+                }, node);
+                // Fail after the commit or rollback was called
+                throw new IllegalStateException();
+            }
+        };
+        final ModelNode result = new ModelNode();
+        final RemoteProxyController proxyController = setupProxyHandlers(controller);
+        final CommitProxyOperationControl commitControl = new CommitProxyOperationControl() {
+            @Override
+            public void operationCompleted(ModelNode response) {
+                super.operationCompleted(response);
+                result.set(response);
+            }
+        };
+        proxyController.execute(node, null, commitControl, null);
+        commitControl.tx.commit();
+        // Needs to call operation-completed
+        Assert.assertEquals(2, commitControl.txCompletionStatus.get());
+        Assert.assertTrue(result.isDefined());
+        Assert.assertEquals("failed", result.get("outcome").asString());
+        Assert.assertTrue(result.hasDefined("failure-description"));
+    }
+
+    @Test
     public void testAttachmentInputStreams() throws Exception {
 
         final byte[] firstBytes = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
@@ -515,9 +557,16 @@ public class RemoteProxyControllerProtocolTestCase {
         }
     }
 
-    private RemoteProxyController setupProxyHandlers(MockModelController controller) {
+    private RemoteProxyController setupProxyHandlers(ModelController controller) {
 
-        handler.setDelegate(new TransactionalModelControllerOperationHandler(controller, channels.getExecutorService()));
+        handler.setDelegate(new TransactionalModelControllerOperationHandler(controller, channels.getExecutorService()) {
+            @Override
+            public void shutdownNow() {
+                super.shutdown();
+                final List<Integer> cancelled = super.cancelAllActiveOperations();
+                throw new IllegalStateException("failed to complete operations" + cancelled);
+            }
+        });
 
         final Channel clientChannel = channels.getClientChannel();
         final RemoteProxyController proxyController = RemoteProxyController.create(channels.getExecutorService(), PathAddress.pathAddress(), ProxyOperationAddressTranslator.HOST, channels.getClientChannel());

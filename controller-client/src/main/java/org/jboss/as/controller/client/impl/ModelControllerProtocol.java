@@ -32,16 +32,9 @@ public interface ModelControllerProtocol {
     byte EXECUTE_CLIENT_REQUEST = 0x46;
     byte EXECUTE_TX_REQUEST = 0x47;
     byte HANDLE_REPORT_REQUEST = 0x48;
-    byte OPERATION_FAILED_REQUEST = 0x49;
-    byte OPERATION_COMPLETED_REQUEST = 0x4A;
-    byte OPERATION_PREPARED_REQUEST = 0x4B;
     byte GET_INPUTSTREAM_REQUEST = 0x4C;
     byte CANCEL_ASYNC_REQUEST = 0x4D;
     byte COMPLETE_TX_REQUEST = 0x4E;
-    /** This must be handled by all later versions. Versions < 7.1.0.Beta1 used this to determine if a slave
-     * was still alive due to https://issues.jboss.org/browse/REM3-123 and https://issues.jboss.org/browse/REM3-121
-     */
-    byte LEGACY_MASTER_HC_PING_REQUEST = 0x4F;
 
 
     byte PARAM_END = 0x60;
@@ -56,5 +49,9 @@ public interface ModelControllerProtocol {
     //byte PARAM_PREPARED = 0x69;
     byte PARAM_COMMIT = 0x70;
     byte PARAM_ROLLBACK = 0x71;
+    // The tx response params
+    byte PARAM_OPERATION_FAILED = 0x49;
+    byte PARAM_OPERATION_COMPLETED = 0x4A;
+    byte PARAM_OPERATION_PREPARED = 0x4B;
 
 }
