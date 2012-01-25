@@ -201,7 +201,7 @@ public class EJBClientDescriptorTestCase {
      * @throws Exception
      */
     @Test
-    @Ignore // EJBCLIENT-18
+    @OperateOnDeployment("local-and-remote-receviers-config")
     public void testLocalAndRemoteReceiversClientConfig() throws Exception {
         deployer.deploy("local-and-remote-receviers-config");
         try {
