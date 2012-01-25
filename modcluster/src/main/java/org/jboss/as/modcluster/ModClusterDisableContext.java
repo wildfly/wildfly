@@ -46,7 +46,7 @@ public class ModClusterDisableContext implements OperationStepHandler, Descripti
     @Override
     public void execute(OperationContext context, ModelNode operation)
             throws OperationFailedException {
-        if (context.getProcessType().isServer()) {
+        if (context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {

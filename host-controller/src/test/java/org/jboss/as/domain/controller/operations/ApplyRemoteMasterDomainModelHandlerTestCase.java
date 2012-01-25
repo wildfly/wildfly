@@ -684,6 +684,10 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase {
             return null;
         }
 
+        public final boolean isNormalServer() {
+            return false;
+        }
+
         public boolean isBooting() {
             return booting;
         }

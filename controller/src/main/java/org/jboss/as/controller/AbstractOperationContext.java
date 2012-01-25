@@ -473,6 +473,10 @@ abstract class AbstractOperationContext implements OperationContext {
         return contextType;
     }
 
+    public final boolean isNormalServer() {
+        return processType.isServer() && runningMode == RunningMode.NORMAL;
+    }
+
     public final boolean isRollbackOnly() {
         return resultAction == ResultAction.ROLLBACK;
     }

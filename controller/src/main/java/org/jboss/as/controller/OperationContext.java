@@ -193,7 +193,7 @@ public interface OperationContext {
      *
      * @return the operation context type
      *
-     * @deprecated Use {@link OperationContext#getProcessType()} and {@link OperationContext#getRunningMode()}
+     * @deprecated Use {@link OperationContext#getProcessType()} and {@link OperationContext#getRunningMode()} or for the most common usage, {@link OperationContext#isNormalServer()}
      */
     @Deprecated
     @SuppressWarnings("deprecation")
@@ -205,6 +205,17 @@ public interface OperationContext {
      * @return whether the controller is currently booting
      */
     boolean isBooting();
+
+    /**
+     * Convenience method to check if the {@link #getProcessType() process type} is {@link ProcessType#isServer() a server type}
+     * and the {@link #getRunningMode() running mode} is {@link RunningMode#NORMAL}. The typical usage would
+     * be for handlers that are only meant to execute on a normally running server, not on a host controller
+     * or on a {@link RunningMode#ADMIN_ONLY} server.
+     *
+     * @return {@code true} if the {@link #getProcessType() process type} is {@link ProcessType#isServer() a server type}
+     *         and the {@link #getRunningMode() running mode} is {@link RunningMode#NORMAL}.
+     */
+    boolean isNormalServer();
 
     /**
      * Determine whether the current operation is bound to be rolled back.

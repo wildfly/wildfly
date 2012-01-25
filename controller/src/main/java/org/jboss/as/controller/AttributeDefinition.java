@@ -504,6 +504,11 @@ public abstract class AttributeDefinition {
         }
 
         @Override
+        public final boolean isNormalServer() {
+            return false;
+        }
+
+        @Override
         public boolean isRuntimeAffected() {
             return false;
         }

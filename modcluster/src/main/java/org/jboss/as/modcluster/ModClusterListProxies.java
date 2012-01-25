@@ -48,7 +48,7 @@ public class ModClusterListProxies implements OperationStepHandler, DescriptionP
     @Override
     public void execute(OperationContext context, ModelNode operation)
             throws OperationFailedException {
-        if (context.getProcessType().isServer()) {
+        if (context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
