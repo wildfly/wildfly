@@ -10,18 +10,16 @@
             </security-realm>
         </security-realms>
         <management-interfaces>
-            <!-- WARNING: We're running without security, so only bind to 127.0.0.1! -->
-            <native-interface>
+            <native-interface security-realm="ManagementRealm">
                 <socket-binding native="management-native"/>
             </native-interface>
-            <http-interface console-enabled="false">
+            <http-interface console-enabled="false" security-realm="ManagementRealm">
                 <socket-binding http="management-http"/>
             </http-interface>
         </management-interfaces>
     </management>
 
     <interfaces>
-        <!-- WARNING: We're running without security, so only bind to 127.0.0.1! -->
         <interface name="management">
             <inet-address value="${jboss.bind.address.management:127.0.0.1}"/>
         </interface>
