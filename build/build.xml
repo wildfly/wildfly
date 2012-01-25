@@ -212,10 +212,6 @@
             <maven-resource group="org.jboss.logmanager" artifact="jboss-logmanager-log4j"/>
         </module-def>
 
-        <module-def name="org.jboss.remote-naming">
-            <maven-resource group="org.jboss" artifact="jboss-remote-naming"/>
-        </module-def>
-
         <module-def name="org.jboss.remoting3">
             <maven-resource group="org.jboss.remoting3" artifact="jboss-remoting"/>
         </module-def>
@@ -964,6 +960,10 @@
         <module-def name="org.jboss.osgi.vfs">
             <maven-resource group="org.jboss.osgi.vfs" artifact="jbosgi-vfs"/>
             <maven-resource group="org.jboss.osgi.vfs" artifact="jbosgi-vfs30"/>
+        </module-def>
+
+        <module-def name="org.jboss.remote-naming">
+            <maven-resource group="org.jboss" artifact="jboss-remote-naming"/>
         </module-def>
 
         <module-def name="org.jboss.resteasy.resteasy-atom-provider">
