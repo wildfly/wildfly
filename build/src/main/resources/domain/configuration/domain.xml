@@ -142,12 +142,12 @@
                         <expiration max-idle="100000"/>
                     </local-cache>
                     <local-cache name="local-query">
-                        <transaction mode="NON_XA"/>
+                        <transaction mode="NONE"/>
                         <eviction strategy="LRU" max-entries="10000"/>
                         <expiration max-idle="100000"/>
                     </local-cache>
                     <local-cache name="timestamps">
-                        <transaction mode="NON_XA"/>
+                        <transaction mode="NONE"/>
                         <eviction strategy="NONE"/>
                     </local-cache>
                 </cache-container>
@@ -481,12 +481,12 @@
                         <expiration max-idle="100000"/>
                     </invalidation-cache>
                     <local-cache name="local-query">
-                        <transaction mode="NON_XA"/>
+                        <transaction mode="NONE"/>
                         <eviction strategy="LRU" max-entries="10000"/>
                         <expiration max-idle="100000"/>
                     </local-cache>
                     <replicated-cache name="timestamps" mode="ASYNC">
-                        <transaction mode="NON_XA"/>
+                        <transaction mode="NONE"/>
                         <eviction strategy="NONE"/>
                     </replicated-cache>
                 </cache-container>
