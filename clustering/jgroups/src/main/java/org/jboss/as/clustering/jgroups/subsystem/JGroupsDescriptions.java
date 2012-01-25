@@ -84,10 +84,10 @@ public class JGroupsDescriptions {
         ModelNode description = createProtocolStackOperationDescription(ModelDescriptionConstants.ADD, resources);
         description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.TRANSPORT, ModelDescriptionConstants.TYPE).set(ModelType.OBJECT);
         description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.TRANSPORT, ModelDescriptionConstants.DESCRIPTION).set(resources.getString("jgroups.stack.transport"));
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.PROTOCOL, ModelDescriptionConstants.TYPE).set(ModelType.LIST);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.PROTOCOL, ModelDescriptionConstants.VALUE_TYPE).set(ModelType.OBJECT);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.PROTOCOL, ModelDescriptionConstants.DESCRIPTION).set(resources.getString("jgroups.stack.protocol"));
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.PROTOCOL, ModelDescriptionConstants.REQUIRED).set(false);
+        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.PROTOCOLS, ModelDescriptionConstants.TYPE).set(ModelType.LIST);
+        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.PROTOCOLS, ModelDescriptionConstants.VALUE_TYPE).set(ModelType.OBJECT);
+        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.PROTOCOLS, ModelDescriptionConstants.DESCRIPTION).set(resources.getString("jgroups.stack.protocol"));
+        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.PROTOCOLS, ModelDescriptionConstants.REQUIRED).set(false);
         return description;
     }
 

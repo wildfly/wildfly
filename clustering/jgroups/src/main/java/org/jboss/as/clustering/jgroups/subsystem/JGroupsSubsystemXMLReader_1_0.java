@@ -134,7 +134,7 @@ public class JGroupsSubsystemXMLReader_1_0 implements XMLElementReader<List<Mode
             Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case PROTOCOL: {
-                    this.parseProtocol(reader, stack.get(ModelKeys.PROTOCOL).add(), Protocol.class);
+                    this.parseProtocol(reader, stack.get(ModelKeys.PROTOCOLS).add(), Protocol.class);
                     break;
                 }
                 default: {
@@ -221,7 +221,7 @@ public class JGroupsSubsystemXMLReader_1_0 implements XMLElementReader<List<Mode
                 throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
             }
             String value = reader.getElementText();
-            protocol.get(ModelKeys.PROPERTY).add(property, value);
+            protocol.get(ModelKeys.PROPERTIES).add(property, value);
         }
     }
 }
