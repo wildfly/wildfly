@@ -26,20 +26,22 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.logging.CommonAttributes.NAME;
 import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
 
+import java.util.List;
+import java.util.logging.Handler;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.logging.LoggingLogger;
 import org.jboss.as.logging.loggers.AbstractLogHandlerAssignmentHandler;
 import org.jboss.as.logging.util.LogServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
-
-import java.util.List;
-import java.util.logging.Handler;
 
 
 /**
@@ -63,6 +65,20 @@ public class AsyncHandlerUnassignSubhandler extends AbstractLogHandlerAssignment
         String asyncHandlerName = address.getLastElement().getValue();
         String handlerNameToRemove = NAME.resolveModelAttribute(context, model).asString();
         removeHandler(context, asyncHandlerName, handlerNameToRemove);
+    }
+
+    @Override
+    protected void rollbackRuntime(OperationContext context, final ModelNode operation, final ModelNode model, List<ServiceController<?>> controllers) {
+        PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        String asyncHandlerName = address.getLastElement().getValue();
+        String handlerName = model.get(NAME.getName()).asString();
+        try {
+            AsyncHandlerAssignSubhandler.addHandler(context, asyncHandlerName, handlerName);
+        } catch (OperationFailedException e) {
+            LoggingLogger.ROOT_LOGGER.errorRevertingOperation(e, getClass().getSimpleName(),
+                    operation.require(ModelDescriptionConstants.OP).asString(),
+                    PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)));
+        }
     }
 
     @Override
@@ -102,7 +118,7 @@ public class AsyncHandlerUnassignSubhandler extends AbstractLogHandlerAssignment
      * @throws OperationFailedException if an error occurs.
      */
     public static void removeHandlers(final AttributeDefinition attribute, final ModelNode node, final OperationContext context,
-                                   final String asyncHandlerName) throws OperationFailedException {
+                                      final String asyncHandlerName) throws OperationFailedException {
         final ModelNode handlers = attribute.resolveModelAttribute(context, node);
         if (handlers.isDefined()) {
             if (handlers.getType() == ModelType.LIST) {

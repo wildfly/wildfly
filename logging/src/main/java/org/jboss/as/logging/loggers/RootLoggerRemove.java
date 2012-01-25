@@ -26,12 +26,17 @@ import static org.jboss.as.logging.CommonAttributes.HANDLERS;
 import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER;
 import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER_NAME;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.logging.CommonAttributes;
 import org.jboss.as.logging.util.LogServices;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -56,5 +61,8 @@ public class RootLoggerRemove extends AbstractRemoveStepHandler {
 
     @Override
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
+        final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
+        RootLoggerAdd.INSTANCE.performRuntime(context, operation, model, verificationHandler, controllers);
     }
 }

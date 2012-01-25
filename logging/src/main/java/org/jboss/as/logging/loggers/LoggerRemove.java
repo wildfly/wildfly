@@ -24,12 +24,17 @@ package org.jboss.as.logging.loggers;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.logging.CommonAttributes;
 import org.jboss.as.logging.util.LogServices;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * @author Emanuel Muckenhuber
@@ -49,7 +54,10 @@ public class LoggerRemove extends AbstractRemoveStepHandler {
         context.removeService(LogServices.loggerName(name));
     }
 
-    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
-        // TODO:  RE-ADD SERVICES
+    @Override
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
+        final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
+        LoggerAdd.INSTANCE.performRuntime(context, operation, model, verificationHandler, controllers);
     }
 }
