@@ -27,9 +27,9 @@ import static org.jboss.as.webservices.dmr.Constants.WSDL_HOST;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_PORT;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_SECURE_PORT;
 
+import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
@@ -39,7 +39,7 @@ import org.jboss.wsf.spi.management.ServerConfig;
 /**
  * @author <a href="mailto:opalka.richard@gmail.com">Richard Opalka</a>
  */
-final class WSSubsystemAttributeChangeHandler extends ReloadRequiredWriteAttributeHandler {
+final class WSSubsystemAttributeChangeHandler extends AbstractWriteAttributeHandler<Void> {
 
     WSSubsystemAttributeChangeHandler(final ParameterValidator valueValidator) {
         super(valueValidator);
@@ -72,6 +72,11 @@ final class WSSubsystemAttributeChangeHandler extends ReloadRequiredWriteAttribu
         }
 
         return true;
+    }
+
+    @Override
+    protected void revertUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final Void handback) throws OperationFailedException {
+        // does nothing
     }
 
 }
