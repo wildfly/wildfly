@@ -1,11 +1,5 @@
 package org.jboss.as.server.deployment.scanner;
 
-import java.util.Collections;
-import java.util.List;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -15,6 +9,11 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import java.util.Collections;
+import java.util.List;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -125,15 +124,11 @@ class DeploymentScannerParser_1_1 implements XMLStreamConstants, XMLElementReade
 
     void parseScanner(XMLExtendedStreamReader reader, final ModelNode address, List<ModelNode> list) throws XMLStreamException {
         // Handle attributes
-        Boolean enabled = null;
-        Integer interval = null;
-        String path = null;
+
         String name = DeploymentScannerExtension.DEFAULT_SCANNER_NAME;
-        String relativeTo = null;
-        Boolean autoDeployZipped = null;
-        Boolean autoDeployExploded = null;
-        Boolean autoDeployXml = null;
-        Long deploymentTimeout = null;
+        String path = null;
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(ADD);
         final int attrCount = reader.getAttributeCount();
         for (int i = 0; i < attrCount; i++) {
             requireNoNamespaceAttribute(reader, i);
@@ -142,38 +137,40 @@ class DeploymentScannerParser_1_1 implements XMLStreamConstants, XMLElementReade
             switch (attribute) {
                 case PATH: {
                     path = value;
+                    DeploymentScannerDefinition.PATH.parseAndSetParameter(value,operation,reader);
                     break;
                 }
                 case NAME: {
                     name = value;
+                    DeploymentScannerDefinition.NAME.parseAndSetParameter(value,operation,reader);
                     break;
                 }
                 case RELATIVE_TO: {
-                    relativeTo = value;
+                    DeploymentScannerDefinition.RELATIVE_TO.parseAndSetParameter(value,operation,reader);
                     break;
                 }
                 case SCAN_INTERVAL: {
-                    interval = Integer.parseInt(value);
+                    DeploymentScannerDefinition.SCAN_INTERVAL.parseAndSetParameter(value,operation,reader);
                     break;
                 }
                 case SCAN_ENABLED: {
-                    enabled = Boolean.parseBoolean(value);
+                    DeploymentScannerDefinition.SCAN_ENABLED.parseAndSetParameter(value,operation,reader);
                     break;
                 }
                 case AUTO_DEPLOY_ZIPPED: {
-                    autoDeployZipped = Boolean.parseBoolean(value);
+                    DeploymentScannerDefinition.AUTO_DEPLOY_ZIPPED.parseAndSetParameter(value,operation,reader);
                     break;
                 }
                 case AUTO_DEPLOY_EXPLODED: {
-                    autoDeployExploded = Boolean.parseBoolean(value);
+                    DeploymentScannerDefinition.AUTO_DEPLOY_EXPLODED.parseAndSetParameter(value,operation,reader);
                     break;
                 }
                 case AUTO_DEPLOY_XML: {
-                    autoDeployXml = Boolean.parseBoolean(value);
+                    DeploymentScannerDefinition.AUTO_DEPLOY_XML.parseAndSetParameter(value,operation,reader);
                     break;
                 }
                 case DEPLOYMENT_TIMEOUT: {
-                    deploymentTimeout = Long.parseLong(value);
+                    DeploymentScannerDefinition.DEPLOYMENT_TIMEOUT.parseAndSetParameter(value,operation,reader);
                     break;
                 }
                 default:
@@ -187,21 +184,7 @@ class DeploymentScannerParser_1_1 implements XMLStreamConstants, XMLElementReade
             ParseUtils.missingRequired(reader, Collections.singleton(CommonAttributes.PATH));
         }
         requireNoContent(reader);
-
-        final ModelNode operation = new ModelNode();
-        operation.get(OP).set(ADD);
         operation.get(OP_ADDR).set(address).add(CommonAttributes.SCANNER, name);
-        operation.get(CommonAttributes.PATH).set(path);
-        if (interval != null) operation.get(CommonAttributes.SCAN_INTERVAL).set(interval.intValue());
-        if (autoDeployZipped != null)
-            operation.get(CommonAttributes.AUTO_DEPLOY_ZIPPED).set(autoDeployZipped.booleanValue());
-        if (autoDeployExploded != null)
-            operation.get(CommonAttributes.AUTO_DEPLOY_EXPLODED).set(autoDeployExploded.booleanValue());
-        if (autoDeployXml != null)
-            operation.get(CommonAttributes.AUTO_DEPLOY_XML).set(autoDeployXml.booleanValue());
-        if (enabled != null) operation.get(CommonAttributes.SCAN_ENABLED).set(enabled.booleanValue());
-        if (relativeTo != null) operation.get(CommonAttributes.RELATIVE_TO).set(relativeTo);
-        if (deploymentTimeout != null) operation.get(CommonAttributes.DEPLOYMENT_TIMEOUT).set(deploymentTimeout);
         list.add(operation);
     }
 

@@ -22,18 +22,18 @@
 
 package org.jboss.as.server.deployment.scanner;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.dmr.ModelNode;
+import org.jboss.as.controller.registry.OperationEntry;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.server.deployment.scanner.DeploymentScannerLogger.ROOT_LOGGER;
 
 /**
@@ -41,53 +41,34 @@ import static org.jboss.as.server.deployment.scanner.DeploymentScannerLogger.ROO
  */
 public class DeploymentScannerExtension implements Extension {
 
-    public static final String SUBSYSTEM_NAME = "deployment-scanner";
-    private static final PathElement scannersPath = PathElement.pathElement("scanner");
+    public static final String SUBSYSTEM_NAME = CommonAttributes.DEPLOYMENT_SCANNER;
+    protected static final PathElement SCANNERS_PATH = PathElement.pathElement("scanner");
     static final String DEFAULT_SCANNER_NAME = "default"; // we actually need a scanner name to make it addressable
+    private static final String RESOURCE_NAME = DeploymentScannerExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
 
-        @Override
-        public ModelNode getModelDescription(final Locale locale) {
-            return DeploymentSubsystemDescriptions.getSubsystemDescription(locale);
-        }
-    };
+    static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
+        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, DeploymentScannerExtension.class.getClassLoader(), true, false);
+    }
 
-    private static final DescriptionProvider SCANNER = new DescriptionProvider() {
-
-        @Override
-        public ModelNode getModelDescription(final Locale locale) {
-            return DeploymentSubsystemDescriptions.getScannerDescription(locale);
-        }
-    };
-
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void initialize(ExtensionContext context) {
         ROOT_LOGGER.debug("Initializing Deployment Scanner Extension");
 
         final SubsystemRegistration subsystem = context.registerSubsystem(CommonAttributes.DEPLOYMENT_SCANNER, 1, 0);
         subsystem.registerXMLElementWriter(DeploymentScannerParser_1_1.INSTANCE);
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(SUBSYSTEM);
-        registration.registerOperationHandler(DeploymentScannerSubsystemAdd.OPERATION_NAME, DeploymentScannerSubsystemAdd.INSTANCE,
-                DeploymentScannerSubsystemAdd.INSTANCE, false);
-        registration.registerOperationHandler(DeploymentScannerSubsystemRemove.OPERATION_NAME, DeploymentScannerSubsystemRemove.INSTANCE,
-                DeploymentScannerSubsystemRemove.INSTANCE, false);
-        // Register operation handlers
-        final ManagementResourceRegistration scanners = registration.registerSubModel(scannersPath, SCANNER);
-        scanners.registerOperationHandler(DeploymentScannerAdd.OPERATION_NAME, DeploymentScannerAdd.INSTANCE, DeploymentScannerAdd.INSTANCE, false);
-        scanners.registerOperationHandler(DeploymentScannerRemove.OPERATION_NAME, DeploymentScannerRemove.INSTANCE, DeploymentScannerRemove.INSTANCE, false);
-        scanners.registerReadWriteAttribute(Attribute.PATH.getLocalName(), null, WritePathAttributeHandler.INSTANCE, Storage.CONFIGURATION);
-        scanners.registerReadWriteAttribute(Attribute.RELATIVE_TO.getLocalName(), null, WriteRelativeToAttributeHandler.INSTANCE, Storage.CONFIGURATION);
-        scanners.registerReadWriteAttribute(Attribute.SCAN_ENABLED.getLocalName(), null, WriteEnabledAttributeHandler.INSTANCE, Storage.CONFIGURATION);
-        scanners.registerReadWriteAttribute(Attribute.SCAN_INTERVAL.getLocalName(), null, WriteScanIntervalAttributeHandler.INSTANCE, Storage.CONFIGURATION);
-        scanners.registerReadWriteAttribute(Attribute.AUTO_DEPLOY_ZIPPED.getLocalName(), null, WriteAutoDeployZipAttributeHandler.INSTANCE, Storage.CONFIGURATION);
-        scanners.registerReadWriteAttribute(Attribute.AUTO_DEPLOY_EXPLODED.getLocalName(), null, WriteAutoDeployExplodedAttributeHandler.INSTANCE, Storage.CONFIGURATION);
-        scanners.registerReadWriteAttribute(Attribute.AUTO_DEPLOY_XML.getLocalName(), null, WriteAutoDeployXMLAttributeHandler.INSTANCE, Storage.CONFIGURATION);
-        scanners.registerReadWriteAttribute(Attribute.DEPLOYMENT_TIMEOUT.getLocalName(), null, WriteDeploymentTimeoutAttributeHandler.INSTANCE, Storage.CONFIGURATION);
+
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new DeploymentScannerSubsystemDefinition());
+        registration.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE, GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        registration.registerSubModel(DeploymentScannerDefinition.INSTANCE);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DEPLOYMENT_SCANNER_1_0.getUriString(), DeploymentScannerParser_1_0.INSTANCE);
