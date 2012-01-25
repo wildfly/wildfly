@@ -389,6 +389,15 @@
                         <login-module code="UsersRoles" flag="required"/>
                     </authentication>
                 </security-domain>
+                <security-domain name="messaging" cache-type="default">
+                    <authentication>
+                        <login-module code="UsersRoles" flag="required">
+                            <module-option name="unauthenticatedIdentity" value="guest"/>
+                            <module-option name="usersProperties" value="${jboss.server.config.dir}/messaging-users.properties"/>
+                            <module-option name="rolesProperties" value="${jboss.server.config.dir}/messaging-roles.properties"/>
+                        </login-module>
+                    </authentication>
+                </security-domain>
             </security-domains>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:threads:1.0"/>

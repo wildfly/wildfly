@@ -248,6 +248,15 @@
                             <login-module code="UsersRoles" flag="required"/>
                         </authentication>
                     </security-domain>
+                    <security-domain name="messaging" cache-type="default">
+                        <authentication>
+                            <login-module code="UsersRoles" flag="required">
+                                <module-option name="unauthenticatedIdentity" value="guest"/>
+                                <module-option name="usersProperties" value="${jboss.server.base.dir}/../../configuration/messaging-users.properties"/>
+                                <module-option name="rolesProperties" value="${jboss.server.base.dir}/../../configuration/messaging-roles.properties"/>
+                            </login-module>
+                        </authentication>
+                    </security-domain>
                 </security-domains>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:transactions:1.0">
@@ -586,6 +595,15 @@
                     <security-domain name="other">
                         <authentication>
                             <login-module code="UsersRoles" flag="required"/>
+                        </authentication>
+                    </security-domain>
+                    <security-domain name="messaging" cache-type="default">
+                        <authentication>
+                            <login-module code="UsersRoles" flag="required">
+                                <module-option name="unauthenticatedIdentity" value="guest"/>
+                                <module-option name="usersProperties" value="${jboss.server.base.dir}/../../configuration/messaging-users.properties"/>
+                                <module-option name="rolesProperties" value="${jboss.server.base.dir}/../../configuration/messaging-roles.properties"/>
+                            </login-module>
                         </authentication>
                     </security-domain>
                 </security-domains>
