@@ -135,7 +135,7 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
                     config.get(SSL).set(ssl);
                     break;
                 default:
-                    unexpectedElement(reader);
+                    throw unexpectedElement(reader);
             }
         }
         return config;
@@ -216,7 +216,7 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
                     conf.get(DOMAIN).set(ParseUtils.parsePossibleExpression(value));
                     break;
                 default:
-                    unexpectedAttribute(reader, i);
+                    throw unexpectedAttribute(reader, i);
             }
         }
     }
@@ -271,7 +271,7 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
                     load.get(FACTOR).set(value);
                     break;
                 default:
-                    unexpectedAttribute(reader, i);
+                    throw unexpectedAttribute(reader, i);
             }
         }
         ParseUtils.requireNoContent(reader);
@@ -293,7 +293,7 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
                     load.get(DECAY).set(value);
                     break;
                 default:
-                    unexpectedAttribute(reader, i);
+                    throw unexpectedAttribute(reader, i);
             }
         }
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -309,7 +309,7 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
                     load.get(CUSTOM_LOAD_METRIC).add(customloadmetric);
                     break;
                 default:
-                    unexpectedElement(reader);
+                    throw unexpectedElement(reader);
             }
         }
 
@@ -335,7 +335,7 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
                     break;
 
                 default:
-                    unexpectedAttribute(reader, i);
+                    throw unexpectedAttribute(reader, i);
             }
         }
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -346,7 +346,7 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
                     load.get(CommonAttributes.PROPERTY).add(property.getName(), property.getValue());
                     break;
                 default:
-                    unexpectedElement(reader);
+                    throw unexpectedElement(reader);
             }
         }
         return load;
@@ -370,7 +370,7 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
                     load.get(CLASS).set(value);
                     break;
                 default:
-                    unexpectedAttribute(reader, i);
+                    throw unexpectedAttribute(reader, i);
             }
         }
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -381,7 +381,7 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
                     load.get(CommonAttributes.PROPERTY).add(property.getName(), property.getValue());
                     break;
                 default:
-                    unexpectedElement(reader);
+                    throw unexpectedElement(reader);
             }
         }
         return load;
