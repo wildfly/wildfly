@@ -22,11 +22,8 @@
 
 package org.jboss.as.server.deployment.scanner;
 
-import java.util.Locale;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -34,10 +31,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Emanuel Muckenhuber
  */
-public class DeploymentScannerSubsystemAdd extends AbstractAddStepHandler implements DescriptionProvider {
-
-    static final String OPERATION_NAME = ModelDescriptionConstants.ADD;
-
+public class DeploymentScannerSubsystemAdd extends AbstractAddStepHandler {
     static final DeploymentScannerSubsystemAdd INSTANCE = new DeploymentScannerSubsystemAdd();
 
     private DeploymentScannerSubsystemAdd() {
@@ -51,10 +45,4 @@ public class DeploymentScannerSubsystemAdd extends AbstractAddStepHandler implem
     protected boolean requiresRuntime(OperationContext context) {
         return false;
     }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return DeploymentSubsystemDescriptions.getSubsystemAdd(locale);
-    }
-
 }

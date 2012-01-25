@@ -37,11 +37,8 @@ import static org.jboss.as.server.deployment.scanner.DeploymentScannerMessages.M
  *
  * @author Emanuel Muckenhuber
  */
-public class DeploymentScannerSubsystemRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
-
-    static final String OPERATION_NAME = ModelDescriptionConstants.REMOVE;
-
-    static final DeploymentScannerSubsystemRemove INSTANCE = new DeploymentScannerSubsystemRemove();
+public class DeploymentScannerSubsystemRemove extends AbstractRemoveStepHandler {
+ static final DeploymentScannerSubsystemRemove INSTANCE = new DeploymentScannerSubsystemRemove();
 
     private DeploymentScannerSubsystemRemove() {
         //
@@ -56,10 +53,4 @@ public class DeploymentScannerSubsystemRemove extends AbstractRemoveStepHandler 
     protected boolean requiresRuntime(OperationContext context) {
         return false;
     }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return DeploymentSubsystemDescriptions.getSubsystemRemove(locale);
-    }
-
 }
