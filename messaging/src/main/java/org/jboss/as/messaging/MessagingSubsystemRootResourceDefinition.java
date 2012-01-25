@@ -22,21 +22,12 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-
-import java.util.Locale;
-
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.DefaultResourceDescriptionProvider;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.dmr.ModelNode;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 /**
  * {@link ResourceDefinition} for the messaging subsystem root resource.
@@ -51,6 +42,6 @@ public class MessagingSubsystemRootResourceDefinition extends SimpleResourceDefi
 
     private MessagingSubsystemRootResourceDefinition() {
         super(SUBSYSTEM_PATH, MessagingExtension.getResourceDescriptionResolver(MessagingExtension.SUBSYSTEM_NAME),
-                MessagingSubsystemAdd.INSTANCE, MessagingSubsystemRemove.INSTANCE);
+                MessagingSubsystemAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 }
