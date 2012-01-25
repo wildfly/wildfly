@@ -8,7 +8,7 @@
                   impl-version="2.0">
     <enterprise-beans>
         
-        <session>
+       <session>
             <ejb-name>ResourceRefBean</ejb-name>
             <!-- This resource-ref has no corresponding res-type specified
             neither in ejb-jar.xml nor in the bean as a @Resource (see EJBTHREE-1823
@@ -18,9 +18,17 @@
                 <jndi-name>java:jboss/datasources/ExampleDS</jndi-name>
             </resource-ref>
         </session>
-        
-		<session>
+
+        <session>
             <ejb-name>StatelessBean</ejb-name>
+        </session>
+        
+        <session>
+            <ejb-name>ResUrlCheckerBean</ejb-name>
+            <resource-ref>
+	        	<res-ref-name>url2</res-ref-name>
+	        	<res-url>http://localhost/url2</res-url>
+	        </resource-ref>
         </session>
         
     </enterprise-beans>
