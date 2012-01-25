@@ -119,6 +119,10 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-deployment-repository"/>
         </module-def>
 
+        <module-def name="org.jboss.as.domain-http-error-context">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-domain-http-error-context"/>
+        </module-def>
+
         <module-def name="org.jboss.as.domain-http-interface">
             <maven-resource group="org.jboss.as" artifact="jboss-as-domain-http-interface"/>
         </module-def>
@@ -714,10 +718,6 @@
         </module-def>
 
     	<module-def name="org.jboss.as.domain-add-user" />
-
-        <module-def name="org.jboss.as.domain-http-error-context">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-domain-http-error-context"/>
-        </module-def>
 
         <module-def name="org.jboss.as.ee">
             <maven-resource group="org.jboss.as" artifact="jboss-as-ee"/>
