@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -36,11 +36,9 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.ws.common.management.DefaultEndpointRegistry;
 import org.jboss.ws.common.management.ManagedEndpointRegistry;
-import org.jboss.wsf.spi.SPIProvider;
-import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.management.EndpointRegistry;
-import org.jboss.wsf.spi.management.EndpointRegistryFactory;
 
 /**
  * The service for the endpoint registry
@@ -65,11 +63,12 @@ public final class EndpointRegistryService implements Service<EndpointRegistry> 
 
     @Override
     public void start(final StartContext context) throws StartException {
-        final SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
-        registry = spiProvider.getSPI(EndpointRegistryFactory.class).getEndpointRegistry();
-        if (injectedMBeanServer.getValue() != null && registry instanceof ManagedEndpointRegistry) {
-            final ManagedEndpointRegistry managedEndpointRegistry = (ManagedEndpointRegistry)registry;
+        if (injectedMBeanServer.getValue() != null) {
+            final ManagedEndpointRegistry managedEndpointRegistry = new ManagedEndpointRegistry();
             managedEndpointRegistry.setMbeanServer(injectedMBeanServer.getValue());
+            registry = managedEndpointRegistry;
+        } else {
+            registry = new DefaultEndpointRegistry();
         }
     }
 
