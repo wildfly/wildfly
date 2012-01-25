@@ -687,6 +687,7 @@
                     <xs:element name="socket" type="http-management-socketType"/>
                     <xs:element name="socket-binding" type="http-management-socket-binding-refType"/>
                 </xs:choice>
+                <xs:attribute name="console-enabled" type="xs:boolean" use="optional"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
