@@ -45,7 +45,7 @@
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>copy-mgmt-users</id>
+                        <id>copy-users</id>
                         <phase>generate-test-resources</phase>
                         <goals><goal>copy-resources</goal></goals>
                         <configuration>
@@ -55,7 +55,8 @@
                                 <resource>
                                     <directory>../../shared/src/main/resources</directory>
                                     <includes>
-                                        <include>mgmt-users.properties</include>
+                                        <include>*-users.properties</include>
+                                        <include>*-roles.properties</include>
                                     </includes>
                                 </resource>
                             </resources>

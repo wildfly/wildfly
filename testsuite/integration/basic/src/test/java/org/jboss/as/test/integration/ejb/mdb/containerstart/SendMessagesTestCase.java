@@ -210,7 +210,7 @@ public class SendMessagesTestCase {
             connectionParams.put(TransportConstants.PORT_PROP_NAME, 5445);
             TransportConfiguration transportConfiguration = new TransportConfiguration(NettyConnectorFactory.class.getName(), connectionParams);
             ConnectionFactory cf = (ConnectionFactory)  HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, transportConfiguration);           
-            connection = cf.createConnection();
+            connection = cf.createConnection("guest", "guest");
             
             
             connection.start();

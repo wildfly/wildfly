@@ -100,7 +100,7 @@ public class JmsClientTestCase {
             QueueConnectionFactory qcf = lookup(client, "RemoteConnectionFactory", QueueConnectionFactory.class);
             Queue queue = lookup(client, QUEUE_NAME, Queue.class);
 
-            conn = qcf.createQueueConnection();
+            conn = qcf.createQueueConnection("guest", "guest");
             conn.start();
             session = conn.createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE);
 
