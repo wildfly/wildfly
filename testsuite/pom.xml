@@ -79,6 +79,12 @@
         <!-- This value is overridden in modules with the correct relative pathname. -->
         <jboss.dist>${project.basedir}/../build/target/jboss-as-${jboss.as.release.version}</jboss.dist>
         <jboss.home>${jboss.dist}</jboss.home>
+        
+        <!-- This project's testsuite dir. To be changed for every submodule (until we figure out how to do it automatically). -->
+        <jbossas.ts.dir>${basedir}</jbossas.ts.dir>
+        <!-- This project's root dir. -->
+        <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir> <!-- TODO: Remove from submodules (is inherited). -->
+        
 
         <!-- Used to provide an absolute location for the XSLT scripts. -->
         <!-- This value is overridden in modules with the correct relative pathname. -->
@@ -98,6 +104,9 @@
         <jvm.args.securityManager></jvm.args.securityManager>
         <jvm.args.securityPolicy></jvm.args.securityPolicy>
         <jvm.args.security>${jvm.args.securityManager} ${jvm.args.securityPolicy}</jvm.args.security>
+        
+        <!-- JaCoCo - Code coverage (-Dcoverage). -->
+        <jvm.args.jacoco></jvm.args.jacoco>
         
         <!-- Timeout ratios. 100 will leave the timeout as it was coded. -->
         <timeout.ratio.fsio>100</timeout.ratio.fsio>
@@ -372,7 +381,7 @@
                     <testFailureIgnore>${surefire.test.failure.ignore}</testFailureIgnore>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                     <systemPropertyVariables>
-                        <jboss.options>${surefire.system.args}</jboss.options>
+                        <jboss.options>${surefire.system.args} ${jvm.args.jacoco}</jboss.options>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                         <jboss.dist>${jboss.dist}</jboss.dist>
                         <jboss.home>${basedir}/target/jbossas</jboss.home>
@@ -528,6 +537,162 @@
                 <surefire.jpda.args>-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y</surefire.jpda.args>
             </properties>
         </profile>
+        
+
+        <!-- JaCoCo test coverage. Will set ${jvm.args.jacoco} to be used in Arquillian config. -->
+        <profile>
+            <id>ts.jacoco.profile</id>
+            <activation><property><name>coverage</name></property></activation>
+            <properties>
+                <jvm.args.jacoco>-javaagent:${jbossas.ts.dir}/target/jacoco-jars/agent/jacocoagent.jar=destfile=${basedir}/target/jacoco.exec,includes=*,excludes=org.jboss.as.test.*,append=true,output=file</jvm.args.jacoco>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>${version.jacoco.plugin}</version>
+                        <executions>
+                            <execution><id>ts.jacoco-prepare</id>
+                                <phase>process-test-classes</phase>
+                                <goals><goal>prepare-agent</goal></goals>
+                                <configuration>
+                                    <append>true</append>
+                                    <destFile>target/jacoco.exec</destFile>
+                                    <includes>
+                                        <include>*</include>
+                                    </includes>
+                                    <excludes>
+                                        <exclude>org.jboss.as.test.*</exclude>
+                                    </excludes>
+                                    <output>file</output>
+                                    <propertyName>jvm.args.jacoco</propertyName>
+                                </configuration>
+                            </execution>
+                            <!-- Doesn't work currently - waiting for JaCoCo to fix this. Moved to the Ant plugin execution. -->
+                            <execution><id>ts.jacoco.report</id>
+                                <phase>none</phase> <!-- post-integration-test -->
+                                <goals><goal>report</goal></goals>
+                                <configuration>
+                                    <dataFile>target/jacoco.exec</dataFile>
+                                    <outputDirectory>target/coverageReport</outputDirectory>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- Copy JaCoCo jars to have them for the Ant plugin. -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <!-- Copy the ant tasks jar. Needed for ts.jacoco.report-ant . -->
+                            <execution> <id>ts.jacoco.dep.ant</id> <goals><goal>copy</goal></goals> <phase>process-test-resources</phase> <inherited>false</inherited>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem><groupId>org.jacoco</groupId><artifactId>org.jacoco.ant</artifactId><version>${version.jacoco.plugin}</version></artifactItem>
+                                    </artifactItems>
+                                    <stripVersion>true</stripVersion>
+                                    <outputDirectory>${basedir}/target/jacoco-jars</outputDirectory>
+                                </configuration>
+                            </execution>
+                            <!-- Copy the agent jar. Needed for ${jvm.args.jacoco} to have this jar on known path.
+                                 If the ts.jacoco-prepare worked and really put the value into the property, this might go away. -->
+                            <execution> <id>ts.jacoco.dep.agent</id> <goals><goal>unpack</goal></goals> <phase>process-test-resources</phase> <inherited>false</inherited>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem><groupId>org.jacoco</groupId><artifactId>org.jacoco.agent</artifactId><version>${version.jacoco.plugin}</version></artifactItem>
+                                    </artifactItems>
+                                    <stripVersion>true</stripVersion>
+                                    <outputDirectory>${basedir}/target/jacoco-jars/agent</outputDirectory>
+                                </configuration>
+                            </execution>
+
+                        </executions>
+                    </plugin>
+                    <!-- Ant plugin. -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <!-- DEBUG -->
+                            <execution>
+                                <id>ts.jacoco.debug</id>
+                                <phase>post-integration-test</phase>
+                                <goals><goal>run</goal></goals>
+                                <inherited>false</inherited>
+                                <configuration>
+                                    <target>
+                                        <echo>Jacoco argline: ${jvm.args.jacoco}</echo>
+                                        <echo>Jacoco jar: ${basedir}/target/jacoco-jars/org.jacoco.ant.jar</echo>
+                                    </target>
+                                </configuration>
+                            </execution>
+                            <!-- Must be run using Ant due to https://sourceforge.net/tracker/?func=detail&aid=3474708&group_id=177969&atid=883354 -->
+                            <execution>
+                                <id>ts.jacoco.report-ant</id>
+                                <phase>site</phase> <!-- post-integration-test -->
+                                <goals><goal>run</goal></goals>
+                                <inherited>false</inherited>
+                                <configuration>
+                                    <target>
+                                        <taskdef name="report" classname="org.jacoco.ant.ReportTask">
+                                            <classpath path="${basedir}/target/jacoco-jars/org.jacoco.ant.jar"/>
+                                        </taskdef>
+                                        <!--
+                                        <taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml" classpathref="maven.plugin.classpath">
+                                            <classpath path="${basedir}/target/jacoco-jars/org.jacoco.ant.jar"/>
+                                        </taskdef>
+                                        -->
+                                        <echo>Creating JaCoCo test coverage reports...</echo>
+                                        <mkdir dir="${basedir}/target/coverage-report"/>
+                                        <report>
+                                            <executiondata>
+                                                <fileset dir="${basedir}">
+                                                    <include name="**/target/jacoco.exec"/>
+                                                </fileset>
+                                            </executiondata>
+                                            <structure name="AS 7 project">
+                                                <classfiles>
+                                                    <fileset dir="${jboss.dist}/modules">
+                                                        <include name="**/*.jar"/>
+                                                        <!-- We have 2.x in main. -->
+                                                        <exclude name="com/sun/jsf-impl/1.*/**/*"/>
+                                                        <!--  AS7-3383 - com/sun/codemodel vs. /1.0/com/sun/codemodel -->
+                                                        <exclude name="com/sun/xml/**/*"/>
+                                                        <exclude name="javax/faces/api/1.2/**/*"/>
+                                                        <!-- AS7-3390 -->
+                                                        <exclude name="org/apache/commons/beanutils/**/*"/>
+                                                        <!-- AS7-3389 -->
+                                                        <exclude name="org/python/jython/standalone/**/*"/>
+                                                    </fileset>
+                                                </classfiles>
+                                                <sourcefiles encoding="UTF-8">
+                                                    <fileset dir="${jbossas.project.dir}">
+                                                        <include name="**/*.java"/>
+                                                        <exclude name="testsuite/**/*.java"/>
+                                                    </fileset>
+                                                </sourcefiles>
+                                            </structure>
+                                            <html destdir ="${basedir}/target/coverage-report/html"/>
+                                            <xml  destfile="${basedir}/target/coverage-report/coverage-report.xml"/>
+                                            <csv  destfile="${basedir}/target/coverage-report/coverage-report.csv"/>
+                                        </report>                                        
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.jacoco</groupId>
+                                <artifactId>org.jacoco.ant</artifactId>
+                                <version>${version.jacoco.plugin}</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        
 
 
         <!-- IPv6. AS7-2228. -->
