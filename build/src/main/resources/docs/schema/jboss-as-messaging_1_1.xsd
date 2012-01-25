@@ -618,6 +618,7 @@
                </xs:sequence>
             </xs:complexType>
          </xs:element>
+         <xs:element name="factory-type" type="connectionFactoryType" minOccurs="0" maxOccurs="1"/>
          <xs:element name="ha" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
          <xs:element name="client-failure-check-period" type="xs:long" maxOccurs="1" minOccurs="0" />
          <xs:element name="connection-ttl" type="xs:long" maxOccurs="1" minOccurs="0" />
@@ -651,6 +652,17 @@
       </xs:all>
       <xs:attribute name="name" type="xs:string" />
    </xs:complexType>
+
+   <xs:simpleType name="connectionFactoryType">
+      <xs:restriction base="xs:token">
+         <xs:enumeration value="GENERIC"/>
+         <xs:enumeration value="QUEUE"/>
+         <xs:enumeration value="TOPIC"/>
+         <xs:enumeration value="XA_GENERIC"/>
+         <xs:enumeration value="XA_QUEUE"/>
+         <xs:enumeration value="XA_TOPIC"/>
+      </xs:restriction>
+   </xs:simpleType>
 
       <xs:complexType name="pooled-connection-factoryType">
       <xs:all>

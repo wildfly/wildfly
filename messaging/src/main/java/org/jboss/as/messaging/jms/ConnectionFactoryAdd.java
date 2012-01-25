@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.config.impl.ConnectionFactoryConfigurationImpl;
@@ -37,6 +38,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -79,6 +81,7 @@ import static org.jboss.as.messaging.CommonAttributes.RETRY_INTERVAL;
 import static org.jboss.as.messaging.CommonAttributes.RETRY_INTERVAL_MULTIPLIER;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_BATCH_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.USE_GLOBAL_POOLS;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY_TYPE;
 
 /**
  * Update adding a connection factory to the subsystem. The
@@ -178,7 +181,8 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
         config.setTransactionBatchSize(TRANSACTION_BATCH_SIZE.resolveModelAttribute(context, model).asInt());
         config.setUseGlobalPools(USE_GLOBAL_POOLS.resolveModelAttribute(context, model).asBoolean());
         config.setLoadBalancingPolicyClassName(LOAD_BALANCING_CLASS_NAME.resolveModelAttribute(context, model).asString());
-
+        JMSFactoryType jmsFactoryType = getFactoryType(CONNECTION_FACTORY_TYPE.resolveModelAttribute(context, model).asString());
+        config.setFactoryType(jmsFactoryType);
         return config;
     }
 
@@ -196,6 +200,23 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
         }
 
         return operation;
+    }
+
+    private static JMSFactoryType getFactoryType(String factoryType) {
+        if(factoryType == null || factoryType.equals(CommonAttributes.GENERIC_FACTORY)) {
+            return JMSFactoryType.CF;
+        } else if (factoryType.equals(CommonAttributes.QUEUE_FACTORY)) {
+            return JMSFactoryType.QUEUE_CF;
+        } else if (factoryType.equals(CommonAttributes.TOPIC_FACTORY)) {
+            return JMSFactoryType.TOPIC_CF;
+        } else if (factoryType.equals(CommonAttributes.XA_GENERIC_FACTORY)) {
+            return JMSFactoryType.XA_CF;
+        } else if (factoryType.equals(CommonAttributes.XA_QUEUE_FACTORY)) {
+            return JMSFactoryType.QUEUE_XA_CF;
+        } else if (factoryType.equals(CommonAttributes.XA_TOPIC_FACTORY)) {
+            return JMSFactoryType.TOPIC_XA_CF;
+        }
+        return JMSFactoryType.CF;
     }
 
 }

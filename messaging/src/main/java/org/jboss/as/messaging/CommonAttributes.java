@@ -31,6 +31,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.messaging.jms.ConnectionFactoryTypeValidator;
 import org.jboss.as.messaging.jms.JndiEntriesAttribute;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -451,6 +452,9 @@ public interface CommonAttributes {
     SimpleAttributeDefinition TYPE = new SimpleAttributeDefinition("type", "type",
             null, ModelType.STRING,  true, false, MeasurementUnit.NONE, GroupingHandlerTypeValidator.INSTANCE);
 
+    SimpleAttributeDefinition CONNECTION_FACTORY_TYPE = new SimpleAttributeDefinition("factory-type", "factory-type",
+            null, ModelType.STRING,  true, false, MeasurementUnit.NONE, ConnectionFactoryTypeValidator.INSTANCE);
+
     SimpleAttributeDefinition USER = new SimpleAttributeDefinition("user",
             new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_USER), ModelType.STRING, true);
 
@@ -505,6 +509,7 @@ public interface CommonAttributes {
     String ENTRY ="entry";
     String FACTORY_TYPE = "factory-type";
     String FILE_DEPLOYMENT_ENABLED ="file-deployment-enabled";
+    String GENERIC_FACTORY = "GENERIC";
     String GROUPING_HANDLER ="grouping-handler";
     String ID ="id";
     String INITIAL_MESSAGE_PACKET_SIZE = "initial-message-packet-size";
@@ -557,7 +562,9 @@ public interface CommonAttributes {
     String SCHEDULED_COUNT = "scheduled-count";
     String SECURITY_SETTING ="security-setting";
     String SECURITY_SETTINGS ="security-settings";
+    String TOPIC_FACTORY = "TOPIC";
     String HORNETQ_SERVER = "hornetq-server";
+    String QUEUE_FACTORY = "QUEUE";
     String STARTED = "started";
     String STATIC_CONNECTORS = "static-connectors";
     String STRING ="string";
@@ -570,6 +577,9 @@ public interface CommonAttributes {
     String VERSION = "version";
     String XA = "xa";
     String XA_TX = "XATransaction";
+    String XA_GENERIC_FACTORY = "XA_GENERIC";
+    String XA_QUEUE_FACTORY = "XA_QUEUE";
+    String XA_TOPIC_FACTORY = "XA_TOPIC";
 
     AttributeDefinition[] SIMPLE_ROOT_RESOURCE_ATTRIBUTES = {
         CLUSTERED, PERSISTENCE_ENABLED, SCHEDULED_THREAD_POOL_MAX_SIZE,
