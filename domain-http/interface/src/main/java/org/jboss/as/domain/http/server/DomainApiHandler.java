@@ -22,30 +22,6 @@
 
 package org.jboss.as.domain.http.server;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.domain.http.server.Constants.ACCEPT;
-import static org.jboss.as.domain.http.server.Constants.APPLICATION_DMR_ENCODED;
-import static org.jboss.as.domain.http.server.Constants.APPLICATION_JSON;
-import static org.jboss.as.domain.http.server.Constants.CONTENT_DISPOSITION;
-import static org.jboss.as.domain.http.server.Constants.CONTENT_TYPE;
-import static org.jboss.as.domain.http.server.Constants.FORBIDDEN;
-import static org.jboss.as.domain.http.server.Constants.GET;
-import static org.jboss.as.domain.http.server.Constants.HOST;
-import static org.jboss.as.domain.http.server.Constants.HTTP;
-import static org.jboss.as.domain.http.server.Constants.HTTPS;
-import static org.jboss.as.domain.http.server.Constants.INTERNAL_SERVER_ERROR;
-import static org.jboss.as.domain.http.server.Constants.METHOD_NOT_ALLOWED;
-import static org.jboss.as.domain.http.server.Constants.OK;
-import static org.jboss.as.domain.http.server.Constants.OPTIONS;
-import static org.jboss.as.domain.http.server.Constants.ORIGIN;
-import static org.jboss.as.domain.http.server.Constants.POST;
-import static org.jboss.as.domain.http.server.Constants.TEXT_HTML;
-import static org.jboss.as.domain.http.server.Constants.US_ASCII;
-import static org.jboss.as.domain.http.server.Constants.UTF_8;
-import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
-import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -74,6 +50,31 @@ import org.jboss.com.sun.net.httpserver.HttpContext;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
 import org.jboss.com.sun.net.httpserver.HttpServer;
 import org.jboss.dmr.ModelNode;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.domain.http.server.Constants.ACCEPT;
+import static org.jboss.as.domain.http.server.Constants.APPLICATION_DMR_ENCODED;
+import static org.jboss.as.domain.http.server.Constants.APPLICATION_JSON;
+import static org.jboss.as.domain.http.server.Constants.CONTENT_DISPOSITION;
+import static org.jboss.as.domain.http.server.Constants.CONTENT_TYPE;
+import static org.jboss.as.domain.http.server.Constants.FORBIDDEN;
+import static org.jboss.as.domain.http.server.Constants.GET;
+import static org.jboss.as.domain.http.server.Constants.HOST;
+import static org.jboss.as.domain.http.server.Constants.HTTP;
+import static org.jboss.as.domain.http.server.Constants.HTTPS;
+import static org.jboss.as.domain.http.server.Constants.INTERNAL_SERVER_ERROR;
+import static org.jboss.as.domain.http.server.Constants.METHOD_NOT_ALLOWED;
+import static org.jboss.as.domain.http.server.Constants.OK;
+import static org.jboss.as.domain.http.server.Constants.OPTIONS;
+import static org.jboss.as.domain.http.server.Constants.ORIGIN;
+import static org.jboss.as.domain.http.server.Constants.POST;
+import static org.jboss.as.domain.http.server.Constants.TEXT_HTML;
+import static org.jboss.as.domain.http.server.Constants.UNSUPPORTED_MEDIA_TYPE;
+import static org.jboss.as.domain.http.server.Constants.US_ASCII;
+import static org.jboss.as.domain.http.server.Constants.UTF_8;
+import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
+import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
 
 /**
  * An embedded web server that provides a JSON over HTTP API to the domain management model.
@@ -124,7 +125,7 @@ class DomainApiHandler implements ManagementHttpHandler {
         this.authenticator = authenticator;
     }
 
-    public void handle(HttpExchange http) throws IOException {
+    private void doHandle(HttpExchange http) throws IOException {
         /**
          *  Request Verification - before the request is handled a set of checks are performed for
          *  CSRF and XSS
@@ -181,7 +182,11 @@ class DomainApiHandler implements ManagementHttpHandler {
             String contentType = extractContentType(headers.getFirst(CONTENT_TYPE));
             if (!(APPLICATION_JSON.equals(contentType) || APPLICATION_DMR_ENCODED.equals(contentType))) {
                 drain(http);
-                http.sendResponseHeaders(FORBIDDEN, -1);
+                // RFC 2616: 14.11 Content-Encoding
+                // If the content-coding of an entity in a request message is not
+                // acceptable to the origin server, the server SHOULD respond with a
+                // status code of 415 (Unsupported Media Type).
+                sendResponse(http, UNSUPPORTED_MEDIA_TYPE, contentType + "\n");
 
                 return;
             }
@@ -192,8 +197,22 @@ class DomainApiHandler implements ManagementHttpHandler {
         processRequest(http);
     }
 
+    @Override
+    public void handle(HttpExchange exchange) throws IOException {
+        // make sure we send something back
+        try {
+            doHandle(exchange);
+        } catch (Exception e) {
+            sendResponse(exchange, INTERNAL_SERVER_ERROR, e.getMessage() + "\n");
+        }
+    }
+
     private void drain(HttpExchange exchange) throws IOException {
-        exchange.getRequestBody().close();
+        try {
+            exchange.getRequestBody().close();
+        } catch (IOException e) {
+            // ignore
+        }
     }
 
     private String extractContentType(final String fullContentType) {
@@ -284,6 +303,17 @@ class DomainApiHandler implements ManagementHttpHandler {
 
         boolean pretty = dmr.hasDefined("json.pretty") && dmr.get("json.pretty").asBoolean();
         writeResponse(http, isGet, pretty, response, status, encode);
+    }
+
+    private void sendResponse(final HttpExchange exchange, final int responseCode, final String body) throws IOException {
+        exchange.sendResponseHeaders(responseCode, 0);
+        final PrintWriter out = new PrintWriter(exchange.getResponseBody());
+        try {
+            out.print(body);
+            out.flush();
+        } finally {
+            safeClose(out);
+        }
     }
 
      private void writeResponse(final HttpExchange http, boolean isGet, boolean pretty, ModelNode response, int status,
