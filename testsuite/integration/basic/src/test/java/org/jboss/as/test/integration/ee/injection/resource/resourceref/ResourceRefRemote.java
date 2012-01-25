@@ -33,6 +33,4 @@ import javax.naming.NamingException;
 @Remote
 public interface ResourceRefRemote {
     public boolean isDataSourceAvailableInEnc() throws NamingException;
-
-    public boolean areOtherResourcesAvailableInEnc() throws NamingException;
 }

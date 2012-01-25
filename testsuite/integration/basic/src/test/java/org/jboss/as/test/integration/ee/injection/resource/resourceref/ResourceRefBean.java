@@ -22,9 +22,6 @@
 
 package org.jboss.as.test.integration.ee.injection.resource.resourceref;
 
-import java.net.URL;
-
-import javax.annotation.Resource;
 import javax.ejb.Stateless;
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -48,10 +45,6 @@ public class ResourceRefBean implements ResourceRefRemote {
 
     private static Logger logger = Logger.getLogger(ResourceRefBean.class);
 
-    /* FIXME: uncomment after solving AS7-2744
-     * @Resource(name = "SomeURL", mappedName = "http://www.jboss.org") */
-    private URL someUrl;
-
     /**
      * Looks up a datasource within the ENC of this bean. The datasource is expected to be configured through the deployment
      * descriptors and should be available at java:comp/env/EJBTHREE-1823_DS
@@ -68,30 +61,5 @@ public class ResourceRefBean implements ResourceRefRemote {
         ret = ds == null ? false : true;
         logger.info("Datasource was found: " + ret + ", on: " + encJndiName);
         return ret;
-    }
-
-    /**
-     * Let's just lookup other resource-ref entries (like a resource-ref for a URL)
-     * 
-     * @return
-     * @throws NamingException
-     */
-    public boolean areOtherResourcesAvailableInEnc() throws NamingException {
-        Context ctx = new InitialContext();
-        String encJndiName = "java:comp/env/SomeURL";
-        URL urlInEnc = (URL) ctx.lookup(encJndiName);
-        if (urlInEnc == null) {
-            logger.error("URL not found in ENC at " + encJndiName);
-            return false;
-        }
-
-        // also check if the resource was injected
-        if (this.someUrl == null) {
-            logger.error("@Resource of type URL not injected");
-            return false;
-        }
-
-        return true;
-
     }
 }
