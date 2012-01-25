@@ -22,20 +22,10 @@
 
 package org.jboss.as.test.integration.ejb.ejb2.reference.annotation;
 
-import java.rmi.RemoteException;
-
 import javax.ejb.EJBObject;
 
 /**
  * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>
  */
 public interface StatefulSession30 extends EJBObject, StatefulSession30RemoteBusiness {
-    // FIXME: AS7-3006 - not needed put here access method - is inhereted from StatefulSession30RemoteBusiness
-    void setValue(String value) throws RemoteException; 
-
-    String getValue() throws RemoteException;
-
-    String accessLocalStateless() throws RemoteException;
-
-    String accessLocalHome() throws RemoteException;
 }

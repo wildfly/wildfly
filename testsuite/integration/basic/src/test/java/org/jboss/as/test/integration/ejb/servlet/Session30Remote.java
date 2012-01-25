@@ -22,24 +22,10 @@
 
 package org.jboss.as.test.integration.ejb.servlet;
 
-import java.rmi.RemoteException;
-
 import javax.ejb.EJBObject;
 
 /**
  * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>
  */
-public interface Session30Remote extends EJBObject /*, Session30 */ {
-    // FIXME: AS7-3006 - there should not be a need to define the methods here whe they're inherited from Session30
-    void hello() throws RemoteException;  
-
-    void goodbye() throws RemoteException;
-
-    String access(TestObject o) throws RemoteException;
-
-    TestObject createTestObject() throws RemoteException;
-
-    boolean checkEqPointer(TestObject to) throws RemoteException;
-
-    WarTestObject getWarTestObject() throws RemoteException;
+public interface Session30Remote extends EJBObject, Session30 {
 }
