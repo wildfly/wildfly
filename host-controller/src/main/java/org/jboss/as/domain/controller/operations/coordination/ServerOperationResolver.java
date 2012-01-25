@@ -63,7 +63,7 @@ import org.jboss.dmr.Property;
  */
 public class ServerOperationResolver {
 
-    public static AttachmentKey<Boolean> DONT_PROPAGATE_TO_SERVERS_ATTACHMENT = AttachmentKey.create(Boolean.class);
+    public static AttachmentKey<Set<ModelNode>> DONT_PROPAGATE_TO_SERVERS_ATTACHMENT = AttachmentKey.create(Set.class);
 
     private enum DomainKey {
 
@@ -150,13 +150,22 @@ public class ServerOperationResolver {
         this.serverProxies = serverProxies;
     }
 
+    public static synchronized void addToDontPropagateToServersAttachment(OperationContext context, ModelNode op) {
+        Set<ModelNode> ops = context.getAttachment(DONT_PROPAGATE_TO_SERVERS_ATTACHMENT);
+        if (ops == null) {
+            ops = new HashSet<ModelNode>();
+            context.attach(DONT_PROPAGATE_TO_SERVERS_ATTACHMENT, ops);
+        }
+        ops.add(op);
+    }
+
     public Map<Set<ServerIdentity>, ModelNode> getServerOperations(OperationContext context, ModelNode operation, PathAddress address, ModelNode domain, ModelNode host) {
         if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {
             HOST_CONTROLLER_LOGGER.tracef("Resolving %s", operation);
         }
 
-        Boolean dontPropagate = context.getAttachment(DONT_PROPAGATE_TO_SERVERS_ATTACHMENT);
-        if (dontPropagate != null && dontPropagate.booleanValue() == true) {
+        Set<ModelNode> dontPropagate = context.getAttachment(DONT_PROPAGATE_TO_SERVERS_ATTACHMENT);
+        if (dontPropagate != null && dontPropagate.contains(operation)) {
             return Collections.emptyMap();
         }
 
