@@ -82,11 +82,11 @@
             <xs:element name="initializers" minOccurs="0" maxOccurs="1" type="orbInitializersConfigType"/>
         </xs:sequence>
         <xs:attribute name="name" type="xs:string" use="optional" default="JBoss"/>
-        <xs:attribute name="print-version" type="xs:string" use="optional" default="off"/>
-        <xs:attribute name="use-imr" type="xs:string" use="optional" default="off"/>
-        <xs:attribute name="use-bom" type="xs:string" use="optional" default="off"/>
-        <xs:attribute name="cache-typecodes" type="xs:string" use="optional" default="off"/>
-        <xs:attribute name="cache-poa-names" type="xs:string" use="optional" default="off"/>
+        <xs:attribute name="print-version" type="onOffType" use="optional" default="off"/>
+        <xs:attribute name="use-imr" type="onOffType" use="optional" default="off"/>
+        <xs:attribute name="use-bom" type="onOffType" use="optional" default="off"/>
+        <xs:attribute name="cache-typecodes" type="onOffType" use="optional" default="off"/>
+        <xs:attribute name="cache-poa-names" type="onOffType" use="optional" default="off"/>
         <xs:attribute name="giop-minor-version" type="xs:integer" use="optional" default="2"/>
     </xs:complexType>
 
@@ -136,7 +136,7 @@
                         ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="security" type="securityEnabledType" use="optional" default="off"/>
+        <xs:attribute name="security" type="onOffType" use="optional" default="off"/>
         <xs:attribute name="transactions" type="transactionEnabledType" use="optional" default="off"/>
     </xs:complexType>
 
@@ -161,8 +161,8 @@
         <xs:sequence>
             <xs:element name="request-processors" minOccurs="0" maxOccurs="1" type="poaRequestProcessorsConfigType"/>
         </xs:sequence>
-        <xs:attribute name="monitoring" type="xs:string" use="optional" default="off"/>
-        <xs:attribute name="queue-wait" type="xs:string" use="optional" default="off"/>
+        <xs:attribute name="monitoring" type="onOffType" use="optional" default="off"/>
+        <xs:attribute name="queue-wait" type="onOffType" use="optional" default="off"/>
         <xs:attribute name="queue-min" type="xs:integer" use="optional" default="10"/>
         <xs:attribute name="queue-max" type="xs:integer" use="optional" default="100"/>
     </xs:complexType>
@@ -198,7 +198,7 @@
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="root-context" type="xs:string" use="optional" default="JBoss/Naming/root"/>
-        <xs:attribute name="export-corbaloc" type="xs:string" use="optional" default="on"/>
+        <xs:attribute name="export-corbaloc" type="onOffType" use="optional" default="on"/>
     </xs:complexType>
 
     <xs:complexType name="interopConfigType">
@@ -221,13 +221,13 @@
                         ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="sun" type="xs:string" use="optional" default="on"/>
-        <xs:attribute name="comet" type="xs:string" use="optional" default="off"/>
-        <xs:attribute name="iona" type="xs:string" use="optional" default="off"/>
-        <xs:attribute name="chunk-custom-rmi-valuetypes" type="xs:string" use="optional" default="on"/>
-        <xs:attribute name="lax-boolean-encoding" type="xs:string" use="optional" default="off"/>
-        <xs:attribute name="indirection-encoding-disable" type="xs:string" use="optional" default="off"/>
-        <xs:attribute name="strict-check-on-tc-creation" type="xs:string" use="optional" default="off"/>
+        <xs:attribute name="sun" type="onOffType" use="optional" default="on"/>
+        <xs:attribute name="comet" type="onOffType" use="optional" default="off"/>
+        <xs:attribute name="iona" type="onOffType" use="optional" default="off"/>
+        <xs:attribute name="chunk-custom-rmi-valuetypes" type="onOffType" use="optional" default="on"/>
+        <xs:attribute name="lax-boolean-encoding" type="onOffType" use="optional" default="off"/>
+        <xs:attribute name="indirection-encoding-disable" type="onOffType" use="optional" default="off"/>
+        <xs:attribute name="strict-check-on-tc-creation" type="onOffType" use="optional" default="off"/>
     </xs:complexType>
 
     <xs:complexType name="securityConfigType">
@@ -241,30 +241,24 @@
                                    to establish SSL connections.
                 * add-component-via-interceptor: indicates whether SSL components should be added by an IOR interceptor
                                                  (on) or not (off).
-                * client-supports: value that indicates the client SSL supported parameters (EstablishTrustInTarget=20,
-                                   EstablishTrustInClient=40, MutualAuth=60).
-                * client-requires: value that indicates the client SSL required parameters (EstablishTrustInTarget=20,
-                                   EstablishTrustInClient=40, MutualAuth=60).
-                * server-supports: value that indicates the server SSL supported parameters (EstablishTrustInTarget=20,
-                                   EstablishTrustInClient=40, MutualAuth=60).
-                * server-requires: value that indicates the server SSL required parameters (EstablishTrustInTarget=20,
-                                   EstablishTrustInClient=40, MutualAuth=60).
-                * use-domain-socket-factory: indicates whether the JBoss domain socket factory should be used (on) or
-                                             not (off).
-                * use-domain-server-socket-factory: indicates whether the JBoss domain server socket factory should be
-                                                    used (on) or not (off).
+                * client-supports: value that indicates the client SSL supported parameters (None, ServerAuth, ClientAuth.
+                                   MutualAuth)
+                * client-requires: value that indicates the client SSL required parameters (None, ServerAuth, ClientAuth.
+                                   MutualAuth)
+                * server-supports: value that indicates the server SSL supported parameters (None, ServerAuth, ClientAuth.
+                                   MutualAuth)
+                * server-requires: value that indicates the server SSL required parameters (None, ServerAuth, ClientAuth.
+                                   MutualAuth)
                         ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="support-ssl" type="xs:string" use="optional" default="off"/>
+        <xs:attribute name="support-ssl" type="onOffType" use="optional" default="off"/>
         <xs:attribute name="security-domain" type="xs:string" use="optional"/>
-        <xs:attribute name="add-component-via-interceptor" type="xs:string" use="optional" default="on"/>
-        <xs:attribute name="client-supports" type="xs:integer" use="optional" default="60"/>
-        <xs:attribute name="client-requires" type="xs:integer" use="optional" default="0"/>
-        <xs:attribute name="server-supports" type="xs:integer" use="optional" default="60"/>
-        <xs:attribute name="server-requires" type="xs:integer" use="optional" default="0"/>
-        <xs:attribute name="use-domain-socket-factory" type="xs:string" use="optional" default="off"/>
-        <xs:attribute name="use-domain-server-socket-factory" type="xs:string" use="optional" default="off"/>
+        <xs:attribute name="add-component-via-interceptor" type="onOffType" use="optional" default="on"/>
+        <xs:attribute name="client-supports" type="sslConfigType" use="optional" default="MutualAuth"/>
+        <xs:attribute name="client-requires" type="sslConfigType" use="optional" default="None"/>
+        <xs:attribute name="server-supports" type="sslConfigType" use="optional" default="MutualAuth"/>
+        <xs:attribute name="server-requires" type="sslConfigType" use="optional" default="None"/>
     </xs:complexType>
 
     <xs:complexType name="genericPropertiesType">
@@ -293,10 +287,12 @@
         <xs:attribute name="value" type="xs:string" use="required"/>
     </xs:complexType>
 
-    <xs:simpleType name="securityEnabledType">
+    <xs:simpleType name="onOffType">
         <xs:annotation>
             <xs:documentation>
-                Enumeration for the security interceptor config.
+                <![CDATA[
+                    Enumeration of allowed values for the standard JacORB attributes.
+                ]]>
             </xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:token">
@@ -308,13 +304,27 @@
     <xs:simpleType name="transactionEnabledType">
         <xs:annotation>
             <xs:documentation>
-                Enumeration for the transaction interceptor config.
+                Enumeration of allowed values for the transaction interceptor config.
             </xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:token">
             <xs:enumeration value="on"/>
             <xs:enumeration value="off"/>
             <xs:enumeration value="spec"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="sslConfigType">
+        <xs:annotation>
+            <xs:documentation>
+                Enumeration of allowed values for the SSL config.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="None"/>
+            <xs:enumeration value="ServerAuth"/>
+            <xs:enumeration value="ClientAuth"/>
+            <xs:enumeration value="MutualAuth"/>
         </xs:restriction>
     </xs:simpleType>
 
