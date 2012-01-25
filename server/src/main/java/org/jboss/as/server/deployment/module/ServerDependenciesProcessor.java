@@ -41,6 +41,9 @@ public class ServerDependenciesProcessor implements DeploymentUnitProcessor {
     private static ModuleIdentifier JAVAX_API = ModuleIdentifier.create("javax.api");
     private static ModuleIdentifier JBOSS_LOGGING = ModuleIdentifier.create("org.jboss.logging");
     private static ModuleIdentifier JBOSS_VFS = ModuleIdentifier.create("org.jboss.vfs");
+    private static ModuleIdentifier COMMONS_LOGGING = ModuleIdentifier.create("org.apache.commons.logging");
+    private static ModuleIdentifier LOG4J = ModuleIdentifier.create("org.apache.log4j");
+    private static ModuleIdentifier SLF4J = ModuleIdentifier.create("org.slf4j");
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -51,6 +54,9 @@ public class ServerDependenciesProcessor implements DeploymentUnitProcessor {
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAVAX_API, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JBOSS_LOGGING, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JBOSS_VFS, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, COMMONS_LOGGING, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, LOG4J, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, SLF4J, false, false, false));
     }
 
     @Override
