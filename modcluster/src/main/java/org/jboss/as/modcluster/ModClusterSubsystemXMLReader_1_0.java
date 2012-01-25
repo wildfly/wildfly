@@ -153,19 +153,19 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
                     conf.get(ADVERTISE_SOCKET).set(value);
                     break;
                 case PROXY_LIST:
-                    conf.get(PROXY_LIST).setExpression(value);
+                    conf.get(PROXY_LIST).set(ParseUtils.parsePossibleExpression(value));
                     break;
                 case PROXY_URL:
-                    conf.get(PROXY_URL).setExpression(value);
+                    conf.get(PROXY_URL).set(ParseUtils.parsePossibleExpression(value));
                     break;
                 case ADVERTISE:
                     conf.get(ADVERTISE).set(value);
                     break;
                 case ADVERTISE_SECURITY_KEY:
-                    conf.get(ADVERTISE_SECURITY_KEY).setExpression(value);
+                    conf.get(ADVERTISE_SECURITY_KEY).set(ParseUtils.parsePossibleExpression(value));
                     break;
                 case EXCLUDED_CONTEXTS:
-                    conf.get(EXCLUDED_CONTEXTS).setExpression(value);
+                    conf.get(EXCLUDED_CONTEXTS).set(ParseUtils.parsePossibleExpression(value));
                     break;
                 case AUTO_ENABLE_CONTEXTS:
                     conf.get(AUTO_ENABLE_CONTEXTS).set(value);
@@ -213,7 +213,7 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
                     conf.get(BALANCER).set(value);
                     break;
                 case DOMAIN:
-                    conf.get(DOMAIN).setExpression(value);
+                    conf.get(DOMAIN).set(ParseUtils.parsePossibleExpression(value));
                     break;
                 default:
                     unexpectedAttribute(reader, i);
@@ -234,10 +234,10 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
                 ssl.get(KEY_ALIAS).set(value);
                 break;
             case PASSWORD:
-                ssl.get(PASSWORD).setExpression(value);
+                ssl.get(PASSWORD).set(ParseUtils.parsePossibleExpression(value));
                 break;
             case CERTIFICATE_KEY_FILE:
-                ssl.get(CERTIFICATE_KEY_FILE).setExpression(value);
+                ssl.get(CERTIFICATE_KEY_FILE).set(ParseUtils.parsePossibleExpression(value));
                 break;
             case CIPHER_SUITE:
                 ssl.get(CIPHER_SUITE).set(value);
@@ -246,7 +246,7 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
                 ssl.get(PROTOCOL).set(value);
                 break;
              case CA_CERTIFICATE_FILE:
-                ssl.get(CA_CERTIFICATE_FILE).setExpression(value);
+                ssl.get(CA_CERTIFICATE_FILE).set(ParseUtils.parsePossibleExpression(value));
                 break;
             case CA_REVOCATION_URL:
                 ssl.get(CA_REVOCATION_URL).set(value);
