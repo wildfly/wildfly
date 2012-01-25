@@ -106,8 +106,7 @@
         <jvm.args.security>${jvm.args.securityManager} ${jvm.args.securityPolicy}</jvm.args.security>
         
         <!-- JaCoCo - Code coverage (-Dcoverage). -->
-        <!--jvm.args.jacoco>-javaagent:${jbossas.ts.dir}/tools/jacoco/jacocoagent.jar=destfile=${basedir}/target/jacoco.exec,includes=${jboss.home}/modules/**/*,excludes=${basedir}/target/classes/**/*,append=true,output=file</jvm.args.jacoco>-->
-        <jvm.args.jacoco>-javaagent:${jbossas.ts.dir}/target/jacoco-jars/agent/jacocoagent.jar=destfile=${basedir}/target/jacoco.exec,includes=*,excludes=org.jboss.as.test.*,append=true,output=file</jvm.args.jacoco>
+        <jvm.args.jacoco></jvm.args.jacoco>
         
         <!-- Timeout ratios. 100 will leave the timeout as it was coded. -->
         <timeout.ratio.fsio>100</timeout.ratio.fsio>
@@ -544,6 +543,9 @@
         <profile>
             <id>ts.jacoco.profile</id>
             <activation><property><name>coverage</name></property></activation>
+            <properties>
+                <jvm.args.jacoco>-javaagent:${jbossas.ts.dir}/target/jacoco-jars/agent/jacocoagent.jar=destfile=${basedir}/target/jacoco.exec,includes=*,excludes=org.jboss.as.test.*,append=true,output=file</jvm.args.jacoco>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
