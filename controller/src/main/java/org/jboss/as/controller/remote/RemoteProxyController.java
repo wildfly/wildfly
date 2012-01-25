@@ -22,6 +22,7 @@
 package org.jboss.as.controller.remote;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import org.jboss.as.controller.ModelController;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.protocol.mgmt.ProtocolUtils.expectHeader;
@@ -50,30 +51,30 @@ import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
-import org.jboss.as.protocol.mgmt.ManagementProtocolHeader;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
-import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Channel;
 
 /**
+ * Remote {@link ProxyController} implementation.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author  Emanuel Muckenhuber
  */
 public class RemoteProxyController extends AbstractMessageHandler<Void, RemoteProxyController.ExecuteRequestContext> implements ProxyController {
 
-    private final PathAddress pathAddress;
     private final Channel channel;
+    private final PathAddress pathAddress;
     private final ProxyOperationAddressTranslator addressTranslator;
 
     private RemoteProxyController(final ExecutorService executorService, final PathAddress pathAddress,
                                   final ProxyOperationAddressTranslator addressTranslator, final Channel channel) {
         super(executorService);
-        this.pathAddress = pathAddress;
         this.channel = channel;
+        this.pathAddress = pathAddress;
         this.addressTranslator = addressTranslator;
     }
 
@@ -96,28 +97,16 @@ public class RemoteProxyController extends AbstractMessageHandler<Void, RemotePr
         return pathAddress;
     }
 
-    @Override
-    protected ManagementRequestHeader validateRequest(ManagementProtocolHeader header) throws IOException {
-        ManagementRequestHeader request = super.validateRequest(header);
-        return request;
-    }
-
+    /** {@inheritDoc} */
     @Override
     protected ManagementRequestHandler<Void, ExecuteRequestContext> getRequestHandler(byte operationType) {
         if (operationType == ModelControllerProtocol.HANDLE_REPORT_REQUEST) {
             return new HandleReportRequestHandler();
-        } else if (operationType == ModelControllerProtocol.OPERATION_FAILED_REQUEST) {
-            return new OperationFailedRequestHandler();
-        } else if (operationType == ModelControllerProtocol.OPERATION_COMPLETED_REQUEST) {
-            return new OperationCompletedRequestHandler();
-        } else if (operationType == ModelControllerProtocol.OPERATION_PREPARED_REQUEST) {
-            return new OperationPreparedRequestHandler();
         } else if (operationType == ModelControllerProtocol.GET_INPUTSTREAM_REQUEST) {
             return new ReadAttachmentInputStreamRequestHandler();
         }
         return super.getRequestHandler(operationType);
     }
-
 
     /** {@inheritDoc} */
     @Override
@@ -126,10 +115,9 @@ public class RemoteProxyController extends AbstractMessageHandler<Void, RemotePr
         final ModelNode operation = getOperationForProxy(original);
         final ExecuteRequestContext context = new ExecuteRequestContext(operation, attachments, handler, control);
         try {
-            final ActiveOperation<Void, RemoteProxyController.ExecuteRequestContext> support = super.registerActiveOperation(context, context);
+            final ActiveOperation<Void, ExecuteRequestContext> support = super.registerActiveOperation(context, context);
             super.executeRequest(new ExecuteRequest(), channel, support);
-            // Wait until the remote side completed all steps and sends the prepared
-            // result, or there is a failure
+            // Wait until we get a prepared or a failed response {@see ExecuteRequestHandler#handleRequest}
             context.awaitPreparedOrFailed();
 
         } catch (Exception e) {
@@ -154,6 +142,13 @@ public class RemoteProxyController extends AbstractMessageHandler<Void, RemotePr
         return proxyOp;
     }
 
+    /**
+     * Request for the the remote {@link TransactionalModelControllerOperationHandler.ExecuteRequestHandler}.
+     *
+     * The required response is either a:
+     *  - {@link ModelControllerProtocol#PARAM_OPERATION_FAILED}, which will complete the operation right away
+     *  - or {@link ModelControllerProtocol#PARAM_OPERATION_PREPARED}
+     */
     private class ExecuteRequest extends AbstractManagementRequest<Void, ExecuteRequestContext> {
 
         @Override
@@ -181,7 +176,90 @@ public class RemoteProxyController extends AbstractMessageHandler<Void, RemotePr
 
         @Override
         public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<Void> resultHandler, final ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
-            //
+            final byte responseType = input.readByte();
+            final ModelNode response = new ModelNode();
+            response.readExternal(input);
+            // If not prepared the operation failed
+            final boolean prepared = responseType == ModelControllerProtocol.PARAM_OPERATION_PREPARED;
+            context.executeAsync(new ManagementRequestContext.AsyncTask<ExecuteRequestContext>() {
+
+                @Override
+                public void execute(ManagementRequestContext<ExecuteRequestContext> executeRequestContextManagementRequestContext) throws Exception {
+                    final ExecuteRequestContext executeRequestContext = context.getAttachment();
+                    if(prepared) {
+                        // operation-prepared, this will allow RemoteProxyController#execute to proceed
+                        executeRequestContext.operationPrepared(new ModelController.OperationTransaction() {
+
+                            @Override
+                            public void rollback() {
+                                done(false);
+                            }
+
+                            @Override
+                            public void commit() {
+                                done(true);
+                            }
+
+                            private void done(boolean commit) {
+                                final byte status = commit ? ModelControllerProtocol.PARAM_COMMIT : ModelControllerProtocol.PARAM_ROLLBACK;
+                                final ActiveOperation<Void, ExecuteRequestContext> activeOperation = RemoteProxyController.this.getActiveOperation(context.getOperationId());
+                                try {
+                                    // Send the CompleteTxRequest
+                                    RemoteProxyController.this.executeRequest(new CompleteTxRequest(status), channel, activeOperation);
+                                } catch (Exception e) {
+                                    resultHandler.failed(e);
+                                }
+                                try {
+                                    /// Await the operation completed notification
+                                    activeOperation.getResult().await();
+                                } catch (InterruptedException e) {
+                                    throw MESSAGES.transactionTimeout(commit ? "commit" : "rollback");
+                                }
+                            }
+                        }, response);
+                    } else {
+                        // Failed
+                        executeRequestContext.operationFailed(response);
+                        resultHandler.done(null);
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * Signal the remote controller to either commit or rollback. The response has to be a
+     * {@link ModelControllerProtocol#PARAM_OPERATION_COMPLETED}.
+     */
+    private class CompleteTxRequest extends AbstractManagementRequest<Void, ExecuteRequestContext> {
+
+        private final byte status;
+
+        private CompleteTxRequest(byte status) {
+            this.status = status;
+        }
+
+        @Override
+        public byte getOperationType() {
+            return ModelControllerProtocol. COMPLETE_TX_REQUEST;
+        }
+
+        @Override
+        protected void sendRequest(final ActiveOperation.ResultHandler<Void> resultHandler, final ManagementRequestContext<ExecuteRequestContext> context, final FlushableDataOutput output) throws IOException {
+            output.write(status);
+        }
+
+        @Override
+        public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<Void> resultHandler, final ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
+            final ExecuteRequestContext executeRequestContext = context.getAttachment();
+            // We only accept operationCompleted responses
+            expectHeader(input, ModelControllerProtocol.PARAM_OPERATION_COMPLETED);
+            final ModelNode response = new ModelNode();
+            response.readExternal(input);
+
+            // Complete the operation
+            executeRequestContext.operationCompleted(response);
+            resultHandler.done(null);
         }
     }
 
@@ -258,112 +336,7 @@ public class RemoteProxyController extends AbstractMessageHandler<Void, RemotePr
 
     }
 
-    /**
-     * Base class for handling {@link ProxyOperationControl} method calls done in the remote target controller
-     */
-    abstract class ProxyOperationControlRequestHandler implements ManagementRequestHandler<Void, ExecuteRequestContext> {
-
-        @Override
-        public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<Void> resultHandler,
-                                  final ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
-            expectHeader(input, ModelControllerProtocol.PARAM_RESPONSE);
-            final ModelNode response = new ModelNode();
-            response.readExternal(input);
-            // handle
-            handle(response, resultHandler, context);
-            // TODO we actually don't need all this empty messages
-            context.executeAsync(ProtocolUtils.<ExecuteRequestContext>emptyResponseTask());
-        }
-
-        abstract void handle(ModelNode response, ActiveOperation.ResultHandler<Void> resultHandler, final ManagementRequestContext<ExecuteRequestContext> context);
-
-    }
-
-    /**
-     * Handles {@link ProxyOperationControl#operationFailed(ModelNode)} method calls done in the remote target controller
-     */
-    private class OperationFailedRequestHandler extends ProxyOperationControlRequestHandler {
-
-        @Override
-        void handle(final ModelNode response, final ActiveOperation.ResultHandler<Void> resultHandler, final ManagementRequestContext<ExecuteRequestContext> context) {
-            final ExecuteRequestContext executeRequestContext = context.getAttachment();
-            executeRequestContext.getControl().operationFailed(response);
-            // complete ?
-        }
-
-    }
-
-    /**
-     * Handles {@link ProxyOperationControl#operationFailed(ModelNode)} method calls done in the remote target controller
-     */
-    private class OperationCompletedRequestHandler extends ProxyOperationControlRequestHandler {
-
-        void handle(final ModelNode response, final ActiveOperation.ResultHandler<Void> resultHandler, final ManagementRequestContext<ExecuteRequestContext> context) {
-            final ExecuteRequestContext executeRequestContext = context.getAttachment();
-            executeRequestContext.getControl().operationCompleted(response);
-            resultHandler.done(null);
-        }
-
-    }
-
-    /**
-     * Handles {@link ProxyOperationControl#operationPrepared(org.jboss.as.controller.ModelController.OperationTransaction, ModelNode)}
-     * method calls done in the remote target controller
-     */
-    private class OperationPreparedRequestHandler extends ProxyOperationControlRequestHandler {
-
-        @Override
-        void handle(final ModelNode response, final ActiveOperation.ResultHandler<Void> resultHandler, final ManagementRequestContext<ExecuteRequestContext> context) {
-            final ExecuteRequestContext executeRequestContext = context.getAttachment();
-            executeRequestContext.getControl().operationPrepared(new OperationTransaction() {
-
-                @Override
-                public void rollback() {
-                    done(false);
-                }
-
-                @Override
-                public void commit() {
-                    done(true);
-                }
-
-                private void done(boolean commit){
-                    final byte status = commit ? ModelControllerProtocol.PARAM_COMMIT : ModelControllerProtocol.PARAM_ROLLBACK;
-                    final ActiveOperation<Void, ExecuteRequestContext> activeOperation = RemoteProxyController.this.getActiveOperation(context.getOperationId());
-                    try {
-                        RemoteProxyController.this.executeRequest(new AbstractManagementRequest<Void, ExecuteRequestContext>() {
-
-                            @Override
-                            public byte getOperationType() {
-                                return ModelControllerProtocol. COMPLETE_TX_REQUEST;
-                            }
-
-                            @Override
-                            protected void sendRequest(ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<ExecuteRequestContext> executeRequestContextManagementRequestContext, FlushableDataOutput output) throws IOException {
-                                output.write(status);
-                            }
-
-                            @Override
-                            public void handleRequest(DataInput input, ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<ExecuteRequestContext> executeRequestContextManagementRequestContext) throws IOException {
-                                //
-                            }
-                        }, channel, activeOperation);
-                    } catch (Exception e) {
-                        resultHandler.failed(e);
-                    }
-                    try {
-                        /// Await the operation completed notification
-                        activeOperation.getResult().await();
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        throw MESSAGES.transactionTimeout(commit ? "commit" : "rollback");
-                    }
-                }
-            }, response);
-        }
-    }
-
-    static class ExecuteRequestContext implements ActiveOperation.CompletedCallback<Void> {
+    static class ExecuteRequestContext implements ActiveOperation.CompletedCallback<Void>, ProxyController.ProxyOperationControl {
 
         final ModelNode operation;
         final OperationAttachments attachments;
@@ -372,32 +345,12 @@ public class RemoteProxyController extends AbstractMessageHandler<Void, RemotePr
         final AtomicBoolean completed = new AtomicBoolean(false);
         final CountDownLatch prepareOrFailedLatch = new CountDownLatch(1);
 
-        public ExecuteRequestContext(final ModelNode operation, final OperationAttachments attachments, final OperationMessageHandler messageHandler, final ProxyOperationControl delegate) {
-            this.control = new ProxyOperationControl() {
-                @Override
-                public void operationFailed(ModelNode response) {
-                    if(completed.compareAndSet(false, true)) {
-                        delegate.operationFailed(response);
-                    }
-                    prepareOrFailedLatch.countDown();
-                }
-
-                @Override
-                public void operationCompleted(ModelNode response) {
-                    if(completed.compareAndSet(false, true)) {
-                        delegate.operationCompleted(response);
-                    }
-                }
-
-                @Override
-                public void operationPrepared(OperationTransaction transaction, ModelNode result) {
-                    delegate.operationPrepared(transaction, result);
-                    prepareOrFailedLatch.countDown();
-                }
-            };
+        ExecuteRequestContext(final ModelNode operation, final OperationAttachments attachments,
+                                 final OperationMessageHandler messageHandler, final ProxyOperationControl delegate) {
             this.operation = operation;
             this.attachments = attachments;
             this.messageHandler = messageHandler;
+            this.control = delegate;
         }
 
         public OperationMessageHandler getMessageHandler() {
@@ -420,31 +373,45 @@ public class RemoteProxyController extends AbstractMessageHandler<Void, RemotePr
             return attachments.getInputStreams();
         }
 
-        public ProxyOperationControl getControl() {
-            return control;
-        }
-
-        public void awaitPreparedOrFailed() throws InterruptedException {
-            prepareOrFailedLatch.await();
-        }
-
         @Override
         public void completed(Void result) {
             //
         }
 
         @Override
-        public void failed(final Exception e) {
-            control.operationFailed(getResponse("failed"));
-            prepareOrFailedLatch.countDown();
+        public void failed(Exception e) {
+            operationFailed(getResponse(e.getMessage() != null ? e.getMessage() : "failed"));
         }
 
         @Override
         public void cancelled() {
-            control.operationFailed(getResponse("cancelled"));
+            operationFailed(getResponse("cancelled"));
+        }
+
+        @Override
+        public synchronized void operationFailed(final ModelNode response) {
+            if(completed.compareAndSet(false, true)) {
+                control.operationFailed(response);
+                prepareOrFailedLatch.countDown();
+            }
+        }
+
+        @Override
+        public synchronized void operationCompleted(final ModelNode response) {
+            if(completed.compareAndSet(false, true)) {
+                control.operationCompleted(response);
+            }
+        }
+
+        @Override
+        public synchronized void operationPrepared(final OperationTransaction transaction, final ModelNode result) {
+            control.operationPrepared(transaction, result);
             prepareOrFailedLatch.countDown();
         }
 
+        public void awaitPreparedOrFailed() throws InterruptedException {
+            prepareOrFailedLatch.await();
+        }
     }
 
     static ModelNode getResponse(final String outcome) {

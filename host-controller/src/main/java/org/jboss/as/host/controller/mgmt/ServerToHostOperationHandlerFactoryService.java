@@ -198,6 +198,11 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
                         } else {
                             proxyHandler.handleMessage(channel, input, header);
                         }
+                    } else if(type == ManagementProtocol.TYPE_RESPONSE) {
+                        if(proxyHandler != null) {
+                            // the proxy is the only one requiring responses
+                            proxyHandler.handleMessage(channel, input, header);
+                        }
                     }
                 }
             };
