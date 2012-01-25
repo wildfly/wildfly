@@ -62,6 +62,7 @@ public class SecondLevelCacheTestCase {
             "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
             "<property name=\"hibernate.show_sql\" value=\"true\"/>" +
             "<property name=\"hibernate.cache.use_second_level_cache\" value=\"true\"/>" +
+            "<property name=\"hibernate.cache.use_query_cache\" value=\"true\"/>" +
             "<property name=\"hibernate.generate_statistics\" value=\"true\"/>" +
             "</properties>" +
             "  </persistence-unit>" +
@@ -74,6 +75,7 @@ public class SecondLevelCacheTestCase {
             "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
             "<property name=\"hibernate.show_sql\" value=\"true\"/>" +
             "<property name=\"hibernate.cache.use_second_level_cache\" value=\"true\"/>" +
+            "<property name=\"hibernate.cache.use_query_cache\" value=\"true\"/>" +
             "<property name=\"hibernate.generate_statistics\" value=\"true\"/>" +
             "</properties>" +
             "  </persistence-unit>" +
@@ -86,6 +88,7 @@ public class SecondLevelCacheTestCase {
             "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
             "<property name=\"hibernate.show_sql\" value=\"true\"/>" +
             "<property name=\"hibernate.cache.use_second_level_cache\" value=\"true\"/>" +
+            "<property name=\"hibernate.cache.use_query_cache\" value=\"true\"/>" +
             "<property name=\"hibernate.generate_statistics\" value=\"true\"/>" +
             "</properties>" +
             "  </persistence-unit>" +
