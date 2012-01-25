@@ -5,7 +5,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import javax.naming.Context;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -260,7 +259,7 @@ public class CacheConfigOperationHandlers {
      * @param context the operation context
      */
     static void reloadRequiredStep(final OperationContext context) {
-        if(context.getType() == OperationContext.Type.SERVER) {
+        if (context.getProcessType().isServer()) {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {

@@ -66,7 +66,7 @@ public class AddAliasCommand implements OperationStepHandler {
      * @return {@code true} if a runtime stage handler should be added; {@code false} otherwise.
      */
     protected boolean requiresRuntime(OperationContext context) {
-        return context.getType() == OperationContext.Type.SERVER && !context.isBooting();
+        return context.getProcessType().isServer() && !context.isBooting();
     }
 
     /**

@@ -40,6 +40,7 @@ import org.infinispan.Cache;
 import org.infinispan.commands.VisitableCommand;
 import org.infinispan.config.ConfigurationException;
 import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.cache.LegacyConfigurationAdaptor;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.configuration.global.LegacyGlobalConfigurationAdaptor;
@@ -81,8 +82,13 @@ public class DefaultEmbeddedCacheManager extends AbstractDelegatingEmbeddedCache
     private final String defaultCache;
 
     @SuppressWarnings("deprecation")
-    public DefaultEmbeddedCacheManager(GlobalConfiguration config, String defaultCache) {
-        this(new DefaultCacheManager(adapt(config), false), defaultCache);
+    public DefaultEmbeddedCacheManager(GlobalConfiguration global, String defaultCache) {
+        this(new DefaultCacheManager(adapt(global), false), defaultCache);
+    }
+
+    @SuppressWarnings("deprecation")
+    public DefaultEmbeddedCacheManager(GlobalConfiguration global, Configuration config, String defaultCache) {
+        this(new DefaultCacheManager(adapt(global), LegacyConfigurationAdaptor.adapt(config), false), defaultCache);
     }
 
     public DefaultEmbeddedCacheManager(EmbeddedCacheManager container, String defaultCache) {
@@ -110,10 +116,6 @@ public class DefaultEmbeddedCacheManager extends AbstractDelegatingEmbeddedCache
         return this.cm.defineConfiguration(this.getCacheName(cacheName), this.getCacheName(templateCacheName), configurationOverride);
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.infinispan.manager.EmbeddedCacheManager#defineConfiguration(String, org.infinispan.configuration.cache.Configuration)
-     */
     @Override
     public Configuration defineConfiguration(String cacheName, Configuration configuration) {
         return this.cm.defineConfiguration(this.getCacheName(cacheName), configuration);

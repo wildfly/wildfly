@@ -282,7 +282,7 @@ public class JBossContextConfig extends ContextConfig {
         // Distributable
         if (metaData.getDistributable() != null) {
             try {
-                context.setManager(new DistributableSessionManager<OutgoingDistributableSessionData>(this.factory.getOptionalValue(), this.context.getParent(), metaData));
+                context.setManager(new DistributableSessionManager<OutgoingDistributableSessionData>(this.factory.getOptionalValue(), this.context, metaData));
                 context.setDistributable(true);
             } catch (Exception e) {
                 WebLogger.WEB_LOGGER.clusteringNotSupported();

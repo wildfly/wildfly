@@ -32,9 +32,10 @@
     </resources>
 
     <dependencies>
+        <module name="org.jboss.as.clustering.api"/>
         <module name="org.jboss.as.clustering.impl"/>
         <module name="org.jboss.as.clustering.infinispan"/>
-        <module name="org.jboss.as.clustering.api"/>
+        <module name="org.jboss.as.clustering.registry"/>
         <module name="org.jboss.as.clustering.web.spi"/>
         <module name="org.jboss.as.server"/>
         <module name="javax.api"/>

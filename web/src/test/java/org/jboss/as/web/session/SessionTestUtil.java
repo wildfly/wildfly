@@ -31,10 +31,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.servlet.ServletException;
 
-import org.apache.catalina.Container;
 import org.apache.catalina.Engine;
 import org.apache.catalina.Host;
 import org.apache.catalina.LifecycleException;
@@ -48,21 +48,24 @@ import org.apache.catalina.core.StandardContext;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.FileCacheStoreConfigurationBuilder.FsyncMode;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.manager.CacheContainer;
-import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
+import org.infinispan.remoting.transport.Transport;
+import org.infinispan.remoting.transport.jgroups.JGroupsChannelLookup;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.infinispan.transaction.TransactionMode;
 import org.infinispan.transaction.tm.BatchModeTransactionManager;
 import org.jboss.as.clustering.CoreGroupCommunicationService;
-import org.jboss.as.clustering.infinispan.ChannelProvider;
 import org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.TransactionManagerProvider;
 import org.jboss.as.clustering.infinispan.subsystem.CacheAdd;
 import org.jboss.as.clustering.jgroups.MuxChannel;
 import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager;
+import org.jboss.as.clustering.registry.Registry;
+import org.jboss.as.clustering.registry.RegistryService;
 import org.jboss.as.clustering.web.ClusteringNotSupportedException;
 import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.as.clustering.web.infinispan.DistributedCacheManagerFactory;
@@ -81,6 +84,8 @@ import org.jboss.metadata.web.jboss.ReplicationConfig;
 import org.jboss.metadata.web.jboss.ReplicationGranularity;
 import org.jboss.metadata.web.jboss.ReplicationTrigger;
 import org.jboss.metadata.web.jboss.SnapshotMode;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StopContext;
 import org.jgroups.Channel;
 import org.jgroups.conf.XmlConfigurator;
 
@@ -92,37 +97,123 @@ import org.jgroups.conf.XmlConfigurator;
  */
 public class SessionTestUtil {
     public static final String CACHE_CONFIG_PROP = "jbosstest.cluster.web.cache.config";
-    private static final String JVM_ROUTE_CACHE_NAME = "jboss.web";
 
     private static final Logger log = Logger.getLogger(SessionTestUtil.class);
 
-    public static DistributableSessionManager<?> createManager(JBossWebMetaData metaData, String warName, int maxInactiveInterval, final CacheContainer cacheContainer, String jvmRoute) {
-        if (cacheContainer == null) {
-            throw new IllegalStateException("Failed to initialize distributedManagerFactory");
+    public static class ExtendedCacheManager extends DefaultEmbeddedCacheManager {
+        private final CoreGroupCommunicationService service;
+        private final SharedLocalYieldingClusterLockManager lockManager;
+
+        ExtendedCacheManager(EmbeddedCacheManager container) {
+            super(container, CacheContainer.DEFAULT_CACHE_NAME);
+            Transport transport = container.getCache().getCacheManager().getTransport();
+            if (transport != null) {
+                Channel channel = ((org.infinispan.remoting.transport.jgroups.JGroupsTransport) transport).getChannel();
+                this.service = new CoreGroupCommunicationService();
+                service.setChannel(channel);
+                service.setScopeId(Integer.valueOf(0).shortValue());
+                this.lockManager = new SharedLocalYieldingClusterLockManager("lock", service, service);
+            } else {
+                this.service = null;
+                this.lockManager = null;
+            }
+        }
+        
+        SharedLocalYieldingClusterLockManager getLockManager() {
+            return this.lockManager;
+        }
+        
+        @Override
+        public void start() {
+            super.start();
+            if (this.lockManager != null) {
+                try {
+                    this.service.start();
+                    this.lockManager.start();
+                } catch (Exception e) {
+                    throw new IllegalStateException(e);
+                }
+            }
         }
 
-        final Cache sessionCache = cacheContainer.getCache();
-        final Cache jvmRouteCache = cacheContainer.getCache(JVM_ROUTE_CACHE_NAME);
+        @Override
+        public void stop() {
+            if (this.lockManager != null) {
+                try {
+                    this.lockManager.stop();
+                    this.service.stop();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    throw new IllegalStateException(e);
+                }
+            }
+            super.stop();
+        }
+    }
+
+    public static class ChannelLookup implements JGroupsChannelLookup {
+        @Override
+        public Channel getJGroupsChannel(Properties properties) {
+            try {
+                Channel channel = new MuxChannel(XmlConfigurator.getInstance(Thread.currentThread().getContextClassLoader().getResource("jgroups-udp.xml")));
+                return channel;
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
+            }
+        }
+
+        @Override
+        public boolean shouldStartAndConnect() {
+            return true;
+        }
+
+        @Override
+        public boolean shouldStopAndDisconnect() {
+            return true;
+        }
+    }
+
+    public static DistributableSessionManager<?> createManager(JBossWebMetaData metaData, String warName, int maxInactiveInterval, final EmbeddedCacheManager cacheContainer, final String jvmRoute) {
+        final Cache<?, ?> jvmRouteCache = cacheContainer.getCache();
+        Registry.RegistryEntryProvider<String, Void> provider = new Registry.RegistryEntryProvider<String, Void>() {
+            @Override
+            public String getKey() {
+                return jvmRoute;
+            }
+            @Override
+            public Void getValue() {
+                return null;
+            }
+        };
+        final RegistryService<String, Void> registry = new RegistryService<String, Void>(provider);
+        registry.getCacheInjector().inject(jvmRouteCache);
         DistributedCacheManagerFactory factory = new DistributedCacheManagerFactory();
-        factory.getSessionCacheInjector().inject(sessionCache);
-        factory.getJvmRouteCacheInjector().inject(jvmRouteCache);
-        final CoreGroupCommunicationService service = new CoreGroupCommunicationService();
-        service.setChannel(((JGroupsTransport) sessionCache.getCacheManager().getTransport()).getChannel());
-        service.setScopeId(Integer.valueOf(0).shortValue());
-        final SharedLocalYieldingClusterLockManager lockManager = new SharedLocalYieldingClusterLockManager("lock", service, service);
-        factory.getLockManagerInjector().inject(lockManager);
+        factory.getCacheContainerInjector().inject(cacheContainer);
+        factory.getCacheConfigurationInjector().inject(jvmRouteCache.getCacheConfiguration());
+        factory.getRegistryInjector().inject(registry);
+        factory.getLockManagerInjector().inject(((ExtendedCacheManager) cacheContainer).getLockManager());
+        
+        Engine engine = new MockEngine();
+        engine.setName("jboss.web");
+        engine.setJvmRoute(jvmRoute);
+        Host host = new MockHost();
+        host.setName("localhost");
+        engine.addChild(host);
+        StandardContext context = new StandardContext();
+        context.setName(warName);
+        context.setDomain(jvmRoute);
+        host.addChild(context);
+
         try {
-            DistributableSessionManager<OutgoingDistributableSessionData> manager = new DistributableSessionManager<OutgoingDistributableSessionData>(factory, mock(Container.class), metaData) {
+            DistributableSessionManager<OutgoingDistributableSessionData> manager = new DistributableSessionManager<OutgoingDistributableSessionData>(factory, context, metaData) {
                 @Override
-                public synchronized void start() throws LifecycleException {
+                public void start() throws LifecycleException {
                     try {
-                        service.start();
-                        lockManager.start();
                         jvmRouteCache.start();
-                        sessionCache.start();
+                        registry.start(mock(StartContext.class));
                         super.start();
                     } catch (Exception e) {
-                        throw new LifecycleException(e);
+                        throw new IllegalStateException(e);
                     }
                 }
 
@@ -130,17 +221,17 @@ public class SessionTestUtil {
                 public void stop() throws LifecycleException {
                     try {
                         super.stop();
-                        sessionCache.stop();
-                        jvmRouteCache.stop();
-                        lockManager.stop();
-                        service.stop();
+                        if (jvmRouteCache.getStatus().allowInvocations()) {
+                            registry.stop(mock(StopContext.class));
+                            jvmRouteCache.stop();
+                        }
                     } catch (Exception e) {
-                        throw new LifecycleException(e);
+                        throw new IllegalStateException(e);
                     }
                 }
             };
 
-            setupContainer(warName, jvmRoute, manager);
+            context.setManager(manager);
 
             // Do this after assigning the manager to the container, or else
             // the container's setting will override ours
@@ -159,9 +250,11 @@ public class SessionTestUtil {
         GlobalConfigurationBuilder globalBuilder = new GlobalConfigurationBuilder();
         String name = "container" + containerIndex++;
         globalBuilder.transport()
-                .defaultTransport()
+                .transport(local ? null : new JGroupsTransport())
+                .addProperty(JGroupsTransport.CHANNEL_LOOKUP, ChannelLookup.class.getName())
+                .distributedSyncTimeout(60000)
                 .clusterName("test")
-                .globalJmxStatistics().cacheManagerName(name).disable()
+                .globalJmxStatistics().enable().cacheManagerName(name).allowDuplicateDomains(true)
         ;
         ConfigurationBuilder builder = new ConfigurationBuilder().read(CacheAdd.getDefaultConfiguration(mode));
         builder.transaction()
@@ -170,54 +263,27 @@ public class SessionTestUtil {
                 .transactionMode(TransactionMode.TRANSACTIONAL)
                 .transactionManagerLookup(new TransactionManagerProvider(BatchModeTransactionManager.getInstance()))
                 .invocationBatching().enable()
+                .jmxStatistics().enable()
         ;
         if (passivationDir != null) {
-            builder.loaders().passivation(true).preload(!purgeCacheLoader).addFileCacheStore().location(passivationDir).fetchPersistentState(mode.isReplicated()).purgeOnStartup(purgeCacheLoader).purgeSynchronously(true);
+            builder.loaders()
+                    .passivation(true)
+                    .preload(false)
+//                    .preload(!purgeCacheLoader)
+                    .addFileCacheStore()
+                            .location(passivationDir)
+                            .fsyncMode(FsyncMode.PER_WRITE)
+                            .fetchPersistentState(mode.isReplicated())
+                            .purgeOnStartup(purgeCacheLoader)
+                            .purgeSynchronously(true)
+            ;
         }
 
         try {
-            final Channel channel = new MuxChannel(XmlConfigurator.getInstance(Thread.currentThread().getContextClassLoader().getResource("jgroups-udp.xml")));
-            channel.setName(name);
-            ChannelProvider.init(globalBuilder.transport(), channel);
-
-            final EmbeddedCacheManager container = new DefaultEmbeddedCacheManager(new DefaultCacheManager(globalBuilder.build(), builder.build(), false), CacheContainer.DEFAULT_CACHE_NAME) {
-                @Override
-                public void start() {
-                    try {
-                        channel.connect("test");
-                    } catch (Exception e) {
-                        throw new IllegalStateException(e);
-                    }
-                    super.start();
-                }
-
-                @Override
-                public void stop() {
-                    super.stop();
-                    channel.close();
-                }
-            };
-    
-            container.defineConfiguration(JVM_ROUTE_CACHE_NAME, builder.build());
-
-            return container;
+            return new ExtendedCacheManager(new DefaultEmbeddedCacheManager(globalBuilder.build(), builder.build(), CacheContainer.DEFAULT_CACHE_NAME));
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
-    }
-
-    public static void setupContainer(String warName, String jvmRoute, Manager mgr) {
-        Engine engine = new MockEngine();
-        engine.setName(JVM_ROUTE_CACHE_NAME);
-        engine.setJvmRoute(jvmRoute);
-        Host host = new MockHost();
-        host.setName("localhost");
-        engine.addChild(host);
-        StandardContext context = new StandardContext();
-        context.setName(warName);
-        context.setDomain(jvmRoute);
-        host.addChild(context);
-        context.setManager(mgr);
     }
 
     public static JBossWebMetaData createWebMetaData(int maxSessions) {
@@ -445,17 +511,10 @@ public class SessionTestUtil {
                 if (f.isDirectory()) {
                     File[] children = f.listFiles();
                     for (File child : children) {
-                        try {
-                            cleanFilesystem(child.getCanonicalPath());
-                        } catch (IOException e) {
-                            log.warn("Can't clean any possible children of " + f);
-                        }
+                        cleanFilesystem(child.getAbsolutePath());
                     }
                 }
-
-                if (!f.delete()) {
-                    f.delete();
-                }
+                f.delete();
             }
         }
     }

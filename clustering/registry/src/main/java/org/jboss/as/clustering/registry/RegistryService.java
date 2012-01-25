@@ -33,7 +33,6 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
-import org.infinispan.distribution.DistributionManager;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
@@ -45,6 +44,7 @@ import org.infinispan.notifications.cachemanagerlistener.event.ViewChangedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.infinispan.invoker.BatchOperation;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -60,6 +60,8 @@ import org.jboss.msc.value.InjectedValue;
 @org.infinispan.notifications.Listener(sync = false)
 public class RegistryService<K, V> implements Service<Registry<K, V>>, Registry<K, V> {
 
+    static final Address LOCAL_ADDRESS = new Address() {};
+
     @SuppressWarnings("rawtypes")
     private final InjectedValue<Cache> cacheRef = new InjectedValue<Cache>();
     private final RegistryEntryProvider<K, V> provider;
@@ -72,6 +74,11 @@ public class RegistryService<K, V> implements Service<Registry<K, V>>, Registry<
 
     public ServiceBuilder<Registry<K, V>> build(ServiceTarget target, ServiceName serviceName, ServiceName cacheServiceName) {
         return target.addService(serviceName, this).addDependency(cacheServiceName, Cache.class, this.cacheRef);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public Injector<Cache> getCacheInjector() {
+        return this.cacheRef;
     }
 
     /**
@@ -112,22 +119,13 @@ public class RegistryService<K, V> implements Service<Registry<K, V>>, Registry<
     }
 
     @Override
-    public Map<K, V> locate(Object key) {
-        DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
-        if (dist == null) {
-            return Collections.emptyMap();
-        }
-        Map<K, V> map = new HashMap<K, V>();
-        for (Address address: dist.locate(key)) {
-            Map.Entry<K, V> entry = this.cache.get(address);
-            map.put(entry.getKey(), entry.getValue());
-        }
-        return Collections.unmodifiableMap(map);
+    public Map.Entry<K, V> getLocalEntry() {
+        return this.cache.get(getLocalAddress(this.cache));
     }
 
     @Override
-    public Map.Entry<K, V> getLocalEntry() {
-        return this.cache.get(this.cache.getCacheManager().getAddress());
+    public Map.Entry<K, V> getRemoteEntry(Object address) {
+        return this.cache.get(address);
     }
 
     /**
@@ -138,6 +136,13 @@ public class RegistryService<K, V> implements Service<Registry<K, V>>, Registry<
     @Override
     public void start(StartContext context) throws StartException {
         this.cache = this.cacheRef.getValue();
+        this.refreshLocalEntry();
+        this.cache.getCacheManager().addListener(this);
+        this.cache.addListener(this);
+    }
+
+    @Override
+    public void refreshLocalEntry() {
         Operation<Void> operation = new Operation<Void>() {
             @Override
             public Void invoke(Cache<Address, Map.Entry<K, V>> cache) {
@@ -146,14 +151,12 @@ public class RegistryService<K, V> implements Service<Registry<K, V>>, Registry<
             }
         };
         this.invoke(operation);
-        this.cache.getCacheManager().addListener(this);
-        this.cache.addListener(this);
     }
 
     void addCacheEntry(Cache<Address, Map.Entry<K, V>> cache) {
         K key = this.provider.getKey();
         if (key != null) {
-            cache.getAdvancedCache().withFlags(Flag.SKIP_REMOTE_LOOKUP).put(cache.getCacheManager().getAddress(), new AbstractMap.SimpleImmutableEntry<K, V>(this.provider.getKey(), this.provider.getValue()));
+            cache.getAdvancedCache().withFlags(Flag.SKIP_REMOTE_LOOKUP).put(getLocalAddress(cache), new AbstractMap.SimpleImmutableEntry<K, V>(this.provider.getKey(), this.provider.getValue()));
         }
     }
 
@@ -168,12 +171,17 @@ public class RegistryService<K, V> implements Service<Registry<K, V>>, Registry<
         Operation<Void> operation = new Operation<Void>() {
             @Override
             public Void invoke(Cache<Address, Map.Entry<K, V>> cache) {
-                cache.getAdvancedCache().withFlags(Flag.SKIP_REMOTE_LOOKUP).remove(cache.getCacheManager().getAddress());
+                cache.getAdvancedCache().withFlags(Flag.SKIP_REMOTE_LOOKUP).remove(getLocalAddress(cache));
                 return null;
             }
         };
         this.invoke(operation);
         this.cache = null;
+    }
+
+    static Address getLocalAddress(Cache<?, ?> cache) {
+        Address address = cache.getCacheManager().getAddress();
+        return (address != null) ? address : LOCAL_ADDRESS;
     }
 
     @ViewChanged

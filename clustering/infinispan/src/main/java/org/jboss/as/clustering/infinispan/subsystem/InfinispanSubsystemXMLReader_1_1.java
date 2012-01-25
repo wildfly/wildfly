@@ -106,6 +106,10 @@ public class InfinispanSubsystemXMLReader_1_1 implements XMLElementReader<List<M
                     container.get(ModelKeys.JNDI_NAME).set(value);
                     break;
                 }
+                case START: {
+                    container.get(ModelKeys.START).set(Boolean.parseBoolean(value));
+                    break;
+                }
                 case LISTENER_EXECUTOR: {
                     container.get(ModelKeys.LISTENER_EXECUTOR).set(value);
                     break;

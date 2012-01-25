@@ -80,6 +80,8 @@ public class CacheConfigurationService implements Service<Configuration> {
      */
     @Override
     public void start(StartContext context) throws StartException {
+        EmbeddedCacheManager container = this.dependencies.getCacheContainer();
+        this.builder.jmxStatistics().enabled(container.getCacheManagerConfiguration().globalJmxStatistics().enabled());
         TransactionManager tm = this.dependencies.getTransactionManager();
         if (tm != null) {
             this.builder.transaction().transactionManagerLookup(new TransactionManagerProvider(tm));
@@ -90,7 +92,6 @@ public class CacheConfigurationService implements Service<Configuration> {
         }
         this.config = this.builder.build();
 
-        EmbeddedCacheManager container = this.dependencies.getCacheContainer();
         CacheMode mode = this.config.clustering().cacheMode();
         if (mode.isClustered() && (container.getTransport() == null)) {
             throw InfinispanMessages.MESSAGES.transportRequired(mode, this.name, container.getCacheManagerConfiguration().globalJmxStatistics().cacheManagerName());

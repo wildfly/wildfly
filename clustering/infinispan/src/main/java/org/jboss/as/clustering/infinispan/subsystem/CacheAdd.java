@@ -85,7 +85,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
             Configuration defaultConfig = holder.getDefaultConfigurationBuilder().build();
             Map<CacheMode, Configuration> map = new EnumMap<CacheMode, Configuration>(CacheMode.class);
             map.put(defaultConfig.clustering().cacheMode(), defaultConfig);
-            for (ConfigurationBuilder builder: holder.getConfigurationBuilders()) {
+            for (ConfigurationBuilder builder: holder.getNamedConfigurationBuilders().values()) {
                 Configuration config = builder.build();
                 map.put(config.clustering().cacheMode(), config);
             }
@@ -177,7 +177,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
 
         // get default cache of the container and start mode
         String defaultCache = container.require(ModelKeys.DEFAULT_CACHE).asString();
-        StartMode startMode = model.hasDefined(ModelKeys.START) ? StartMode.valueOf(model.get(ModelKeys.START).asString()) : StartMode.LAZY;
+        ServiceController.Mode initialMode = model.hasDefined(ModelKeys.START) ? StartMode.valueOf(model.get(ModelKeys.START).asString()).getMode() : ServiceController.Mode.ON_DEMAND;
 
         // install the cache configuration service (configures a cache)
         ServiceTarget target = context.getServiceTarget();
@@ -186,14 +186,14 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         CacheConfigurationService cacheConfigurationService = new CacheConfigurationService(cacheName, builder, cacheConfigurationDependencies);
 
         ServiceBuilder<Configuration> configBuilder = target.addService(cacheConfigurationServiceName, cacheConfigurationService)
-            .addDependency(containerServiceName, EmbeddedCacheManager.class, containerInjection)
-            .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .addDependency(containerServiceName, EmbeddedCacheManager.class, containerInjection)
+                .setInitialMode(ServiceController.Mode.PASSIVE)
         ;
 
         Configuration config = builder.build();
         if (config.invocationBatching().enabled()) {
             cacheConfigurationDependencies.getTransactionManagerInjector().inject(BatchModeTransactionManager.getInstance());
-        } else if (config.transaction().transactionalCache()) {
+        } else if (config.transaction().transactionMode() == org.infinispan.transaction.TransactionMode.TRANSACTIONAL) {
             configBuilder.addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class, cacheConfigurationDependencies.getTransactionManagerInjector());
             if (config.transaction().useSynchronization()) {
                 configBuilder.addDependency(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY, TransactionSynchronizationRegistry.class, cacheConfigurationDependencies.getTransactionSynchronizationRegistryInjector());
@@ -217,7 +217,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
 
         ServiceBuilder<Cache<Object,Object>> cacheBuilder = target.addService(cacheServiceName, cacheService)
                 .addDependency(cacheConfigurationServiceName)
-                .setInitialMode(startMode.getMode())
+                .setInitialMode(initialMode)
         ;
 
         if (config.transaction().recovery().enabled()) {
@@ -229,7 +229,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
             cacheBuilder.addAliases(CacheService.getServiceName(containerName,  null));
         }
 
-        if (startMode.getMode() == ServiceController.Mode.ACTIVE) {
+        if (initialMode == ServiceController.Mode.ACTIVE) {
             cacheBuilder.addListener(verificationHandler);
         }
 
@@ -244,7 +244,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
                 .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiName))
                 .addDependency(cacheServiceName, Cache.class, new ManagedReferenceInjector<Cache>(binder.getManagedObjectInjector()))
                 .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binder.getNamingStoreInjector())
-                .setInitialMode(startMode.getMode())
+                .setInitialMode(initialMode)
         ;
         newControllers.add(binderBuilder.install());
 
@@ -412,6 +412,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
             LoaderConfigurationBuilder storeBuilder = builder.loaders().addCacheLoader()
                     .fetchPersistentState(store.hasDefined(ModelKeys.FETCH_STATE) ? store.get(ModelKeys.FETCH_STATE).asBoolean() : true)
                     .purgeOnStartup(store.hasDefined(ModelKeys.PURGE) ? store.get(ModelKeys.PURGE).asBoolean() : true)
+                    .purgeSynchronously(true)
             ;
             storeBuilder.singletonStore().enabled(store.hasDefined(ModelKeys.SINGLETON) ? store.get(ModelKeys.SINGLETON).asBoolean() : false);
             this.buildCacheStore(storeBuilder, cacheName, store, storeKey, dependencies);

@@ -117,7 +117,7 @@ public interface CommonAttributes {
     SimpleAttributeDefinition VIRTUAL_NODES = new SimpleAttributeDefinition(ModelKeys.VIRTUAL_NODES,
             new ModelNode().set(intDefault), ModelType.INT, true);
 
-    AttributeDefinition[] CACHE_CONTAINER_ATTRIBUTES = { DEFAULT_CACHE, ALIASES, JNDI_NAME, LISTENER_EXECUTOR, EVICTION_EXECUTOR, REPLICATION_QUEUE_EXECUTOR };
+    AttributeDefinition[] CACHE_CONTAINER_ATTRIBUTES = { DEFAULT_CACHE, ALIASES, JNDI_NAME, START, LISTENER_EXECUTOR, EVICTION_EXECUTOR, REPLICATION_QUEUE_EXECUTOR };
     AttributeDefinition[] TRANSPORT_ATTRIBUTES = { STACK, EXECUTOR, LOCK_TIMEOUT, SITE, RACK, MACHINE  };
 
     AttributeDefinition[] CACHE_ATTRIBUTES = { /* NAME, */ START, BATCHING, INDEXING, JNDI_NAME };
