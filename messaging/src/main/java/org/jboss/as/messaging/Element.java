@@ -213,6 +213,7 @@ public enum Element {
    USE_JNDI(CommonAttributes.USE_JNDI),
    JNDI_PARAMS(CommonAttributes.JNDI_PARAMS),
    USE_LOCAL_TX(CommonAttributes.USE_LOCAL_TX),
+   CONNECTION_FACTORY_TYPE(CommonAttributes.CONNECTION_FACTORY_TYPE),
    SETUP_ATTEMPTS(CommonAttributes.SETUP_ATTEMPTS),
    SETUP_INTERVAL(CommonAttributes.SETUP_INTERVAL),
    SOCKET_BINDING(CommonAttributes.SOCKET_BINDING.getName()),
