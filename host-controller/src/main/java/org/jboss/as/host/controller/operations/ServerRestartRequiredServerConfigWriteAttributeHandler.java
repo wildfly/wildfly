@@ -58,7 +58,7 @@ public abstract class ServerRestartRequiredServerConfigWriteAttributeHandler ext
             ModelNode currentValue) throws OperationFailedException {
         if (newValue.equals(currentValue)) {
             //Set an attachment to avoid propagation to the servers, we don't want them to go into restart-required if nothing changed
-            context.attach(ServerOperationResolver.DONT_PROPAGATE_TO_SERVERS_ATTACHMENT, true);
+            ServerOperationResolver.addToDontPropagateToServersAttachment(context, operation);
         }
         validateReferencedNewValueExisits(context, newValue);
 

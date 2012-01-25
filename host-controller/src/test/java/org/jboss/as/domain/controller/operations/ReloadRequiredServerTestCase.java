@@ -104,7 +104,7 @@ public class ReloadRequiredServerTestCase extends AbstractOperationTestCase {
         operation.get(VALUE).set("some-profile");
 
         ServerGroupProfileWriteAttributeHandler.INSTANCE.execute(operationContext, operation);
-        Assert.assertTrue(operationContext.getAttachment(ServerOperationResolver.DONT_PROPAGATE_TO_SERVERS_ATTACHMENT));
+        Assert.assertTrue(operationContext.getAttachment(ServerOperationResolver.DONT_PROPAGATE_TO_SERVERS_ATTACHMENT).contains(operation));
         checkServerOperationResolver(operationContext, operation, pa, false);
     }
 
@@ -165,7 +165,7 @@ public class ReloadRequiredServerTestCase extends AbstractOperationTestCase {
         operation.get(VALUE).set("group-one");
 
         ServerRestartRequiredServerConfigWriteAttributeHandler.GROUP_INSTANCE.execute(operationContext, operation);
-        Assert.assertTrue(operationContext.getAttachment(ServerOperationResolver.DONT_PROPAGATE_TO_SERVERS_ATTACHMENT));
+        Assert.assertTrue(operationContext.getAttachment(ServerOperationResolver.DONT_PROPAGATE_TO_SERVERS_ATTACHMENT).contains(operation));
         checkServerOperationResolver(operationContext, operation, pa, false);
     }
 
@@ -223,7 +223,7 @@ public class ReloadRequiredServerTestCase extends AbstractOperationTestCase {
         operation.get(VALUE).set("old-group");
 
         ServerRestartRequiredServerConfigWriteAttributeHandler.SOCKET_BINDING_GROUP_INSTANCE.execute(operationContext, operation);
-        Assert.assertTrue(operationContext.getAttachment(ServerOperationResolver.DONT_PROPAGATE_TO_SERVERS_ATTACHMENT));
+        Assert.assertTrue(operationContext.getAttachment(ServerOperationResolver.DONT_PROPAGATE_TO_SERVERS_ATTACHMENT).contains(operation));
         checkServerOperationResolver(operationContext, operation, pa, false);
     }
 
@@ -278,7 +278,7 @@ public class ReloadRequiredServerTestCase extends AbstractOperationTestCase {
         operation.get(VALUE).set(10);
 
         ServerRestartRequiredServerConfigWriteAttributeHandler.SOCKET_BINDING_PORT_OFFSET_INSTANCE.execute(operationContext, operation);
-        Assert.assertTrue(operationContext.getAttachment(ServerOperationResolver.DONT_PROPAGATE_TO_SERVERS_ATTACHMENT));
+        Assert.assertTrue(operationContext.getAttachment(ServerOperationResolver.DONT_PROPAGATE_TO_SERVERS_ATTACHMENT).contains(operation));
         checkServerOperationResolver(operationContext, operation, pa, false);
     }
 
