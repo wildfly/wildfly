@@ -73,6 +73,10 @@ public class PersistenceProviderAdaptorLoader {
         public ManagementAdaptor getManagementAdaptor() {
             return null;
         }
+
+        @Override
+        public void cleanup(PersistenceUnitMetadata pu) {
+        }
     };
 
     /**

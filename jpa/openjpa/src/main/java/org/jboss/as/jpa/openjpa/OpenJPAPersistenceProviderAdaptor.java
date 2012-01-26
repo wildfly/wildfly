@@ -22,13 +22,13 @@
 
 package org.jboss.as.jpa.openjpa;
 
+import java.util.Map;
+
 import org.jboss.as.jpa.spi.JtaManager;
 import org.jboss.as.jpa.spi.ManagementAdaptor;
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.msc.service.ServiceName;
-
-import java.util.Map;
 
 /**
  * Implements the {@link PersistenceProviderAdaptor} for OpenJPA 2.x.
@@ -78,6 +78,11 @@ public class OpenJPAPersistenceProviderAdaptor implements PersistenceProviderAda
     @Override
     public ManagementAdaptor getManagementAdaptor() {
         return null;
+    }
+
+    @Override
+    public void cleanup(PersistenceUnitMetadata pu) {
+        JBossPersistenceMetaDataFactory.cleanup(pu);
     }
 
 }

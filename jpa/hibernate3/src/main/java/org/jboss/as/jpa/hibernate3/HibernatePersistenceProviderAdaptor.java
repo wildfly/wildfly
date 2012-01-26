@@ -155,5 +155,10 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
     public ManagementAdaptor getManagementAdaptor() {
         return null;
     }
+
+    @Override
+    public void cleanup(PersistenceUnitMetadata pu) {
+        HibernateAnnotationScanner.cleanup(pu);
+    }
 }
 
