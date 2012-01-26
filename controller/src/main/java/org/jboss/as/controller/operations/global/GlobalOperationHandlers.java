@@ -46,6 +46,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART_REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STORAGE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -63,8 +64,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -859,7 +860,11 @@ public class GlobalOperationHandlers {
                     final AccessType accessType = access == null ? AccessType.READ_ONLY : access.getAccessType();
                     final Storage storage = access == null ? Storage.CONFIGURATION : access.getStorageType();
                     final ModelNode attrNode = nodeDescription.get(ATTRIBUTES, attr);
-                    attrNode.get(ACCESS_TYPE).set(accessType.toString());
+                    //AS7-3085 - For a domain mode server show writable attributes as read-only
+                    String displayedAccessType =
+                            context.getProcessType() == ProcessType.DOMAIN_SERVER && storage == Storage.CONFIGURATION ?
+                                   AccessType.READ_ONLY.toString() : accessType.toString();
+                    attrNode.get(ACCESS_TYPE).set(displayedAccessType);
                     attrNode.get(STORAGE).set(storage.toString());
                     if (accessType == AccessType.READ_WRITE) {
                         Set<AttributeAccess.Flag> flags = access.getFlags();

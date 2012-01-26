@@ -65,6 +65,15 @@ public abstract class AbstractControllerTestBase {
 
     private ServiceContainer container;
     private ModelController controller;
+    private final ProcessType processType;
+
+    protected AbstractControllerTestBase(ProcessType processType) {
+        this.processType = processType;
+    }
+
+    protected AbstractControllerTestBase() {
+        this(ProcessType.EMBEDDED_SERVER);
+    }
 
     public ModelController getController() {
         return controller;
@@ -75,7 +84,7 @@ public abstract class AbstractControllerTestBase {
         container = ServiceContainer.Factory.create("test");
         ServiceTarget target = container.subTarget();
         ControlledProcessState processState = new ControlledProcessState(true);
-        ModelControllerService svc = new ModelControllerService(container, processState);
+        ModelControllerService svc = new ModelControllerService(container, processState, processType);
         ServiceBuilder<ModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
         builder.install();
         svc.latch.await();
@@ -104,8 +113,8 @@ public abstract class AbstractControllerTestBase {
 
         private final CountDownLatch latch = new CountDownLatch(1);
 
-        ModelControllerService(final ServiceContainer serviceContainer, final ControlledProcessState processState) {
-            super(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.NORMAL), new NullConfigurationPersister(), processState, getRootDescriptionProvider(), null, ExpressionResolver.DEFAULT);
+        ModelControllerService(final ServiceContainer serviceContainer, final ControlledProcessState processState, final ProcessType processType) {
+            super(processType, new RunningModeControl(RunningMode.NORMAL), new NullConfigurationPersister(), processState, getRootDescriptionProvider(), null, ExpressionResolver.DEFAULT);
         }
 
         @Override
