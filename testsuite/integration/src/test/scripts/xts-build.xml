@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<project name="clustering-build scripts">
+
+    <!-- import shared ant targets -->
+    <import file="common-targets.xml" as="common"/>
+
+    <target name="build-xts" description="Builds server configuration for XTS tests">
+
+        <echo message="Building config xts"/>
+
+        <build-server-config name="xts"/>
+        <antcall target="changeDefaultDatabase">
+           <param name="server-config" value="xts"/>
+           <propertyset refid="ds.properties"/>
+        </antcall>
+
+    </target>
+
+</project>
