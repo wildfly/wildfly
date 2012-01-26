@@ -381,8 +381,10 @@ abstract class AbstractOperationContext implements OperationContext {
                 }
 
             } catch (Throwable t) {
+                t.printStackTrace();
                 // Special handling for OperationClientException marker interface
                 if (! (t instanceof OperationClientException)) {
+                    t.printStackTrace();
                     throw t;
                 } else if (currentStage != Stage.DONE) {
                     // Handler threw OCE before calling completeStep(); that's equivalent to
