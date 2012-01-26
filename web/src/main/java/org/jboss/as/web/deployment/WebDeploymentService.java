@@ -26,6 +26,8 @@ import static org.jboss.as.web.WebMessages.MESSAGES;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.servlet.ServletContext;
+
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Realm;
@@ -51,22 +53,32 @@ class WebDeploymentService implements Service<Context> {
     private final InjectedValue<Realm> realm = new InjectedValue<Realm>();
     private final WebInjectionContainer injectionContainer;
     private final List<SetupAction> setupActions;
+    final List<ServletContextAttribute> attributes;
 
-    public WebDeploymentService(final StandardContext context, final WebInjectionContainer injectionContainer, final List<SetupAction> setupActions) {
+    public WebDeploymentService(final StandardContext context, final WebInjectionContainer injectionContainer, final List<SetupAction> setupActions, final List<ServletContextAttribute> attributes) {
         this.context = context;
         this.injectionContainer = injectionContainer;
         this.setupActions = setupActions;
+        this.attributes = attributes;
     }
 
     /**
      * {@inheritDoc}
      */
     public synchronized void start(StartContext startContext) throws StartException {
+        if (attributes != null) {
+            final ServletContext context = this.context.getServletContext();
+            for (ServletContextAttribute attribute : attributes) {
+                context.setAttribute(attribute.getName(), attribute.getValue());
+            }
+        }
+
         context.setRealm(realm.getValue());
 
         JsfInjectionProvider.getInjectionContainer().set(injectionContainer);
         final List<SetupAction> actions = new ArrayList<SetupAction>();
         actions.addAll(setupActions);
+        context.setInstanceManager(injectionContainer);
         context.setThreadBindingListener(new ThreadSetupBindingListener(actions));
         try {
             try {
