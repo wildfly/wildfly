@@ -55,4 +55,9 @@ class DeploymentScannerRemove extends AbstractRemoveStepHandler {
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
         // TODO:  RE-ADD SERVICES
     }
+
+    @Override
+    protected boolean requireNoChildResources() {
+        return true;
+    }
 }

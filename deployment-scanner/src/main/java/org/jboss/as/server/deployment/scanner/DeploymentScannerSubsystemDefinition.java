@@ -12,7 +12,7 @@ public class DeploymentScannerSubsystemDefinition extends SimpleResourceDefiniti
 
     protected DeploymentScannerSubsystemDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, DeploymentScannerExtension.SUBSYSTEM_NAME),
-                DeploymentScannerExtension.getResourceDescriptionResolver(DeploymentScannerExtension.SUBSYSTEM_NAME),
+                DeploymentScannerExtension.getResourceDescriptionResolver("deployment.scanner.subsystem"),
                 DeploymentScannerSubsystemAdd.INSTANCE,DeploymentScannerSubsystemRemove.INSTANCE
         );
     }
