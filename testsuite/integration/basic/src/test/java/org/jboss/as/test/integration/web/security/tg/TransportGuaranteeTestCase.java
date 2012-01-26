@@ -29,6 +29,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.as.test.http.util.HttpClientUtils;
 import org.junit.*;
 import org.apache.commons.io.FileUtils;
@@ -68,9 +69,8 @@ public class TransportGuaranteeTestCase {
     private static final String TG_DD = "tg-dd";
     private static final String TG_MIXED = "tg-mixed";
 
-    // FIXME remove when  @ArquillianResource wil work on multiple deployments
-    //@ArquillianResource
-    URL url;
+    @ArquillianResource @OperateOnDeployment(TG_ANN + WAR)
+    URL deploymentUrl;
 
     private ServerManager serverManager = null;
 
@@ -152,9 +152,6 @@ public class TransportGuaranteeTestCase {
     @Before
     public void before() throws IOException {
 
-        // set URL : FIXME remove when  @ArquillianResource wil work on multiple deployments
-        url = new URL("http://localhost:8080/");
-
         if (beforeServerManagerInitialized)
             return;
 
@@ -162,7 +159,7 @@ public class TransportGuaranteeTestCase {
 
         FileUtils.copyURLToFile(tccl.getResource("web/sec/tg/localhost.keystore"), keyStoreFile);
 
-        serverManager = new ServerManager(url.getHost());
+        serverManager = new ServerManager(deploymentUrl.getHost());
         serverManager.initModelControllerClient();
 
         try {
@@ -175,8 +172,8 @@ public class TransportGuaranteeTestCase {
         }
 
         // set test URL
-        httpsTestURL = "https://" + url.getHost() + ":" + Integer.toString(httpsPort);
-        httpTestURL = "http://" + url.getHost() + ":" + url.getPort();
+        httpsTestURL = "https://" + deploymentUrl.getHost() + ":" + Integer.toString(httpsPort);
+        httpTestURL = "http://" + deploymentUrl.getHost() + ":" + deploymentUrl.getPort();
         
     }
 
