@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.net.ssl.SSLContext;
+import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
@@ -48,11 +49,17 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
 
+import org.jboss.as.domain.management.RealmUser;
 import org.jboss.as.domain.management.SecurityRealm;
+import org.jboss.as.domain.management.SubjectCallback;
+import org.jboss.as.domain.management.SubjectUserInfo;
+import org.jboss.as.domain.management.security.DomainCallbackHandler;
+import org.jboss.as.domain.management.security.SubjectSupplemental;
 import org.jboss.remoting3.Remoting;
 import org.jboss.remoting3.security.AuthorizingCallbackHandler;
 import org.jboss.remoting3.security.ServerAuthenticationProvider;
 import org.jboss.remoting3.security.UserInfo;
+import org.jboss.remoting3.security.UserPrincipal;
 import org.jboss.sasl.callback.DigestHashCallback;
 import org.jboss.sasl.callback.VerifyPasswordCallback;
 import org.xnio.OptionMap;
@@ -66,8 +73,8 @@ import org.xnio.ssl.XnioSsl;
 /**
  * A Remoting ServerAuthenticationProvider that wraps a management domain security realm.
  * <p/>
- * In addition to making the CallbackHandler available for the requested mechanism this class
- * will also generate the initial OptionsMap based on the capabilities of the security realm.
+ * In addition to making the CallbackHandler available for the requested mechanism this class will also generate the initial
+ * OptionsMap based on the capabilities of the security realm.
  * <p/>
  * Initially this only verified that DIGEST-MD5 can be supported.
  *
@@ -203,24 +210,24 @@ public class RealmSecurityProvider implements RemotingSecurityProvider {
 
     public CallbackHandler getCallbackHandler(String mechanismName) {
         // TODO - Once authorization is in place we may be able to relax the realm check to
-        //        allow anonymous along side fully authenticated connections.
+        // allow anonymous along side fully authenticated connections.
 
         // If the mechanism is ANONYMOUS and we don't have a realm we return quickly.
         if (ANONYMOUS.equals(mechanismName) && realm == null) {
-            return new CallbackHandler() {
+            return new RealmCallbackHandler(new CallbackHandler() {
 
                 public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
                     for (Callback current : callbacks) {
                         throw MESSAGES.anonymousMechanismNotExpected(current);
                     }
                 }
-            };
+            }, null);
         }
 
         // For now for the JBOSS_LOCAL_USER we are only supporting the $local user and not allowing for
         // an alternative authorizationID.
         if (JBOSS_LOCAL_USER.equals(mechanismName)) {
-            return new CallbackHandler() {
+            return new RealmCallbackHandler(new CallbackHandler() {
 
                 @Override
                 public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
@@ -239,13 +246,13 @@ public class RealmSecurityProvider implements RemotingSecurityProvider {
                     }
 
                 }
-            };
+            }, realm.getSubjectSupplemental());
         }
 
         // In this calls only the AuthorizeCallback is needed, we are not making use if an authorization ID just yet
         // so don't need to be linked back to the realms.
         if (EXTERNAL.equals(mechanismName)) {
-            return new CallbackHandler() {
+            return new RealmCallbackHandler(new CallbackHandler() {
 
                 @Override
                 public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
@@ -259,15 +266,14 @@ public class RealmSecurityProvider implements RemotingSecurityProvider {
                     }
 
                 }
-            };
+            }, realm.getSubjectSupplemental());
         }
 
-        final CallbackHandler realmCallbackHandler; // Referenced later by an inner-class so needs to be final.
+        final RealmCallbackHandler realmCallbackHandler; // Referenced later by an inner-class so needs to be final.
 
         // We must have a match in this block or throw an IllegalStateException.
-        if (DIGEST_MD5.equals(mechanismName) && digestMd5Supported() ||
-                PLAIN.equals(mechanismName) && plainSupported()) {
-            realmCallbackHandler = realm.getCallbackHandler();
+        if (DIGEST_MD5.equals(mechanismName) && digestMd5Supported() || PLAIN.equals(mechanismName) && plainSupported()) {
+            realmCallbackHandler = new RealmCallbackHandler(realm.getCallbackHandler(), realm.getSubjectSupplemental());
         } else {
             return null;
         }
@@ -278,7 +284,8 @@ public class RealmSecurityProvider implements RemotingSecurityProvider {
             return realmCallbackHandler;
         }
 
-        return new CallbackHandler() {
+        return new AuthorizingCallbackHandler() {
+
             public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
                 serverCallbackHandler.handle(callbacks);
                 if (handled(callbacks) == false) {
@@ -287,8 +294,8 @@ public class RealmSecurityProvider implements RemotingSecurityProvider {
             }
 
             /*
-            * Check if the PasswordCallback had already been handled.
-            */
+             * Check if the PasswordCallback had already been handled.
+             */
             private boolean handled(Callback[] callbacks) {
                 // For the moment handled will only return true if the user was successfully authenticated,
                 // may later add a Callback to obtain the server info to verify is a server was identified with
@@ -307,6 +314,11 @@ public class RealmSecurityProvider implements RemotingSecurityProvider {
                 }
                 return false;
             }
+
+            public UserInfo createUserInfo(Collection<Principal> remotingPrincipals) throws IOException {
+                return realmCallbackHandler.createUserInfo(remotingPrincipals);
+            }
+
         };
     }
 
@@ -339,8 +351,7 @@ public class RealmSecurityProvider implements RemotingSecurityProvider {
         if (contains(RealmCallback.class, callbacks) == false) {
             return false;
         }
-        if (contains(PasswordCallback.class, callbacks) == false &&
-                contains(DigestHashCallback.class, callbacks) == false) {
+        if (contains(PasswordCallback.class, callbacks) == false && contains(DigestHashCallback.class, callbacks) == false) {
             return false;
         }
         if (contains(AuthorizeCallback.class, callbacks) == false) {
@@ -376,6 +387,80 @@ public class RealmSecurityProvider implements RemotingSecurityProvider {
             }
         }
         return false;
+    }
+
+    private class RealmCallbackHandler implements AuthorizingCallbackHandler {
+
+        private final CallbackHandler callbackHandler;
+        private final SubjectSupplemental subjectSupplemental;
+        private final boolean subjectCallbackSupported;
+
+        /** The Subject returned from the authentication process. */
+        private Subject subject = null;
+
+        private RealmCallbackHandler(CallbackHandler callbackHandler, SubjectSupplemental subjectSupplemental) {
+            this.callbackHandler = callbackHandler;
+            this.subjectSupplemental = subjectSupplemental;
+            subjectCallbackSupported = false;
+        }
+
+        private RealmCallbackHandler(DomainCallbackHandler callbackHandler, SubjectSupplemental subjectSupplemental) {
+            this.callbackHandler = callbackHandler;
+            this.subjectSupplemental = subjectSupplemental;
+            subjectCallbackSupported = contains(SubjectCallback.class, callbackHandler.getSupportedCallbacks());
+        }
+
+        @Override
+        public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+            if (subjectCallbackSupported) {
+                Callback[] newCallbacks = new Callback[callbacks.length + 1];
+                System.arraycopy(callbacks, 0, newCallbacks, 0, callbacks.length);
+                SubjectCallback subjectCallBack = new SubjectCallback();
+                newCallbacks[newCallbacks.length] = subjectCallBack;
+                callbackHandler.handle(newCallbacks);
+                subject = subjectCallBack.getSubject();
+            } else {
+                callbackHandler.handle(callbacks);
+            }
+        }
+
+        @Override
+        public UserInfo createUserInfo(Collection<Principal> remotingPrincipals) throws IOException {
+            Subject subject = this.subject == null ? new Subject() : this.subject;
+            subject.getPrincipals().addAll(remotingPrincipals);
+            Set<UserPrincipal> remotingUsers = subject.getPrincipals(UserPrincipal.class);
+            Set<RealmUser> realmUsers = new HashSet<RealmUser>(remotingUsers.size());
+            for (UserPrincipal current : remotingUsers) {
+                realmUsers.add(new RealmUser(current.getName()));
+            }
+            subject.getPrincipals().addAll(realmUsers);
+
+            if (subjectSupplemental != null) {
+                subjectSupplemental.supplementSubject(subject);
+            }
+
+            return new RealmSubjectUserInfo(subject);
+        }
+    }
+
+    private static class RealmSubjectUserInfo implements SubjectUserInfo, UserInfo {
+
+        private final Subject subject;
+
+        private RealmSubjectUserInfo(Subject subject) {
+            this.subject = subject;
+        }
+
+        @Override
+        public Collection<Principal> getPrincipals() {
+            return subject.getPrincipals();
+        }
+
+        @Override
+        public Subject getSubject() {
+            return subject;
+        }
+
     }
 
 }

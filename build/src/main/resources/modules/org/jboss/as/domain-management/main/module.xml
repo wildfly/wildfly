@@ -38,6 +38,6 @@
         <module name="org.jboss.msc" />
         <module name="org.jboss.sasl"/>
         <module name="org.jboss.staxmapper"/>
-        <module name="javax.api" />
+        <module name="javax.api"/>
     </dependencies>
 </module>
