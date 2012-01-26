@@ -167,7 +167,7 @@
         <version.org.jboss.metadata>7.0.0.Beta33</version.org.jboss.metadata>
         <version.org.jboss.mod_cluster>1.2.0.Beta4</version.org.jboss.mod_cluster>
         <version.org.jboss.modules.jboss-modules>1.1.0.CR8</version.org.jboss.modules.jboss-modules>
-        <version.org.jboss.msc.jboss-msc>1.0.2.GA-SNAPSHOT</version.org.jboss.msc.jboss-msc>
+        <version.org.jboss.msc.jboss-msc>1.0.2.GA</version.org.jboss.msc.jboss-msc>
         <version.org.jboss.netty>3.2.6.Final</version.org.jboss.netty>
         <version.org.jboss.osgi.framework>1.1.0</version.org.jboss.osgi.framework>
         <version.org.jboss.osgi.logging>1.0.0</version.org.jboss.osgi.logging>
