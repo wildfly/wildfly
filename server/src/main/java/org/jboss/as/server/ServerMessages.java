@@ -336,4 +336,17 @@ public interface ServerMessages {
     @Message(id = 15843, value = "Failed to create temp file provider")
     StartException failedCreatingTempProvider();
 
+    @Message(id = 15844, value = "%s cannot be defined when either %s or %s is also defined")
+    OperationFailedException illegalCombinationOfHttpManagementInterfaceConfigurations(String interfaceAttr,
+                                                                             String socketBindingAttr,
+                                                                             String secureSocketBindingAttr);
+
+
+    /*
+     * WARNING!!! id 15849 is the last id in the available block for this class. Once the block
+     * is used up, check what ids ServerLogger is using, allocate another block for use by this
+     * class from the overall id pool used by this module and update the class javadoc above
+     * and this message accordingly.
+     */
+
 }
