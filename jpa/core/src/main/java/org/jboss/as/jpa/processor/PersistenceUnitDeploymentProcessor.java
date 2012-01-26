@@ -611,6 +611,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
         public void uninject() {
             reference.release();
             reference = null;
+            dataSourceInjector.uninject();
         }
     }
 
