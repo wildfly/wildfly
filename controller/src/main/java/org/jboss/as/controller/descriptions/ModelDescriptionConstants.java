@@ -281,6 +281,7 @@ public class ModelDescriptionConstants {
     public static final String USERNAME_ATTRIBUTE = "username-attribute";
     public static final String USERS = "users";
     public static final String VALIDATE_OPERATION = "validate-operation";
+    public static final String VALID = "valid";
     public static final String VALUE = "value";
     public static final String VALUE_TYPE = "value-type";
     public static final String VAULT = "vault";
