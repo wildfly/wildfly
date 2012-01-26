@@ -408,6 +408,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     @Override
     public void stop(StopContext context) {
         serverInventory = null;
+        extensionRegistry.clear();
         super.stop(context);
     }
 

@@ -306,7 +306,7 @@ public class DomainModelUtil {
 
         // Extensions
         root.registerSubModel(new ExtensionResourceDefinition(extensionRegistry, true));
-        extensionRegistry.setProfileResourceRegistration(profile);
+        extensionRegistry.setSubsystemParentResourceRegistrations(profile, null);
 
         if(!isMaster) {
             ApplyRemoteMasterDomainModelHandler armdmh = new ApplyRemoteMasterDomainModelHandler(extensionRegistry, fileRepository, contentRepo, hostControllerInfo);
