@@ -106,7 +106,8 @@ public enum Attribute {
     USER_DN("user-dn"),
     USERNAME("username"),
     USERNAME_ATTRIBUTE("username-attribute"),
-    VALUE("value")
+    VALUE("value"),
+    WILDCARD("wildcard")
     ;
 
     private final String name;

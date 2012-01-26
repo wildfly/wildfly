@@ -40,6 +40,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
+import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.dmr.ModelNode;
 
@@ -57,10 +58,12 @@ public class PrepareStepHandler  implements OperationStepHandler {
     private final OperationSlaveStepHandler slaveHandler;
 
     public PrepareStepHandler(final LocalHostControllerInfo localHostControllerInfo,
-                              ContentRepository contentRepository, final Map<String, ProxyController> hostProxies,
-                              final Map<String, ProxyController> serverProxies) {
+                              final ContentRepository contentRepository,
+                              final Map<String, ProxyController> hostProxies,
+                              final Map<String, ProxyController> serverProxies,
+                              final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry) {
         this.localHostControllerInfo = localHostControllerInfo;
-        this.slaveHandler = new OperationSlaveStepHandler(localHostControllerInfo, serverProxies);
+        this.slaveHandler = new OperationSlaveStepHandler(localHostControllerInfo, serverProxies, ignoredDomainResourceRegistry);
         this.coordinatorHandler = new OperationCoordinatorStepHandler(localHostControllerInfo, contentRepository, hostProxies, serverProxies, slaveHandler);
     }
 
@@ -99,7 +102,7 @@ public class PrepareStepHandler  implements OperationStepHandler {
      * Directly handles the op in the standard way the default prepare step handler would
      * @param context the operation execution context
      * @param operation the operation
-     * @throws OperationFailedException
+     * @throws OperationFailedException if there is no handler registered for the operation
      */
     private void executeDirect(OperationContext context, ModelNode operation) throws OperationFailedException {
         if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {

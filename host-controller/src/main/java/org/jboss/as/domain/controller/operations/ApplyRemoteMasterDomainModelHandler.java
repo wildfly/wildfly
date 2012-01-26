@@ -71,6 +71,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.domain.controller.operations.coordination.DomainServerUtils;
+import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.management.client.content.ManagedDMRContentTypeResource;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
@@ -93,17 +94,20 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
     private final HostFileRepository fileRepository;
     private final ContentRepository contentRepository;
     private final ExtensionRegistry extensionRegistry;
+    private final IgnoredDomainResourceRegistry ignoredResourceRegistry;
 
     private final LocalHostControllerInfo localHostInfo;
 
     public ApplyRemoteMasterDomainModelHandler(final ExtensionRegistry extensionRegistry,
                                                final HostFileRepository fileRepository,
                                                final ContentRepository contentRepository,
-                                               final LocalHostControllerInfo localHostInfo) {
+                                               final LocalHostControllerInfo localHostInfo,
+                                               final IgnoredDomainResourceRegistry ignoredResourceRegistry) {
         this.extensionRegistry = extensionRegistry;
         this.fileRepository = fileRepository;
         this.contentRepository = contentRepository;
         this.localHostInfo = localHostInfo;
+        this.ignoredResourceRegistry = ignoredResourceRegistry;
     }
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -122,7 +126,12 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
         clearDomain(rootResource);
 
         for (final ModelNode resourceDescription : domainModel.asList()) {
+
             final PathAddress resourceAddress = PathAddress.pathAddress(resourceDescription.require("domain-resource-address"));
+            if (ignoredResourceRegistry.isResourceExcluded(resourceAddress)) {
+                continue;
+            }
+
             final Resource resource = getResource(resourceAddress, rootResource, context);
             if (resourceAddress.size() == 1 && resourceAddress.getElement(0).getKey().equals(EXTENSION)) {
                 final String module = resourceAddress.getElement(0).getValue();

@@ -123,6 +123,7 @@ import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymen
 import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentUndeployHandler;
 import org.jboss.as.domain.controller.resource.SocketBindingResourceDefinition;
 import org.jboss.as.host.controller.HostControllerEnvironment;
+import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.management.client.content.ManagedDMRContentResourceDefinition;
 import org.jboss.as.management.client.content.ManagedDMRContentTypeResourceDefinition;
 import org.jboss.as.repository.ContentRepository;
@@ -179,19 +180,23 @@ public class DomainModelUtil {
                                                                   final ContentRepository contentRepository, final HostFileRepository fileRepository,
                                                                   final DomainController domainController, final UnregisteredHostChannelRegistry channelRegistry,
                                                                   final ExtensionRegistry extensionRegistry) {
-        initializeDomainRegistry(root, configurationPersister, contentRepository, fileRepository, true, domainController, channelRegistry, domainController.getLocalHostInfo(), extensionRegistry);
+        initializeDomainRegistry(root, configurationPersister, contentRepository, fileRepository, true, domainController,
+                channelRegistry, domainController.getLocalHostInfo(), extensionRegistry, null);
     }
 
     public static void initializeSlaveDomainRegistry(final ManagementResourceRegistration root, final ExtensibleConfigurationPersister configurationPersister,
                                                                  final ContentRepository contentRepository, final HostFileRepository fileRepository,
-                                                                 final LocalHostControllerInfo hostControllerInfo, final ExtensionRegistry extensionRegistry) {
-        initializeDomainRegistry(root, configurationPersister, contentRepository, fileRepository, false, null, null, hostControllerInfo, extensionRegistry);
+                                                                 final LocalHostControllerInfo hostControllerInfo, final ExtensionRegistry extensionRegistry,
+                                                             final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry) {
+        initializeDomainRegistry(root, configurationPersister, contentRepository, fileRepository, false, null, null,
+                hostControllerInfo, extensionRegistry, ignoredDomainResourceRegistry);
     }
 
     private static void initializeDomainRegistry(final ManagementResourceRegistration root, final ExtensibleConfigurationPersister configurationPersister,
                                                              final ContentRepository contentRepo, final HostFileRepository fileRepository, final boolean isMaster,
                                                              final DomainController domainController, final UnregisteredHostChannelRegistry channelRegistry,
-                                                             final LocalHostControllerInfo hostControllerInfo, final ExtensionRegistry extensionRegistry) {
+                                                             final LocalHostControllerInfo hostControllerInfo, final ExtensionRegistry extensionRegistry,
+                                                             final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry) {
 
         final EnumSet<OperationEntry.Flag> readOnly = EnumSet.of(OperationEntry.Flag.READ_ONLY);
         final EnumSet<OperationEntry.Flag> masterOnly = EnumSet.of(OperationEntry.Flag.MASTER_HOST_CONTROLLER_ONLY);
@@ -314,7 +319,8 @@ public class DomainModelUtil {
         extensionRegistry.setSubsystemParentResourceRegistrations(profile, null);
 
         if(!isMaster) {
-            ApplyRemoteMasterDomainModelHandler armdmh = new ApplyRemoteMasterDomainModelHandler(extensionRegistry, fileRepository, contentRepo, hostControllerInfo);
+            ApplyRemoteMasterDomainModelHandler armdmh = new ApplyRemoteMasterDomainModelHandler(extensionRegistry, fileRepository,
+                    contentRepo, hostControllerInfo, ignoredDomainResourceRegistry);
             root.registerOperationHandler(ApplyRemoteMasterDomainModelHandler.OPERATION_NAME, armdmh, armdmh, false, OperationEntry.EntryType.PRIVATE);
         } else {
             ReadMasterDomainModelHandler rmdmh = new ReadMasterDomainModelHandler(domainController, channelRegistry);

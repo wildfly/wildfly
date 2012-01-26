@@ -928,7 +928,7 @@ public class ParseAndMarshalModelsTestCase {
          * Create the ServerAddHandler
          */
         protected MockRemoteDomainControllerAddHandler() {
-            super(null, null, null, null, null, null);
+            super(null, null, null, null, null, null, null);
         }
 
         @Override

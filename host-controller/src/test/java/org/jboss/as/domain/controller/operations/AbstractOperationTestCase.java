@@ -156,7 +156,7 @@ public abstract class AbstractOperationTestCase {
     }
 
     class MockOperationContext implements OperationContext {
-        final Resource root;
+        Resource root;
         private final boolean booting;
         private final PathAddress operationAddress;
         private Set<PathAddress> expectedSteps = new HashSet<PathAddress>();

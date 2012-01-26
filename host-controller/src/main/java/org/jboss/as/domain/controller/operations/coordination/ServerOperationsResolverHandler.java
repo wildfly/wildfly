@@ -25,7 +25,6 @@ package org.jboss.as.domain.controller.operations.coordination;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_RESULTS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
@@ -42,10 +41,8 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * Adds to the localResponse the server-level operations needed to effect the given domain/host operation on the
@@ -57,20 +54,30 @@ public class ServerOperationsResolverHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = "server-operation-resolver";
 
-    private final String localHostName;
+    private static final HostControllerExecutionSupport.ServerOperationProvider NO_OP_PROVIDER =
+        new HostControllerExecutionSupport.ServerOperationProvider() {
+            @Override
+            public Map<Set<ServerIdentity>, ModelNode> getServerOperations(ModelNode domainOp, PathAddress address) {
+
+                return Collections.emptyMap();
+            }
+        };
+
     private final ServerOperationResolver resolver;
-    private final ParsedOp parsedOp;
+    private final HostControllerExecutionSupport hostControllerExecutionSupport;
     private final PathAddress originalAddress;
     private final ImmutableManagementResourceRegistration originalRegistration;
     private final ModelNode localResponse;
     private final boolean recordResponse;
 
-    ServerOperationsResolverHandler(final String localHostName, final ServerOperationResolver resolver, final ParsedOp parsedOp,
-                                    final PathAddress originalAddress, final ImmutableManagementResourceRegistration originalRegistration,
-                                    final ModelNode response, final boolean recordResponse) {
-        this.localHostName = localHostName;
+    ServerOperationsResolverHandler(final ServerOperationResolver resolver,
+                                    final HostControllerExecutionSupport hostControllerExecutionSupport,
+                                    final PathAddress originalAddress,
+                                    final ImmutableManagementResourceRegistration originalRegistration,
+                                    final ModelNode response,
+                                    final boolean recordResponse) {
         this.resolver = resolver;
-        this.parsedOp = parsedOp;
+        this.hostControllerExecutionSupport = hostControllerExecutionSupport;
         this.originalAddress = originalAddress;
         this.originalRegistration = originalRegistration;
         this.localResponse = response;
@@ -80,45 +87,39 @@ public class ServerOperationsResolverHandler implements OperationStepHandler {
     @Override
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
 
-        // Read out what was added by any MODEL/RUNTIME/VERIFY handlers and publish it to the overall context
-        if (context.hasResult()) {
-            localResponse.get(RESULT).set(context.getResult());
-        }
         if (context.hasFailureDescription()) {
             localResponse.get(FAILURE_DESCRIPTION).set(context.getFailureDescription());
             // We do not allow failures on the host controllers
             context.setRollbackOnly();
         } else {
+            boolean nullDomainOp = hostControllerExecutionSupport.getDomainOperation() == null;
 
-            final ModelNode domainModel = Resource.Tools.readModel(context.getRootResource());
-            ParsedOp.ServerOperationProvider provider = new ParsedOp.ServerOperationProvider() {
+            HostControllerExecutionSupport.ServerOperationProvider provider = nullDomainOp
+                ? NO_OP_PROVIDER
+                : new HostControllerExecutionSupport.ServerOperationProvider() {
+                    @Override
+                    public Map<Set<ServerIdentity>, ModelNode> getServerOperations(ModelNode domainOp, PathAddress address) {
 
-                @Override
-                public Map<Set<ServerIdentity>, ModelNode> getServerOperations(ModelNode domainOp, PathAddress address) {
-                    return ServerOperationsResolverHandler.this.getServerOperations(context, domainOp, address, domainModel, domainModel.get(HOST).get(localHostName));
-                }
-            };
+                        return ServerOperationsResolverHandler.this.getServerOperations(context, domainOp, address);
+                    }
+                };
+            Map<Set<ServerIdentity>, ModelNode> serverOps = hostControllerExecutionSupport.getServerOps(provider);
 
-            ModelNode localResult = localResponse.get(RESULT);
-            localResponse.remove(RESULT);  // We're going to replace it
-            ModelNode responseNode = recordResponse ? context.getResult() : localResponse.get(RESULT);
-            if (ModelType.STRING == localResult.getType() && IGNORED.equals(localResult.asString())) {
-                // Just pass the IGNORED along
-                responseNode.set(localResult);
-            } else {
-                Map<Set<ServerIdentity>, ModelNode> serverOps = parsedOp.getServerOps(provider);
-                createOverallResult(serverOps, localResult, responseNode);
-            }
+            ModelNode domainOpResult = nullDomainOp ? new ModelNode(IGNORED) : (context.hasResult() ? context.getResult() : new ModelNode());
+
+            ModelNode overallResult = localResponse == null ? context.getResult() : localResponse.get(RESULT);
+            createOverallResult(serverOps, domainOpResult, overallResult);
 
             if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {
-                HOST_CONTROLLER_LOGGER.tracef("%s responseNode is %s",getClass().getSimpleName(), responseNode);
+                HOST_CONTROLLER_LOGGER.tracef("%s responseNode is %s", getClass().getSimpleName(), overallResult);
             }
         }
 
         context.completeStep();
     }
 
-    private Map<Set<ServerIdentity>, ModelNode> getServerOperations(OperationContext context, ModelNode domainOp, PathAddress domainOpAddress, ModelNode domainModel, ModelNode hostModel) {
+    private Map<Set<ServerIdentity>, ModelNode> getServerOperations(OperationContext context, ModelNode domainOp,
+                                                                    PathAddress domainOpAddress) {
         Map<Set<ServerIdentity>, ModelNode> result = null;
         final PathAddress relativeAddress = domainOpAddress.subAddress(originalAddress.size());
         Set<OperationEntry.Flag> flags = originalRegistration.getOperationFlags(relativeAddress, domainOp.require(OP).asString());
@@ -126,14 +127,16 @@ public class ServerOperationsResolverHandler implements OperationStepHandler {
             result = Collections.emptyMap();
         }
         if (result == null) {
-            result = resolver.getServerOperations(context, domainOp, domainOpAddress, domainModel, hostModel);
+            result = resolver.getServerOperations(context, domainOp, domainOpAddress);
         }
         return result;
     }
 
     private void createOverallResult(Map<Set<ServerIdentity>, ModelNode> serverOps, final ModelNode localResult, final ModelNode overallResult) {
-        ModelNode domainResult = parsedOp.getFormattedDomainResult(localResult);
+
+        ModelNode domainResult = hostControllerExecutionSupport.getFormattedDomainResult(localResult);
         overallResult.get(DOMAIN_RESULTS).set(domainResult);
+
         ModelNode serverOpsNode = overallResult.get(SERVER_OPERATIONS);
         for (Map.Entry<Set<ServerIdentity>, ModelNode> entry : serverOps.entrySet()) {
             ModelNode setNode = serverOpsNode.add();

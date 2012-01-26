@@ -7,6 +7,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -48,6 +49,7 @@ import org.jboss.as.controller.operations.common.ResolveExpressionHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyRemoveHandler;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.domain.controller.operations.ResolveExpressionOnDomainHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentFullReplaceHandler;
@@ -159,7 +161,7 @@ public class ServerOperationResolver {
         ops.add(op);
     }
 
-    public Map<Set<ServerIdentity>, ModelNode> getServerOperations(OperationContext context, ModelNode operation, PathAddress address, ModelNode domain, ModelNode host) {
+    public Map<Set<ServerIdentity>, ModelNode> getServerOperations(OperationContext context, ModelNode operation, PathAddress address) {
         if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {
             HOST_CONTROLLER_LOGGER.tracef("Resolving %s", operation);
         }
@@ -169,6 +171,8 @@ public class ServerOperationResolver {
             return Collections.emptyMap();
         }
 
+        final ModelNode domain = Resource.Tools.readModel(context.getRootResource());
+        final ModelNode host = domain.get(HOST, localHostName);
         if (address.size() == 0) {
             return resolveDomainRootOperation(operation, domain, host);
         }

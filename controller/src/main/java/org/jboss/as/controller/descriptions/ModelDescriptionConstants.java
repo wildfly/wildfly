@@ -102,6 +102,8 @@ public class ModelDescriptionConstants {
     public static final String HOST_STATE = "host-state";
     public static final String HTTP_INTERFACE = "http-interface";
     public static final String IGNORED = "ignored-by-unaffected-host-controller";
+    public static final String IGNORED_RESOURCES = "ignored-resources";
+    public static final String IGNORED_RESOURCE_TYPE = "ignored-resource-type";
     public static final String IN_SERIES = "in-series";
     public static final String INCLUDE = "include";
     public static final String INCLUDES = "includes";
@@ -285,6 +287,7 @@ public class ModelDescriptionConstants {
     public static final String VAULT = "vault";
     public static final String VAULT_OPTION = "vault-option";
     public static final String VAULT_OPTIONS = "vault-options";
+    public static final String WILDCARD = "wildcard";
     public static final String WRITE_ATTRIBUTE_OPERATION = "write-attribute";
 
     private ModelDescriptionConstants() {
