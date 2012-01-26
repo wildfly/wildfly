@@ -1,0 +1,77 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.jboss.spec</groupId>
+    <artifactId>jboss-javaee-6.0-with-tools-parent</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>JBoss Java EE 6 Specification APIs with Tools Parent</name>
+    <description>Dependency Management for Java EE 6 Specification APIs with Deployment and Testing Tools Parent</description>
+
+    <licenses>
+        <license>
+            <name>GNU Lesser General Public License, Version 2.1</name>
+            <url>http://www.gnu.org/licenses/lgpl-2.1.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git://github.com/kpiwko/jboss-javaee-6.0-with-tools.git</connection>
+        <developerConnection>scm:git@github.com:kpiwko/jboss-javaee-6.0-with-tools.git</developerConnection>
+        <url>https://github.com/kpiwko/jboss-javaee-6.0-with-tools</url>
+    </scm>
+
+    <issueManagement>
+        <system>jira</system>
+        <url>http://jira.jboss.com/jira/browse/JBEE</url>
+    </issueManagement>
+
+    <properties>
+        <!-- Versions of JBoss projects -->
+        <version.org.jboss.spec.jboss.javaee.6.0>3.0.0.Beta1</version.org.jboss.spec.jboss.javaee.6.0>
+        <version.org.jboss.arquillian>1.0.0.CR7</version.org.jboss.arquillian>
+        <version.org.jboss.arquillian.extension.drone>1.0.0.CR3</version.org.jboss.arquillian.extension.drone>
+        <version.org.jboss.arquillian.ajocado>1.0.0.CR2</version.org.jboss.arquillian.ajocado>
+        <version.org.jboss.as.arquillian.container>7.1.0.CR1b</version.org.jboss.as.arquillian.container>
+
+        <!-- Versions of projects not directly under JBoss umbrella -->
+        <version.junit>4.8.1</version.junit>
+        <version.org.testng>5.14.6</version.org.testng>
+
+        <!-- Versions of Maven plugins, user must setup them by his/her own -->
+        <version.org.apache.maven.surefire.plugin>2.10</version.org.apache.maven.surefire.plugin>
+        <version.org.jboss.as.plugins.jboss.as.maven.plugin>7.1.0.CR1b</version.org.jboss.as.plugins.jboss.as.maven.plugin>
+    </properties>
+
+    <modules>
+        <module>jboss-javaee-web-6.0-with-tools</module>
+        <module>jboss-javaee-6.0-with-tools</module>
+    </modules>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <!-- The Maven Surefire plugin tests your application. Here we ensure we are using a version compatible with Arquillian -->
+                <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${version.org.apache.maven.surefire.plugin}</version>
+                </plugin>
+                <!-- The JBoss AS plugin deploys your war to a local JBoss AS container -->
+                <!-- To use, set the JBOSS_HOME environment variable and run:
+                    mvn package jboss-as:deploy -->
+                <plugin>
+                    <groupId>org.jboss.as.plugins</groupId>
+                    <artifactId>jboss-as-maven-plugin</artifactId>
+                    <version>${version.org.jboss.as.plugins.jboss.as.maven.plugin}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+
+</project>

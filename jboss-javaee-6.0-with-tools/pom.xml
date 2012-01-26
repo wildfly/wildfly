@@ -1,0 +1,130 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.jboss.spec</groupId>
+        <artifactId>jboss-javaee-6.0-with-tools-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>jboss-javaee-6.0-with-tools</artifactId>
+    <packaging>pom</packaging>
+
+    <name>JBoss Java EE 6 Specification APIs with Tools</name>
+    <description>Dependency Management for Java EE 6 Specification APIs with Deployment and Testing Tools</description>
+
+    <licenses>
+        <license>
+            <name>GNU Lesser General Public License, Version 2.1</name>
+            <url>http://www.gnu.org/licenses/lgpl-2.1.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git://github.com/kpiwko/jboss-javaee-6.0-with-tools.git</connection>
+        <developerConnection>scm:git@github.com:kpiwko/jboss-javaee-6.0-with-tools.git</developerConnection>
+        <url>https://github.com/kpiwko/jboss-javaee-6.0-with-tools</url>
+    </scm>
+
+    <issueManagement>
+        <system>jira</system>
+        <url>http://jira.jboss.com/jira/browse/JBEE</url>
+    </issueManagement>
+
+    <properties>
+        <!-- Version properties are inherited from parent -->
+    </properties>
+
+    <dependencyManagement>
+
+        <dependencies>
+            <!-- JBoss distributes a complete set of Java EE 6 APIs including
+                a Bill of Materials (BOM). A BOM specifies the versions of a "stack" (or
+                a collection) of artifacts. We use this here so that we always get the correct
+                versions of artifacts. Here we use the jboss-javaee-web-6.0 stack (you can
+                read this as the JBoss stack of the Java EE Web Profile 6 APIs), and we use
+                version 3.0.0.Beta1 which is the latest release of the stack. You can actually
+                use this stack with any version of JBoss AS that implements Java EE 6, not
+                just JBoss AS 7! -->
+            <dependency>
+                <groupId>org.jboss.spec</groupId>
+                <artifactId>jboss-javaee-6.0</artifactId>
+                <version>${version.org.jboss.spec.jboss.javaee.6.0}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Recommended JUnit version -->
+            <!-- Note that JUnit is preferred framework -->
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${version.junit}</version>
+            </dependency>
+
+            <!-- Recommended TestNG version -->
+            <dependency>
+                <groupId>org.testng</groupId>
+                <artifactId>testng</artifactId>
+                <version>${version.org.testng}</version>
+            </dependency>
+
+            <!-- Arquillian lets test you your applications in real environment -->
+            <dependency>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-bom</artifactId>
+                <version>${version.org.jboss.arquillian}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Arquillian Drone adds support for visual testing of your application -->
+            <dependency>
+                <groupId>org.jboss.arquillian.extension</groupId>
+                <artifactId>arquillian-drone-bom</artifactId>
+                <version>${version.org.jboss.arquillian.extension.drone}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Arquillian Ajocado is an enhanced tool based on Selenium allowing you to test AJAX more easily, bindings for JUnit -->
+            <!-- Note that JUnit is preferred framework -->
+            <dependency>
+                <groupId>org.jboss.arquillian.ajocado</groupId>
+                <artifactId>arquillian-ajocado-junit</artifactId>
+                <version>${version.org.jboss.arquillian.ajocado}</version>
+                <type>pom</type>
+            </dependency>
+
+            <!-- Arquillian Ajocado is an enhanced tool based on Selenium allowing you to test AJAX more easily, bindings for TestNG -->
+            <dependency>
+                <groupId>org.jboss.arquillian.ajocado</groupId>
+                <artifactId>arquillian-ajocado-testng</artifactId>
+                <version>${version.org.jboss.arquillian.ajocado}</version>
+                <type>pom</type>
+            </dependency>
+
+            <!-- Arquillian support for JBoss AS7 container -->
+            <!-- Note: Managed version of container allows Arquillian to control startup and shutdown of the container -->
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-arquillian-container-managed</artifactId>
+                <version>${version.org.jboss.as.arquillian.container}</version>
+            </dependency>
+
+            <!-- Arquillian support for JBoss AS7 container -->
+            <!-- Note: Remote version of container allows Arquillian to connect to already running container -->
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-arquillian-container-remote</artifactId>
+                <version>${version.org.jboss.as.arquillian.container}</version>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
+</project>
