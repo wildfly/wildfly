@@ -63,8 +63,8 @@ if "x%JAVA_HOME%" == "x" (
 rem Add -server to the JVM options, if supported
 "%JAVA%" -server -version 2>&1 | findstr /I hotspot > nul
 if not errorlevel == 1 (
-  set "PROCESS_CONTROLLER_JAVA_OPTS=%PROCESS_CONTROLLER_JAVA_OPTS -server"
-  set "HOST_CONTROLLER_JAVA_OPTS=%HOST_CONTROLLER_JAVA_OPTS -server"
+  set "PROCESS_CONTROLLER_JAVA_OPTS=%PROCESS_CONTROLLER_JAVA_OPTS% -server"
+  set "HOST_CONTROLLER_JAVA_OPTS=%HOST_CONTROLLER_JAVA_OPTS% -server"
 )
 
 rem Find run.jar, or we can't continue
