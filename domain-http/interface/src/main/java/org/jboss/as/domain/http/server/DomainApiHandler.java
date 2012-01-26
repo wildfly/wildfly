@@ -58,6 +58,7 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
@@ -67,10 +68,12 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.domain.http.server.multipart.BoundaryDelimitedInputStream;
 import org.jboss.as.domain.http.server.multipart.MimeHeaderParser;
+import org.jboss.as.domain.http.server.security.SubjectAssociationFilter;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.security.DomainCallbackHandler;
 import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.com.sun.net.httpserver.Authenticator;
+import org.jboss.com.sun.net.httpserver.Filter;
 import org.jboss.com.sun.net.httpserver.Headers;
 import org.jboss.com.sun.net.httpserver.HttpContext;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
@@ -545,10 +548,12 @@ class DomainApiHandler implements ManagementHttpHandler {
         // any redirects.
         if (authenticator != null) {
             context.setAuthenticator(authenticator);
+            List<Filter> filters = context.getFilters();
             if (securityRealm.hasTrustStore() == false) {
                 DomainCallbackHandler callbackHandler = securityRealm.getCallbackHandler();
-                context.getFilters().add(new RealmReadinessFilter(callbackHandler, ErrorHandler.getRealmRedirect()));
+                filters.add(new RealmReadinessFilter(callbackHandler, ErrorHandler.getRealmRedirect()));
             }
+            filters.add(new SubjectAssociationFilter());
         }
     }
 

@@ -20,31 +20,40 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.management;
+package org.jboss.as.domain.http.server.security;
 
-import java.security.Principal;
-import java.util.Collection;
+import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
+
+import java.io.IOException;
 
 import javax.security.auth.Subject;
 
+import org.jboss.as.controller.security.SecurityContext;
+import org.jboss.com.sun.net.httpserver.Filter;
+import org.jboss.com.sun.net.httpserver.HttpExchange;
+import org.jboss.com.sun.net.httpserver.HttpExchange.AttributeScope;
+
 /**
- * A UserInfo definition that also allows for a Subject to be returned.
- *
- * This interface contains a method from the Remoting UserInfo definition, however
- * domain management is both about Remoting and non-Remoting invocations so we do not
- * tie this directly to the Remoting class.
+ * Filter to ensure that the Subject for the authenticated user is associated for this request.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public interface SubjectUserInfo {
+public class SubjectAssociationFilter extends Filter {
 
-    /**
-     * Get the principals for this user.
-     *
-     * @return the principals
-     */
-    Collection<Principal> getPrincipals();
+    @Override
+    public void doFilter(final HttpExchange exchange, final Chain chain) throws IOException {
+        Subject subject = (Subject) exchange.getAttribute(Subject.class.getName(), AttributeScope.CONNECTION);
+        SecurityContext.setSubject(subject);
+        try {
+            chain.doFilter(exchange);
+        } finally {
+            SecurityContext.clearSubject();
+        }
+    }
 
-    Subject getSubject();
+    @Override
+    public String description() {
+        return MESSAGES.subjectAssociationFilter();
+    }
 
 }
