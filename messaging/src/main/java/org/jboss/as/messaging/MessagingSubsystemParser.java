@@ -2123,7 +2123,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         connectionFactory.get(OP).set(ADD);
         connectionFactory.get(OP_ADDR).set(address).add(CONNECTION_FACTORY, name);
 
-        updates.add(createConnectionFactory(reader, connectionFactory));
+        updates.add(createConnectionFactory(reader, connectionFactory, false));
     }
 
     static void processPooledConnectionFactory(final XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
@@ -2136,7 +2136,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         connectionFactory.get(OP).set(ADD);
         connectionFactory.get(OP_ADDR).set(address).add(POOLED_CONNECTION_FACTORY, name);
 
-        updates.add(createConnectionFactory(reader, connectionFactory));
+        updates.add(createConnectionFactory(reader, connectionFactory, true));
     }
 
     static ModelNode processJmsConnectors(final XMLExtendedStreamReader reader) throws XMLStreamException {
@@ -2177,7 +2177,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         return connectors;
     }
 
-    private static ModelNode createConnectionFactory(XMLExtendedStreamReader reader, ModelNode connectionFactory) throws XMLStreamException
+    private static ModelNode createConnectionFactory(XMLExtendedStreamReader reader, ModelNode connectionFactory, boolean pooled) throws XMLStreamException
     {
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
@@ -2216,6 +2216,9 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     }
                     break;
                 } case TRANSACTION: {
+                    if(!pooled) {
+                        throw ParseUtils.unexpectedElement(reader);
+                    }
                     final String txType = reader.getAttributeValue(0);
                     if( txType != null) {
                         connectionFactory.get(TRANSACTION).set(txType);
