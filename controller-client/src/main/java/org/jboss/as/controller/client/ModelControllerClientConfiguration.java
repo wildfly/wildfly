@@ -24,6 +24,7 @@ package org.jboss.as.controller.client;
 
 import javax.net.ssl.SSLContext;
 import javax.security.auth.callback.CallbackHandler;
+import java.io.Closeable;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
@@ -32,7 +33,7 @@ import java.util.concurrent.ExecutorService;
  *
  * @author Emanuel Muckenhuber
  */
-public interface ModelControllerClientConfiguration {
+public interface ModelControllerClientConfiguration extends Closeable {
 
     /**
      * Get the address of the remote host.

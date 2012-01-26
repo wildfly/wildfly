@@ -37,6 +37,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Emanuel Muckenhuber
@@ -45,8 +46,11 @@ public class ClientConfigurationImpl implements ModelControllerClientConfigurati
 
     private static final int DEFAULT_MAX_THREADS = getSystemProperty("org.jboss.as.controller.client.max-threads", 6);
 
+    // Global count of created pools
+    private static final AtomicInteger executorCount = new AtomicInteger();
     static ExecutorService createDefaultExecutor() {
-        final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("management-client-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
+        final ThreadGroup group = new ThreadGroup("management-client-thread");
+        final ThreadFactory threadFactory = new JBossThreadFactory(group, Boolean.FALSE, null, "%G " + executorCount.incrementAndGet() + "-%t", null, null, AccessController.getContext());
         return new ThreadPoolExecutor(2, DEFAULT_MAX_THREADS, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), threadFactory);
     }
 
@@ -56,14 +60,20 @@ public class ClientConfigurationImpl implements ModelControllerClientConfigurati
     private final Map<String, String> saslOptions;
     private final SSLContext sslContext;
     private final ExecutorService executorService;
+    private boolean shutdownExecutor;
 
     protected ClientConfigurationImpl(String address, int port, CallbackHandler handler, Map<String, String> saslOptions, SSLContext sslContext, ExecutorService executorService) {
+        this(address, port, handler, saslOptions, sslContext, executorService, false);
+    }
+
+    protected ClientConfigurationImpl(String address, int port, CallbackHandler handler, Map<String, String> saslOptions, SSLContext sslContext, ExecutorService executorService, boolean shutdownExecutor) {
         this.address = address;
         this.port = port;
         this.handler = handler;
         this.saslOptions = saslOptions;
         this.sslContext = sslContext;
         this.executorService = executorService;
+        this.shutdownExecutor = shutdownExecutor;
     }
 
     @Override
@@ -101,32 +111,39 @@ public class ClientConfigurationImpl implements ModelControllerClientConfigurati
         return executorService;
     }
 
+    @Override
+    public void close() {
+        if(shutdownExecutor && executorService != null) {
+            executorService.shutdown();
+        }
+    }
+
     public static ModelControllerClientConfiguration create(final InetAddress address, final int port) {
-        return new ClientConfigurationImpl(address.getHostName(), port, null, null, null, createDefaultExecutor());
+        return new ClientConfigurationImpl(address.getHostName(), port, null, null, null, createDefaultExecutor(), true);
     }
 
     public static ModelControllerClientConfiguration create(final InetAddress address, final int port, final CallbackHandler handler){
-        return new ClientConfigurationImpl(address.getHostName(), port, handler, null, null, createDefaultExecutor());
+        return new ClientConfigurationImpl(address.getHostName(), port, handler, null, null, createDefaultExecutor(), true);
     }
 
     public static ModelControllerClientConfiguration create(final InetAddress address, final int port, final CallbackHandler handler, final Map<String, String> saslOptions){
-        return new ClientConfigurationImpl(address.getHostName(), port, handler, saslOptions, null, createDefaultExecutor());
+        return new ClientConfigurationImpl(address.getHostName(), port, handler, saslOptions, null, createDefaultExecutor(), true);
     }
 
     public static ModelControllerClientConfiguration create(final String hostName, final int port) throws UnknownHostException {
-        return new ClientConfigurationImpl(hostName, port, null, null, null, createDefaultExecutor());
+        return new ClientConfigurationImpl(hostName, port, null, null, null, createDefaultExecutor(), true);
     }
 
     public static ModelControllerClientConfiguration create(final String hostName, final int port, final CallbackHandler handler) throws UnknownHostException {
-        return new ClientConfigurationImpl(hostName, port, handler, null, null, createDefaultExecutor());
+        return new ClientConfigurationImpl(hostName, port, handler, null, null, createDefaultExecutor(), true);
     }
 
     public static ModelControllerClientConfiguration create(final String hostName, final int port, final CallbackHandler handler, final SSLContext sslContext) throws UnknownHostException {
-        return new ClientConfigurationImpl(hostName, port, handler, null, sslContext, createDefaultExecutor());
+        return new ClientConfigurationImpl(hostName, port, handler, null, sslContext, createDefaultExecutor(), true);
     }
 
     public static ModelControllerClientConfiguration create(final String hostName, final int port, final CallbackHandler handler, final Map<String, String> saslOptions) throws UnknownHostException {
-        return new ClientConfigurationImpl(hostName, port, handler, saslOptions, null, createDefaultExecutor());
+        return new ClientConfigurationImpl(hostName, port, handler, saslOptions, null, createDefaultExecutor(), true);
     }
 
     private static int getSystemProperty(final String name, final int defaultValue) {
