@@ -34,7 +34,7 @@ public enum Element {
     // must be first
     UNKNOWN(null),
 
-    // Domain 1.0 elements in alpha order
+    // Domain elements in alpha order
     ADVANCED_FILTER("advanced-filter"),
     AGENT_LIB("agent-lib"),
     AGENT_PATH("agent-path"),
@@ -43,6 +43,7 @@ public enum Element {
     ANY_IPV4_ADDRESS("any-ipv4-address"),
     ANY_IPV6_ADDRESS("any-ipv6-address"),
     AUTHENTICATION("authentication"),
+    AUTHORIZATION("authorization"),
 
     CLIENT_MAPPING("client-mapping"),
     CONTENT("content"),
