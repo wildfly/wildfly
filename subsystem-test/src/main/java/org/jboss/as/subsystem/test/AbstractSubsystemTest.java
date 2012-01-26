@@ -253,8 +253,7 @@ public abstract class AbstractSubsystemTest {
         StringConfigurationPersister persister = new StringConfigurationPersister(Collections.<ModelNode>emptyList(), testParser);
 
         ExtensionRegistry outputExtensionRegistry = new ExtensionRegistry(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.NORMAL));
-        outputExtensionRegistry.setProfileResourceRegistration(MOCK_RESOURCE_REG);
-        outputExtensionRegistry.setDeploymentsResourceRegistration(MOCK_RESOURCE_REG);
+        outputExtensionRegistry.setSubsystemParentResourceRegistrations(MOCK_RESOURCE_REG, MOCK_RESOURCE_REG);
         outputExtensionRegistry.setWriterRegistry(persister);
 
         Extension extension = mainExtension.getClass().newInstance();
@@ -744,8 +743,7 @@ public abstract class AbstractSubsystemTest {
             //Hack to be able to access the registry for the jmx facade
             rootRegistration.registerOperationHandler(RootResourceHack.NAME, RootResourceHack.INSTANCE, RootResourceHack.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
-            extensionRegistry.setProfileResourceRegistration(rootRegistration);
-            extensionRegistry.setDeploymentsResourceRegistration(deployments);
+            extensionRegistry.setSubsystemParentResourceRegistrations(rootRegistration, deployments);
 
             controllerInitializer.initializeModel(rootResource, rootRegistration);
 

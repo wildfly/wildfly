@@ -346,8 +346,7 @@ public class ServerControllerModelUtil {
 
         // Extensions
         root.registerSubModel(new ExtensionResourceDefinition(extensionRegistry, parallelBoot));
-        extensionRegistry.setProfileResourceRegistration(root);
-        extensionRegistry.setDeploymentsResourceRegistration(deployments);
+        extensionRegistry.setSubsystemParentResourceRegistrations(root, deployments);
 
         // Util
         root.registerOperationHandler(DeployerChainAddHandler.NAME, DeployerChainAddHandler.INSTANCE, DeployerChainAddHandler.INSTANCE, false, EntryType.PRIVATE);

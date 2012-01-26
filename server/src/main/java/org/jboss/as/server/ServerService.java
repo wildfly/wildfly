@@ -273,6 +273,8 @@ public final class ServerService extends AbstractControllerService {
     public void stop(final StopContext context) {
         super.stop(context);
 
+        configuration.getExtensionRegistry().clear();
+
         if (queuelessExecutor != null) {
             context.asynchronous();
             Thread executorShutdown = new Thread(new Runnable() {

@@ -78,14 +78,15 @@ public class ExtensionRegistry {
     private final ProcessType processType;
 
     private SubsystemXmlWriterRegistry writerRegistry;
-    private ManagementResourceRegistration profileRegistration;
-    private ManagementResourceRegistration deploymentsRegistration;
+    private volatile ManagementResourceRegistration profileRegistration;
+    private volatile ManagementResourceRegistration deploymentsRegistration;
 
     private final ConcurrentMap<String, Map<String, SubsystemInformation>> extensionInfo =
             new ConcurrentHashMap<String, Map<String, SubsystemInformation>>();
     private final ConcurrentMap<String, Set<String>> unnamedParsers = new ConcurrentHashMap<String, Set<String>>();
     private final ConcurrentMap<String, String> registeredSubystems = new ConcurrentHashMap<String, String>();
     private final RunningModeControl runningModeControl;
+    // protected by unnamedParsers
     private boolean unnamedMerged;
 
     public ExtensionRegistry(ProcessType processType, RunningModeControl runningModeControl) {
@@ -113,34 +114,28 @@ public class ExtensionRegistry {
     }
 
     /**
-     * Sets the {@link ManagementResourceRegistration} for the resource under which subsystem child resources
+     * Sets the {@link ManagementResourceRegistration}s for the resource under which subsystem child resources
      * should be registered.
      *
      * @param profileResourceRegistration the {@link ManagementResourceRegistration} for the resource under which
      *           subsystem child resources should be registered. Cannot be {@code null}
+     * @param deploymentsResourceRegistration the {@link ManagementResourceRegistration} for the deployments resource.
+     *                                        May be {@code null} if deployment resources are not supported
      */
-    public void setProfileResourceRegistration(ManagementResourceRegistration profileResourceRegistration) {
+    public void setSubsystemParentResourceRegistrations(ManagementResourceRegistration profileResourceRegistration,
+                                                        ManagementResourceRegistration deploymentsResourceRegistration) {
         assert profileResourceRegistration != null : "profileResourceRegistration is null";
         assert this.profileRegistration == null : "profileResourceRegistration is already set";
         this.profileRegistration = profileResourceRegistration;
-    }
 
-    /**
-     * Sets the {@link ManagementResourceRegistration} for the deployments resource under which deployment-related
-     * subsystem child resources should be registered.
-     *
-     * @param deploymentsResourceRegistration the {@link ManagementResourceRegistration} for the deployments resource.
-     *                                        Cannot be {@code null}
-     * @throws IllegalStateException if {@link #getProcessType() the process type} is {@link ProcessType#APPLICATION_CLIENT}
-     *            or {@link ProcessType#HOST_CONTROLLER}, neither of which support deployment resources.
-     */
-    public void setDeploymentsResourceRegistration(ManagementResourceRegistration deploymentsResourceRegistration) {
-        assert deploymentsResourceRegistration != null : "deploymentsResourceRegistration is null";
-        assert this.deploymentsRegistration == null : "deploymentsResourceRegistration is already set";
-        PathAddress subdepAddress = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBDEPLOYMENT));
-        final ManagementResourceRegistration subdeployments = deploymentsResourceRegistration.getSubModel(subdepAddress);
-        this.deploymentsRegistration = subdeployments == null ? deploymentsResourceRegistration
-                    : new DeploymentManagementResourceRegistration(deploymentsResourceRegistration, subdeployments);
+        if (deploymentsResourceRegistration != null) {
+            assert this.deploymentsRegistration == null : "deploymentsResourceRegistration is already set";
+            PathAddress subdepAddress = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBDEPLOYMENT));
+            final ManagementResourceRegistration subdeployments = deploymentsResourceRegistration.getSubModel(subdepAddress);
+            this.deploymentsRegistration = subdeployments == null ? deploymentsResourceRegistration
+                        : new DeploymentManagementResourceRegistration(deploymentsResourceRegistration, subdeployments);
+
+        }
     }
 
     /**
@@ -189,7 +184,7 @@ public class ExtensionRegistry {
      * @param moduleName the name of the extension's module. Cannot be {@code null}
      * @return  the {@link ExtensionContext}.  Will not return {@code null}
      *
-     * @throws IllegalStateException if no {@link #setProfileResourceRegistration(ManagementResourceRegistration) profile resource registration has been set}
+     * @throws IllegalStateException if no {@link #setSubsystemParentResourceRegistrations(ManagementResourceRegistration, ManagementResourceRegistration)} profile resource registration has been set}
      */
     public ExtensionContext getExtensionContext(String moduleName) {
         return new ExtensionContextImpl(moduleName);
@@ -227,6 +222,14 @@ public class ExtensionRegistry {
      * @throws IllegalStateException if the extension still has subsystems present in {@code rootResource} or its children
      */
     public void removeExtension(Resource rootResource, String moduleName) throws IllegalStateException {
+
+        final ManagementResourceRegistration profileReg = profileRegistration;
+        if (profileReg == null) {
+            // we've been cleared and haven't re-initialized yet
+            return;
+        }
+
+        final ManagementResourceRegistration deploymentsReg = deploymentsRegistration;
         Map<String, SubsystemInformation> subsystems = extensionInfo.remove(moduleName);
         if (subsystems != null) {
             synchronized (subsystems) {
@@ -239,14 +242,28 @@ public class ExtensionRegistry {
                     }
                 }
                 for (String subsystem : subsystemNames) {
-                    profileRegistration.unregisterSubModel(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, subsystem));
-                    if (deploymentsRegistration != null) {
-                        deploymentsRegistration.unregisterSubModel(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, subsystem));
+                    profileReg.unregisterSubModel(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, subsystem));
+                    if (deploymentsReg != null) {
+                        deploymentsReg.unregisterSubModel(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, subsystem));
                     }
                 }
                 unnamedParsers.remove(moduleName);
                 // TODO when STXM-11 is complete and integrated unregister the XMElementReader from xmlMapper
             }
+        }
+    }
+
+    /**
+     * Clears the registry to prepare for re-registration (e.g. as part of a reload).
+     */
+    public void clear() {
+        synchronized (unnamedParsers) {    // we synchronize just to guard unnamedMerged
+            profileRegistration = null;
+            deploymentsRegistration = null;
+            extensionInfo.clear();
+            unnamedParsers.clear();
+            registeredSubystems.clear();
+            unnamedMerged = false;
         }
     }
 
@@ -481,7 +498,15 @@ public class ExtensionRegistry {
         @Override
         public ManagementResourceRegistration registerSubsystemModel(ResourceDefinition resourceDefinition) {
             assert resourceDefinition != null : "resourceDefinition is null";
-            return profileRegistration.registerSubModel(resourceDefinition);
+
+            ManagementResourceRegistration profileReg = profileRegistration;
+            if (profileReg == null) {
+                // we've been cleared and haven't re-initialized. This would mean a management op is registering
+                // an extension at the same time we are shutting down or reloading. Unlikely.
+                // Just provide a fake reg to the op (whose work is being discarded anyway) so it can finish cleanly.
+                profileReg = getDummyRegistration();
+            }
+            return profileReg.registerSubModel(resourceDefinition);
         }
 
         @Override
@@ -494,20 +519,25 @@ public class ExtensionRegistry {
         @Override
         public ManagementResourceRegistration registerDeploymentModel(ResourceDefinition resourceDefinition) {
             assert resourceDefinition != null : "resourceDefinition is null";
-            ManagementResourceRegistration base = deploymentsRegistration != null
-                ? deploymentsRegistration
-                : ManagementResourceRegistration.Factory.create(new DescriptionProvider() {
-                    @Override
-                    public ModelNode getModelDescription(Locale locale) {
-                        return  new ModelNode();
-                    }
-                });
+            final ManagementResourceRegistration deploymentsReg = deploymentsRegistration;
+            ManagementResourceRegistration base = deploymentsReg != null
+                ? deploymentsReg
+                : getDummyRegistration();
             return base.registerSubModel(resourceDefinition);
         }
 
         @Override
         public void registerXMLElementWriter(XMLElementWriter<SubsystemMarshallingContext> writer) {
             writerRegistry.registerSubsystemWriter(name, writer);
+        }
+
+        private ManagementResourceRegistration getDummyRegistration() {
+             return ManagementResourceRegistration.Factory.create(new DescriptionProvider() {
+                    @Override
+                    public ModelNode getModelDescription(Locale locale) {
+                        return  new ModelNode();
+                    }
+                });
         }
 
     }
