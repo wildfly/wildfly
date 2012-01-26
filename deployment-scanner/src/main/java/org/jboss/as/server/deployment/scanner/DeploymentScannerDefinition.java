@@ -19,13 +19,13 @@ public class DeploymentScannerDefinition extends SimpleResourceDefinition {
 
     private DeploymentScannerDefinition() {
         super(DeploymentScannerExtension.SCANNERS_PATH,
-                DeploymentScannerExtension.getResourceDescriptionResolver(DeploymentScannerExtension.SUBSYSTEM_NAME),
+                DeploymentScannerExtension.getResourceDescriptionResolver("deployment.scanner"),
                 DeploymentScannerAdd.INSTANCE, DeploymentScannerRemove.INSTANCE
         );
     }
 
     protected static final SimpleAttributeDefinition NAME =
-            new SimpleAttributeDefinitionBuilder(CommonAttributes.NAME, ModelType.STRING, true)
+            new SimpleAttributeDefinitionBuilder(CommonAttributes.NAME, ModelType.STRING, false)
                     .setXmlName(Attribute.NAME.getLocalName())
                     .setAllowExpression(true)
                     .setValidator(new StringLengthValidator(1))
@@ -33,7 +33,7 @@ public class DeploymentScannerDefinition extends SimpleResourceDefinition {
                     .build();
 
     protected static final SimpleAttributeDefinition PATH =
-            new SimpleAttributeDefinitionBuilder(CommonAttributes.PATH, ModelType.STRING, true)
+            new SimpleAttributeDefinitionBuilder(CommonAttributes.PATH, ModelType.STRING, false)
                     .setXmlName(Attribute.PATH.getLocalName())
                     .setAllowExpression(true)
                     .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true))
@@ -41,14 +41,13 @@ public class DeploymentScannerDefinition extends SimpleResourceDefinition {
     protected static final SimpleAttributeDefinition RELATIVE_TO =
             new SimpleAttributeDefinitionBuilder(CommonAttributes.RELATIVE_TO, ModelType.STRING, true)
                     .setXmlName(Attribute.RELATIVE_TO.getLocalName())
-                    .setAllowExpression(true)
                     .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
                     .build();
     protected static final SimpleAttributeDefinition SCAN_ENABLED =
             new SimpleAttributeDefinitionBuilder(CommonAttributes.SCAN_ENABLED, ModelType.BOOLEAN, true)
                     .setXmlName(Attribute.SCAN_ENABLED.getLocalName())
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode().set(true))
+                    .setDefaultValue(new ModelNode(true))
                     .build();
     protected static final SimpleAttributeDefinition SCAN_INTERVAL =
             new SimpleAttributeDefinitionBuilder(CommonAttributes.SCAN_INTERVAL, ModelType.INT, true)
@@ -82,11 +81,11 @@ public class DeploymentScannerDefinition extends SimpleResourceDefinition {
                     .setAllowExpression(true)
                     .setDefaultValue(new ModelNode().set(60))
                     .build();
-    protected static final SimpleAttributeDefinition[] ALL_ATTRIBUTES = {NAME,PATH,RELATIVE_TO,SCAN_ENABLED,SCAN_INTERVAL,AUTO_DEPLOY_EXPLODED,AUTO_DEPLOY_XML,AUTO_DEPLOY_ZIPPED,DEPLOYMENT_TIMEOUT};
+    protected static final SimpleAttributeDefinition[] ALL_ATTRIBUTES = {PATH,RELATIVE_TO,SCAN_ENABLED,SCAN_INTERVAL,AUTO_DEPLOY_EXPLODED,AUTO_DEPLOY_XML,AUTO_DEPLOY_ZIPPED,DEPLOYMENT_TIMEOUT};
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadWriteAttribute(NAME, null, new ReloadRequiredWriteAttributeHandler());
+        //resourceRegistration.registerReadOnlyAttribute(NAME, null);
         resourceRegistration.registerReadWriteAttribute(PATH, null, new ReloadRequiredWriteAttributeHandler());
         resourceRegistration.registerReadWriteAttribute(RELATIVE_TO, null, new ReloadRequiredWriteAttributeHandler());
         resourceRegistration.registerReadWriteAttribute(SCAN_ENABLED, null, WriteEnabledAttributeHandler.INSTANCE);

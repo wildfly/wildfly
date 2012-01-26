@@ -58,18 +58,10 @@ class DeploymentScannerAdd extends AbstractAddStepHandler {
         //
     }
 
-    protected void populateModel(ModelNode operation, ModelNode model) {
-        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        try {
-            for (SimpleAttributeDefinition atr : ALL_ATTRIBUTES) {
-                atr.validateAndSet(operation, model);
-            }
-        } catch (OperationFailedException e) {
-            //
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        for (SimpleAttributeDefinition atr : ALL_ATTRIBUTES) {
+            atr.validateAndSet(operation, model);
         }
-        final String name = address.getLastElement().getValue();
-        model.get(CommonAttributes.NAME).set(name);
-
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
@@ -78,7 +70,7 @@ class DeploymentScannerAdd extends AbstractAddStepHandler {
         final String path = DeploymentScannerDefinition.PATH.resolveModelAttribute(context, operation).asString();
         final Boolean enabled = SCAN_ENABLED.resolveModelAttribute(context, operation).asBoolean();
         final Integer interval = SCAN_INTERVAL.resolveModelAttribute(context, operation).asInt();
-        final String relativeTo =  operation.hasDefined(CommonAttributes.RELATIVE_TO)?RELATIVE_TO.resolveModelAttribute(context, operation).asString():null;
+        final String relativeTo = operation.hasDefined(CommonAttributes.RELATIVE_TO) ? RELATIVE_TO.resolveModelAttribute(context, operation).asString() : null;
         final Boolean autoDeployZip = AUTO_DEPLOY_ZIPPED.resolveModelAttribute(context, operation).asBoolean();
         final Boolean autoDeployExp = AUTO_DEPLOY_EXPLODED.resolveModelAttribute(context, operation).asBoolean();
         final Boolean autoDeployXml = AUTO_DEPLOY_XML.resolveModelAttribute(context, operation).asBoolean();
