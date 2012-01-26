@@ -22,9 +22,11 @@
 
 package org.jboss.as.controller.client.impl;
 
+import org.jboss.as.controller.client.ControllerClientLogger;
 import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.ModelControllerClientConfiguration;
@@ -60,16 +62,24 @@ public class RemotingModelControllerClient extends AbstractModelControllerClient
     public void close() throws IOException {
         synchronized (this) {
             closed = true;
-            if (endpoint != null) {
-                StreamUtils.safeClose(endpoint);
-                endpoint = null;
-            }
+            // Don't allow any new request
+            shutdown();
+            // First close the channel and connection
             if (strategy != null) {
                 StreamUtils.safeClose(strategy);
                 strategy = null;
             }
+            // Then the endpoint
+            if (endpoint != null) {
+                StreamUtils.safeClose(endpoint);
+                endpoint = null;
+            }
+            // Cancel all still active operations
+            shutdownNow();
             try {
-                super.shutdownNow();
+                awaitCompletion(1, TimeUnit.SECONDS);
+            } catch (InterruptedException ignore) {
+                Thread.currentThread().interrupt();
             } finally {
                 StreamUtils.safeClose(clientConfiguration);
             }
