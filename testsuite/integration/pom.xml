@@ -150,7 +150,7 @@
                     <!-- First, make a copy for this module. -->
                     <execution>
                         <inherited>false</inherited>
-                        <id>ts.copy-jbossas</id>
+                        <id>ts.copy-jbossas.integ</id>
                         <phase>generate-test-resources</phase>
                         <goals><goal>copy-resources</goal></goals>
                         <configuration>
@@ -164,22 +164,6 @@
                                         <exclude>modules/</exclude>
                                         <exclude>bundles/</exclude>
                                     </excludes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                    <!-- Copy this copy into submodules. -->
-                    <execution>
-                        <inherited>true</inherited>
-                        <id>ts.copy-jbossas.groups</id>
-                        <phase>generate-test-resources</phase>
-                        <goals><goal>copy-resources</goal></goals>
-                        <configuration>
-                            <outputDirectory>${basedir}/target/jbossas</outputDirectory>
-                            <overwrite>true</overwrite>
-                            <resources>
-                                <resource>
-                                    <directory>${basedir}/../target/jbossas</directory>
                                 </resource>
                             </resources>
                         </configuration>

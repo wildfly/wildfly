@@ -286,8 +286,10 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions combine.children="append">
+                    <!-- Copy AS from ${jboss.home} to testsuite/target/jbossas -->
                     <execution>
-                        <id>build-jbossas.server</id>
+                        <id>ts.copy-jbossas.from-dist</id>
+                        <inherited>false</inherited>
                         <phase>generate-test-resources</phase>
                         <goals><goal>copy-resources</goal></goals>
                         <configuration>
@@ -300,6 +302,22 @@
                                         <exclude>modules/</exclude>
                                         <exclude>bundles/</exclude>
                                     </excludes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <!-- Copy that AS  ../target/jbossas into current_submodule/target/jbossas . This is executed recursively in submodules. -->
+                    <execution>
+                        <id>ts.copy-jbossas.groups</id>
+                        <inherited>true</inherited>
+                        <phase>generate-test-resources</phase>
+                        <goals><goal>copy-resources</goal></goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/jbossas</outputDirectory>
+                            <overwrite>true</overwrite>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/../target/jbossas</directory>
                                 </resource>
                             </resources>
                         </configuration>
