@@ -160,7 +160,8 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                 persistenceProviderAdaptor.afterCreateContainerEntityManagerFactory(pu);
             } finally {
                 pu.setAnnotationIndex(null);    // close reference to Annotation Index (only needed during call to createContainerEntityManagerFactory)
-                pu.setTempClassLoaderFactory(null);    // close reference to temp classloader factory (only needed during call to createEntityManagerFactory)
+                //This is needed if the datasource is restarted
+                //pu.setTempClassLoaderFactory(null);    // close reference to temp classloader factory (only needed during call to createEntityManagerFactory)
             }
         }
     }
