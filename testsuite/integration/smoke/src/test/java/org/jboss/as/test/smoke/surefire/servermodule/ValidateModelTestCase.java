@@ -95,6 +95,7 @@ public class ValidateModelTestCase {
         final ModelNode ROOT_ADDR = new ModelNode().setEmptyList();
         //Exclude the operations where one of the reply properties is known to have {type=OBJECT,value-type=UNDEFINED}
         config.allowNullValueTypeForOperationParameter(ROOT_ADDR, VALIDATE_OPERATION, VALUE);
+        config.allowNullValueTypeForOperationParameter(ROOT_ADDR, "check-address", VALUE);
 
         //Exclude the operations where reply-properties is known to have {type=OBJECT,value-type=UNDEFINED}
         config.allowNullValueTypeForOperationReplyProperties(ROOT_ADDR, READ_OPERATION_DESCRIPTION_OPERATION);
