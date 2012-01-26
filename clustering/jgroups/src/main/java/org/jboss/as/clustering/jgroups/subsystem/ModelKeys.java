@@ -44,5 +44,6 @@ class ModelKeys {
     static final String THREAD_FACTORY = "thread-factory";
     static final String TIMER_EXECUTOR = "timer-executor";
     static final String TRANSPORT = "transport";
+    static final String TRANSPORT_NAME = "TRANSPORT";
     static final String TYPE = "type";
 }
