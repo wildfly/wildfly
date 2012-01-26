@@ -197,11 +197,18 @@ public abstract class ManagementClientChannelStrategy implements Closeable {
             return channel;
         }
 
-        private void resetChannel(Channel old) {
+        private void resetChannel(final Channel old) {
+            boolean reset = false;
             synchronized (this) {
                 if(channel == old) {
                     channel = null;
+                    reset = true;
                 }
+            }
+            // Since this is used by older clients to signal that they are about to close the channel
+            // we just close it to make sure that we don't leak it
+            if(reset) {
+                old.closeAsync();
             }
         }
 
