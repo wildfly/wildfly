@@ -4,13 +4,17 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.jboss.spec</groupId>
-    <artifactId>jboss-javaee-6.0-with-tools-parent</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <parent>
+        <groupId>org.jboss.as.quickstarts</groupId>
+        <artifactId>jboss-as-quickstarts-parent</artifactId>
+        <version>7.0.2-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>jboss-as-quickstarts-bom-parent</artifactId>
     <packaging>pom</packaging>
 
-    <name>JBoss Java EE 6 Specification APIs with Tools Parent</name>
-    <description>Dependency Management for Java EE 6 Specification APIs with Deployment and Testing Tools Parent</description>
+    <name>JBoss Java EE 6 Specification APIs (with Extras) BOM Parent</name>
+    <description>Dependency Management BOM for Java EE 6 Specification APIs (with extras) Parent</description>
 
     <licenses>
         <license>
@@ -52,26 +56,5 @@
         <module>jboss-javaee-web-6.0-with-tools</module>
         <module>jboss-javaee-6.0-with-tools</module>
     </modules>
-
-    <build>
-        <pluginManagement>
-            <plugins>
-                <!-- The Maven Surefire plugin tests your application. Here we ensure we are using a version compatible with Arquillian -->
-                <plugin>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>${version.org.apache.maven.surefire.plugin}</version>
-                </plugin>
-                <!-- The JBoss AS plugin deploys your war to a local JBoss AS container -->
-                <!-- To use, set the JBOSS_HOME environment variable and run:
-                    mvn package jboss-as:deploy -->
-                <plugin>
-                    <groupId>org.jboss.as.plugins</groupId>
-                    <artifactId>jboss-as-maven-plugin</artifactId>
-                    <version>${version.org.jboss.as.plugins.jboss.as.maven.plugin}</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-    </build>
-
 
 </project>
