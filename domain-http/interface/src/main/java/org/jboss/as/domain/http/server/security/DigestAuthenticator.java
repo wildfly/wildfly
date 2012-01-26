@@ -22,6 +22,7 @@
 
 package org.jboss.as.domain.http.server.security;
 
+import static org.jboss.as.domain.http.server.Constants.INTERNAL_SERVER_ERROR;
 import static org.jboss.as.domain.http.server.Constants.AUTHORIZATION_HEADER;
 import static org.jboss.as.domain.http.server.Constants.UNAUTHORIZED;
 import static org.jboss.as.domain.http.server.Constants.VIA;
@@ -31,8 +32,8 @@ import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
 
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
+import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
@@ -43,13 +44,16 @@ import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
+import org.jboss.as.domain.management.SubjectUserInfo;
 import org.jboss.as.domain.management.security.UserNotFoundException;
 import org.jboss.com.sun.net.httpserver.Authenticator;
 import org.jboss.com.sun.net.httpserver.Headers;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
 import org.jboss.com.sun.net.httpserver.HttpPrincipal;
 import org.jboss.com.sun.net.httpserver.HttpsExchange;
+import org.jboss.com.sun.net.httpserver.HttpExchange.AttributeScope;
 import org.jboss.sasl.callback.DigestHashCallback;
 import org.jboss.sasl.util.HexConverter;
 
@@ -66,7 +70,8 @@ public class DigestAuthenticator extends Authenticator {
 
     private final NonceFactory theNonceFactory = new NonceFactory();
 
-    private final CallbackHandler callbackHandler;
+    private final AuthenticationProvider authenticationProvider;
+    private final ThreadLocal<AuthorizingCallbackHandler> callbackHandler = new ThreadLocal<AuthorizingCallbackHandler>();
 
     private final String realm;
     private final boolean preDigested;
@@ -80,14 +85,34 @@ public class DigestAuthenticator extends Authenticator {
     private static final String USERNAME = "username";
     private static final String URI = "uri";
 
-    public DigestAuthenticator(CallbackHandler callbackHandler, String realm, boolean preDigested) {
-        this.callbackHandler = callbackHandler;
+    public DigestAuthenticator(AuthenticationProvider authenticationProvider, String realm, boolean preDigested) {
+        this.authenticationProvider = authenticationProvider;
         this.realm = realm;
         this.preDigested = preDigested;
     }
 
     @Override
     public Result authenticate(HttpExchange httpExchange) {
+        Subject subject = (Subject) httpExchange.getAttribute(Subject.class.getName(), AttributeScope.CONNECTION);
+        // If we have a cached Subject with a HttpPrincipal this connection is already authenticated so no further action
+        // required.
+        if (subject != null) {
+            Set<HttpPrincipal> httpPrincipals = subject.getPrincipals(HttpPrincipal.class);
+            if (httpPrincipals.size() > 0) {
+                return new Success(httpPrincipals.iterator().next());
+            }
+        }
+
+        callbackHandler.set(authenticationProvider.getCallbackHandler());
+        try {
+            return _authenticate(httpExchange);
+        } finally {
+            callbackHandler.set(null);
+        }
+    }
+
+    private Result _authenticate(HttpExchange httpExchange) {
+        Result response = null;
         // If we already have a Principal from the SSLSession no need to continue with
         // username / password authentication.
         if (httpExchange instanceof HttpsExchange) {
@@ -97,12 +122,35 @@ public class DigestAuthenticator extends Authenticator {
                 try {
                     Principal p = session.getPeerPrincipal();
 
-                    return new Success(new HttpPrincipal(p.getName(), realm));
-
+                    response = new Success(new HttpPrincipal(p.getName(), realm));
                 } catch (SSLPeerUnverifiedException e) {
                 }
             }
         }
+
+        if (response == null) {
+            response = digestAuth(httpExchange);
+        }
+
+        if (response instanceof Success) {
+            // For this method to have been called a Subject with HttpPrincipal was not found within the HttpExchange so now
+            // create a new one.
+            HttpPrincipal principal = ((Success) response).getPrincipal();
+
+            try {
+                SubjectUserInfo userInfo = callbackHandler.get().createSubjectUserInfo(principal);
+                httpExchange.setAttribute(Subject.class.getName(), userInfo.getSubject());
+
+            } catch (IOException e) {
+                ROOT_LOGGER.debug("Unable to create SubjectUserInfo", e);
+                response = new Authenticator.Failure(INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        return response;
+    }
+
+    private Result digestAuth(HttpExchange httpExchange) {
 
         // If authentication has already completed for this connection re-use it.
         DigestContext context = getOrCreateNegotiationContext(httpExchange);
@@ -172,7 +220,7 @@ public class DigestAuthenticator extends Authenticator {
 
         // Step 2 - Call CallbackHandler
         try {
-            callbackHandler.handle(callbacks);
+            callbackHandler.get().handle(callbacks);
         } catch (UserNotFoundException e) {
             if (ROOT_LOGGER.isDebugEnabled()) {
                 ROOT_LOGGER.debug(e.getMessage());
