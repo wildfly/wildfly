@@ -21,6 +21,8 @@
 */
 package org.jboss.as.jsr77.managedobject;
 
+import org.jboss.as.controller.interfaces.InetAddressUtil;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collections;
@@ -69,7 +71,7 @@ class JVMHandler extends BaseHandler {
             return SecurityActions.getSystemProperty("java.vendor");
         } else if (attribute.equals(ATTR_NODE)) {
             try {
-                return InetAddress.getLocalHost().getHostName();
+                return InetAddressUtil.getLocalHost().getHostName();
             } catch (UnknownHostException e) {
                 throw new RuntimeException(e);
             }
