@@ -158,6 +158,11 @@ class ProxyTask implements Callable<ModelNode> {
     }
 
     /**
+     * Gets either the prepared (pre-commit/rollback) result from the remote node,
+     * or the failure result if the remote node failed before reaching Stage.DONE.
+     *
+     * @return the remote node's result. Will not return {@code null}.
+     *
      * @throws InterruptedException if interrupted while waiting for the result
      * @throws Exception if something went wrong executing the request
      */

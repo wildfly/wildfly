@@ -184,6 +184,7 @@ public class TransactionalModelControllerOperationHandler extends AbstractModelC
         private final int batchId;
         private final Channel channel;
         private final ExecuteRequestContext executeRequestContext;
+        private boolean prepared;
 
         public ProxyOperationControlProxy(final Channel channel, final int batchId, final ExecuteRequestContext executeRequestContext) {
             this.batchId = batchId;
@@ -194,6 +195,7 @@ public class TransactionalModelControllerOperationHandler extends AbstractModelC
         @Override
         public void operationPrepared(final ModelController.OperationTransaction transaction, final ModelNode result) {
             try {
+                prepared = true;
                 executeRequest(new OperationStatusRequest(result) {
                     @Override
                     public byte getOperationType() {
@@ -227,20 +229,27 @@ public class TransactionalModelControllerOperationHandler extends AbstractModelC
 
         @Override
         public void operationFailed(final ModelNode response) {
-            executeRequest(new OperationStatusRequest(response) {
+            if (prepared) {
+                // the failure happened after we already sent a prepare message; i.e. on the
+                // return path following commit or rollback. This is really an "operationCompleted"
+                operationCompleted(response);
+            } else {
+                // Failure before we sent prepare message
+                executeRequest(new OperationStatusRequest(response) {
 
-                @Override
-                public byte getOperationType() {
-                    return ModelControllerProtocol.OPERATION_FAILED_REQUEST;
-                }
+                    @Override
+                    public byte getOperationType() {
+                        return ModelControllerProtocol.OPERATION_FAILED_REQUEST;
+                    }
 
-                @Override
-                public void handleRequest(DataInput input, ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
-                    // Mark the active operation as complete. Even though the operation failed we don't want to throw an exception.
-                    executeRequestContext.getResultHandler().done(null);
-                }
+                    @Override
+                    public void handleRequest(DataInput input, ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
+                        // Mark the active operation as complete. Even though the operation failed we don't want to throw an exception.
+                        executeRequestContext.getResultHandler().done(null);
+                    }
 
-            });
+                });
+            }
         }
 
         @Override

@@ -87,8 +87,6 @@ final class OperationContextImpl extends AbstractOperationContext {
     /** Tracks whether any steps have gotten write access to the management resource registration*/
     private volatile boolean affectsResourceRegistration;
 
-    private boolean respectInterruption = true;
-
     private volatile Resource model;
 
     private volatile Resource originalModel;
@@ -296,7 +294,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                         synchronized (map) {
                             ServiceName name = controller.getName();
                             if (map.get(name) == controller) {
-                                map.remove(controller.getName());
+                                map.remove(name);
                                 removalSteps.put(name, removalStep);
                                 map.notifyAll();
                             }
@@ -335,6 +333,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                 modelController.acquireLock(respectInterruption);
                 lockStep = activeStep;
             } catch (InterruptedException e) {
+                cancelled = true;
                 Thread.currentThread().interrupt();
                 throw MESSAGES.operationCancelledAsynchronously();
             }
@@ -355,6 +354,10 @@ final class OperationContextImpl extends AbstractOperationContext {
         try {
             modelController.awaitContainerMonitor(respectInterruption, 1);
         } catch (InterruptedException e) {
+            if (currentStage != Stage.DONE && resultAction != ResultAction.ROLLBACK) {
+                // We're not on the way out, so we've been cancelled on the way in
+                cancelled = true;
+            }
             Thread.currentThread().interrupt();
             throw MESSAGES.operationCancelledAsynchronously();
         }
@@ -594,14 +597,27 @@ final class OperationContextImpl extends AbstractOperationContext {
     @Override
     void releaseStepLocks(AbstractOperationContext.Step step) {
 
-        if (this.lockStep == step) {
-            modelController.releaseLock();
-            lockStep = null;
-        }
-        if (this.containerMonitorStep == step) {
-            try {
-                awaitContainerMonitor();
-            } finally {
+        try {
+            if (this.lockStep == step) {
+                modelController.releaseLock();
+                lockStep = null;
+            }
+            if (this.containerMonitorStep == step) {
+                // Note: If we allow this thread to be interrupted, an op that has been cancelled
+                // because of minor user impatience can release the controller lock while the
+                // container is unsettled. OTOH, if we don't allow interruption, if the
+                // container can't settle (e.g. a broken service is blocking in start()), the operation
+                // will not be cancellable. I (BES 2012/01/24) chose the former as the lesser evil.
+                // Any subsequent step that calls getServiceRegistry/getServiceTarget/removeService
+                // is going to have to await the monitor uninterruptibly anyway before proceeding.
+                try {
+                    modelController.awaitContainerMonitor(true, 1);
+                }  catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        } finally {
+            if (this.containerMonitorStep == step) {
                 modelController.releaseContainerMonitor();
                 containerMonitorStep = null;
             }
@@ -857,42 +873,30 @@ final class OperationContextImpl extends AbstractOperationContext {
         public ServiceController<T> install() throws ServiceRegistryException, IllegalStateException {
             final Map<ServiceName, ServiceController<?>> map = realRemovingControllers;
             synchronized (map) {
-                // Wait for removal to complete
-                while (map.containsKey(name)) try {
-                    map.wait();
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                    throw MESSAGES.serviceInstallCancelled();
-                }
                 boolean intr = false;
                 try {
-                    while (map.containsKey(name)) try {
-                        map.wait();
-
-                        // If a step removed this ServiceName before, it's no longer responsible
-                        // for any ill effect
-                        removalSteps.remove(name);
-
-                        return realBuilder.install();
-                    } catch (InterruptedException e) {
-                        if (respectInterruption) {
-                            Thread.currentThread().interrupt();
-                            throw MESSAGES.serviceInstallCancelled();
-                        } else {
+                    while (map.containsKey(name)) {
+                        try {
+                            map.wait();
+                        } catch (InterruptedException e) {
                             intr = true;
+                            if (respectInterruption) {
+                                cancelled = true;
+                                throw MESSAGES.serviceInstallCancelled();
+                            } // else keep waiting and mark the thread interrupted at the end
                         }
                     }
+
+                    // If a step removed this ServiceName before, it's no longer responsible
+                    // for any ill effect
+                    removalSteps.remove(name);
+
+                    return realBuilder.install();
                 } finally {
                     if (intr) {
                         Thread.currentThread().interrupt();
                     }
                 }
-
-                // If a step removed this ServiceName before, it's no longer responsible
-                // for any ill effect
-                removalSteps.remove(name);
-
-                return realBuilder.install();
             }
         }
     }

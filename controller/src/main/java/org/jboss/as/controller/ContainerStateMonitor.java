@@ -128,10 +128,6 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
         }
     }
 
-    void awaitUninterruptibly() {
-        awaitUninterruptibly(0);
-    }
-
     void awaitUninterruptibly(int count) {
         boolean intr = false;
         try {
@@ -149,10 +145,6 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
                 Thread.currentThread().interrupt();
             }
         }
-    }
-
-    void await() throws InterruptedException {
-        await(0);
     }
 
     void await(int count) throws InterruptedException {
