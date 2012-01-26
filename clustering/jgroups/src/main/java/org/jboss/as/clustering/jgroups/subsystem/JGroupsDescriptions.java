@@ -21,9 +21,14 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.jboss.as.clustering.jgroups.subsystem.CommonAttributes.DEFAULT_STACK;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
+
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -42,60 +47,82 @@ public class JGroupsDescriptions {
 
     static ModelNode getSubsystemDescription(Locale locale) {
         ResourceBundle resources = getResources(locale);
-        ModelNode description = createDescription(resources, "jgroups");
-        description.get(ModelDescriptionConstants.HEAD_COMMENT_ALLOWED).set(true);
-        description.get(ModelDescriptionConstants.TAIL_COMMENT_ALLOWED).set(true);
-        description.get(ModelDescriptionConstants.NAMESPACE).set(Namespace.CURRENT.getUri());
-        return description;
+        ModelNode subsystem = createDescription(resources, "jgroups");
+        subsystem.get(ModelDescriptionConstants.HEAD_COMMENT_ALLOWED).set(true);
+        subsystem.get(ModelDescriptionConstants.TAIL_COMMENT_ALLOWED).set(true);
+        subsystem.get(ModelDescriptionConstants.NAMESPACE).set(Namespace.CURRENT.getUri());
+        // children of the root subsystem
+        subsystem.get(CHILDREN, ModelKeys.STACK, DESCRIPTION).set(resources.getString("jgroups.stack"));
+        subsystem.get(CHILDREN, ModelKeys.STACK, MIN_OCCURS).set(1);
+        subsystem.get(CHILDREN, ModelKeys.STACK, MAX_OCCURS).set(Integer.MAX_VALUE);
+        subsystem.get(CHILDREN, ModelKeys.STACK, MODEL_DESCRIPTION).setEmptyObject();
+        return subsystem;
     }
 
     static ModelNode getSubsystemAddDescription(Locale locale) {
         ResourceBundle resources = getResources(locale);
-        ModelNode description = createSubsystemOperationDescription(ModelDescriptionConstants.ADD, resources);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.DEFAULT_STACK, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.DEFAULT_STACK, ModelDescriptionConstants.DESCRIPTION).set(resources.getString("jgroups.default-stack"));
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.DEFAULT_STACK, ModelDescriptionConstants.REQUIRED).set(false);
-        return description;
+        final ModelNode op = createOperationDescription(ADD, resources, "jgroups.add");
+        DEFAULT_STACK.addOperationParameterDescription(resources, "jgroups", op);
+        return op;
     }
 
     static ModelNode getSubsystemRemoveDescription(Locale locale) {
         ResourceBundle resources = getResources(locale);
-        ModelNode description = createSubsystemOperationDescription(ModelDescriptionConstants.ADD, resources);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES).setEmptyObject();
-        return description;
+        final ModelNode op = createOperationDescription(REMOVE, resources, "jgroups.remove");
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+        op.get(REQUEST_PROPERTIES).setEmptyObject();
+        return op;
     }
 
     static ModelNode getSubsystemDescribeDescription(Locale locale) {
         ResourceBundle resources = getResources(locale);
-        ModelNode description = createSubsystemOperationDescription(ModelDescriptionConstants.DESCRIBE, resources);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES).setEmptyObject();
-        description.get(ModelDescriptionConstants.REPLY_PROPERTIES, ModelDescriptionConstants.TYPE).set(ModelType.LIST);
-        description.get(ModelDescriptionConstants.REPLY_PROPERTIES, ModelDescriptionConstants.VALUE_TYPE).set(ModelType.OBJECT);
-        return description;
+        final ModelNode op = createOperationDescription(DESCRIBE, resources, "jgroups.describe");
+        op.get(REQUEST_PROPERTIES).setEmptyObject();
+        op.get(REPLY_PROPERTIES, TYPE).set(ModelType.LIST);
+        op.get(REPLY_PROPERTIES, VALUE_TYPE).set(ModelType.OBJECT);
+        return op;
     }
 
     static ModelNode getProtocolStackDescription(Locale locale) {
         ResourceBundle resources = getResources(locale);
-        return createDescription(resources, "jgroups.stack");
+        final ModelNode stack = createDescription(resources, "jgroups.stack");
+        // attributes
+        for (AttributeDefinition attr : CommonAttributes.STACK_ATTRIBUTES) {
+            attr.addResourceAttributeDescription(resources, "jgroups.stack", stack);
+        }
+
+        // information about its child "transport=TRANSPORT"
+        stack.get(CHILDREN, ModelKeys.TRANSPORT, DESCRIPTION).set(resources.getString("jgroups.stack.transport"));
+        stack.get(CHILDREN, ModelKeys.TRANSPORT, MIN_OCCURS).set(0);
+        stack.get(CHILDREN, ModelKeys.TRANSPORT, MAX_OCCURS).set(1);
+        stack.get(CHILDREN, ModelKeys.TRANSPORT, ALLOWED).setEmptyList().add(ModelKeys.TRANSPORT_NAME);
+        stack.get(CHILDREN, ModelKeys.TRANSPORT, MODEL_DESCRIPTION);
+
+        // information about its child "protocol=*"
+        stack.get(CHILDREN, ModelKeys.PROTOCOL, DESCRIPTION).set(resources.getString("jgroups.stack.protocol"));
+        stack.get(CHILDREN, ModelKeys.PROTOCOL, MIN_OCCURS).set(0);
+        stack.get(CHILDREN, ModelKeys.PROTOCOL, MAX_OCCURS).set(Integer.MAX_VALUE);
+        stack.get(CHILDREN, ModelKeys.PROTOCOL, MODEL_DESCRIPTION);
+
+        return stack ;
     }
 
     static ModelNode getProtocolStackAddDescription(Locale locale) {
         ResourceBundle resources = getResources(locale);
-        ModelNode description = createProtocolStackOperationDescription(ModelDescriptionConstants.ADD, resources);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.TRANSPORT, ModelDescriptionConstants.TYPE).set(ModelType.OBJECT);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.TRANSPORT, ModelDescriptionConstants.DESCRIPTION).set(resources.getString("jgroups.stack.transport"));
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.PROTOCOLS, ModelDescriptionConstants.TYPE).set(ModelType.LIST);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.PROTOCOLS, ModelDescriptionConstants.VALUE_TYPE).set(ModelType.OBJECT);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.PROTOCOLS, ModelDescriptionConstants.DESCRIPTION).set(resources.getString("jgroups.stack.protocol"));
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.PROTOCOLS, ModelDescriptionConstants.REQUIRED).set(false);
-        return description;
+
+        final ModelNode op = createOperationDescription(ADD, resources, "jgroups.stack.add");
+        // request parameters
+        for (AttributeDefinition attr : CommonAttributes.STACK_ATTRIBUTES) {
+            attr.addOperationParameterDescription(resources, "jgroups.stack", op);
+        }
+        return op;
     }
 
     static ModelNode getProtocolStackRemoveDescription(Locale locale) {
         ResourceBundle resources = getResources(locale);
-        ModelNode description = createProtocolStackOperationDescription(ModelDescriptionConstants.REMOVE, resources);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES).setEmptyObject();
-        return description;
+        final ModelNode op = createOperationDescription(REMOVE, resources, "jgroups.stack.remove");
+        op.get(REQUEST_PROPERTIES).setEmptyObject();
+        return op;
     }
 
     private static ResourceBundle getResources(Locale locale) {
