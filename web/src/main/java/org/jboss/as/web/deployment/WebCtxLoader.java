@@ -96,7 +96,6 @@ public class WebCtxLoader implements Lifecycle, Loader {
 
     public void stop() throws LifecycleException {
         this.container = null;
-        this.classloader = null;
     }
 
 }

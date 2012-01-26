@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.security.jacc.PolicyConfiguration;
-import javax.servlet.ServletContext;
 
 import org.apache.catalina.Loader;
 import org.apache.catalina.Realm;
@@ -185,7 +184,6 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
                 }
             }
         }
-        webContext.setInstanceManager(injectionContainer);
 
         final Loader loader = new WebCtxLoader(classLoader);
         webContext.setLoader(loader);
@@ -210,12 +208,6 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
 
         // Setup an deployer configured ServletContext attributes
         final List<ServletContextAttribute> attributes = deploymentUnit.getAttachment(ServletContextAttribute.ATTACHMENT_KEY);
-        if (attributes != null) {
-            final ServletContext context = webContext.getServletContext();
-            for (ServletContextAttribute attribute : attributes) {
-                context.setAttribute(attribute.getName(), attribute.getValue());
-            }
-        }
 
         try {
             final ServiceName deploymentServiceName = WebSubsystemServices.deploymentServiceName(hostName, pathName);
@@ -227,7 +219,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
                     SecurityDomainContext.class, realmService.getSecurityDomainContextInjector()).setInitialMode(Mode.ACTIVE)
                     .install();
 
-            final WebDeploymentService webDeploymentService = new WebDeploymentService(webContext, injectionContainer, setupActions);
+            final WebDeploymentService webDeploymentService = new WebDeploymentService(webContext, injectionContainer, setupActions, attributes);
             builder = serviceTarget
                     .addService(deploymentServiceName, webDeploymentService)
                     .addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName), VirtualHost.class,
