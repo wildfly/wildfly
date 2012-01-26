@@ -29,6 +29,7 @@ import java.io.IOException;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.ModelControllerClientConfiguration;
 import org.jboss.as.protocol.ProtocolChannelClient;
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
@@ -60,14 +61,18 @@ public class RemotingModelControllerClient extends AbstractModelControllerClient
         synchronized (this) {
             closed = true;
             if (endpoint != null) {
-                endpoint.close();
+                StreamUtils.safeClose(endpoint);
                 endpoint = null;
             }
             if (strategy != null) {
-                strategy.close();
+                StreamUtils.safeClose(strategy);
                 strategy = null;
             }
-            super.shutdownNow();
+            try {
+                super.shutdownNow();
+            } finally {
+                StreamUtils.safeClose(clientConfiguration);
+            }
         }
     }
 
