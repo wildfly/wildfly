@@ -76,18 +76,17 @@ public final class Main {
         } catch (Throwable ignored) {
         }
 
-        // Install JBoss Stdio to avoid any nasty crosstalk.
-        StdioContext.install();
-        final StdioContext context = StdioContext.create(
-            new NullInputStream(),
-            new LoggingOutputStream(Logger.getLogger("stdout"), Level.INFO),
-            new LoggingOutputStream(Logger.getLogger("stderr"), Level.ERROR)
-        );
-        StdioContext.setStdioContextSelector(new SimpleStdioContextSelector(context));
-
         try {
             Module.registerURLStreamHandlerFactoryModule(Module.getBootModuleLoader().loadModule(ModuleIdentifier.create("org.jboss.vfs")));
             ServerEnvironment serverEnvironment = determineEnvironment(args, new Properties(SecurityActions.getSystemProperties()), SecurityActions.getSystemEnvironment(), ServerEnvironment.LaunchType.STANDALONE);
+            // Install JBoss Stdio to avoid any nasty crosstalk, after command line arguments are processed.
+            StdioContext.install();
+            final StdioContext context = StdioContext.create(
+                    new NullInputStream(),
+                    new LoggingOutputStream(Logger.getLogger("stdout"), Level.INFO),
+                    new LoggingOutputStream(Logger.getLogger("stderr"), Level.ERROR)
+            );
+            StdioContext.setStdioContextSelector(new SimpleStdioContextSelector(context));
             if (serverEnvironment == null) {
                 abort(null);
             } else {
