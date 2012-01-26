@@ -46,7 +46,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.domain.management.SubjectUserInfo;
+import org.jboss.as.controller.security.SubjectUserInfo;
 import org.jboss.as.domain.management.security.UserNotFoundException;
 import org.jboss.com.sun.net.httpserver.Authenticator;
 import org.jboss.com.sun.net.httpserver.Headers;
@@ -139,7 +139,7 @@ public class DigestAuthenticator extends Authenticator {
 
             try {
                 SubjectUserInfo userInfo = callbackHandler.get().createSubjectUserInfo(principal);
-                httpExchange.setAttribute(Subject.class.getName(), userInfo.getSubject());
+                httpExchange.setAttribute(Subject.class.getName(), userInfo.getSubject(), AttributeScope.CONNECTION);
 
             } catch (IOException e) {
                 ROOT_LOGGER.debug("Unable to create SubjectUserInfo", e);

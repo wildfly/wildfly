@@ -38,7 +38,7 @@ import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
-import org.jboss.as.domain.management.SubjectUserInfo;
+import org.jboss.as.controller.security.SubjectUserInfo;
 import org.jboss.com.sun.net.httpserver.Authenticator;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
 import org.jboss.com.sun.net.httpserver.HttpExchange.AttributeScope;
@@ -109,7 +109,7 @@ public class BasicAuthenticator extends org.jboss.com.sun.net.httpserver.BasicAu
 
             try {
                 SubjectUserInfo userInfo = callbackHandler.get().createSubjectUserInfo(principal);
-                httpExchange.setAttribute(Subject.class.getName(), userInfo.getSubject());
+                httpExchange.setAttribute(Subject.class.getName(), userInfo.getSubject(), AttributeScope.CONNECTION);
 
             } catch (IOException e) {
                 ROOT_LOGGER.debug("Unable to create SubjectUserInfo", e);

@@ -30,10 +30,10 @@ import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
+import org.jboss.as.controller.security.SubjectUserInfo;
 import org.jboss.as.domain.management.RealmUser;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.SubjectCallback;
-import org.jboss.as.domain.management.SubjectUserInfo;
 import org.jboss.as.domain.management.security.DomainCallbackHandler;
 import org.jboss.as.domain.management.security.SubjectSupplemental;
 
@@ -42,11 +42,11 @@ import org.jboss.as.domain.management.security.SubjectSupplemental;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-class AuthenticationProvider {
+public class AuthenticationProvider {
 
     private final SecurityRealm securityRealm;
 
-    AuthenticationProvider(final SecurityRealm securityRealm) {
+    public AuthenticationProvider(final SecurityRealm securityRealm) {
         this.securityRealm = securityRealm;
     }
 

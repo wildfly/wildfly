@@ -49,10 +49,10 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
 
+import org.jboss.as.controller.security.SubjectUserInfo;
 import org.jboss.as.domain.management.RealmUser;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.SubjectCallback;
-import org.jboss.as.domain.management.SubjectUserInfo;
 import org.jboss.as.domain.management.security.DomainCallbackHandler;
 import org.jboss.as.domain.management.security.SubjectSupplemental;
 import org.jboss.remoting3.Remoting;

@@ -20,22 +20,36 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.http.server.security;
+package org.jboss.as.controller.security;
 
-import java.io.IOException;
 import java.security.Principal;
+import java.util.Collection;
 
-import org.jboss.as.controller.security.SubjectUserInfo;
-import org.jboss.as.domain.management.security.DomainCallbackHandler;
+import javax.security.auth.Subject;
 
 /**
- * An extension to the CallbackHandler interface to allow additional use info to be loaded
- * after authentication is complete.
+ * A UserInfo definition that also allows for a Subject to be returned.
+ *
+ * This interface contains a method from the Remoting UserInfo definition, however
+ * domain management is both about Remoting and non-Remoting invocations so we do not
+ * tie this directly to the Remoting class.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-interface AuthorizingCallbackHandler extends DomainCallbackHandler {
+public interface SubjectUserInfo {
 
-    SubjectUserInfo createSubjectUserInfo(Principal userPrincipal) throws IOException;
+    // TODO - This is currently within this module as it needs to be widely accessible - the domain-management
+    //        module currently depends on controller so can't see this class.  We really need to split the domain
+    //        management into two pieces - 1 for the management operations and 2 the core library handling security
+    //        the latter should have no other dependencies within the AS tree.
+
+    /**
+     * Get the principals for this user.
+     *
+     * @return the principals
+     */
+    Collection<Principal> getPrincipals();
+
+    Subject getSubject();
 
 }
