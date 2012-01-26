@@ -32,6 +32,7 @@ import java.util.regex.Pattern;
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.interfaces.InetAddressUtil;
 import org.jboss.as.controller.persistence.ConfigurationFile;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.modules.Module;
@@ -265,7 +266,7 @@ public class ServerEnvironment implements Serializable {
             }
             if (qualifiedHostName == null) {
                 try {
-                    qualifiedHostName = InetAddress.getLocalHost().getHostName();
+                    qualifiedHostName = InetAddressUtil.getLocalHost().getHostName();
                 } catch (UnknownHostException e) {
                     qualifiedHostName = null;
                 }
