@@ -40,8 +40,6 @@ import java.util.Map;
 import java.util.Set;
 
 import junit.framework.Assert;
-
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -298,37 +296,54 @@ public class ReloadRequiredServerTestCase extends AbstractOperationTestCase {
         ServerRestartRequiredServerConfigWriteAttributeHandler.SOCKET_BINDING_PORT_OFFSET_INSTANCE.execute(operationContext, operation);
     }
 
-    private void checkServerOperationResolver(OperationContext context, ModelNode operation, PathAddress address, boolean expectServerOps) {
+    private void checkServerOperationResolver(MockOperationContext context, ModelNode operation, PathAddress address, boolean expectServerOps) {
         Map<String, ProxyController> serverProxies = new HashMap<String, ProxyController>();
         serverProxies.put("server-one", new MockServerProxy());
         serverProxies.put("server-two", new MockServerProxy());
         serverProxies.put("server-three", new MockServerProxy());
         ServerOperationResolver resolver = new ServerOperationResolver("localhost", serverProxies);
 
-        ModelNode domain = new ModelNode();
-        ModelNode host = new ModelNode();
-        host.get(SERVER_CONFIG, "server-one", GROUP).set("group-one");
-        host.get(SERVER_CONFIG, "server-two", GROUP).set("nope");
-        host.get(SERVER_CONFIG, "server-three", GROUP).set("nope");
+        final Resource backup = context.root;
+        context.root = getServerResolutionResource();
+        try {
+            Map<Set<ServerIdentity>, ModelNode> serverOps = resolver.getServerOperations(context, operation, address);
+            if (expectServerOps) {
+                Assert.assertEquals(1, serverOps.size());
+                Set<ServerIdentity> ids = serverOps.entrySet().iterator().next().getKey();
+                Assert.assertEquals(1, ids.size());
 
+                ServerIdentity expected = new ServerIdentity("localhost", "group-one","server-one");
+                assertEquals(expected, ids.iterator().next());
 
-        Map<Set<ServerIdentity>, ModelNode> serverOps = resolver.getServerOperations(context, operation, address, domain, host);
-        if (expectServerOps) {
-            Assert.assertEquals(1, serverOps.size());
-            Set<ServerIdentity> ids = serverOps.entrySet().iterator().next().getKey();
-            Assert.assertEquals(1, ids.size());
+                ModelNode expectedOp = new ModelNode();
 
-            ServerIdentity expected = new ServerIdentity("localhost", "group-one","server-one");
-            assertEquals(expected, ids.iterator().next());
-
-            ModelNode expectedOp = new ModelNode();
-
-            expectedOp.get(OP).set(ServerRestartRequiredHandler.OPERATION_NAME);
-            expectedOp.get(OP_ADDR).setEmptyList();
-            Assert.assertEquals(expectedOp, serverOps.get(ids));
-        } else {
-            Assert.assertEquals(0, serverOps.size());
+                expectedOp.get(OP).set(ServerRestartRequiredHandler.OPERATION_NAME);
+                expectedOp.get(OP_ADDR).setEmptyList();
+                Assert.assertEquals(expectedOp, serverOps.get(ids));
+            } else {
+                Assert.assertEquals(0, serverOps.size());
+            }
+        } finally {
+            context.root = backup;
         }
+    }
+
+    private Resource getServerResolutionResource() {
+
+        final Resource result = Resource.Factory.create();
+        final Resource host =  Resource.Factory.create();
+        result.registerChild(PathElement.pathElement(HOST, "localhost"), host);
+        final Resource serverOne = Resource.Factory.create();
+        serverOne.getModel().get(GROUP).set("group-one");
+        host.registerChild(PathElement.pathElement(SERVER_CONFIG, "server-one"), serverOne);
+        final Resource serverTwo = Resource.Factory.create();
+        serverTwo.getModel().get(GROUP).set("nope");
+        host.registerChild(PathElement.pathElement(SERVER_CONFIG, "server-two"), serverTwo);
+        final Resource serverThree = Resource.Factory.create();
+        serverThree.getModel().get(GROUP).set("nope");
+        host.registerChild(PathElement.pathElement(SERVER_CONFIG, "server-three"), serverThree);
+
+        return result;
     }
 
     private class MockServerProxy implements ProxyController {

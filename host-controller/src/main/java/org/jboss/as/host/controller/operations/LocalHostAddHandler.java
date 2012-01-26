@@ -53,6 +53,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.host.controller.HostControllerEnvironment;
+import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.platform.mbean.PlatformMBeanConstants;
 import org.jboss.as.platform.mbean.RootPlatformMBeanResource;
 import org.jboss.as.version.Version;
@@ -68,13 +69,11 @@ public class LocalHostAddHandler implements OperationStepHandler, DescriptionPro
     public static final String OPERATION_NAME = "add-host";
 
     private final HostControllerEnvironment hostControllerEnvironment;
+    private final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry;
 
-    public static LocalHostAddHandler getInstance(final HostControllerEnvironment hostControllerEnvironment) {
-        return new LocalHostAddHandler(hostControllerEnvironment);
-    }
-
-    private LocalHostAddHandler(final HostControllerEnvironment hostControllerEnvironment) {
+    public LocalHostAddHandler(final HostControllerEnvironment hostControllerEnvironment, IgnoredDomainResourceRegistry ignoredDomainResourceRegistry) {
         this.hostControllerEnvironment = hostControllerEnvironment;
+        this.ignoredDomainResourceRegistry = ignoredDomainResourceRegistry;
     }
 
     @Override
@@ -102,6 +101,9 @@ public class LocalHostAddHandler implements OperationStepHandler, DescriptionPro
         // Wire in the platform mbean resources. We're bypassing the context.createResource API here because
         // we want to use our own resource type. But it's ok as the createResource calls above have taken the lock
         rootResource.registerChild(PlatformMBeanConstants.ROOT_PATH, new RootPlatformMBeanResource());
+        // Wire in the ignored-resources resource
+        Resource.ResourceEntry ignoredRoot = ignoredDomainResourceRegistry.getRootResource();
+        rootResource.registerChild(ignoredRoot.getPathElement(), ignoredRoot);
 
         // Add a step to store the HC name
         ModelNode writeNameOp = Util.getWriteAttributeOperation(operation.get(OP_ADDR), NAME, operation.get(NAME));

@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.net.URL;
 
 import javax.security.sasl.SaslException;
+import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.RunningMode;
@@ -38,6 +40,7 @@ import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
+import org.jboss.logging.Param;
 
 /**
  * This module is using message IDs in the range 10800-10999. This file is using the subset 10940-10999 for host
@@ -559,4 +562,10 @@ public interface HostControllerMessages {
 
     @Message(id = 10989, value = "HostControllerEnvironment does not support system property updates")
     UnsupportedOperationException hostControllerSystemPropertyUpdateNotSupported();
+
+    @Message(id = 10990, value = "Resources of type %s cannot be ignored")
+    OperationFailedException cannotIgnoreTypeHost(String type);
+
+    @Message(id = 10991, value = "An '%s' element whose '%s' attribute is has already been found")
+    XMLStreamException duplicateIgnoredResourceType(String element, String value, @Param Location location);
 }

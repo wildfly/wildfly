@@ -76,6 +76,7 @@ import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.SlaveRegistrationException;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
 import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
+import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.domain.controller.operations.coordination.PrepareStepHandler;
 import org.jboss.as.host.controller.RemoteDomainConnectionService.RemoteFileRepository;
 import org.jboss.as.host.controller.mgmt.MasterDomainControllerOperationHandlerService;
@@ -141,6 +142,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private final ContentRepository contentRepository;
     private final ExtensionRegistry extensionRegistry;
     private final ControlledProcessState processState;
+    private final IgnoredDomainResourceRegistry ignoredRegistry;
 
     private volatile ServerInventory serverInventory;
 
@@ -156,9 +158,12 @@ public class DomainModelControllerService extends AbstractControllerService impl
         final AbstractVaultReader vaultReader = service(AbstractVaultReader.class);
         ROOT_LOGGER.debugf("Using VaultReader %s", vaultReader);
         final ContentRepository contentRepository = ContentRepository.Factory.create(environment.getDomainDeploymentDir());
-        final PrepareStepHandler prepareStepHandler = new PrepareStepHandler(hostControllerInfo, contentRepository, hostProxies, serverProxies);
+        IgnoredDomainResourceRegistry ignoredRegistry = new IgnoredDomainResourceRegistry(hostControllerInfo);
+        final PrepareStepHandler prepareStepHandler = new PrepareStepHandler(hostControllerInfo, contentRepository,
+                hostProxies, serverProxies, ignoredRegistry);
         DomainModelControllerService service = new DomainModelControllerService(environment, runningModeControl, processState,
-                hostControllerInfo, contentRepository, hostProxies, serverProxies, prepareStepHandler, vaultReader, bootstrapListener);
+                hostControllerInfo, contentRepository, hostProxies, serverProxies, prepareStepHandler, vaultReader,
+                ignoredRegistry, bootstrapListener);
         return serviceTarget.addService(SERVICE_NAME, service)
                 .addDependency(HostControllerService.HC_EXECUTOR_SERVICE_NAME, ExecutorService.class, service.getExecutorServiceInjector())
                 .addDependency(ProcessControllerConnectionService.SERVICE_NAME, ProcessControllerConnectionService.class, service.injectedProcessControllerConnection)
@@ -175,6 +180,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
                                          final Map<String, ProxyController> serverProxies,
                                          final PrepareStepHandler prepareStepHandler,
                                          final AbstractVaultReader vaultReader,
+                                         final IgnoredDomainResourceRegistry ignoredRegistry,
                                          final BootstrapListener bootstrapListener) {
         super(ProcessType.HOST_CONTROLLER, runningModeControl, null, processState,
                 DomainDescriptionProviders.ROOT_PROVIDER, prepareStepHandler, new RuntimeExpressionResolver(vaultReader));
@@ -190,6 +196,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         this.serverProxies = serverProxies;
         this.prepareStepHandler = prepareStepHandler;
         this.vaultReader = vaultReader;
+        this.ignoredRegistry = ignoredRegistry;
         this.bootstrapListener = bootstrapListener;
         this.extensionRegistry = new ExtensionRegistry(ProcessType.HOST_CONTROLLER, runningModeControl);
     }
@@ -296,7 +303,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         DomainModelUtil.updateCoreModel(rootResource, environment);
         HostModelUtil.createHostRegistry(rootRegistration, hostControllerConfigurationPersister, environment, runningModeControl,
                 localFileRepository, hostControllerInfo, new DelegatingServerInventory(), remoteFileRepository, contentRepository,
-                this, this, extensionRegistry,vaultReader, processState);
+                this, this, extensionRegistry,vaultReader, ignoredRegistry, processState);
         this.modelNodeRegistration = rootRegistration;
     }
 

@@ -20,26 +20,42 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.controller.operations.coordination;
+package org.jboss.as.host.controller.ignored;
 
-import java.util.Map;
-import java.util.Set;
-
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.dmr.ModelNode;
 
 /**
-* TODO class javadoc.
-*
-* @author Brian Stansberry (c) 2011 Red Hat Inc.
-*/
-interface ParsedOp {
-    ModelNode getDomainOperation();
-    Map<Set<ServerIdentity>, ModelNode> getServerOps(ServerOperationProvider provider);
-    ModelNode getFormattedDomainResult(ModelNode resultNode);
+ * Handles remove of an ignored domain resource type.
+ *
+ * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ */
+class IgnoredDomainTypeRemoveHandler implements OperationStepHandler {
 
-    interface ServerOperationProvider {
-        Map<Set<ServerIdentity>, ModelNode> getServerOperations(ModelNode domainOp, PathAddress address);
+    IgnoredDomainTypeRemoveHandler() {
+    }
+
+
+    @Override
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+
+        IgnoreDomainResourceTypeResource resource =
+                IgnoreDomainResourceTypeResource.class.cast(context.removeResource(PathAddress.EMPTY_ADDRESS));
+
+        boolean booting = context.isBooting();
+        if (!booting) {
+            context.reloadRequired();
+        }
+
+        if (context.completeStep() == OperationContext.ResultAction.KEEP) {
+            if (booting) {
+                resource.publish();
+            }
+        } else if (!booting) {
+            context.revertReloadRequired();
+        }
     }
 }

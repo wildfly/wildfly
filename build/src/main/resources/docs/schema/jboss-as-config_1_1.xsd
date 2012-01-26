@@ -740,9 +740,55 @@
     <xs:complexType name="domain-controller-localType" />
 
     <xs:complexType name="domain-controller-remoteType">
-         <xs:attribute name="host" type="xs:string" use="required" />
-         <xs:attribute name="port" type="xs:integer" use="required" />
-         <xs:attribute name="security-realm" type="xs:string" use="optional" />
+        <xs:sequence>
+            <xs:element name="ignored-resources" type="ignored-resourcesType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="host" type="xs:string" use="required" />
+        <xs:attribute name="port" type="xs:integer" use="required" />
+        <xs:attribute name="security-realm" type="xs:string" use="optional" />
+    </xs:complexType>
+
+    <xs:complexType name="ignored-resourcesType">
+        <xs:annotation>
+            <xs:documentation>
+                Provides names of direct child resources of the domain root resource requests for which the
+                Host Controller should ignore. Only relevant on a slave Host Controller. Configuring such
+                "ignored resources" may help allow a Host Controller from an earlier release to function as a
+                slave to a master Host Controller running a later release, by letting the slave ignore portions
+                of the configuration its version of the software cannot understand. This strategy can only be
+                successful if the servers managed by the slave Host Controller do not reference any of the
+                ignored configuration.
+
+                Supports the following attributes:
+
+                type -- the type of resource (e.g. 'profile' or 'socket-binding-group') certain instances of which
+                        should be ignored. The value corresponds to the 'key' portion of the first element in the
+                        resource's address (e.g. 'profile' in the address /profile=ha/subsystem=web)
+
+                wildcard -- if 'true', all resources of the given type should be ignored.
+
+                Child elements list the names of specific instances of the given type of resource
+                that should be ignored. Each element in the list corresponds to the 'value' portion of
+                the first element in the resource's address (e.g. 'ha' in the address /profile=ha/subsystem=web.)
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="instance" type="ignored-resource-instanceType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="type" type="xs:string" use="required" />
+        <xs:attribute name="wildcard" type="xs:boolean" use="optional" default="false" />
+        <xs:attribute name="names" type="xs:string" use="optional" />
+    </xs:complexType>
+
+    <xs:complexType name="ignored-resource-instanceType">
+        <xs:annotation>
+            <xs:documentation>
+                The name of a specific instances of a particular type of resource that should be ignored.
+                The 'name' attribute corresponds to the 'value' portion of the first element in the resource's address
+                (e.g. 'ha' in the address /profile=ha/subsystem=web.)
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="xs:string" use="required" />
     </xs:complexType>
 
     <xs:complexType name="serversType">

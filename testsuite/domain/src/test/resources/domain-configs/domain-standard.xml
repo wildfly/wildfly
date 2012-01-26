@@ -759,6 +759,9 @@
                 </capabilities>
             </subsystem>
         </profile>
+        <profile name="ignored">
+            <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
+        </profile>
     </profiles>
 
     <!--
@@ -823,6 +826,9 @@
             </outbound-socket-binding>
             <!-- include socket-binding-group="standard-sockets"/-->
          </socket-binding-group>
+        <socket-binding-group name="ignored" default-interface="public">
+            <socket-binding name="http" port="8080"/>
+        </socket-binding-group>
     </socket-binding-groups>
 
     <server-groups>
@@ -838,6 +844,14 @@
                <heap size="64m" max-size="512m"/>
             </jvm>
             <socket-binding-group ref="osgi-sockets"/>
+        </server-group>
+
+        <server-group name="ignored-profile" profile="ignored">
+            <socket-binding-group ref="standard-sockets"/>
+        </server-group>
+
+        <server-group name="ignored-sockets" profile="default">
+            <socket-binding-group ref="ignored"/>
         </server-group>
     </server-groups>
 

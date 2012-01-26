@@ -45,6 +45,7 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.management.client.content.ManagedDMRContentTypeResource;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
@@ -57,7 +58,7 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase extends AbstractOperati
     private final ApplyRemoteMasterDomainModelHandler handler =
             new ApplyRemoteMasterDomainModelHandler(
                     new ExtensionRegistry(ProcessType.HOST_CONTROLLER, new RunningModeControl(RunningMode.NORMAL)),
-                    null, null, HOST_INFO) {
+                    null, null, HOST_INFO, new IgnoredDomainResourceRegistry(HOST_INFO)) {
         protected void initializeExtension(String module) {
         }
     };
