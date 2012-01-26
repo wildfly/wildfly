@@ -59,7 +59,7 @@ public class HibernateAnnotationScanner implements Scanner {
 
     /** Caches, used when restarting the persistence unit service */
     private static final Map<PersistenceUnitMetadata, Map<URL, Set<Package>>> PACKAGES_IN_JAR_CACHE = new WeakHashMap<PersistenceUnitMetadata, Map<URL,Set<Package>>>();
-    private static final Map<PersistenceUnitMetadata, Map<URL, Map<Class<? extends Annotation>, Set<Class<?>>>>> CLASSES_IN_JAR_CACHE = new WeakHashMap<PersistenceUnitMetadata, Map<URL, Map<Class<? extends Annotation>, Set<Class<?>>>>>();
+    private static final Map<PersistenceUnitMetadata, Map<URL, Map<Class<? extends Annotation>, Set<Class<?>>>>> CLASSES_IN_JAR_CACHE = new HashMap<PersistenceUnitMetadata, Map<URL, Map<Class<? extends Annotation>, Set<Class<?>>>>>();
 
     public static void setThreadLocalPersistenceUnitMetadata(final PersistenceUnitMetadata pu) {
         PERSISTENCE_UNIT_METADATA_TLS.set(pu);
@@ -131,6 +131,10 @@ public class HibernateAnnotationScanner implements Scanner {
             }
             return classes;
         }
+    }
+
+    static void cleanup(PersistenceUnitMetadata pu) {
+        CLASSES_IN_JAR_CACHE.remove(pu);
     }
 
     @Override

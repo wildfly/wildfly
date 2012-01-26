@@ -24,11 +24,11 @@ package org.jboss.as.jpa.openjpa;
 
 import java.net.URL;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 
 import javax.persistence.Entity;
 
@@ -50,7 +50,7 @@ public class JBossPersistenceMetaDataFactory extends PersistenceMetaDataFactory 
 
     private static final ThreadLocal<PersistenceUnitMetadata> PERSISTENCE_UNIT_METADATA = new ThreadLocal<PersistenceUnitMetadata>();
     /** Cache of the type names, used when restarting the persistence unit service */
-    private static final Map<PersistenceUnitMetadata, Set<String>> CACHED_TYPENAMES = new WeakHashMap<PersistenceUnitMetadata, Set<String>>();
+    private static final Map<PersistenceUnitMetadata, Set<String>> CACHED_TYPENAMES = new HashMap<PersistenceUnitMetadata, Set<String>>();
 
     @Override
     protected Set<String> parsePersistentTypeNames(ClassLoader loader) {
@@ -68,6 +68,10 @@ public class JBossPersistenceMetaDataFactory extends PersistenceMetaDataFactory 
 
     static void clearThreadLocalPersistenceUnitMetadata() {
         PERSISTENCE_UNIT_METADATA.remove();
+    }
+
+    static void cleanup(PersistenceUnitMetadata pu) {
+        CACHED_TYPENAMES.remove(pu);
     }
 
     private Set<String> findPersistenceTypeNames(PersistenceUnitMetadata pu) {

@@ -22,9 +22,9 @@
 
 package org.jboss.as.jpa.spi;
 
-import org.jboss.msc.service.ServiceName;
-
 import java.util.Map;
+
+import org.jboss.msc.service.ServiceName;
 
 /**
  * PersistenceProvider adaptor
@@ -77,6 +77,9 @@ public interface PersistenceProviderAdaptor {
      */
     ManagementAdaptor getManagementAdaptor();
 
-
+    /**
+     * Called when we are done with the persistence unit metadata
+     */
+    void cleanup(PersistenceUnitMetadata pu);
 }
 
