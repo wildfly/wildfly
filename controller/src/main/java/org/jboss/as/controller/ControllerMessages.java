@@ -2370,5 +2370,11 @@ public interface ControllerMessages {
     @Message(id = 14837, value = "Cannot resolve the localhost address to create a UUID-based name for this process")
     RuntimeException cannotResolveProcessUUID(@Cause UnknownHostException cause);
 
-
+    /**
+     * Creates an exception indicating a user tried calling ServiceController.setMode(REMOVE) from an operation handler.
+     *
+     * @return a {@link XMLStreamException} for the error.
+     */
+    @Message(id = 14838, value = "Do not call ServiceController.setMode(REMOVE), use OperationContext.removeService() instead.")
+    String useOperationContextRemoveService();
 }

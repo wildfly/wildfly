@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -52,12 +53,16 @@ import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.BatchServiceTarget;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceListener;
+import org.jboss.msc.service.ServiceListener.Inheritance;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceNotFoundException;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartException;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.Value;
 
@@ -207,7 +212,7 @@ final class OperationContextImpl extends AbstractOperationContext {
             acquireContainerMonitor();
             awaitContainerMonitor();
         }
-        return modelController.getServiceRegistry();
+        return new OperationContextServiceRegistry(modelController.getServiceRegistry());
     }
 
     public ServiceController<?> removeService(final ServiceName name) throws UnsupportedOperationException {
@@ -958,5 +963,120 @@ final class OperationContextImpl extends AbstractOperationContext {
             }
             context.completeStep();
         }
+    }
+
+    private class OperationContextServiceRegistry implements ServiceRegistry {
+        private final ServiceRegistry registry;
+
+        public OperationContextServiceRegistry(ServiceRegistry registry) {
+            this.registry = registry;
+        }
+
+        @Override
+        public ServiceController<?> getRequiredService(ServiceName serviceName) throws ServiceNotFoundException {
+            return new OperationContextServiceController(registry.getRequiredService(serviceName));
+        }
+
+        @Override
+        public ServiceController<?> getService(ServiceName serviceName) {
+            ServiceController<?> controller = registry.getService(serviceName);
+            if (controller == null) {
+                return null;
+            }
+            return new OperationContextServiceController(controller);
+        }
+
+        @Override
+        public List<ServiceName> getServiceNames() {
+            return registry.getServiceNames();
+        }
+    }
+
+    private class OperationContextServiceController<S> implements ServiceController<S> {
+        private final ServiceController<S> controller;
+
+        public OperationContextServiceController(ServiceController<S> controller) {
+            this.controller = controller;
+        }
+
+        public ServiceController<?> getParent() {
+            return controller.getParent();
+        }
+
+        public ServiceContainer getServiceContainer() {
+            return controller.getServiceContainer();
+        }
+
+        public Mode getMode() {
+            return controller.getMode();
+        }
+
+        public boolean compareAndSetMode(Mode expected,
+                org.jboss.msc.service.ServiceController.Mode newMode) {
+            checkModeTransition(newMode);
+            return controller.compareAndSetMode(expected, newMode);
+        }
+
+        public void setMode(Mode mode) {
+            checkModeTransition(mode);
+            controller.setMode(mode);
+        }
+
+        private void checkModeTransition(Mode mode) {
+            if (mode == Mode.REMOVE) {
+                ControllerLogger.ROOT_LOGGER.warn(MESSAGES.useOperationContextRemoveService());
+                throw new IllegalArgumentException(MESSAGES.useOperationContextRemoveService());
+            }
+        }
+
+        public org.jboss.msc.service.ServiceController.State getState() {
+            return controller.getState();
+        }
+
+        public org.jboss.msc.service.ServiceController.Substate getSubstate() {
+            return controller.getSubstate();
+        }
+
+        public S getValue() throws IllegalStateException {
+            return controller.getValue();
+        }
+
+        public Service<S> getService() throws IllegalStateException {
+            return controller.getService();
+        }
+
+        public ServiceName getName() {
+            return controller.getName();
+        }
+
+        public ServiceName[] getAliases() {
+            return controller.getAliases();
+        }
+
+        public void addListener(ServiceListener<? super S> serviceListener) {
+            controller.addListener(serviceListener);
+        }
+
+        public void addListener(Inheritance inheritance, ServiceListener<Object> serviceListener) {
+            controller.addListener(inheritance, serviceListener);
+        }
+
+        public void removeListener(ServiceListener<? super S> serviceListener) {
+            controller.removeListener(serviceListener);
+        }
+
+        public StartException getStartException() {
+            return controller.getStartException();
+        }
+
+        public void retry() {
+            controller.retry();
+        }
+
+        public Set<ServiceName> getImmediateUnavailableDependencies() {
+            return controller.getImmediateUnavailableDependencies();
+        }
+
+
     }
 }

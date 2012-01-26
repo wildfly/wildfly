@@ -79,14 +79,14 @@ public class DataSourceDisable implements OperationStepHandler {
                     final ServiceName referenceServiceName = DataSourceReferenceFactoryService.SERVICE_NAME_BASE.append(dsName);
                     final ServiceController<?> referenceController = registry.getService(referenceServiceName);
                     if (referenceController != null ) {
-                        referenceController.setMode(ServiceController.Mode.REMOVE);
+                        context.removeService(referenceController);
                     }
 
                     final ServiceName binderServiceName = ContextNames.bindInfoFor(jndiName).getBinderServiceName();
 
                     final ServiceController<?> binderController = registry.getService(binderServiceName);
                     if (binderController != null ) {
-                        binderController.setMode(ServiceController.Mode.REMOVE);
+                        context.removeService(binderController);
                     }
 
                     final ServiceName dataSourceConfigServiceName = DataSourceConfigService.SERVICE_NAME_BASE.append(dsName);
@@ -131,14 +131,19 @@ public class DataSourceDisable implements OperationStepHandler {
 
 
                     if (xaDataSourceConfigController != null) {
-                        xaDataSourceConfigController.setMode(ServiceController.Mode.REMOVE);
+                        context.removeService(xaDataSourceConfigController);
                     }
 
                     if (dataSourceConfigController != null) {
-                        dataSourceConfigController.setMode(ServiceController.Mode.REMOVE);
+                        context.removeService(dataSourceConfigController);
                     }
 
-                    context.completeStep();
+                    context.completeStep(new OperationContext.RollbackHandler() {
+                        @Override
+                        public void handleRollback(OperationContext context, ModelNode operation) {
+                            //TODO Readd services
+                        }
+                    });
                 }
             }, OperationContext.Stage.RUNTIME);
         }
