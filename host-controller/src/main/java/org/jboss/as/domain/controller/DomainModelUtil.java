@@ -81,6 +81,7 @@ import org.jboss.as.controller.operations.common.SocketBindingGroupRemoveHandler
 import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyRemoveHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyValueWriteAttributeHandler;
+import org.jboss.as.controller.operations.common.ValidateAddressOperationHandler;
 import org.jboss.as.controller.operations.common.XmlMarshallingHandler;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
@@ -232,6 +233,7 @@ public class DomainModelUtil {
         root.registerReadOnlyAttribute(ServerDescriptionConstants.LAUNCH_TYPE, new LaunchTypeHandler(ServerEnvironment.LaunchType.DOMAIN), Storage.RUNTIME);
 
         root.registerOperationHandler(GlobalOperationHandlers.VALIDATE_ADDRESS_OPERATION_NAME, GlobalOperationHandlers.VALIDATE_ADDRESS, CommonProviders.VALIDATE_ADDRESS_PROVIDER, true);
+        root.registerOperationHandler(ValidateAddressOperationHandler.OPERATION_NAME, ValidateAddressOperationHandler.INSTANCE, ValidateAddressOperationHandler.INSTANCE, false);
 
         root.registerOperationHandler(ResolveExpressionOnDomainHandler.OPERATION_NAME, ResolveExpressionOnDomainHandler.INSTANCE,
                 ResolveExpressionOnDomainHandler.INSTANCE, EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.DOMAIN_PUSH_TO_SERVERS));
