@@ -4,5 +4,6 @@
   <security-role>
     <role-name>gooduser</role-name>
     <principal-name>superuser</principal-name>
+    <principal-name>peter</principal-name>
   </security-role>
 </jboss-web>
