@@ -34,7 +34,7 @@ import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
 import javax.security.auth.Subject;
 
-import org.jboss.as.domain.management.SubjectUserInfo;
+import org.jboss.as.controller.security.SubjectUserInfo;
 import org.jboss.com.sun.net.httpserver.Authenticator;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
 import org.jboss.com.sun.net.httpserver.HttpPrincipal;
@@ -96,7 +96,7 @@ public class ClientCertAuthenticator extends Authenticator {
 
                 try {
                     SubjectUserInfo userInfo = authenticationProvider.getCallbackHandler().createSubjectUserInfo(principal);
-                    exchange.setAttribute(Subject.class.getName(), userInfo.getSubject());
+                    exchange.setAttribute(Subject.class.getName(), userInfo.getSubject(), AttributeScope.CONNECTION);
 
                 } catch (IOException e) {
                     ROOT_LOGGER.debug("Unable to create SubjectUserInfo", e);

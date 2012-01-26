@@ -20,22 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.http.server.security;
+package org.jboss.as.controller.security;
 
-import java.io.IOException;
-import java.security.Principal;
-
-import org.jboss.as.controller.security.SubjectUserInfo;
-import org.jboss.as.domain.management.security.DomainCallbackHandler;
+import javax.security.auth.Subject;
 
 /**
- * An extension to the CallbackHandler interface to allow additional use info to be loaded
- * after authentication is complete.
+ * A simple SecurityContext to manage associating the Subject of the current request with the current thread.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-interface AuthorizingCallbackHandler extends DomainCallbackHandler {
+public class SecurityContext {
 
-    SubjectUserInfo createSubjectUserInfo(Principal userPrincipal) throws IOException;
+    private static final ThreadLocal<Subject> subject = new ThreadLocal<Subject>();
+
+    public static Subject getSubject() {
+        return subject.get();
+    }
+
+    public static void setSubject(final Subject subject) {
+        SecurityContext.subject.set(subject);
+    }
+
+    public static void clearSubject() {
+        subject.set(null);
+    }
 
 }

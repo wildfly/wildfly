@@ -23,11 +23,13 @@ package org.jboss.as.controller.remote;
 
 
 import org.jboss.as.controller.ControllerLogger;
+import org.jboss.as.controller.security.SubjectUserInfo;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.HandleableCloseable;
+import org.jboss.remoting3.security.UserInfo;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -41,8 +43,17 @@ public class ModelControllerClientOperationHandlerFactoryService extends Abstrac
 
     @Override
     public HandleableCloseable.Key startReceiving(Channel channel) {
-        final ManagementChannelHandler handler = new ManagementChannelHandler(ManagementClientChannelStrategy.create(channel), getExecutor());
-        handler.addHandlerFactory(new ModelControllerClientOperationHandler(getController(), handler));
+        final ManagementChannelHandler handler = new ManagementChannelHandler(ManagementClientChannelStrategy.create(channel),
+                getExecutor());
+        UserInfo userInfo = channel.getConnection().getUserInfo();
+        if (userInfo instanceof SubjectUserInfo) {
+            handler.addHandlerFactory(new ModelControllerClientOperationHandler(getController(), handler,
+                    ((SubjectUserInfo) userInfo).getSubject()));
+        } else {
+            handler.addHandlerFactory(new ModelControllerClientOperationHandler(getController(), handler));
+        }
+
+
         final HandleableCloseable.Key key = channel.addCloseHandler(new CloseHandler<Channel>() {
             @Override
             public void handleClose(Channel closed, IOException exception) {
