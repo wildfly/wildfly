@@ -49,6 +49,7 @@ public class ModelDescriptionConstants {
     public static final String ARCHIVE = "archive";
     public static final String ATTRIBUTES = "attributes";
     public static final String AUTHENTICATION = "authentication";
+    public static final String AUTHORIZATION = "authorization";
     public static final String AUTO_START = "auto-start";
     public static final String BASE_DN = "base-dn";
     public static final String BOOT_TIME = "boot-time";
