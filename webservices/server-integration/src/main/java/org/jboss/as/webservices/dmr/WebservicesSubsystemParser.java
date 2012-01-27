@@ -10,7 +10,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttri
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONFIG;
-import static org.jboss.as.webservices.dmr.Constants.FEATURE;
 import static org.jboss.as.webservices.dmr.Constants.HANDLER;
 import static org.jboss.as.webservices.dmr.Constants.HANDLER_CLASS;
 import static org.jboss.as.webservices.dmr.Constants.MODIFY_WSDL_ADDRESS;
@@ -111,17 +110,6 @@ final class WebservicesSubsystemParser implements XMLStreamConstants, XMLElement
             }
         }
 
-        if (value.hasDefined(Constants.FEATURE)) {
-            for (String key : value.get(Constants.FEATURE).keys()) {
-                writer.writeStartElement(Namespace.JAXWSCONFIG.getUriString(), Constants.FEATURE);
-
-                writer.writeStartElement(Namespace.JAXWSCONFIG.getUriString(), Constants.FEATURE_NAME);
-                writer.writeCharacters(key);
-                writer.writeEndElement();
-
-                writer.writeEndElement();
-            }
-        }
         writer.writeEndElement();
     }
 
@@ -249,7 +237,7 @@ final class WebservicesSubsystemParser implements XMLStreamConstants, XMLElement
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
-            if (element != Element.FEATURE && element != Element.PROPERTY
+            if (element != Element.PROPERTY
                     && !encountered.add(element)) {
                 throw unexpectedElement(reader);
             }
@@ -272,11 +260,6 @@ final class WebservicesSubsystemParser implements XMLStreamConstants, XMLElement
                 }
                 case PROPERTY : {
                     final ModelNode operation = parseProperty(reader, configName);
-                    operationList.add(operation);
-                    break;
-                }
-                case FEATURE : {
-                    final ModelNode operation = parseFeature(reader, configName);
                     operationList.add(operation);
                     break;
                 }
@@ -316,30 +299,6 @@ final class WebservicesSubsystemParser implements XMLStreamConstants, XMLElement
         if (propertyValue != null) {
             operation.get(VALUE).set(propertyValue);
         }
-        return operation;
-    }
-
-    private ModelNode parseFeature(final XMLExtendedStreamReader reader, final String configName) throws XMLStreamException {
-        String featureName = null;
-        final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
-        while (reader.nextTag() != END_ELEMENT) {
-            final Element element = Element.forName(reader.getLocalName());
-            if (!encountered.add(element)) {
-                throw unexpectedElement(reader);
-            }
-            switch (element) {
-                case FEATURE_NAME: {
-                    featureName = parseElementNoAttributes(reader);
-                    break;
-                }
-                default: {
-                    throw unexpectedElement(reader);
-                }
-            }
-        }
-        final ModelNode operation = new ModelNode();
-        operation.get(OP).set(ADD);
-        operation.get(OP_ADDR).add(SUBSYSTEM, WSExtension.SUBSYSTEM_NAME).add(ENDPOINT_CONFIG, configName).add(FEATURE, featureName);
         return operation;
     }
 
