@@ -127,6 +127,7 @@ public class StatefulWithXPCFailoverTestCase {
         String xpc2_get_url = "http://127.0.0.1:8180/stateful/count?command=getEmployee";
         String xpc1_getempsecond_url = "http://127.0.0.1:8080/stateful/count?command=getSecondBeanEmployee";
         String xpc2_getempsecond_url = "http://127.0.0.1:8180/stateful/count?command=getSecondBeanEmployee";
+        String xpc2_getdestroy_url = "http://127.0.0.1:8180/stateful/count?command=destroy";
 
         try {
             // extended persistence context is available on node1
@@ -188,6 +189,7 @@ public class StatefulWithXPCFailoverTestCase {
             assertGetEmployee(client, xpc2_get_url, "7. stopped deployment on node1, xpc should failover to node2, node2 should be able to read entity from xpc");
             assertGetEmployee(client, xpc2_getempsecond_url, "7. stopped deployment on node1, xpc should failover to node2, node2 should be able to read entity from xpc that is on node2 (second bean)");
 
+            assertDestroy(client, xpc2_getdestroy_url,"destroy the bean on node2");
 
 
         } finally {
@@ -237,6 +239,18 @@ public class StatefulWithXPCFailoverTestCase {
         }
     }
 
+    private String getDestroy(HttpClient client, String url) throws IOException {
+        HttpResponse response = client.execute(new HttpGet(url));
+        try {
+            if (response.getStatusLine().getStatusCode() >= 400 && response.getStatusLine().getStatusCode() < 500)
+               return null;
+
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            return response.getFirstHeader("employee").getValue();
+        } finally {
+            response.getEntity().getContent().close();
+        }
+    }
 
 
     private void assertCreateEmployee(HttpClient client, String url) throws IOException, InterruptedException {
@@ -272,7 +286,7 @@ public class StatefulWithXPCFailoverTestCase {
           }
 
           if (name == null)
-              throw new AssertionError("assertGetEmployee Timed out waiting for a result");
+              throw new AssertionError("assertGetEmployee timed out waiting for a result");
 
           assertEquals(message, name, "Tom Brady");
       }
@@ -291,9 +305,28 @@ public class StatefulWithXPCFailoverTestCase {
           }
 
           if (name == null)
-              throw new AssertionError("assertGetSecondEmployee Timed out waiting for a result");
+              throw new AssertionError("assertGetSecondEmployee timed out waiting for a result");
 
           assertEquals(message, name, "Tom Brady");
+      }
+
+    private void assertDestroy(HttpClient client, String url, String message) throws IOException, InterruptedException {
+           int maxWait = GRACE_TIME;
+           String name = null;
+           while (maxWait > 0) {
+               Thread.sleep(1000);
+
+               name = getDestroy(client, url);
+               if (name != null) {
+                   break;
+               }
+               maxWait -= 1000;
+          }
+
+          if (name == null)
+              throw new AssertionError("assertDestroy timed out waiting for a result " + message);
+
+          assertEquals(message, name, "destroy");
       }
 
     private void stop(String deployment, String container) {

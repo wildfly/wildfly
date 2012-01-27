@@ -44,7 +44,7 @@ import javax.persistence.metamodel.Metamodel;
  * @author Scott Marlow (forked from jboss-jpa)
  */
 public abstract class AbstractEntityManager implements EntityManager {
-    private final boolean isTraceEnabled = ROOT_LOGGER.isTraceEnabled();
+    private final transient boolean isTraceEnabled = ROOT_LOGGER.isTraceEnabled();
 
     protected abstract EntityManager getEntityManager();
 

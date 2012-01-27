@@ -22,13 +22,14 @@
 
 package org.jboss.as.jpa.container;
 
+import static org.jboss.as.jpa.JpaLogger.ROOT_LOGGER;
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+
 import java.io.Serializable;
 
 import javax.persistence.EntityManager;
 
 import org.jboss.as.jpa.transaction.TransactionUtil;
-
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
 /**
  * Represents the Extended persistence context injected into a stateful bean.  At bean invocation time,
@@ -80,6 +81,8 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
      * the UUID representing the extended persistence context
      */
     private final ExtendedEntityManagerKey ID = ExtendedEntityManagerKey.extendedEntityManagerID();
+
+    private final transient boolean isTraceEnabled = ROOT_LOGGER.isTraceEnabled();
 
     public ExtendedEntityManager(final String puScopedName, final EntityManager underlyingEntityManager) {
         this.underlyingEntityManager = underlyingEntityManager;
@@ -143,6 +146,9 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
     public void containerClose() {
         if (underlyingEntityManager.isOpen()) {
             underlyingEntityManager.close();
+            if (isTraceEnabled) {
+                ROOT_LOGGER.tracef("closed extended persistence context for pu = %s", puScopedName);
+            }
         }
     }
 

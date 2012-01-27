@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.clustering.unmanaged.ejb3.xpc.bean;
 
+import javax.ejb.Remove;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
@@ -80,4 +81,9 @@ public class StatefulBean implements Stateful {
         return em.find(Employee.class, id, LockModeType.NONE);
     }
 
+    @Override
+    @Remove
+    public void destroy() {
+
+    }
 }

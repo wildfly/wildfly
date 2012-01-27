@@ -22,6 +22,7 @@
 package org.jboss.as.test.integration.jpa.epcpropagation;
 
 import javax.ejb.Local;
+import javax.persistence.EntityManager;
 
 /**
  * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>
@@ -43,5 +44,6 @@ public interface StatefulInterface {
 
     StatefulInterface createSFSBOnInvocation() throws Exception;
 
+    EntityManager getExtendedPersistenceContext();
     void finishUp() throws Exception;
 }

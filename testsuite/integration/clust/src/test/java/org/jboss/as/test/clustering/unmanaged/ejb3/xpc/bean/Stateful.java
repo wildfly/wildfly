@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.clustering.unmanaged.ejb3.xpc.bean;
 
+import javax.ejb.Remove;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
@@ -45,4 +46,7 @@ public interface Stateful {
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     Employee getSecondBeanEmployee(int id);
+
+    @Remove
+    void destroy();
 }
