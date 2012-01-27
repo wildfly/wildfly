@@ -174,6 +174,16 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         AbsolutePathService.addService("user.home", System.getProperty("user.home"), serviceTarget);
         AbsolutePathService.addService("java.home", System.getProperty("java.home"), serviceTarget);
 
+        // In the domain mode add a few more paths
+        if(serverEnvironment.getLaunchType() == ServerEnvironment.LaunchType.DOMAIN) {
+            if(serverEnvironment.getDomainBaseDir() != null) {
+                AbsolutePathService.addService(ServerEnvironment.DOMAIN_BASE_DIR, serverEnvironment.getDomainBaseDir().getAbsolutePath(), serviceTarget);
+            }
+            if(serverEnvironment.getDomainConfigurationDir() != null) {
+                AbsolutePathService.addService(ServerEnvironment.DOMAIN_CONFIG_DIR, serverEnvironment.getDomainConfigurationDir().getAbsolutePath(), serviceTarget);
+            }
+        }
+
         // BES 2011/06/11 -- moved this to AbstractControllerService.start()
 //        processState.setRunning();
 
