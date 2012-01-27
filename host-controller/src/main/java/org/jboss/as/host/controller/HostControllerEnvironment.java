@@ -9,10 +9,12 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.Map;
 
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.operations.common.ProcessEnvironment;
 import org.jboss.as.controller.persistence.ConfigurationFile;
 import org.jboss.as.process.DefaultJvmUtils;
 import org.jboss.as.version.ProductConfig;
@@ -22,7 +24,7 @@ import org.jboss.as.version.ProductConfig;
  *
  * @author Brian Stansberry
  */
-public class HostControllerEnvironment {
+public class HostControllerEnvironment extends ProcessEnvironment {
 
 
     /////////////////////////////////////////////////////////////////////////
@@ -102,6 +104,18 @@ public class HostControllerEnvironment {
     public static final String DOMAIN_TEMP_DIR = "jboss.domain.temp.dir";
 
     /**
+     * Constant that holds the name of the system property for specifying the local part of the name of the host that this
+     * server is running on.
+     */
+    public static final String HOST_NAME = "jboss.host.name";
+
+    /**
+     * Constant that holds the name of the system property for specifying the fully-qualified name of the host that this server
+     * is running on.
+     */
+    public static final String QUALIFIED_HOST_NAME = "jboss.qualified.host.name";
+
+    /**
      * Common alias between domain and standalone mode. Uses jboss.domain.temp.dir on domain mode,
      * and jboss.server.temp.dir on standalone server mode.
      */
@@ -160,7 +174,10 @@ public class HostControllerEnvironment {
 
     private final RunningMode initialRunningMode;
     private final ProductConfig productConfig;
+    private final String qualifiedHostName;
+    private final String hostName;
 
+    private String hostControllerName;
 
     public HostControllerEnvironment(Map<String, String> hostSystemProperties, boolean isRestart, InputStream stdin, PrintStream stdout, PrintStream stderr,
                                      InetAddress processControllerAddress, Integer processControllerPort, InetAddress hostControllerAddress,
@@ -204,6 +221,48 @@ public class HostControllerEnvironment {
         this.hostControllerPort = hostControllerPort;
         this.isRestart = isRestart;
 
+        // Calculate host and default server name
+        String hostName = hostSystemProperties.get(HOST_NAME);
+        String qualifiedHostName = hostSystemProperties.get(QUALIFIED_HOST_NAME);
+        if (qualifiedHostName == null) {
+            Map<String, String> env = null;
+            // if host name is specified, don't pick a qualified host name that isn't related to it
+            qualifiedHostName = hostName;
+            if (qualifiedHostName == null) {
+                env = SecurityActions.getSystemEnvironment();
+                // POSIX-like OSes including Mac should have this set
+                qualifiedHostName = env.get("HOSTNAME");
+            }
+            if (qualifiedHostName == null) {
+                // Certain versions of Windows
+                qualifiedHostName = env.get("COMPUTERNAME");
+            }
+            if (qualifiedHostName == null) {
+                try {
+                    qualifiedHostName = InetAddress.getLocalHost().getHostName();
+                } catch (UnknownHostException e) {
+                    qualifiedHostName = null;
+                }
+            }
+            if (qualifiedHostName != null && qualifiedHostName.matches("^\\d+\\.\\d+\\.\\d+\\.\\d+$|:")) {
+                // IP address is not acceptable
+                qualifiedHostName = null;
+            }
+            if (qualifiedHostName == null) {
+                // Give up
+                qualifiedHostName = "unknown-host.unknown-domain";
+            }
+            qualifiedHostName = qualifiedHostName.trim().toLowerCase();
+        }
+        this.qualifiedHostName = qualifiedHostName;
+        this.hostControllerName = qualifiedHostName;
+
+        if (hostName == null) {
+            // Use the host part of the qualified host name
+            final int idx = qualifiedHostName.indexOf('.');
+            hostName = idx == -1 ? qualifiedHostName : qualifiedHostName.substring(0, idx);
+        }
+        this.hostName = hostName;
 
 
         File home = getFileFromProperty(HOME_DIR);
@@ -211,28 +270,28 @@ public class HostControllerEnvironment {
            home = new File(System.getProperty("user.dir"));
         }
         this.homeDir = home;
-        System.setProperty(HOME_DIR, homeDir.getAbsolutePath());
+        SecurityActions.setSystemProperty(HOME_DIR, homeDir.getAbsolutePath());
 
         File tmp = getFileFromProperty(MODULES_DIR);
         if (tmp == null) {
             tmp = new File(this.homeDir, "modules");
         }
         this.modulesDir = tmp;
-        System.setProperty(MODULES_DIR, this.modulesDir.getAbsolutePath());
+        SecurityActions.setSystemProperty(MODULES_DIR, this.modulesDir.getAbsolutePath());
 
         tmp = getFileFromProperty(DOMAIN_BASE_DIR);
         if (tmp == null) {
             tmp = new File(this.homeDir, "domain");
         }
         this.domainBaseDir = tmp;
-        System.setProperty(DOMAIN_BASE_DIR, this.domainBaseDir.getAbsolutePath());
+        SecurityActions.setSystemProperty(DOMAIN_BASE_DIR, this.domainBaseDir.getAbsolutePath());
 
         tmp = getFileFromProperty(DOMAIN_CONFIG_DIR);
         if (tmp == null) {
             tmp = new File(this.domainBaseDir, "configuration");
         }
         this.domainConfigurationDir = tmp;
-        System.setProperty(DOMAIN_CONFIG_DIR, this.domainConfigurationDir.getAbsolutePath());
+        SecurityActions.setSystemProperty(DOMAIN_CONFIG_DIR, this.domainConfigurationDir.getAbsolutePath());
 
         hostConfigurationFile = new ConfigurationFile(domainConfigurationDir, "host.xml", hostConfig);
         domainConfigurationFile = new ConfigurationFile(domainConfigurationDir, "domain.xml", domainConfig);
@@ -242,35 +301,35 @@ public class HostControllerEnvironment {
             tmp = new File(this.domainBaseDir, "content");
         }
         this.domainDeploymentDir = tmp;
-        System.setProperty(DOMAIN_DEPLOYMENT_DIR, this.domainDeploymentDir.getAbsolutePath());
+        SecurityActions.setSystemProperty(DOMAIN_DEPLOYMENT_DIR, this.domainDeploymentDir.getAbsolutePath());
 
         tmp = getFileFromProperty(DOMAIN_DATA_DIR);
         if (tmp == null) {
             tmp = new File(this.domainBaseDir, "data");
         }
         this.domainDataDir = tmp;
-        System.setProperty(DOMAIN_DATA_DIR, this.domainDataDir.getAbsolutePath());
+        SecurityActions.setSystemProperty(DOMAIN_DATA_DIR, this.domainDataDir.getAbsolutePath());
 
         tmp = getFileFromProperty(DOMAIN_LOG_DIR);
         if (tmp == null) {
             tmp = new File(this.domainBaseDir, "log");
         }
         this.domainLogDir = tmp;
-        System.setProperty(DOMAIN_LOG_DIR, this.domainLogDir.getAbsolutePath());
+        SecurityActions.setSystemProperty(DOMAIN_LOG_DIR, this.domainLogDir.getAbsolutePath());
 
         tmp = getFileFromProperty(DOMAIN_SERVERS_DIR);
         if (tmp == null) {
             tmp = new File(this.domainBaseDir, "servers");
         }
         this.domainServersDir = tmp;
-        System.setProperty(DOMAIN_SERVERS_DIR, this.domainServersDir.getAbsolutePath());
+        SecurityActions.setSystemProperty(DOMAIN_SERVERS_DIR, this.domainServersDir.getAbsolutePath());
 
         tmp = getFileFromProperty(DOMAIN_TEMP_DIR);
         if (tmp == null) {
             tmp = new File(this.domainBaseDir, "tmp");
         }
         this.domainTempDir = tmp;
-        System.setProperty(DOMAIN_TEMP_DIR, this.domainTempDir.getAbsolutePath());
+        SecurityActions.setSystemProperty(DOMAIN_TEMP_DIR, this.domainTempDir.getAbsolutePath());
 
         if(defaultJVM != null) {
             if (defaultJVM.equals("java")) {
@@ -444,18 +503,66 @@ public class HostControllerEnvironment {
         return hostSystemProperties;
     }
 
+    /**
+     * Get the fully-qualified host name detected at server startup.
+     *
+     * @return the qualified host name
+     */
+    public String getQualifiedHostName() {
+        return qualifiedHostName;
+    }
+
+    /**
+     * Get the local host name detected at server startup. Note that this is not the same
+     * as the {@link #getHostControllerName() host controller name}
+     *
+     * @return the local host name
+     */
+    public String getHostName() {
+        return hostName;
+    }
+
+    /**
+     * Gets the name by which this host controller is known in the domain.
+     *
+     * @return the name of the host controller
+     */
+    public String getHostControllerName() {
+        return hostControllerName;
+    }
+
+    protected String getProcessName() {
+        return hostControllerName;
+    }
+
+
+    @Override
+    protected void setProcessName(String processName) {
+        if (processName != null) {
+            this.hostControllerName = processName;
+        }
+    }
+
+    @Override
+    protected boolean isRuntimeSystemPropertyUpdateAllowed(String propertyName, String propertyValue, boolean bootTime) {
+        //TODO implement validateSystemPropertyUpdate
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    protected void updateSystemProperty(String propertyName, String propertyValue) {
+        //TODO implement updateSystemProperty
+        throw new UnsupportedOperationException();
+    }
+
 
     /**
      * Get a File from configuration.
+     * @param name the name of the property
      * @return the CanonicalFile form for the given name.
      */
     private File getFileFromProperty(final String name) {
        String value = hostSystemProperties.get(name);
-       if (value != null) {
-          File f = new File(value);
-          return f;
-       }
-
-       return null;
+       return (value != null) ? new File(value) : null;
     }
 }

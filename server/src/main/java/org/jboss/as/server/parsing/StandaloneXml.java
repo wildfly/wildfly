@@ -190,9 +190,6 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
             }
         }
 
-        if (serverName == null) {
-            serverName = getDefaultName();
-        }
         setServerName(address, list, serverName);
 
         // elements - sequence
@@ -298,9 +295,6 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
             }
         }
 
-        if (serverName == null) {
-            serverName = getDefaultName();
-        }
         setServerName(address, list, serverName);
 
         // elements - sequence
@@ -912,7 +906,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
     }
 
     private void setServerName(final ModelNode address, final List<ModelNode> operationList, final String value) {
-        if (value.length() > 0) {
+        if (value != null && value.length() > 0) {
             final ModelNode update = Util.getWriteAttributeOperation(address, NAME, value);
             operationList.add(update);
         }

@@ -23,7 +23,6 @@ package org.jboss.as.server;
 
 import java.io.File;
 import java.io.Serializable;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Properties;
@@ -33,6 +32,7 @@ import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.interfaces.InetAddressUtil;
+import org.jboss.as.controller.operations.common.ProcessEnvironment;
 import org.jboss.as.controller.persistence.ConfigurationFile;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.modules.Module;
@@ -45,9 +45,9 @@ import org.jboss.modules.ModuleLoader;
  * @author Brian Stansberry
  * @author Mike M. Clark
  */
-public class ServerEnvironment implements Serializable {
+public class ServerEnvironment extends ProcessEnvironment implements Serializable {
 
-    private static final long serialVersionUID = -349976376447122910L;
+    private static final long serialVersionUID = 1725061010357265545L;
 
     public static enum LaunchType {
         DOMAIN,
@@ -210,8 +210,10 @@ public class ServerEnvironment implements Serializable {
     private final String qualifiedHostName;
     private final String hostName;
     private final String hostControllerName;
-    private final String serverName;
-    private final String nodeName;
+    private volatile String serverName;
+    private volatile String nodeName;
+    private final boolean providedServerName;
+    private final boolean providedNodeName;
 
     private final File[] javaExtDirs;
 
@@ -292,15 +294,20 @@ public class ServerEnvironment implements Serializable {
 
         // Set up the server name for management purposes
         String serverName = props.getProperty(SERVER_NAME);
-        if (serverName == null) {
+        providedServerName = serverName != null;
+        if (!providedServerName) {
             serverName = hostName;
+        } else {
+            // If necessary, convert jboss.domain.uuid into a UUID
+            serverName = resolveGUID(serverName);
         }
         this.serverName = serverName;
 
         // Set up the clustering node name
         String nodeName = props.getProperty(NODE_NAME);
-        if (nodeName == null) {
-            nodeName = serverName;
+        providedNodeName = nodeName != null;
+        if (!providedNodeName) {
+            nodeName = hostControllerName == null ? serverName : hostControllerName + ":" + serverName;
         }
         this.nodeName = nodeName;
 
@@ -548,25 +555,59 @@ public class ServerEnvironment implements Serializable {
         return defaultThreads;
     }
 
+    @Override
+    protected String getProcessName() {
+        return serverName;
+    }
+
+    @Override
+    protected void setProcessName(String processName) {
+        if (processName != null) {
+            if (providedServerName) {
+                // User specified both -Djboss.server.name and a standalone.xml <server name="xxx"/> value.
+                // Log a WARN
+                String rawServerProp = SecurityActions.getSystemProperty(SERVER_NAME, serverName);
+                ServerLogger.AS_ROOT_LOGGER.duplicateServerNameConfiguration(SERVER_NAME, rawServerProp, processName);
+            }
+            serverName = processName;
+            if (!providedNodeName) {
+                nodeName = serverName;
+            }
+        }
+    }
+
+    @Override
+    protected boolean isRuntimeSystemPropertyUpdateAllowed(String propertyName, String propertyValue, boolean bootTime) {
+        //TODO implement validateSystemPropertyUpdate
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    protected void updateSystemProperty(String propertyName, String propertyValue) {
+        //TODO implement updateSystemProperty
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * Get a File from configuration.
+     *
+     * @param name the name of the property
+     * @param props the set of configuration properties
      *
      * @return the CanonicalFile form for the given name.
      */
     private File getFileFromProperty(final String name, final Properties props) {
         String value = props.getProperty(name, null);
-        if (value != null) {
-            File f = new File(value);
-            return f;
-        }
-
-        return null;
+        return (value != null) ? new File(value) : null;
     }
 
     private static final File[] NO_FILES = new File[0];
 
     /**
      * Get a File path list from configuration.
+     *
+     * @param name the name of the property
+     * @param props the set of configuration properties
      *
      * @return the CanonicalFile form for the given name.
      */

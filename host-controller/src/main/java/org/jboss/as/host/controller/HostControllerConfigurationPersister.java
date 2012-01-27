@@ -64,7 +64,7 @@ public class HostControllerConfigurationPersister implements ExtensibleConfigura
         this.extensionRegistry = extensionRegistry;
         final File configDir = environment.getDomainConfigurationDir();
         final ConfigurationFile configurationFile = environment.getHostConfigurationFile();
-        this.hostPersister = ConfigurationPersisterFactory.createHostXmlConfigurationPersister(configurationFile, executorService);
+        this.hostPersister = ConfigurationPersisterFactory.createHostXmlConfigurationPersister(configurationFile, environment.getHostControllerName());
     }
 
     public void initializeDomainConfigurationPersister(boolean slave) {

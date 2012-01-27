@@ -181,7 +181,6 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         List<ModelNode> updates = new ArrayList<ModelNode>();
 
         addNamespaces(updates);
-        addServerName(updates);
         addProfileName(updates);
         addSchemaLocations(updates);
         addExtensions(updates);
@@ -289,10 +288,6 @@ class ModelCombiner implements ManagedServerBootConfiguration {
                 map.put(prop.getName(), NamespaceAddHandler.getAddNamespaceOperation(EMPTY, prop.getName(), prop.getValue().asString()));
             }
         }
-    }
-
-    private void addServerName(List<ModelNode> updates) {
-        updates.add(Util.getWriteAttributeOperation(EMPTY, NAME, serverName));
     }
 
     private void addProfileName(List<ModelNode> updates) {

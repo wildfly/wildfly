@@ -80,9 +80,12 @@
             <xs:attribute name="name" type="xs:string" use="optional">
                 <xs:annotation>
                     <xs:documentation>
-                        The name to use for this host's host controller. Must be
-                        unique across the domain. If not set, defaults to the
-                        runtime value of InetAddress.getLocalHost().getHostName().
+                        The name to use for this host's host controller. Must be unique across the domain.
+                        If not set, defaults to the runtime value "HOSTNAME" or "COMPUTERNAME" environment variables,
+                        or, if neither environment variable is present, to the value of InetAddress.getLocalHost().getHostName().
+
+                        If the special value "jboss.domain.uuid" is used, a java.util.UUID will be created
+                        and used, based on the value of InetAddress.getLocalHost().
                     </xs:documentation>
                 </xs:annotation>
             </xs:attribute>
@@ -116,8 +119,12 @@
             <xs:attribute name="name" type="xs:string" use="optional">
                 <xs:annotation>
                     <xs:documentation>
-                        The name to use for this server. If not set, defaults to
-                        the runtime value of InetAddress.getLocalHost().getHostName().
+                        The name to use for this server.
+                        If not set, defaults to the runtime value "HOSTNAME" or "COMPUTERNAME" environment variables,
+                        or, if neither environment variable is present, to the value of InetAddress.getLocalHost().getHostName().
+
+                        If the special value "jboss.domain.uuid" is used, a java.util.UUID will be created
+                        and used, based on the value of InetAddress.getLocalHost().
                     </xs:documentation>
                 </xs:annotation>
             </xs:attribute>
@@ -179,7 +186,7 @@
         </xs:complexContent>
     </xs:complexType>
 
-    <xs:complexType name="ldapType"> 
+    <xs:complexType name="ldapType">
         <xs:annotation>
             <xs:documentation>
                 The LDAP connection definition.
@@ -341,14 +348,14 @@
                 </xs:annotation>
             </xs:element>
             <xs:choice minOccurs="0">
-                <xs:element name="jaas" type="jaasAuthenticationType" minOccurs="0" />            
+                <xs:element name="jaas" type="jaasAuthenticationType" minOccurs="0" />
                 <xs:element name="ldap" type="ldapAuthenticationType" minOccurs="0" />
                 <xs:element name="properties" type="propertiesAuthenticationType" minOccurs="0" />
                 <xs:element name="users" type="usersAuthenticationType" minOccurs="0" />
             </xs:choice>
         </xs:sequence>
     </xs:complexType>
-    
+
     <xs:complexType name="jaasAuthenticationType">
         <xs:annotation>
             <xs:documentation>
@@ -361,7 +368,7 @@
                     The name identifying the jaas configuration of LoginModules.
                 </xs:documentation>
             </xs:annotation>
-        </xs:attribute>            
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="ldapAuthenticationType">
@@ -1158,7 +1165,7 @@
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
-    
+
     <xs:complexType name="socket-binding-client-mappingType">
         <xs:annotation>
                 <xs:documentation>
