@@ -20,51 +20,39 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.management;
+package org.jboss.as.domain.http.server.security;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
-import java.security.Principal;
+import java.io.IOException;
+
+import javax.security.auth.Subject;
+
+import org.jboss.as.controller.security.SecurityContext;
+import org.jboss.com.sun.net.httpserver.HttpExchange;
+import org.jboss.com.sun.net.httpserver.HttpExchange.AttributeScope;
+import org.jboss.com.sun.net.httpserver.HttpHandler;
 
 /**
- * Base class for Principals define in DomainManagement.
+ * Handler to ensure that the Subject for the authenticated user is associated for this request.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public abstract class DomainManagementPrincipal implements Principal {
+public class SubjectAssociationHandler implements HttpHandler {
 
-    private final String name;
+    private final HttpHandler wrapped;
 
-    public DomainManagementPrincipal(final String name) {
-        if (name == null) {
-            throw MESSAGES.canNotBeNull("name");
+    public SubjectAssociationHandler(HttpHandler wrapped) {
+        this.wrapped = wrapped;
+    }
+
+    @Override
+    public void handle(HttpExchange exchange) throws IOException {
+        Subject subject = (Subject) exchange.getAttribute(Subject.class.getName(), AttributeScope.CONNECTION);
+        SecurityContext.setSubject(subject);
+        try {
+            wrapped.handle(exchange);
+        } finally {
+            SecurityContext.clearSubject();
         }
-        this.name = name;
-    }
-
-    /**
-     * @see java.security.Principal#getName()
-     */
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public int hashCode() {
-        return name.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return obj != null && this.getClass().equals(obj.getClass()) ? equals((DomainManagementPrincipal) obj) : false;
-    }
-
-    protected boolean equals(DomainManagementPrincipal principal) {
-        return this == principal || name.equals(principal.name);
-    }
-
-    @Override
-    public String toString() {
-        return name;
     }
 
 }

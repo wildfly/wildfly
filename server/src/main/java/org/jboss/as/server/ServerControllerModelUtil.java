@@ -95,6 +95,7 @@ import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
 import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
+import org.jboss.as.domain.management.security.WhoAmIOperation;
 import org.jboss.as.platform.mbean.PlatformMBeanResourceRegistrar;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.DeploymentFileRepository;
@@ -266,6 +267,7 @@ public class ServerControllerModelUtil {
                 ResolveExpressionHandler.INSTANCE, EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.RUNTIME_ONLY));
 
         root.registerOperationHandler(SpecifiedInterfaceResolveHandler.OPERATION_NAME, SpecifiedInterfaceResolveHandler.INSTANCE, SpecifiedInterfaceResolveHandler.INSTANCE, runtimeOnlyFlag);
+        root.registerOperationHandler(WhoAmIOperation.OPERATION_NAME, WhoAmIOperation.INSTANCE, WhoAmIOperation.INSTANCE, true);
 
         //Hack to be able to access the registry for the jmx facade
         root.registerOperationHandler(RootResourceHack.NAME, RootResourceHack.INSTANCE, RootResourceHack.INSTANCE, false, OperationEntry.EntryType.PRIVATE, runtimeOnlyFlag);

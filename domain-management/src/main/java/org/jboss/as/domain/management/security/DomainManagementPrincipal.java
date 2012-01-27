@@ -20,16 +20,51 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.management;
+package org.jboss.as.domain.management.security;
+
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import java.security.Principal;
 
 /**
+ * Base class for Principals define in DomainManagement.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class RealmRole extends DomainManagementPrincipal {
+public abstract class DomainManagementPrincipal implements Principal {
 
-    public RealmRole(final String name) {
-        super(name);
+    private final String name;
+
+    public DomainManagementPrincipal(final String name) {
+        if (name == null) {
+            throw MESSAGES.canNotBeNull("name");
+        }
+        this.name = name;
+    }
+
+    /**
+     * @see java.security.Principal#getName()
+     */
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj != null && this.getClass().equals(obj.getClass()) ? equals((DomainManagementPrincipal) obj) : false;
+    }
+
+    protected boolean equals(DomainManagementPrincipal principal) {
+        return this == principal || name.equals(principal.name);
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 
 }

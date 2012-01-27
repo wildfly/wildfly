@@ -31,10 +31,10 @@ import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.jboss.as.controller.security.SubjectUserInfo;
-import org.jboss.as.domain.management.RealmUser;
 import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.as.domain.management.SubjectCallback;
 import org.jboss.as.domain.management.security.DomainCallbackHandler;
+import org.jboss.as.domain.management.security.RealmUser;
+import org.jboss.as.domain.management.security.SubjectCallback;
 import org.jboss.as.domain.management.security.SubjectSupplemental;
 
 /**
@@ -85,7 +85,7 @@ public class AuthenticationProvider {
                 Subject subject = this.subject == null ? new Subject() : this.subject;
                 Collection<Principal> allPrincipals = subject.getPrincipals();
                 allPrincipals.add(userPrincipal);
-                allPrincipals.add(new RealmUser(userPrincipal.getName()));
+                allPrincipals.add(new RealmUser(securityRealm.getName(), userPrincipal.getName()));
 
                 SubjectSupplemental subjectSupplemental = securityRealm.getSubjectSupplemental();
                 if (subjectSupplemental != null) {
