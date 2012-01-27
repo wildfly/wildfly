@@ -105,7 +105,12 @@ public class InfinispanSubsystemXMLReader_1_1 implements XMLElementReader<List<M
                     break;
                 }
                 case START: {
-                    container.get(ModelKeys.START).set(value);
+                    try {
+                        StartMode mode = StartMode.valueOf(value);
+                        container.get(ModelKeys.START).set(mode.name());
+                    } catch (IllegalArgumentException e) {
+                        throw ParseUtils.invalidAttributeValue(reader, i);
+                    }
                     break;
                 }
                 case LISTENER_EXECUTOR: {
