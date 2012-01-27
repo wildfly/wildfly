@@ -407,11 +407,15 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
     /**
      * AS7-1201 test for en/diable xa datasources
      *
+     * DO NOT RE-ENABLE THIS TEST WITHOUT ACTUALLY FIXING THE PROBLEM
+     *
+     * It fails INTERMITTENTLY. This means that it is not enough to just run it once, decide it passes and submit it.
+     *
      * @throws Exception
      */
     @Test
-    
-    public void DisableAndReEnableXaDs() throws Exception {
+    @Ignore("AS7-3173")
+    public void disableAndReEnableXaDs() throws Exception {
         final String dsName = "XaDsNameDisEn";
         final String jndiDsName = "XaJndiDsNameDisEn";
 
@@ -600,7 +604,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
         ModelNode rightChild=findNodeWithProperty(newList,"jndi-name",complexDsJndi);
 
         Assert.assertTrue("node:"+rightChild.asString()+";\nparams"+params,checkModelParams(rightChild, params));
-        
+
         Assert.assertEquals(rightChild.asString(),"Property2",rightChild.get("valid-connection-checker-properties","name").asString());
         Assert.assertEquals(rightChild.asString(),"Property4",rightChild.get("exception-sorter-properties","name").asString());
         Assert.assertEquals(rightChild.asString(),"Property3",rightChild.get("stale-connection-checker-properties","name").asString());
@@ -657,7 +661,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
         ModelNode rightChild=findNodeWithProperty(newList,"jndi-name",complexXaDsJndi);
 
         Assert.assertTrue("node:"+rightChild.asString()+";\nparams"+params,checkModelParams(rightChild, params));
-        
+
         Assert.assertEquals(rightChild.asString(),"Property2",rightChild.get("valid-connection-checker-properties","name").asString());
         Assert.assertEquals(rightChild.asString(),"Property4",rightChild.get("exception-sorter-properties","name").asString());
         Assert.assertEquals(rightChild.asString(),"Property3",rightChild.get("stale-connection-checker-properties","name").asString());
@@ -667,21 +671,21 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
         Assert.assertNotNull("xa-datasource-properties not propagated ",findNodeWithProperty(newList,"value","jdbc:h2:mem:test"));
     }
-    
+
     @Test
     @Ignore("AS7-3316")
     public void testXaDsWithSystemProperties() throws Exception {
-     	
+
     	final ModelNode propAddress=new ModelNode();
     	propAddress.add("system-property","sql.parameter");
     	propAddress.protect();
-    	
+
     	final ModelNode propOperation=new ModelNode();
     	propOperation.get(OP).set("add");
     	propOperation.get(OP_ADDR).set(propAddress);
     	propOperation.get("value").set("sa");
     	executeOperation(propOperation);
-    	
+
         final String dsName = "XaDsName2";
         final String jndiDsName = "XaJndiDsName2";
 
@@ -721,9 +725,9 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
         operation2.get(OP_ADDR).set(address);
 
         executeOperation(operation2);
-        
+
         testConnectionXA(dsName, getModelControllerClient());
-        
+
         remove(address);
         remove(propAddress);
 
@@ -737,18 +741,18 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
     @Ignore("AS7-3316")
     public void testDsWithSystemProperties() throws Exception {
     	//System.setProperty("sql.parameter", "sa");
-    	
+
     	final ModelNode propAddress=new ModelNode();
     	propAddress.add("system-property","sql.parameter");
     	propAddress.protect();
-    	
+
     	final ModelNode propOperation=new ModelNode();
     	propOperation.get(OP).set("add");
     	propOperation.get(OP_ADDR).set(propAddress);
     	propOperation.get("value").set("sa");
     	executeOperation(propOperation);
     	//System.out.println("sql.parameter="+System.getProperty("sql.parameter"));
-    	
+
     	final ModelNode address = new ModelNode();
         address.add("subsystem", "datasources");
         address.add("data-source", "MyNewDs");
@@ -776,9 +780,9 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
         operation2.get(OP_ADDR).set(address);
 
         executeOperation(operation2);
-        
+
         testConnection("MyNewDs", getModelControllerClient());
-        
+
         remove(address);
         remove(propAddress);
 
