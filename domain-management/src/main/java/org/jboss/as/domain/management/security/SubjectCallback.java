@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.management;
+package org.jboss.as.domain.management.security;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;

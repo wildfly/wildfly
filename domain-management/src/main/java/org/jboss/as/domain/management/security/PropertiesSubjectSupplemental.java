@@ -33,8 +33,6 @@ import java.util.Set;
 
 import javax.security.auth.Subject;
 
-import org.jboss.as.domain.management.RealmRole;
-import org.jboss.as.domain.management.RealmUser;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;

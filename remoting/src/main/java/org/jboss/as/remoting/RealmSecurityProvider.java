@@ -50,10 +50,10 @@ import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
 
 import org.jboss.as.controller.security.SubjectUserInfo;
-import org.jboss.as.domain.management.RealmUser;
 import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.as.domain.management.SubjectCallback;
 import org.jboss.as.domain.management.security.DomainCallbackHandler;
+import org.jboss.as.domain.management.security.RealmUser;
+import org.jboss.as.domain.management.security.SubjectCallback;
 import org.jboss.as.domain.management.security.SubjectSupplemental;
 import org.jboss.remoting3.Remoting;
 import org.jboss.remoting3.security.AuthorizingCallbackHandler;
@@ -431,7 +431,7 @@ public class RealmSecurityProvider implements RemotingSecurityProvider {
             Set<UserPrincipal> remotingUsers = subject.getPrincipals(UserPrincipal.class);
             Set<RealmUser> realmUsers = new HashSet<RealmUser>(remotingUsers.size());
             for (UserPrincipal current : remotingUsers) {
-                realmUsers.add(new RealmUser(current.getName()));
+                realmUsers.add(new RealmUser(realm.getName(), current.getName()));
             }
             subject.getPrincipals().addAll(realmUsers);
 

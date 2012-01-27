@@ -68,7 +68,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.domain.http.server.multipart.BoundaryDelimitedInputStream;
 import org.jboss.as.domain.http.server.multipart.MimeHeaderParser;
-import org.jboss.as.domain.http.server.security.SubjectAssociationFilter;
+import org.jboss.as.domain.http.server.security.SubjectAssociationHandler;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.security.DomainCallbackHandler;
 import org.jboss.as.protocol.mgmt.ProtocolUtils;
@@ -543,7 +543,9 @@ class DomainApiHandler implements ManagementHttpHandler {
     }
 
     public void start(HttpServer httpServer, SecurityRealm securityRealm) {
-        HttpContext context = httpServer.createContext(DOMAIN_API_CONTEXT, this);
+        // The SubjectAssociationHandler wraps all calls to this HttpHandler to ensure the Subject has been associated
+        // with the security context.
+        HttpContext context = httpServer.createContext(DOMAIN_API_CONTEXT, new SubjectAssociationHandler(this));
         // Once there is a trust store we can no longer rely on users being defined so skip
         // any redirects.
         if (authenticator != null) {
@@ -553,7 +555,6 @@ class DomainApiHandler implements ManagementHttpHandler {
                 DomainCallbackHandler callbackHandler = securityRealm.getCallbackHandler();
                 filters.add(new RealmReadinessFilter(callbackHandler, ErrorHandler.getRealmRedirect()));
             }
-            filters.add(new SubjectAssociationFilter());
         }
     }
 
