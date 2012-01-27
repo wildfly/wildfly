@@ -22,24 +22,21 @@
 
 package org.jboss.as.test.clustering.unmanaged.ejb3.stateful.bean;
 
-import javax.ejb.EJB;
-import javax.interceptor.Interceptors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.ejb3.annotation.Clustered;
 
 /**
  * @author Paul Ferraro
+ *
  */
 @Clustered
-@javax.ejb.Stateful(name = "StatefulBean")
-@Interceptors(StatefulInterceptor.class)
-@Intercepted
-public class StatefulBean implements Stateful {
-
-    @EJB
-    private Nested nested;
+@javax.ejb.Stateful(name = "NestedBean")
+public class NestedBean implements Nested {
+    private AtomicInteger count = new AtomicInteger(0);
     
+    @Override
     public int increment() {
-        return this.nested.increment();
+        return this.count.incrementAndGet();
     }
 }
