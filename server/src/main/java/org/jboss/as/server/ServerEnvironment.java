@@ -210,6 +210,9 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
      */
     public static final String JBOSS_DEFAULT_MULTICAST_ADDRESS = "jboss.default.multicast.address";
 
+    protected static final String DOMAIN_BASE_DIR = "jboss.domain.base.dir";
+    protected static final String DOMAIN_CONFIG_DIR = "jboss.domain.config.dir";
+
     private static final Set<String> ILLEGAL_PROPERTIES = new HashSet<String>(Arrays.asList(JAVA_EXT_DIRS, HOME_DIR,
             "modules.path", SERVER_BASE_DIR, SERVER_CONFIG_DIR, SERVER_DATA_DIR, SERVER_DEPLOY_DIR, SERVER_LOG_DIR,
             BOOTSTRAP_MAX_THREADS, CONTROLLER_TEMP_DIR));
@@ -246,6 +249,8 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
     private volatile File serverDeployDir;
     private volatile File serverTempDir;
     private volatile File bundlesDir;
+    private final File domainBaseDir;
+    private final File domainConfigurationDir;
 
     private final boolean standalone;
     private final boolean allowModelControllerExecutor;
@@ -329,6 +334,22 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
             tmp = new File(serverBaseDir, "tmp");
         }
         controllerTempDir = tmp;
+
+        // Optional paths for the domain mode
+        tmp = getFileFromProperty(DOMAIN_BASE_DIR, props);
+        if (tmp != null) {
+            this.domainBaseDir = tmp;
+            SecurityActions.setSystemProperty(DOMAIN_BASE_DIR, this.domainBaseDir.getAbsolutePath());
+        } else {
+            this.domainBaseDir = null;
+        }
+        tmp = getFileFromProperty(DOMAIN_CONFIG_DIR, props);
+        if (tmp != null) {
+            this.domainConfigurationDir = tmp;
+            SecurityActions.setSystemProperty(DOMAIN_CONFIG_DIR, this.domainConfigurationDir.getAbsolutePath());
+        } else {
+            this.domainConfigurationDir = null;
+        }
 
         boolean allowExecutor = true;
         String maxThreads = SecurityActions.getSystemProperty(BOOTSTRAP_MAX_THREADS);
@@ -592,6 +613,14 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
 
     public File getControllerTempDir() {
         return controllerTempDir;
+    }
+
+    public File getDomainBaseDir() {
+        return domainBaseDir;
+    }
+
+    public File getDomainConfigurationDir() {
+        return domainConfigurationDir;
     }
 
     public LaunchType getLaunchType() {
