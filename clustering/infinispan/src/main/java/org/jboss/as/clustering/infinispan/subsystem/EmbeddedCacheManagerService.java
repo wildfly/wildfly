@@ -36,17 +36,14 @@ import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStarted
 import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStopped;
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStartedEvent;
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStoppedEvent;
+import org.jboss.as.clustering.AsynchronousService;
 import org.jboss.as.clustering.infinispan.ChannelProvider;
 import org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.ExecutorProvider;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
 import org.jgroups.Channel;
 import org.jgroups.util.TopologyUUID;
 
@@ -54,7 +51,7 @@ import org.jgroups.util.TopologyUUID;
  * @author Paul Ferraro
  */
 @Listener
-public class EmbeddedCacheManagerService implements Service<EmbeddedCacheManager> {
+public class EmbeddedCacheManagerService extends AsynchronousService<EmbeddedCacheManager> {
 
     private static final Logger log = Logger.getLogger(EmbeddedCacheManagerService.class.getPackage().getName());
     private static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(InfinispanExtension.SUBSYSTEM_NAME);
@@ -80,7 +77,6 @@ public class EmbeddedCacheManagerService implements Service<EmbeddedCacheManager
     private final String name;
     private final String defaultCache;
     private final Dependencies dependencies;
-
     private volatile EmbeddedCacheManager container;
 
     public EmbeddedCacheManagerService(String name, String defaultCache, Dependencies dependencies) {
@@ -98,12 +94,8 @@ public class EmbeddedCacheManagerService implements Service<EmbeddedCacheManager
         return this.container;
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.jboss.msc.service.Service#start(org.jboss.msc.service.StartContext)
-     */
     @Override
-    public void start(StartContext context) throws StartException {
+    protected void start() {
 
         GlobalConfigurationBuilder globalBuilder = new GlobalConfigurationBuilder();
         globalBuilder
@@ -125,7 +117,7 @@ public class EmbeddedCacheManagerService implements Service<EmbeddedCacheManager
             // Topology is retrieved from the channel
             Channel channel = transport.getChannel();
             if(channel.getAddress() instanceof TopologyUUID) {
-                TopologyUUID topologyAddress = (TopologyUUID)channel.getAddress();
+                TopologyUUID topologyAddress = (TopologyUUID) channel.getAddress();
                 String site = topologyAddress.getSiteId();
                 if (site != null) {
                     transportBuilder.siteId(site);
@@ -188,16 +180,13 @@ public class EmbeddedCacheManagerService implements Service<EmbeddedCacheManager
         log.debugf("%s cache container started", this.name);
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.jboss.msc.service.Service#stop(org.jboss.msc.service.StopContext)
-     */
     @Override
-    public void stop(StopContext context) {
-        this.container.stop();
-        this.container.removeListener(this);
-        log.debugf("%s cache container stopped", this.name);
-        this.container = null;
+    protected void stop() {
+        if ((this.container != null) && this.container.getStatus().allowInvocations()) {
+            this.container.stop();
+            this.container.removeListener(this);
+            log.debugf("%s cache container stopped", this.name);
+        }
     }
 
     @CacheStarted

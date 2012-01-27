@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.web.infinispan;
 
-import org.jboss.as.clustering.ClusteringMessages;
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
@@ -35,7 +34,7 @@ import org.jboss.metadata.web.jboss.ReplicationGranularity;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @MessageBundle(projectCode = "JBAS")
-interface InfinispanWebMessages extends ClusteringMessages {
+interface InfinispanWebMessages {
     /**
      * The messages
      */

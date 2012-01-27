@@ -22,13 +22,13 @@
 
 package org.jboss.as.clustering;
 
+import java.util.Collection;
+
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 import org.jgroups.Address;
-
-import java.util.Collection;
 
 /**
  * Date: 26.08.2011
@@ -36,7 +36,7 @@ import java.util.Collection;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @MessageBundle(projectCode = "JBAS")
-public interface ClusteringImplMessages extends ClusteringMessages {
+public interface ClusteringImplMessages extends ClusteringApiMessages {
 
     /**
      * The messages.

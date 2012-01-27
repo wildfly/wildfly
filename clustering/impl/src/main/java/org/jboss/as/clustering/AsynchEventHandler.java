@@ -50,7 +50,7 @@ class AsynchEventHandler implements Runnable {
     private AsynchEventProcessor processor;
     private boolean stopped = true;
     private Thread handlerThread;
-    private final ClusteringLogger log;
+    private final ClusteringImplLogger log;
 
     /**
      * Create a new AsynchEventHandler.
@@ -65,7 +65,7 @@ class AsynchEventHandler implements Runnable {
         if (name == null)
             name = "AsynchEventHandler";
         this.name = name;
-        this.log = Logger.getMessageLogger(ClusteringLogger.class, processor.getClass().getName() + "." + name);
+        this.log = Logger.getMessageLogger(ClusteringImplLogger.class, processor.getClass().getName() + "." + name);
     }
 
     /**

@@ -22,14 +22,14 @@
 
 package org.jboss.as.clustering.web.impl;
 
-import org.jboss.as.clustering.ClusteringApiLogger;
+import static org.jboss.logging.Logger.Level.WARN;
+
+import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
-
-import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * Date: 30.08.2011
@@ -37,7 +37,8 @@ import static org.jboss.logging.Logger.Level.WARN;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @MessageLogger(projectCode = "JBAS")
-interface ClusteringWebLogger extends ClusteringApiLogger {
+interface ClusteringWebLogger extends BasicLogger {
+    String ROOT_LOGGER_CATEGORY = ClusteringWebLogger.class.getPackage().getName();
 
     /**
      * A logger with a category for the root clustering.
@@ -52,6 +53,6 @@ interface ClusteringWebLogger extends ClusteringApiLogger {
      * @param methodName the name of the method the error occurred in.
      */
     @LogMessage(level = WARN)
-    @Message(id = 10380, value = "%s: rolling back transaction with exception")
+    @Message(id = 10300, value = "%s: rolling back transaction with exception")
     void rollingBackTransaction(@Cause Throwable cause, String methodName);
 }

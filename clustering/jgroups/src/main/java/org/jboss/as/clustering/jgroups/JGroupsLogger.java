@@ -22,13 +22,13 @@
 
 package org.jboss.as.clustering.jgroups;
 
-import org.jboss.as.clustering.ClusteringLogger;
+import static org.jboss.logging.Logger.Level.INFO;
+
+import org.jboss.logging.BasicLogger;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
-
-import static org.jboss.logging.Logger.Level.INFO;
 
 /**
  * Date: 29.08.2011
@@ -36,7 +36,8 @@ import static org.jboss.logging.Logger.Level.INFO;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @MessageLogger(projectCode = "JBAS")
-public interface JGroupsLogger extends ClusteringLogger {
+public interface JGroupsLogger extends BasicLogger {
+    String ROOT_LOGGER_CATEGORY = JGroupsLogger.class.getPackage().getName();
 
     /**
      * The root logger.
@@ -47,6 +48,6 @@ public interface JGroupsLogger extends ClusteringLogger {
      * Logs an informational message indicating the JGroups subsystem is being activated.
      */
     @LogMessage(level = INFO)
-    @Message(id = 10360, value = "Activating JGroups subsystem.")
+    @Message(id = 10260, value = "Activating JGroups subsystem.")
     void activatingSubsystem();
 }

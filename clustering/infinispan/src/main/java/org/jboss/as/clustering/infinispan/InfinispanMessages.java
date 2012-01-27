@@ -23,9 +23,9 @@
 package org.jboss.as.clustering.infinispan;
 
 import java.net.UnknownHostException;
+import java.util.Properties;
 
 import org.infinispan.configuration.cache.CacheMode;
-import org.jboss.as.clustering.ClusteringMessages;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.logging.Cause;
@@ -41,7 +41,7 @@ import org.jboss.msc.service.StartException;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @MessageBundle(projectCode = "JBAS")
-public interface InfinispanMessages extends ClusteringMessages {
+public interface InfinispanMessages {
 
     /**
      * A logger with the category of the default clustering package.
@@ -57,9 +57,64 @@ public interface InfinispanMessages extends ClusteringMessages {
      *
      * @return a {@link ConfigurationPersistenceException} for the error.
      */
-    @Message(id = 10310, value = "Could not resolve destination address for outbound socket binding named '%s'")
+    @Message(id = 10290, value = "Could not resolve destination address for outbound socket binding named '%s'")
     InjectionException failedToInjectSocketBinding(@Cause UnknownHostException cause, OutboundSocketBinding binding);
 
-    @Message(id = 10311, value = "Failed to add %s %s cache to non-clustered %s cache container.")
+    @Message(id = 10291, value = "Failed to add %s %s cache to non-clustered %s cache container.")
     StartException transportRequired(CacheMode mode, String cache, String cacheContainer);
+
+    /**
+     * Creates an exception indicating an invalid cache store.
+     *
+     * @param cause          the cause of the error.
+     * @param cacheStoreName the name of the cache store.
+     *
+     * @return an {@link IllegalArgumentException} for the error.
+     */
+    @Message(id = 10292, value = "%s is not a valid cache store")
+    IllegalArgumentException invalidCacheStore(@Cause Throwable cause, String cacheStoreName);
+
+    /**
+     * Creates an exception indicating an invalid cache store.
+     *
+     * @param cacheStoreName     the name of the cache store.
+     * @param cacheContainerName the container name.
+     *
+     * @return an {@link IllegalArgumentException} for the error.
+     */
+    @Message(id = 10293, value = "%s is not a valid default cache. The %s cache container does not contain a cache with that name")
+    IllegalArgumentException invalidCacheStore(String cacheStoreName, String cacheContainerName);
+
+    /**
+     * Creates an exception indicating the an executor property is invalid.
+     *
+     * @param id         the id of the property.
+     * @param properties the properties that were searched.
+     *
+     * @return an {@link IllegalStateException} for the error.
+     */
+    @Message(id = 10294, value = "No %s property was specified within the executor properties: %s")
+    IllegalStateException invalidExecutorProperty(String id, Properties properties);
+
+    /**
+     * Creates an exception indicating the an transport property is invalid.
+     *
+     * @param id         the id of the property.
+     * @param properties the properties that were searched.
+     *
+     * @return an {@link IllegalStateException} for the error.
+     */
+    @Message(id = 10295, value = "No %s property was specified within the transport properties: %s")
+    IllegalStateException invalidTransportProperty(String id, Properties properties);
+
+    /**
+     * Creates an exception indicating that the cache is aborting after the specified number of retries.
+     *
+     * @param cause           the cause of the error.
+     * @param numberOfRetries the number of retries.
+     *
+     * @return a {@link RuntimeException}
+     */
+    @Message(id = 10296, value = "Aborting cache operation after %d retries.")
+    RuntimeException abortingCacheOperation(@Cause Throwable cause, int numberOfRetries);
 }

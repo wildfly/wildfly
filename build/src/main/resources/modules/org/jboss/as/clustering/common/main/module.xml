@@ -33,6 +33,6 @@
 
     <dependencies>
         <module name="org.jboss.threads"/>
-        <module name="org.jboss.logging"/>
+        <module name="org.jboss.msc"/>
     </dependencies>
 </module>

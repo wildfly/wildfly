@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.jboss.as.clustering.AsynchronousService;
 import org.jboss.as.clustering.ClusterNode;
 import org.jboss.as.clustering.GroupRpcDispatcher;
 import org.jboss.as.clustering.service.ServiceProviderRegistry;
@@ -47,7 +48,7 @@ import org.jboss.msc.value.InjectedValue;
  * Decorates an MSC service ensuring that it is only started on one node in the cluster at any given time.
  * @author Paul Ferraro
  */
-public class SingletonService<T extends Serializable> implements Service<T>, ServiceProviderRegistry.Listener, StopContext, SingletonRpcHandler<T> {
+public class SingletonService<T extends Serializable> extends AsynchronousService<T> implements ServiceProviderRegistry.Listener, StopContext, SingletonRpcHandler<T> {
 
     public static final String DEFAULT_CONTAINER = "cluster";
 
@@ -57,8 +58,8 @@ public class SingletonService<T extends Serializable> implements Service<T>, Ser
     private final ServiceName serviceName;
     private final AtomicBoolean master = new AtomicBoolean(false);
 
-    private volatile ServiceProviderRegistry registry;
-    private volatile GroupRpcDispatcher dispatcher;
+    volatile ServiceProviderRegistry registry;
+    volatile GroupRpcDispatcher dispatcher;
     private volatile SingletonElectionPolicy electionPolicy;
     private volatile SingletonRpcHandler<T> handler;
     private volatile StartContext context;
@@ -87,18 +88,23 @@ public class SingletonService<T extends Serializable> implements Service<T>, Ser
     }
 
     @Override
-    public void start(StartContext context) throws StartException {
+    public void start(final StartContext context) throws StartException {
         this.context = context;
+        super.start(context);
+    }
+
+    @Override
+    protected void start() {
         this.dispatcher = this.dispatcherRef.getValue();
         this.registry = this.registryRef.getValue();
-        String name = this.serviceName.getCanonicalName();
+        final String name = this.serviceName.getCanonicalName();
         this.handler = new RpcHandler(this.dispatcher, name);
         this.dispatcher.registerRPCHandler(name, this, SingletonService.class.getClassLoader());
         this.registry.register(name, this);
     }
 
     @Override
-    public void stop(StopContext context) {
+    protected void stop() {
         String name = this.serviceName.getCanonicalName();
         this.registry.unregister(name);
         this.dispatcher.unregisterRPCHandler(name, this);

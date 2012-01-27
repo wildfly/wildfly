@@ -33,6 +33,7 @@
 
     <dependencies>
         <module name="org.jboss.as.clustering.api"/>
+        <module name="org.jboss.as.clustering.common"/>
         <module name="org.jboss.as.clustering.impl"/>
         <module name="org.jboss.as.clustering.service"/>
         <module name="org.jboss.logging"/>
