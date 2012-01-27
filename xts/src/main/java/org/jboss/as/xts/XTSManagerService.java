@@ -79,8 +79,9 @@ public class XTSManagerService extends AbstractService<XTSService> {
             try {
                 service.start();
             } catch (Exception e) {
-                throw new StartException("XTS service start failed", e);
+                throw XtsAsMessages.MESSAGES.xtsServiceFailedToStart();
             }
+
             xtsService = service;
         } finally {
             SecurityActions.setContextLoader(null);
