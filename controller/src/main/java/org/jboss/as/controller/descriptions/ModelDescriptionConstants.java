@@ -171,6 +171,7 @@ public class ModelDescriptionConstants {
     public static final String PORT = "port";
     public static final String PORT_OFFSET = "port-offset";
     public static final String PRIORITY = "priority";
+    public static final String PROBLEM = "problem";
     public static final String PROCESS_TYPE = "process-type";
     public static final String PROCESS_STATE = "process-state";
     public static final String PRODUCT_NAME = "product-name";
