@@ -51,8 +51,6 @@ public final class Constants {
     public static final String POST_HANDLER_CHAINS="post-handler-chains";
     public static final String HANDLER_CHAIN="handler-chain";
     public static final String PROTOCOL_BINDINGS="protocol-bindings";
-    public static final String SERVICE_NAME_PATTERN="service-name-pattern";
-    public static final String PORT_NAME_PATTERN="port-name-pattern";
     public static final String HANDLER="handler";
     public static final String HANDLER_NAME="handler-name";
     public static final String HANDLER_CLASS="handler-class";

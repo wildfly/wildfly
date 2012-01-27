@@ -124,18 +124,6 @@ final class WebservicesSubsystemParser implements XMLStreamConstants, XMLElement
                 writer.writeEndElement();
             }
 
-            if (handlerChain.hasDefined(Constants.SERVICE_NAME_PATTERN)) {
-                writer.writeStartElement(Namespace.JAVAEE.getUriString(), Constants.SERVICE_NAME_PATTERN);
-                writer.writeCharacters(handlerChain.get(Constants.SERVICE_NAME_PATTERN).asString());
-                writer.writeEndElement();
-            }
-
-            if (handlerChain.hasDefined(Constants.PORT_NAME_PATTERN)) {
-                writer.writeStartElement(Namespace.JAVAEE.getUriString(), Constants.PORT_NAME_PATTERN);
-                writer.writeCharacters(handlerChain.get(Constants.PORT_NAME_PATTERN).asString());
-                writer.writeEndElement();
-            }
-
             if (handlerChain.hasDefined(Constants.HANDLER)) {
 
                 for (String key : handlerChain.get(Constants.HANDLER).keys()) {
@@ -346,8 +334,6 @@ final class WebservicesSubsystemParser implements XMLStreamConstants, XMLElement
             handlerChainId = "auto-generated-" + System.currentTimeMillis();
         }
         String protocolBindings = null;
-        String portNamePattern = null;
-        String serviceNamePattern = null;
         final List<ModelNode> addHandlerOperations = new LinkedList<ModelNode>();
         while (reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
@@ -357,14 +343,6 @@ final class WebservicesSubsystemParser implements XMLStreamConstants, XMLElement
             switch (element) {
                 case PROTOCOL_BINDINGS: {
                     protocolBindings = parseElementNoAttributes(reader);
-                    break;
-                }
-                case SERVICE_NAME_PATTERN: {
-                    serviceNamePattern = parseElementNoAttributes(reader);
-                    break;
-                }
-                case PORT_NAME_PATTERN: {
-                    portNamePattern = parseElementNoAttributes(reader);
                     break;
                 }
                 case HANDLER: {
@@ -382,12 +360,6 @@ final class WebservicesSubsystemParser implements XMLStreamConstants, XMLElement
         operation.get(OP_ADDR).add(SUBSYSTEM, WSExtension.SUBSYSTEM_NAME).add(ENDPOINT_CONFIG, configName).add(handlerChainType, handlerChainId);
         if (protocolBindings != null) {
             operation.get(Constants.PROTOCOL_BINDINGS).set(protocolBindings);
-        }
-        if (serviceNamePattern != null) {
-            operation.get(Constants.SERVICE_NAME_PATTERN).set(serviceNamePattern);
-        }
-        if (portNamePattern != null) {
-            operation.get(Constants.PORT_NAME_PATTERN).set(portNamePattern);
         }
         operationList.add(operation);
         operationList.addAll(addHandlerOperations);
