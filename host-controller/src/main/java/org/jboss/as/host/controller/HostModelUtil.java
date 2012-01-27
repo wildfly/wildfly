@@ -149,43 +149,6 @@ import org.jboss.dmr.ModelType;
  */
 public class HostModelUtil {
 
-    public static void initCoreModel(final ModelNode root, HostControllerEnvironment environment) {
-
-        root.get(RELEASE_VERSION).set(Version.AS_VERSION);
-        root.get(RELEASE_CODENAME).set(Version.AS_RELEASE_CODENAME);
-        root.get(MANAGEMENT_MAJOR_VERSION).set(Version.MANAGEMENT_MAJOR_VERSION);
-        root.get(MANAGEMENT_MINOR_VERSION).set(Version.MANAGEMENT_MINOR_VERSION);
-
-        // Community uses UNDEF values
-        ModelNode nameNode = root.get(PRODUCT_NAME);
-        ModelNode versionNode = root.get(PRODUCT_VERSION);
-
-        if (environment != null) {
-            String productName = environment.getProductConfig().getProductName();
-            String productVersion = environment.getProductConfig().getProductVersion();
-
-            if (productName != null) {
-                nameNode.set(productName);
-            }
-            if (productVersion != null) {
-                versionNode.set(productVersion);
-            }
-        }
-
-        root.get(NAME);
-        root.get(NAMESPACES).setEmptyList();
-        root.get(SCHEMA_LOCATIONS).setEmptyList();
-        root.get(EXTENSION);
-        root.get(SYSTEM_PROPERTY);
-        root.get(PATH);
-        root.get(CORE_SERVICE);
-        root.get(SERVER_CONFIG);
-        root.get(DOMAIN_CONTROLLER);
-        root.get(INTERFACE);
-        root.get(JVM);
-        root.get(RUNNING_SERVER);
-    }
-
     public static void createHostRegistry(final ManagementResourceRegistration root, final HostControllerConfigurationPersister configurationPersister,
                                           final HostControllerEnvironment environment, final HostRunningModeControl runningModeControl,
                                           final HostFileRepository localFileRepository,
@@ -199,7 +162,7 @@ public class HostModelUtil {
                                           final ControlledProcessState processState) {
         // Add of the host itself
         ManagementResourceRegistration hostRegistration = root.registerSubModel(PathElement.pathElement(HOST), HostDescriptionProviders.HOST_ROOT_PROVIDER);
-        LocalHostAddHandler handler = LocalHostAddHandler.getInstance(hostControllerInfo);
+        LocalHostAddHandler handler = LocalHostAddHandler.getInstance(environment);
         hostRegistration.registerOperationHandler(LocalHostAddHandler.OPERATION_NAME, handler, handler, false, OperationEntry.EntryType.PRIVATE);
 
         // Global operations
@@ -229,7 +192,7 @@ public class HostModelUtil {
         hostRegistration.registerOperationHandler(SchemaLocationAddHandler.OPERATION_NAME, SchemaLocationAddHandler.INSTANCE, SchemaLocationAddHandler.INSTANCE, false);
         hostRegistration.registerOperationHandler(SchemaLocationRemoveHandler.OPERATION_NAME, SchemaLocationRemoveHandler.INSTANCE, SchemaLocationRemoveHandler.INSTANCE, false);
 
-        hostRegistration.registerReadWriteAttribute(NAME, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1), Storage.CONFIGURATION);
+        hostRegistration.registerReadWriteAttribute(NAME, environment.getProcessNameReadHandler(), environment.getProcessNameWriteHandler(), Storage.CONFIGURATION);
         hostRegistration.registerReadOnlyAttribute(MASTER, IsMasterHandler.INSTANCE, Storage.RUNTIME);
         hostRegistration.registerReadOnlyAttribute(HOST_STATE, new ProcessStateAttributeHandler(processState), Storage.RUNTIME);
 

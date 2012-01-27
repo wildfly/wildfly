@@ -26,8 +26,8 @@ import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONSOLE_ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
@@ -69,7 +69,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -86,7 +85,6 @@ import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
-import org.jboss.modules.ModuleLoader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -98,8 +96,10 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  */
 public class HostXml extends CommonXml implements ManagementXml.Delegate {
 
-    public HostXml(final ModuleLoader loader, ExecutorService executorService) {
-        super();
+    private final String defaultHostControllerName;
+
+    public HostXml(String defaultHostControllerName) {
+        this.defaultHostControllerName = defaultHostControllerName;
     }
 
     @Override
@@ -239,10 +239,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
             }
         }
 
-        if (hostName == null) {
-            hostName = getDefaultName();
-        }
-        // The follownig also updates the address parameter so this address can be used for future operations
+        // The following also updates the address parameter so this address can be used for future operations
         // in the context of this host.
         addLocalHost(address, list, hostName);
         // The namespace operations were created before the host name was known, the address can now be updated
@@ -337,10 +334,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
             }
         }
 
-        if (hostName == null) {
-            hostName = getDefaultName();
-        }
-        // The follownig also updates the address parameter so this address can be used for future operations
+        // The following also updates the address parameter so this address can be used for future operations
         // in the context of this host.
         addLocalHost(address, list, hostName);
         // The namespace operations were created before the host name was known, the address can now be updated
@@ -684,7 +678,9 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
         host.get(OP).set("add-host");
         host.get(OP_ADDR).set(address.clone());
 
-        host.get(NAME).set(hostName);
+        if (hostName != null) {
+            host.get(NAME).set(hostName);
+        }
 
         operationList.add(host);
     }

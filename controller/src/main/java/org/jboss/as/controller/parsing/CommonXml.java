@@ -152,7 +152,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     protected String getDefaultName() {
-        return  InetAddressUtil.getLocalHostName();
+        return InetAddressUtil.getLocalHostName();
     }
 
     protected void parseNamespaces(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> nodes) {

@@ -44,8 +44,8 @@ import org.jboss.modules.Module;
  */
 public class ConfigurationPersisterFactory {
 
-    public static ExtensibleConfigurationPersister createHostXmlConfigurationPersister(final ConfigurationFile file, ExecutorService executorService) {
-        HostXml hostXml = new HostXml(Module.getBootModuleLoader(), executorService);
+    public static ExtensibleConfigurationPersister createHostXmlConfigurationPersister(final ConfigurationFile file, String defaultHostControllerName) {
+        HostXml hostXml = new HostXml(defaultHostControllerName);
         BackupXmlConfigurationPersister persister =  new BackupXmlConfigurationPersister(file, new QName(Namespace.CURRENT.getUriString(), "host"), hostXml, hostXml);
         persister.registerAdditionalRootElement(new QName(Namespace.DOMAIN_1_0.getUriString(), "host"), hostXml);
         return persister;

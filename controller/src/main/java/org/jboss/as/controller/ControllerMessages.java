@@ -24,6 +24,7 @@ package org.jboss.as.controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -2365,4 +2366,9 @@ public interface ControllerMessages {
      */
     @Message(id = 14836, value = "Illegal '%s' value %s -- must be a valid port number")
     XMLStreamException invalidPort(String name, String value, @Param Location location);
+
+    @Message(id = 14837, value = "Cannot resolve the localhost address to create a UUID-based name for this process")
+    RuntimeException cannotResolveProcessUUID(@Cause UnknownHostException cause);
+
+
 }

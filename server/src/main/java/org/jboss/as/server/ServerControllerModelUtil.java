@@ -59,6 +59,7 @@ import java.util.EnumSet;
 
 import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningModeControl;
@@ -195,10 +196,14 @@ public class ServerControllerModelUtil {
 
         boolean isDomain = serverEnvironment == null || serverEnvironment.getLaunchType() == LaunchType.DOMAIN;
 
-        // Build up the core model registry
-        root.registerReadWriteAttribute(NAME, null, new StringLengthValidatingHandler(1), AttributeAccess.Storage.CONFIGURATION);
-        if (serverEnvironment != null && serverEnvironment.getLaunchType() == ServerEnvironment.LaunchType.DOMAIN) {
-            root.registerReadWriteAttribute(PROFILE_NAME, null, new StringLengthValidatingHandler(1), AttributeAccess.Storage.CONFIGURATION);
+        // Root resource attributes
+        if (serverEnvironment != null) { // TODO eliminate test cases that result in serverEnviroment == null
+            if (isDomain) {
+                root.registerReadOnlyAttribute(NAME, serverEnvironment.getProcessNameReadHandler(), AttributeAccess.Storage.CONFIGURATION);
+                root.registerReadWriteAttribute(PROFILE_NAME, null, new StringLengthValidatingHandler(1), AttributeAccess.Storage.CONFIGURATION);
+            } else {
+                root.registerReadWriteAttribute(NAME, serverEnvironment.getProcessNameReadHandler(), serverEnvironment.getProcessNameWriteHandler(), AttributeAccess.Storage.CONFIGURATION);
+            }
         }
 
         // Global operations
