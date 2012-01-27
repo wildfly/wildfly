@@ -20,40 +20,53 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.http.server.security;
+package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
-
-import java.io.IOException;
-
-import javax.security.auth.Subject;
-
-import org.jboss.as.controller.security.SecurityContext;
-import org.jboss.com.sun.net.httpserver.Filter;
-import org.jboss.com.sun.net.httpserver.HttpExchange;
-import org.jboss.com.sun.net.httpserver.HttpExchange.AttributeScope;
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 /**
- * Filter to ensure that the Subject for the authenticated user is associated for this request.
+ * The Principal used to represent the name of an authenticated user.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class SubjectAssociationFilter extends Filter {
+public class RealmUser extends DomainManagementPrincipal {
 
-    @Override
-    public void doFilter(final HttpExchange exchange, final Chain chain) throws IOException {
-        Subject subject = (Subject) exchange.getAttribute(Subject.class.getName(), AttributeScope.CONNECTION);
-        SecurityContext.setSubject(subject);
-        try {
-            chain.doFilter(exchange);
-        } finally {
-            SecurityContext.clearSubject();
+    private final String realm;
+
+    public RealmUser(final String realm, final String name) {
+        super(name);
+        if (name == null) {
+            throw MESSAGES.canNotBeNull("realm");
         }
+        this.realm = realm;
+    }
+
+    public String getRealm() {
+        return realm;
+    }
+
+    public String getFullName() {
+        return getName() + "@" + realm;
     }
 
     @Override
-    public String description() {
-        return MESSAGES.subjectAssociationFilter();
+    public String toString() {
+        return getFullName();
+    }
+
+    @Override
+    public int hashCode() {
+        return (super.hashCode() + 31) * realm.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof RealmUser ? equals((RealmUser) obj) : false;
+
+    }
+
+    private boolean equals(RealmUser user) {
+        return this == user ? true : super.equals(user) && realm.equals(user.realm);
     }
 
 }

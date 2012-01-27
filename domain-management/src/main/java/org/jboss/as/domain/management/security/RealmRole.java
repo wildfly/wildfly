@@ -20,16 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.management;
+package org.jboss.as.domain.management.security;
 
 /**
- * The Principal used to represent the name of an authenticated user.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class RealmUser extends DomainManagementPrincipal {
+public class RealmRole extends DomainManagementPrincipal {
 
-    public RealmUser(final String name) {
+    public RealmRole(final String name) {
         super(name);
     }
 

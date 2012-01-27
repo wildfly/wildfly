@@ -160,7 +160,7 @@ public interface HttpServerMessages {
     String realmReadinessFilter();
 
     /**
-     * The description for the {@link SubjectAssociationFilter}.
+     * The description for the {@link SubjectAssociationHandler}.
      *
      * @return the description.
      */

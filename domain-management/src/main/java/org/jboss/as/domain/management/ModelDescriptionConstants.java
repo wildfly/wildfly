@@ -23,20 +23,25 @@
 package org.jboss.as.domain.management;
 
 /**
- * Model description constants specific to the domain-management module.
+ * Constants specific to the Domain Management module.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class ModelDescriptionConstants {
 
+    public static final String IDENTITY = "identity";
     public static final String KEYSTORE_PASSWORD = "keystore-password";
     public static final String KEYSTORE_PATH = "keystore-path";
     public static final String KEYSTORE_RELATIVE_TO = "keystore-relative-to";
     public static final String PASSWORD = "password";
     public static final String PATH = "path";
+    public static final String REALM = "realm";
     public static final String RELATIVE_TO = "relative-to";
+    public static final String ROLES = "roles";
+    public static final String USERNAME = "username";
+    public static final String VERBOSE = "verbose";
+    public static final String WHOAMI = "whoami";
 
     // Prevent instantiation.
     private ModelDescriptionConstants() {}
-
 }
