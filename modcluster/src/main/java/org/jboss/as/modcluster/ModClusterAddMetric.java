@@ -22,6 +22,8 @@
 
 package org.jboss.as.modcluster;
 
+import static org.jboss.as.modcluster.ModClusterMessages.MESSAGES;
+
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -35,10 +37,8 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
-import static org.jboss.as.modcluster.ModClusterMessages.MESSAGES;
-
 // implements ModelQueryOperationHandler, DescriptionProvider
-public class ModClusterAddMetric implements OperationStepHandler, DescriptionProvider{
+public class ModClusterAddMetric implements OperationStepHandler, DescriptionProvider {
 
     static final ModClusterAddMetric INSTANCE = new ModClusterAddMetric();
 
@@ -48,67 +48,66 @@ public class ModClusterAddMetric implements OperationStepHandler, DescriptionPro
     }
 
     @Override
-    public void execute(OperationContext context, ModelNode operation)
-            throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        // TODO AS7-3194 no reason this can't run on the Host Controller; it just updates the model
-        // TODO AS7-3194 this does not update the runtime! The server needs to be marked reload-required
+        context.addStep(new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+
+                // Look for the dynamic-load-provider
+                final ModelNode dynamicLoadProvider = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel()
+                        .get(CommonAttributes.DYNAMIC_LOAD_PROVIDER);
+
+                // Add the metric to the dynamic-load-provider.
+                final ModelNode metric = new ModelNode();
+                List<Property> list = operation.asPropertyList();
+                Iterator<Property> it = list.iterator();
+                while (it.hasNext()) {
+                    Property prop = it.next();
+                    if (prop.getName().equals("property")) {
+                        String properties = prop.getValue().asString();
+                        ModelNode props = ModelNode.fromString(properties);
+                        metric.get("property").set(props);
+                    } else if (prop.getName().equals("type")) {
+                        metric.get(prop.getName()).set(prop.getValue().asString());
+                    }
+                }
+                if (!metric.get("type").isDefined()) {
+                    throw new OperationFailedException(new ModelNode().set(MESSAGES.typeAttributeRequired("add-metric")));
+                }
+                if (!dynamicLoadProvider.isDefined()) {
+                    // Create a default one.
+                    dynamicLoadProvider.get(CommonAttributes.HISTORY).set(9);
+                    dynamicLoadProvider.get(CommonAttributes.DECAY).set(2);
+                }
+                replaceMetric(dynamicLoadProvider, metric);
+
+                context.completeStep();
+            }
+
+            private void replaceMetric(ModelNode dynamicLoadProvider, ModelNode metric) {
+                List<ModelNode> newlist = Collections.<ModelNode> emptyList();
+                if (dynamicLoadProvider.get(CommonAttributes.LOAD_METRIC).isDefined()) {
+                    List<ModelNode> list = dynamicLoadProvider.get(CommonAttributes.LOAD_METRIC).asList();
+                    String type = metric.get("type").asString();
+                    Iterator<ModelNode> it = list.iterator();
+                    dynamicLoadProvider.get(CommonAttributes.LOAD_METRIC).set(newlist);
+                    while (it.hasNext()) {
+                        ModelNode node = it.next();
+                        if (!node.get("type").asString().equals(type)) {
+                            dynamicLoadProvider.get(CommonAttributes.LOAD_METRIC).add(node);
+                        }
+                    }
+                } else {
+                    dynamicLoadProvider.get(CommonAttributes.LOAD_METRIC).set(newlist);
+                }
+                dynamicLoadProvider.get(CommonAttributes.LOAD_METRIC).add(metric);
+            }
+        }, OperationContext.Stage.MODEL);
+
         if (context.isNormalServer()) {
-            context.addStep(new OperationStepHandler() {
-                @Override
-                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-
-                    // Look for the dynamic-load-provider
-                    final ModelNode dynamicLoadProvider = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel().get(CommonAttributes.DYNAMIC_LOAD_PROVIDER);
-
-                    // Add the metric to the dynamic-load-provider.
-                    final ModelNode metric = new ModelNode();
-                    List<Property> list = operation.asPropertyList();
-                    Iterator<Property> it = list.iterator();
-                    while(it.hasNext()) {
-                        Property prop = it.next();
-                        if (prop.getName().equals("property")) {
-                            String properties = prop.getValue().asString();
-                            ModelNode props =  ModelNode.fromString(properties);
-                            metric.get("property").set(props);
-                        } else {
-                            metric.get(prop.getName()).set(prop.getValue().asString());
-                        }
-                    }
-                    if (!metric.get("type").isDefined()) {
-                        throw new OperationFailedException(new ModelNode().set(MESSAGES.typeAttributeRequired("add-metric")));
-                    }
-                    if (!dynamicLoadProvider.isDefined()) {
-                        // Create a default one.
-                        dynamicLoadProvider.get(CommonAttributes.HISTORY).set(9);
-                        dynamicLoadProvider.get(CommonAttributes.DECAY).set(2);
-                    }
-                    replaceMetric(dynamicLoadProvider, metric);
-
-                    context.completeStep();
-                }
-
-                private void replaceMetric(ModelNode dynamicLoadProvider, ModelNode metric) {
-                    List<ModelNode> newlist = Collections.<ModelNode>emptyList();
-                    if (dynamicLoadProvider.get(CommonAttributes.LOAD_METRIC).isDefined()) {
-                        List<ModelNode> list = dynamicLoadProvider.get(CommonAttributes.LOAD_METRIC).asList();
-                        String type = metric.get("type").asString();
-                        Iterator<ModelNode> it = list.iterator();
-                        dynamicLoadProvider.get(CommonAttributes.LOAD_METRIC).set(newlist);
-                        while(it.hasNext()) {
-                            ModelNode node = it.next();
-                            if (!node.get("type").asString().equals(type)) {
-                                dynamicLoadProvider.get(CommonAttributes.LOAD_METRIC).add(node);
-                            }
-                        }
-                    } else {
-                        dynamicLoadProvider.get(CommonAttributes.LOAD_METRIC).set(newlist);
-                    }
-                    dynamicLoadProvider.get(CommonAttributes.LOAD_METRIC).add(metric);
-                }
-            }, OperationContext.Stage.MODEL);
+            context.reloadRequired();
         }
-
         context.completeStep();
     }
 }
