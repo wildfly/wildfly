@@ -27,11 +27,8 @@ import javax.transaction.xa.XAResource;
 import org.infinispan.Cache;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.jboss.msc.service.Service;
+import org.jboss.as.clustering.AsynchronousService;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
 import org.jboss.tm.XAResourceRecovery;
 import org.jboss.tm.XAResourceRecoveryRegistry;
 
@@ -39,7 +36,7 @@ import org.jboss.tm.XAResourceRecoveryRegistry;
  * @author Paul Ferraro
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class CacheService<K, V> implements Service<Cache<K, V>> {
+public class CacheService<K, V> extends AsynchronousService<Cache<K, V>> {
 
     private final Dependencies dependencies;
     private final String name;
@@ -69,16 +66,10 @@ public class CacheService<K, V> implements Service<Cache<K, V>> {
         return this.cache;
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.jboss.msc.service.Service#start(org.jboss.msc.service.StartContext)
-     */
     @Override
-    public void start(StartContext context) throws StartException {
-
+    protected void start() {
         EmbeddedCacheManager container = this.dependencies.getCacheContainer();
 
-        // get an instance of the defined cache
         this.cache = container.getCache(this.name);
         this.cache.start();
 
@@ -88,21 +79,18 @@ public class CacheService<K, V> implements Service<Cache<K, V>> {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.jboss.msc.service.Service#stop(org.jboss.msc.service.StopContext)
-     */
     @Override
-    public void stop(StopContext context) {
-        EmbeddedCacheManager container = this.dependencies.getCacheContainer();
-        XAResourceRecoveryRegistry recoveryRegistry = this.dependencies.getRecoveryRegistry();
-        if (recoveryRegistry != null) {
-            recoveryRegistry.addXAResourceRecovery(new InfinispanXAResourceRecovery(this.name, container));
+    protected void stop() {
+        if ((this.cache != null) && this.cache.getStatus().allowInvocations()) {
+            EmbeddedCacheManager container = this.dependencies.getCacheContainer();
+
+            XAResourceRecoveryRegistry recoveryRegistry = this.dependencies.getRecoveryRegistry();
+            if (recoveryRegistry != null) {
+                recoveryRegistry.addXAResourceRecovery(new InfinispanXAResourceRecovery(this.name, container));
+            }
+
+            this.cache.stop();
         }
-
-        this.cache.stop();
-
-        this.cache = null;
     }
 
     static class InfinispanXAResourceRecovery implements XAResourceRecovery {

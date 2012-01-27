@@ -22,14 +22,14 @@
 
 package org.jboss.as.clustering.infinispan;
 
-import org.jboss.as.clustering.ClusteringLogger;
+import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
+
+import org.jboss.logging.BasicLogger;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
-
-import static org.jboss.logging.Logger.Level.INFO;
-import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * Date: 29.08.2011
@@ -38,7 +38,9 @@ import static org.jboss.logging.Logger.Level.WARN;
  * @author Tristan Tarrant
  */
 @MessageLogger(projectCode = "JBAS")
-public interface InfinispanLogger extends ClusteringLogger {
+public interface InfinispanLogger extends BasicLogger {
+    String ROOT_LOGGER_CATEGORY = InfinispanLogger.class.getPackage().getName();
+
     /**
      * The root logger.
      */
@@ -48,7 +50,7 @@ public interface InfinispanLogger extends ClusteringLogger {
      * Logs an informational message indicating the Infinispan subsystem is being activated.
      */
     @LogMessage(level = INFO)
-    @Message(id = 10300, value = "Activating Infinispan subsystem.")
+    @Message(id = 10280, value = "Activating Infinispan subsystem.")
     void activatingSubsystem();
 
     /**
@@ -58,7 +60,7 @@ public interface InfinispanLogger extends ClusteringLogger {
      * @param containerName the name of the cache container.
      */
     @LogMessage(level = INFO)
-    @Message(id = 10301, value = "Started %s cache from %s container")
+    @Message(id = 10281, value = "Started %s cache from %s container")
     void cacheStarted(String cacheName, String containerName);
 
 
@@ -69,7 +71,7 @@ public interface InfinispanLogger extends ClusteringLogger {
      * @param containerName the name of the cache container.
      */
     @LogMessage(level = INFO)
-    @Message(id = 10302, value = "Stopped %s cache from %s container")
+    @Message(id = 10282, value = "Stopped %s cache from %s container")
     void cacheStopped(String cacheName, String containerName);
 
 
@@ -79,6 +81,6 @@ public interface InfinispanLogger extends ClusteringLogger {
      *
      */
     @LogMessage(level = WARN)
-    @Message(id = 10303, value = "The 'eager' attribute specified on the 'transaction' element of a cache is no longer valid")
+    @Message(id = 10283, value = "The 'eager' attribute specified on the 'transaction' element of a cache is no longer valid")
     void eagerAttributeDeprecated();
 }

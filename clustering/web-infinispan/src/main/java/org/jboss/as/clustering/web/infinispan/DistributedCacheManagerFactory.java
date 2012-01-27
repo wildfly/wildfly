@@ -52,6 +52,7 @@ import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.jboss.ReplicationConfig;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -104,7 +105,8 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
     @Override
     public boolean addDependencies(ServiceTarget target, ServiceBuilder<?> builder, JBossWebMetaData metaData) {
         ServiceName cacheServiceName = this.getCacheServiceName(metaData.getReplicationConfig());
-        if (CurrentServiceContainer.getServiceContainer().getService(cacheServiceName) == null) {
+        ServiceContainer serviceContainer = CurrentServiceContainer.getServiceContainer();
+        if (serviceContainer.getService(cacheServiceName) == null) {
             return false;
         }
         ServiceName containerServiceName = cacheServiceName.getParent();
@@ -112,13 +114,14 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
         ServiceName lockManagerServiceName = SharedLocalYieldingClusterLockManagerService.getServiceName(container);
         ServiceName registryServiceName = cacheServiceName.append("registry");
         synchronized (this) {
-            if (CurrentServiceContainer.getServiceContainer().getService(lockManagerServiceName) == null) {
+            if (serviceContainer.getService(lockManagerServiceName) == null) {
                 new CoreGroupCommunicationServiceService(SCOPE_ID).build(target, container).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
                 new SharedLocalYieldingClusterLockManagerService(container).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
             }
+            if (serviceContainer.getService(registryServiceName) == null) {
+                new RegistryService<String, Void>(this.registryEntryProvider).build(target, registryServiceName, cacheServiceName).install();
+            }
         }
-        new RegistryService<String, Void>(this.registryEntryProvider).build(target, registryServiceName, cacheServiceName).install();
-
         builder.addDependency(containerServiceName, EmbeddedCacheManager.class, this.container);
         builder.addDependency(CacheConfigurationService.getServiceName(container, cacheServiceName.getSimpleName()), Configuration.class, this.config);
         builder.addDependency(registryServiceName, Registry.class, this.registry);

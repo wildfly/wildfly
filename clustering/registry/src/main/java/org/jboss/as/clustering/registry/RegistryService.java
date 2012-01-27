@@ -42,23 +42,20 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.infinispan.notifications.cachemanagerlistener.annotation.ViewChanged;
 import org.infinispan.notifications.cachemanagerlistener.event.ViewChangedEvent;
 import org.infinispan.remoting.transport.Address;
+import org.jboss.as.clustering.AsynchronousService;
 import org.jboss.as.clustering.infinispan.invoker.BatchOperation;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 /**
  * @author Paul Ferraro
  */
 @org.infinispan.notifications.Listener(sync = false)
-public class RegistryService<K, V> implements Service<Registry<K, V>>, Registry<K, V> {
+public class RegistryService<K, V> extends AsynchronousService<Registry<K, V>> implements Registry<K, V> {
 
     static final Address LOCAL_ADDRESS = new Address() {};
 
@@ -128,13 +125,9 @@ public class RegistryService<K, V> implements Service<Registry<K, V>>, Registry<
         return this.cache.get(address);
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.jboss.msc.service.Service#start(org.jboss.msc.service.StartContext)
-     */
     @SuppressWarnings("unchecked")
     @Override
-    public void start(StartContext context) throws StartException {
+    protected void start() {
         this.cache = this.cacheRef.getValue();
         this.refreshLocalEntry();
         this.cache.getCacheManager().addListener(this);
@@ -160,23 +153,20 @@ public class RegistryService<K, V> implements Service<Registry<K, V>>, Registry<
         }
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.jboss.msc.service.Service#stop(org.jboss.msc.service.StopContext)
-     */
     @Override
-    public void stop(StopContext context) {
-        this.cache.removeListener(this);
-        this.cache.getCacheManager().removeListener(this);
-        Operation<Void> operation = new Operation<Void>() {
-            @Override
-            public Void invoke(Cache<Address, Map.Entry<K, V>> cache) {
-                cache.getAdvancedCache().withFlags(Flag.SKIP_REMOTE_LOOKUP).remove(getLocalAddress(cache));
-                return null;
-            }
-        };
-        this.invoke(operation);
-        this.cache = null;
+    protected void stop() {
+        if (this.cache != null) {
+            this.cache.removeListener(this);
+            this.cache.getCacheManager().removeListener(this);
+            Operation<Void> operation = new Operation<Void>() {
+                @Override
+                public Void invoke(Cache<Address, Map.Entry<K, V>> cache) {
+                    cache.getAdvancedCache().withFlags(Flag.SKIP_REMOTE_LOOKUP).remove(getLocalAddress(cache));
+                    return null;
+                }
+            };
+            this.invoke(operation);
+        }
     }
 
     static Address getLocalAddress(Cache<?, ?> cache) {

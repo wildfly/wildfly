@@ -38,10 +38,10 @@ public interface SingletonLogger {
     SingletonLogger ROOT_LOGGER = Logger.getMessageLogger(SingletonLogger.class, ROOT_LOGGER_CATEGORY);
 
     @LogMessage(level = INFO)
-    @Message(id = 10390, value = "This node will now operate as the singleton provider of the %s service")
+    @Message(id = 10340, value = "This node will now operate as the singleton provider of the %s service")
     void electedMaster(String service);
 
     @LogMessage(level = INFO)
-    @Message(id = 10391, value = "This node will no longer operate as the singleton provider of the %s service")
+    @Message(id = 10341, value = "This node will no longer operate as the singleton provider of the %s service")
     void electedSlave(String service);
 }

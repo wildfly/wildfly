@@ -27,6 +27,8 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import org.jboss.as.clustering.jgroups.ProtocolDefaults;
 import org.jboss.msc.service.Service;
@@ -50,6 +52,7 @@ public class ProtocolDefaultsService implements Service<ProtocolDefaults> {
 
     private static final String DEFAULTS = "jgroups-defaults.xml";
 
+    private final Executor executor = Executors.newCachedThreadPool();
     private final String resource;
     private volatile ProtocolDefaults defaults;
 
@@ -75,13 +78,29 @@ public class ProtocolDefaultsService implements Service<ProtocolDefaults> {
      * @see org.jboss.msc.service.Service#start(org.jboss.msc.service.StartContext)
      */
     @Override
-    public void start(StartContext context) throws StartException {
-        ProtocolStackConfigurator configurator = load(this.resource);
+    public void start(final StartContext context) throws StartException {
+        Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    ProtocolDefaultsService.this.start();
+                    context.complete();
+                } catch (StartException e) {
+                    context.failed(e);
+                }
+            }
+        };
+        context.asynchronous();
+        this.executor.execute(task);
+    }
+
+    void start() throws StartException {
+        ProtocolStackConfigurator configurator = load(ProtocolDefaultsService.this.resource);
         Defaults defaults = new Defaults();
         for (org.jgroups.conf.ProtocolConfiguration config: configurator.getProtocolStack()) {
             defaults.add(config.getProtocolName(), config.getProperties());
         }
-        this.defaults = defaults;
+        ProtocolDefaultsService.this.defaults = defaults;
     }
 
     private static ProtocolStackConfigurator load(String resource) throws StartException {

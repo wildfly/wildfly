@@ -22,6 +22,12 @@
 
 package org.jboss.as.clustering;
 
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
+
+import java.util.Collection;
+
 import org.jboss.as.clustering.CoreGroupCommunicationService.GroupView;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
@@ -29,19 +35,13 @@ import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 import org.jgroups.Address;
 
-import java.util.Collection;
-
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.INFO;
-import static org.jboss.logging.Logger.Level.WARN;
-
 /**
  * Date: 26.08.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @MessageLogger(projectCode = "JBAS")
-interface ClusteringImplLogger extends ClusteringLogger {
+interface ClusteringImplLogger extends ClusteringApiLogger {
 
     /**
      * Logs an error message indicating an error occurred while destroying the service.
@@ -49,7 +49,7 @@ interface ClusteringImplLogger extends ClusteringLogger {
      * @param cause the cause of the error.
      */
     @LogMessage(level = ERROR)
-    @Message(id = 10260, value = "Error destroying service")
+    @Message(id = 10240, value = "Error destroying service")
     void errorDestroyingService(@Cause Throwable cause);
 
     /**
@@ -58,7 +58,7 @@ interface ClusteringImplLogger extends ClusteringLogger {
      * @param cause the cause of the error.
      */
     @LogMessage(level = WARN)
-    @Message(id = 10261, value = "Exception in stop")
+    @Message(id = 10241, value = "Exception in stop")
     void exceptionInStop(@Cause Throwable cause);
 
     /**
@@ -68,7 +68,7 @@ interface ClusteringImplLogger extends ClusteringLogger {
      * @param groupName the partition group name.
      */
     @LogMessage(level = WARN)
-    @Message(id = 10262, value = "Partition %s message wrapper does not contain Object[] object!")
+    @Message(id = 10242, value = "Partition %s message wrapper does not contain Object[] object!")
     void invalidPartitionMessageWrapper(String groupName);
 
     /**
@@ -78,7 +78,7 @@ interface ClusteringImplLogger extends ClusteringLogger {
      * @param groupName the partition group name.
      */
     @LogMessage(level = WARN)
-    @Message(id = 10263, value = "Partition %s message does not contain a MethodCall object!")
+    @Message(id = 10243, value = "Partition %s message does not contain a MethodCall object!")
     void invalidPartitionMessage(String groupName);
 
     /**
@@ -88,7 +88,7 @@ interface ClusteringImplLogger extends ClusteringLogger {
      * @param listener the listener in error.
      */
     @LogMessage(level = WARN)
-    @Message(id = 10264, value = "Membership listener callback failure: %s")
+    @Message(id = 10244, value = "Membership listener callback failure: %s")
     void memberShipListenerCallbackFailure(@Cause Throwable cause, GroupMembershipListener listener);
 
     /**
@@ -98,7 +98,7 @@ interface ClusteringImplLogger extends ClusteringLogger {
      * @param methodName the name of the method that failed.
      */
     @LogMessage(level = ERROR)
-    @Message(id = 10265, value = "%s failed")
+    @Message(id = 10245, value = "%s failed")
     void methodFailure(@Cause Throwable cause, String methodName);
 
     /**
@@ -109,7 +109,7 @@ interface ClusteringImplLogger extends ClusteringLogger {
      * @param serviceName the service name.
      */
     @LogMessage(level = ERROR)
-    @Message(id = 10266, value = "%s failed for service %s")
+    @Message(id = 10246, value = "%s failed for service %s")
     void methodFailure(@Cause Throwable cause, String methodName, String serviceName);
 
     /**
@@ -122,7 +122,7 @@ interface ClusteringImplLogger extends ClusteringLogger {
      * @param allMembers a collection of all the new members.
      */
     @LogMessage(level = INFO)
-    @Message(id = 10267, value = "New cluster view for partition %s (id: %d, delta: %d, merge: %b) : %s")
+    @Message(id = 10247, value = "New cluster view for partition %s (id: %d, delta: %d, merge: %b) : %s")
     void newClusterCurrentView(String groupName, long viewId, int difference, boolean isMerge, Collection<ClusterNode> allMembers);
 
     /**
@@ -135,7 +135,7 @@ interface ClusteringImplLogger extends ClusteringLogger {
      * @param isMerge    {@code true} if this was a merge view, otherwise {@code false}.
      */
     @LogMessage(level = INFO)
-    @Message(id = 10268, value = "New cluster view for partition %s: %d (%s delta: %d, merge: %b)")
+    @Message(id = 10248, value = "New cluster view for partition %s: %d (%s delta: %d, merge: %b)")
     void newClusterView(String groupName, long viewId, GroupView groupView, int difference, boolean isMerge);
 
     /**
@@ -146,7 +146,7 @@ interface ClusteringImplLogger extends ClusteringLogger {
      * @param serviceName the service name.
      */
     @LogMessage(level = WARN)
-    @Message(id = 10269, value = "No %s registered to receive state for service %s")
+    @Message(id = 10249, value = "No %s registered to receive state for service %s")
     void notRegisteredToReceiveState(String className, String serviceName);
 
     /**
@@ -156,7 +156,7 @@ interface ClusteringImplLogger extends ClusteringLogger {
      * @param groupName the partition group name.
      */
     @LogMessage(level = WARN)
-    @Message(id = 10270, value = "Partition %s message or message buffer is null!")
+    @Message(id = 10250, value = "Partition %s message or message buffer is null!")
     void nullPartitionMessage(String groupName);
 
     /**
@@ -167,7 +167,7 @@ interface ClusteringImplLogger extends ClusteringLogger {
      * @param groupName the partition group name.
      */
     @LogMessage(level = WARN)
-    @Message(id = 10271, value = "Partition %s failed extracting message body from request bytes")
+    @Message(id = 10251, value = "Partition %s failed extracting message body from request bytes")
     void partitionFailedExtractingMessageBody(@Cause Throwable cause, String groupName);
 
     /**
@@ -179,7 +179,7 @@ interface ClusteringImplLogger extends ClusteringLogger {
      * @param request   the message.
      */
     @LogMessage(level = WARN)
-    @Message(id = 10272, value = "Partition %s failed unserializing message buffer (msg=%s)")
+    @Message(id = 10252, value = "Partition %s failed unserializing message buffer (msg=%s)")
     void partitionFailedUnserialing(@Cause Throwable cause, String groupName, org.jgroups.Message request);
 
     /**
@@ -188,7 +188,7 @@ interface ClusteringImplLogger extends ClusteringLogger {
      * @param serviceName the service name the request was sent for.
      */
     @LogMessage(level = WARN)
-    @Message(id = 10273, value = "Received concurrent requests to get service state for %s")
+    @Message(id = 10253, value = "Received concurrent requests to get service state for %s")
     void receivedConcurrentStateRequests(String serviceName);
 
     /**
@@ -197,6 +197,6 @@ interface ClusteringImplLogger extends ClusteringLogger {
      * @param suspectedMember the suspected member.
      */
     @LogMessage(level = INFO)
-    @Message(id = 10274, value = "Suspected member: %s")
+    @Message(id = 10254, value = "Suspected member: %s")
     void suspectedMember(Address suspectedMember);
 }

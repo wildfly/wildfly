@@ -30,6 +30,7 @@
 
     <dependencies>
         <module name="org.infinispan"/>
+        <module name="org.jboss.as.clustering.common"/>
         <module name="org.jboss.as.clustering.infinispan"/>
         <module name="org.jboss.msc"/>
     </dependencies>

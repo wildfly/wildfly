@@ -39,6 +39,6 @@ public interface SingletonMessages {
      *
      * @return a {@link ConfigurationPersistenceException} for the error.
      */
-    @Message(id = 10395, value = "Expected result from singleton provider only, but instead received %d results.")
+    @Message(id = 10350, value = "Expected result from singleton provider only, but instead received %d results.")
     IllegalStateException unexpectedResponseCount(int results);
 }
