@@ -244,7 +244,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
                 .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiName))
                 .addDependency(cacheServiceName, Cache.class, new ManagedReferenceInjector<Cache>(binder.getManagedObjectInjector()))
                 .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binder.getNamingStoreInjector())
-                .setInitialMode(initialMode)
+                .setInitialMode(ServiceController.Mode.PASSIVE)
         ;
         newControllers.add(binderBuilder.install());
 
