@@ -35,16 +35,15 @@ import java.util.concurrent.ExecutorService;
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
-import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.ActiveOperation.ResultHandler;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
+import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
-import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
 import org.jboss.as.protocol.mgmt.ManagementProtocolHeader;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
+import org.jboss.as.protocol.mgmt.ManagementRequestHandlerFactory;
 import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.as.protocol.mgmt.ProtocolUtils;
@@ -121,11 +120,24 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
         return null;
     }
 
+    private class ServerHandlerFactory implements ManagementRequestHandlerFactory {
+
+        @Override
+        public ManagementRequestHandler<?, ?> resolveHandler(RequestHandlerChain handlers, ManagementRequestHeader header) {
+            if(header.getOperationId() == DomainServerProtocol.GET_FILE_REQUEST) {
+                handlers.registerActiveOperation(header.getBatchId(), null);
+                return new GetFileOperation();
+            }
+            return handlers.resolveNext();
+        }
+    }
+
+    /**
+     * The initial message handler only handles the registration request.
+     */
     private class InitialMessageHandler extends ManagementChannelReceiver {
 
         private final ExecutorService executorService;
-        private volatile ManagementMessageHandler proxyHandler;
-
         private InitialMessageHandler(ExecutorService executorService) {
             this.executorService = executorService;
         }
@@ -152,25 +164,26 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
                 executorService.execute(new Runnable() {
                     @Override
                     public void run() {
-                        final Channel mgmtChannel = channel;
-                        ServerToHostOperationHandlerFactoryService.this.callback.getValue().serverCommunicationRegistered(serverName, mgmtChannel, new ServerInventory.ProxyCreatedCallback() {
+                        // Create the server mgmt handler
+                        final ManagementChannelHandler handler = new ManagementChannelHandler(channel, executorService, new ServerHandlerFactory());
+                        ServerToHostOperationHandlerFactoryService.this.callback.getValue().serverCommunicationRegistered(serverName, handler, new ServerInventory.ProxyCreatedCallback() {
                             @Override
-                            public void proxyOperationHandlerCreated(final ManagementMessageHandler handler) {
-
+                            public void proxyOperationHandlerCreated(final ManagementRequestHandlerFactory handlerFactory) {
                                 channel.addCloseHandler(new CloseHandler<Channel>() {
                                     @Override
                                     public void handleClose(Channel closed, IOException exception) {
                                         handler.shutdownNow();
                                     }
                                 });
-                                InitialMessageHandler.this.proxyHandler = handler;
                                 // Send the response once the server is fully registered
                                 safeWriteResponse(channel, header, null);
+                                // Once the server and handlers are registered, receive the next message
+                                handler.addHandlerFactory(handlerFactory);
+                                channel.receiveMessage(handler.getReceiver());
                             }
                         });
                     }
                 });
-
             } else {
                 safeWriteResponse(channel, header, MESSAGES.unrecognizedType(type));
                 channel.close();
@@ -179,34 +192,8 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
 
         @Override
         protected Channel.Receiver next() {
-            return new ManagementChannelReceiver() {
-
-                @Override
-                public void handleMessage(final Channel channel, final DataInput input, final ManagementProtocolHeader header) throws IOException {
-                    final byte type = header.getType();
-                    if(type == ManagementProtocol.TYPE_REQUEST) {
-                        final ManagementRequestHeader request = (ManagementRequestHeader) header;
-                        final byte op = request.getOperationId();
-                        if (op == DomainServerProtocol.GET_FILE_REQUEST) {
-                            AbstractMessageHandler<ModelNode, Void> operationHandler = new AbstractMessageHandler<ModelNode, Void>(executorService) {
-                                public void handleMessage(final Channel channel, final DataInput input, final ManagementProtocolHeader header) throws IOException {
-                                    final ActiveOperation<ModelNode, Void> support = super.registerActiveOperation(((ManagementRequestHeader)header).getBatchId(), null);
-                                    super.handleMessage(channel, input, header, support, new GetFileOperation());
-                                }
-                            };
-                            operationHandler.handleMessage(channel, input, header);
-                        } else {
-                            proxyHandler.handleMessage(channel, input, header);
-                        }
-                    } else if(type == ManagementProtocol.TYPE_RESPONSE) {
-                        if(proxyHandler != null) {
-                            // the proxy is the only one requiring responses
-                            proxyHandler.handleMessage(channel, input, header);
-                        }
-                    }
-                }
-            };
-        };
+            return null;
+        }
     }
 
     private class GetFileOperation implements ManagementRequestHandler<ModelNode, Void> {

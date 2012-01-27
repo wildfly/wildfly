@@ -24,7 +24,6 @@ package org.jboss.as.protocol.mgmt;
 
 import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
 import org.jboss.as.protocol.StreamUtils;
-import org.jboss.remoting3.MessageOutputStream;
 
 import java.io.DataInput;
 import java.io.EOFException;

@@ -55,7 +55,7 @@ public class DomainRemoteFileRequestAndHandler extends RemoteFileRequestAndHandl
         }
     };
 
-    public static DomainRemoteFileRequestAndHandler INSTANCE = new DomainRemoteFileRequestAndHandler(MAPPER);
+    public static final DomainRemoteFileRequestAndHandler INSTANCE = new DomainRemoteFileRequestAndHandler(MAPPER);
 
     private DomainRemoteFileRequestAndHandler(RemoteFileProtocolIdMapper mapper) {
         super(mapper);

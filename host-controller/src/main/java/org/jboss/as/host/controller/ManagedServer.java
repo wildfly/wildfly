@@ -31,9 +31,14 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.client.OperationAttachments;
+import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
 import org.jboss.as.process.ProcessControllerClient;
+import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.server.ServerStartTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.marshalling.Marshaller;
@@ -99,8 +104,7 @@ class ManagedServer {
     private final ProcessControllerClient processControllerClient;
     private final ManagedServer.ManagedServerBootConfiguration bootConfiguration;
 
-    private Channel.Key closeHandlerRegistration;
-    private Channel serverManagementChannel;
+    private ManagementChannelHandler channelAssociation;
     private volatile int respawnCount;
 
     private volatile InternalState requiredState = InternalState.STOPPED;
@@ -259,11 +263,9 @@ class ManagedServer {
      *
      * @param task the transition task
      * @param mgmtChannel the channel
-     * @param registration the close handler
      */
-    protected synchronized void callbackRegistered(final TransitionTask task, final Channel mgmtChannel, final Channel.Key registration) {
-        this.serverManagementChannel = mgmtChannel;
-        this.closeHandlerRegistration = registration;
+    protected synchronized void callbackRegistered(final TransitionTask task, final ManagementChannelHandler mgmtChannel) {
+        channelAssociation = mgmtChannel;
         // TODO use the mgmt protocol to signal if the server is started
         internalSetState(task, InternalState.SERVER_STARTING, InternalState.SERVER_STARTED);
     }
@@ -272,12 +274,7 @@ class ManagedServer {
      * Unregister the mgmt channel.
      */
     protected synchronized void callbackUnregistered() {
-        final Channel.Key registration = this.closeHandlerRegistration;
-        this.closeHandlerRegistration = null;
-        this.serverManagementChannel = null;
-        if(registration != null) {
-            registration.remove();
-        }
+        this.channelAssociation = null;
     }
 
     /**

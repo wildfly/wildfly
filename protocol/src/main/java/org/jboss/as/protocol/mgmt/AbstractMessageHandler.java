@@ -45,11 +45,11 @@ import org.xnio.Cancellable;
  *
  * @author Emanuel Muckenhuber
  */
-public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSupport<T, A> implements ManagementMessageHandler {
+public abstract class AbstractMessageHandler extends ActiveOperationSupport implements ManagementMessageHandler {
 
     private final ExecutorService executorService;
     private final AtomicInteger requestID = new AtomicInteger();
-    private final Map<Integer, ActiveRequest> requests = new ConcurrentHashMap<Integer, ActiveRequest>(16, 0.75f, Runtime.getRuntime().availableProcessors());
+    private final Map<Integer, ActiveRequest<?, ?>> requests = new ConcurrentHashMap<Integer, ActiveRequest<?, ?>>(16, 0.75f, Runtime.getRuntime().availableProcessors());
 
     protected AbstractMessageHandler(final ExecutorService executorService) {
         super(executorService);
@@ -71,11 +71,11 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
     /**
      * Get the request handler.
      *
-     * @param operationType the operation type
+     * @param header the request header
      * @return the request handler
      */
-    protected ManagementRequestHandler<T, A> getRequestHandler(final byte operationType) {
-        return getFallbackHandler();
+    protected ManagementRequestHandler<?, ?> getRequestHandler(final ManagementRequestHeader header) {
+        return getFallbackHandler(header);
     }
 
     /**
@@ -102,30 +102,25 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
         if(type == ManagementProtocol.TYPE_RESPONSE) {
             // Handle response to local requests
             final ManagementResponseHeader response =  (ManagementResponseHeader) header;
-            final ActiveRequest request = requests.remove(response.getResponseId());
+            final ActiveRequest<?, ?> request = requests.remove(response.getResponseId());
             if(request == null) {
                 ProtocolLogger.CONNECTION_LOGGER.noSuchRequest(response.getResponseId(), channel);
+                safeWriteErrorResponse(channel, header, ProtocolMessages.MESSAGES.responseHandlerNotFound(response.getResponseId()));
             } else if(response.getError() != null) {
                 // Actually we could move this in the response handler
                 request.context.getResultHandler().failed(new IOException(response.getError()));
             } else {
-                handleMessage(channel, input, header, request.context, request.handler);
+                handleRequest(channel, input, header, request);
             }
         } else {
             // Handle requests (or other messages)
             try {
                 final ManagementRequestHeader requestHeader = validateRequest(header);
-                final ActiveOperation<T, A> support = getActiveOperation(requestHeader);
-                if(support == null) {
-                    safeWriteErrorResponse(channel, header, ProtocolMessages.MESSAGES.responseHandlerNotFound(requestHeader.getBatchId()));
-                    return;
-                }
-                final ManagementRequestHandler<T, A> handler = getRequestHandler(requestHeader.getOperationId());
+                final ManagementRequestHandler<?, ?> handler = getRequestHandler(requestHeader);
                 if(handler == null) {
-                    // TODO This might also be a failure for the current active operation?
                     safeWriteErrorResponse(channel, header, ProtocolMessages.MESSAGES.responseHandlerNotFound(requestHeader.getBatchId()));
                 } else {
-                    handleMessage(channel, input, requestHeader, support, handler);
+                    handleMessage(channel, input, requestHeader, handler);
                 }
             } catch (Exception e) {
                 safeWriteErrorResponse(channel, header, e);
@@ -141,10 +136,10 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
      * @param support the request support
      * @return the future result
      */
-    protected AsyncFuture<T> executeRequest(final ManagementRequest<T, A> request, final Channel channel, final ActiveOperation<T, A> support) {
+    protected <T, A> AsyncFuture<T> executeRequest(final ManagementRequest<T, A> request, final Channel channel, final ActiveOperation<T, A> support) {
         assert support != null;
         final Integer requestId = this.requestID.incrementAndGet();
-        final ActiveRequest ar = new ActiveRequest(support, request, channel);
+        final ActiveRequest<T, A> ar = new ActiveRequest<T, A>(support, request, channel);
         requests.put(requestId, ar);
         final ManagementRequestHeader header = new ManagementRequestHeader(ManagementProtocol.VERSION, requestId, support.getOperationId(), request.getOperationType());
         final ActiveOperation.ResultHandler<T> resultHandler = support.getResultHandler();
@@ -209,10 +204,39 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
      * @param channel the channel
      * @param message the message
      * @param header the protocol header
+     * @param activeRequest the active request
+     */
+    protected <T, A> void handleRequest(final Channel channel, final DataInput message, final ManagementProtocolHeader header, ActiveRequest<T, A> activeRequest) {
+        handleMessage(channel, message, header, activeRequest.context, activeRequest.handler);
+    }
+
+    /**
+     * Handle a message.
+     *
+     * @param channel the channel
+     * @param message the message
+     * @param header the protocol header
+     * @param handler the request handler
+     * @throws IOException
+     */
+    protected <T, A> void handleMessage(final Channel channel, final DataInput message, final ManagementRequestHeader header, ManagementRequestHandler<T, A> handler) throws IOException {
+        final ActiveOperation<T, A> support = getActiveOperation(header);
+        if(support == null) {
+            throw ProtocolMessages.MESSAGES.responseHandlerNotFound(header.getBatchId());
+        }
+        handleMessage(channel, message, header, support, handler);
+    }
+
+    /**
+     * Handle a message.
+     *
+     * @param channel the channel
+     * @param message the message
+     * @param header the protocol header
      * @param support the request support
      * @param handler the request handler
      */
-    protected void handleMessage(final Channel channel, final DataInput message, final ManagementProtocolHeader header,
+    protected <T, A> void handleMessage(final Channel channel, final DataInput message, final ManagementProtocolHeader header,
                                  final ActiveOperation<T, A> support, final ManagementRequestHandler<T, A> handler) {
         assert support != null;
 
@@ -306,9 +330,9 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
      * @param closed the closed resource
      * @param e the exception which occurred during close, if any
      */
-    protected void handleChannelClosed(final Channel closed, final IOException e) {
-        for(final Map.Entry<Integer, ActiveRequest> requestEntry : requests.entrySet()) {
-            final ActiveRequest request = requestEntry.getValue();
+    public void handleChannelClosed(final Channel closed, final IOException e) {
+        for(final Map.Entry<Integer, ActiveRequest<?, ?>> requestEntry : requests.entrySet()) {
+            final ActiveRequest<?, ?> request = requestEntry.getValue();
             if(request.channel == closed) {
                 final IOException failure = e == null ? new IOException("Channel closed") : e;
                 request.context.getResultHandler().failed(failure);
@@ -321,11 +345,11 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
      * {@inheritDoc}
      */
     @Override
-    protected ActiveOperation<T, A> removeActiveOperation(Integer id) {
+    protected <T, A> ActiveOperation<T, A> removeActiveOperation(Integer id) {
         final ActiveOperation<T, A> removed = super.removeActiveOperation(id);
         if(removed != null) {
-            for(final Map.Entry<Integer, ActiveRequest> requestEntry : requests.entrySet()) {
-                final ActiveRequest request = requestEntry.getValue();
+            for(final Map.Entry<Integer, ActiveRequest<?, ?>> requestEntry : requests.entrySet()) {
+                final ActiveRequest<?, ?> request = requestEntry.getValue();
                 if(request.context == removed) {
                     requests.remove(requestEntry.getKey());
                 }
@@ -386,9 +410,10 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
     /**
      * Get a fallback handler.
      *
+     * @param header the protocol header
      * @return the fallback handler
      */
-    protected ManagementRequestHandler<T, A> getFallbackHandler() {
+    protected <T, A> ManagementRequestHandler<T, A> getFallbackHandler(final ManagementRequestHeader header) {
         return new ManagementRequestHandler<T, A>() {
             @Override
             public void handleRequest(final DataInput input, ActiveOperation.ResultHandler<T> resultHandler, ManagementRequestContext<A> context) throws IOException {
@@ -400,7 +425,7 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
         };
     }
 
-    private class ActiveRequest {
+    private static class ActiveRequest<T, A> {
 
         private final Channel channel;
         private final ActiveOperation<T, A> context;

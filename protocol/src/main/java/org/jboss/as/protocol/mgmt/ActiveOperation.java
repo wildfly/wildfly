@@ -24,9 +24,6 @@ package org.jboss.as.protocol.mgmt;
 
 import org.jboss.threads.AsyncFuture;
 import org.xnio.Cancellable;
-import org.xnio.IoFuture;
-
-import java.io.IOException;
 
 /**
  * Encapsulates information about a currently active operation, which

@@ -43,7 +43,7 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  * @author Emanuel Muckenhuber
  */
-class ActiveOperationSupport<T, A> {
+class ActiveOperationSupport {
 
     private static final Executor directExecutor = new Executor() {
 
@@ -53,10 +53,10 @@ class ActiveOperationSupport<T, A> {
         }
     };
 
-    private final ActiveOperation.CompletedCallback<T> NO_OP_CALLBACK = new ActiveOperation.CompletedCallback<T>() {
+    private static final ActiveOperation.CompletedCallback<?> NO_OP_CALLBACK = new ActiveOperation.CompletedCallback<Object>() {
 
         @Override
-        public void completed(T result) {
+        public void completed(Object result) {
             //
         }
 
@@ -72,7 +72,7 @@ class ActiveOperationSupport<T, A> {
     };
 
     private final Executor executor;
-    private final ConcurrentMap<Integer, ActiveOperationImpl<T, A>> activeRequests = new ConcurrentHashMap<Integer, ActiveOperationImpl<T, A>> (16, 0.75f, Runtime.getRuntime().availableProcessors());
+    private final ConcurrentMap<Integer, ActiveOperationImpl<?, ?>> activeRequests = new ConcurrentHashMap<Integer, ActiveOperationImpl<?, ?>> (16, 0.75f, Runtime.getRuntime().availableProcessors());
     private final ManagementBatchIdManager operationIdManager = new ManagementBatchIdManager.DefaultManagementBatchIdManager();
 
     private final ReentrantLock lock = new ReentrantLock();
@@ -85,14 +85,20 @@ class ActiveOperationSupport<T, A> {
         this.executor = executor != null ? executor : directExecutor;
     }
 
+    static <T> ActiveOperation.CompletedCallback<T> getDefaultCallback() {
+        //noinspection unchecked
+        return (ActiveOperation.CompletedCallback<T>) NO_OP_CALLBACK;
+    }
+
     /**
      * Register an active operation. The operation-id will be generated.
      *
      * @param attachment the shared attachment
      * @return the active operation
      */
-    protected ActiveOperation<T, A> registerActiveOperation(A attachment) {
-        return registerActiveOperation(attachment, NO_OP_CALLBACK);
+    protected <T, A> ActiveOperation<T, A> registerActiveOperation(A attachment) {
+        final ActiveOperation.CompletedCallback<T> callback = getDefaultCallback();
+        return registerActiveOperation(attachment, callback);
     }
 
     /**
@@ -102,7 +108,7 @@ class ActiveOperationSupport<T, A> {
      * @param callback the completed callback
      * @return the active operation
      */
-    protected ActiveOperation<T, A> registerActiveOperation(A attachment, ActiveOperation.CompletedCallback<T> callback) {
+    protected <T, A> ActiveOperation<T, A> registerActiveOperation(A attachment, ActiveOperation.CompletedCallback<T> callback) {
         return registerActiveOperation(null, attachment, callback);
     }
 
@@ -113,8 +119,9 @@ class ActiveOperationSupport<T, A> {
      * @param attachment the shared attachment
      * @return the created active operation
      */
-    protected ActiveOperation<T, A> registerActiveOperation(final Integer id, A attachment) {
-        return registerActiveOperation(id, attachment, NO_OP_CALLBACK);
+    protected <T, A> ActiveOperation<T, A> registerActiveOperation(final Integer id, A attachment) {
+        final ActiveOperation.CompletedCallback<T> callback = getDefaultCallback();
+        return registerActiveOperation(id, attachment, callback);
     }
 
     /**
@@ -125,7 +132,7 @@ class ActiveOperationSupport<T, A> {
      * @param callback the completed callback
      * @return the created active operation
      */
-    protected ActiveOperation<T, A> registerActiveOperation(final Integer id, A attachment, ActiveOperation.CompletedCallback<T> callback) {
+    protected <T, A> ActiveOperation<T, A> registerActiveOperation(final Integer id, A attachment, ActiveOperation.CompletedCallback<T> callback) {
         lock.lock(); try {
             // Check that we still allow registration
             assert ! shutdown;
@@ -140,7 +147,7 @@ class ActiveOperationSupport<T, A> {
                 }
                 operationId = id;
             }
-            final ActiveOperationImpl<T, A> request = new ActiveOperationImpl(operationId, attachment, callback);
+            final ActiveOperationImpl<T, A> request = new ActiveOperationImpl<T, A>(operationId, attachment, callback);
             final ActiveOperation<?, ?> existing =  activeRequests.putIfAbsent(operationId, request);
             if(existing != null) {
                 throw ProtocolMessages.MESSAGES.operationIdAlreadyExists(operationId);
@@ -158,7 +165,7 @@ class ActiveOperationSupport<T, A> {
      * @param header the request header
      * @return the active operation, {@code null} if if there is no registered operation
      */
-    protected ActiveOperation<T, A> getActiveOperation(final ManagementRequestHeader header) {
+    protected <T, A> ActiveOperation<T, A> getActiveOperation(final ManagementRequestHeader header) {
         return getActiveOperation(header.getBatchId());
     }
 
@@ -168,8 +175,9 @@ class ActiveOperationSupport<T, A> {
      * @param id the active operation id
      * @return the active operation, {@code null} if if there is no registered operation
      */
-    protected ActiveOperation<T, A> getActiveOperation(final Integer id) {
-        return activeRequests.get(id);
+    protected <T, A> ActiveOperation<T, A> getActiveOperation(final Integer id) {
+        //noinspection unchecked
+        return (ActiveOperation<T, A>) activeRequests.get(id);
     }
 
     /**
@@ -178,15 +186,16 @@ class ActiveOperationSupport<T, A> {
      * @param id the operation id
      * @return the removed active operation, {@code null} if there was no registered operation
      */
-    protected ActiveOperation<T, A> removeActiveOperation(final Integer id) {
+    protected <T, A> ActiveOperation<T, A> removeActiveOperation(final Integer id) {
         lock.lock(); try {
-            final ActiveOperation<T, A> removed = activeRequests.remove(id);
+            final ActiveOperation<?, ?> removed = activeRequests.remove(id);
             if(removed != null) {
                 activeCount--;
                 operationIdManager.freeBatchId(id);
                 condition.signalAll();
             }
-            return removed;
+            //noinspection unchecked
+            return (ActiveOperation<T, A>) removed;
         } finally {
             lock.unlock();
         }
@@ -194,10 +203,12 @@ class ActiveOperationSupport<T, A> {
 
     /**
      * Cancel all currently active operations.
+     *
+     * @return a list of cancelled operations
      */
     protected List<Integer> cancelAllActiveOperations() {
         final List<Integer> operations = new ArrayList<Integer>();
-        for(final ActiveOperationImpl<T, A> activeOperation : activeRequests.values()) {
+        for(final ActiveOperationImpl<?, ?> activeOperation : activeRequests.values()) {
             activeOperation.asyncCancel(false);
             operations.add(activeOperation.getOperationId());
         }
@@ -257,7 +268,7 @@ class ActiveOperationSupport<T, A> {
         private final Integer operationId;
         private List<Cancellable> cancellables;
 
-        private ResultHandler<T> completionHandler = new ResultHandler<T>() {
+        private final ResultHandler<T> completionHandler = new ResultHandler<T>() {
             @Override
             public boolean done(T result) {
                 try {

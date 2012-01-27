@@ -63,7 +63,7 @@ import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
 import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
-import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
+import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.repository.HostFileRepository;
@@ -108,7 +108,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     private volatile ModelControllerClient masterProxy;
     private final AtomicBoolean shutdown = new AtomicBoolean();
     private volatile Channel channel;
-    private volatile AbstractMessageHandler handler;
+    private volatile ManagementChannelHandler handler;
     private final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("domain-connection-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
     private final ExecutorService executor = Executors.newCachedThreadPool(threadFactory);
     private final AtomicBoolean connected = new AtomicBoolean(false);
@@ -206,32 +206,35 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             throw new RuntimeException(e);
         }
 
-        this.handler = new TransactionalModelControllerOperationHandler(controller, executor);
-
         try {
             SecurityRealm realm = securityRealmInjector.getOptionalValue();
-            CallbackHandler handler = null;
+            CallbackHandler callbackHandler = null;
             SSLContext sslContext = null;
 
             if (realm != null) {
                 sslContext = realm.getSSLContext();
                 CallbackHandlerFactory handlerFactory = realm.getSecretCallbackHandlerFactory();
                 if (handlerFactory != null) {
-                    handler = handlerFactory.getCallbackHandler(name);
+                    callbackHandler = handlerFactory.getCallbackHandler(name);
                 }
             }
-            connection = client.connectSync(handler, Collections.<String, String> emptyMap(), sslContext);
+            connection = client.connectSync(callbackHandler, Collections.<String, String> emptyMap(), sslContext);
             this.channelClient = client;
 
             channel = connection.openChannel(ManagementRemotingServices.DOMAIN_CHANNEL, OptionMap.EMPTY).get();
+
+            final ManagementChannelHandler handler = new ManagementChannelHandler(channel, executor);
             channel.addCloseHandler(new CloseHandler<Channel>() {
                 public void handleClose(final Channel closed, final IOException exception) {
                     connectionClosed();
                 }
             });
-            channel.receiveMessage(ManagementChannelReceiver.createDelegating(this.handler));
+            handler.addHandlerFactory(new TransactionalModelControllerOperationHandler(controller, handler));
+            channel.receiveMessage(handler.getReceiver());
+            this.handler = handler;
 
-            masterProxy = new ExistingChannelModelControllerClient(channel, executor);
+            // TODO
+            masterProxy = ExistingChannelModelControllerClient.createAndAdd(handler);
         } catch (IOException e) {
             ROOT_LOGGER.cannotConnect(host.getHostAddress(), port);
             throw new IllegalStateException(e);
@@ -239,7 +242,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
 
         SlaveRegistrationException error = null;
         try {
-            error = new RegisterModelControllerRequest().executeForResult(handler, channel, null);
+            error = handler.executeRequest(new RegisterModelControllerRequest(), null).getResult().get();
         } catch (Exception e) {
             ROOT_LOGGER.errorRetrievingDomainModel(host.getHostAddress(), port, e.getLocalizedMessage());
             throw new IllegalStateException(e);
@@ -260,7 +263,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             return;
         }
         try {
-            new UnregisterModelControllerRequest().executeForResult(handler, channel, null);
+            handler.executeRequest(new UnregisterModelControllerRequest(), null).getResult().await();
             registered.set(false);
             HostControllerLogger.ROOT_LOGGER.unregisteredAtRemoteHostController();
         } catch (Exception e) {
@@ -531,7 +534,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     private RemoteFileRepositoryExecutor remoteFileRepositoryExecutor = new RemoteFileRepositoryExecutor() {
         public File getFile(final String relativePath, final byte repoId, HostFileRepository localFileRepository) {
             try {
-                return new GetFileRequest(repoId, relativePath, localFileRepository).executeForResult(handler, channel, null);
+                return handler.executeRequest(new GetFileRequest(repoId, relativePath, localFileRepository), null).getResult().get();
             } catch (Exception e) {
                 throw MESSAGES.failedToGetFileFromRemoteRepository(e);
             }

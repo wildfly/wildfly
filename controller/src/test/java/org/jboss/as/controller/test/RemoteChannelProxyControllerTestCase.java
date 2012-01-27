@@ -22,7 +22,6 @@
 package org.jboss.as.controller.test;
 
 import java.io.IOException;
-import java.util.concurrent.Executors;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.PathAddress;
@@ -31,9 +30,11 @@ import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
 import org.jboss.as.controller.support.RemoteChannelPairSetup;
-import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
+import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
+import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
+import org.jboss.remoting3.HandleableCloseable;
 import org.junit.After;
 
 /**
@@ -43,34 +44,49 @@ import org.junit.After;
  */
 public class RemoteChannelProxyControllerTestCase extends AbstractProxyControllerTest {
 
-    static RemoteChannelPairSetup channels;
+    RemoteChannelPairSetup channels;
 
     @After
-    public void stopChannels() throws Exception{
+    public void stopChannels() throws Exception {
         channels.stopChannels();
         channels.shutdownRemoting();
+        channels = null;
     }
 
     @Override
     protected ProxyController createProxyController(final ModelController proxiedController, final PathAddress proxyNodeAddress) {
-        TransactionalModelControllerOperationHandler operationHandler = new TransactionalModelControllerOperationHandler(proxiedController, Executors.newCachedThreadPool());
         try {
             channels = new RemoteChannelPairSetup();
-            channels.setupRemoting(operationHandler);
+            channels.setupRemoting(new ManagementChannelInitialization() {
+                @Override
+                public HandleableCloseable.Key startReceiving(Channel channel) {
+                    final ManagementChannelHandler support = new ManagementChannelHandler(channel, channels.getExecutorService());
+                    support.addHandlerFactory(new TransactionalModelControllerOperationHandler(proxiedController, support));
+                    channel.addCloseHandler(new CloseHandler<Channel>() {
+                        @Override
+                        public void handleClose(Channel closed, IOException exception) {
+                            support.shutdownNow();
+                        }
+                    });
+                    channel.receiveMessage(support.getReceiver());
+                    return null;
+                }
+            });
             channels.startClientConnetion();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
         final Channel clientChannel = channels.getClientChannel();
-        final RemoteProxyController proxyController = RemoteProxyController.create(channels.getExecutorService(), proxyNodeAddress, ProxyOperationAddressTranslator.SERVER, channels.getClientChannel());
+        final ManagementChannelHandler support = new ManagementChannelHandler(clientChannel, channels.getExecutorService());
+        final RemoteProxyController proxyController = RemoteProxyController.create(support, proxyNodeAddress, ProxyOperationAddressTranslator.SERVER);
         clientChannel.addCloseHandler(new CloseHandler<Channel>() {
             @Override
             public void handleClose(Channel closed, IOException exception) {
-                proxyController.shutdownNow();
+                support.shutdownNow();
             }
         });
-        clientChannel.receiveMessage(ManagementChannelReceiver.createDelegating(proxyController));
+        clientChannel.receiveMessage(support.getReceiver());
         return proxyController;
     }
 }

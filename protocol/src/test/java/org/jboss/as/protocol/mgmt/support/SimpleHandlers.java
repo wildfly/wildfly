@@ -82,7 +82,7 @@ public class SimpleHandlers {
         }
     }
 
-    public static class OperationHandler extends AbstractMessageHandler<Void, Void> {
+    public static class OperationHandler extends AbstractMessageHandler {
 
         public OperationHandler() {
             super(Executors.newCachedThreadPool());
@@ -91,12 +91,13 @@ public class SimpleHandlers {
         @Override
         protected ManagementRequestHeader validateRequest(ManagementProtocolHeader header) throws IOException {
             ManagementRequestHeader request = super.validateRequest(header);
-            super.registerActiveOperation(request.getBatchId(), null);
+            super.registerActiveOperation(request.getBatchId(), (Void) null);
             return request;
         }
 
         @Override
-        protected ManagementRequestHandler<Void, Void> getRequestHandler(byte operationType) {
+        protected ManagementRequestHandler<?, ?> getRequestHandler(final ManagementRequestHeader header) {
+            final byte operationType = header.getOperationId();
             switch (operationType) {
                 case SIMPLE_REQUEST:
                     return new RequestHandler();
@@ -109,7 +110,7 @@ public class SimpleHandlers {
                 case REQUEST_WITH_NO_HANDLER:
                     //No handler for this
                 default:
-                    return super.getRequestHandler(operationType);
+                    return super.getRequestHandler(header);
                 }
         }
     }
@@ -186,7 +187,7 @@ public class SimpleHandlers {
         }
     }
 
-    public static class SimpleClient extends AbstractMessageHandler<Integer, Void> {
+    public static class SimpleClient extends AbstractMessageHandler {
 
         private final Channel channel;
         SimpleClient(final Channel channel, final ExecutorService executorService) {

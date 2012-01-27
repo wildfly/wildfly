@@ -82,5 +82,5 @@ public interface ManagementBatchIdManager {
             ids.remove(id);
         }
 
-    };
+    }
 }

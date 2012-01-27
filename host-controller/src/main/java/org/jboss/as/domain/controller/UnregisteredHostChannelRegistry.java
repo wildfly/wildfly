@@ -20,8 +20,9 @@ package org.jboss.as.domain.controller;
 
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.RunningMode;
-import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
-import org.jboss.remoting3.Channel;
+import org.jboss.as.protocol.mgmt.ManagementChannelAssociation;
+import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
+import org.jboss.as.protocol.mgmt.ManagementRequestHandlerFactory;
 
 /**
  *
@@ -33,14 +34,14 @@ public interface UnregisteredHostChannelRegistry {
      * Register a host channel to be registered in the DomainController
      *
      * @param hostName the name of the host
-     * @param channel the channel
+     * @param channelAssociation the channel association
      * @param callback to be called when {@link UnregisteredHostChannelRegistry#popChannelAndCreateProxy(String)}
      * is called and creates a proxy
      *
      * @throws IllegalArgumentException if there is already a channel for the hostName
      * @throws IllegalStateException if this host's running mode is {@link RunningMode#ADMIN_ONLY}
      */
-    void registerChannel(String hostName, Channel channel, ProxyCreatedCallback callback) throws SlaveRegistrationException;
+    void registerChannel(String hostName, ManagementChannelHandler channelAssociation, ProxyCreatedCallback callback) throws SlaveRegistrationException;
 
     /**
      * Get and remove a host channel to be registered in the DomainController
@@ -62,9 +63,9 @@ public interface UnregisteredHostChannelRegistry {
         /**
          * Gets called with the management operation handler once the proxy has been created
          *
-         * @param handler the operation handler
+         * @param handlerFactory the operation handler
          */
-        void proxyCreated(ManagementMessageHandler handler);
+        void proxyCreated(final ManagementRequestHandlerFactory handlerFactory);
     }
 
 }

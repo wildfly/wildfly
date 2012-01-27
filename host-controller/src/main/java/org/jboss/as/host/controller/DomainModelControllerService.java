@@ -90,6 +90,7 @@ import org.jboss.as.process.ExitCodes;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.process.ProcessMessageHandler;
+import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.remoting.EndpointService;
 import org.jboss.as.remoting.management.ManagementChannelRegistryService;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
@@ -133,7 +134,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private final BootstrapListener bootstrapListener;
     private ManagementResourceRegistration modelNodeRegistration;
 
-    private final Map<String, Channel> unregisteredHostChannels = new HashMap<String, Channel>();
+    private final Map<String, ManagementChannelHandler> unregisteredHostChannels = new HashMap<String, ManagementChannelHandler>();
     private final Map<String, ProxyCreatedCallback> proxyCreatedCallbacks = new HashMap<String, ProxyCreatedCallback>();
     // TODO look into using the controller executor
     final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("proxy-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
@@ -436,7 +437,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     }
 
     @Override
-    public synchronized void registerChannel(final String hostName, final Channel channel, final ProxyCreatedCallback callback) {
+    public synchronized void registerChannel(final String hostName, final ManagementChannelHandler channelHandler, final ProxyCreatedCallback callback) {
 
         /* Disable this as part of the REM3-121 workarounds
         PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(HOST, hostName));
@@ -447,29 +448,39 @@ public class DomainModelControllerService extends AbstractControllerService impl
         if (unregisteredHostChannels.containsKey(hostName)) {
             throw MESSAGES.hostNameAlreadyConnected(hostName);
         }
-        unregisteredHostChannels.put(hostName, channel);
+        unregisteredHostChannels.put(hostName, channelHandler);
         proxyCreatedCallbacks.put(hostName, callback);
-        channel.addCloseHandler(new CloseHandler<Channel>() {
-            public void handleClose(final Channel closed, final IOException exception) {
-                unregisteredHostChannels.remove(hostName);
-                proxyCreatedCallbacks.remove(hostName);
-            }
-        });
+        try {
+            channelHandler.getChannel().addCloseHandler(new CloseHandler<Channel>() {
+                public void handleClose(final Channel closed, final IOException exception) {
+                    unregisteredHostChannels.remove(hostName);
+                    proxyCreatedCallbacks.remove(hostName);
+                }
+            });
+        } catch(IOException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     @Override
     public synchronized ProxyController popChannelAndCreateProxy(final String hostName) {
-        final Channel channel = unregisteredHostChannels.remove(hostName);
-        if (channel == null) {
+        final ManagementChannelHandler channelHandler = unregisteredHostChannels.remove(hostName);
+        if (channelHandler == null) {
             throw MESSAGES.noChannelForHost(hostName);
         }
-        channel.addCloseHandler(new CloseHandler<Channel>() {
-            public void handleClose(final Channel closed, final IOException exception) {
-                unregisterRemoteHost(hostName);
-            }
-        });
+        try {
+            channelHandler.getChannel().addCloseHandler(new CloseHandler<Channel>() {
+                public void handleClose(final Channel closed, final IOException exception) {
+                    unregisterRemoteHost(hostName);
+                }
+            });
+        } catch ( IOException e) {
+            throw new RuntimeException(e);
+        }
+
         final PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.HOST, hostName));
-        RemoteProxyController proxy = RemoteProxyController.create(proxyExecutor, addr, ProxyOperationAddressTranslator.HOST, channel);
+        RemoteProxyController proxy = RemoteProxyController.create(channelHandler, addr, ProxyOperationAddressTranslator.HOST);
         ProxyCreatedCallback callback = proxyCreatedCallbacks.remove(hostName);
         if (callback != null) {
             callback.proxyCreated(proxy);
@@ -478,8 +489,8 @@ public class DomainModelControllerService extends AbstractControllerService impl
     }
 
     private class DelegatingServerInventory implements ServerInventory {
-        public void serverCommunicationRegistered(String serverProcessName, Channel channel, ProxyCreatedCallback callback) {
-            serverInventory.serverCommunicationRegistered(serverProcessName, channel, callback);
+        public void serverCommunicationRegistered(String serverProcessName, ManagementChannelHandler channelHandler, ProxyCreatedCallback callback) {
+            serverInventory.serverCommunicationRegistered(serverProcessName, channelHandler, callback);
         }
 
         public void serverProcessAdded(String processName) {

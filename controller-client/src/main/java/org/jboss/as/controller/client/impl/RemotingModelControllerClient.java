@@ -22,7 +22,6 @@
 
 package org.jboss.as.controller.client.impl;
 
-import org.jboss.as.controller.client.ControllerClientLogger;
 import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
 
 import java.io.IOException;
@@ -32,6 +31,8 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.ModelControllerClientConfiguration;
 import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.mgmt.ManagementChannelAssociation;
+import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
@@ -51,11 +52,27 @@ public class RemotingModelControllerClient extends AbstractModelControllerClient
     private ManagementClientChannelStrategy strategy;
     private boolean closed;
 
+    private final ManagementChannelHandler channelAssociation;
     private final ModelControllerClientConfiguration clientConfiguration;
 
     public RemotingModelControllerClient(final ModelControllerClientConfiguration configuration) {
-        super(configuration.getExecutor());
+        this.channelAssociation = new ManagementChannelHandler(new ManagementClientChannelStrategy() {
+            @Override
+            public Channel getChannel() throws IOException {
+                return getOrCreateChannel();
+            }
+
+            @Override
+            public synchronized void close() throws IOException {
+                //
+            }
+        }, configuration.getExecutor(), this);
         this.clientConfiguration = configuration;
+    }
+
+    @Override
+    protected ManagementChannelAssociation getChannelAssociation() throws IOException {
+        return channelAssociation;
     }
 
     @Override
@@ -63,7 +80,7 @@ public class RemotingModelControllerClient extends AbstractModelControllerClient
         synchronized (this) {
             closed = true;
             // Don't allow any new request
-            shutdown();
+            channelAssociation.shutdown();
             // First close the channel and connection
             if (strategy != null) {
                 StreamUtils.safeClose(strategy);
@@ -75,9 +92,9 @@ public class RemotingModelControllerClient extends AbstractModelControllerClient
                 endpoint = null;
             }
             // Cancel all still active operations
-            shutdownNow();
+            channelAssociation.shutdownNow();
             try {
-                awaitCompletion(1, TimeUnit.SECONDS);
+                channelAssociation.awaitCompletion(1, TimeUnit.SECONDS);
             } catch (InterruptedException ignore) {
                 Thread.currentThread().interrupt();
             } finally {
@@ -86,7 +103,7 @@ public class RemotingModelControllerClient extends AbstractModelControllerClient
         }
     }
 
-    protected synchronized Channel getChannel() throws IOException {
+    protected synchronized Channel getOrCreateChannel() throws IOException {
         if (closed) {
             throw MESSAGES.objectIsClosed( ModelControllerClient.class.getSimpleName());
         }
@@ -102,12 +119,12 @@ public class RemotingModelControllerClient extends AbstractModelControllerClient
                 configuration.setEndpointName("management-client");
 
                 final ProtocolChannelClient setup = ProtocolChannelClient.create(configuration);
-                strategy = ManagementClientChannelStrategy.create(setup, this, clientConfiguration.getCallbackHandler(),
+                strategy = ManagementClientChannelStrategy.create(setup, channelAssociation, clientConfiguration.getCallbackHandler(),
                         clientConfiguration.getSaslOptions(), clientConfiguration.getSSLContext(),
                         new CloseHandler<Channel>() {
                     @Override
                     public void handleClose(final Channel closed, final IOException exception) {
-                        handleChannelClosed(closed, exception);
+                        channelAssociation.handleChannelClosed(closed, exception);
                     }
                 });
             } catch (IOException e) {

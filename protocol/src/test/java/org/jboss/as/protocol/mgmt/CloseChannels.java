@@ -71,10 +71,10 @@ public class CloseChannels {
             @Override
             public void channelOpened(Channel channel) {
                 System.out.println("Opened channel");
-                final AbstractMessageHandler<Integer, Void> handler = new AbstractMessageHandler<Integer, Void>(executor) {
+                final AbstractMessageHandler handler = new AbstractMessageHandler(executor) {
 
                     @Override
-                    protected ManagementRequestHandler<Integer, Void> getRequestHandler(byte operationType) {
+                    protected ManagementRequestHandler<Integer, Void> getRequestHandler(ManagementRequestHeader header) {
                         return new ManagementRequestHandler<Integer, Void>() {
                             @Override
                             public void handleRequest(DataInput input, ActiveOperation.ResultHandler<Integer> resultHandler, ManagementRequestContext<Void> context) throws IOException {

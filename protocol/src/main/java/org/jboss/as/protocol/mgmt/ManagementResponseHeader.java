@@ -46,6 +46,7 @@ public class ManagementResponseHeader extends ManagementProtocolHeader {
      *
      * @param version The protocol version
      * @param responseId The response id
+     * @param error an optional error description
      */
     public ManagementResponseHeader(final int version, final int responseId, final String error) {
         super(version);
