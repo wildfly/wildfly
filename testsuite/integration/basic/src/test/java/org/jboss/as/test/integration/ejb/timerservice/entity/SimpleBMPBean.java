@@ -37,21 +37,24 @@ import javax.ejb.RemoveException;
 import javax.ejb.TimedObject;
 import javax.ejb.Timer;
 
+import org.jboss.logging.Logger;
+
 /**
  * @author Stuart Douglas
  */
 public class SimpleBMPBean implements EntityBean, TimedObject {
-
+    private static final Logger log = Logger.getLogger(SimpleBMPBean.class);
+    private static final long serialVersionUID = 1L;
     private static final AtomicInteger ID = new AtomicInteger();
     public static final int HOME_METHOD_RETURN = 100;
 
     private String myField;
     private EntityContext entityContext;
     private boolean ejbPostCreateCalled;
-
-    private static final CountDownLatch latch = new CountDownLatch(2);
+   
+    private static CountDownLatch latch = new CountDownLatch(2);
     private static final Map<Integer, String> timerData = new HashMap<Integer, String>();
-
+    
     public Integer ejbCreateEmpty() {
         int primaryKey = ID.incrementAndGet();
         DataStore.DATA.put(primaryKey, myField);
@@ -125,7 +128,7 @@ public class SimpleBMPBean implements EntityBean, TimedObject {
 
     @Override
     public void ejbActivate() throws EJBException, RemoteException {
-
+        log.info("EJB " + ID + " activated [" + entityContext.getPrimaryKey() + "]");
     }
 
     @Override
@@ -150,6 +153,10 @@ public class SimpleBMPBean implements EntityBean, TimedObject {
         entityContext.getTimerService().createTimer(100, null);
     }
 
+    public void setupTimerDefined(int time) {
+        entityContext.getTimerService().createTimer(time, null);
+    }    
+    
     public String getMyField() {
         return myField;
     }
@@ -174,5 +181,13 @@ public class SimpleBMPBean implements EntityBean, TimedObject {
 
     public static CountDownLatch getLatch() {
         return latch;
+    }
+    
+    public static void redefineLatch(int countDownLatchNumber) {
+        latch = new CountDownLatch(countDownLatchNumber);
+    }
+    
+    public Collection<Timer> getTimers() {
+        return entityContext.getTimerService().getTimers();
     }
 }
