@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,26 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering.unmanaged.ejb3.stateful.bean;
+package org.jboss.as.ejb3.component.stateful;
 
-import javax.ejb.EJB;
-import javax.interceptor.Interceptors;
-
-import org.jboss.ejb3.annotation.Clustered;
+import org.jboss.marshalling.SerializabilityChecker;
 
 /**
  * @author Paul Ferraro
  */
-@Clustered
-@javax.ejb.Stateful(name = "StatefulBean")
-@Interceptors(StatefulInterceptor.class)
-@Intercepted
-public class StatefulBean implements Stateful {
+public class StatefulSessionBeanSerializabilityChecker implements SerializabilityChecker {
 
-    @EJB
-    private Nested nested;
-    
-    public int increment() {
-        return this.nested.increment();
+    private final Class<?> beanClass;
+
+    public StatefulSessionBeanSerializabilityChecker(Class<?> beanClass) {
+        this.beanClass = beanClass;
+    }
+
+    /**
+     * {@inheritDoc}
+     * @see org.jboss.marshalling.SerializabilityChecker#isSerializable(java.lang.Class)
+     */
+    @Override
+    public boolean isSerializable(Class<?> clazz) {
+        return this.beanClass == clazz || DEFAULT.isSerializable(clazz);
     }
 }

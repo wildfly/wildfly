@@ -33,6 +33,7 @@ import org.jboss.as.ejb3.cache.spi.ReplicationPassivationManager;
 import org.jboss.as.ejb3.cache.spi.SerializationGroup;
 import org.jboss.logging.Logger;
 import org.jboss.marshalling.MarshallingConfiguration;
+import org.jboss.marshalling.SerializabilityChecker;
 
 /**
  * Functions as both a StatefulObjectFactory and PassivationManager for {@link SerializationGroup}s.
@@ -45,12 +46,31 @@ public class SerializationGroupContainer<K extends Serializable, V extends Cache
     private static final Logger log = Logger.getLogger(SerializationGroupContainer.class);
 
     private PassivatingBackingCache<UUID, Cacheable<UUID>, SerializationGroup<K, V, UUID>> groupCache;
-    private final PassivationManager<K, V> passivationManager;
+    private final MarshallingConfiguration marshallingConfiguration;
+    private final SerializationGroupSerializabilityChecker serializabilityChecker;
 
     private boolean clustered;
 
     public SerializationGroupContainer(PassivationManager<K, V> passivationManager) {
-        this.passivationManager = passivationManager;
+        this.serializabilityChecker = new SerializationGroupSerializabilityChecker();
+        this.serializabilityChecker.addSerializabilityChecker(SerializabilityChecker.DEFAULT);
+        MarshallingConfiguration config = passivationManager.getMarshallingConfiguration();
+        this.marshallingConfiguration = new MarshallingConfiguration();
+        this.marshallingConfiguration.setBufferSize(config.getBufferSize());
+        this.marshallingConfiguration.setClassCount(config.getClassCount());
+        this.marshallingConfiguration.setClassExternalizerFactory(config.getClassExternalizerFactory());
+        this.marshallingConfiguration.setClassResolver(config.getClassResolver());
+        this.marshallingConfiguration.setClassTable(config.getClassTable());
+        this.marshallingConfiguration.setExceptionListener(config.getExceptionListener());
+        this.marshallingConfiguration.setExternalizerCreator(config.getExternalizerCreator());
+        this.marshallingConfiguration.setExternalizerCreator(config.getExternalizerCreator());
+        this.marshallingConfiguration.setInstanceCount(config.getInstanceCount());
+        this.marshallingConfiguration.setObjectResolver(config.getObjectResolver());
+        this.marshallingConfiguration.setObjectTable(config.getObjectTable());
+        this.marshallingConfiguration.setSerializabilityChecker(this.serializabilityChecker);
+        this.marshallingConfiguration.setSerializedCreator(config.getSerializedCreator());
+        this.marshallingConfiguration.setStreamHeader(config.getStreamHeader());
+        this.marshallingConfiguration.setVersion(config.getVersion());
     }
 
     public boolean isClustered() {
@@ -63,7 +83,14 @@ public class SerializationGroupContainer<K extends Serializable, V extends Cache
 
     @Override
     public MarshallingConfiguration getMarshallingConfiguration() {
-        return this.passivationManager.getMarshallingConfiguration();
+        return this.marshallingConfiguration;
+    }
+
+    public void addMemberPassivationManager(PassivationManager<K, V> passivationManager) {
+        SerializabilityChecker checker = passivationManager.getMarshallingConfiguration().getSerializabilityChecker();
+        if (checker != null) {
+            this.serializabilityChecker.addSerializabilityChecker(checker);
+        }
     }
 
     @Override

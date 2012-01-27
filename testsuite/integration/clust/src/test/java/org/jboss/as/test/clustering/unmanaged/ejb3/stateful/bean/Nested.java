@@ -22,24 +22,13 @@
 
 package org.jboss.as.test.clustering.unmanaged.ejb3.stateful.bean;
 
-import javax.ejb.EJB;
-import javax.interceptor.Interceptors;
-
-import org.jboss.ejb3.annotation.Clustered;
+import javax.ejb.Local;
 
 /**
  * @author Paul Ferraro
+ *
  */
-@Clustered
-@javax.ejb.Stateful(name = "StatefulBean")
-@Interceptors(StatefulInterceptor.class)
-@Intercepted
-public class StatefulBean implements Stateful {
-
-    @EJB
-    private Nested nested;
-    
-    public int increment() {
-        return this.nested.increment();
-    }
+@Local
+public interface Nested {
+    int increment();
 }

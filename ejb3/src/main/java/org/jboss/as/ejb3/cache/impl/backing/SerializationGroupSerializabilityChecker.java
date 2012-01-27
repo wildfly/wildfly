@@ -20,26 +20,34 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering.unmanaged.ejb3.stateful.bean;
+package org.jboss.as.ejb3.cache.impl.backing;
 
-import javax.ejb.EJB;
-import javax.interceptor.Interceptors;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.jboss.ejb3.annotation.Clustered;
+import org.jboss.marshalling.SerializabilityChecker;
 
 /**
  * @author Paul Ferraro
+ *
  */
-@Clustered
-@javax.ejb.Stateful(name = "StatefulBean")
-@Interceptors(StatefulInterceptor.class)
-@Intercepted
-public class StatefulBean implements Stateful {
+public class SerializationGroupSerializabilityChecker implements SerializabilityChecker {
 
-    @EJB
-    private Nested nested;
-    
-    public int increment() {
-        return this.nested.increment();
+    private final List<SerializabilityChecker> checkers = new CopyOnWriteArrayList<SerializabilityChecker>();
+
+    public void addSerializabilityChecker(SerializabilityChecker checker) {
+        this.checkers.add(checker);
+    }
+
+    /**
+     * {@inheritDoc}
+     * @see org.jboss.marshalling.SerializabilityChecker#isSerializable(java.lang.Class)
+     */
+    @Override
+    public boolean isSerializable(Class<?> clazz) {
+        for (SerializabilityChecker checker: this.checkers) {
+            if (checker.isSerializable(clazz)) return true;
+        }
+        return false;
     }
 }
