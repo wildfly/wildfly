@@ -189,6 +189,41 @@ final class WebservicesSubsystemParser implements XMLStreamConstants, XMLElement
                             break;
                         }
                         case ENDPOINT_CONFIG: {
+                            readEndpointConfigOld(reader, subsystem.get(OP_ADDR), endpointConfigs);
+                            break;
+                        }
+                        default: {
+                            throw unexpectedElement(reader);
+                        }
+                    }
+                    break;
+                }
+                case WEBSERVICES_1_1: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    if (element != Element.ENDPOINT_CONFIG && !encountered.add(element)) {
+                        throw unexpectedElement(reader);
+                    }
+                    switch (element) {
+                        case MODIFY_WSDL_ADDRESS: {
+                            boolean b = Boolean.parseBoolean(parseElementNoAttributes(reader));
+                            subsystem.get(MODIFY_WSDL_ADDRESS).set(b);
+                            break;
+                        }
+                        case WSDL_HOST: {
+                            subsystem.get(WSDL_HOST).set(parseElementNoAttributes(reader));
+                            break;
+                        }
+                        case WSDL_PORT: {
+                            int port = Integer.valueOf(parseElementNoAttributes(reader));
+                            subsystem.get(WSDL_PORT).set(port);
+                            break;
+                        }
+                        case WSDL_SECURE_PORT: {
+                            int port = Integer.valueOf(parseElementNoAttributes(reader));
+                            subsystem.get(WSDL_SECURE_PORT).set(port);
+                            break;
+                        }
+                        case ENDPOINT_CONFIG: {
                             readEndpointConfig(reader, subsystem.get(OP_ADDR), endpointConfigs);
                             break;
                         }
@@ -215,7 +250,7 @@ final class WebservicesSubsystemParser implements XMLStreamConstants, XMLElement
         return reader.getElementText().trim();
     }
 
-    private void readEndpointConfig(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> operationList) throws XMLStreamException {
+    private void readEndpointConfigOld(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> operationList) throws XMLStreamException {
         String configName = null;
 
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
@@ -235,11 +270,59 @@ final class WebservicesSubsystemParser implements XMLStreamConstants, XMLElement
                     break;
                 }
                 case PRE_HANDLER_CHAINS: {
-                    parseHandlerChains(reader, configName, operationList, true);
+                    parseHandlerChainsOld(reader, configName, operationList, true);
                     break;
                 }
                 case POST_HANDLER_CHAINS: {
-                    parseHandlerChains(reader, configName, operationList, false);
+                    parseHandlerChainsOld(reader, configName, operationList, false);
+                    break;
+                }
+                case PROPERTY : {
+                    final ModelNode operation = parsePropertyOld(reader, configName);
+                    operationList.add(operation);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private void readEndpointConfig(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> operationList) throws XMLStreamException {
+        String configName = null;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+            case NAME:
+                configName = value;
+                break;
+            default:
+                throw unexpectedAttribute(reader, i);
+            }
+        }
+
+        final ModelNode node = new ModelNode();
+        node.get(OP).set(ADD);
+        node.get(OP_ADDR).set(address).add(ENDPOINT_CONFIG, configName);
+        operationList.add(node);
+        final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
+        while (reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            if (element != Element.PRE_HANDLER_CHAIN && element != Element.POST_HANDLER_CHAIN && element != Element.PROPERTY
+                    && !encountered.add(element)) {
+                throw unexpectedElement(reader);
+            }
+            switch (element) {
+                case PRE_HANDLER_CHAIN: {
+                    parseHandlerChain(reader, configName, operationList, true);
+                    break;
+                }
+                case POST_HANDLER_CHAIN: {
+                    parseHandlerChain(reader, configName, operationList, false);
                     break;
                 }
                 case PROPERTY : {
@@ -254,7 +337,7 @@ final class WebservicesSubsystemParser implements XMLStreamConstants, XMLElement
         }
     }
 
-    private ModelNode parseProperty(XMLExtendedStreamReader reader, final String configName) throws XMLStreamException {
+    private ModelNode parsePropertyOld(final XMLExtendedStreamReader reader, final String configName) throws XMLStreamException {
         String propertyName = null;
         String propertyValue = null;
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
@@ -286,7 +369,48 @@ final class WebservicesSubsystemParser implements XMLStreamConstants, XMLElement
         return operation;
     }
 
-    private ModelNode parseHandlerChains(final XMLExtendedStreamReader reader, final String configName, final List<ModelNode> operationList, final boolean isPreHandlerChain) throws XMLStreamException {
+    private ModelNode parseProperty(final XMLExtendedStreamReader reader, final String configName) throws XMLStreamException {
+        String propertyName = null;
+        String propertyValue = null;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+            case NAME:
+                propertyName = value;
+                break;
+            case VALUE:
+                propertyValue = value;
+                break;
+            default:
+                throw unexpectedAttribute(reader, i);
+            }
+        }
+
+        final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
+        while (reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            if (!encountered.add(element)) {
+                throw unexpectedElement(reader);
+            }
+            switch (element) {
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(ADD);
+        operation.get(OP_ADDR).add(SUBSYSTEM, WSExtension.SUBSYSTEM_NAME).add(ENDPOINT_CONFIG, configName).add(PROPERTY, propertyName);
+        if (propertyValue != null) {
+            operation.get(VALUE).set(propertyValue);
+        }
+        return operation;
+    }
+
+    private ModelNode parseHandlerChainsOld(final XMLExtendedStreamReader reader, final String configName, final List<ModelNode> operationList, final boolean isPreHandlerChain) throws XMLStreamException {
         ModelNode chainsNode = new ModelNode();
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.nextTag() != END_ELEMENT) {
@@ -297,7 +421,7 @@ final class WebservicesSubsystemParser implements XMLStreamConstants, XMLElement
 
             switch (element) {
                 case HANDLER_CHAIN: {
-                    parseHandlerChain(reader, configName, operationList, isPreHandlerChain);
+                    parseHandlerChainOld(reader, configName, operationList, isPreHandlerChain);
                     break;
                 }
 
@@ -310,7 +434,7 @@ final class WebservicesSubsystemParser implements XMLStreamConstants, XMLElement
 
     }
 
-    private void parseHandlerChain(final XMLExtendedStreamReader reader, final String configName, final List<ModelNode> operationList, final boolean isPreHandlerChain) throws XMLStreamException {
+    private void parseHandlerChainOld(final XMLExtendedStreamReader reader, final String configName, final List<ModelNode> operationList, final boolean isPreHandlerChain) throws XMLStreamException {
         String handlerChainId = null;
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         final int count = reader.getAttributeCount();
@@ -342,6 +466,53 @@ final class WebservicesSubsystemParser implements XMLStreamConstants, XMLElement
                     break;
                 }
                 case HANDLER: {
+                    parseHandlerOld(reader, configName, handlerChainId, isPreHandlerChain, addHandlerOperations);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+        final ModelNode operation = new ModelNode();
+        final String handlerChainType = isPreHandlerChain ? PRE_HANDLER_CHAIN : POST_HANDLER_CHAIN;
+        operation.get(OP).set(ADD);
+        operation.get(OP_ADDR).add(SUBSYSTEM, WSExtension.SUBSYSTEM_NAME).add(ENDPOINT_CONFIG, configName).add(handlerChainType, handlerChainId);
+        if (protocolBindings != null) {
+            operation.get(Constants.PROTOCOL_BINDINGS).set(protocolBindings);
+        }
+        operationList.add(operation);
+        operationList.addAll(addHandlerOperations);
+    }
+
+    private void parseHandlerChain(final XMLExtendedStreamReader reader, final String configName, final List<ModelNode> operationList, final boolean isPreHandlerChain) throws XMLStreamException {
+        String handlerChainId = null;
+        String protocolBindings = null;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+            case NAME:
+                handlerChainId = value;
+                break;
+            case PROTOCOL_BINDINGS:
+                protocolBindings = value;
+                break;
+            default:
+                throw unexpectedAttribute(reader, i);
+            }
+        }
+        final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
+        final List<ModelNode> addHandlerOperations = new LinkedList<ModelNode>();
+        while (reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            if (element != Element.HANDLER && !encountered.add(element)) {
+                throw unexpectedElement(reader);
+            }
+            switch (element) {
+                case HANDLER: {
                     parseHandler(reader, configName, handlerChainId, isPreHandlerChain, addHandlerOperations);
                     break;
                 }
@@ -361,7 +532,7 @@ final class WebservicesSubsystemParser implements XMLStreamConstants, XMLElement
         operationList.addAll(addHandlerOperations);
     }
 
-    private void parseHandler(XMLExtendedStreamReader reader, final String configName, final String handlerChainId, final boolean isPreHandlerChain, final List<ModelNode> operations) throws XMLStreamException {
+    private void parseHandlerOld(final XMLExtendedStreamReader reader, final String configName, final String handlerChainId, final boolean isPreHandlerChain, final List<ModelNode> operations) throws XMLStreamException {
         String handlerName = null;
         String handlerClass = null;
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
@@ -384,6 +555,46 @@ final class WebservicesSubsystemParser implements XMLStreamConstants, XMLElement
                 }
             }
         }
+        final ModelNode operation = new ModelNode();
+        final String handlerChainType = isPreHandlerChain ? PRE_HANDLER_CHAIN : POST_HANDLER_CHAIN;
+        operation.get(OP).set(ADD);
+        operation.get(OP_ADDR).add(SUBSYSTEM, WSExtension.SUBSYSTEM_NAME).add(ENDPOINT_CONFIG, configName).add(handlerChainType, handlerChainId).add(HANDLER, handlerName);
+        operation.get(CLASS).set(handlerClass);
+        operations.add(operation);
+    }
+
+    private void parseHandler(final XMLExtendedStreamReader reader, final String configName, final String handlerChainId, final boolean isPreHandlerChain, final List<ModelNode> operations) throws XMLStreamException {
+        String handlerName = null;
+        String handlerClass = null;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+            case NAME:
+                handlerName = value;
+                break;
+            case CLASS:
+                handlerClass = value;
+                break;
+            default:
+                throw unexpectedAttribute(reader, i);
+            }
+        }
+        final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
+        while (reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            if (!encountered.add(element)) {
+                throw unexpectedElement(reader);
+            }
+            switch (element) {
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+
         final ModelNode operation = new ModelNode();
         final String handlerChainType = isPreHandlerChain ? PRE_HANDLER_CHAIN : POST_HANDLER_CHAIN;
         operation.get(OP).set(ADD);

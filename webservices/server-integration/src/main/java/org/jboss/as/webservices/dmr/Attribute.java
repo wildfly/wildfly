@@ -32,6 +32,10 @@ enum Attribute {
     UNKNOWN(null),
 
     ID(Constants.ID),
+    NAME(Constants.NAME),
+    VALUE(Constants.VALUE),
+    CLASS(Constants.CLASS),
+    PROTOCOL_BINDINGS(Constants.PROTOCOL_BINDINGS),
     ;
 
     private final String name;
