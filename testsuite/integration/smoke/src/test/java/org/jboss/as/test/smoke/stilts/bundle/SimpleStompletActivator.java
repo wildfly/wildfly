@@ -19,9 +19,8 @@ package org.jboss.as.test.smoke.stilts.bundle;
 
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.osgi.repository.RepositoryConstants;
-import org.jboss.osgi.repository.RepositoryRequirementBuilder;
-import org.jboss.osgi.repository.XRepository;
+import org.jboss.osgi.resolver.v2.XRequirementBuilder;
+import org.jboss.osgi.resolver.v2.XResourceConstants;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -81,11 +80,10 @@ public class SimpleStompletActivator implements BundleActivator {
     }
 
     private Bundle installSupportBundle(BundleContext context, ModuleIdentifier moduleid) throws BundleException {
-        XRepository repository = (XRepository) getRepository(context);
-        RepositoryRequirementBuilder builder = repository.getRequirementBuilder();
-        Requirement req = builder.createArtifactRequirement(moduleid);
+        Repository repository = getRepository(context);
+        Requirement req = XRequirementBuilder.createArtifactRequirement(moduleid);
         Capability cap = repository.findProviders(req).iterator().next();
-        URL location = (URL) cap.getAttributes().get(RepositoryConstants.CONTENT_URL);
+        URL location = (URL) cap.getAttributes().get(XResourceConstants.CONTENT_URL);
         return context.installBundle(location.toExternalForm());
     }
 

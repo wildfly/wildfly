@@ -24,8 +24,7 @@ import org.jboss.as.test.smoke.stilts.bundle.SimpleStomplet;
 import org.jboss.as.test.smoke.stilts.bundle.SimpleStompletActivator;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.osgi.repository.XRepository;
-import org.jboss.osgi.resolver.v2.XCapability;
+import org.jboss.osgi.resolver.v2.XRequirementBuilder;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -79,7 +78,7 @@ public class SimpleStompletTestCase {
                 builder.addBundleManifestVersion(2);
                 builder.addBundleActivator(SimpleStompletActivator.class);
                 builder.addImportPackages(BundleContext.class, PackageAdmin.class, Logger.class);
-                builder.addImportPackages(Repository.class, Resource.class, XRepository.class, XCapability.class);
+                builder.addImportPackages(Repository.class, Resource.class, XRequirementBuilder.class);
                 builder.addImportPackages(ModuleIdentifier.class);
                 builder.addDynamicImportPackages("org.projectodd.stilts.*");
                 return builder.openStream();
