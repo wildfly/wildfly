@@ -42,6 +42,7 @@ public class CacheService<K, V> extends AsynchronousService<Cache<K, V>> {
     private final String name;
 
     private volatile Cache<K, V> cache;
+    private volatile XAResourceRecovery recovery;
 
     public static ServiceName getServiceName(String container, String cache) {
         return EmbeddedCacheManagerService.getServiceName(container).append((cache != null) ? cache : CacheContainer.DEFAULT_CACHE_NAME);
@@ -75,18 +76,16 @@ public class CacheService<K, V> extends AsynchronousService<Cache<K, V>> {
 
         XAResourceRecoveryRegistry recoveryRegistry = this.dependencies.getRecoveryRegistry();
         if (recoveryRegistry != null) {
-            recoveryRegistry.addXAResourceRecovery(new InfinispanXAResourceRecovery(this.name, container));
+            this.recovery = new InfinispanXAResourceRecovery(this.name, container);
+            recoveryRegistry.addXAResourceRecovery(this.recovery);
         }
     }
 
     @Override
     protected void stop() {
         if ((this.cache != null) && this.cache.getStatus().allowInvocations()) {
-            EmbeddedCacheManager container = this.dependencies.getCacheContainer();
-
-            XAResourceRecoveryRegistry recoveryRegistry = this.dependencies.getRecoveryRegistry();
-            if (recoveryRegistry != null) {
-                recoveryRegistry.addXAResourceRecovery(new InfinispanXAResourceRecovery(this.name, container));
+            if (this.recovery != null) {
+                this.dependencies.getRecoveryRegistry().removeXAResourceRecovery(this.recovery);
             }
 
             this.cache.stop();
