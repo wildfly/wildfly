@@ -4,18 +4,20 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.jboss.as.webservices.dmr.Constants.CLASS;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONFIG;
 import static org.jboss.as.webservices.dmr.Constants.HANDLER;
-import static org.jboss.as.webservices.dmr.Constants.HANDLER_CLASS;
 import static org.jboss.as.webservices.dmr.Constants.MODIFY_WSDL_ADDRESS;
+import static org.jboss.as.webservices.dmr.Constants.NAME;
 import static org.jboss.as.webservices.dmr.Constants.POST_HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PRE_HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PROPERTY;
+import static org.jboss.as.webservices.dmr.Constants.PROTOCOL_BINDINGS;
+import static org.jboss.as.webservices.dmr.Constants.VALUE;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_HOST;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_PORT;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_SECURE_PORT;
@@ -35,8 +37,7 @@ import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
-final class WebservicesSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
-        XMLElementWriter<SubsystemMarshallingContext> {
+final class WebservicesSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
     private static final WebservicesSubsystemParser INSTANCE = new WebservicesSubsystemParser();
 
@@ -45,111 +46,106 @@ final class WebservicesSubsystemParser implements XMLStreamConstants, XMLElement
     }
 
     @Override
-    public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-        //context = new SubsystemMarshallingContext(context.getModelNode(), writer);// for test
+    public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
         context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
-        writer.writeNamespace("javaee", Namespace.JAVAEE.getUriString());
-        writer.writeNamespace("jaxwsconfig", Namespace.JAXWSCONFIG.getUriString());
-        ModelNode node = context.getModelNode();
-        writeElement(writer, Element.MODIFY_WSDL_ADDRESS, node.require(MODIFY_WSDL_ADDRESS));
-        writeElement(writer, Element.WSDL_HOST, node.require(WSDL_HOST));
-        if (has(node, WSDL_SECURE_PORT)) {
-            writeElement(writer, Element.WSDL_SECURE_PORT, node.require(WSDL_SECURE_PORT));
+        ModelNode subsystem = context.getModelNode();
+        if (has(subsystem, MODIFY_WSDL_ADDRESS)) {
+            final String modifyWsdlAddressValue = subsystem.require(MODIFY_WSDL_ADDRESS).asString();
+            writeElement(writer, MODIFY_WSDL_ADDRESS, modifyWsdlAddressValue);
         }
-        if (has(node, WSDL_PORT)) {
-            writeElement(writer, Element.WSDL_PORT, node.require(WSDL_PORT));
+        if (has(subsystem, WSDL_HOST)) {
+            final String wsdlHostValue = subsystem.require(WSDL_HOST).asString();
+            writeElement(writer, WSDL_HOST, wsdlHostValue);
         }
-        if (has(node, ENDPOINT_CONFIG)) {
-            for (String name : node.get(ENDPOINT_CONFIG).keys()) {
-                writeEndpointConfig(writer, name, node.get(ENDPOINT_CONFIG, name));
-            }
+        if (has(subsystem, WSDL_PORT)) {
+            final String wsdlPortValue = subsystem.require(WSDL_PORT).asString();
+            writeElement(writer, WSDL_PORT, wsdlPortValue);
         }
-
-        writer.writeEndElement(); // End of subsystem element
-    }
-
-    private boolean has(ModelNode node, String name) {
-        return node.has(name) && node.get(name).isDefined();
-    }
-
-    private void writeEndpointConfig(final XMLExtendedStreamWriter writer, String name, final ModelNode value)
-            throws XMLStreamException {
-        writer.writeStartElement(Constants.ENDPOINT_CONFIG);
-        writer.writeStartElement(Namespace.JAXWSCONFIG.getUriString(), Constants.CONFIG_NAME);
-        writer.writeCharacters(name);
-        writer.writeEndElement();
-        if (value.hasDefined(Constants.PRE_HANDLER_CHAIN)) {
-            writer.writeStartElement(Namespace.JAXWSCONFIG.getUriString(), Constants.PRE_HANDLER_CHAINS);
-            ModelNode handlerChains = value.get(Constants.PRE_HANDLER_CHAIN);
-            writeHandlerChains(writer, handlerChains);
-            writer.writeEndElement();
+        if (has(subsystem, WSDL_SECURE_PORT)) {
+            final String wsdlSecurePortValue = subsystem.require(WSDL_SECURE_PORT).asString();
+            writeElement(writer, WSDL_SECURE_PORT, wsdlSecurePortValue);
         }
-
-        if (value.hasDefined(Constants.POST_HANDLER_CHAIN)) {
-            writer.writeStartElement(Namespace.JAXWSCONFIG.getUriString(), Constants.POST_HANDLER_CHAINS);
-            ModelNode handlerChains = value.get(Constants.POST_HANDLER_CHAIN);
-            writeHandlerChains(writer, handlerChains);
-            writer.writeEndElement();
+        if (has(subsystem, ENDPOINT_CONFIG)) {
+            final ModelNode endpointConfigs = subsystem.get(ENDPOINT_CONFIG);
+            writeEndpointConfigs(writer, endpointConfigs);
         }
-
-        if (value.hasDefined(Constants.PROPERTY)) {
-            for (String key : value.get(PROPERTY).keys()) {
-                writer.writeStartElement(Namespace.JAXWSCONFIG.getUriString(), Constants.PROPERTY);
-
-                writer.writeStartElement(Namespace.JAXWSCONFIG.getUriString(), Constants.PROPERTY_NAME);
-                writer.writeCharacters(key);
-                writer.writeEndElement();
-
-                if (value.get(PROPERTY).get(key).hasDefined(VALUE)) {
-                    writer.writeStartElement(Namespace.JAXWSCONFIG.getUriString(), Constants.PROPERTY_VALUE);
-                    writer.writeCharacters(value.get(PROPERTY).get(key).get(VALUE).asString());
-                    writer.writeEndElement();
-                }
-
-                writer.writeEndElement();
-            }
-        }
-
         writer.writeEndElement();
     }
 
-    private void writeHandlerChains(final XMLExtendedStreamWriter writer, final ModelNode handlerChains) throws XMLStreamException {
+    private void writeEndpointConfigs(final XMLExtendedStreamWriter writer, final ModelNode endpointConfigs) throws XMLStreamException {
+        ModelNode endpointConfig = null;
+        for (final String configName : endpointConfigs.keys()) {
+            endpointConfig = endpointConfigs.get(configName);
+            // start endpoint-config element
+            writer.writeStartElement(Constants.ENDPOINT_CONFIG);
+            writer.writeAttribute(Constants.NAME, configName);
+            // write pre-handler-chain elements
+            if (endpointConfig.hasDefined(Constants.PRE_HANDLER_CHAIN)) {
+                final ModelNode handlerChains = endpointConfig.get(Constants.PRE_HANDLER_CHAIN);
+                writeHandlerChains(writer, handlerChains, true);
+            }
+            // write post-handler-chain elements
+            if (endpointConfig.hasDefined(Constants.POST_HANDLER_CHAIN)) {
+                final ModelNode handlerChains = endpointConfig.get(Constants.POST_HANDLER_CHAIN);
+                writeHandlerChains(writer, handlerChains, false);
+            }
+            // write property elements
+            if (endpointConfig.hasDefined(Constants.PROPERTY)) {
+                final ModelNode properties = endpointConfig.get(PROPERTY);
+                writeProperties(writer, properties);
+            }
+            // close endpoint-config element
+            writer.writeEndElement();
+        }
+    }
+
+    private void writeProperties(final XMLExtendedStreamWriter writer, final ModelNode properties) throws XMLStreamException {
+        ModelNode property = null;
+        String propertyValue = null;
+        for (final String propertyName : properties.keys()) {
+            property = properties.get(propertyName);
+            writer.writeStartElement(PROPERTY);
+            writer.writeAttribute(NAME, propertyName);
+            if (property.hasDefined(VALUE)) {
+                propertyValue = property.get(VALUE).asString();
+                writer.writeAttribute(VALUE, propertyValue);
+            }
+            writer.writeEndElement();
+        }
+    }
+
+    private void writeHandlerChains(final XMLExtendedStreamWriter writer, final ModelNode handlerChains, final boolean isPre) throws XMLStreamException {
+        ModelNode handlerChain = null;
+        ModelNode handler = null;
         for (final String handlerChainId : handlerChains.keys()) {
-            final ModelNode handlerChain = handlerChains.get(handlerChainId);
-            writer.writeStartElement(Namespace.JAVAEE.getUriString(), Constants.HANDLER_CHAIN);
-            writer.writeAttribute(Constants.ID, handlerChainId);
-            if (handlerChain.hasDefined(Constants.PROTOCOL_BINDINGS)) {
-                writer.writeStartElement(Namespace.JAVAEE.getUriString(), Constants.PROTOCOL_BINDINGS);
-                writer.writeCharacters(handlerChain.get(Constants.PROTOCOL_BINDINGS).asString());
-                writer.writeEndElement();
+            handlerChain = handlerChains.get(handlerChainId);
+            writer.writeStartElement(isPre ? PRE_HANDLER_CHAIN : POST_HANDLER_CHAIN);
+            writer.writeAttribute(NAME, handlerChainId);
+            if (handlerChain.hasDefined(PROTOCOL_BINDINGS)) {
+                final String protocolBinding = handlerChain.get(PROTOCOL_BINDINGS).asString();
+                writer.writeAttribute(PROTOCOL_BINDINGS, protocolBinding);
             }
-
-            if (handlerChain.hasDefined(Constants.HANDLER)) {
-
-                for (String key : handlerChain.get(Constants.HANDLER).keys()) {
-                    writer.writeStartElement(Namespace.JAVAEE.getUriString(), Constants.HANDLER);
-
-                    writer.writeStartElement(Namespace.JAVAEE.getUriString(), Constants.HANDLER_NAME);
-                    writer.writeCharacters(key);
-                    writer.writeEndElement();
-
-                    writer.writeStartElement(Namespace.JAVAEE.getUriString(), Constants.HANDLER_CLASS);
-                    writer.writeCharacters(handlerChain.get(Constants.HANDLER).get(key).get(HANDLER_CLASS).asString());
-                    writer.writeEndElement();
-
+            if (handlerChain.hasDefined(HANDLER)) {
+                for (final String handlerName : handlerChain.require(HANDLER).keys()) {
+                    handler = handlerChain.get(HANDLER).get(handlerName);
+                    writer.writeStartElement(HANDLER);
+                    writer.writeAttribute(NAME, handlerName);
+                    writer.writeAttribute(CLASS, handler.get(CLASS).asString());
                     writer.writeEndElement();
                 }
-
             }
             writer.writeEndElement();
         }
     }
 
-    private void writeElement(final XMLExtendedStreamWriter writer, final Element element, final ModelNode value)
-            throws XMLStreamException {
-        writer.writeStartElement(element.getLocalName());
-        writer.writeCharacters(value.asString());
+    private void writeElement(final XMLExtendedStreamWriter writer, final String elementName, final String elementValue) throws XMLStreamException {
+        writer.writeStartElement(elementName);
+        writer.writeCharacters(elementValue);
         writer.writeEndElement();
+    }
+
+    private boolean has(final ModelNode node, final String name) {
+        return node.has(name) && node.get(name).isDefined();
     }
 
     @Override
@@ -173,13 +169,13 @@ final class WebservicesSubsystemParser implements XMLStreamConstants, XMLElement
                         throw unexpectedElement(reader);
                     }
                     switch (element) {
-                        case WSDL_HOST: {
-                            subsystem.get(WSDL_HOST).set(parseElementNoAttributes(reader));
-                            break;
-                        }
                         case MODIFY_WSDL_ADDRESS: {
                             boolean b = Boolean.parseBoolean(parseElementNoAttributes(reader));
                             subsystem.get(MODIFY_WSDL_ADDRESS).set(b);
+                            break;
+                        }
+                        case WSDL_HOST: {
+                            subsystem.get(WSDL_HOST).set(parseElementNoAttributes(reader));
                             break;
                         }
                         case WSDL_PORT: {
@@ -392,7 +388,7 @@ final class WebservicesSubsystemParser implements XMLStreamConstants, XMLElement
         final String handlerChainType = isPreHandlerChain ? PRE_HANDLER_CHAIN : POST_HANDLER_CHAIN;
         operation.get(OP).set(ADD);
         operation.get(OP_ADDR).add(SUBSYSTEM, WSExtension.SUBSYSTEM_NAME).add(ENDPOINT_CONFIG, configName).add(handlerChainType, handlerChainId).add(HANDLER, handlerName);
-        operation.get(HANDLER_CLASS).set(handlerClass);
+        operation.get(CLASS).set(handlerClass);
         operations.add(operation);
     }
 }

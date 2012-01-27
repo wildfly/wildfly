@@ -23,7 +23,7 @@ package org.jboss.as.webservices.dmr;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.webservices.WSMessages.MESSAGES;
-import static org.jboss.as.webservices.dmr.Constants.HANDLER_CLASS;
+import static org.jboss.as.webservices.dmr.Constants.CLASS;
 import static org.jboss.as.webservices.dmr.Constants.POST_HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PRE_HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.PackageUtils.getServerConfig;
@@ -62,7 +62,7 @@ final class HandlerAdd extends AbstractAddStepHandler {
             final String handlerChainType = address.getElement(address.size() - 2).getKey();
             final String handlerChainId = address.getElement(address.size() - 2).getValue();
             final String handlerName = address.getElement(address.size() - 1).getValue();
-            final String handlerClass = operation.require(HANDLER_CLASS).asString();
+            final String handlerClass = operation.require(CLASS).asString();
             for (final EndpointConfig endpointConfig : config.getEndpointConfigs()) {
                 if (configName.equals(endpointConfig.getConfigName())) {
                     final List<UnifiedHandlerChainMetaData> handlerChains;
@@ -102,8 +102,8 @@ final class HandlerAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        if (operation.hasDefined(HANDLER_CLASS)) {
-            model.get(HANDLER_CLASS).set(operation.get(HANDLER_CLASS));
+        if (operation.hasDefined(CLASS)) {
+            model.get(CLASS).set(operation.get(CLASS));
         }
     }
 

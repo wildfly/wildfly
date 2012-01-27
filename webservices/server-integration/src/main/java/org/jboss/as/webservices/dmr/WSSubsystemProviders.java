@@ -40,6 +40,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQ
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.webservices.dmr.Constants.CLASS;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CLASS;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONFIG;
@@ -48,7 +49,6 @@ import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_NAME;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_TYPE;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_WSDL;
 import static org.jboss.as.webservices.dmr.Constants.HANDLER_CHAIN;
-import static org.jboss.as.webservices.dmr.Constants.HANDLER_CLASS;
 import static org.jboss.as.webservices.dmr.Constants.MODIFY_WSDL_ADDRESS;
 import static org.jboss.as.webservices.dmr.Constants.POST_HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PRE_HANDLER_CHAIN;
@@ -457,10 +457,10 @@ final class WSSubsystemProviders {
             node.get(HEAD_COMMENT_ALLOWED).set(true);
             node.get(TAIL_COMMENT_ALLOWED).set(true);
 
-            node.get(ATTRIBUTES, HANDLER_CLASS, TYPE).set(ModelType.STRING);
-            node.get(ATTRIBUTES, HANDLER_CLASS, DESCRIPTION).set(bundle.getString("handler.class"));
-            node.get(ATTRIBUTES, HANDLER_CLASS, REQUIRED).set(true);
-            node.get(ATTRIBUTES, HANDLER_CLASS, NILLABLE).set(false);
+            node.get(ATTRIBUTES, CLASS, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, CLASS, DESCRIPTION).set(bundle.getString("handler.class"));
+            node.get(ATTRIBUTES, CLASS, REQUIRED).set(true);
+            node.get(ATTRIBUTES, CLASS, NILLABLE).set(false);
 
             return node;
         }
@@ -536,10 +536,10 @@ final class WSSubsystemProviders {
             node.get(OPERATION_NAME).set(ADD);
             node.get(DESCRIPTION).set(bundle.getString("handler.name"));
 
-            node.get(REQUEST_PROPERTIES, HANDLER_CLASS, TYPE).set(ModelType.STRING);
-            node.get(REQUEST_PROPERTIES, HANDLER_CLASS, DESCRIPTION).set(bundle.getString("handler.class"));
-            node.get(REQUEST_PROPERTIES, HANDLER_CLASS, REQUIRED).set(true);
-            node.get(REQUEST_PROPERTIES, HANDLER_CLASS, NILLABLE).set(false);
+            node.get(REQUEST_PROPERTIES, CLASS, TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, CLASS, DESCRIPTION).set(bundle.getString("handler.class"));
+            node.get(REQUEST_PROPERTIES, CLASS, REQUIRED).set(true);
+            node.get(REQUEST_PROPERTIES, CLASS, NILLABLE).set(false);
 
             node.get(REPLY_PROPERTIES).setEmptyObject();
 

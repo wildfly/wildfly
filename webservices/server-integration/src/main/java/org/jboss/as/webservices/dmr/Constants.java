@@ -30,6 +30,7 @@ public final class Constants {
         // forbidden inheritance
     }
     public static final String ID = "id";
+    public static final String CLASS = "class";
     public static final String MODIFY_WSDL_ADDRESS = "modify-wsdl-address";
     public static final String WSDL_HOST = "wsdl-host";
     public static final String WSDL_PORT = "wsdl-port";
@@ -42,6 +43,7 @@ public final class Constants {
     public static final String ENDPOINT_WSDL = "wsdl-url";
     public static final String ENDPOINT_CONFIG = "endpoint-config";
     public static final String CONFIG_NAME = "config-name";
+    public static final String NAME = "name";
     public static final String PROPERTY="property";
     public static final String PROPERTY_NAME="property-name";
     public static final String PROPERTY_VALUE="property-value";
@@ -54,4 +56,5 @@ public final class Constants {
     public static final String HANDLER="handler";
     public static final String HANDLER_NAME="handler-name";
     public static final String HANDLER_CLASS="handler-class";
+    public static final String VALUE = "value";
 }
