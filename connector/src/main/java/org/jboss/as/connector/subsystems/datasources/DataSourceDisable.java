@@ -121,7 +121,7 @@ public class DataSourceDisable implements OperationStepHandler {
 
 
                         for (ServiceName name : serviceNames) {
-                            if (dataSourceConfigServiceName.append("connetion-properties").isParentOf(name)) {
+                            if (dataSourceConfigServiceName.append("connection-properties").isParentOf(name)) {
                                 final ServiceController<?> connProperyController = registry.getService(name);
 
                                 if (connProperyController != null) {
@@ -250,7 +250,7 @@ public class DataSourceDisable implements OperationStepHandler {
 
 
                         for (ServiceName name : serviceNames) {
-                            if (dataSourceCongServiceName.append("connetion-properties").isParentOf(name)) {
+                            if (dataSourceCongServiceName.append("connection-properties").isParentOf(name)) {
                                 final ServiceController<?> dataSourceController = registry.getService(name);
                                 ConnectionPropertiesService connPropService = (ConnectionPropertiesService) dataSourceController.getService();
 
