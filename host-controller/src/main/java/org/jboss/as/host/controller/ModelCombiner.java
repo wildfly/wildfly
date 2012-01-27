@@ -201,12 +201,15 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         return environment;
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * @param processName*/
     @Override
-    public List<String> getServerLaunchCommand() {
+    public List<String> getServerLaunchCommand(String processName) {
         final List<String> command = new ArrayList<String>();
 
         command.add(getJavaCommand());
+
+        command.add("-D[" + processName + "]");
 
         JvmOptionsBuilderFactory.getInstance().addOptions(jvmElement, command);
 

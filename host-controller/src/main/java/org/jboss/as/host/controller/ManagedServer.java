@@ -498,8 +498,9 @@ class ManagedServer {
          * Get server launch command.
          *
          * @return the launch command
+         * @param processName
          */
-        List<String> getServerLaunchCommand();
+        List<String> getServerLaunchCommand(String processName);
 
         /**
          * Get the host controller environment.
@@ -558,7 +559,7 @@ class ManagedServer {
         @Override
         public void execute(ManagedServer server) throws Exception {
             assert Thread.holdsLock(ManagedServer.this); // Call under lock
-            final List<String> command = bootConfiguration.getServerLaunchCommand();
+            final List<String> command = bootConfiguration.getServerLaunchCommand(serverProcessName);
             final Map<String, String> env = bootConfiguration.getServerLaunchEnvironment();
             final HostControllerEnvironment environment = bootConfiguration.getHostControllerEnvironment();
             // Add the process to the process controller

@@ -191,6 +191,7 @@ public final class Main {
 
         final List<String> initialCommand = new ArrayList<String>();
         initialCommand.add(jvmName);
+        initialCommand.add("-D[" + HOST_CONTROLLER_PROCESS_NAME + "]");
         initialCommand.addAll(javaOptions);
         initialCommand.add("-jar");
         initialCommand.add(bootJar);
