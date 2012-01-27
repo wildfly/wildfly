@@ -35,6 +35,7 @@ import java.util.List;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
@@ -127,7 +128,9 @@ public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
             ServerConfigImpl serverConfig = createServerConfig(model, false);
             newControllers.add(ServerConfigService.install(serviceTarget, serverConfig, verificationHandler));
             newControllers.add(EndpointRegistryService.install(serviceTarget, verificationHandler));
-            newControllers.add(PortComponentLinkService.install(serviceTarget, verificationHandler));
+
+            String defaultHost = context.getRootResource().getChild(PathElement.pathElement("subsystem", "web")).getModel().get("default-virtual-server").asString();
+            newControllers.add(PortComponentLinkService.install(serviceTarget, defaultHost, verificationHandler));
         }
     }
 
