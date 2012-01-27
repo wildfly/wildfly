@@ -135,6 +135,7 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
                 .addService(hornetQResourceAdapterService, resourceAdapterService)
                 .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, resourceAdapterService.getTransactionManager())
                 .addDependency(hqServiceName, HornetQServer.class, resourceAdapterService.getHornetQService())
+                .addDependency(JMSServices.getJmsManagerBaseServiceName(hqServiceName))
                 .addListener(verificationHandler);
 
         newControllers.add(serviceBuilder.setInitialMode(Mode.ACTIVE).install());
