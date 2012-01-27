@@ -40,7 +40,7 @@ Start the server in standalone mode
 
 To stop the server, press Ctrl + C, or use the admin console
 
-> $ ./jboss-admin.sh --connect command=:shutdown
+> $ ./jboss-cli.sh --connect command=:shutdown
 
 More information on the wiki: http://community.jboss.org/wiki/JBossAS7UserGuide
 
