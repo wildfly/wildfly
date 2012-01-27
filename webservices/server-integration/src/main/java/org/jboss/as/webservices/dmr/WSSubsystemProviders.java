@@ -47,7 +47,6 @@ import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONTEXT;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_NAME;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_TYPE;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_WSDL;
-import static org.jboss.as.webservices.dmr.Constants.FEATURE;
 import static org.jboss.as.webservices.dmr.Constants.HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.HANDLER_CLASS;
 import static org.jboss.as.webservices.dmr.Constants.MODIFY_WSDL_ADDRESS;
@@ -145,12 +144,6 @@ final class WSSubsystemProviders {
         }
     };
 
-    static final DescriptionProvider FEATURE_DESCRIPTION = new DescriptionProvider() {
-        public ModelNode getModelDescription(final Locale locale) {
-            return Descriptions.getEndpointConfigFeatureDescription(locale);
-        }
-    };
-
     static final DescriptionProvider PROPERTY_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
             return Descriptions.getEndpointConfigPropertyDescription(locale);
@@ -178,12 +171,6 @@ final class WSSubsystemProviders {
     static final DescriptionProvider ENDPOINT_CONFIG_ADD_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
             return Descriptions.getEndpointConfigAddDescription(locale);
-        }
-    };
-
-    static final DescriptionProvider FEATURE_ADD_DESCRIPTION = new DescriptionProvider() {
-        public ModelNode getModelDescription(final Locale locale) {
-            return Descriptions.getEndpointConfigFeatureAddDescription(locale);
         }
     };
 
@@ -232,12 +219,6 @@ final class WSSubsystemProviders {
     static final DescriptionProvider ENDPOINT_CONFIG_REMOVE_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
             return Descriptions.getEndpointConfigRemoveDescription(locale);
-        }
-    };
-
-    static final DescriptionProvider FEATURE_REMOVE_DESCRIPTION = new DescriptionProvider() {
-        public ModelNode getModelDescription(final Locale locale) {
-            return Descriptions.getEndpointConfigFeatureRemoveDescription(locale);
         }
     };
 
@@ -448,9 +429,6 @@ final class WSSubsystemProviders {
             node.get(CHILDREN, PROPERTY, DESCRIPTION).set(bundle.getString("endpoint.config.property"));
             node.get(CHILDREN, PROPERTY, REQUIRED).set(false);
 
-            node.get(CHILDREN, FEATURE, DESCRIPTION).set(bundle.getString("endpoint.config.feature"));
-            node.get(CHILDREN, FEATURE, REQUIRED).set(false);
-
             return node;
         }
 
@@ -499,17 +477,6 @@ final class WSSubsystemProviders {
             return node;
         }
 
-        static ModelNode getEndpointConfigFeatureDescription(final Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-            final ModelNode node = new ModelNode();
-
-            node.get(DESCRIPTION).set(bundle.getString("endpoint.config.feature"));
-            node.get(HEAD_COMMENT_ALLOWED).set(true);
-            node.get(TAIL_COMMENT_ALLOWED).set(true);
-
-            return node;
-        }
-
         static ModelNode getEndpointConfigPropertyDescription(final Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
             final ModelNode node = new ModelNode();
@@ -531,16 +498,6 @@ final class WSSubsystemProviders {
             final ModelNode node = new ModelNode();
             node.get(OPERATION_NAME).set(ADD);
             node.get(DESCRIPTION).set(bundle.getString("endpoint.config.add"));
-            node.get(REQUEST_PROPERTIES).setEmptyObject();
-            node.get(REPLY_PROPERTIES).setEmptyObject();
-            return node;
-        }
-
-        static ModelNode getEndpointConfigFeatureAddDescription(final Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-            final ModelNode node = new ModelNode();
-            node.get(OPERATION_NAME).set(ADD);
-            node.get(DESCRIPTION).set(bundle.getString("endpoint.config.feature.add"));
             node.get(REQUEST_PROPERTIES).setEmptyObject();
             node.get(REPLY_PROPERTIES).setEmptyObject();
             return node;
@@ -626,16 +583,6 @@ final class WSSubsystemProviders {
             final ModelNode node = new ModelNode();
             node.get(OPERATION_NAME).set(REMOVE);
             node.get(DESCRIPTION).set(bundle.getString("endpoint.config.remove"));
-            node.get(REQUEST_PROPERTIES).setEmptyObject();
-            node.get(REPLY_PROPERTIES).setEmptyObject();
-            return node;
-        }
-
-        static ModelNode getEndpointConfigFeatureRemoveDescription(final Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-            final ModelNode node = new ModelNode();
-            node.get(OPERATION_NAME).set(REMOVE);
-            node.get(DESCRIPTION).set(bundle.getString("endpoint.config.feature.remove"));
             node.get(REQUEST_PROPERTIES).setEmptyObject();
             node.get(REPLY_PROPERTIES).setEmptyObject();
             return node;

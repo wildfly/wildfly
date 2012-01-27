@@ -66,7 +66,7 @@ final class PropertyRemove extends AbstractRemoveStepHandler {
 
     @Override
     protected void recoverServices(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        FeatureAdd.INSTANCE.performRuntime(context, operation, model, null, null);
+        PropertyAdd.INSTANCE.performRuntime(context, operation, model, null, null);
     }
 
 }

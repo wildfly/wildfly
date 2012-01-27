@@ -28,7 +28,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.registry.OperationEntry.EntryType.PRIVATE;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONFIG;
-import static org.jboss.as.webservices.dmr.Constants.FEATURE;
 import static org.jboss.as.webservices.dmr.Constants.HANDLER;
 import static org.jboss.as.webservices.dmr.Constants.HANDLER_CLASS;
 import static org.jboss.as.webservices.dmr.Constants.MODIFY_WSDL_ADDRESS;
@@ -66,7 +65,6 @@ public final class WSExtension implements Extension {
 
     private static final PathElement endpointPath = PathElement.pathElement(ENDPOINT);
     private static final PathElement endpointConfigPath = PathElement.pathElement(ENDPOINT_CONFIG);
-    private static final PathElement featurePath = PathElement.pathElement(FEATURE);
     private static final PathElement propertyPath = PathElement.pathElement(PROPERTY);
     private static final PathElement preHandlerChainPath = PathElement.pathElement(PRE_HANDLER_CHAIN);
     private static final PathElement postHandlerChainPath = PathElement.pathElement(POST_HANDLER_CHAIN);
@@ -92,10 +90,6 @@ public final class WSExtension implements Extension {
         final ManagementResourceRegistration endpointConfig = registration.registerSubModel(endpointConfigPath, WSSubsystemProviders.ENDPOINT_CONFIG_DESCRIPTION);
         endpointConfig.registerOperationHandler(ADD, EndpointConfigAdd.INSTANCE, WSSubsystemProviders.ENDPOINT_CONFIG_ADD_DESCRIPTION, false);
         endpointConfig.registerOperationHandler(REMOVE, EndpointConfigRemove.INSTANCE, WSSubsystemProviders.ENDPOINT_CONFIG_REMOVE_DESCRIPTION, false);
-        // features
-        final ManagementResourceRegistration feature = endpointConfig.registerSubModel(featurePath, WSSubsystemProviders.FEATURE_DESCRIPTION);
-        feature.registerOperationHandler(ADD, FeatureAdd.INSTANCE, WSSubsystemProviders.FEATURE_ADD_DESCRIPTION, false);
-        feature.registerOperationHandler(REMOVE, FeatureRemove.INSTANCE, WSSubsystemProviders.FEATURE_REMOVE_DESCRIPTION, false);
         // properties
         final ManagementResourceRegistration property = endpointConfig.registerSubModel(propertyPath, WSSubsystemProviders.PROPERTY_DESCRIPTION);
         property.registerOperationHandler(ADD, PropertyAdd.INSTANCE, WSSubsystemProviders.PROPERTY_ADD_DESCRIPTION, false);
