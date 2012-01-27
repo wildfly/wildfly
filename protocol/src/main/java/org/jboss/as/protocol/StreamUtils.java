@@ -23,20 +23,15 @@
 package org.jboss.as.protocol;
 
 import java.io.Closeable;
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import org.jboss.marshalling.Marshaller;
-import org.jboss.marshalling.Unmarshaller;
-
 import javax.xml.stream.XMLStreamWriter;
 
 import static org.jboss.as.protocol.ProtocolLogger.ROOT_LOGGER;
-import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -60,23 +55,6 @@ public final class StreamUtils {
         } catch (Throwable t) {
             // temporarily disable log message until fixed in remoting/xnio
             // ROOT_LOGGER.failedToCloseResource(t, closeable);
-
-//        java.lang.IllegalStateException
-//              at org.xnio.Buffers$3.getResource(Buffers.java:1763) [xnio-api-3.0.0.CR5.jar:]
-//              at org.xnio.Buffers$3.getResource(Buffers.java:1749) [xnio-api-3.0.0.CR5.jar:]
-//              at org.xnio.streams.BufferPipeOutputStream.send(BufferPipeOutputStream.java:104) [xnio-api-3.0.0.CR5.jar:]
-//              at org.xnio.streams.BufferPipeOutputStream.flush(BufferPipeOutputStream.java:131) [xnio-api-3.0.0.CR5.jar:]
-//              at org.jboss.remoting3.remote.OutboundMessage.flush(OutboundMessage.java:173) [jboss-remoting-3.2.0.CR4.jar:]
-//              at java.io.DataOutputStream.flush(DataOutputStream.java:106) [:1.6.0_26]
-//              at java.io.FilterOutputStream.close(FilterOutputStream.java:140) [:1.6.0_26]
-//              at org.jboss.as.protocol.mgmt.FlushableDataOutputImpl2.close(FlushableDataOutputImpl2.java:120) [jboss-as-protocol-7.1.0.CR1-SNAPSHOT.jar:]
-//              at org.jboss.as.protocol.StreamUtils.safeClose(StreamUtils.java:59) [jboss-as-protocol-7.1.0.CR1-SNAPSHOT.jar:]
-//              at org.jboss.as.controller.remote.ModelControllerClientOperationHandler$ExecuteRequestHandler$1.execute(ModelControllerClientOperationHandler.java:107) [jboss-as-controller-7.1.0.CR1-SNAPSHOT.jar:]
-//              at org.jboss.as.protocol.mgmt.AbstractMessageHandler$2$1.run(AbstractMessageHandler.java:252) [jboss-as-protocol-7.1.0.CR1-SNAPSHOT.jar:]
-//              at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886) [:1.6.0_26]
-//              at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908) [:1.6.0_26]
-//              at java.lang.Thread.run(Thread.java:662) [:1.6.0_26]
-
         }
     }
 

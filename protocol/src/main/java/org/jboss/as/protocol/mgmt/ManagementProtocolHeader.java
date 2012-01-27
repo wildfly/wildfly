@@ -24,13 +24,10 @@ package org.jboss.as.protocol.mgmt;
 
 import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
 import static org.jboss.as.protocol.mgmt.ProtocolUtils.expectHeader;
-import org.jboss.remoting3.MessageOutputStream;
 
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Arrays;
 
 /**
@@ -104,6 +101,9 @@ public abstract class ManagementProtocolHeader {
     /**
      * Parses the input stream to read the header
      *
+     * @param input data input to read from
+     * @return the parsed protocol header
+     * @throws IOException
      */
     public static ManagementProtocolHeader parse(DataInput input) throws IOException {
         validateSignature(input);

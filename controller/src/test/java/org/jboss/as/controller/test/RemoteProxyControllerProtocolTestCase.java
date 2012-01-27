@@ -1,24 +1,24 @@
 /*
-* JBoss, Home of Professional Open Source.
-* Copyright 2006, Red Hat Middleware LLC, and individual contributors
-* as indicated by the @author tags. See the copyright.txt file in the
-* distribution for a full listing of individual contributors.
-*
-* This is free software; you can redistribute it and/or modify it
-* under the terms of the GNU Lesser General Public License as
-* published by the Free Software Foundation; either version 2.1 of
-* the License, or (at your option) any later version.
-*
-* This software is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-* Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public
-* License along with this software; if not, write to the Free
-* Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-* 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-*/
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.as.controller.test;
 
 import static junit.framework.Assert.assertEquals;
@@ -33,7 +33,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 import java.io.ByteArrayInputStream;
-import java.io.DataInput;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -42,7 +41,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -58,12 +56,12 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
 import org.jboss.as.controller.support.RemoteChannelPairSetup;
-import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
-import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
-import org.jboss.as.protocol.mgmt.ManagementProtocolHeader;
+import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
+import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
+import org.jboss.remoting3.HandleableCloseable;
 import org.jboss.threads.AsyncFutureTask;
 import org.junit.After;
 import org.junit.Before;
@@ -76,19 +74,18 @@ import org.junit.Test;
  */
 public class RemoteProxyControllerProtocolTestCase {
 
-    final DelegatingChannelHandler handler = new DelegatingChannelHandler();
     RemoteChannelPairSetup channels;
+
     @Before
     public void start() throws Exception {
         channels = new RemoteChannelPairSetup();
-        channels.setupRemoting(handler);
-        channels.startClientConnetion();
     }
 
     @After
     public void stop() throws Exception {
         channels.stopChannels();
         channels.shutdownRemoting();
+        channels = null;
     }
 
     @Test @Ignore("OperationMessageHandlerProxy turned off temporarily")
@@ -557,26 +554,37 @@ public class RemoteProxyControllerProtocolTestCase {
         }
     }
 
-    private RemoteProxyController setupProxyHandlers(ModelController controller) {
-
-        handler.setDelegate(new TransactionalModelControllerOperationHandler(controller, channels.getExecutorService()) {
-            @Override
-            public void shutdownNow() {
-                super.shutdown();
-                final List<Integer> cancelled = super.cancelAllActiveOperations();
-                throw new IllegalStateException("failed to complete operations" + cancelled);
-            }
-        });
-
+    private RemoteProxyController setupProxyHandlers(final ModelController proxiedController) {
+        try {
+            channels.setupRemoting(new ManagementChannelInitialization() {
+                @Override
+                public HandleableCloseable.Key startReceiving(Channel channel) {
+                    final ManagementChannelHandler support = new ManagementChannelHandler(channel, channels.getExecutorService());
+                    support.addHandlerFactory(new TransactionalModelControllerOperationHandler(proxiedController, support));
+                    channel.addCloseHandler(new CloseHandler<Channel>() {
+                        @Override
+                        public void handleClose(Channel closed, IOException exception) {
+                            support.shutdownNow();
+                        }
+                    });
+                    channel.receiveMessage(support.getReceiver());
+                    return null;
+                }
+            });
+            channels.startClientConnetion();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         final Channel clientChannel = channels.getClientChannel();
-        final RemoteProxyController proxyController = RemoteProxyController.create(channels.getExecutorService(), PathAddress.pathAddress(), ProxyOperationAddressTranslator.HOST, channels.getClientChannel());
+        final ManagementChannelHandler support = new ManagementChannelHandler(clientChannel, channels.getExecutorService());
+        final RemoteProxyController proxyController = RemoteProxyController.create(support, PathAddress.pathAddress(), ProxyOperationAddressTranslator.HOST);
         clientChannel.addCloseHandler(new CloseHandler<Channel>() {
             @Override
             public void handleClose(Channel closed, IOException exception) {
-                proxyController.shutdownNow();
+                support.shutdownNow();
             }
         });
-        clientChannel.receiveMessage(ManagementChannelReceiver.createDelegating(proxyController));
+        clientChannel.receiveMessage(support.getReceiver());
         return proxyController;
     }
 
@@ -626,45 +634,6 @@ public class RemoteProxyControllerProtocolTestCase {
 
         void done(T result) {
             super.setResult(result);
-        }
-    }
-
-    static class DelegatingChannelHandler implements ManagementMessageHandler {
-
-        private ManagementMessageHandler delegate;
-
-        @Override
-        public synchronized void handleMessage(Channel channel, DataInput input, ManagementProtocolHeader header) throws IOException {
-            if(delegate == null) {
-                throw new IllegalStateException();
-            }
-            delegate.handleMessage(channel, input, header);
-        }
-
-        public synchronized void setDelegate(ManagementMessageHandler delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public void shutdown() {
-            if(delegate != null) {
-                delegate.shutdown();
-            }
-        }
-
-        @Override
-        public boolean awaitCompletion(long timeout, TimeUnit unit) throws InterruptedException {
-            if(delegate != null) {
-                return delegate.awaitCompletion(timeout, unit);
-            }
-            return true;
-        }
-
-        @Override
-        public void shutdownNow() {
-            if(delegate != null) {
-                delegate.shutdownNow();
-            }
         }
     }
 

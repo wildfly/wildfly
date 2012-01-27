@@ -23,7 +23,6 @@
 package org.jboss.as.protocol.mgmt;
 
 import org.jboss.remoting3.Channel;
-import org.jboss.remoting3.MessageOutputStream;
 
 import java.io.IOException;
 
@@ -75,6 +74,7 @@ public interface ManagementRequestContext<A> {
      *
      * @param header the protocol header
      * @return the message output stream
+     * @throws IOException
      */
     FlushableDataOutput writeMessage(final ManagementProtocolHeader header) throws IOException;
 
@@ -83,6 +83,7 @@ public interface ManagementRequestContext<A> {
         /**
          * Execute the task.
          *
+         * @param context the request context
          * @throws Exception
          */
         void execute(final ManagementRequestContext<A> context) throws Exception;

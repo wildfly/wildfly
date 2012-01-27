@@ -38,7 +38,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import javax.security.auth.callback.Callback;
@@ -59,6 +58,7 @@ import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.process.ProcessMessageHandler;
+import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Channel;
@@ -279,7 +279,7 @@ public class ServerInventoryImpl implements ServerInventory {
     }
 
     @Override
-    public void serverCommunicationRegistered(final String serverProcessName, final Channel channel, final ProxyCreatedCallback callback) {
+    public void serverCommunicationRegistered(final String serverProcessName, final ManagementChannelHandler channelAssociation, final ProxyCreatedCallback callback) {
         if(stopped || connectionFinished) {
             throw HostControllerMessages.MESSAGES.hostAlreadyShutdown();
         }
@@ -290,7 +290,14 @@ public class ServerInventoryImpl implements ServerInventory {
             return;
         }
 
-        final Channel.Key key = channel.addCloseHandler(new CloseHandler<Channel>() {
+        final Channel channel;
+        try {
+            channel = channelAssociation.getChannel();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        channel.addCloseHandler(new CloseHandler<Channel>() {
             public void handleClose(final Channel closed, final IOException exception) {
                 server.callbackUnregistered();
                 domainController.unregisterRunningServer(server.getServerName());
@@ -301,16 +308,14 @@ public class ServerInventoryImpl implements ServerInventory {
             @Override
             public void execute(ManagedServer server) throws Exception {
                 final PathElement element = PathElement.pathElement(RUNNING_SERVER, server.getServerName());
-                final ProxyController serverController = RemoteProxyController.create(Executors.newCachedThreadPool(),
+                final RemoteProxyController serverController = RemoteProxyController.create(channelAssociation,
                         PathAddress.pathAddress(PathElement.pathElement(HOST, domainController.getLocalHostInfo().getLocalHostName()), element),
-                        ProxyOperationAddressTranslator.SERVER,
-                        channel);
-                if (callback != null && serverController instanceof ManagementMessageHandler) {
-                    callback.proxyOperationHandlerCreated((ManagementMessageHandler)serverController);
-                }
+                        ProxyOperationAddressTranslator.SERVER);
+
+                callback.proxyOperationHandlerCreated(serverController);
                 domainController.registerRunningServer(serverController);
             }
-        }, channel, key);
+        }, channelAssociation);
     }
 
     @Override

@@ -25,6 +25,9 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import org.jboss.as.controller.ModelController;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
+import org.jboss.as.protocol.mgmt.ManagementRequestHandlerFactory;
+import org.jboss.as.protocol.mgmt.ManagementChannelAssociation;
 import static org.jboss.as.protocol.mgmt.ProtocolUtils.expectHeader;
 
 import java.io.ByteArrayOutputStream;
@@ -34,7 +37,6 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.controller.ModelController.OperationTransaction;
@@ -47,7 +49,6 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
-import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
@@ -56,39 +57,39 @@ import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.dmr.ModelNode;
-import org.jboss.remoting3.Channel;
+import org.jboss.threads.AsyncFuture;
 
 /**
  * Remote {@link ProxyController} implementation.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @author  Emanuel Muckenhuber
+ * @author Emanuel Muckenhuber
  */
-public class RemoteProxyController extends AbstractMessageHandler<Void, RemoteProxyController.ExecuteRequestContext> implements ProxyController {
+public class RemoteProxyController implements ManagementRequestHandlerFactory, ProxyController {
 
-    private final Channel channel;
     private final PathAddress pathAddress;
+    private final ManagementChannelAssociation channelAssociation;
     private final ProxyOperationAddressTranslator addressTranslator;
 
-    private RemoteProxyController(final ExecutorService executorService, final PathAddress pathAddress,
-                                  final ProxyOperationAddressTranslator addressTranslator, final Channel channel) {
-        super(executorService);
-        this.channel = channel;
+    private RemoteProxyController(final ManagementChannelAssociation channelAssociation, final PathAddress pathAddress,
+                                  final ProxyOperationAddressTranslator addressTranslator) {
+        this.channelAssociation = channelAssociation;
         this.pathAddress = pathAddress;
         this.addressTranslator = addressTranslator;
     }
 
     /**
-     * Creates a new remote proxy controller using an existing channel
+     * Creates a new remote proxy controller using an existing channel.
      *
-     * @param executorService the executor to use for the requests
+     * @param channelAssociation the channel association
      * @param pathAddress the address within the model of the created proxy controller
      * @param addressTranslator the translator to use translating the address for the remote proxy
-     * @param channel the channel to use for communication
      * @return the proxy controller
      */
-    public static RemoteProxyController create(final ExecutorService executorService, final PathAddress pathAddress, final ProxyOperationAddressTranslator addressTranslator, final Channel channel) {
-        return new RemoteProxyController(executorService, pathAddress, addressTranslator, channel);
+    public static RemoteProxyController create(final ManagementChannelHandler channelAssociation, final PathAddress pathAddress, final ProxyOperationAddressTranslator addressTranslator) {
+        final RemoteProxyController controller = new RemoteProxyController(channelAssociation, pathAddress, addressTranslator);
+        channelAssociation.addHandlerFactory(controller);
+        return controller;
     }
 
     /** {@inheritDoc} */
@@ -99,13 +100,14 @@ public class RemoteProxyController extends AbstractMessageHandler<Void, RemotePr
 
     /** {@inheritDoc} */
     @Override
-    protected ManagementRequestHandler<Void, ExecuteRequestContext> getRequestHandler(byte operationType) {
+    public ManagementRequestHandler<?, ?> resolveHandler(RequestHandlerChain handlers, ManagementRequestHeader header) {
+        final byte operationType = header.getOperationId();
         if (operationType == ModelControllerProtocol.HANDLE_REPORT_REQUEST) {
             return new HandleReportRequestHandler();
         } else if (operationType == ModelControllerProtocol.GET_INPUTSTREAM_REQUEST) {
             return new ReadAttachmentInputStreamRequestHandler();
         }
-        return super.getRequestHandler(operationType);
+        return handlers.resolveNext();
     }
 
     /** {@inheritDoc} */
@@ -115,8 +117,7 @@ public class RemoteProxyController extends AbstractMessageHandler<Void, RemotePr
         final ModelNode operation = getOperationForProxy(original);
         final ExecuteRequestContext context = new ExecuteRequestContext(operation, attachments, handler, control);
         try {
-            final ActiveOperation<Void, ExecuteRequestContext> support = super.registerActiveOperation(context, context);
-            super.executeRequest(new ExecuteRequest(), channel, support);
+            channelAssociation.executeRequest(new ExecuteRequest(), context, context);
             // Wait until we get a prepared or a failed response {@see ExecuteRequestHandler#handleRequest}
             context.awaitPreparedOrFailed();
 
@@ -202,18 +203,15 @@ public class RemoteProxyController extends AbstractMessageHandler<Void, RemotePr
 
                             private void done(boolean commit) {
                                 final byte status = commit ? ModelControllerProtocol.PARAM_COMMIT : ModelControllerProtocol.PARAM_ROLLBACK;
-                                final ActiveOperation<Void, ExecuteRequestContext> activeOperation = RemoteProxyController.this.getActiveOperation(context.getOperationId());
                                 try {
                                     // Send the CompleteTxRequest
-                                    RemoteProxyController.this.executeRequest(new CompleteTxRequest(status), channel, activeOperation);
-                                } catch (Exception e) {
-                                    resultHandler.failed(e);
-                                }
-                                try {
+                                    final AsyncFuture<Void> result = channelAssociation.executeRequest(context.getOperationId(), new CompleteTxRequest(status));
                                     /// Await the operation completed notification
-                                    activeOperation.getResult().await();
+                                    result.await();
                                 } catch (InterruptedException e) {
                                     throw MESSAGES.transactionTimeout(commit ? "commit" : "rollback");
+                                } catch (Exception e) {
+                                    resultHandler.failed(e);
                                 }
                             }
                         }, response);
@@ -231,7 +229,7 @@ public class RemoteProxyController extends AbstractMessageHandler<Void, RemotePr
      * Signal the remote controller to either commit or rollback. The response has to be a
      * {@link ModelControllerProtocol#PARAM_OPERATION_COMPLETED}.
      */
-    private class CompleteTxRequest extends AbstractManagementRequest<Void, ExecuteRequestContext> {
+    private static class CompleteTxRequest extends AbstractManagementRequest<Void, ExecuteRequestContext> {
 
         private final byte status;
 
@@ -267,7 +265,7 @@ public class RemoteProxyController extends AbstractMessageHandler<Void, RemotePr
      * Handles {@link OperationMessageHandler#handleReport(org.jboss.as.controller.client.MessageSeverity, String)} calls
      * done in the remote target controller
      */
-    private class HandleReportRequestHandler implements ManagementRequestHandler<Void, ExecuteRequestContext> {
+    private static class HandleReportRequestHandler implements ManagementRequestHandler<Void, ExecuteRequestContext> {
 
         @Override
         public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<Void> resultHandler, final ManagementRequestContext<ExecuteRequestContext> context) throws IOException {

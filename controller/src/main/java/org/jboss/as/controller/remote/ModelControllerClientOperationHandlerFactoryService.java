@@ -23,9 +23,8 @@ package org.jboss.as.controller.remote;
 
 
 import org.jboss.as.controller.ControllerLogger;
-import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
-import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
-import org.jboss.msc.service.StopContext;
+import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
+import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.HandleableCloseable;
@@ -41,10 +40,10 @@ import java.util.concurrent.TimeUnit;
 public class ModelControllerClientOperationHandlerFactoryService extends AbstractModelControllerOperationHandlerFactoryService {
 
     @Override
-    public synchronized HandleableCloseable.Key startReceiving(Channel channel) {
-        final ManagementMessageHandler handler = new ModelControllerClientOperationHandler(getController(), getExecutor());
-        final Channel.Receiver receiver = ManagementChannelReceiver.createDelegating(handler);
-        Channel.Key key = channel.addCloseHandler(new CloseHandler<Channel>() {
+    public HandleableCloseable.Key startReceiving(Channel channel) {
+        final ManagementChannelHandler handler = new ManagementChannelHandler(ManagementClientChannelStrategy.create(channel), getExecutor());
+        handler.addHandlerFactory(new ModelControllerClientOperationHandler(getController(), handler));
+        final HandleableCloseable.Key key = channel.addCloseHandler(new CloseHandler<Channel>() {
             @Override
             public void handleClose(Channel closed, IOException exception) {
                 handler.shutdown();
@@ -57,8 +56,7 @@ public class ModelControllerClientOperationHandlerFactoryService extends Abstrac
                 }
             }
         });
-        channel.receiveMessage(receiver);
+        channel.receiveMessage(handler.getReceiver());
         return key;
     }
-
 }

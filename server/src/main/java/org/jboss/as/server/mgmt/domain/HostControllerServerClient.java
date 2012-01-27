@@ -35,12 +35,9 @@ import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
 import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
-import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
-import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
-import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
-import org.jboss.as.protocol.mgmt.ManagementRequest;
+import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerMessages;
@@ -55,8 +52,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.Channel;
-import org.jboss.remoting3.CloseHandler;
-import org.jboss.threads.AsyncFuture;
 import org.jboss.threads.JBossThreadFactory;
 
 /**
@@ -79,8 +74,8 @@ public class HostControllerServerClient implements Service<HostControllerServerC
     private final String serverProcessName;
     private final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("host-controller-connection-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
     private final ExecutorService executor = Executors.newCachedThreadPool(threadFactory);
-    private volatile HostControllerServerHandler registerHandler;
-    //private volatile AbstractMessageHandler<File, Void> getFileHandler;
+
+    private ManagementChannelHandler handler;
 
     public HostControllerServerClient(final String serverName, final String serverProcessName) {
         this.serverName = serverName;
@@ -89,30 +84,40 @@ public class HostControllerServerClient implements Service<HostControllerServerC
 
     /** {@inheritDoc} */
     public synchronized void start(final StartContext context) throws StartException {
+        final ModelController controller = this.controller.getValue();
         final Channel channel = hcChannel.getValue();
-        final HostControllerServerHandler handler = new HostControllerServerHandler(controller.getValue(), executor);
-        channel.addCloseHandler(new CloseHandler<Channel>() {
-            @Override
-            public void handleClose(final Channel closed, final IOException exception) {
-                handler.shutdownNow();
-            }
-        });
+        handler = new ManagementChannelHandler(channel, executor);
+        handler.addHandlerFactory(new TransactionalModelControllerOperationHandler(controller, handler));
         // Notify MSC asynchronously when the server gets registered
         context.asynchronous();
         try {
-            handler.executeRegistrationRequest(channel, new ServerRegisterRequest(), context);
+            this.handler.executeRequest(new ServerRegisterRequest(), null, new ActiveOperation.CompletedCallback<Void>() {
+                @Override
+                public void completed(Void result) {
+                    remoteFileRepositoryValue.getValue().setRemoteFileRepositoryExecutor(new RemoteFileRepositoryExecutorImpl());
+                    context.complete();
+                }
+
+                @Override
+                public void failed(Exception e) {
+                    context.failed(ServerMessages.MESSAGES.failedToConnectToHC(e));
+                }
+
+                @Override
+                public void cancelled() {
+                    context.failed(ServerMessages.MESSAGES.cancelledHCConnect());
+                }
+            });
         } catch (Exception e) {
             throw ServerMessages.MESSAGES.failedToConnectToHC(e);
         }
-        this.registerHandler = handler;
-        remoteFileRepositoryValue.getValue().setRemoteFileRepositoryExecutor(new RemoteFileRepositoryExecutorImpl());
-
-        channel.receiveMessage(ManagementChannelReceiver.createDelegating(handler));
+        // this.registerHandler = handler;
+        channel.receiveMessage(handler.getReceiver());
     }
 
     /** {@inheritDoc} */
     public synchronized void stop(StopContext context) {
-        final ManagementMessageHandler handler = this.registerHandler;
+        final ManagementChannelHandler handler = this.handler;
         if(handler != null) {
             handler.shutdown();
             try {
@@ -152,38 +157,6 @@ public class HostControllerServerClient implements Service<HostControllerServerC
         return remoteFileRepositoryValue;
     }
 
-    private class HostControllerServerHandler extends TransactionalModelControllerOperationHandler {
-
-        private HostControllerServerHandler(final ModelController controller, final ExecutorService executorService) {
-            super(controller, executorService);
-        }
-
-        protected AsyncFuture<Void> executeRegistrationRequest(final Channel channel, final ManagementRequest request, final StartContext callback) {
-            final ActiveOperation support = super.registerActiveOperation(null, new ActiveOperation.CompletedCallback<Void>() {
-                @Override
-                public void completed(Void result) {
-                    callback.complete();
-                }
-
-                @Override
-                public void failed(Exception e) {
-                    callback.failed(ServerMessages.MESSAGES.failedToConnectToHC(e));
-                }
-
-                @Override
-                public void cancelled() {
-                    callback.failed(ServerMessages.MESSAGES.cancelledHCConnect());
-                }
-            });
-            return super.executeRequest(request, channel, support);
-        }
-
-        protected AsyncFuture executeGetFileRequest(final Channel channel, final ManagementRequest request){
-            final ActiveOperation support = super.registerActiveOperation(null);
-            return super.executeRequest(request, channel, support);
-        }
-    }
-
     private class ServerRegisterRequest extends AbstractManagementRequest<Void, Void> {
 
         @Override
@@ -204,7 +177,7 @@ public class HostControllerServerClient implements Service<HostControllerServerC
 
     }
 
-    private class GetFileRequest extends AbstractManagementRequest<File, Void> {
+    private static class GetFileRequest extends AbstractManagementRequest<File, Void> {
         private final String hash;
         private final File localDeploymentFolder;
 
@@ -226,7 +199,6 @@ public class HostControllerServerClient implements Service<HostControllerServerC
 
         @Override
         public void handleRequest(DataInput input, ActiveOperation.ResultHandler<File> resultHandler, ManagementRequestContext<Void> context) throws IOException {
-            boolean error;
             try {
                 File first = new File(localDeploymentFolder, hash.substring(0,2));
                 File localPath = new File(first, hash.substring(2));
@@ -243,18 +215,11 @@ public class HostControllerServerClient implements Service<HostControllerServerC
     private class RemoteFileRepositoryExecutorImpl implements RemoteFileRepositoryExecutor {
         public File getFile(final String relativePath, final byte repoId, final File localDeploymentFolder) {
             try {
-                return (File)registerHandler.executeGetFileRequest(hcChannel.getValue(), new GetFileRequest(relativePath, localDeploymentFolder)).get();
+                return handler.executeRequest(new GetFileRequest(relativePath, localDeploymentFolder), null).getResult().get();
             } catch (Exception e) {
                 throw ServerMessages.MESSAGES.failedToGetFileFromRemoteRepository(e);
             }
         }
     }
 
-    private static class GetFileOperationHandler extends AbstractMessageHandler<File, Void>{
-
-        protected GetFileOperationHandler(ExecutorService executorService) {
-            super(executorService);
-        }
-
-    }
 }

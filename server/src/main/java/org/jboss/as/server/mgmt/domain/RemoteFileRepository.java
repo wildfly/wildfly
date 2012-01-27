@@ -44,7 +44,7 @@ public class RemoteFileRepository implements DeploymentFileRepository, Service<R
 
     private RemoteFileRepository(final File localDeploymentFolder) {
         this.localDeploymentFolder = localDeploymentFolder;
-        this.remoteFileRepositoryExecutor = remoteFileRepositoryExecutor;
+        // this.remoteFileRepositoryExecutor = remoteFileRepositoryExecutor;
         localRepository = new LocalDeploymentFileRepository(localDeploymentFolder);
     }
 

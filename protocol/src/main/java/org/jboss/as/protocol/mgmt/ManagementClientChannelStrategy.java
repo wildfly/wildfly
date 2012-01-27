@@ -72,17 +72,17 @@ public abstract class ManagementClientChannelStrategy implements Closeable {
      * @param handler the {@code ManagementMessageHandler}
      * @param cbHandler a callback handler
      * @param saslOptions the sasl options
+     * @param sslContext the ssl context
      * @param closeHandler a close handler
      * @return the management client channel strategy
-     * @throws IOException
      */
     public static ManagementClientChannelStrategy create(final ProtocolChannelClient setup,
                                                    final ManagementMessageHandler handler,
                                                    final CallbackHandler cbHandler,
                                                    final Map<String, String> saslOptions,
                                                    final SSLContext sslContext,
-                                                   final CloseHandler<Channel> closeHandler) throws IOException {
-        return new Establishing(DEFAULT_CHANNEL_SERVICE_TYPE, setup, saslOptions, cbHandler, sslContext, handler, closeHandler);
+                                                   final CloseHandler<Channel> closeHandler) {
+        return new Establishing(setup, saslOptions, cbHandler, sslContext, handler, closeHandler);
     }
 
     /**
@@ -123,6 +123,12 @@ public abstract class ManagementClientChannelStrategy implements Closeable {
 
         volatile Connection connection;
         volatile Channel channel;
+
+        public Establishing(final ProtocolChannelClient setup, final Map<String, String> saslOptions,
+                            final CallbackHandler callbackHandler, final SSLContext sslContext, final ManagementMessageHandler handler,
+                            final CloseHandler<Channel> closeHandler) {
+            this(DEFAULT_CHANNEL_SERVICE_TYPE, setup, saslOptions, callbackHandler, sslContext, handler, closeHandler);
+        }
 
         public Establishing(final String channelName, final ProtocolChannelClient setup, final Map<String, String> saslOptions,
                             final CallbackHandler callbackHandler, final SSLContext sslContext, final ManagementMessageHandler handler,

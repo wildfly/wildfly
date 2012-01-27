@@ -32,7 +32,8 @@ public interface ManagementChannelInitialization {
     /**
      * Initialize the management channel and start receiving request.
      *
-     * @param channel
+     * @param channel opened channel
+     * @return a key which may be used to remove the channel close handler
      */
     Channel.Key startReceiving(Channel channel);
 
