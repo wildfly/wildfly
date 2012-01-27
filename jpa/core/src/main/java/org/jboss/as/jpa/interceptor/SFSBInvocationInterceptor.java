@@ -22,16 +22,16 @@
 
 package org.jboss.as.jpa.interceptor;
 
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
-import org.jboss.as.ee.component.ComponentInstance;
-import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
+import org.jboss.as.jpa.container.ReferenceCountedEntityManager;
 import org.jboss.as.jpa.container.SFSBCallStack;
-import org.jboss.as.jpa.ejb3.SFSBContextHandleImpl;
-import org.jboss.invocation.ImmediateInterceptorFactory;
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.InterceptorFactoryContext;
 
 /**
  * Stateful session bean Invocation interceptor that is responsible for the SFSBCallStack being set for each
@@ -41,25 +41,32 @@ import org.jboss.invocation.InterceptorFactory;
  */
 public class SFSBInvocationInterceptor implements Interceptor {
 
-    public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new SFSBInvocationInterceptor());
+    public static final String CONTEXT_KEY = "org.jboss.as.jpa.InterceptorContextKey";
 
-    protected SFSBInvocationInterceptor() {
+    public static final InterceptorFactory FACTORY = new Factory();
+
+    private final Map<String, ReferenceCountedEntityManager> entityManagers;
+
+    protected SFSBInvocationInterceptor(final Map<String, ReferenceCountedEntityManager> entityManagers) {
+        this.entityManagers = entityManagers;
     }
 
     @Override
     public Object processInvocation(InterceptorContext context) throws Exception {
-        ComponentInstance componentInstance = context.getPrivateData(ComponentInstance.class);
-        if (componentInstance == null) {
-            throw MESSAGES.notSetInInterceptorContext("componentInstance", context);
-        }
-        StatefulSessionComponentInstance sfsb = (StatefulSessionComponentInstance) componentInstance;
-        SFSBContextHandleImpl sfsbContextHandle = new SFSBContextHandleImpl(sfsb.getId());
-
-        SFSBCallStack.pushCall(sfsbContextHandle);
+        SFSBCallStack.pushCall(entityManagers);
         try {
             return context.proceed();   // call the next interceptor or target
         } finally {
             SFSBCallStack.popCall();
+        }
+    }
+
+
+    public static class Factory implements InterceptorFactory {
+
+        @Override
+        public Interceptor create(final InterceptorFactoryContext context) {
+            return new SFSBInvocationInterceptor((Map<String, ReferenceCountedEntityManager>) ((AtomicReference<ManagedReference>) context.getContextData().get(CONTEXT_KEY)).get().getInstance());
         }
     }
 }

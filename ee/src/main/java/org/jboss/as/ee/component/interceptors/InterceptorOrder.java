@@ -42,6 +42,7 @@ public class InterceptorOrder {
         public static final int REENTRANCY_INTERCEPTOR = 0x501;
         public static final int BMT_TRANSACTION_INTERCEPTOR = 0x520;
         public static final int ENTITY_BEAN_REMOVE_INTERCEPTOR = 0x550;
+        public static final int JPA_SFSB_INTERCEPTOR = 0x560;
         public static final int JPA_SESSION_BEAN_INTERCEPTOR = 0x600;
         public static final int SINGLETON_CONTAINER_MANAGED_CONCURRENCY_INTERCEPTOR = 0x700;
         public static final int CMP_RELATIONSHIP_INTERCEPTOR = 0x800;
@@ -138,7 +139,6 @@ public class InterceptorOrder {
         public static final int CMT_TRANSACTION_INTERCEPTOR = 0x500;
         public static final int HOME_METHOD_INTERCEPTOR = 0x600;
         public static final int ASSOCIATING_INTERCEPTOR = 0x700;
-        public static final int JPA_SFSB_INTERCEPTOR = 0x800;
         public static final int SESSION_REMOVE_INTERCEPTOR = 0x900;
         public static final int COMPONENT_DISPATCHER = 0xA00;
 
