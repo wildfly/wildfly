@@ -35,7 +35,7 @@ set DIRNAME=
 if "%OS%" == "Windows_NT" (
   set "PROGNAME=%~nx0%"
 ) else (
-  set "PROGNAME=jboss-admin.bat"
+  set "PROGNAME=jboss-cli.bat"
 )
 
 rem Setup JBoss specific properties

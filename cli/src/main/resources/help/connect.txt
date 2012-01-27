@@ -14,11 +14,11 @@ ARGUMENTS
 The default values can be customized by specifying the desired defaults as command line
 arguments when launching the CLI. E.g.
  
- jboss-admin.sh controller=controller-host.net:1234
+ jboss-cli.sh controller=controller-host.net:1234
 
 Or
 
- jboss-admin.sh controller=controller-host.net
+ jboss-cli.sh controller=controller-host.net
  
 In this case, the default port will be 9999.
 
@@ -27,9 +27,9 @@ for the connect command but will not automatically connect to the specified cont
  
 To connect automatically after the launch, use '--connect' switch. E.g.
  
- jboss-admin.sh --connect
- jboss-admin.sh --connect controller=controller-host.net
- jboss-admin.sh --connect controller=controller-host.net:1234
+ jboss-cli.sh --connect
+ jboss-cli.sh --connect controller=controller-host.net
+ jboss-cli.sh --connect controller=controller-host.net:1234
  
  The host may be any of these formats:
 -a host name, e.g. localhost
