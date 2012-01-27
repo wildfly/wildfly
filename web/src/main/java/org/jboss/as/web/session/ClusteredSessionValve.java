@@ -21,6 +21,8 @@
  */
 package org.jboss.as.web.session;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
@@ -63,7 +65,7 @@ public class ClusteredSessionValve extends ValveBase implements Lifecycle {
      * Create a new Valve.
      */
     public ClusteredSessionValve(Manager manager, BatchingManager tm) {
-        assert manager != null : "manager is null";
+        assert manager != null : MESSAGES.nullManager();
 
         this.manager = manager;
         this.tm = tm;
@@ -180,7 +182,7 @@ public class ClusteredSessionValve extends ValveBase implements Lifecycle {
         } catch (RuntimeException re) {
             throw re;
         } catch (Exception e) {
-            throw new ServletException("Failed to initiate batch replication transaction", e);
+            throw new ServletException(MESSAGES.failToStartBatchTransaction(e));
         }
 
         return started;

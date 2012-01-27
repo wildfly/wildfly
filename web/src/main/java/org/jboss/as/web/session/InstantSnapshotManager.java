@@ -21,6 +21,8 @@
  */
 package org.jboss.as.web.session;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 
 /**
@@ -44,7 +46,7 @@ public class InstantSnapshotManager extends SnapshotManager {
             try {
                 getManager().storeSession(session);
             } catch (Exception e) {
-                getLog().warn("Failed to replicate session " + session.getIdInternal(), e);
+                getLog().warn(MESSAGES.failedSessionReplication(session.getIdInternal()), e);
             }
         }
     }

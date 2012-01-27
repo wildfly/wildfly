@@ -21,6 +21,8 @@
  */
 package org.jboss.as.web.session;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -73,7 +75,7 @@ public class IntervalSnapshotManager extends SnapshotManager implements Runnable
                 sessions.add(session);
             }
         } catch (Exception e) {
-            log.error("Failed to queue session " + session + " for replication", e);
+            log.error(MESSAGES.failedQueueingSessionReplication(session), e);
         }
     }
 
@@ -96,7 +98,7 @@ public class IntervalSnapshotManager extends SnapshotManager implements Runnable
             try {
                 mgr.storeSession(session);
             } catch (Exception e) {
-                getLog().error("Caught exception processing session " + session.getRealId(), e);
+                getLog().error(MESSAGES.failedToStoreSession(session.getRealId()), e);
             }
         }
     }
@@ -174,9 +176,9 @@ public class IntervalSnapshotManager extends SnapshotManager implements Runnable
                 } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();
                     if (!threadDone)
-                        getLog().error("Caught exception processing sessions", ie);
+                        getLog().error(MESSAGES.exceptionProcessingSessions(), ie);
                 } catch (Exception e) {
-                    getLog().error("Caught exception processing sessions", e);
+                    getLog().error(MESSAGES.exceptionProcessingSessions(), e);
                 }
             }
         } finally {
