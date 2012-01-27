@@ -76,11 +76,16 @@ public class RemoveAliasCommand implements OperationStepHandler {
      * @param alias
      * @return LIST ModelNode with the alias removed
      */
-    private ModelNode removeAliasFromList(ModelNode list, String alias) {
+    private ModelNode removeAliasFromList(ModelNode list, String alias) throws OperationFailedException {
 
         // check for empty string
         if (alias == null || alias.equals(""))
             return list ;
+
+        // check for undefined list (AS7-3476)
+        if (!list.isDefined()) {
+            throw new OperationFailedException(new ModelNode().set("cannot remove alias " + alias + " from empty list"));
+        }
 
         ModelNode newList = new ModelNode() ;
         List<ModelNode> listElements = list.asList();
