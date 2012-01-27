@@ -22,14 +22,20 @@
 
 package org.jboss.as.jpa.interceptor;
 
-import org.jboss.as.ee.component.ComponentInstance;
-import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
-import org.jboss.as.jpa.container.SFSBXPCMap;
-import org.jboss.as.jpa.ejb3.SFSBContextHandleImpl;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+
+import org.jboss.as.jpa.container.ReferenceCountedEntityManager;
+import org.jboss.as.jpa.container.CreatedEntityManagers;
+import org.jboss.as.naming.ManagedReference;
+import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
+import org.jboss.msc.value.ImmediateValue;
 
 /**
  * For SFSB life cycle management.
@@ -39,32 +45,35 @@ import org.jboss.invocation.InterceptorFactoryContext;
  */
 public class SFSBCreateInterceptor implements Interceptor {
 
-    private final SFSBXPCMap sfsbxpcMap;
+    private final Map<String, ReferenceCountedEntityManager> entityManagers;
 
-    private SFSBCreateInterceptor(final SFSBXPCMap sfsbxpcMap) {
-        this.sfsbxpcMap = sfsbxpcMap;
+    private SFSBCreateInterceptor(final Map<String, ReferenceCountedEntityManager> entityManagers) {
+        this.entityManagers = entityManagers;
     }
 
     @Override
     public Object processInvocation(InterceptorContext interceptorContext) throws Exception {
-        StatefulSessionComponentInstance sfsb = (StatefulSessionComponentInstance) interceptorContext.getPrivateData(ComponentInstance.class);
-        SFSBContextHandleImpl sfsbContextHandle = new SFSBContextHandleImpl(sfsb.getId());
-        sfsbxpcMap.finishRegistrationOfPersistenceContext(sfsbContextHandle);
+        final List<ReferenceCountedEntityManager> ems = CreatedEntityManagers.getDeferredEntityManagers();
+        for (ReferenceCountedEntityManager e : ems) {
+            entityManagers.put(e.getEntityManager().getScopedPuName(), e);
+        }
         return interceptorContext.proceed();
     }
 
 
     public static class Factory implements InterceptorFactory {
 
-        private final SFSBXPCMap sfsbxpcMap;
-
-        public Factory(final SFSBXPCMap sfsbxpcMap) {
-            this.sfsbxpcMap = sfsbxpcMap;
-        }
 
         @Override
         public Interceptor create(final InterceptorFactoryContext context) {
-            return new SFSBCreateInterceptor(sfsbxpcMap);
+            HashMap<String, ReferenceCountedEntityManager> entityManagers;
+            if (context.getContextData().containsKey(SFSBInvocationInterceptor.CONTEXT_KEY)) {
+                entityManagers = (HashMap<String, ReferenceCountedEntityManager>) ((AtomicReference<ManagedReference>) context.getContextData().get(SFSBInvocationInterceptor.CONTEXT_KEY)).get().getInstance();
+            } else {
+                entityManagers = new HashMap<String, ReferenceCountedEntityManager>();
+                context.getContextData().put(SFSBInvocationInterceptor.CONTEXT_KEY, new AtomicReference<ManagedReference>(new ValueManagedReference(new ImmediateValue<Object>(entityManagers))));
+            }
+            return new SFSBCreateInterceptor(entityManagers);
         }
     }
 }

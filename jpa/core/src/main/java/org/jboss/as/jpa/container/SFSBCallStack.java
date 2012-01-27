@@ -25,11 +25,6 @@ package org.jboss.as.jpa.container;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-
-import javax.persistence.EntityManager;
-
-import org.jboss.as.jpa.spi.SFSBContextHandle;
 
 /**
  * For tracking of SFSB call stack on a per thread basis.
@@ -43,16 +38,16 @@ public class SFSBCallStack {
     /**
      * Each thread will have its own list of SFSB invocations in progress.
      */
-    private static ThreadLocal<ArrayList<SFSBContextHandle>> SFSBInvocationStack = new ThreadLocal<ArrayList<SFSBContextHandle>>() {
-        protected ArrayList<SFSBContextHandle> initialValue() {
-            return new ArrayList<SFSBContextHandle>();
+    private static ThreadLocal<ArrayList<Map<String, ReferenceCountedEntityManager>>> SFSBInvocationStack = new ThreadLocal<ArrayList<Map<String, ReferenceCountedEntityManager>>>() {
+        protected ArrayList<Map<String, ReferenceCountedEntityManager>> initialValue() {
+            return new ArrayList<Map<String, ReferenceCountedEntityManager>>();
         }
     };
 
     /**
      * Entity managers that form part of the
      */
-    private static ThreadLocal<Map<String, EntityManager>> sfsbCreationMap = new ThreadLocal<Map<String, EntityManager>>();
+    private static ThreadLocal<Map<String, ReferenceCountedEntityManager>> sfsbCreationMap = new ThreadLocal<Map<String, ReferenceCountedEntityManager>>();
 
     private static ThreadLocal<Integer> sfsbCreationCallStackCount = new ThreadLocal<Integer>() {
         @Override
@@ -64,7 +59,7 @@ public class SFSBCallStack {
     public static void beginSfsbCreation() {
         int no = sfsbCreationCallStackCount.get();
         if (no == 0) {
-            sfsbCreationMap.set(new HashMap<String, EntityManager>());
+            sfsbCreationMap.set(new HashMap<String, ReferenceCountedEntityManager>());
         }
         sfsbCreationCallStackCount.set(no + 1);
     }
@@ -78,9 +73,9 @@ public class SFSBCallStack {
         }
     }
 
-    public static void extendedPersistenceContextCreated(String scopedPuName, EntityManager entityManager) {
+    public static void extendedPersistenceContextCreated(String scopedPuName, ReferenceCountedEntityManager entityManager) {
         if (sfsbCreationCallStackCount.get() > 0) {
-            Map<String, EntityManager> map = sfsbCreationMap.get();
+            Map<String, ReferenceCountedEntityManager> map = sfsbCreationMap.get();
             if (!map.containsKey(scopedPuName)) {
                 map.put(scopedPuName, entityManager);
             }
@@ -91,23 +86,19 @@ public class SFSBCallStack {
      * For the current thread, look at the call stack of SFSB invocations and return the first extended
      * persistence context that is based on puName.
      *
+     *
      * @param puScopedName Scoped pu name
      * @return the found XPC that matches puName or null if not found
      */
-    public static EntityManager findPersistenceContext(String puScopedName, SFSBXPCMap sfsbxpcMap) {
+    public static ReferenceCountedEntityManager findPersistenceContext(String puScopedName) {
         // TODO: arrange for a more optimal datastructure for this
-        for (SFSBContextHandle handle : currentSFSBCallStack()) {
-            Set<ExtendedEntityManager> xpcs = sfsbxpcMap.getXPC(handle);
-            if (xpcs == null)
-                continue;
-            for (ExtendedEntityManager xpc : xpcs) {
-                if (xpc != null &&
-                    xpc.getScopedPuName().equals(puScopedName)) {
-                    return xpc;
-                }
+        for (Map<String, ReferenceCountedEntityManager> handle : currentSFSBCallStack()) {
+            final ReferenceCountedEntityManager res = handle.get(puScopedName);
+            if(res != null) {
+                return res;
             }
         }
-        Map<String, EntityManager> map = sfsbCreationMap.get();
+        Map<String, ReferenceCountedEntityManager> map = sfsbCreationMap.get();
         if (map != null) {
             return map.get(puScopedName);
         }
@@ -119,17 +110,17 @@ public class SFSBCallStack {
      *
      * @return call stack (may be empty but never null)
      */
-    public static ArrayList<SFSBContextHandle> currentSFSBCallStack() {
+    public static ArrayList<Map<String, ReferenceCountedEntityManager>> currentSFSBCallStack() {
         return SFSBInvocationStack.get();
     }
 
     /**
      * Push the passed SFSB context handle onto the invocation call stack
      *
-     * @param beanContextHandle
+     * @param entityManagers the entity manager map
      */
-    public static void pushCall(SFSBContextHandle beanContextHandle) {
-        currentSFSBCallStack().add(beanContextHandle);
+    public static void pushCall(Map<String, ReferenceCountedEntityManager> entityManagers) {
+        currentSFSBCallStack().add(entityManagers);
     }
 
     /**
@@ -137,9 +128,9 @@ public class SFSBCallStack {
      *
      * @return the popped SFSB context handle
      */
-    public static SFSBContextHandle popCall() {
-        ArrayList<SFSBContextHandle> stack = currentSFSBCallStack();
-        SFSBContextHandle result = stack.remove(stack.size() - 1);
+    public static Map<String, ReferenceCountedEntityManager> popCall() {
+        ArrayList<Map<String, ReferenceCountedEntityManager>> stack = currentSFSBCallStack();
+        Map<String, ReferenceCountedEntityManager> result = stack.remove(stack.size() - 1);
         stack.trimToSize();
         return result;
     }

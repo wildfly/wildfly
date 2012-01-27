@@ -22,15 +22,13 @@
 
 package org.jboss.as.jpa.container;
 
-import static org.jboss.as.jpa.JpaLogger.ROOT_LOGGER;
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
-
-import java.io.IOException;
 import java.io.Serializable;
 
 import javax.persistence.EntityManager;
 
 import org.jboss.as.jpa.transaction.TransactionUtil;
+
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
 /**
  * Represents the Extended persistence context injected into a stateful bean.  At bean invocation time,
@@ -186,36 +184,4 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
         // return hashCode of the ExtendedEntityManagerKey
         return ID != null ? ID.hashCode() : 0;
     }
-
-    /**
-     * Serialization handling methods start here
-     */
-
-
-    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
-        ROOT_LOGGER.tracef("starting serializing extended persistence context for PU '%s'", puScopedName);
-
-        // write all non-transient fields
-        out.defaultWriteObject();
-
-        SFSBXPCMap.delegateWriteObject(out, this, puScopedName);
-
-        ROOT_LOGGER.tracef("finished serializing extended persistence context for PU '%s'", puScopedName);
-    }
-
-    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
-        ROOT_LOGGER.tracef("starting deserialization of extended persistence context");
-        // read all non-transient fields
-        in.defaultReadObject();
-        SFSBXPCMap.delegateReadObject(in, this, puScopedName);
-
-        ROOT_LOGGER.tracef("finished deserialization of extended persistence context for PU '%s'", puScopedName);
-    }
-
-
-    /**
-     * Serialization handling methods end here
-     */
-
-
 }
