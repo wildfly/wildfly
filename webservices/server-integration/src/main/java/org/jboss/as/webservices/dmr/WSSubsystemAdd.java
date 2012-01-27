@@ -132,7 +132,7 @@ public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     private static ServerConfigImpl createServerConfig(ModelNode configuration, boolean appclient) {
-        final ServerConfigImpl config = ServerConfigImpl.getInstance();
+        final ServerConfigImpl config = ServerConfigImpl.newInstance();
         try {
             ModelNode wsdlHost = configuration.require(WSDL_HOST).resolve();
             config.setWebServiceHost(wsdlHost.asString());

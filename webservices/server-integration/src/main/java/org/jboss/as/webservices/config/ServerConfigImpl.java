@@ -39,8 +39,6 @@ import org.jboss.ws.common.management.AbstractServerConfigMBean;
  */
 public final class ServerConfigImpl extends AbstractServerConfig implements AbstractServerConfigMBean {
 
-    private static final ServerConfigImpl INSTANCE = new ServerConfigImpl();
-
     private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
     private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<ServerEnvironment>();
 
@@ -82,8 +80,8 @@ public final class ServerConfigImpl extends AbstractServerConfig implements Abst
         return injectedServerEnvironment.getValue();
     }
 
-    public static ServerConfigImpl getInstance() {
-        return INSTANCE;
+    public static ServerConfigImpl newInstance() {
+        return new ServerConfigImpl();
     }
 
 }
