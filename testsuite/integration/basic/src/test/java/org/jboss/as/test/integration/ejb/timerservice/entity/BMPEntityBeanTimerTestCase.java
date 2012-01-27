@@ -69,6 +69,8 @@ public class BMPEntityBeanTimerTestCase {
         ejbInstance.setupTimer();
         ejbInstance = home.findByPrimaryKey(20);
         ejbInstance.setupTimer();
+        // getTimers returns only timer connected to particular entity id
+        Assert.assertEquals(1, ejbInstance.getTimers().size());
         SimpleBMPBean.getLatch().await(10, TimeUnit.SECONDS);
         Map<Integer, String> data = SimpleBMPBean.getTimerData();
 
@@ -76,6 +78,27 @@ public class BMPEntityBeanTimerTestCase {
         Assert.assertTrue(data.containsKey(20));
         Assert.assertEquals("Hello", data.get(createdPk));
         Assert.assertEquals("Existing", data.get(20));
+    }
+    
+    /**
+     * Aimed to test EJB3.1 18.4.5.
+     */
+    @Test
+    public void testExistenceAfterDelete() throws Exception {
+        DataStore.DATA.clear();
+        SimpleBMPBean.redefineLatch(1);
+        
+        BMPLocalHome home = getHome();
+        BMPLocalInterface ejbInstance = home.createWithValue("Bye");
+        Integer createdPk = (Integer) ejbInstance.getPrimaryKey();
+               
+        // this one not should tick - bean will be removed
+        SimpleBMPBean.redefineLatch(1);
+        ejbInstance.setupTimerDefined(800);
+        // wait of 0.8 sec should be long enough for timer be removed before its tick
+        ejbInstance.remove(); 
+        SimpleBMPBean.getLatch().await(1700, TimeUnit.MILLISECONDS); // supposing timeout expriration
+        Assert.assertFalse(SimpleBMPBean.getTimerData().containsKey(createdPk));
     }
 
     private BMPLocalHome getHome() throws NamingException {
