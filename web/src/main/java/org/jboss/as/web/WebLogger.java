@@ -53,6 +53,16 @@ public interface WebLogger extends BasicLogger {
     WebLogger WEB_SECURITY_LOGGER = Logger.getMessageLogger(WebLogger.class, "org.jboss.as.web.security");
 
     /**
+     * A logger with the category {@code org.jboss.as.web.session}.
+     */
+    WebLogger WEB_SESSION_LOGGER = Logger.getMessageLogger(WebLogger.class, "org.jboss.as.web.session");
+
+    /**
+     * A logger with the category {@code org.jboss.as.web.sso}.
+     */
+    WebLogger WEB_SSO_LOGGER = Logger.getMessageLogger(WebLogger.class, "org.jboss.as.web.sso");
+
+    /**
      * A logger with the category {@code org.jboss.web}.
      */
     WebLogger WEB_LOGGER = Logger.getMessageLogger(WebLogger.class, "org.jboss.web");
@@ -148,5 +158,9 @@ public interface WebLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 18222, value = "Error forwarding to error page: %s")
     void errorForwardingToErrorPage(String encoding);
+
+    @LogMessage(level = WARN)
+    @Message(id = 18223, value = "Snapshot mode set to 'interval' but snapshotInterval is < 1 or was not specified, using 'instant'")
+    void invalidSnapshotInterval();
 
 }

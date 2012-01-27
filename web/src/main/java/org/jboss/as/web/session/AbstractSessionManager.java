@@ -21,6 +21,8 @@
  */
 package org.jboss.as.web.session;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.Map;
@@ -167,12 +169,12 @@ public abstract class AbstractSessionManager extends ManagerBase implements Sess
 
     @Override
     public void load() throws ClassNotFoundException, IOException {
-        throw new UnsupportedOperationException("load() not supported");
+        throw new UnsupportedOperationException(MESSAGES.noSessionPassivation());
     }
 
     @Override
     public void unload() throws IOException {
-        throw new UnsupportedOperationException("unload() not supported");
+        throw new UnsupportedOperationException(MESSAGES.noSessionPassivation());
     }
 
     @Override

@@ -212,4 +212,121 @@ public interface WebMessages {
     @Message(id = 18056, value = "Catalina Context is null while creating JACC permissions")
     IllegalStateException noCatalinaContextForJacc();
 
+    @Message(id = 18057, value = "This session manager does not support session passivation")
+    String noSessionPassivation();
+
+    @Message(id = 18058, value = "Session is already expired")
+    IllegalStateException expiredSession();
+
+    @Message(id = 18059, value = "Specified manager does not implement ClusteredManager")
+    IllegalArgumentException invalidManager();
+
+    @Message(id = 18060, value = "Exception acquiring ownership of %s")
+    RuntimeException failAcquiringOwnership(String id, @Cause Throwable t);
+
+    @Message(id = 18061, value = "Interruped acquiring ownership of %s")
+    RuntimeException interruptedAcquiringOwnership(String id, @Cause Throwable t);
+
+    @Message(id = 18062, value = "Specified attribute cannot be replicated")
+    IllegalArgumentException failToReplicateAttribute();
+
+    @Message(id = 18063, value = "Error calling value bound session listener")
+    String errorValueBoundEvent(@Cause Throwable t);
+
+    @Message(id = 18064, value = "Error calling value unbound session listener")
+    String errorValueUnboundEvent(@Cause Throwable t);
+
+    @Message(id = 18065, value = "Error calling session attribute listener")
+    String errorSessionAttributeEvent(@Cause Throwable t);
+
+    @Message(id = 18066, value = "Session data is null")
+    String nullSessionData();
+
+    @Message(id = 18067, value = "Error calling session listener")
+    String errorSessionEvent(@Cause Throwable t);
+
+    @Message(id = 18068, value = "Error calling session activation listener")
+    String errorSessionActivationEvent(@Cause Throwable t);
+
+    @Message(id = 18069, value = "DistributedCacheManager is null")
+    IllegalStateException nullDistributedCacheManager();
+
+    @Message(id = 18070, value = "Session manager is null")
+    String nullManager();
+
+    @Message(id = 18071, value = "Fail to start batch transaction")
+    String failToStartBatchTransaction(@Cause Throwable t);
+
+    @Message(id = 18072, value = "Unable to start manager")
+    String failToStartManager();
+
+    @Message(id = 18073, value = "Invalid snapshot mode specified")
+    IllegalArgumentException invalidSnapshotMode();
+
+    @Message(id = 18074, value = "Failed to instantiate %s %s")
+    RuntimeException failToCreateSessionNotificationPolicy(String className, String policyClass, @Cause Throwable t);
+
+    @Message(id = 18075, value = "Number of active sessions exceeds limit %s trying to create session %s")
+    IllegalStateException tooManyActiveSessions(int limit, String id);
+
+    @Message(id = 18076, value = "Exception expiring or passivating sesion %s")
+    String errorPassivatingSession(String id);
+
+    @Message(id = 18077, value = "Failed to load session %s for passivation")
+    String failToPassivateLoad(String id);
+
+    @Message(id = 18078, value = "Failed to unload session %s for passivation")
+    String failToPassivateUnloaded(String id);
+
+    @Message(id = 18079, value = "Failed to passivate %s session %s")
+    String failToPassivate(String unloaded, String id);
+
+    @Message(id = 18080, value = "Standard expiration of session %s failed; switching to a brute force cleanup. Problem is %s")
+    String bruteForceCleanup(String id, String t);
+
+    @Message(id = 18081, value = "Recieved notification for inactive session %s")
+    String notificationForInactiveSession(String id);
+
+    @Message(id = 18082, value = "Caught exception during brute force cleanup of unloaded session %s  Session will be removed from Manager but may still exist in distributed cache")
+    String failToBruteForceCleanup(String id);
+
+    @Message(id = 18083, value = "Failed to replicate session")
+    RuntimeException failedSessionReplication(@Cause Throwable t);
+
+    @Message(id = 18084, value = "Caught exception rolling back transaction")
+    String exceptionRollingBackTransaction();
+
+    @Message(id = 18085, value = "Expected clustered session, but got a %s")
+    IllegalArgumentException invalidSession(String className);
+
+    @Message(id = 18086, value = "Null owned session update")
+    String nullOsu();
+
+    @Message(id = 18087, value = "Null session id")
+    String nullSessionId();
+
+    @Message(id = 18088, value = "Null session")
+    String nullSession();
+
+    @Message(id = 18089, value = "Failed to replicate session %s")
+    String failedSessionReplication(String id);
+
+    @Message(id = 18090, value = "Failed to queue replicate session %s")
+    String failedQueueingSessionReplication(Object session);
+
+    @Message(id = 18091, value = "Exception storing session %s")
+    String failedToStoreSession(String id);
+
+    @Message(id = 18092, value = "Exception sprocessing sessions")
+    String exceptionProcessingSessions();
+
+    @Message(id = 18093, value = "Null real id")
+    IllegalArgumentException nullRealId();
+
+    @Message(id = 18094, value = "Clustered SSO valve is already started")
+    String valveAlreadyStarted();
+
+    @Message(id = 18095, value = "Clustered SSO valve is not started")
+    String valveNotStarted();
+
 }

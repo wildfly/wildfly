@@ -96,8 +96,7 @@ public class JvmRouteValve extends ValveBase implements Lifecycle {
             String jvmRoute = manager.getJvmRoute();
 
             if (log_.isTraceEnabled()) {
-                log_.trace("checkJvmRoute(): check if need to re-route based on JvmRoute. Session id: " + sessionId
-                        + " jvmRoute: " + jvmRoute);
+                log_.tracef("checkJvmRoute(): check if need to re-route based on JvmRoute. Session id: %s jvmRoute: %s", sessionId, jvmRoute);
             }
 
             if (jvmRoute != null) {
@@ -169,10 +168,10 @@ public class JvmRouteValve extends ValveBase implements Lifecycle {
             // Note this will trigger a session remove from the super Tomcat class.
             session.resetIdWithRouteInfo(newId);
             if (log_.isTraceEnabled()) {
-                log_.trace("resetSessionId(): changed catalina session to= [" + newId + "] old one= [" + oldId + "]");
+                log_.tracef("resetSessionId(): changed catalina session to= [%s] old one= [%s]", newId, oldId);
             }
         } else if (log_.isTraceEnabled()) {
-            log_.trace("resetSessionId(): no session with id " + newId + " found");
+            log_.tracef("resetSessionId(): no session with id %s found", newId);
         }
     }
 
