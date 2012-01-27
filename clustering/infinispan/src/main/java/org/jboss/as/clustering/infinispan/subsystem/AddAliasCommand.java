@@ -82,6 +82,11 @@ public class AddAliasCommand implements OperationStepHandler {
         if (alias == null || alias.equals(""))
             return list ;
 
+        // check for undefined list (AS7-3476)
+        if (!list.isDefined()) {
+            list.setEmptyList();
+        }
+
         ModelNode newList = list.clone() ;
         List<ModelNode> listElements = list.asList();
 
