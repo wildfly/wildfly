@@ -27,6 +27,7 @@ import static org.junit.Assert.assertTrue;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.persistence.EntityManager;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -200,6 +201,10 @@ public class EPCPropagationTestCase {
                               // both entities (8,9) should still be in XPC
         equal = anotherStateful.createEntity(9,"John Steed");
         assertTrue("again, XPC inheritance should copy entity to other SFSB created on SFSB invocation call", equal);
+        EntityManager xpc = anotherStateful.getExtendedPersistenceContext();
+        assertTrue("extended persistence context is still open", xpc.isOpen());
+        anotherStateful.finishUp();
+        assertFalse("extended persistence context is closed after last referencing SFSB is destroyed", xpc.isOpen());
     }
 
 

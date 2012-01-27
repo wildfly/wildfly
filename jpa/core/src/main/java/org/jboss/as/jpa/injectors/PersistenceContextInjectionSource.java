@@ -22,6 +22,9 @@
 
 package org.jboss.as.jpa.injectors;
 
+import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+
 import java.lang.reflect.Proxy;
 import java.util.Map;
 
@@ -30,11 +33,11 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContextType;
 
 import org.jboss.as.ee.component.InjectionSource;
+import org.jboss.as.jpa.container.CreatedEntityManagers;
 import org.jboss.as.jpa.container.EntityManagerUnwrappedTargetInvocationHandler;
 import org.jboss.as.jpa.container.ExtendedEntityManager;
 import org.jboss.as.jpa.container.ReferenceCountedEntityManager;
 import org.jboss.as.jpa.container.SFSBCallStack;
-import org.jboss.as.jpa.container.CreatedEntityManagers;
 import org.jboss.as.jpa.container.TransactionScopedEntityManager;
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
@@ -48,9 +51,6 @@ import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.ImmediateValue;
-
-import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
 /**
  * Represents the PersistenceContext injected into a component.
@@ -158,7 +158,8 @@ public class PersistenceContextInjectionSource extends InjectionSource {
                     entityManager1.increaseReferenceCount();
                     entityManager = entityManager1.getEntityManager();
                     if (JPA_LOGGER.isDebugEnabled())
-                    JPA_LOGGER.debugf("inherited existing ExtendedEntityManager from SFSB invocation stack, unit name=%s", unitName);
+                    JPA_LOGGER.debugf("inherited existing ExtendedEntityManager from SFSB invocation stack, unit name=%s, " +
+                        "%d beans sharing ExtendedEntityManager", unitName, entityManager1.getReferenceCount());
                 }
 
                 // register the EntityManager on TL so that SFSBCreateInterceptor will see it.

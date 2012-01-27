@@ -2,6 +2,8 @@ package org.jboss.as.jpa.container;
 
 import java.io.Serializable;
 
+import org.jboss.as.jpa.JpaMessages;
+
 /**
  * Structure used to track SFSB references to an entity manager
  * <p/>
@@ -16,7 +18,7 @@ public class ReferenceCountedEntityManager implements Serializable {
     private static final long serialVersionUID = 456457893L;
 
     private final ExtendedEntityManager entityManager;
-    private int referenceCount = 1;
+    private volatile int referenceCount = 1;
 
     public ReferenceCountedEntityManager(final ExtendedEntityManager entityManager) {
         this.entityManager = entityManager;
@@ -30,9 +32,17 @@ public class ReferenceCountedEntityManager implements Serializable {
         if (--referenceCount == 0) {
             entityManager.containerClose();
         }
+        // referenceCount should never be negative, if it is we need to fix the bug that caused it to decrement too much
+        if (referenceCount < 0) {
+            throw JpaMessages.MESSAGES.referenceCountedEntityManagerNegativeCount(referenceCount, entityManager.getScopedPuName());
+        }
     }
 
     public ExtendedEntityManager getEntityManager() {
         return entityManager;
+    }
+
+    public int getReferenceCount() {
+        return referenceCount;
     }
 }

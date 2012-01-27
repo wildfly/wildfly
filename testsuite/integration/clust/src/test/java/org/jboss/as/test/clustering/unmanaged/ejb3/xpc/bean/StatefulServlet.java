@@ -68,6 +68,11 @@ public class StatefulServlet extends HttpServlet {
             Employee employee = bean.getSecondBeanEmployee(1);
             resp.setHeader("employee", employee.getName());
         }
+        else if("destroy".equals(command)) {
+            bean.destroy();
+            resp.setHeader("employee", command);
+        }
+
 
         resp.getWriter().write("Success");
         session.setAttribute("bean", bean);

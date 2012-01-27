@@ -56,6 +56,9 @@ public class SFSBCallStack {
         }
     };
 
+    /**
+     * called from SFSBPreCreateInterceptor, before bean creation
+     */
     public static void beginSfsbCreation() {
         int no = sfsbCreationCallStackCount.get();
         if (no == 0) {
@@ -64,6 +67,9 @@ public class SFSBCallStack {
         sfsbCreationCallStackCount.set(no + 1);
     }
 
+    /**
+     * called from SFSBPreCreateInterceptor, after bean creation
+     */
     public static void endSfsbCreation() {
         int no = sfsbCreationCallStackCount.get();
         no--;
@@ -73,6 +79,12 @@ public class SFSBCallStack {
         }
     }
 
+    /**
+     * register the entity manager map so it is accessible to other SFSB's during the creation process
+     *
+     * @param scopedPuName
+     * @param entityManager
+     */
     public static void extendedPersistenceContextCreated(String scopedPuName, ReferenceCountedEntityManager entityManager) {
         if (sfsbCreationCallStackCount.get() > 0) {
             Map<String, ReferenceCountedEntityManager> map = sfsbCreationMap.get();
@@ -83,15 +95,13 @@ public class SFSBCallStack {
     }
 
     /**
-     * For the current thread, look at the call stack of SFSB invocations and return the first extended
-     * persistence context that is based on puName.
-     *
+     * For the current thread, look at the call stack (containing entity manager maps) and return the first extended
+     * persistence context that is based on puScopedName.
      *
      * @param puScopedName Scoped pu name
-     * @return the found XPC that matches puName or null if not found
+     * @return the found ReferenceCountedEntityManager (XPC) that matches puScopedName or null if not found
      */
     public static ReferenceCountedEntityManager findPersistenceContext(String puScopedName) {
-        // TODO: arrange for a more optimal datastructure for this
         for (Map<String, ReferenceCountedEntityManager> handle : currentSFSBCallStack()) {
             final ReferenceCountedEntityManager res = handle.get(puScopedName);
             if(res != null) {
@@ -106,7 +116,7 @@ public class SFSBCallStack {
     }
 
     /**
-     * Return the current SFSB call stack
+     * Return the current entity manager map
      *
      * @return call stack (may be empty but never null)
      */
@@ -126,7 +136,7 @@ public class SFSBCallStack {
     /**
      * Pops the current SFSB invocation off the invocation call stack
      *
-     * @return the popped SFSB context handle
+     * @return the entity manager map
      */
     public static Map<String, ReferenceCountedEntityManager> popCall() {
         ArrayList<Map<String, ReferenceCountedEntityManager>> stack = currentSFSBCallStack();

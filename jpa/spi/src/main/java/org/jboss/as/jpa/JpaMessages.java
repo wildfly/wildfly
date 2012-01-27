@@ -22,8 +22,6 @@
 
 package org.jboss.as.jpa;
 
-import java.io.IOException;
-import java.io.NotSerializableException;
 import java.net.URLConnection;
 
 import javax.ejb.EJBException;
@@ -546,33 +544,15 @@ public interface JpaMessages {
     RuntimeException couldNotCreateInstanceProvider(@Cause Throwable cause, String providerClassName);
 
     /**
-     * Create exception for what should be an internal error (spi was not called for thread before
-     * (de)serializing an extended perstence context.
-     *
-     * @return a {@link NotSerializableException} for the error
-     */
-    @Message(id = 11472, value = "Could not (de)serialize extended persistence context because XPCSerializationController is not configured")
-    NotSerializableException couldNotSerialize();
-
-    /**
-     * internal error, shouldn't happen
+     * internal error indicating that the number of stateful session beans associated with a
+     * extended persistence context has reached a negative count.
      *
      * @return a {@link RuntimeException} for the error
      */
-    @Message(id = 11473, value = "Deserialation error occurred for persistence unit %s")
-    RuntimeException couldNotDeserialize(@Cause Throwable cause, String scopedPerstenceUnitName);
+    @Message(id = 11472, value = "internal error, the number of stateful session beans (%d) associated " +
+        "with an extended persistence context (%s) cannot be a negative number.")
+    RuntimeException referenceCountedEntityManagerNegativeCount(int referenceCount, String scopedPuName);
 
-    /**
-     * After serializing an extended persistence context for passivation or cluster replication.
-     * When we activate or fail-over to a new node, we will deserialize the extended persistence context.
-     * This error means that we couldn't reestablish the DataSource when deserializing.
-     *
-     * @param cause
-     * @param jndiDataSource
-     * @return a IOException for this error
-     */
-    @Message(id = 11474, value = "Deserialation error, could not lookup DataSource %s")
-    IOException cannotJNDILookupDataSource(@Cause Throwable cause, String jndiDataSource);
 
 
     /**
