@@ -31,12 +31,10 @@ import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONFIG;
 import static org.jboss.as.webservices.dmr.Constants.HANDLER;
 import static org.jboss.as.webservices.dmr.Constants.HANDLER_CLASS;
 import static org.jboss.as.webservices.dmr.Constants.MODIFY_WSDL_ADDRESS;
-import static org.jboss.as.webservices.dmr.Constants.PORT_NAME_PATTERN;
 import static org.jboss.as.webservices.dmr.Constants.POST_HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PRE_HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PROPERTY;
 import static org.jboss.as.webservices.dmr.Constants.PROTOCOL_BINDINGS;
-import static org.jboss.as.webservices.dmr.Constants.SERVICE_NAME_PATTERN;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_HOST;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_PORT;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_SECURE_PORT;
@@ -100,8 +98,6 @@ public final class WSExtension implements Extension {
         preHandlerChain.registerOperationHandler(ADD, HandlerChainAdd.INSTANCE, WSSubsystemProviders.PRE_HANDLER_CHAIN_ADD_DESCRIPTION, false);
         preHandlerChain.registerOperationHandler(REMOVE, HandlerChainRemove.INSTANCE, WSSubsystemProviders.PRE_HANDLER_CHAIN_REMOVE_DESCRIPTION, false);
         preHandlerChain.registerReadOnlyAttribute(PROTOCOL_BINDINGS, null, Storage.CONFIGURATION);
-        preHandlerChain.registerReadOnlyAttribute(PORT_NAME_PATTERN, null, Storage.CONFIGURATION);
-        preHandlerChain.registerReadOnlyAttribute(SERVICE_NAME_PATTERN, null, Storage.CONFIGURATION);
         // pre handlers
         final ManagementResourceRegistration preHandler = preHandlerChain.registerSubModel(handlerPath, WSSubsystemProviders.HANDLER_DESCRIPTION);
         preHandler.registerOperationHandler(ADD, HandlerAdd.INSTANCE, WSSubsystemProviders.HANDLER_ADD_DESCRIPTION, false);
@@ -112,8 +108,6 @@ public final class WSExtension implements Extension {
         postHandlerChain.registerOperationHandler(ADD, HandlerChainAdd.INSTANCE, WSSubsystemProviders.POST_HANDLER_CHAIN_ADD_DESCRIPTION, false);
         postHandlerChain.registerOperationHandler(REMOVE, HandlerChainRemove.INSTANCE, WSSubsystemProviders.POST_HANDLER_CHAIN_REMOVE_DESCRIPTION, false);
         postHandlerChain.registerReadOnlyAttribute(PROTOCOL_BINDINGS, null, Storage.CONFIGURATION);
-        postHandlerChain.registerReadOnlyAttribute(PORT_NAME_PATTERN, null, Storage.CONFIGURATION);
-        postHandlerChain.registerReadOnlyAttribute(SERVICE_NAME_PATTERN, null, Storage.CONFIGURATION);
         // post handlers
         final ManagementResourceRegistration postHandler = postHandlerChain.registerSubModel(handlerPath, WSSubsystemProviders.HANDLER_DESCRIPTION);
         postHandler.registerOperationHandler(ADD, HandlerAdd.INSTANCE, WSSubsystemProviders.HANDLER_ADD_DESCRIPTION, false);

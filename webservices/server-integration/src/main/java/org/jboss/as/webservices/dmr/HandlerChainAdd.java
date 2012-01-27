@@ -23,17 +23,13 @@ package org.jboss.as.webservices.dmr;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.webservices.WSMessages.MESSAGES;
-import static org.jboss.as.webservices.dmr.Constants.PORT_NAME_PATTERN;
 import static org.jboss.as.webservices.dmr.Constants.POST_HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PRE_HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PROTOCOL_BINDINGS;
-import static org.jboss.as.webservices.dmr.Constants.SERVICE_NAME_PATTERN;
 import static org.jboss.as.webservices.dmr.PackageUtils.getServerConfig;
 
 import java.util.LinkedList;
 import java.util.List;
-
-import javax.xml.namespace.QName;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -61,10 +57,7 @@ final class HandlerChainAdd extends AbstractAddStepHandler {
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         final ServerConfig config = getServerConfig(context);
         if (config != null) {
-            final QName portNamePattern = getQName(getAttributeValue(operation, PORT_NAME_PATTERN));
             final String protocolBindings = getAttributeValue(operation, PROTOCOL_BINDINGS);
-            final QName serviceNamePattern = getQName(getAttributeValue(operation, SERVICE_NAME_PATTERN));
-            ensurePreconditions(portNamePattern, protocolBindings, serviceNamePattern);
             final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             final String configName = address.getElement(address.size() - 2).getValue();
             final String handlerChainType = address.getElement(address.size() - 1).getKey();
@@ -93,9 +86,7 @@ final class HandlerChainAdd extends AbstractAddStepHandler {
                     }
                     handlerChain = new UnifiedHandlerChainMetaData();
                     handlerChain.setId(handlerChainId);
-                    handlerChain.setPortNamePattern(portNamePattern);
                     handlerChain.setProtocolBindings(protocolBindings);
-                    handlerChain.setServiceNamePattern(serviceNamePattern);
                     handlerChains.add(handlerChain);
                     if (!context.isBooting()) {
                         context.restartRequired();
@@ -114,31 +105,14 @@ final class HandlerChainAdd extends AbstractAddStepHandler {
         return null;
     }
 
-    private static QName getQName(final String value) {
-        return value != null ? QName.valueOf(value) : null;
-    }
-
-    private static void ensurePreconditions(final QName portNamePattern, final String protocolBindings, final QName serviceNamePattern) throws OperationFailedException {
-        if ((portNamePattern == null) && (protocolBindings == null)) return;
-        if ((portNamePattern == null) && (serviceNamePattern == null)) return;
-        if ((protocolBindings == null) && (serviceNamePattern == null)) return;
-        throw MESSAGES.mutuallyExclusiveHandlerChainAttributes(PORT_NAME_PATTERN, PROTOCOL_BINDINGS, SERVICE_NAME_PATTERN);
-    }
-
     private static String getAttributeValue(final ModelNode node, final String propertyName) {
         return node.hasDefined(propertyName) ? node.get(propertyName).asString() : null;
     }
 
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        if (operation.hasDefined(PORT_NAME_PATTERN)) {
-            model.get(PORT_NAME_PATTERN).set(operation.get(PORT_NAME_PATTERN));
-        }
         if (operation.hasDefined(PROTOCOL_BINDINGS)) {
             model.get(PROTOCOL_BINDINGS).set(operation.get(PROTOCOL_BINDINGS));
-        }
-        if (operation.hasDefined(SERVICE_NAME_PATTERN)) {
-            model.get(SERVICE_NAME_PATTERN).set(operation.get(SERVICE_NAME_PATTERN));
         }
     }
 

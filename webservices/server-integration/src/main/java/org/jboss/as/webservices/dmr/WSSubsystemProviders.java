@@ -50,12 +50,10 @@ import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_WSDL;
 import static org.jboss.as.webservices.dmr.Constants.HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.HANDLER_CLASS;
 import static org.jboss.as.webservices.dmr.Constants.MODIFY_WSDL_ADDRESS;
-import static org.jboss.as.webservices.dmr.Constants.PORT_NAME_PATTERN;
 import static org.jboss.as.webservices.dmr.Constants.POST_HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PRE_HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PROPERTY;
 import static org.jboss.as.webservices.dmr.Constants.PROTOCOL_BINDINGS;
-import static org.jboss.as.webservices.dmr.Constants.SERVICE_NAME_PATTERN;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_HOST;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_PORT;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_SECURE_PORT;
@@ -445,16 +443,6 @@ final class WSSubsystemProviders {
             node.get(ATTRIBUTES, PROTOCOL_BINDINGS, REQUIRED).set(false);
             node.get(ATTRIBUTES, PROTOCOL_BINDINGS, NILLABLE).set(true);
 
-            node.get(ATTRIBUTES, PORT_NAME_PATTERN, TYPE).set(ModelType.STRING);
-            node.get(ATTRIBUTES, PORT_NAME_PATTERN, DESCRIPTION).set(bundle.getString("portname.pattern"));
-            node.get(ATTRIBUTES, PORT_NAME_PATTERN, REQUIRED).set(false);
-            node.get(ATTRIBUTES, PORT_NAME_PATTERN, NILLABLE).set(true);
-
-            node.get(ATTRIBUTES, SERVICE_NAME_PATTERN, TYPE).set(ModelType.STRING);
-            node.get(ATTRIBUTES, SERVICE_NAME_PATTERN, DESCRIPTION).set(bundle.getString("servicename.pattern"));
-            node.get(ATTRIBUTES, SERVICE_NAME_PATTERN, REQUIRED).set(false);
-            node.get(ATTRIBUTES, SERVICE_NAME_PATTERN, NILLABLE).set(true);
-
             node.get(CHILDREN, HANDLER_CHAIN, DESCRIPTION).set(bundle.getString(handlerChainName));
             node.get(CHILDREN, HANDLER_CHAIN, REQUIRED).set(false);
 
@@ -526,16 +514,6 @@ final class WSSubsystemProviders {
             node.get(REQUEST_PROPERTIES, PROTOCOL_BINDINGS, DESCRIPTION).set(bundle.getString("protocol.binding"));
             node.get(REQUEST_PROPERTIES, PROTOCOL_BINDINGS, REQUIRED).set(false);
             node.get(REQUEST_PROPERTIES, PROTOCOL_BINDINGS, NILLABLE).set(true);
-
-            node.get(REQUEST_PROPERTIES, PORT_NAME_PATTERN, TYPE).set(ModelType.STRING);
-            node.get(REQUEST_PROPERTIES, PORT_NAME_PATTERN, DESCRIPTION).set(bundle.getString("portname.pattern"));
-            node.get(REQUEST_PROPERTIES, PORT_NAME_PATTERN, REQUIRED).set(false);
-            node.get(REQUEST_PROPERTIES, PORT_NAME_PATTERN, NILLABLE).set(true);
-
-            node.get(REQUEST_PROPERTIES, SERVICE_NAME_PATTERN, TYPE).set(ModelType.STRING);
-            node.get(REQUEST_PROPERTIES, SERVICE_NAME_PATTERN, DESCRIPTION).set(bundle.getString("servicename.pattern"));
-            node.get(REQUEST_PROPERTIES, SERVICE_NAME_PATTERN, REQUIRED).set(false);
-            node.get(REQUEST_PROPERTIES, SERVICE_NAME_PATTERN, NILLABLE).set(true);
 
             node.get(REPLY_PROPERTIES).setEmptyObject();
 
