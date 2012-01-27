@@ -36,7 +36,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
 // implements ModelQueryOperationHandler, DescriptionProvider
-public class ModClusterRemoveMetric implements OperationStepHandler, DescriptionProvider{
+public class ModClusterRemoveMetric implements OperationStepHandler, DescriptionProvider {
 
     static final ModClusterRemoveMetric INSTANCE = new ModClusterRemoveMetric();
 
@@ -46,60 +46,61 @@ public class ModClusterRemoveMetric implements OperationStepHandler, Description
     }
 
     @Override
-    public void execute(OperationContext context, ModelNode operation)
-            throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        // TODO AS7-3194 no reason this can't run on the Host Controller; it just updates the model
-        // TODO AS7-3194 this does not update the runtime! The server needs to be marked reload-required
-        if (context.isNormalServer()) {
-            context.addStep(new OperationStepHandler() {
-                @Override
-                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        context.addStep(new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-                    // Look for the dynamic-load-provider
-                    final ModelNode dynamicLoadProvider = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel().get(CommonAttributes.DYNAMIC_LOAD_PROVIDER);
-                    String type = null;
-                     if (dynamicLoadProvider.isDefined()) {
-                         List<Property> list = operation.asPropertyList();
-                         Iterator<Property> it = list.iterator();
-                         while(it.hasNext()) {
-                             Property prop = it.next();
-                             if (prop.getName().equals("type")) {
-                                 type = prop.getValue().asString();
-                                 break;
-                             }
-                         }
-                         if (type != null) {
-                             removeMetric( dynamicLoadProvider, type);
-                         }
-                         if (!dynamicLoadProvider.get(CommonAttributes.LOAD_METRIC).isDefined() && !dynamicLoadProvider.get(CommonAttributes.CUSTOM_LOAD_METRIC).isDefined()) {
-                             context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel().remove(CommonAttributes.DYNAMIC_LOAD_PROVIDER);
-                         }
-
-                     }
-
-                    context.completeStep();
-                }
-
-                private void removeMetric(ModelNode dynamicLoadProvider, String type) {
-                    List<ModelNode> list = dynamicLoadProvider.get(CommonAttributes.LOAD_METRIC).asList();
-                    List<ModelNode> newlist = Collections.<ModelNode>emptyList();
-                    dynamicLoadProvider.get(CommonAttributes.LOAD_METRIC).set(newlist);
-                    Iterator<ModelNode> it = list.iterator();
-                    while(it.hasNext()) {
-                        ModelNode node = it.next();
-                        if (!node.get("type").asString().equals(type)) {
-                            dynamicLoadProvider.get(CommonAttributes.LOAD_METRIC).add(node);
+                // Look for the dynamic-load-provider
+                final ModelNode dynamicLoadProvider = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel()
+                        .get(CommonAttributes.DYNAMIC_LOAD_PROVIDER);
+                String type = null;
+                if (dynamicLoadProvider.isDefined()) {
+                    List<Property> list = operation.asPropertyList();
+                    Iterator<Property> it = list.iterator();
+                    while (it.hasNext()) {
+                        Property prop = it.next();
+                        if (prop.getName().equals("type")) {
+                            type = prop.getValue().asString();
+                            break;
                         }
                     }
-                    list = dynamicLoadProvider.get(CommonAttributes.LOAD_METRIC).asList();
-                    if (list.isEmpty()) {
-                        dynamicLoadProvider.remove(CommonAttributes.LOAD_METRIC);
+                    if (type != null) {
+                        removeMetric(dynamicLoadProvider, type);
+                    }
+                    if (!dynamicLoadProvider.get(CommonAttributes.LOAD_METRIC).isDefined()
+                            && !dynamicLoadProvider.get(CommonAttributes.CUSTOM_LOAD_METRIC).isDefined()) {
+                        context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel()
+                                .remove(CommonAttributes.DYNAMIC_LOAD_PROVIDER);
+                    }
+
+                }
+
+                context.completeStep();
+            }
+
+            private void removeMetric(ModelNode dynamicLoadProvider, String type) {
+                List<ModelNode> list = dynamicLoadProvider.get(CommonAttributes.LOAD_METRIC).asList();
+                List<ModelNode> newlist = Collections.<ModelNode> emptyList();
+                dynamicLoadProvider.get(CommonAttributes.LOAD_METRIC).set(newlist);
+                Iterator<ModelNode> it = list.iterator();
+                while (it.hasNext()) {
+                    ModelNode node = it.next();
+                    if (!node.get("type").asString().equals(type)) {
+                        dynamicLoadProvider.get(CommonAttributes.LOAD_METRIC).add(node);
                     }
                 }
-            }, OperationContext.Stage.MODEL);
-        }
+                list = dynamicLoadProvider.get(CommonAttributes.LOAD_METRIC).asList();
+                if (list.isEmpty()) {
+                    dynamicLoadProvider.remove(CommonAttributes.LOAD_METRIC);
+                }
+            }
+        }, OperationContext.Stage.MODEL);
 
+        if (context.isNormalServer()) {
+            context.reloadRequired();
+        }
         context.completeStep();
     }
 }

@@ -25,6 +25,8 @@ package org.jboss.as.modcluster;
 import java.util.Locale;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 
@@ -35,8 +37,11 @@ class ModClusterRemoveSSL extends AbstractRemoveStepHandler implements Descripti
 
     static final ModClusterRemoveSSL INSTANCE = new ModClusterRemoveSSL();
 
-    private ModClusterRemoveSSL() {
-        //
+    @Override
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model)
+            throws OperationFailedException {
+        // need to set reload-required on the server
+        context.reloadRequired();
     }
 
     @Override
