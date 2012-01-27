@@ -265,18 +265,18 @@ public class SFSBXPCMap {
 
             sfsbList = sfsbxpcMap.getSFSBList(extendedEntityManager);
 
-            // when we activate the SFSB, we will remap each SFSB to XPC
-            for (SFSBContextHandle sfsbContextHandle : sfsbList) {
-                Set XPCSet = sfsbxpcMap.contextToXPCMap.get(sfsbContextHandle);
-                if (XPCSet != null) {
-                    XPCSet.remove(extendedEntityManager);
+            if (sfsbList != null) {
+                // when we activate the SFSB, we will remap each SFSB to XPC
+                for (SFSBContextHandle sfsbContextHandle : sfsbList) {
+                    Set XPCSet = sfsbxpcMap.contextToXPCMap.get(sfsbContextHandle);
+                    if (XPCSet != null) {
+                        XPCSet.remove(extendedEntityManager);
+                    }
                 }
+
+                // when we activate, we will re-add with a new XPC instance
+                sfsbxpcMap.XPCToContextMap.remove(extendedEntityManager);
             }
-
-            // when we activate, we will re-add with a new XPC instance
-            sfsbxpcMap.XPCToContextMap.remove(extendedEntityManager);
-
-
         }
     }
 
