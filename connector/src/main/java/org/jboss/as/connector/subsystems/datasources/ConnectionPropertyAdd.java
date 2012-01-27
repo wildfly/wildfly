@@ -79,7 +79,7 @@ public class ConnectionPropertyAdd extends AbstractAddStepHandler implements Des
         final String jndiName = path.getElement(path.size() - 2).getValue();
         final String configPropertyName = PathAddress.pathAddress(address).getLastElement().getValue();
 
-        ServiceName serviceName = DataSourceConfigService.SERVICE_NAME_BASE.append(jndiName).append("connetion-properties").append(configPropertyName);
+        ServiceName serviceName = DataSourceConfigService.SERVICE_NAME_BASE.append(jndiName).append("connection-properties").append(configPropertyName);
         ServiceName dsServiceName = DataSourceConfigService.SERVICE_NAME_BASE.append(jndiName);
 
         final ServiceRegistry registry = context.getServiceRegistry(true);

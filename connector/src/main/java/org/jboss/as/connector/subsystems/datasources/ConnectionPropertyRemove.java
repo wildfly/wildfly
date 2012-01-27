@@ -27,8 +27,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -52,7 +50,7 @@ public static final ConnectionPropertyRemove INSTANCE = new ConnectionPropertyRe
         final String jndiName = path.getElement(path.size() - 2).getValue();
         final String configPropertyName = PathAddress.pathAddress(address).getLastElement().getValue();
 
-        ServiceName serviceName = DataSourceConfigService.SERVICE_NAME_BASE.append(jndiName).append("connetion-properties").append(configPropertyName);
+        ServiceName serviceName = DataSourceConfigService.SERVICE_NAME_BASE.append(jndiName).append("connection-properties").append(configPropertyName);
 
         final ServiceController<?> dataSourceConfigController = registry.getService(serviceName);
         if (dataSourceConfigController != null) {

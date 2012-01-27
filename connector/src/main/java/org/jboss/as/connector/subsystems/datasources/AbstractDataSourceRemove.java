@@ -22,15 +22,13 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.List;
 
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -74,7 +72,7 @@ public abstract class AbstractDataSourceRemove extends AbstractRemoveStepHandler
 
 
         for (ServiceName name : serviceNames) {
-            if (dataSourceConfigServiceName.append("connetion-properties").isParentOf(name)) {
+            if (dataSourceConfigServiceName.append("connection-properties").isParentOf(name)) {
                 context.removeService(name);
             }
             if (xaDataSourceConfigServiceName.append("xa-datasource-properties").isParentOf(name)) {
