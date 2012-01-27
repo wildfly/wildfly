@@ -18,11 +18,9 @@ package org.jboss.as.test.smoke.osgi;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.osgi.repository.MavenCoordinates;
-import org.jboss.osgi.repository.RepositoryRequirementBuilder;
-import org.jboss.osgi.repository.XRepository;
-import org.jboss.osgi.resolver.v2.XCapability;
+import org.jboss.osgi.resolver.v2.MavenCoordinates;
 import org.jboss.osgi.resolver.v2.XIdentityCapability;
+import org.jboss.osgi.resolver.v2.XRequirementBuilder;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -68,7 +66,7 @@ public class SimpleRepositoryTestCase {
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(BundleActivator.class, Repository.class, Resource.class);
-                builder.addImportPackages(XRepository.class, XCapability.class);
+                builder.addImportPackages(XRequirementBuilder.class);
                 return builder.openStream();
             }
         });
@@ -78,13 +76,12 @@ public class SimpleRepositoryTestCase {
     @Test
     public void testRepositoryService() throws Exception {
 
-        XRepository xrepo = (XRepository) getRepository();
-        RepositoryRequirementBuilder reqbuilder = xrepo.getRequirementBuilder();
+        Repository repo = getRepository();
         MavenCoordinates coordinates = MavenCoordinates.parse("org.apache.felix:org.apache.felix.eventadmin:1.2.6");
-        Requirement req = reqbuilder.createArtifactRequirement(coordinates);
+        Requirement req = XRequirementBuilder.createArtifactRequirement(coordinates);
         assertNotNull("Requirement not null", req);
 
-        Collection<Capability> caps = xrepo.findProviders(req);
+        Collection<Capability> caps = repo.findProviders(req);
         assertEquals("Capability not null", 1, caps.size());
 
         XIdentityCapability xcap = (XIdentityCapability) caps.iterator().next();

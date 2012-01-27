@@ -38,8 +38,9 @@ import org.jboss.osgi.framework.Constants;
 import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.repository.ArtifactProviderPlugin;
 import org.jboss.osgi.repository.RepositoryResolutionException;
-import org.jboss.osgi.repository.RepositoryResourceBuilder;
 import org.jboss.osgi.resolver.v2.XResource;
+import org.jboss.osgi.resolver.v2.XResourceBuilder;
+import org.jboss.osgi.resolver.v2.XResourceConstants;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.resource.Capability;
@@ -58,7 +59,7 @@ import java.util.List;
 
 import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
 import static org.jboss.as.osgi.service.FrameworkBootstrapService.SERVICE_BASE_NAME;
-import static org.jboss.osgi.repository.RepositoryConstants.MODULE_IDENTITY_NAMESPACE;
+import static org.jboss.osgi.resolver.v2.XResourceConstants.MODULE_IDENTITY_NAMESPACE;
 
 /**
  * An {@link ArtifactProviderPlugin} that resolves arteffacts from the local modules/bundles location
@@ -121,7 +122,7 @@ final class ModuleIdentityArtifactProvider extends AbstractService<Void> impleme
                     URL baseURL = bundlesDir.toURI().toURL();
                     String contentPath = contentFile.getAbsolutePath();
                     contentPath = contentPath.substring(baseURL.getPath().length());
-                    XResource resource = RepositoryResourceBuilder.create(baseURL, contentPath).getResource();
+                    XResource resource = XResourceBuilder.create(baseURL, contentPath).getResource();
                     result.add(resource.getIdentityCapability());
                 } else {
                     contentFile = getRepositoryEntry(modulesDir, moduleIdentifier);
@@ -129,7 +130,7 @@ final class ModuleIdentityArtifactProvider extends AbstractService<Void> impleme
                         URL baseURL = modulesDir.toURI().toURL();
                         String contentPath = contentFile.getAbsolutePath();
                         contentPath = contentPath.substring(baseURL.getPath().length());
-                        XResource resource = RepositoryResourceBuilder.create(baseURL, contentPath).getResource();
+                        XResource resource = XResourceBuilder.create(baseURL, contentPath).getResource();
                         result.add(resource.getIdentityCapability());
                     }
                 }
