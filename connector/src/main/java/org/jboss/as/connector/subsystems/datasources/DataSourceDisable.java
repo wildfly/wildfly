@@ -29,7 +29,6 @@ import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeU
 import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeUtil.xaFrom;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
 
 import java.util.List;
 
@@ -178,15 +177,6 @@ public class DataSourceDisable implements OperationStepHandler {
     }
 
     public void reEnable(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        // On boot we invoke this op but we may not want to store a default value the model
-        boolean persist = operation.get(PERSISTENT).asBoolean(true);
-        if (persist) {
-            model.get(ENABLED).set(true);
-        } else if (model.hasDefined(ENABLED) && !model.get(ENABLED).asBoolean()) {
-            // Just clear the "false" value that gets stored by default
-            model.get(ENABLED).set(new ModelNode());
-        }
-
         if (context.getType() == OperationContext.Type.SERVER) {
 
 
