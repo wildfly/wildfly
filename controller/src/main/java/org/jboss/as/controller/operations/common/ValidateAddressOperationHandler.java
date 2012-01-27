@@ -21,18 +21,21 @@
  */
 package org.jboss.as.controller.operations.common;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROBLEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALID;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import java.util.Locale;
+import java.util.NoSuchElementException;
 
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -48,8 +51,14 @@ public class ValidateAddressOperationHandler implements OperationStepHandler, De
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final ModelNode address = operation.require(VALUE);
         final PathAddress pathAddr = PathAddress.pathAddress(address);
-        final ImmutableManagementResourceRegistration subModel = context.getResourceRegistration().getSubModel(pathAddr);
-        context.getResult().get(VALID).set(subModel != null);
+        final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+        try {
+            resource.navigate(pathAddr);
+            context.getResult().get(VALID).set(true);
+        } catch(NoSuchElementException e) {
+            context.getResult().get(VALID).set(false);
+            context.getResult().get(PROBLEM).set(e.getMessage());
+        }
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
