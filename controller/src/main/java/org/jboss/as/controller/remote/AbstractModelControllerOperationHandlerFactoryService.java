@@ -23,7 +23,6 @@ package org.jboss.as.controller.remote;
 
 import java.security.AccessController;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;

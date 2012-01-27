@@ -37,7 +37,9 @@ public interface ManagementRequestHandler<T, A> {
      * Handle a request.
      *
      * @param input the data input
+     * @param resultHandler the result handler which may be used to mark the operation as complete
      * @param context the request context
+     * @throws IOException
      */
     void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<T> resultHandler, final ManagementRequestContext<A> context) throws IOException;
 

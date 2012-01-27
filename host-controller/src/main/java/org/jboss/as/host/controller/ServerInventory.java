@@ -29,9 +29,9 @@ import javax.security.auth.callback.CallbackHandler;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.process.ProcessMessageHandler;
-import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
+import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
+import org.jboss.as.protocol.mgmt.ManagementRequestHandlerFactory;
 import org.jboss.dmr.ModelNode;
-import org.jboss.remoting3.Channel;
 
 /**
  * Inventory of the managed servers.
@@ -144,11 +144,11 @@ public interface ServerInventory {
      * Notification that a channel for communication with a managed server process has been registered.
      *
      * @param serverProcessName  process name of the server
-     * @param channel remoting channel to use for communicating with the server
+     * @param channelHandler remoting channel to use for communicating with the server
      * @param callback callback the listener is to invoke when an operation handler is available for handling
      *                 management operations from the server. The callback will be invoked before this method returns
      */
-    void serverCommunicationRegistered(String serverProcessName, Channel channel, ProxyCreatedCallback callback);
+    void serverCommunicationRegistered(String serverProcessName, ManagementChannelHandler channelHandler, ProxyCreatedCallback callback);
 
     /**
      * Notification that the start of a server process has failed.
@@ -214,7 +214,7 @@ public interface ServerInventory {
          *
          * @param handler the handler
          */
-        void proxyOperationHandlerCreated(ManagementMessageHandler handler);
+        void proxyOperationHandlerCreated(ManagementRequestHandlerFactory handler);
     }
 
 }

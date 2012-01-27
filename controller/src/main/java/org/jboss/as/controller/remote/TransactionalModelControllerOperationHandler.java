@@ -28,7 +28,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import java.io.DataInput;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ProxyController;
@@ -38,10 +37,11 @@ import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
-import org.jboss.as.protocol.mgmt.ManagementProtocolHeader;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
+import org.jboss.as.protocol.mgmt.ManagementRequestHandlerFactory;
 import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
+import org.jboss.as.protocol.mgmt.ManagementChannelAssociation;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.dmr.ModelNode;
@@ -52,38 +52,31 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author Emanuel Muckenhuber
  */
-public class TransactionalModelControllerOperationHandler extends AbstractModelControllerOperationHandler<Void, TransactionalModelControllerOperationHandler.ExecuteRequestContext> {
+public class TransactionalModelControllerOperationHandler implements ManagementRequestHandlerFactory {
 
     private final ModelController controller;
-    public TransactionalModelControllerOperationHandler(final ModelController controller, final ExecutorService executorService) {
-        super(executorService);
+    private final ManagementChannelAssociation channelAssociation;
+    public TransactionalModelControllerOperationHandler(final ModelController controller, final ManagementChannelAssociation channelAssociation) {
         this.controller = controller;
+        this.channelAssociation = channelAssociation;
     }
 
     @Override
-    protected ManagementRequestHeader validateRequest(ManagementProtocolHeader header) throws IOException {
-        final ManagementRequestHeader request =  super.validateRequest(header);
-        // Initialize the request context
-        if(request.getOperationId() == ModelControllerProtocol.EXECUTE_TX_REQUEST) {
-            final ExecuteRequestContext executeRequestContext = new ExecuteRequestContext();
-            executeRequestContext.operation = registerActiveOperation(request.getBatchId(), executeRequestContext);
-        }
-        return request;
-    }
-
-    @Override
-    protected ManagementRequestHandler<Void, ExecuteRequestContext> getRequestHandler(byte operationType) {
-        switch(operationType) {
+    public ManagementRequestHandler<?, ?> resolveHandler(RequestHandlerChain handlers, ManagementRequestHeader request) {
+        switch(request.getOperationId()) {
             case ModelControllerProtocol.EXECUTE_TX_REQUEST:
+                // Initialize the request context
+                final ExecuteRequestContext executeRequestContext = new ExecuteRequestContext();
+                executeRequestContext.operation = handlers.registerActiveOperation(request.getBatchId(), executeRequestContext);
                 return new ExecuteRequestHandler();
             case ModelControllerProtocol.COMPLETE_TX_REQUEST:
                 return new CompleteTxOperationHandler();
         }
-        return super.getRequestHandler(operationType);
+        return handlers.resolveNext();
     }
 
     /**
-     * The request handler for requests from {@link RemoteProxyController#execute}.
+     * The request handler for requests from {@link org.jboss.as.controller.remote.RemoteProxyController#execute}.
      */
     private class ExecuteRequestHandler implements ManagementRequestHandler<Void, ExecuteRequestContext> {
 
@@ -109,9 +102,9 @@ public class TransactionalModelControllerOperationHandler extends AbstractModelC
             // Set the response information
             executeRequestContext.initialize(context);
             final Integer batchId = executeRequestContext.getOperationId();
-            final AbstractModelControllerOperationHandler.OperationMessageHandlerProxy messageHandlerProxy = new AbstractModelControllerOperationHandler.OperationMessageHandlerProxy(context.getChannel(), batchId);
+            final OperationMessageHandlerProxy messageHandlerProxy = new OperationMessageHandlerProxy(channelAssociation, batchId);
             final ProxyOperationControlProxy control = new ProxyOperationControlProxy(executeRequestContext);
-            final AbstractModelControllerOperationHandler.OperationAttachmentsProxy attachmentsProxy = new AbstractModelControllerOperationHandler.OperationAttachmentsProxy(context.getChannel(), batchId, attachmentsLength);
+            final OperationAttachmentsProxy attachmentsProxy = OperationAttachmentsProxy.create(channelAssociation, batchId, attachmentsLength);
             final ModelNode result;
             try {
                 // Execute the operation
@@ -139,7 +132,7 @@ public class TransactionalModelControllerOperationHandler extends AbstractModelC
     }
 
     /**
-     * The request handler for requests from {@link RemoteProxyController.CompleteTxRequest}
+     * The request handler for requests from {@link org.jboss.as.controller.remote.RemoteProxyController.CompleteTxRequest}
      */
     private class CompleteTxOperationHandler implements ManagementRequestHandler<Void, ExecuteRequestContext> {
 
@@ -156,7 +149,7 @@ public class TransactionalModelControllerOperationHandler extends AbstractModelC
 
     static class ProxyOperationControlProxy implements ProxyController.ProxyOperationControl {
 
-        private ExecuteRequestContext requestContext;
+        private final ExecuteRequestContext requestContext;
         ProxyOperationControlProxy(ExecuteRequestContext requestContext) {
             this.requestContext = requestContext;
         }
@@ -275,7 +268,7 @@ public class TransactionalModelControllerOperationHandler extends AbstractModelC
      * @param context the request context
      * @param responseType the response type
      * @param response the operation response
-     * @throws IOException for any error
+     * @throws java.io.IOException for any error
      */
     static void sendResponse(final ManagementRequestContext<ExecuteRequestContext> context, final byte responseType, final ModelNode response) throws IOException {
         final ManagementResponseHeader header = ManagementResponseHeader.create(context.getRequestHeader());

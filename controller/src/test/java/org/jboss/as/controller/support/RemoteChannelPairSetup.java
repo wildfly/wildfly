@@ -34,7 +34,9 @@ import java.util.concurrent.TimeUnit;
 import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
 import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
+import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
 import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.OpenListener;
 import org.jboss.remoting3.security.PasswordClientCallbackHandler;
@@ -78,12 +80,10 @@ public class RemoteChannelPairSetup {
         return executorService;
     }
 
-    public void setupRemoting(final ManagementMessageHandler handler) throws IOException {
+    public void setupRemoting(final ManagementChannelInitialization initialization) throws IOException {
         //executorService = Executors.newCachedThreadPool();
         final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("Remoting"), Boolean.FALSE, null, "Remoting %f thread %t", null, null, AccessController.getContext());
         executorService = new QueueExecutor(EXECUTOR_MAX_THREADS / 4 + 1, EXECUTOR_MAX_THREADS, EXECUTOR_KEEP_ALIVE_TIME, TimeUnit.MILLISECONDS, 500, threadFactory, true, null);
-
-        final Channel.Receiver receiver = ManagementChannelReceiver.createDelegating(handler);
 
         final ChannelServer.Configuration configuration = new ChannelServer.Configuration();
         configuration.setEndpointName(ENDPOINT_NAME);
@@ -101,7 +101,7 @@ public class RemoteChannelPairSetup {
             @Override
             public void channelOpened(Channel channel) {
                 serverChannel = channel;
-                serverChannel.receiveMessage(receiver);
+                initialization.startReceiving(channel);
                 clientConnectedLatch.countDown();
             }
         });
@@ -136,4 +136,5 @@ public class RemoteChannelPairSetup {
         executorService.awaitTermination(10L, TimeUnit.SECONDS);
         executorService.shutdownNow();
     }
+
 }
