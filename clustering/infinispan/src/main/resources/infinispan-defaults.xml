@@ -22,7 +22,7 @@
   -->
 <!-- N.B. This is *not* meant to be a usable cache configuration -->
 <!-- This file supplies the internal configuration defaults per cache mode -->
-<infinispan xmlns="urn:infinispan:config:5.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:infinispan:config:5.1 http://docs.jboss.org/infinispan/schemas/infinispan-config-5.1.xsd">
+<infinispan xmlns="urn:infinispan:config:5.1">
     <default>
         <transaction useSynchronization="true" transactionMode="TRANSACTIONAL"/>
         <locking lockAcquisitionTimeout="15000" useLockStriping="false" concurrencyLevel="1000"/>
@@ -33,42 +33,42 @@
     <namedCache name="REPL_SYNC">
         <storeAsBinary enabled="true"/>
         <clustering mode="replication">
-            <stateRetrieval timeout="60000" fetchInMemoryState="true"/>
+            <stateTransfer timeout="60000" fetchInMemoryState="true"/>
             <sync replTimeout="17500"/>
         </clustering>
     </namedCache>
     <namedCache name="REPL_ASYNC">
         <storeAsBinary enabled="true"/>
         <clustering mode="replication">
-            <stateRetrieval timeout="60000" fetchInMemoryState="true"/>
+            <stateTransfer timeout="60000" fetchInMemoryState="true"/>
             <async/>
         </clustering>
     </namedCache>
     <namedCache name="DIST_SYNC">
         <storeAsBinary enabled="true"/>
         <clustering mode="distribution">
-            <stateRetrieval fetchInMemoryState="true"/>
+            <stateTransfer timeout="60000" fetchInMemoryState="true"/>
             <sync replTimeout="17500"/>
         </clustering>
     </namedCache>
     <namedCache name="DIST_ASYNC">
         <storeAsBinary enabled="true"/>
         <clustering mode="distribution">
-            <stateRetrieval fetchInMemoryState="true"/>
+            <stateTransfer timeout="60000" fetchInMemoryState="true"/>
             <async/>
         </clustering>
     </namedCache>
     <namedCache name="INVALIDATION_SYNC">
         <storeAsBinary enabled="true" storeValuesAsBinary="false"/>
         <clustering mode="invalidation">
-            <stateRetrieval fetchInMemoryState="false"/>
+            <stateTransfer fetchInMemoryState="false"/>
             <sync replTimeout="17500"/>
         </clustering>
     </namedCache>
     <namedCache name="INVALIDATION_ASYNC">
         <storeAsBinary enabled="true" storeValuesAsBinary="false"/>
         <clustering mode="invalidation">
-            <stateRetrieval fetchInMemoryState="false"/>
+            <stateTransfer fetchInMemoryState="false"/>
             <async/>
         </clustering>
     </namedCache>
