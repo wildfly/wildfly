@@ -115,15 +115,9 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
         MarshallingContext context = new MarshallingContext(this.factory, passivationManager.getMarshallingConfiguration());
         MarshalledValueFactory<MarshallingContext> keyFactory = new HashableMarshalledValueFactory(context);
         MarshalledValueFactory<MarshallingContext> valueFactory = new SimpleMarshalledValueFactory(context);
-        LockKeyFactory<G, MarshallingContext> lockKeyFactory = new LockKeyFactory<G, MarshallingContext>() {
-            @Override
-            public Serializable createLockKey(MarshalledValue<G, MarshallingContext> key) {
-                return key;
-            }
-        };
         @SuppressWarnings("unchecked")
         Registry<String, ?> registry = this.registry.getValue();
-        return new InfinispanBackingCacheEntryStore<G, Cacheable<G>, E, MarshallingContext>(cache, this.invoker, null, timeout, this, false, keyFactory, valueFactory, context, this.lockManager.getValue(), lockKeyFactory, registry);
+        return new InfinispanBackingCacheEntryStore<G, Cacheable<G>, E, MarshallingContext>(cache, this.invoker, null, timeout, this, false, keyFactory, valueFactory, context, null, null, registry);
     }
 
     @Override
