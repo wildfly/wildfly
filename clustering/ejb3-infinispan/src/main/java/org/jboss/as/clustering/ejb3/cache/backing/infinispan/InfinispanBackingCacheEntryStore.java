@@ -141,7 +141,9 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
 
     @Override
     public void insert(E entry) {
-        final MarshalledValue<K, C> key = this.marshalKey(entry.getId());
+        K id = entry.getId();
+        this.trace("insert(%s)", id);
+        final MarshalledValue<K, C> key = this.marshalKey(id);
 
         this.acquireSessionOwnership(key, true);
         try {
@@ -161,6 +163,7 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
 
     @Override
     public E get(K id, boolean lock) {
+        this.trace("get(%s. %s)", id, lock);
         final MarshalledValue<K, C> key = this.marshalKey(id);
 
         if (lock) {
@@ -178,7 +181,9 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
 
     @Override
     public void update(E entry, boolean modified) {
-        final MarshalledValue<K, C> key = this.marshalKey(entry.getId());
+        K id = entry.getId();
+        this.trace("update(%s, %s)", id, modified);
+        final MarshalledValue<K, C> key = this.marshalKey(id);
         try {
             if (modified) {
                 final MarshalledValue<E, C> value = this.marshalEntry(entry);
@@ -198,6 +203,7 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
 
     @Override
     public E remove(K id) {
+        this.trace("remove(%s)", id);
         final MarshalledValue<K, C> key = this.marshalKey(id);
         Operation<MarshalledValue<E, C>> operation = new Operation<MarshalledValue<E, C>>() {
             @Override
@@ -256,12 +262,13 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
 
         this.trace("Acquiring %slock on %s", newLock ? "new " : "", lockKey);
 
+        long timeout = this.cache.getCacheConfiguration().locking().lockAcquisitionTimeout();
         try {
-            LockResult result = this.lockManager.lock(lockKey, this.cache.getCacheConfiguration().locking().lockAcquisitionTimeout(), newLock);
+            LockResult result = this.lockManager.lock(lockKey, timeout, newLock);
             this.trace("Lock acquired (%s) on %s", result, lockKey);
             return result;
         } catch (TimeoutException e) {
-            throw InfinispanEjbMessages.MESSAGES.lockAcquisitionTimeout(e, lockKey);
+            throw InfinispanEjbMessages.MESSAGES.lockAcquisitionTimeout(lockKey, timeout);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw InfinispanEjbMessages.MESSAGES.lockAcquisitionInterruption(e, lockKey);
