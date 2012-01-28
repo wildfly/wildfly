@@ -107,7 +107,7 @@ public abstract class ProcessEnvironment {
                                                                     boolean bootTime) throws OperationFailedException;
 
     /**
-     * Informs this {@code ProcessEnvironment} that the runtime value of the given system property has been updated,
+     * Notifies this {@code ProcessEnvironment} that the runtime value of the given system property has been updated,
      * allowing it to update any state that was originally set via the system property during primordial process boot.
      * This method should only be invoked after a call to {@link #isRuntimeSystemPropertyUpdateAllowed(String, String, boolean)}
      * has returned {@code true}.
@@ -115,7 +115,7 @@ public abstract class ProcessEnvironment {
      * @param propertyName  the name of the property. Cannot be {@code null}
      * @param propertyValue the value of the property. May be {@code null}
      */
-    protected abstract void updateSystemProperty(String propertyName, String propertyValue);
+    protected abstract void systemPropertyUpdated(String propertyName, String propertyValue);
 
     protected static String resolveGUID(final String unresolvedName) {
 
@@ -172,8 +172,6 @@ public abstract class ProcessEnvironment {
 
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-
-            new Exception().printStackTrace(System.out);
 
             final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
             if (model.hasDefined(NAME.getName())) {

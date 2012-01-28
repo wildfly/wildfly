@@ -22,6 +22,8 @@ package org.jboss.as.controller.operations.common;
 import java.util.Locale;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 
@@ -29,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.dmr.ModelNode;
 
@@ -41,7 +44,7 @@ public class SystemPropertyRemoveHandler extends AbstractRemoveStepHandler imple
 
     public static final String OPERATION_NAME = REMOVE;
 
-    public static final SystemPropertyRemoveHandler INSTANCE = new SystemPropertyRemoveHandler();
+    public static final SystemPropertyRemoveHandler INSTANCE = new SystemPropertyRemoveHandler(null);
 
     public static ModelNode getOperation(ModelNode address, String name) {
         ModelNode op = Util.getEmptyOperation(OPERATION_NAME, address);
@@ -49,22 +52,59 @@ public class SystemPropertyRemoveHandler extends AbstractRemoveStepHandler imple
         return op;
     }
 
+    private final ProcessEnvironment processEnvironment;
+
     /**
      * Create the SystemPropertyRemoveHandler
+     * @param processEnvironment
      */
-    private SystemPropertyRemoveHandler() {
+    public SystemPropertyRemoveHandler(ProcessEnvironment processEnvironment) {
+        this.processEnvironment = processEnvironment;
     }
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
-        ModelNode opAddr = operation.require(OP_ADDR);
-        String name = PathAddress.pathAddress(opAddr).getLastElement().getValue();
-        SecurityActions.clearSystemProperty(name);
-    }
+    @Override
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
-        ModelNode opAddr = operation.require(OP_ADDR);
-        String name = PathAddress.pathAddress(opAddr).getLastElement().getValue();
-        SecurityActions.setSystemProperty(name, model.get(VALUE).asString());
+        final ModelNode model = context.removeResource(PathAddress.EMPTY_ADDRESS).getModel();
+
+        final String name = PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement().getValue();
+        final String oldValue = model.hasDefined(VALUE) ? model.get(VALUE).asString() : null;
+
+        final boolean applyToRuntime = processEnvironment != null &&
+                processEnvironment.isRuntimeSystemPropertyUpdateAllowed(name, oldValue, context.isBooting());
+        final boolean reload = !applyToRuntime && context.getProcessType().isServer();
+
+        if (applyToRuntime) {
+            context.addStep(new OperationStepHandler() {
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+
+                    SecurityActions.clearSystemProperty(name);
+                    if (processEnvironment != null) {
+                        processEnvironment.systemPropertyUpdated(name, null);
+                    }
+                    context.completeStep(new OperationContext.RollbackHandler() {
+                        @Override
+                        public void handleRollback(OperationContext context, ModelNode operation) {
+                            SecurityActions.setSystemProperty(name, oldValue);
+                            if (processEnvironment != null) {
+                                processEnvironment.systemPropertyUpdated(name, oldValue);
+                            }
+                        }
+                    });
+                }
+            }, OperationContext.Stage.RUNTIME);
+        } else if (reload) {
+            context.reloadRequired();
+        }
+
+        context.completeStep(new OperationContext.RollbackHandler() {
+            @Override
+            public void handleRollback(OperationContext context, ModelNode operation) {
+                if (reload) {
+                    context.revertReloadRequired();
+                }
+            }
+        });
     }
 
     public ModelNode getModelDescription(Locale locale) {
