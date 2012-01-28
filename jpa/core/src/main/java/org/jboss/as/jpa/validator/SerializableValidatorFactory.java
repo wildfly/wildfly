@@ -52,7 +52,7 @@ public class SerializableValidatorFactory implements ValidatorFactory, Serializa
     /**
      * The validator factory that all invocations are delegated to.
      */
-    private volatile ValidatorFactory delegate = new JPALazyValidatorFactory(null);
+    private transient volatile ValidatorFactory delegate = new JPALazyValidatorFactory();
 
     public static ValidatorFactory validatorFactory() {
         return new SerializableValidatorFactory();
@@ -121,6 +121,7 @@ public class SerializableValidatorFactory implements ValidatorFactory, Serializa
      * @throws IOException Thrown if an error occurs
      */
     private void writeObject(ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
     }
 
     /**
@@ -130,6 +131,9 @@ public class SerializableValidatorFactory implements ValidatorFactory, Serializa
      * @throws IOException Thrown if an error occurs
      */
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-
+        in.defaultReadObject();
+        // create a new validator factory (when HV-460 is fixed, we should be able to reuse th HV factory)
+        delegate = new JPALazyValidatorFactory();
     }
+
 }

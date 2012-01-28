@@ -24,7 +24,6 @@ package org.jboss.as.jpa.validator;
 import java.util.Collections;
 import java.util.List;
 
-import javax.validation.Configuration;
 import javax.validation.ConstraintValidatorFactory;
 import javax.validation.MessageInterpolator;
 import javax.validation.TraversableResolver;
@@ -51,11 +50,10 @@ import org.hibernate.validator.cfg.ConstraintMapping;
  */
 public class JPALazyValidatorFactory implements ValidatorFactory {
 
-    private final Configuration<?> configuration;
+
     private volatile ValidatorFactory delegate; //use as a barrier
 
-    public JPALazyValidatorFactory(Configuration<?> configuration) {
-        this.configuration = configuration;
+    public JPALazyValidatorFactory() {
     }
 
     private ValidatorFactory getDelegate() {
@@ -79,16 +77,11 @@ public class JPALazyValidatorFactory implements ValidatorFactory {
         final ClassLoader oldTCCL = SecurityActions.getContextClassLoader();
         try {
             SecurityActions.setContextClassLoader(oldTCCL);
-            if (configuration == null) {
-                ConstraintMapping mapping = new ConstraintMapping();
-                HibernateValidatorConfiguration config = Validation.byProvider(HibernateValidator.class).providerResolver(new JbossProviderResolver()).configure();
-                config.addMapping(mapping);
-                ValidatorFactory factory = config.buildValidatorFactory();
-                return factory;
-
-            } else {
-                return configuration.buildValidatorFactory();
-            }
+            ConstraintMapping mapping = new ConstraintMapping();
+            HibernateValidatorConfiguration config = Validation.byProvider(HibernateValidator.class).providerResolver(new JbossProviderResolver()).configure();
+            config.addMapping(mapping);
+            ValidatorFactory factory = config.buildValidatorFactory();
+            return factory;
         } finally {
             SecurityActions.setContextClassLoader(oldTCCL);
         }

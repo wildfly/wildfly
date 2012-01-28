@@ -24,8 +24,8 @@ package org.jboss.as.jpa.container;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.persistence.EntityManager;
 
@@ -97,12 +97,12 @@ public class SFSBCallStack {
     public static EntityManager findPersistenceContext(String puScopedName, SFSBXPCMap sfsbxpcMap) {
         // TODO: arrange for a more optimal datastructure for this
         for (SFSBContextHandle handle : currentSFSBCallStack()) {
-            List<EntityManager> xpcs = sfsbxpcMap.getXPC(handle);
+            Set<ExtendedEntityManager> xpcs = sfsbxpcMap.getXPC(handle);
             if (xpcs == null)
                 continue;
-            for (EntityManager xpc : xpcs) {
-
-                if (xpc != null && xpc.unwrap(EntityManagerMetadata.class).getScopedPuName().equals(puScopedName)) {
+            for (ExtendedEntityManager xpc : xpcs) {
+                if (xpc != null &&
+                    xpc.getScopedPuName().equals(puScopedName)) {
                     return xpc;
                 }
             }

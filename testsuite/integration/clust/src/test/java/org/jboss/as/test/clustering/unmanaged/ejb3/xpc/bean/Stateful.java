@@ -20,18 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.jpa.spi;
+package org.jboss.as.test.clustering.unmanaged.ejb3.xpc.bean;
 
-
-import java.io.Serializable;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 
 /**
- * Represents a SFSB EJB bean context
+ * Interface to see if that helps avoid the
+ * error:
+ *
+ * JBAS014134: EJB Invocation failed on component StatefulBean for method
+ * public org.jboss.as.test.clustering.unmanaged.ejb3.xpc.bean.Employee
+ * org.jboss.as.test.clustering.unmanaged.ejb3.xpc.bean.StatefulBean.getEmployee(int):
+ * java.lang.IllegalArgumentException: object is not an instance of declaring class
  *
  * @author Scott Marlow
  */
-public interface SFSBContextHandle {
+public interface Stateful {
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    void createEmployee(String name, String address, int id);
 
-    Serializable getSerializable();
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    Employee getEmployee(int id);
 
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    Employee getSecondBeanEmployee(int id);
 }

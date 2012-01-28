@@ -29,7 +29,9 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 
 /**
- * Session bean Invocation interceptor
+ * Session bean Invocation interceptor.
+ * Used for stateless session bean invocations to allow NonTxEmCloser to close the
+ * underlying entity manager after a non-transactional invocation.
  *
  * @author Scott Marlow
  */

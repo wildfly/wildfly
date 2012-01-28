@@ -22,17 +22,29 @@
 
 package org.jboss.as.jpa.container;
 
+import static org.jboss.as.jpa.JpaLogger.ROOT_LOGGER;
 import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.persistence.EntityManager;
 
+import org.jboss.as.jpa.ejb3.SFSBContextHandleImpl;
+import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.jpa.spi.SFSBContextHandle;
+import org.jboss.as.jpa.util.JPAServiceNames;
+import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * For stateful session bean life cycle management and tracking XPC Inheritance.
@@ -52,15 +64,16 @@ public class SFSBXPCMap {
     /**
      * Track the XPCs used by each stateful session bean.
      */
-    private ConcurrentHashMap<SFSBContextHandle, List<EntityManager>> contextToXPCMap =
-        new ConcurrentHashMap<SFSBContextHandle, List<EntityManager>>();
+    private ConcurrentHashMap<SFSBContextHandle, Set<ExtendedEntityManager>> contextToXPCMap =
+        new ConcurrentHashMap<SFSBContextHandle, Set<ExtendedEntityManager>>();
 
 
     /**
      * Track the stateful session beans that are referencing a XPC.
+     * Depends on the fact that ExtendedEntityManager implements ExtendedEntityManagerKey
      */
-    private ConcurrentHashMap<EntityManager, List<SFSBContextHandle>> XPCToContextMap =
-        new ConcurrentHashMap<EntityManager, List<SFSBContextHandle>>();
+    private ConcurrentHashMap<ExtendedEntityManager, List<SFSBContextHandle>> XPCToContextMap =
+        new ConcurrentHashMap<ExtendedEntityManager, List<SFSBContextHandle>>();
 
     /**
      * Get the extended persistence contexts associate with the specified SFSB
@@ -68,8 +81,8 @@ public class SFSBXPCMap {
      * @param beanContextHandle represents the SFSB
      * @return a list of extended (XPC) persistence contexts
      */
-    public List<EntityManager> getXPC(SFSBContextHandle beanContextHandle) {
-        return contextToXPCMap.get(beanContextHandle);
+    public Set<ExtendedEntityManager> getXPC(SFSBContextHandle beanContextHandle) {
+         return contextToXPCMap.get(beanContextHandle);
     }
 
     /**
@@ -78,7 +91,7 @@ public class SFSBXPCMap {
      * @param entityManager represents the extended persistence context (XPC)
      * @return list of stateful session beans
      */
-    private List<SFSBContextHandle> getSFSB(EntityManager entityManager) {
+    public List<SFSBContextHandle> getSFSBList(ExtendedEntityManager entityManager) {
         return XPCToContextMap.get(entityManager);
     }
 
@@ -104,8 +117,8 @@ public class SFSBXPCMap {
             throw MESSAGES.nullParameter("SFSBXPCMap.RegisterPersistenceContext", "EntityManager");
         }
 
-        if (!(xpc instanceof AbstractEntityManager)) {
-            throw MESSAGES.parameterMustBeAbstractEntityManager("XPC");
+        if (!(xpc instanceof ExtendedEntityManager)) {
+            throw MESSAGES.parameterMustBeExtendedEntityManager(xpc.getClass().getName());
         }
 
         List<EntityManager> store = deferToPostConstruct.get();
@@ -118,7 +131,7 @@ public class SFSBXPCMap {
     public void finishRegistrationOfPersistenceContext(SFSBContextHandle current) {
         List<EntityManager> store = deferToPostConstruct.get();
         for (EntityManager em : store) {
-            register(current, (EntityManager) em);
+            register(current, em);
         }
         store.clear();
     }
@@ -130,24 +143,24 @@ public class SFSBXPCMap {
      * @param entityManager     represents the extended persistence context (XPC)
      */
     public void register(SFSBContextHandle beanContextHandle, EntityManager entityManager) {
-        if (!(entityManager instanceof AbstractEntityManager)) {
-            throw MESSAGES.parameterMustBeAbstractEntityManager("XPC");
+        if (!(entityManager instanceof ExtendedEntityManager)) {
+            throw MESSAGES.parameterMustBeExtendedEntityManager(entityManager.getClass().getName());
         }
-        List<EntityManager> xpcList = contextToXPCMap.get(beanContextHandle);
-        if (xpcList == null) {
+        Set<ExtendedEntityManager> xpcSet = contextToXPCMap.get(beanContextHandle);
+        if (xpcSet == null) {
             // create array of entity managers owned by a bean.  No synchronization is needed as it will only
             // be read/written to by one thread at a time (protected by the SFSB bean lock).
-            xpcList = new ArrayList<EntityManager>();
-            xpcList.add(entityManager);
+            xpcSet = new HashSet<ExtendedEntityManager>();
+            xpcSet.add((ExtendedEntityManager)entityManager);
 
             // no other thread should put at the same time on the same beanContextHandle
-            Object existingList = contextToXPCMap.put(beanContextHandle, xpcList);
-            if (existingList != null) {
-                throw MESSAGES.multipleThreadsInvokingSfsb(beanContextHandle.getBeanContextHandle());
+            Object existingSet = contextToXPCMap.put(beanContextHandle, xpcSet);
+            if (existingSet != null) {
+                throw MESSAGES.multipleThreadsInvokingSfsb(beanContextHandle);
             }
         } else {
             // session bean was already registered, just add XPC to existing list.
-            xpcList.add(entityManager);
+            xpcSet.add((ExtendedEntityManager)entityManager);
         }
 
         // create array of stateful session beans that are sharing the entityManager
@@ -155,10 +168,9 @@ public class SFSBXPCMap {
         List<SFSBContextHandle> sfsbList = XPCToContextMap.get(entityManager);
         if (sfsbList == null) {
             sfsbList = new ArrayList<SFSBContextHandle>();
-            Object existingList = XPCToContextMap.put(entityManager, sfsbList);
+            Object existingList = XPCToContextMap.put((ExtendedEntityManager)entityManager, sfsbList);
             if (existingList != null) {
-                throw MESSAGES.multipleThreadsUsingEntityManager(entityManager);
-            }
+                throw MESSAGES.multipleThreadsUsingEntityManager(entityManager);}
         }
         // XPC was already registered, just add SFSB to existing list.
         sfsbList.add(beanContextHandle);
@@ -172,10 +184,10 @@ public class SFSBXPCMap {
      */
     public List<EntityManager> remove(SFSBContextHandle bean) {
         List<EntityManager> result = null;
-        // get list of extended persistence contexts that this bean was using.
-        List<EntityManager> xpcList = contextToXPCMap.remove(bean);
-        if (xpcList != null) {
-            for (EntityManager xpc : xpcList) {
+        // get set of extended persistence contexts that this bean was using.
+        Set<ExtendedEntityManager> xpcSet = contextToXPCMap.remove(bean);
+        if (xpcSet != null) {
+            for (ExtendedEntityManager xpc : xpcSet) {
                 List<SFSBContextHandle> sfsbList = XPCToContextMap.get(xpc);
                 if (sfsbList != null) {
                     sfsbList.remove(bean);
@@ -204,6 +216,7 @@ public class SFSBXPCMap {
         SFSBXPCMap sfsbMap = top.getAttachment(SFSBXPCMap.ATTACHMENT_KEY);
         if (sfsbMap == null) {
             synchronized (top) {
+
                 sfsbMap = top.getAttachment(SFSBXPCMap.ATTACHMENT_KEY);
                 if (sfsbMap == null) {
                     top.putAttachment(SFSBXPCMap.ATTACHMENT_KEY, sfsbMap = new SFSBXPCMap());
@@ -213,5 +226,105 @@ public class SFSBXPCMap {
         return sfsbMap;
     }
 
+
+    /**
+     * Get a SFSBXPCMap that is shared over the top level deployment
+     *
+     * @param scopedPuName
+     * @return
+     */
+    public static SFSBXPCMap getXpcMap(final String scopedPuName) {
+        final ServiceController<?> controller = CurrentServiceContainer.getServiceContainer().getService(JPAServiceNames.getPUServiceName(scopedPuName));
+        final PersistenceUnitServiceImpl persistenceUnitService = (PersistenceUnitServiceImpl)controller.getService();
+        return persistenceUnitService.getSfsbxpcMap();
+    }
+
+    /**
+     * help serialize an extended persitence context, by handling the serializing of the SFSBXPCMap state
+     *
+     * @param out
+     * @param extendedEntityManager
+     * @param puScopedName
+     */
+    protected static void delegateWriteObject(ObjectOutputStream out, ExtendedEntityManager extendedEntityManager, String puScopedName) throws
+        IOException {
+
+        boolean isPassivating = false;  // TODO: AS7-3388 need a way for ejb3 to tell me when we are cluster replicating
+                                        //       versus passivating a stateful bean.
+
+        SFSBXPCMap sfsbxpcMap = SFSBXPCMap.getXpcMap(puScopedName);
+        List<SFSBContextHandle> sfsbList = sfsbxpcMap.getSFSBList(extendedEntityManager);
+        ROOT_LOGGER.tracef("starting serializing of %d SFSBXPCMap entries", sfsbList.size());
+        out.writeInt(sfsbList.size());  // write the count of SFSBContextHandle that reference extendedEntityManager
+        for (SFSBContextHandle sfsbContextHandle : sfsbList) {
+            out.writeObject(sfsbContextHandle.getSerializable());
+            ROOT_LOGGER.tracef("serialized SFSBXPCMap entry %s", sfsbContextHandle.getSerializable().toString());
+        }
+
+        if (isPassivating) {
+
+            sfsbList = sfsbxpcMap.getSFSBList(extendedEntityManager);
+
+            if (sfsbList != null) {
+                // when we activate the SFSB, we will remap each SFSB to XPC
+                for (SFSBContextHandle sfsbContextHandle : sfsbList) {
+                    Set XPCSet = sfsbxpcMap.contextToXPCMap.get(sfsbContextHandle);
+                    if (XPCSet != null) {
+                        XPCSet.remove(extendedEntityManager);
+                    }
+                }
+
+                // when we activate, we will re-add with a new XPC instance
+                sfsbxpcMap.XPCToContextMap.remove(extendedEntityManager);
+            }
+        }
+    }
+
+    /**
+     * help deserialize an extended persistence context, by handling the deserialization of the SFSBXPCMap state.
+     * <p/>
+     * As per contract between ejb3 clustering and extended persistence context clustering, Derserialization only
+     * happens on an node where the SFSB serialization group is either active already or being activated.
+     * <p/>
+     * There are twp different cases to handle.  Cluster replication, followed by fail-over and
+     * stateful session bean passivation followed by activation.
+     * <p/>
+     * For cluster replication, we are creating the SFSBXPCMap state related to the passed extended persistence
+     * context.
+     *
+     * @param in
+     * @param extendedEntityManager
+     * @param puScopedName
+     * @throws IOException
+     */
+    protected static void delegateReadObject(ObjectInputStream in, ExtendedEntityManager extendedEntityManager, String puScopedName) throws
+        IOException {
+
+        SFSBXPCMap sfsbxpcMap = SFSBXPCMap.getXpcMap(puScopedName);
+        int sfsbContextHandleCount = in.readInt();
+        ROOT_LOGGER.tracef("starting deserializing of %d SFSBXPCMap entries", sfsbContextHandleCount);
+        ArrayList sfsbList = new ArrayList<SFSBContextHandle>();
+
+        for (int looper = 0; looper < sfsbContextHandleCount; looper++) {
+            try {
+                Serializable sfsbContextHandleId = (Serializable) in.readObject();
+                ROOT_LOGGER.tracef("deserialized SFSBXPCMap entry %s", sfsbContextHandleId.toString());
+                SFSBContextHandleImpl sfsbContextHandle = new SFSBContextHandleImpl(sfsbContextHandleId);
+                sfsbList.add(sfsbContextHandle);
+
+                Set<ExtendedEntityManager> existingXPCSet = sfsbxpcMap.contextToXPCMap.get(extendedEntityManager);
+                if (existingXPCSet == null) {
+                    existingXPCSet = new HashSet<ExtendedEntityManager>();
+                    sfsbxpcMap.contextToXPCMap.put(sfsbContextHandle, existingXPCSet);
+                }
+                existingXPCSet.add(extendedEntityManager);  // replace the current XPC (if any) with the deserialized instance
+
+            } catch (ClassNotFoundException e) {
+                throw MESSAGES.couldNotDeserialize(e, extendedEntityManager.getScopedPuName());
+            }
+        }
+        sfsbxpcMap.XPCToContextMap.put(extendedEntityManager, sfsbList);  // replace the current XPC (if any) with the deserialized instance
+
+    }
 
 }
