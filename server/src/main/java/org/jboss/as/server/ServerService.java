@@ -276,6 +276,7 @@ public final class ServerService extends AbstractControllerService {
         super.stop(context);
 
         configuration.getExtensionRegistry().clear();
+        configuration.getServerEnvironment().resetProvidedProperties();
 
         if (queuelessExecutor != null) {
             context.asynchronous();

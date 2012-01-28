@@ -545,14 +545,14 @@ public class HostControllerEnvironment extends ProcessEnvironment {
 
     @Override
     protected boolean isRuntimeSystemPropertyUpdateAllowed(String propertyName, String propertyValue, boolean bootTime) {
-        //TODO implement validateSystemPropertyUpdate
-        throw new UnsupportedOperationException();
+        // Currently any system-property in host.xml should not be applied to the HC runtime. This method
+        // should not be invoked.
+        throw HostControllerMessages.MESSAGES.hostControllerSystemPropertyUpdateNotSupported();
     }
 
     @Override
-    protected void updateSystemProperty(String propertyName, String propertyValue) {
-        //TODO implement updateSystemProperty
-        throw new UnsupportedOperationException();
+    protected void systemPropertyUpdated(String propertyName, String propertyValue) {
+        // no-op
     }
 
 

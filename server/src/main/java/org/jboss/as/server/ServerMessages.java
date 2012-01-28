@@ -341,6 +341,14 @@ public interface ServerMessages {
                                                                              String socketBindingAttr,
                                                                              String secureSocketBindingAttr);
 
+    @Message(id = 15845, value = "System property %s cannot be set via the xml configuration file or from a management client; " +
+            "it's value must be known at initial process start so it can only set from the commmand line")
+    OperationFailedException systemPropertyNotManageable(String propertyName);
+
+
+    @Message(id = 15846, value = "System property %s cannot be set after the server name has been set via the xml " +
+            "configuration file or from a management client")
+    OperationFailedException systemPropertyCannotOverrideServerName(String propertyName);
 
     /*
      * WARNING!!! id 15849 is the last id in the available block for this class. Once the block
@@ -348,5 +356,4 @@ public interface ServerMessages {
      * class from the overall id pool used by this module and update the class javadoc above
      * and this message accordingly.
      */
-
 }

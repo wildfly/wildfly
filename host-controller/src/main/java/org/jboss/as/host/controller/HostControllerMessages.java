@@ -556,4 +556,7 @@ public interface HostControllerMessages {
      */
     @Message(id = 10988, value = "No socket-binding-group called: %s")
     OperationFailedException noSocketBindingGroupCalled(String groupName);
+
+    @Message(id = 10989, value = "HostControllerEnvironment does not support system property updates")
+    UnsupportedOperationException hostControllerSystemPropertyUpdateNotSupported();
 }
