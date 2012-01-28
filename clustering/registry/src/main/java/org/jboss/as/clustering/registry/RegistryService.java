@@ -185,7 +185,7 @@ public class RegistryService<K, V> extends AsynchronousService<Registry<K, V>> i
                 // Remove entry of crashed member
                 for (Address member: oldMembers) {
                     if (!newMembers.contains(member)) {
-                        Map.Entry<K, V> old = cache.remove(member);
+                        Map.Entry<K, V> old = cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL).remove(member);
                         if (old != null) {
                             removed.add(old.getKey());
                         }
