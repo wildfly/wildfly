@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.infinispan.Cache;
+import org.infinispan.context.Flag;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import org.jboss.as.clustering.ClusterNode;
@@ -153,7 +154,7 @@ public class ServiceProviderRegistryService implements ServiceProviderRegistry, 
                 List<Map.Entry<String, Set<ClusterNode>>> entries = new ArrayList<Map.Entry<String, Set<ClusterNode>>>(cache.size());
                 // Remove dead nodes for each service
                 for (String key: cache.keySet()) {
-                    Map<ClusterNode, Void> map = cache.get(key);
+                    Map<ClusterNode, Void> map = cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL).get(key);
                     if (map != null) {
                         Set<ClusterNode> nodes = map.keySet();
                         if (nodes.removeAll(deadNodes)) {
