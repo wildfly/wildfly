@@ -72,8 +72,7 @@ public class DataSourceDisable implements OperationStepHandler {
         model.get(ENABLED).set(false);
 
         if (context.getType() == OperationContext.Type.SERVER) {
-            //if (context.isResourceServiceRestartAllowed()) {
-            if (true) {
+            if (context.isResourceServiceRestartAllowed()) {
                 context.addStep(new OperationStepHandler() {
                     public void execute(final OperationContext context, ModelNode operation) throws OperationFailedException {
 
