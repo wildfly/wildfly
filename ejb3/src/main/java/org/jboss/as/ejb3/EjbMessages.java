@@ -2020,4 +2020,10 @@ public interface EjbMessages {
      */
     @Message(id = 14557, value = "Pool name cannot be empty string for bean %s")
     IllegalArgumentException poolNameCannotBeEmptyString(final String ejbName);
+
+    /**
+     * The user attempts to look up the ejb context in a war when no ejb context is active
+     */
+    @Message(id = 14558, value = "No EjbContext available as no EJB invocation is active")
+    IllegalStateException noEjbContextAvailable();
 }
