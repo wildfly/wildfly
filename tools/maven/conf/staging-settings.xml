@@ -50,8 +50,8 @@ under the License.
    | The path to the local repository maven will use to store artifacts.
    |
    | Default: ~/.m2/repository
-  <localRepository>/path/to/local/repo</localRepository>
-  -->
+   -->
+  <localRepository>~/.m2/staging-repository</localRepository>
 
   <!-- interactiveMode
    | This will determine whether maven prompts you when it needs input. If set to false,
