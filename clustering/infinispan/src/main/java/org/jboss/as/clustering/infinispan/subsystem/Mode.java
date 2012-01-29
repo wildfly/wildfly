@@ -50,6 +50,7 @@ public enum Mode {
 
     @Override
     public String toString() {
-        return this.name().toLowerCase();
+        // remove conversion to lower case (AS7-3478)
+         return this.name();
     }
 }
