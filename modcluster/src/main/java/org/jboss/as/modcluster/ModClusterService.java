@@ -158,7 +158,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         if (modelconf.hasDefined(CommonAttributes.AUTO_ENABLE_CONTEXTS))
             config.setAutoEnableContexts(modelconf.get(CommonAttributes.AUTO_ENABLE_CONTEXTS).asBoolean());
         if (modelconf.hasDefined(CommonAttributes.STOP_CONTEXT_TIMEOUT)) {
-            config.setStopContextTimeout(modelconf.get(CommonAttributes.SOCKET_TIMEOUT).asInt());
+            config.setStopContextTimeout(modelconf.get(CommonAttributes.STOP_CONTEXT_TIMEOUT).asInt());
             config.setStopContextTimeoutUnit(TimeUnit.SECONDS);
         }
         if (modelconf.hasDefined(CommonAttributes.SOCKET_TIMEOUT)) {
