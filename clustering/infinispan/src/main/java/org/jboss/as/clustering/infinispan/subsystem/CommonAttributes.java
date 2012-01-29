@@ -1,5 +1,6 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.jboss.as.clustering.infinispan.subsystem.validators.CacheModeValidator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
@@ -30,6 +31,8 @@ public interface CommonAttributes {
     SimpleAttributeDefinition BATCHING = new SimpleAttributeDefinition(ModelKeys.BATCHING,
             new ModelNode().set(booleanDefault), ModelType.BOOLEAN,  true);
     SimpleAttributeDefinition CACHE = new SimpleAttributeDefinition(ModelKeys.CACHE, ModelType.STRING, true);
+    ShareableNameAttributeDefinition CACHE_MODE = new ShareableNameAttributeDefinition(ModelKeys.CACHE_MODE, ModelKeys.MODE, ModelType.STRING, false,
+                                            null, new CacheModeValidator(false));
     SimpleAttributeDefinition CHUNK_SIZE = new SimpleAttributeDefinition(ModelKeys.CHUNK_SIZE,
             new ModelNode().set(intDefault), ModelType.INT,  true);
     SimpleAttributeDefinition CLASS = new SimpleAttributeDefinition(ModelKeys.CLASS, ModelType.STRING, true);
@@ -116,12 +119,11 @@ public interface CommonAttributes {
     SimpleAttributeDefinition VALUE = new SimpleAttributeDefinition("value", ModelType.STRING, false);
     SimpleAttributeDefinition VIRTUAL_NODES = new SimpleAttributeDefinition(ModelKeys.VIRTUAL_NODES,
             new ModelNode().set(intDefault), ModelType.INT, true);
-
     AttributeDefinition[] CACHE_CONTAINER_ATTRIBUTES = { DEFAULT_CACHE, ALIASES, JNDI_NAME, START, LISTENER_EXECUTOR, EVICTION_EXECUTOR, REPLICATION_QUEUE_EXECUTOR };
     AttributeDefinition[] TRANSPORT_ATTRIBUTES = { STACK, EXECUTOR, LOCK_TIMEOUT, SITE, RACK, MACHINE  };
 
     AttributeDefinition[] CACHE_ATTRIBUTES = { /* NAME, */ START, BATCHING, INDEXING, JNDI_NAME };
-    AttributeDefinition[] CLUSTERED_CACHE_ATTRIBUTES = { MODE,  QUEUE_SIZE, QUEUE_FLUSH_INTERVAL, REMOTE_TIMEOUT };
+    AttributeDefinition[] CLUSTERED_CACHE_ATTRIBUTES = { CACHE_MODE,  QUEUE_SIZE, QUEUE_FLUSH_INTERVAL, REMOTE_TIMEOUT };
     AttributeDefinition[] DISTRIBUTED_CACHE_ATTRIBUTES = { OWNERS, VIRTUAL_NODES, L1_LIFESPAN };
 
     AttributeDefinition[] LOCKING_ATTRIBUTES = { ISOLATION, STRIPING, ACQUIRE_TIMEOUT, CONCURRENCY_LEVEL  };
