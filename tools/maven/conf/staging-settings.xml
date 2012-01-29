@@ -51,7 +51,7 @@ under the License.
    |
    | Default: ~/.m2/repository
    -->
-  <localRepository>~/.m2/staging-repository</localRepository>
+  <localRepository>staging-repository</localRepository>
 
   <!-- interactiveMode
    | This will determine whether maven prompts you when it needs input. If set to false,
