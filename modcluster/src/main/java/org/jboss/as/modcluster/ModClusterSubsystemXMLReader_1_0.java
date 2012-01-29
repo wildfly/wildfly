@@ -168,46 +168,46 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
                     conf.get(EXCLUDED_CONTEXTS).set(ParseUtils.parsePossibleExpression(value));
                     break;
                 case AUTO_ENABLE_CONTEXTS:
-                    conf.get(AUTO_ENABLE_CONTEXTS).set(value);
+                    conf.get(AUTO_ENABLE_CONTEXTS).set(Boolean.parseBoolean(value));
                     break;
                 case STOP_CONTEXT_TIMEOUT:
-                    conf.get(STOP_CONTEXT_TIMEOUT).set(value);
+                    conf.get(STOP_CONTEXT_TIMEOUT).set(Integer.parseInt(value));
                     break;
                 case SOCKET_TIMEOUT:
-                    conf.get(SOCKET_TIMEOUT).set(value);
+                    conf.get(SOCKET_TIMEOUT).set(Integer.parseInt(value));
                     break;
                 case STICKY_SESSION:
-                    conf.get(STICKY_SESSION).set(value);
+                    conf.get(STICKY_SESSION).set(Boolean.parseBoolean(value));
                     break;
                 case STICKY_SESSION_REMOVE:
-                    conf.get(STICKY_SESSION_REMOVE).set(value);
+                    conf.get(STICKY_SESSION_REMOVE).set(Boolean.parseBoolean(value));
                     break;
                 case STICKY_SESSION_FORCE:
-                    conf.get(STICKY_SESSION_FORCE).set(value);
+                    conf.get(STICKY_SESSION_FORCE).set(Boolean.parseBoolean(value));
                     break;
                 case WORKER_TIMEOUT:
-                    conf.get(WORKER_TIMEOUT).set(value);
+                    conf.get(WORKER_TIMEOUT).set(Integer.parseInt(value));
                     break;
                  case MAX_ATTEMPTS:
-                     conf.get(MAX_ATTEMPTS).set(value);
+                     conf.get(MAX_ATTEMPTS).set(Integer.parseInt(value));
                      break;
                 case FLUSH_PACKETS:
-                    conf.get(FLUSH_PACKETS).set(value);
+                    conf.get(FLUSH_PACKETS).set(Boolean.parseBoolean(value));
                     break;
                 case FLUSH_WAIT:
-                    conf.get(FLUSH_WAIT).set(value);
+                    conf.get(FLUSH_WAIT).set(Integer.parseInt(value));
                     break;
                 case PING:
-                    conf.get(PING).set(value);
+                    conf.get(PING).set(Integer.parseInt(value));
                     break;
                 case SMAX:
-                    conf.get(SMAX).set(value);
+                    conf.get(SMAX).set(Integer.parseInt(value));
                     break;
                 case TTL:
-                    conf.get(TTL).set(value);
+                    conf.get(TTL).set(Integer.parseInt(value));
                     break;
                 case NODE_TIMEOUT:
-                    conf.get(NODE_TIMEOUT).set(value);
+                    conf.get(NODE_TIMEOUT).set(Integer.parseInt(value));
                     break;
                 case BALANCER:
                     conf.get(BALANCER).set(value);

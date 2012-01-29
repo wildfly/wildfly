@@ -415,7 +415,7 @@ class ModClusterSubsystemDescriptions {
         node.get(type, CommonAttributes.STICKY_SESSION, TYPE).set(ModelType.BOOLEAN);
         node.get(type, CommonAttributes.STICKY_SESSION, DESCRIPTION).set(bundle.getString("modcluster.configuration.sticky-session"));
         node.get(type, CommonAttributes.STICKY_SESSION, REQUIRED).set(false);
-        node.get(type, CommonAttributes.STICKY_SESSION, DEFAULT).set(1);
+        node.get(type, CommonAttributes.STICKY_SESSION, DEFAULT).set(true);
 
         node.get(type, CommonAttributes.STICKY_SESSION_REMOVE, TYPE).set(ModelType.BOOLEAN);
         node.get(type, CommonAttributes.STICKY_SESSION_REMOVE, DESCRIPTION).set(bundle.getString("modcluster.configuration.sticky-session-remove"));
