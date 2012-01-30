@@ -25,12 +25,19 @@ package org.jboss.as.domain.http.server.security;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
+import javax.security.auth.Subject;
+
+import org.jboss.as.controller.security.SecurityContext;
+
 /**
- * Security actions for the org.jboss.as.domain.http.server.security package.
+ * Security Actions for classes in the org.jboss.as.domain.http.server.security package.
+ *
+ * No methods in this class are to be made public under any circumstances!
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 class SecurityActions {
+
 
     static boolean getBoolean(final String key) {
         return AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
@@ -44,6 +51,26 @@ class SecurityActions {
         return AccessController.doPrivileged(new PrivilegedAction<Integer>() {
             public Integer run() {
                 return Integer.getInteger(key, def);
+            }
+            });
+    }
+
+    static void setSecurityContextSubject(final Subject subject) {
+        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+            public Void run() {
+                SecurityContext.setSubject(subject);
+                return null;
+
+            }
+        });
+    }
+
+    static void clearSubjectSecurityContext() {
+        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+            public Void run() {
+                SecurityContext.clearSubject();
+                return null;
+
             }
         });
     }

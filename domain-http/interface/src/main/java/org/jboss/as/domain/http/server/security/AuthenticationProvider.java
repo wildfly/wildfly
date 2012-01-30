@@ -25,6 +25,7 @@ package org.jboss.as.domain.http.server.security;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.Collection;
+import java.util.Set;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
@@ -109,18 +110,23 @@ public class AuthenticationProvider {
 
     private static class HttpSubjectUserInfo implements SubjectUserInfo {
 
+        private final String userName;
         private final Subject subject;
 
         private HttpSubjectUserInfo(Subject subject) {
             this.subject = subject;
+            Set<RealmUser> users = subject.getPrincipals(RealmUser.class);
+            userName = users.isEmpty() ? null : users.iterator().next().getName();
         }
 
-        @Override
+        public String getUserName() {
+            return userName;
+        }
+
         public Collection<Principal> getPrincipals() {
             return subject.getPrincipals();
         }
 
-        @Override
         public Subject getSubject() {
             return subject;
         }

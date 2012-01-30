@@ -20,38 +20,40 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.http.server.security;
+package org.jboss.as.controller.remote;
 
-import java.io.IOException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 import javax.security.auth.Subject;
 
-import org.jboss.com.sun.net.httpserver.HttpExchange;
-import org.jboss.com.sun.net.httpserver.HttpExchange.AttributeScope;
-import org.jboss.com.sun.net.httpserver.HttpHandler;
+import org.jboss.as.controller.security.SecurityContext;
 
 /**
- * Handler to ensure that the Subject for the authenticated user is associated for this request.
+ * Security Actions for classes in the org.jboss.as.controller.remote package.
+ *
+ * No methods in this class are to be made public under any circumstances!
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class SubjectAssociationHandler implements HttpHandler {
+class SecurityActions {
 
-    private final HttpHandler wrapped;
-
-    public SubjectAssociationHandler(HttpHandler wrapped) {
-        this.wrapped = wrapped;
+    static void setSecurityContextSubject(final Subject subject) {
+        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+            public Void run() {
+                SecurityContext.setSubject(subject);
+                return null;
+            }
+        });
     }
 
-    @Override
-    public void handle(HttpExchange exchange) throws IOException {
-        Subject subject = (Subject) exchange.getAttribute(Subject.class.getName(), AttributeScope.CONNECTION);
-        SecurityActions.setSecurityContextSubject(subject);
-        try {
-            wrapped.handle(exchange);
-        } finally {
-            SecurityActions.clearSubjectSecurityContext();
-        }
+    static void clearSubjectSecurityContext() {
+        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+            public Void run() {
+                SecurityContext.clearSubject();
+                return null;
+            }
+        });
     }
 
 }
