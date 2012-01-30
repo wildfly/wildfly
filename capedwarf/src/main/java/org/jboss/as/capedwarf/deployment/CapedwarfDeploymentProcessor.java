@@ -102,6 +102,8 @@ public class CapedwarfDeploymentProcessor extends CapedwarfDeploymentUnitProcess
         moduleSpecification.addSystemDependency(createModuleDependency(loader, INFINISPAN));
         // check if we bundle gae api jar
         if (hasAppEngineAPI(unit)) {
+            // set it in marker
+            CapedwarfDeploymentMarker.setBundledAppEngineApi(unit);
             // add a transformer, modifying GAE service factories
             moduleSpecification.addClassFileTransformer("org.jboss.capedwarf.bytecode.FactoriesTransformer");
             // add CapeDwarf resources directly as libs

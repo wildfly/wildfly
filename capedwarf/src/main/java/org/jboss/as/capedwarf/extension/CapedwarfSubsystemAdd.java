@@ -22,6 +22,7 @@
 
 package org.jboss.as.capedwarf.extension;
 
+import org.jboss.as.capedwarf.deployment.CapedwarfCDIExtensionProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfDependenciesProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfDeploymentProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfInitializationProcessor;
@@ -29,6 +30,7 @@ import org.jboss.as.capedwarf.deployment.CapedwarfJPAProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfPersistenceModificationProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfWebCleanupProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfWebComponentsDeploymentProcessor;
+import org.jboss.as.capedwarf.deployment.CapedwarfWeldParseProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfWeldProcessor;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -80,10 +82,12 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(Phase.PARSE, initialPhaseOrder - 10, new CapedwarfPersistenceModificationProcessor(context.getServiceTarget())); // before persistence.xml parsing
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_DEPLOYMENT + 1, new CapedwarfWebCleanupProcessor()); // right after web.xml parsing
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_MERGE_METADATA + 1, new CapedwarfWebComponentsDeploymentProcessor());
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WELD_WEB_INTEGRATION - 10, new CapedwarfWeldParseProcessor()); // before Weld web integration
                 processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_WELD - 10, new CapedwarfWeldProcessor()); // before Weld
                 processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_JPA - 10, new CapedwarfJPAProcessor()); // before default JPA processor
                 processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_WAR_MODULE + 10, new CapedwarfDeploymentProcessor(appengineAPI));
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_APP_NAMING_CONTEXT + 10, new CapedwarfDependenciesProcessor()); // adjust order as needed
+                processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WELD_PORTABLE_EXTENSIONS + 10, new CapedwarfCDIExtensionProcessor()); // after Weld portable extensions lookup
             }
         }, OperationContext.Stage.RUNTIME);
 

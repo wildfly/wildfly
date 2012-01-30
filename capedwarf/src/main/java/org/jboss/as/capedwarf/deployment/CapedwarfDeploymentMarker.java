@@ -31,7 +31,13 @@ import org.jboss.as.server.deployment.DeploymentUnit;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class CapedwarfDeploymentMarker {
-    private static final AttachmentKey<Boolean> MARKER = AttachmentKey.create(Boolean.class);
+    private static final AttachmentKey<CapedwarfDeploymentMarker> MARKER = AttachmentKey.create(CapedwarfDeploymentMarker.class);
+
+    private boolean bundledAppEngineApi;
+    private boolean cdiApp;
+
+    private CapedwarfDeploymentMarker() {
+    }
 
     /**
      * Mark the top level deployment as being a CapeDwarf deployment.
@@ -39,7 +45,7 @@ public class CapedwarfDeploymentMarker {
      * @param unit the deployment unit
      */
     static void mark(DeploymentUnit unit) {
-        unit.putAttachment(MARKER, Boolean.TRUE);
+        unit.putAttachment(MARKER, new CapedwarfDeploymentMarker());
     }
 
     /**
@@ -51,5 +57,50 @@ public class CapedwarfDeploymentMarker {
      */
     public static boolean isCapedwarfDeployment(DeploymentUnit unit) {
         return unit.hasAttachment(MARKER);
+    }
+
+    /**
+     * Keep info weather GAE api is bundled.
+     *
+     * @param unit the deployment unit
+     */
+    public static void setBundledAppEngineApi(DeploymentUnit unit) {
+        final CapedwarfDeploymentMarker marker = unit.getAttachment(MARKER);
+        if (marker != null)
+            marker.bundledAppEngineApi = true;
+    }
+
+    /**
+     * Is GAE api bundled in app.
+     *
+     * @param unit the deployment unit
+     * @return true if GAE api is bundled, false otherwise
+     */
+    public static boolean isBundledAppEngineApi(DeploymentUnit unit) {
+        final CapedwarfDeploymentMarker marker = unit.getAttachment(MARKER);
+        return marker != null && marker.bundledAppEngineApi;
+    }
+
+    /**
+     * Keep info weather app was CDI originally.
+     *
+     * @param unit the deployment unit
+     * @param flag the cdi app flag
+     */
+    public static void setCDIApp(DeploymentUnit unit, boolean flag) {
+        final CapedwarfDeploymentMarker marker = unit.getAttachment(MARKER);
+        if (marker != null)
+            marker.cdiApp = flag;
+    }
+
+    /**
+     * Was this originally CDI app.
+     *
+     * @param unit the deployment unit
+     * @return true if app was originally CDI app, false otherwise
+     */
+    public static boolean isCDIApp(DeploymentUnit unit) {
+        final CapedwarfDeploymentMarker marker = unit.getAttachment(MARKER);
+        return marker != null && marker.cdiApp;
     }
 }

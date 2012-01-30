@@ -22,23 +22,20 @@
 
 package org.jboss.as.capedwarf.deployment;
 
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.weld.WeldDeploymentMarker;
 
 /**
- * CapeDwarf modifying web content processor.
+ * Make every Capedwarf app a CDI app -- due to admin console.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
- * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public abstract class CapedwarfWebDeploymentProcessor extends CapedwarfDeploymentUnitProcessor {
+public class CapedwarfWeldParseProcessor extends CapedwarfWebDeploymentProcessor {
     @Override
-    protected void doDeploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final DeploymentUnit unit = phaseContext.getDeploymentUnit();
-        doDeploy(unit);
-    }
-
-    protected void doDeploy(DeploymentUnit unit) throws DeploymentUnitProcessingException {
+    protected void doDeploy(DeploymentUnit unit) {
+        final boolean flag = WeldDeploymentMarker.isPartOfWeldDeployment(unit);
+        CapedwarfDeploymentMarker.setCDIApp(unit, flag);
+        if (flag == false)
+            WeldDeploymentMarker.mark(unit); // mark it as Weld anyway
     }
 }
