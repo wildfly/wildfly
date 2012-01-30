@@ -29,6 +29,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -46,7 +47,8 @@ public class WebSecurityJBossWebXmlSecurityRolesTestCase extends WebSecurityFORM
     @ArquillianResource @OperateOnDeployment(deploymentName)
     URL deploymentUrl;
 
-    public WebSecurityJBossWebXmlSecurityRolesTestCase() {
+    @Before
+    public void init() {
         // make URL params flexible in case we are running tests against something different than localhost:8080
         setHostname(deploymentUrl.getHost());
         setPort(deploymentUrl.getPort());
