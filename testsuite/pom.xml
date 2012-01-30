@@ -93,12 +93,12 @@
         <jvm.args.ip>-Djava.net.preferIPv4Stack=true -Djava.net.preferIPv6Addresses=false</jvm.args.ip>
         <jvm.args.ip.server>${jvm.args.ip}</jvm.args.ip.server>
         <jvm.args.ip.client>${jvm.args.ip}</jvm.args.ip.client>
-        
+
         <!-- Security. -->
         <jvm.args.securityManager></jvm.args.securityManager>
         <jvm.args.securityPolicy></jvm.args.securityPolicy>
         <jvm.args.security>${jvm.args.securityManager} ${jvm.args.securityPolicy}</jvm.args.security>
-        
+
         <!-- Timeout ratios. 100 will leave the timeout as it was coded. -->
         <timeout.ratio.fsio>100</timeout.ratio.fsio>
         <timeout.ratio.netio>100</timeout.ratio.netio>
@@ -202,7 +202,7 @@
         </pluginManagement>
 
         <plugins>
-            
+
             <!-- Testsuite debugging info. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -232,7 +232,7 @@
                     </execution>
                 </executions>
             </plugin>
-            
+
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>properties-maven-plugin</artifactId>
@@ -278,7 +278,7 @@
                 </configuration>
             </plugin>
 
-            <!-- 
+            <!--
                 A build of target/jbossas which is shared by all modules.
                 Modules and bundles are not copied as they are read-only (see surefire props).
             -->
@@ -377,7 +377,7 @@
                     </additionalClasspathElements>
                 </configuration>
             </plugin>
-            
+
             <!-- Disable default site run. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -385,12 +385,12 @@
                 <version>3.0</version>
                 <executions><execution><id>default-site</id><phase>none</phase></execution></executions>
             </plugin>
-                
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions combine.self="override">
-                    
+
                     <!-- Run the reporting tool. -->
                     <execution>
                         <id>reporting</id>
@@ -400,7 +400,7 @@
                         <configuration>
                             <target>
                                 <ant dir="${basedir}" antfile="${basedir}/tools/reporting/buildReports.xml">
-                                    <!-- Defaults.   
+                                    <!-- Defaults.
                                     <property name="reporting.dir" value="${basedir}/tools/reporting"/>
                                     <property name="reports.dest.dir" value="${basedir}/target/reports"/>
                                     <property name="reports.src.mask" value="**/target/surefire-reports/TEST-*.xml"/>
@@ -410,7 +410,7 @@
                             </target>
                         </configuration>
                     </execution>
-                    
+
                     <!-- Help banner. -->
                     <execution>
                         <id>banner</id>
@@ -424,7 +424,7 @@
                             </target>
                         </configuration>
                     </execution>
-                    
+
                 </executions>
                 <dependencies>
                     <!-- Todo: Move to <pluginManagement>. -->
@@ -435,7 +435,7 @@
                     </dependency>
                 </dependencies>
             </plugin>
-            
+
             <!-- Don't create source jars - nothing to do. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -472,7 +472,7 @@
                 <module>stress</module>
             </modules>
         </profile>
-        
+
         <profile>
             <id>benchmark.module.profile</id>
             <activation><property><name>benchmark.module</name></property></activation>

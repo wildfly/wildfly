@@ -21,9 +21,6 @@
  */
 package org.jboss.as.test.integration.management.util;
 
-import static org.jboss.as.arquillian.container.Authentication.password;
-import static org.jboss.as.arquillian.container.Authentication.username;
-
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -41,6 +38,8 @@ import java.util.Vector;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+
+import org.jboss.as.test.http.Authentication;
 
 /**
  *
@@ -113,7 +112,7 @@ public class CLIWrapper implements Runnable {
             throw new CLIException("Connect failed. Line received: " + line);
         }
     }
-    
+
     /**
      * Sends command line to CLI.
      *
@@ -162,7 +161,7 @@ public class CLIWrapper implements Runnable {
             throw new CLIException("Wait for prompt failed." + line);
         }
     }
-    
+
     /**
      * Non blocking read from CLI output.
      *
@@ -333,7 +332,7 @@ public class CLIWrapper implements Runnable {
         if ((outputReader != null) || (errorReader != null))
             throw new CLIException ("CLI did not quit properly.");
     }
-    
+
     /**
      * Returns CLI status.
      *
@@ -344,7 +343,7 @@ public class CLIWrapper implements Runnable {
     }
 
     private void init(String[] cliArgs) throws Exception {
-        
+
         StringBuilder cmd = new StringBuilder(getCliCommand());
         if (cliArgs != null)
             for (String arg : cliArgs) {
@@ -352,7 +351,7 @@ public class CLIWrapper implements Runnable {
                 cmd.append(arg);
             }
         String cmdString = cmd.toString();
-        
+
         System.out.println("CLI command:" + cmdString);
 
         cliProcess = Runtime.getRuntime().exec(cmdString);
@@ -361,7 +360,7 @@ public class CLIWrapper implements Runnable {
         errorReader = new BufferedReader(new InputStreamReader(cliProcess.getErrorStream()));
 
         running = true;
-        
+
         Thread readOutputThread = new Thread(this, outThreadHame);
         readOutputThread.start();
         Thread readErrorThread = new Thread(this, errThreadHame);
@@ -388,8 +387,8 @@ public class CLIWrapper implements Runnable {
                 + " -jar " + asDist + "/jboss-modules.jar"
                 + " -mp " + asDist + "/modules"
                 + " org.jboss.as.cli"
-                + " --user=" + username
-                + " --password=" + password;
+                + " --user=" + Authentication.USERNAME
+                + " --password=" + Authentication.PASSWORD;
         return cliCommand;
     }
 

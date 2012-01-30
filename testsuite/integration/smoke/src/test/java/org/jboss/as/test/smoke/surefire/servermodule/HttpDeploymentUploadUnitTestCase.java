@@ -34,13 +34,13 @@ import java.util.NoSuchElementException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.http.Authentication;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.as.test.smoke.surefire.servermodule.archive.sar.Simple;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -78,9 +78,8 @@ public class HttpDeploymentUploadUnitTestCase {
     }
 
     @Test
-    @Ignore("AS7-3489")
     public void testHttpDeploymentUpload() throws Exception {
-        //Authenticator.setDefault(getAuthenticator());
+        Authentication.setupDefaultAuthenticator();
 
         HttpURLConnection connection = null;
         BufferedOutputStream os = null;

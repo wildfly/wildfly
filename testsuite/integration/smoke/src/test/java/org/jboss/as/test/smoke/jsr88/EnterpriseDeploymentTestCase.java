@@ -53,6 +53,7 @@ import org.jboss.as.ee.deployment.spi.DeploymentManagerImpl;
 import org.jboss.as.ee.deployment.spi.DeploymentMetaData;
 import org.jboss.as.ee.deployment.spi.JarUtils;
 import org.jboss.as.ee.deployment.spi.factories.DeploymentFactoryImpl;
+import org.jboss.as.test.http.Authentication;
 import org.jboss.as.test.smoke.embedded.deployment.Echo;
 import org.jboss.as.test.smoke.embedded.deployment.EchoBean;
 import org.jboss.as.test.smoke.embedded.deployment.EchoHome;
@@ -68,8 +69,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.jboss.as.arquillian.container.Authentication.password;
-import static org.jboss.as.arquillian.container.Authentication.username;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -84,7 +83,6 @@ import static org.junit.Assert.fail;
  */
 @RunAsClient
 @RunWith(Arquillian.class)
-@Ignore("AS7-3489")
 public class EnterpriseDeploymentTestCase {
     private static final long TIMEOUT = 10000;
 
@@ -169,7 +167,7 @@ public class EnterpriseDeploymentTestCase {
     @Test
     public void testListAvailableModules() throws Exception {
         String uri = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7&serverHost=127.0.0.1&serverPort=9999";
-        DeploymentManager manager = getDeploymentManager(uri, username, password);
+        DeploymentManager manager = getDeploymentManager(uri, Authentication.USERNAME, Authentication.PASSWORD);
         Target[] targets = manager.getTargets();
         TargetModuleID[] modules = manager.getAvailableModules(ModuleType.EAR, targets);
         assertNull(modules);
@@ -241,7 +239,7 @@ public class EnterpriseDeploymentTestCase {
     @Test
     public void testListAvailableModulesWrongHost() throws Exception {
         String uri = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7&serverHost=wrongHost";
-        DeploymentManager manager = getDeploymentManager(uri, username, password);
+        DeploymentManager manager = getDeploymentManager(uri, Authentication.USERNAME, Authentication.PASSWORD);
         Target[] targets = manager.getTargets();
         try {
             manager.getAvailableModules(ModuleType.EAR, targets);
@@ -254,7 +252,7 @@ public class EnterpriseDeploymentTestCase {
     @Test
     public void testListAvailableModulesWrongPort() throws Exception {
         String uri = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7&serverPort=9876";
-        DeploymentManager manager = getDeploymentManager(uri, username, password);
+        DeploymentManager manager = getDeploymentManager(uri, Authentication.USERNAME, Authentication.PASSWORD);
         Target[] targets = manager.getTargets();
         try {
             manager.getAvailableModules(ModuleType.EAR, targets);
@@ -265,7 +263,7 @@ public class EnterpriseDeploymentTestCase {
     }
 
     private DeploymentManager getDeploymentManager() throws Exception {
-        return getDeploymentManager(username, password);
+        return getDeploymentManager(Authentication.USERNAME, Authentication.PASSWORD);
     }
 
     private DeploymentManager getDeploymentManager(String username, String password) throws Exception {
