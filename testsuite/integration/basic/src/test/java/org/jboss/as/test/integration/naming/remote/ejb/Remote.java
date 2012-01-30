@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,36 +20,12 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.naming;
-
-import javax.ejb.Stateless;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import static org.junit.Assert.assertNotNull;
+package org.jboss.as.test.integration.naming.remote.ejb;
 
 /**
  * @author John Bailey
  */
-@Stateless
-public class BeanWithBind {
-    public void doBind() {
-        try {
-            final Context context = new InitialContext();
-            context.bind("java:jboss/test", "Test");
-            context.bind("java:comp/test", "Test");
-            context.bind("java:/test", "Test");
-        } catch (NamingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void checkBind() {
-        try {
-            final Context context = new InitialContext();
-            assertNotNull(context.lookup("java:comp/test"));
-        } catch (NamingException e) {
-            throw new RuntimeException(e);
-        }
-    }
+@javax.ejb.Remote
+public interface Remote {
+    String echo(String value);
 }

@@ -27,6 +27,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.value.Value;
 
 /**
  * Injection source for EJB remote views.
@@ -42,8 +43,13 @@ public class RemoteViewInjectionSource extends InjectionSource {
     private final String beanName;
     private final String viewClass;
     private final boolean stateful;
+    private final Value<ClassLoader> viewClassLoader;
 
     public RemoteViewInjectionSource(final ServiceName serviceName, final String appName, final String moduleName, final String distinctName, final String beanName, final String viewClass, final boolean stateful) {
+        this(serviceName, appName, moduleName, distinctName, beanName, viewClass, stateful, null);
+    }
+
+    public RemoteViewInjectionSource(final ServiceName serviceName, final String appName, final String moduleName, final String distinctName, final String beanName, final String viewClass, final boolean stateful, final Value<ClassLoader> viewClassLoader) {
         this.serviceName = serviceName;
         this.appName = appName;
         this.moduleName = moduleName;
@@ -51,6 +57,7 @@ public class RemoteViewInjectionSource extends InjectionSource {
         this.beanName = beanName;
         this.viewClass = viewClass;
         this.stateful = stateful;
+        this.viewClassLoader = viewClassLoader;
     }
 
     /**
@@ -60,7 +67,9 @@ public class RemoteViewInjectionSource extends InjectionSource {
         if(serviceName != null) {
             serviceBuilder.addDependency(serviceName);
         }
-        injector.inject(new RemoteViewManagedReferenceFactory(appName, moduleName, distinctName, beanName, viewClass, stateful));
+        final RemoteViewManagedReferenceFactory factory = viewClassLoader != null ? new RemoteViewManagedReferenceFactory(appName, moduleName, distinctName, beanName, viewClass, stateful, viewClassLoader)
+            : new RemoteViewManagedReferenceFactory(appName, moduleName, distinctName, beanName, viewClass, stateful);
+        injector.inject(factory);
     }
 
     @Override
