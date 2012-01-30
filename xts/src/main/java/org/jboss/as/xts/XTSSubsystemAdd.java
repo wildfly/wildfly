@@ -37,7 +37,6 @@ import org.jboss.as.webservices.service.EndpointPublishService;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jbossts.XTSService;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -131,8 +130,6 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
      */
     private static final String ENDPOINT_SERVICE_HOST_NAME = "default-host";
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.transactions");
-
     private XTSSubsystemAdd() {
     }
 
@@ -150,8 +147,8 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
     @Override
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final String coordinatorURL = model.get(CommonAttributes.XTS_ENVIRONMENT).hasDefined(ModelDescriptionConstants.URL) ? model.get(CommonAttributes.XTS_ENVIRONMENT, ModelDescriptionConstants.URL).asString() : null;
-        if (coordinatorURL != null && log.isDebugEnabled()) {
-            log.debugf("nodeIdentifier=%s\n", coordinatorURL);
+        if (coordinatorURL != null && XtsAsLogger.ROOT_LOGGER.isDebugEnabled()) {
+            XtsAsLogger.ROOT_LOGGER.debugf("nodeIdentifier=%s\n", coordinatorURL);
         }
 
 

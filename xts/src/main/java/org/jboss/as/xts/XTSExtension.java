@@ -41,7 +41,6 @@ import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -53,14 +52,13 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * @author <a href="mailto:adinn@redhat.com">Andrew Dinn</a>
  */
 public class XTSExtension implements Extension {
-    private static final Logger log = Logger.getLogger("org.jboss.as.xts");
 
     public static final String SUBSYSTEM_NAME = "xts";
     private static final XTSSubsystemParser parser = new XTSSubsystemParser();
 
 
     public void initialize(ExtensionContext context) {
-        log.debug("Initializing XTS Extension");
+        XtsAsLogger.ROOT_LOGGER.debug("Initializing XTS Extension");
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(XTSSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ModelDescriptionConstants.ADD, XTSSubsystemAdd.INSTANCE, XTSSubsystemProviders.SUBSYSTEM_ADD, false);
