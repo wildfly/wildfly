@@ -34,6 +34,7 @@ import javax.ejb.EJBHome;
 import javax.ejb.EJBLocalHome;
 
 import static org.jboss.as.ejb3.EjbMessages.*;
+import org.jboss.msc.value.Value;
 
 
 /**
@@ -49,24 +50,36 @@ public class RemoteViewManagedReferenceFactory implements ManagedReferenceFactor
     private final String beanName;
     private final String viewClass;
     private final boolean stateful;
+    private final Value<ClassLoader> viewClassLoader;
 
     public RemoteViewManagedReferenceFactory(final String appName, final String moduleName, final String distinctName, final String beanName, final String viewClass, final boolean stateful) {
+        this(appName, moduleName, distinctName, beanName, viewClass, stateful, null);
+    }
+
+    public RemoteViewManagedReferenceFactory(final String appName, final String moduleName, final String distinctName, final String beanName, final String viewClass, final boolean stateful, final Value<ClassLoader> viewClassLoader) {
         this.appName = appName == null ? "" : appName;
         this.moduleName = moduleName;
         this.distinctName = distinctName;
         this.beanName = beanName;
         this.viewClass = viewClass;
         this.stateful = stateful;
+        this.viewClassLoader = viewClassLoader;
     }
 
     @Override
     public ManagedReference getReference() {
-        final ClassLoader tccl = SecurityActions.getContextClassLoader();
-        final Class<?> viewClass;
+        Class<?> viewClass;
         try {
-            viewClass = Class.forName(this.viewClass, false, tccl);
+            viewClass = Class.forName(this.viewClass, false, SecurityActions.getContextClassLoader());
         } catch (ClassNotFoundException e) {
-            throw MESSAGES.failToLoadViewClassEjb(beanName, e);
+            if(viewClassLoader == null) {
+                throw MESSAGES.failToLoadViewClassEjb(beanName, e);
+            }
+            try {
+                viewClass = Class.forName(this.viewClass, false, viewClassLoader.getValue());
+            } catch (ClassNotFoundException ce) {
+                throw MESSAGES.failToLoadViewClassEjb(beanName, ce);
+            }
         }
         EJBLocator ejbLocator = null;
         if (EJBHome.class.isAssignableFrom(viewClass) || EJBLocalHome.class.isAssignableFrom(viewClass)) {
