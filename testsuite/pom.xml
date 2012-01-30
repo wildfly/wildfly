@@ -333,7 +333,7 @@
                 <artifactId>xml-maven-plugin</artifactId>
                 <executions combine.children="append">
                     <execution>
-                        <id>update-ip-addresses-jbossas.server</id>
+                        <id>ts.config-as.ip-addresses</id>
                         <phase>process-test-resources</phase>
                         <goals><goal>transform</goal></goals>
                         <inherited>false</inherited>
@@ -452,6 +452,13 @@
                         <version>1.6.5</version>
                     </dependency>
                 </dependencies>
+            </plugin>
+
+            <!-- Don't create jars - nothing to do. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions><execution><id>default-jar</id><phase>none</phase></execution></executions>
             </plugin>
 
             <!-- Don't create source jars - nothing to do. -->
