@@ -398,13 +398,9 @@
                 </hornetq-server>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
-           <subsystem xmlns="urn:jboss:domain:webservices:1.0">
+           <subsystem xmlns="urn:jboss:domain:webservices:1.1">
              <modify-wsdl-address>true</modify-wsdl-address>
              <wsdl-host>${jboss.bind.address:127.0.0.1}</wsdl-host>
-             <!--
-             <wsdl-port>8080</wsdl-port>
-             <wsdl-secure-port>8443</wsdl-secure-port>
-             -->
           </subsystem>
           <subsystem xmlns="urn:jboss:domain:modcluster:1.0">
              <mod-cluster-config advertise-socket="mod_cluster" />
@@ -738,13 +734,9 @@
                 </hornetq-server>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
-           <subsystem xmlns="urn:jboss:domain:webservices:1.0">
+           <subsystem xmlns="urn:jboss:domain:webservices:1.1">
              <modify-wsdl-address>true</modify-wsdl-address>
              <wsdl-host>${jboss.bind.address:127.0.0.1}</wsdl-host>
-             <!--
-             <wsdl-port>8080</wsdl-port>
-             <wsdl-secure-port>8443</wsdl-secure-port>
-             -->
           </subsystem>
           <subsystem xmlns="urn:jboss:domain:modcluster:1.0">
              <mod-cluster-config advertise-socket="mod_cluster" />

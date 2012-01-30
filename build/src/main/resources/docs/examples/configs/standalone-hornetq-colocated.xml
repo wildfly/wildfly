@@ -410,27 +410,14 @@
                 <alias name="example.com"/>
             </virtual-server>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:webservices:1.0" xmlns:javaee="http://java.sun.com/xml/ns/javaee" xmlns:jaxwsconfig="urn:jboss:jbossws-jaxws-config:4.0">
+        <subsystem xmlns="urn:jboss:domain:webservices:1.1">
             <modify-wsdl-address>true</modify-wsdl-address>
             <wsdl-host>${jboss.bind.address:127.0.0.1}</wsdl-host>
-            <!--
-            <wsdl-port>8080</wsdl-port>
-            <wsdl-secure-port>8443</wsdl-secure-port>
-            -->
-            <endpoint-config>
-                <jaxwsconfig:config-name>Standard-Endpoint-Config</jaxwsconfig:config-name>
-            </endpoint-config>
-            <endpoint-config>
-                <jaxwsconfig:config-name>Recording-Endpoint-Config</jaxwsconfig:config-name>
-                <jaxwsconfig:pre-handler-chains>
-                    <javaee:handler-chain xmlns="http://java.sun.com/xml/ns/javaee" id="recording-handlers">
-                            <javaee:protocol-bindings>##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM</javaee:protocol-bindings>
-                        <javaee:handler>
-                            <javaee:handler-name>RecordingHandler</javaee:handler-name>
-                            <javaee:handler-class>org.jboss.ws.common.invocation.RecordingServerHandler</javaee:handler-class>
-                        </javaee:handler>
-                    </javaee:handler-chain>
-                </jaxwsconfig:pre-handler-chains>
+            <endpoint-config name="Standard-Endpoint-Config"/>
+            <endpoint-config name="Recording-Endpoint-Config">
+                <pre-handler-chain name="recording-handlers" protocol-bindings="##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM">
+                    <handler name="RecordingHandler" class="org.jboss.ws.common.invocation.RecordingServerHandler"/>
+                </pre-handler-chain>
             </endpoint-config>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:weld:1.0"/>

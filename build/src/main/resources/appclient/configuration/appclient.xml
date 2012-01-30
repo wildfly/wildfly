@@ -144,7 +144,7 @@
             </core-environment>
             <coordinator-environment default-timeout="300"/>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:webservices:1.0"/>
+        <subsystem xmlns="urn:jboss:domain:webservices:1.1"/>
     </profile>
 
     <interfaces>
