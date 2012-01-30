@@ -26,7 +26,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 
 /**
- * Security actions to perform possibly privileged operations.  No methods in
+ * Security actions to perform possibly privileged operations.  no methods in
  * this class are to be made public under any circumstances!
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.

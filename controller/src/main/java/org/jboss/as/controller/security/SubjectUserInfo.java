@@ -44,6 +44,13 @@ public interface SubjectUserInfo {
     //        the latter should have no other dependencies within the AS tree.
 
     /**
+     * Get the name for this user.
+     *
+     * @return the name
+     */
+    String getUserName();
+
+    /**
      * Get the principals for this user.
      *
      * @return the principals

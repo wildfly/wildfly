@@ -20,38 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.http.server.security;
+package org.jboss.as.domain.management.security;
 
-import java.io.IOException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 import javax.security.auth.Subject;
 
-import org.jboss.com.sun.net.httpserver.HttpExchange;
-import org.jboss.com.sun.net.httpserver.HttpExchange.AttributeScope;
-import org.jboss.com.sun.net.httpserver.HttpHandler;
+import org.jboss.as.controller.security.SecurityContext;
 
 /**
- * Handler to ensure that the Subject for the authenticated user is associated for this request.
+ * Security actions for use by classes in the org.jboss.as.domain.management.security package.
+ *
+ * No methods in this class are to be made public under any circumstances!
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class SubjectAssociationHandler implements HttpHandler {
+class SecurityActions {
 
-    private final HttpHandler wrapped;
-
-    public SubjectAssociationHandler(HttpHandler wrapped) {
-        this.wrapped = wrapped;
-    }
-
-    @Override
-    public void handle(HttpExchange exchange) throws IOException {
-        Subject subject = (Subject) exchange.getAttribute(Subject.class.getName(), AttributeScope.CONNECTION);
-        SecurityActions.setSecurityContextSubject(subject);
-        try {
-            wrapped.handle(exchange);
-        } finally {
-            SecurityActions.clearSubjectSecurityContext();
-        }
+    /**
+     * @return The Subject currently associated with the SecurityContext.
+     */
+    static Subject getSecurityContextSubject() {
+        return AccessController.doPrivileged(new PrivilegedAction<Subject>() {
+            public Subject run() {
+                return SecurityContext.getSubject();
+            }
+        });
     }
 
 }

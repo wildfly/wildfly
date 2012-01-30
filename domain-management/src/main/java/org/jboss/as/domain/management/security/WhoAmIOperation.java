@@ -77,7 +77,7 @@ public class WhoAmIOperation implements OperationStepHandler, DescriptionProvide
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         validator.validate(operation);
 
-        Subject subject = SecurityContext.getSubject();
+        Subject subject = SecurityActions.getSecurityContextSubject();
         if (subject == null) {
             throw new OperationFailedException(new ModelNode().set(MESSAGES.noSecurityContextEstablished()));
         }
