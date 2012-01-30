@@ -63,7 +63,8 @@ public class EntityBeanComponentDescriptionFactory extends EJBComponentDescripti
 
     @Override
     protected void processBeanMetaData(final DeploymentUnit deploymentUnit, final EnterpriseBeanMetaData enterpriseBeanMetaData) throws DeploymentUnitProcessingException {
-        if (enterpriseBeanMetaData instanceof EntityBeanMetaData) {
+        if (enterpriseBeanMetaData.isEntity()) {
+            assert enterpriseBeanMetaData instanceof EntityBeanMetaData : enterpriseBeanMetaData + " is not an EntityBeanMetaData";
             processEntityBeanMetaData(deploymentUnit, (EntityBeanMetaData) enterpriseBeanMetaData);
         }
     }

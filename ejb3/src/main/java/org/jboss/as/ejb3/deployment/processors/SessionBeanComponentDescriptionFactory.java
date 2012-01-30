@@ -108,7 +108,8 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
 
     @Override
     protected void processBeanMetaData(final DeploymentUnit deploymentUnit, final EnterpriseBeanMetaData enterpriseBeanMetaData) throws DeploymentUnitProcessingException {
-        if (enterpriseBeanMetaData instanceof SessionBeanMetaData) {
+        if (enterpriseBeanMetaData.isSession()) {
+            assert enterpriseBeanMetaData instanceof SessionBeanMetaData : enterpriseBeanMetaData + " is not a SessionBeanMetaData";
             processSessionBeanMetaData(deploymentUnit, (SessionBeanMetaData) enterpriseBeanMetaData);
         }
     }

@@ -81,7 +81,8 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
 
     @Override
     protected void processBeanMetaData(final DeploymentUnit deploymentUnit, final EnterpriseBeanMetaData enterpriseBeanMetaData) throws DeploymentUnitProcessingException {
-        if (enterpriseBeanMetaData instanceof MessageDrivenBeanMetaData) {
+        if (enterpriseBeanMetaData.isMessageDriven()) {
+            assert enterpriseBeanMetaData instanceof MessageDrivenBeanMetaData : enterpriseBeanMetaData + " is not a MessageDrivenBeanMetaData";
             processMessageDrivenBeanMetaData(deploymentUnit, (MessageDrivenBeanMetaData) enterpriseBeanMetaData);
         }
     }
