@@ -26,9 +26,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DIRECTORY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_RESULTS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_DEFAULTS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PLATFORM_MBEAN;
@@ -44,14 +47,18 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import org.jboss.as.test.integration.domain.DomainTestSupport;
-
 import static org.jboss.as.test.integration.domain.DomainTestSupport.validateResponse;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
-import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
+import org.jboss.as.controller.operations.common.SnapshotDeleteHandler;
+import org.jboss.as.controller.operations.common.SnapshotListHandler;
+import org.jboss.as.controller.operations.common.SnapshotTakeHandler;
+import org.jboss.as.test.integration.domain.DomainTestSupport;
+import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.junit.AfterClass;
@@ -408,6 +415,58 @@ public class CoreResourceManagementTestCase {
             Assert.assertFalse(response.get(RESULT).isDefined());
         }
     }
+
+    @Test
+    public void testDomainSnapshot() throws Exception {
+        testSnapshot(new ModelNode().setEmptyList());
+    }
+
+    @Test
+    public void testMasterSnapshot() throws Exception {
+        testSnapshot(new ModelNode().add(HOST, "master"));
+    }
+
+    @Test
+    public void testSlaveSnapshot() throws Exception {
+        testSnapshot(new ModelNode().add(HOST, "slave"));
+    }
+
+    private void testSnapshot(ModelNode addr) throws Exception {
+        final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
+
+        ModelNode snapshotOperation = new ModelNode();
+        snapshotOperation.get(OP).set(SnapshotTakeHandler.OPERATION_NAME);
+        snapshotOperation.get(OP_ADDR).set(addr);
+        final String snapshot = validateResponse(masterClient.execute(snapshotOperation)).get(DOMAIN_RESULTS).get("step-1").asString();
+        Assert.assertNotNull(snapshot);
+        Assert.assertFalse(snapshot.isEmpty());
+
+        ModelNode listSnapshotOperation = new ModelNode();
+        listSnapshotOperation.get(OP).set(SnapshotListHandler.OPERATION_NAME);
+        listSnapshotOperation.get(OP_ADDR).set(addr);
+        ModelNode listResult = validateResponse(masterClient.execute(listSnapshotOperation)).get(DOMAIN_RESULTS).get("step-1");
+        Set<String> snapshots = new HashSet<String>();
+        for (ModelNode curr : listResult.get(NAMES).asList()) {
+            snapshots.add(listResult.get(DIRECTORY).asString() + "/" + curr.asString());
+        }
+
+        Assert.assertTrue(snapshots.contains(snapshot));
+
+        ModelNode deleteSnapshotOperation = new ModelNode();
+        deleteSnapshotOperation.get(OP).set(SnapshotDeleteHandler.OPERATION_NAME);
+        deleteSnapshotOperation.get(OP_ADDR).set(addr);
+        deleteSnapshotOperation.get(NAME).set(snapshot.substring(snapshot.lastIndexOf("/")  + 1));
+        validateResponse(masterClient.execute(deleteSnapshotOperation));
+
+        listResult = validateResponse(masterClient.execute(listSnapshotOperation)).get(DOMAIN_RESULTS).get("step-1");
+        snapshots = new HashSet<String>();
+        for (ModelNode curr : listResult.get(NAMES).asList()) {
+            snapshots.add(listResult.get(DIRECTORY).asString() + "/" + curr.asString());
+        }
+
+        Assert.assertFalse(snapshots.contains(snapshot));
+    }
+
 
     private static ModelNode getSystemPropertyAddOperation(ModelNode address, String value, Boolean boottime) {
         ModelNode result = getEmptyOperation(ADD, address);
