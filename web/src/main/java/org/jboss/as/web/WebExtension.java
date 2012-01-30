@@ -124,8 +124,9 @@ public class WebExtension implements Extension {
         hosts.registerOperationHandler(ADD, WebVirtualHostAdd.INSTANCE, WebVirtualHostAdd.INSTANCE, false);
         hosts.registerOperationHandler(REMOVE, WebVirtualHostRemove.INSTANCE, WebVirtualHostRemove.INSTANCE, false);
         hosts.registerReadWriteAttribute(Constants.ALIAS, null, new WriteAttributeHandlers. ListValidatatingHandler(new StringLengthValidator(1, false), true), Storage.CONFIGURATION);
-        hosts.registerReadWriteAttribute(Constants.ENABLE_WELCOME_ROOT, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN, true), Storage.CONFIGURATION);
-        hosts.registerReadWriteAttribute(Constants.DEFAULT_WEB_MODULE, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
+        // They excluded each other...
+        hosts.registerReadWriteAttribute(Constants.ENABLE_WELCOME_ROOT, null, WriteEnableWelcomeRoot.INSTANCE, Storage.CONFIGURATION);
+        hosts.registerReadWriteAttribute(Constants.DEFAULT_WEB_MODULE, null, WriteDefaultWebModule.INSTANCE, Storage.CONFIGURATION);
 
         // access-log.
         final ManagementResourceRegistration accesslog = hosts.registerSubModel(accesslogPath, WebSubsystemDescriptionProviders.ACCESS_LOG);
