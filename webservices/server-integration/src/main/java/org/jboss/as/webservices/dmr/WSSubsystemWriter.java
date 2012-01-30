@@ -44,7 +44,7 @@ import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
- * @author <a href="mailto:opalka.richard@gmail.com">Richard Opalka</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 final class WSSubsystemWriter implements XMLElementWriter<SubsystemMarshallingContext> {
 

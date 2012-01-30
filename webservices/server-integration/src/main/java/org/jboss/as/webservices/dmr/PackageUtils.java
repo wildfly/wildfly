@@ -28,7 +28,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.wsf.spi.management.ServerConfig;
 
 /**
- * @author <a href="mailto:opalka.richard@gmail.com">Richard Opalka</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 final class PackageUtils {
 

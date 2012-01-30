@@ -32,9 +32,16 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
+/**
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ */
 final class WebservicesSubsystemParser implements XMLElementReader<List<ModelNode>> {
 
     private static final WebservicesSubsystemParser INSTANCE = new WebservicesSubsystemParser();
+
+    private WebservicesSubsystemParser() {
+        // forbidden instantiation
+    }
 
     static WebservicesSubsystemParser getInstance() {
         return INSTANCE;
