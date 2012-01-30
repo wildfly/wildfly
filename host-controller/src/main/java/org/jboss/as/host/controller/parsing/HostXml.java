@@ -285,6 +285,9 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
             parseServers(reader, address, DOMAIN_1_0, list);
             element = nextElement(reader, DOMAIN_1_0);
         }
+        if (element != null) {
+            throw unexpectedElement(reader);
+        }
 
     }
 
@@ -672,7 +675,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
      */
     private void addLocalHost(final ModelNode address, final List<ModelNode> operationList, final String hostName) {
         // All further operations should modify the newly added host so the address passed in is updated.
-        address.add(HOST, hostName);
+        address.add(HOST, hostName != null ? hostName : defaultHostControllerName);
 
         final ModelNode host = new ModelNode();
         host.get(OP).set("add-host");
