@@ -23,7 +23,6 @@
 package org.jboss.as.web;
 
 import org.jboss.jandex.AnnotationTarget;
-import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
@@ -74,7 +73,7 @@ public interface WebMessages {
     @Message(id = 18010, value = "A default web module can not be specified when the welcome root has been enabled")
     String noRootWebappWithWelcomeWebapp();
 
-    @Message(id = 18011, value = "The welcome root can not be enabled on a host that has a default web module")
+    @Message(id = 18011, value = "The welcome root can not be enabled on a host that has the default web module")
     String noWelcomeWebappWithDefaultWebModule();
 
     @Message(id = 18012, value = "Failed to create welcome context")
