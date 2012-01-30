@@ -82,8 +82,17 @@ public class ModClusterAddMetric implements OperationStepHandler, DescriptionPro
         if (context.isNormalServer()) {
             context.reloadRequired();
         }
-        context.completeStep();
+
+        context.completeStep(new OperationContext.RollbackHandler() {
+            @Override
+            public void handleRollback(OperationContext context, ModelNode operation) {
+                if (context.isNormalServer()) {
+                    context.revertReloadRequired();
+                }
+            }
+        });
     }
+
     private void replaceMetric(ModelNode dynamicLoadProvider, ModelNode metric) {
         List<ModelNode> newlist = Collections.<ModelNode> emptyList();
         if (dynamicLoadProvider.get(CommonAttributes.LOAD_METRIC).isDefined()) {

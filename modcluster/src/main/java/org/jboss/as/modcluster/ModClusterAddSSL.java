@@ -51,6 +51,12 @@ class ModClusterAddSSL extends AbstractAddStepHandler implements DescriptionProv
     }
 
     @Override
+    protected void rollbackRuntime(OperationContext context, ModelNode operation, ModelNode model, List<ServiceController<?>> controllers) {
+        // just revert the reload-required
+        context.revertReloadRequired();
+    }
+
+    @Override
     public ModelNode getModelDescription(Locale locale) {
         return ModClusterSubsystemDescriptions.getModClusterAddSSL(locale);
     }

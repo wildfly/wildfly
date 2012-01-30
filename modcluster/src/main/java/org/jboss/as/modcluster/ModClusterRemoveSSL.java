@@ -27,22 +27,16 @@ import java.util.Locale;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author Jean-Frederic Clere
  */
-class ModClusterRemoveSSL extends AbstractRemoveStepHandler implements DescriptionProvider {
+class ModClusterRemoveSSL extends ReloadRequiredRemoveStepHandler implements DescriptionProvider {
 
     static final ModClusterRemoveSSL INSTANCE = new ModClusterRemoveSSL();
-
-    @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model)
-            throws OperationFailedException {
-        // need to set reload-required on the server
-        context.reloadRequired();
-    }
 
     @Override
     public ModelNode getModelDescription(Locale locale) {

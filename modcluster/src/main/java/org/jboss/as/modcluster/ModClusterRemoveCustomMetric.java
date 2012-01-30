@@ -48,60 +48,59 @@ public class ModClusterRemoveCustomMetric implements OperationStepHandler, Descr
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        context.addStep(new OperationStepHandler() {
-            @Override
-            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-
-                // Look for the dynamic-load-provider
-                final ModelNode dynamicLoadProvider = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel()
-                        .get(CommonAttributes.DYNAMIC_LOAD_PROVIDER);
-                String classname = null;
-                if (dynamicLoadProvider.isDefined()) {
-                    List<Property> list = operation.asPropertyList();
-                    Iterator<Property> it = list.iterator();
-                    while (it.hasNext()) {
-                        Property prop = it.next();
-                        if (prop.getName().equals("class")) {
-                            classname = prop.getValue().asString();
-                            break;
-                        }
-                    }
-                    if (classname != null) {
-                        removeMetric(dynamicLoadProvider, classname);
-                    }
-                }
-
-                if (!dynamicLoadProvider.get(CommonAttributes.LOAD_METRIC).isDefined()
-                        && !dynamicLoadProvider.get(CommonAttributes.CUSTOM_LOAD_METRIC).isDefined()) {
-                    context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel()
-                            .remove(CommonAttributes.DYNAMIC_LOAD_PROVIDER);
-                }
-
-                context.completeStep();
-            }
-
-            private void removeMetric(ModelNode dynamicLoadProvider, String classname) {
-                List<ModelNode> list = dynamicLoadProvider.get(CommonAttributes.CUSTOM_LOAD_METRIC).asList();
-                List<ModelNode> newlist = Collections.<ModelNode> emptyList();
-                dynamicLoadProvider.get(CommonAttributes.CUSTOM_LOAD_METRIC).set(newlist);
-                Iterator<ModelNode> it = list.iterator();
-                while (it.hasNext()) {
-                    ModelNode node = it.next();
-                    if (!node.get("class").asString().equals(classname)) {
-                        dynamicLoadProvider.get(CommonAttributes.CUSTOM_LOAD_METRIC).add(node);
-                    }
-                }
-                list = dynamicLoadProvider.get(CommonAttributes.CUSTOM_LOAD_METRIC).asList();
-                if (list.isEmpty()) {
-                    dynamicLoadProvider.remove(CommonAttributes.CUSTOM_LOAD_METRIC);
+        // Look for the dynamic-load-provider
+        final ModelNode dynamicLoadProvider = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel()
+                .get(CommonAttributes.DYNAMIC_LOAD_PROVIDER);
+        String classname = null;
+        if (dynamicLoadProvider.isDefined()) {
+            List<Property> list = operation.asPropertyList();
+            Iterator<Property> it = list.iterator();
+            while (it.hasNext()) {
+                Property prop = it.next();
+                if (prop.getName().equals("class")) {
+                    classname = prop.getValue().asString();
+                    break;
                 }
             }
-        }, OperationContext.Stage.MODEL);
+            if (classname != null) {
+                removeMetric(dynamicLoadProvider, classname);
+            }
+        }
+
+        if (!dynamicLoadProvider.get(CommonAttributes.LOAD_METRIC).isDefined()
+                && !dynamicLoadProvider.get(CommonAttributes.CUSTOM_LOAD_METRIC).isDefined()) {
+            context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel()
+                    .remove(CommonAttributes.DYNAMIC_LOAD_PROVIDER);
+        }
 
         if (context.isNormalServer()) {
             context.reloadRequired();
         }
 
-        context.completeStep();
+        context.completeStep(new OperationContext.RollbackHandler() {
+            @Override
+            public void handleRollback(OperationContext context, ModelNode operation) {
+                if (context.isNormalServer()) {
+                    context.revertReloadRequired();
+                }
+            }
+        });
+    }
+
+    private void removeMetric(ModelNode dynamicLoadProvider, String classname) {
+        List<ModelNode> list = dynamicLoadProvider.get(CommonAttributes.CUSTOM_LOAD_METRIC).asList();
+        List<ModelNode> newlist = Collections.<ModelNode> emptyList();
+        dynamicLoadProvider.get(CommonAttributes.CUSTOM_LOAD_METRIC).set(newlist);
+        Iterator<ModelNode> it = list.iterator();
+        while (it.hasNext()) {
+            ModelNode node = it.next();
+            if (!node.get("class").asString().equals(classname)) {
+                dynamicLoadProvider.get(CommonAttributes.CUSTOM_LOAD_METRIC).add(node);
+            }
+        }
+        list = dynamicLoadProvider.get(CommonAttributes.CUSTOM_LOAD_METRIC).asList();
+        if (list.isEmpty()) {
+            dynamicLoadProvider.remove(CommonAttributes.CUSTOM_LOAD_METRIC);
+        }
     }
 }
