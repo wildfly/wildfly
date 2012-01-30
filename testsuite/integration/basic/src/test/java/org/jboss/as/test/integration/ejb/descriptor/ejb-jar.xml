@@ -30,5 +30,9 @@
             <ejb-class>org.jboss.as.test.integration.ejb.descriptor.DescriptorGreeterBean</ejb-class>
             <session-type>Stateless</session-type>
         </session>
+        <session>
+            <ejb-name>RedefinedSingletonBean</ejb-name>
+            <ejb-class>org.jboss.as.test.integration.ejb.descriptor.SessionTypeSpecifiedBean</ejb-class>
+        </session>
     </enterprise-beans>
 </ejb-jar>

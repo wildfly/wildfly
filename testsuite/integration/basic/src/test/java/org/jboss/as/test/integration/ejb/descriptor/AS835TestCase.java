@@ -21,10 +21,6 @@
  */
 package org.jboss.as.test.integration.ejb.descriptor;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -32,11 +28,13 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.common.Naming;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * [AS7-835] ejb-jar.xml doesn't need to define a session-type
@@ -54,7 +52,7 @@ public class AS835TestCase {
         WebArchive deployment = ShrinkWrap.create(WebArchive.class, "as835.war")
                 .addPackage(SimpleStatelessBean.class.getPackage())
                 .addPackage(Naming.class.getPackage())
-                .addAsWebInfResource(new StringAsset(EJB_JAR), "ejb-jar.xml");
+                .addAsWebInfResource(AS835TestCase.class.getPackage(), "ejb-jar-as835.xml", "ejb-jar.xml");
         System.out.println(deployment.toString(true));
         return deployment;
     }
@@ -62,7 +60,6 @@ public class AS835TestCase {
     /**
      * Make sure the ejb-jar.xml is actually processed.
      */
-    @Ignore("@Resource java.lang.String var; isn't working")
     @Test
     public void testEnvEntry() throws NamingException {
         final SimpleStatelessBean bean = Naming.lookup("java:global/as835/SimpleStatelessBean", SimpleStatelessBean.class);
@@ -74,7 +71,6 @@ public class AS835TestCase {
     /**
      * Make sure the ejb-jar.xml is actually processed.
      */
-    @Ignore("Interceptor overrides from xml are not working")
     @Test
     public void testInterceptor() throws NamingException {
         final SimpleStatelessBean bean = Naming.lookup("java:global/as835/SimpleStatelessBean", SimpleStatelessBean.class);
@@ -91,26 +87,4 @@ public class AS835TestCase {
         // if we can invoke the bean it must have been deployed properly
     }
 
-    private static final String EJB_JAR="<ejb-jar xmlns=\"http://java.sun.com/xml/ns/javaee\"\n" +
-            "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
-            "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd\"\n" +
-            "         version=\"3.1\">\n" +
-            "    <enterprise-beans>\n" +
-            "        <session>\n" +
-            "            <ejb-name>SimpleStatelessBean</ejb-name>\n" +
-            "            <!-- AS7-835: do not specify ejb-class and session-type\n" +
-            "            <ejb-class>org.jboss.as.test.integration.internals.as7_835.SimpleStatelessBean</ejb-class>\n" +
-            "            <session-type>Stateless</session-type>\n" +
-            "            -->\n" +
-            "            <env-entry>\n" +
-            "                <env-entry-name>test</env-entry-name>\n" +
-            "                <env-entry-type>java.lang.String</env-entry-type>\n" +
-            "                <env-entry-value>Hello world</env-entry-value>\n" +
-            "            </env-entry>\n" +
-            "            <around-invoke>\n" +
-            "                <method-name>aroundInvoke</method-name>\n" +
-            "            </around-invoke>\n" +
-            "        </session>\n" +
-            "    </enterprise-beans>\n" +
-            "</ejb-jar>";
 }

@@ -220,6 +220,7 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
         final EjbJarDescription ejbJarDescription = getEjbJarDescription(deploymentUnit);
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final List<ComponentDescription> additionalComponents = deploymentUnit.getAttachmentList(Attachments.ADDITIONAL_RESOLVABLE_COMPONENTS);
+        final CompositeIndex compositeIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
 
         final String beanName = sessionBean.getName();
         // the important bit is to skip already processed EJBs via annotations
@@ -245,18 +246,24 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
                 }
             }
         }
-        final SessionType sessionType = sessionBean.getSessionType();
+        SessionType sessionType = sessionBean.getSessionType();
 
         if (sessionType == null && sessionBean instanceof GenericBeanMetaData) {
             final GenericBeanMetaData bean = (GenericBeanMetaData) sessionBean;
             if (bean.getEjbType() == EjbType.SESSION) {
-                throw EjbMessages.MESSAGES.sessionTypeNotSpecified(beanName);
+                sessionType = determineSessionType(sessionBean.getEjbClass(), compositeIndex);
+                if (sessionType == null) {
+                    throw EjbMessages.MESSAGES.sessionTypeNotSpecified(beanName);
+                }
             } else {
                 //it is not a session bean, so we ignore it
                 return;
             }
-        } else if(sessionType == null) {
-            throw EjbMessages.MESSAGES.sessionTypeNotSpecified(beanName);
+        } else if (sessionType == null) {
+            sessionType = determineSessionType(sessionBean.getEjbClass(), compositeIndex);
+            if (sessionType == null) {
+                throw EjbMessages.MESSAGES.sessionTypeNotSpecified(beanName);
+            }
         }
 
         final String beanClassName = sessionBean.getEjbClass();
@@ -282,6 +289,21 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
             ejbJarDescription.getEEModuleDescription().addComponent(sessionBeanDescription);
         }
         sessionBeanDescription.setDescriptorData(sessionBean);
+    }
+
+    private SessionType determineSessionType(final String ejbClass, final CompositeIndex compositeIndex) {
+        if(ejbClass == null) {
+            return null;
+        }
+        final ClassInfo info = compositeIndex.getClassByName(DotName.createSimple(ejbClass));
+        if(info.annotations().get(STATEFUL_ANNOTATION) != null) {
+            return SessionType.Stateful;
+        } else if(info.annotations().get(STATELESS_ANNOTATION) != null) {
+            return SessionType.Stateless;
+        } else if(info.annotations().get(SINGLETON_ANNOTATION) != null) {
+            return SessionType.Singleton;
+        }
+        return null;
     }
 
 }

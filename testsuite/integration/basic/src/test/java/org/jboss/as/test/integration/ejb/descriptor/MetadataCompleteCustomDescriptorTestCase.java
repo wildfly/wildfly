@@ -21,6 +21,10 @@
  */
 package org.jboss.as.test.integration.ejb.descriptor;
 
+import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingException;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -28,10 +32,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.InitialContext;
-import javax.naming.NameNotFoundException;
-import javax.naming.NamingException;
 
 import static org.junit.Assert.fail;
 
@@ -43,8 +43,8 @@ public class MetadataCompleteCustomDescriptorTestCase extends AbstractCustomDesc
     @Deployment
     public static Archive<?> deployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ejb-descriptor-test.jar")
-            .addPackage(DescriptorGreeterBean.class.getPackage())
-            .addAsManifestResource("ejb/descriptor/jboss-ejb3-md-complete.xml", "jboss-ejb3.xml");
+                .addPackage(DescriptorGreeterBean.class.getPackage())
+                .addAsManifestResource(MetadataCompleteCustomDescriptorTestCase.class.getPackage(), "jboss-ejb3-md-complete.xml", "jboss-ejb3.xml");
         return jar;
     }
 
