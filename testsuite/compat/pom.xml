@@ -102,17 +102,14 @@
                 <inherited>false</inherited>
                 <executions>
                     <execution>
-                        <id>build-jars</id>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
+                        <id>ts.compat.copy-jars</id> <goals><goal>run</goal></goals>
                         <phase>test-compile</phase>
                         <configuration>
                             <tasks>
                                 <property name="tests.resources.dir" value="${basedir}/src/test/resources"/>
-                                <property name="tests.output.dir" value="${project.build.directory}"/>
+                                <property name="tests.output.dir"    value="${project.build.directory}"/>
                                 <ant antfile="src/test/scripts/build-jars.xml">
-                                    <target name="build-jars"/>
+                                    <target name="copy-jars"/>
                                 </ant>
                             </tasks>
                         </configuration>
