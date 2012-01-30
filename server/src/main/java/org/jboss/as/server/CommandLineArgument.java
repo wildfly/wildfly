@@ -133,6 +133,22 @@ enum CommandLineArgument {
             return MESSAGES.argServerConfig();
         }
     },
+    SECURITY_PROP {
+        @Override
+        public String argument() {
+            return CommandLineConstants.SECURITY_PROP;
+        }
+
+        @Override
+        public String argumentExample() {
+            return String.format("%s<name>[=<value>]", argument());
+        }
+
+        @Override
+        public String instructions() {
+            return MESSAGES.argSecurityProperty();
+        }
+    },
     SYSTEM_PROPERTY {
         @Override
         public String argument() {
