@@ -30,17 +30,17 @@ import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.jboss.as.clustering.CoreGroupCommunicationServiceService;
 import org.jboss.as.clustering.HashableMarshalledValueFactory;
 import org.jboss.as.clustering.MarshalledValue;
 import org.jboss.as.clustering.MarshalledValueFactory;
 import org.jboss.as.clustering.MarshallingContext;
 import org.jboss.as.clustering.SimpleMarshalledValueFactory;
+import org.jboss.as.clustering.impl.CoreGroupCommunicationService;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.as.clustering.infinispan.invoker.RetryingCacheInvoker;
 import org.jboss.as.clustering.infinispan.subsystem.CacheService;
 import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager;
-import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManagerService;
+import org.jboss.as.clustering.lock.impl.SharedLocalYieldingClusterLockManagerService;
 import org.jboss.as.clustering.registry.Registry;
 import org.jboss.as.clustering.registry.RegistryService;
 import org.jboss.as.ejb3.cache.Cacheable;
@@ -89,7 +89,7 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
     @Override
     public void addDependencies(ServiceTarget target, ServiceBuilder<?> builder) {
         // install the GroupCommunicationService
-        final CoreGroupCommunicationServiceService groupCommunicationService = new CoreGroupCommunicationServiceService(SCOPE_ID);
+        final CoreGroupCommunicationService groupCommunicationService = new CoreGroupCommunicationService(SCOPE_ID);
         groupCommunicationService.build(target, this.cacheContainerName).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
         new SharedLocalYieldingClusterLockManagerService(this.cacheContainerName).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
         builder.addDependency(CacheService.getServiceName(this.cacheContainerName, this.beanCacheName), Cache.class, this.groupCache);

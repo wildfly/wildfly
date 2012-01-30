@@ -19,15 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.clustering;
+package org.jboss.as.clustering.impl;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
+import org.jboss.as.clustering.ClusterNode;
 import org.jgroups.Address;
 
-import static org.jboss.as.clustering.ClusteringImplMessages.MESSAGES;
+import static org.jboss.as.clustering.impl.ClusteringImplMessages.MESSAGES;
 
 /**
  * Replacement for a JG IpAddress that doesn't base its representation on the JG address but on the computed node name added to

@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering;
+package org.jboss.as.clustering.concurrent;
 
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
@@ -29,6 +29,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.as.clustering.concurrent.ManagedScheduledExecutorService;
 import org.junit.Test;
 
 /**

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2008, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,19 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.clustering;
+package org.jboss.as.clustering.impl;
 
+import org.jboss.as.clustering.ResponseFilter;
 import org.jgroups.Address;
+import org.jgroups.blocks.RspFilter;
 
 /**
- * Factory for ClusterNode(s)
+ * JGroups RspFilter adapter class that delegates work to ResponseFilter, Cluster abstraction of RspFilter.
  *
- *
- * @see ClusterNodeImpl
- *
- * @author Vladimir Blagojevic
+ * @author <a href="mailto:galder.zamarreno@jboss.com">Galder Zamarreno</a>
  */
-public interface ClusterNodeFactory {
+public class RspFilterAdapter implements RspFilter {
+    private final ResponseFilter filter;
+    private final ClusterNodeFactory factory;
 
-    ClusterNode getClusterNode(Address address);
+    public RspFilterAdapter(ResponseFilter filter, ClusterNodeFactory factory) {
+        this.filter = filter;
+        this.factory = factory;
+    }
+
+    @Override
+    public boolean isAcceptable(Object response, Address sender) {
+        return this.filter.isAcceptable(response, this.factory.getClusterNode(sender));
+    }
+
+    @Override
+    public boolean needMoreResponses() {
+        return this.filter.needMoreResponses();
+    }
 }

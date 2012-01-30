@@ -27,7 +27,7 @@ import javax.transaction.xa.XAResource;
 import org.infinispan.Cache;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.jboss.as.clustering.AsynchronousService;
+import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.tm.XAResourceRecovery;
 import org.jboss.tm.XAResourceRecoveryRegistry;

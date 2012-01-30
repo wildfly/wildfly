@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering;
+package org.jboss.as.clustering.concurrent;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -85,6 +85,7 @@ public class ManagedScheduledExecutorService extends ManagedExecutorService impl
             this.futures.notify();
         }
     }
+
     @Override
     public boolean isShutdown() {
         return this.shutdown;

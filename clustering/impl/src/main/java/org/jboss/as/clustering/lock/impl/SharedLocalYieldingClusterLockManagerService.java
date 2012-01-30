@@ -20,27 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.lock;
+package org.jboss.as.clustering.lock.impl;
 
-import org.jboss.as.clustering.CoreGroupCommunicationService;
-import org.jboss.as.clustering.CoreGroupCommunicationServiceService;
-import org.jboss.msc.service.Service;
+import org.jboss.as.clustering.impl.ClusteringImplLogger;
+import org.jboss.as.clustering.impl.CoreGroupCommunicationService;
+import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager;
+import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 /**
  * @author Paul Ferraro
- *
  */
-public class SharedLocalYieldingClusterLockManagerService implements Service<SharedLocalYieldingClusterLockManager> {
+public class SharedLocalYieldingClusterLockManagerService extends AsynchronousService<SharedLocalYieldingClusterLockManager> {
 
     public static ServiceName getServiceName(String name) {
-        return CoreGroupCommunicationServiceService.getServiceName(name).append("lock");
+        return CoreGroupCommunicationService.getServiceName(name).append("lock");
     }
 
     private final String name;
@@ -53,7 +50,7 @@ public class SharedLocalYieldingClusterLockManagerService implements Service<Sha
 
     public ServiceBuilder<SharedLocalYieldingClusterLockManager> build(ServiceTarget target) {
         return target.addService(getServiceName(this.name), this)
-            .addDependency(CoreGroupCommunicationServiceService.getServiceName(this.name), CoreGroupCommunicationService.class, this.service)
+            .addDependency(CoreGroupCommunicationService.getServiceName(this.name), CoreGroupCommunicationService.class, this.service)
         ;
     }
 
@@ -66,31 +63,21 @@ public class SharedLocalYieldingClusterLockManagerService implements Service<Sha
         return this.lockManager;
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.jboss.msc.service.Service#start(org.jboss.msc.service.StartContext)
-     */
     @Override
-    public void start(StartContext context) throws StartException {
+    protected void start() throws Exception {
         CoreGroupCommunicationService service = this.service.getValue();
         this.lockManager = new SharedLocalYieldingClusterLockManager(this.name, service, service);
-        try {
-            this.lockManager.start();
-        } catch (Exception e) {
-            throw new StartException(e);
-        }
+        this.lockManager.start();
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.jboss.msc.service.Service#stop(org.jboss.msc.service.StopContext)
-     */
     @Override
-    public void stop(StopContext context) {
-        try {
-            this.lockManager.stop();
-        } catch (Exception e) {
-            // log
+    protected void stop() {
+        if (this.lockManager != null) {
+            try {
+                this.lockManager.stop();
+            } catch (Exception e) {
+                ClusteringImplLogger.ROOT_LOGGER.lockManagerStopFailed(e);
+            }
         }
     }
 }
