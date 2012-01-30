@@ -64,6 +64,9 @@ public class SecurityTest {
     }
 
     public static void createSecurityDomain() throws Exception {
+
+        log.debug("start of the domain creation");
+
         final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
 
         final List<ModelNode> updates = new ArrayList<ModelNode>();
@@ -83,46 +86,6 @@ public class SecurityTest {
         ModelNode loginModule = op.get(Constants.LOGIN_MODULES).add();
         loginModule.get(CODE).set("UsersRoles");
         loginModule.get(FLAG).set("required");
-        op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        updates.add(op);
-
-
-
-        applyUpdates(updates, client);
-    }
-
-    public static void createSimpleRoleMappingSecurityDomain() throws Exception {
-        
-        log.debug("start of createSimpleRoleMappingSecurityDomain");
-
-        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
-
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
-        ModelNode op = new ModelNode();
-
-        op.get(OP).set(ADD);
-        op.get(OP_ADDR).add(SUBSYSTEM, "security");
-        op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
-        updates.add(op);
-
-        op = new ModelNode();
-        op.get(OP).set(ADD);
-        op.get(OP_ADDR).add(SUBSYSTEM, "security");
-        op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
-        op.get(OP_ADDR).add(AUTHENTICATION, Constants.CLASSIC);
-        op.get(OP_ADDR).add(MAPPING, CLASSIC);
-
-        ModelNode loginModule = op.get(Constants.LOGIN_MODULES).add();
-        loginModule.get(CODE).set("UsersRoles");
-        loginModule.get(FLAG).set("required");
-
-        ModelNode mappingModule =op.get(MAPPING_MODULES).add();
-        mappingModule.get(CODE).set("SimpleRoles"); // see:  https://docs.jboss.org/author/display/AS71/Security+subsystem+configuration
-        mappingModule.get(TYPE).set("role");
-        ModelNode mappingOptions = mappingModule.get(MODULE_OPTIONS);
-        ModelNode moduleOption = mappingOptions.add();
-        moduleOption.add("peter", "superuser,gooduser");
-
         op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         updates.add(op);
 
@@ -131,8 +94,58 @@ public class SecurityTest {
         }
         catch (Exception e) {
             log.error(e);
+            throw e;
         }
-        log.debug("end of createSimpleRoleMappingSecurityDomain");
+        log.debug("end of the domain creation");
+    }
+
+    public static void createSimpleRoleMappingSecurityDomain() throws Exception {
+        
+        log.debug("start of the domain creation");
+
+        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
+
+        final List<ModelNode> updates = new ArrayList<ModelNode>();
+
+        ModelNode op = new ModelNode();
+        op.get(OP).set(ADD);
+        op.get(OP_ADDR).add(SUBSYSTEM, "security");
+        op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
+        updates.add(op);
+
+        op = new ModelNode();
+        op.get(OP).set(ADD);
+        op.get(OP_ADDR).add(SUBSYSTEM, "security");
+        op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
+        op.get(OP_ADDR).add(AUTHENTICATION, Constants.CLASSIC);
+
+        ModelNode loginModule = op.get(Constants.LOGIN_MODULES).add();
+        loginModule.get(CODE).set("UsersRoles");
+        loginModule.get(FLAG).set("required");
+        updates.add(op);
+
+        op = new ModelNode();
+        op.get(OP).set(ADD);
+        op.get(OP_ADDR).add(SUBSYSTEM, "security");
+        op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
+        op.get(OP_ADDR).add(MAPPING, CLASSIC);
+
+        ModelNode mappingModule =op.get(MAPPING_MODULES).add();
+        mappingModule.get(CODE).set("SimpleRoles"); // see:  https://docs.jboss.org/author/display/AS71/Security+subsystem+configuration
+        mappingModule.get(TYPE).set("role");
+        ModelNode mappingOptions = mappingModule.get(MODULE_OPTIONS);
+        mappingOptions.get("peter").set("superuser,gooduser");
+        op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+        updates.add(op);
+
+        try {
+            applyUpdates(updates, client);
+        }
+        catch (Exception e) {
+            log.error(e);
+            throw e;
+        }
+        log.debug("end of the domain creation");
     }
 
     public static void removeSecurityDomain() throws Exception {
