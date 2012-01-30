@@ -508,7 +508,6 @@
             <maven-resource group="org.apache.cxf" artifact="cxf-tools-wsdlto-databinding-jaxb"/>
             <maven-resource group="org.apache.cxf" artifact="cxf-tools-wsdlto-frontend-jaxws"/>
             <maven-resource group="org.apache.cxf.xjcplugins" artifact="cxf-xjc-boolean"/>
-            <maven-resource group="org.apache.cxf.xjcplugins" artifact="cxf-xjc-bug671"/>
             <maven-resource group="org.apache.cxf.xjcplugins" artifact="cxf-xjc-dv"/>
             <maven-resource group="org.apache.cxf.xjcplugins" artifact="cxf-xjc-ts"/>
         </module-def>

@@ -500,11 +500,6 @@
 
                 <dependency>
                     <groupId>org.apache.cxf.xjcplugins</groupId>
-                    <artifactId>cxf-xjc-bug671</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.apache.cxf.xjcplugins</groupId>
                     <artifactId>cxf-xjc-dv</artifactId>
                 </dependency>
 
