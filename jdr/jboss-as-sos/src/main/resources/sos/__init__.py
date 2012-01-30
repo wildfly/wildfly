@@ -17,22 +17,40 @@
 
 __version__ = "@SOSVERSION@"
 
-try:
-    from java.util import ResourceBundle
+import gettext
+gettext_dir = "/usr/share/locale"
+gettext_app = "sos"
 
-    rb = ResourceBundle.getBundle("sos.po.sos")
+gettext.bindtextdomain(gettext_app, gettext_dir)
 
-    def _sos(msg):
-        try:
-            return rb.getString(msg).encode('utf-8')
-        except:
-            return msg
-except:
-    import gettext
-    gettext_dir = "/usr/share/locale"
-    gettext_app = "sos"
+def _default(msg):
+    return gettext.dgettext(gettext_app, msg)
 
-    gettext.bindtextdomain(gettext_app, gettext_dir)
+_sos = _default
 
-    def _sos(msg):
-        return gettext.dgettext(gettext_app, msg)
+def _get_classloader(jarfile):
+    """Makes a new classloader loaded with the jarfile"""
+    from java.net import URLClassLoader, URL
+    from java.io import File
+    import jarray
+
+    file_ = File(jarfile)
+    ary = jarray.array([file_.toURL()], URL)
+    classloader = URLClassLoader.newInstance(ary)
+    return classloader
+
+def set_i18n(path=None):
+    try:
+        from java.util import ResourceBundle, Locale
+
+        rb = ResourceBundle.getBundle("sos.po.sos",
+                Locale.getDefault(), _get_classloader(path))
+
+        def _java(msg):
+            try:
+                return rb.getString(msg).encode('utf-8')
+            except:
+                return msg
+        _sos = _java
+    except:
+        pass
