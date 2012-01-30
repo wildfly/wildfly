@@ -21,11 +21,6 @@
  */
 package org.jboss.as.ejb3.remote;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.EJBReceiver;
@@ -37,6 +32,11 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Service that manages an EJBClientContext
@@ -55,19 +55,36 @@ public class DefaultEjbClientContextService implements Service<EJBClientContext>
      */
     public static final ServiceName DEFAULT_SERVICE_NAME = BASE_SERVICE_NAME.append("default");
 
+    // setup the EJB client context selector in a static block so that the service restart
+    // doesn't run into trouble while resetting a selector, since the ability to switch the
+    // selector will be locked https://issues.jboss.org/browse/AS7-2998
+    static {
+        // setup the selector
+        AccessController.doPrivileged(new SetSelectorAction(TCCLEJBClientContextSelector.INSTANCE));
+    }
+
     /**
      * The recievers to add to the context
      */
     private final List<InjectedValue<EJBReceiver>> ejbReceivers = new ArrayList<InjectedValue<EJBReceiver>>();
 
-    private final InjectedValue<TCCLBasedEJBClientContextSelector> tcclEJBClientContextSelector = new InjectedValue<TCCLBasedEJBClientContextSelector>();
+    private final InjectedValue<TCCLEJBClientContextSelectorService> tcclEJBClientContextSelector = new InjectedValue<TCCLEJBClientContextSelectorService>();
 
     /**
      * The client context
      */
     private volatile EJBClientContext context;
 
-    private ContextSelector<EJBClientContext> previousSelector;
+    private final boolean lockSelectorOnStart;
+
+    /**
+     * @param lockEJBClientContextSelectorOnStart
+     *         True if the EJB client context selector should be locked on start of this
+     *         service. False otherwise.
+     */
+    public DefaultEjbClientContextService(final boolean lockEJBClientContextSelectorOnStart) {
+        this.lockSelectorOnStart = lockEJBClientContextSelectorOnStart;
+    }
 
     @Override
     public synchronized void start(final StartContext context) throws StartException {
@@ -76,20 +93,24 @@ public class DefaultEjbClientContextService implements Service<EJBClientContext>
             clientContext.registerEJBReceiver(receiver.getValue());
         }
         this.context = clientContext;
-        // setup the client context selector
-        // TODO: We set this up here, for now. But we need to rethink about how we are going to
-        // handle manual overrides of EJB client context selector by user code on the server side.
-        // Setting this up via interceptor isn't a good idea too since that will end up overriding
-        // the selector which the user code might have set intentionally. So let this be here for now
-        previousSelector = AccessController.doPrivileged(new SetSelectorAction(this.tcclEJBClientContextSelector.getValue()));
+        if (this.lockSelectorOnStart) {
+            // lock the EJB client context selector
+            AccessController.doPrivileged(new LockSelectorAction());
+        }
+
+        // the EJBClientContext selector is set to TCCLEJBClientContextSelector and is *locked* once
+        // (in a static block of this service) so that restarting this service will not cause failures related
+        // to resetting the selector. The TCCLEJBClientContextSelector is backed by a TCCLEJBClientContextSelectorService
+        // which is what we set here during the service start, so that the selector has the correct service to return the
+        // EJBClientContext. @see https://issues.jboss.org/browse/AS7-2998 for details
+        TCCLEJBClientContextSelector.INSTANCE.setTCCLEJBClientContextService(this.tcclEJBClientContextSelector.getValue());
+
     }
 
     @Override
     public synchronized void stop(final StopContext context) {
         this.context = null;
-        if (this.previousSelector != null) {
-            AccessController.doPrivileged(new SetSelectorAction(previousSelector));
-        }
+        TCCLEJBClientContextSelector.INSTANCE.setTCCLEJBClientContextService(null);
     }
 
     @Override
@@ -107,7 +128,7 @@ public class DefaultEjbClientContextService implements Service<EJBClientContext>
         ejbReceivers.add(value);
     }
 
-    public Injector<TCCLBasedEJBClientContextSelector> getTCCLBasedEJBClientContextSelectorInjector() {
+    public Injector<TCCLEJBClientContextSelectorService> getTCCLBasedEJBClientContextSelectorInjector() {
         return this.tcclEJBClientContextSelector;
     }
 
@@ -124,4 +145,13 @@ public class DefaultEjbClientContextService implements Service<EJBClientContext>
             return EJBClientContext.setSelector(selector);
         }
     }
+
+    private static final class LockSelectorAction implements PrivilegedAction<Void> {
+        @Override
+        public Void run() {
+            EJBClientContext.lockSelector();
+            return null;
+        }
+    }
+
 }

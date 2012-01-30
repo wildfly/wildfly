@@ -22,7 +22,7 @@
 package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
-import org.jboss.as.ejb3.remote.TCCLBasedEJBClientContextSelector;
+import org.jboss.as.ejb3.remote.TCCLEJBClientContextSelectorService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -33,7 +33,7 @@ import org.jboss.msc.service.ServiceController;
 
 /**
  * A deployment processor which associates the {@link EJBClientContext}, belonging to a deployment unit,
- * with the deployment unit's classloader, so that the {@link TCCLBasedEJBClientContextSelector} can then
+ * with the deployment unit's classloader, so that the {@link org.jboss.as.ejb3.remote.TCCLEJBClientContextSelectorService} can then
  * be used to return an appropriate {@link EJBClientContext} based on the classloader.
  *
  * @author Stuart Douglas
@@ -50,9 +50,9 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
             return;
         }
         final EJBClientContext ejbClientContext = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT);
-        final ServiceController<TCCLBasedEJBClientContextSelector> tcclEJBClientContextSelectorServiceController = (ServiceController<TCCLBasedEJBClientContextSelector>) phaseContext.getServiceRegistry().getService(TCCLBasedEJBClientContextSelector.TCCL_BASED_EJB_CLIENT_CONTEXT_SELECTOR_SERVICE_NAME);
+        final ServiceController<TCCLEJBClientContextSelectorService> tcclEJBClientContextSelectorServiceController = (ServiceController<TCCLEJBClientContextSelectorService>) phaseContext.getServiceRegistry().getService(TCCLEJBClientContextSelectorService.TCCL_BASED_EJB_CLIENT_CONTEXT_SELECTOR_SERVICE_NAME);
         if (tcclEJBClientContextSelectorServiceController != null) {
-            final TCCLBasedEJBClientContextSelector tcclBasedEJBClientContextSelector = tcclEJBClientContextSelectorServiceController.getValue();
+            final TCCLEJBClientContextSelectorService tcclBasedEJBClientContextSelector = tcclEJBClientContextSelectorServiceController.getValue();
             // associate the EJB client context with the deployment classloader
             tcclBasedEJBClientContextSelector.registerEJBClientContext(ejbClientContext, module.getClassLoader());
         }

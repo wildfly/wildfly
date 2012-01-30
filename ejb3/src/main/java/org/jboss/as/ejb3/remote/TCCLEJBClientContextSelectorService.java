@@ -38,7 +38,7 @@ import org.jboss.msc.service.StopContext;
  *
  * @author Jaikiran Pai
  */
-public class TCCLBasedEJBClientContextSelector implements Service<TCCLBasedEJBClientContextSelector>,
+public class TCCLEJBClientContextSelectorService implements Service<TCCLEJBClientContextSelectorService>,
         ContextSelector<EJBClientContext> {
 
     public static final ServiceName TCCL_BASED_EJB_CLIENT_CONTEXT_SELECTOR_SERVICE_NAME = ServiceName.JBOSS.append("ejb").append("remote").append("tccl-based-ejb-client-context-selector");
@@ -73,7 +73,7 @@ public class TCCLBasedEJBClientContextSelector implements Service<TCCLBasedEJBCl
     }
 
     @Override
-    public TCCLBasedEJBClientContextSelector getValue() throws IllegalStateException, IllegalArgumentException {
+    public TCCLEJBClientContextSelectorService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
 
