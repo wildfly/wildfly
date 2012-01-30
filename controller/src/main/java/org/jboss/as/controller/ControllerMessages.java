@@ -2376,5 +2376,5 @@ public interface ControllerMessages {
      * @return a {@link XMLStreamException} for the error.
      */
     @Message(id = 14838, value = "Do not call ServiceController.setMode(REMOVE), use OperationContext.removeService() instead.")
-    String useOperationContextRemoveService();
+    IllegalStateException useOperationContextRemoveService();
 }
