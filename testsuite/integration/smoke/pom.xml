@@ -46,6 +46,7 @@
                 <executions>
                     <execution>
                         <id>copy-users</id>
+                        <id>ts.config-as.copy-users</id>
                         <phase>generate-test-resources</phase>
                         <goals><goal>copy-resources</goal></goals>
                         <configuration>
