@@ -21,11 +21,6 @@
  */
 package org.jboss.as.test.integration.ws.tools.jbws3207;
 
-import static org.jboss.as.arquillian.container.Authentication.password;
-import static org.jboss.as.arquillian.container.Authentication.username;
-import static org.jboss.as.protocol.StreamUtils.safeClose;
-import static org.junit.Assert.assertTrue;
-
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.InputStream;
@@ -33,7 +28,6 @@ import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.URLConnection;
 
-import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.ws.tools.jbws3207.service.EndpointImpl;
 import org.jboss.as.webservices.deployer.RemoteDeployer;
@@ -46,8 +40,12 @@ import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.deployer.Deployer;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.jboss.as.protocol.StreamUtils.safeClose;
+import static org.junit.Assert.assertTrue;
 
 /**
  * [JBWS-3207] JBossWS remote deployer support.
@@ -55,12 +53,13 @@ import org.junit.runner.RunWith;
  * @author <a href="ropalka@redhat.com">Richard Opalka</a>
  */
 @RunWith(Arquillian.class)
+@Ignore("AS7-3489")
 public class JBWS3207TestCase {
 
     @BeforeClass
     public static void setProperties() {
-        System.setProperty("jbossws.deployer.authentication.username", username);
-        System.setProperty("jbossws.deployer.authentication.password", password);
+        //System.setProperty("jbossws.deployer.authentication.username", username);
+        //System.setProperty("jbossws.deployer.authentication.password", password);
     }
 
     @AfterClass

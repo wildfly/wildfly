@@ -21,22 +21,13 @@
  */
 package org.jboss.as.test.smoke.surefire.servermodule;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static org.jboss.as.arquillian.container.Authentication.getAuthenticator;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.Authenticator;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.NoSuchElementException;
 
@@ -49,10 +40,15 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.net.ssl.HttpsURLConnection;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 /**
  * Test the HTTP API upload functionality to ensure that a deployment is successfully
@@ -82,8 +78,9 @@ public class HttpDeploymentUploadUnitTestCase {
     }
 
     @Test
+    @Ignore("AS7-3489")
     public void testHttpDeploymentUpload() throws Exception {
-        Authenticator.setDefault(getAuthenticator());
+        //Authenticator.setDefault(getAuthenticator());
 
         HttpURLConnection connection = null;
         BufferedOutputStream os = null;

@@ -16,26 +16,19 @@
  */
 package org.jboss.as.arquillian.container.managed;
 
-import org.jboss.arquillian.container.spi.client.container.LifecycleException;
-import org.jboss.as.arquillian.container.CommonDeployableContainer;
-import org.jboss.sasl.util.UsernamePasswordHashUtil;
-
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.Socket;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
-import static org.jboss.as.arquillian.container.Authentication.password;
-import static org.jboss.as.arquillian.container.Authentication.username;
+import org.jboss.arquillian.container.spi.client.container.LifecycleException;
+import org.jboss.as.arquillian.container.CommonDeployableContainer;
 
 /**
  * JBossAsManagedContainer
@@ -46,8 +39,6 @@ import static org.jboss.as.arquillian.container.Authentication.username;
 public final class ManagedDeployableContainer extends CommonDeployableContainer<ManagedContainerConfiguration> {
 
     private static final String CONFIG_PATH = "/standalone/configuration/";
-    private static final String MGMT_USERS_FILE = "mgmt-users.properties";
-    private static final String MGMT_USERS_TMP_FILE = "mgmt-users.properties_arq-temp";
 
     private final Logger log = Logger.getLogger(ManagedDeployableContainer.class.getName());
     private Thread shutdownThread;
@@ -100,8 +91,6 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             File modulesJar = new File(jbossHomeDir + File.separatorChar + "jboss-modules.jar");
             if (!modulesJar.exists())
                 throw new IllegalStateException("Cannot find: " + modulesJar);
-
-            createTempAuthConfigurationIfAuthNotDefined(config, jbossHomeDir);
 
             List<String> cmd = new ArrayList<String>();
             String javaExec = config.getJavaHome() + File.separatorChar + "bin" + File.separatorChar + "java";
@@ -193,8 +182,6 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             }
         } catch (Exception e) {
             throw new LifecycleException("Could not stop container", e);
-        } finally {
-            removeTempAuthConfigurationIfAuthNotDefined();
         }
     }
 
@@ -264,42 +251,5 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             }
         }
 
-    }
-
-    /*
-     * Create a temp management api auth configuration if no authentication is given by the user.
-     *
-     * Copy the existing mgmt-users files and create a temp setup.
-     * Copy the original back in stopInternal() (removeTempAuthConfigurationIfAuthNotDefined)
-     */
-    private void createTempAuthConfigurationIfAuthNotDefined(ManagedContainerConfiguration config, final String jbossHomeDir)
-            throws NoSuchAlgorithmException, IOException {
-
-        File usersFile = new File(jbossHomeDir + CONFIG_PATH + MGMT_USERS_FILE);
-
-        if (config.getUsername() == null) {
-            File tmpUsersFile = new File(jbossHomeDir + CONFIG_PATH + MGMT_USERS_TMP_FILE);
-            if (usersFile.exists()) {
-                if (!usersFile.renameTo(tmpUsersFile)) {
-                    throw new IllegalStateException("Could not rename " + usersFile + " to " + tmpUsersFile + ". " +
-                            "Unable to start server with custom security. " +
-                            "Please setup a management user manually and provide username/password in the Arquillian configuration.");
-                }
-            }
-            FileOutputStream fos = new FileOutputStream(usersFile);
-            PrintWriter pw = new PrintWriter(fos);
-            pw.println(username + "=" + new UsernamePasswordHashUtil().generateHashedHexURP(username, "ManagementRealm", password.toCharArray()));
-            pw.close();
-            fos.close();
-        }
-    }
-
-    private void removeTempAuthConfigurationIfAuthNotDefined() {
-        final String jbossHomeDir = getContainerConfiguration().getJbossHome();
-        File tmpUsersFile = new File(jbossHomeDir, CONFIG_PATH + MGMT_USERS_TMP_FILE);
-        if (tmpUsersFile.exists() && getContainerConfiguration().getUsername() == null) {
-            File usersFile = new File(jbossHomeDir, CONFIG_PATH + MGMT_USERS_FILE);
-            tmpUsersFile.renameTo(usersFile);
-        }
     }
 }

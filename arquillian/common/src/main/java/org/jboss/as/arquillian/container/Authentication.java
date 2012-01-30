@@ -16,15 +16,14 @@
  */
 package org.jboss.as.arquillian.container;
 
+import java.io.IOException;
+
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.RealmCallback;
-import java.io.IOException;
-import java.net.Authenticator;
-import java.net.PasswordAuthentication;
 
 /**
  * Factory to supply an Authenticator or CallbackHandler for use during tests.
@@ -33,8 +32,8 @@ import java.net.PasswordAuthentication;
  */
 public class Authentication {
 
-    public static String username = "testUser";
-    public static String password = "test_user_password";
+    public static String username = "";
+    public static String password = "";
 
     public static CallbackHandler getCallbackHandler() {
         return new CallbackHandler() {
@@ -57,16 +56,5 @@ public class Authentication {
             }
         };
     }
-
-    public static Authenticator getAuthenticator() {
-        return new Authenticator() {
-
-            @Override
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(username, password.toCharArray());
-            }
-        };
-    }
-
 
 }
