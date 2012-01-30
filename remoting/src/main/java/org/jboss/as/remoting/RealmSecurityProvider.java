@@ -58,6 +58,7 @@ import org.jboss.as.domain.management.security.SubjectSupplemental;
 import org.jboss.remoting3.Remoting;
 import org.jboss.remoting3.security.AuthorizingCallbackHandler;
 import org.jboss.remoting3.security.ServerAuthenticationProvider;
+import org.jboss.remoting3.security.SimpleUserInfo;
 import org.jboss.remoting3.security.UserInfo;
 import org.jboss.remoting3.security.UserPrincipal;
 import org.jboss.sasl.callback.DigestHashCallback;
@@ -173,20 +174,12 @@ public class RealmSecurityProvider implements RemotingSecurityProvider {
                 } else {
                     return new AuthorizingCallbackHandler() {
 
-                        @Override
                         public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
                             cbh.handle(callbacks);
                         }
 
-                        @Override
                         public UserInfo createUserInfo(final Collection<Principal> remotingPrincipals) {
-                            return new UserInfo() {
-
-                                @Override
-                                public Collection<Principal> getPrincipals() {
-                                    return remotingPrincipals;
-                                }
-                            };
+                            return new SimpleUserInfo(remotingPrincipals);
                         }
                     };
                 }
@@ -445,10 +438,17 @@ public class RealmSecurityProvider implements RemotingSecurityProvider {
 
     private static class RealmSubjectUserInfo implements SubjectUserInfo, UserInfo {
 
+        private final String userName;
         private final Subject subject;
 
         private RealmSubjectUserInfo(Subject subject) {
             this.subject = subject;
+            Set<RealmUser> userPrinc = subject.getPrincipals(RealmUser.class);
+            userName = userPrinc.isEmpty() ? null : userPrinc.iterator().next().getName();
+        }
+
+        public String getUserName() {
+            return userName;
         }
 
         @Override
@@ -460,6 +460,8 @@ public class RealmSecurityProvider implements RemotingSecurityProvider {
         public Subject getSubject() {
             return subject;
         }
+
+
 
     }
 

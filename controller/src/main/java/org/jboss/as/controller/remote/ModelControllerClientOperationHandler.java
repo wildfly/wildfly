@@ -36,7 +36,6 @@ import javax.security.auth.Subject;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
-import org.jboss.as.controller.security.SecurityContext;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
@@ -104,11 +103,11 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
                 public void execute(final ManagementRequestContext<Void> context) throws Exception {
                     final ManagementResponseHeader response = ManagementResponseHeader.create(context.getRequestHeader());
                     final ModelNode result;
-                    SecurityContext.setSubject(subject);
+                    SecurityActions.setSecurityContextSubject(subject);
                     try {
                         result = doExecute(operation, attachmentsLength, context);
                     } finally {
-                        SecurityContext.clearSubject();
+                        SecurityActions.clearSubjectSecurityContext();
                     }
 
                     final FlushableDataOutput output = context.writeMessage(response);
