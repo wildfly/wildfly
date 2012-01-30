@@ -332,7 +332,7 @@
                         <xs:documentation></xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
-                <xs:attribute name="queue-size" type="xs:int" default="1000">
+                <xs:attribute name="queue-size" type="xs:int" default="0">
                     <xs:annotation>
                         <xs:documentation></xs:documentation>
                     </xs:annotation>

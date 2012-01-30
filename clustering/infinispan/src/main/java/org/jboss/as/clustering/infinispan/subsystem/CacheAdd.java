@@ -304,7 +304,8 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
             builder.indexing().enabled(indexing.isEnabled()).indexLocalOnly(indexing.isLocalOnly());
         }
         if (cache.hasDefined(ModelKeys.QUEUE_SIZE)) {
-            builder.clustering().async().replQueueMaxElements(cache.get(ModelKeys.QUEUE_SIZE).asInt());
+            int size = cache.get(ModelKeys.QUEUE_SIZE).asInt();
+            builder.clustering().async().replQueueMaxElements(size).useReplQueue(size > 0);
         }
         if (cache.hasDefined(ModelKeys.QUEUE_FLUSH_INTERVAL)) {
             builder.clustering().async().replQueueInterval(cache.get(ModelKeys.QUEUE_FLUSH_INTERVAL).asLong());
