@@ -96,12 +96,14 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
 
             raDeployer.setConfiguration(config.getValue());
 
-
             try {
                 WritableServiceBasedNamingStore.pushOwner(container.subTarget());
+                ClassLoader old = SecurityActions.getThreadContextClassLoader();
                 try {
+                    SecurityActions.setThreadContextClassLoader(module.getClassLoader());
                     raxmlDeployment = raDeployer.doDeploy();
                 } finally {
+                    SecurityActions.setThreadContextClassLoader(old);
                     WritableServiceBasedNamingStore.popOwner();
                 }
             } catch (Throwable t) {

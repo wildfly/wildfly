@@ -169,7 +169,13 @@ public abstract class AbstractResourceAdapterDeploymentService {
             }
 
             if (value.getDeployment() != null && value.getDeployment().getResourceAdapter() != null) {
-                value.getDeployment().getResourceAdapter().stop();
+                ClassLoader old = SecurityActions.getThreadContextClassLoader();
+                try {
+                    SecurityActions.setThreadContextClassLoader(value.getDeployment().getResourceAdapter().getClass().getClassLoader());
+                    value.getDeployment().getResourceAdapter().stop();
+                } finally {
+                    SecurityActions.setThreadContextClassLoader(old);
+                }
             }
         }
     }

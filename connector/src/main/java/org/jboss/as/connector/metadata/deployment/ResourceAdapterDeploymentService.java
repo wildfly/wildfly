@@ -95,10 +95,14 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
             new AS7RaDeployer(context.getChildTarget(), url, deploymentName, root, module.getClassLoader(), cmd, ijmd);
         raDeployer.setConfiguration(config.getValue());
 
+        ClassLoader old = SecurityActions.getThreadContextClassLoader();
         try {
+            SecurityActions.setThreadContextClassLoader(module.getClassLoader());
             raDeployment = raDeployer.doDeploy();
         } catch (Throwable t) {
             throw MESSAGES.failedToStartRaDeployment(t, deploymentName);
+        } finally {
+            SecurityActions.setThreadContextClassLoader(old);
         }
 
         value = new ResourceAdapterDeployment(raDeployment);
