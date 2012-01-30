@@ -99,6 +99,14 @@ public interface ServerMessages {
     String argProperties();
 
     /**
+     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#SECURITY_PROP} command line argument.
+     *
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Set a Security Property")
+    String argSecurityProperty();
+
+    /**
      * Instructions for the {@link org.jboss.as.process.CommandLineArgument#SYSTEM_PROPERTY} command line argument.
      *
      * @return the message.
