@@ -62,6 +62,7 @@ public class SoSReport {
         sysPath = interpreter.get("path");
 
         addToJythonPath(pyLocation);
+        setI18NJar(pyLocation);
 
         interpreter.exec("from sos.sosreport import SoSReport");
         interpreter.exec("reporter = SoSReport([])");
@@ -74,6 +75,12 @@ public class SoSReport {
         enableOption("--report");
         enableOption("--silent");
         setHome(jbossHomeDir);
+    }
+
+    private void setI18NJar(String pyLocation) {
+        interpreter.exec("import sos");
+        PyObject sos = interpreter.get("sos");
+        sos.invoke("set_i18n", new PyString(pyLocation));
     }
 
     private void addToJythonPath(String location) {
