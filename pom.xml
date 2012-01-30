@@ -2565,50 +2565,6 @@
 
             <dependency>
                 <groupId>org.apache.cxf.xjcplugins</groupId>
-                <artifactId>cxf-xjc-bug671</artifactId>
-                <version>${version.org.apache.cxf.xjcplugins}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>commons-lang</groupId>
-                        <artifactId>commons-lang</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-aop</artifactId>
-                    </exclusion>
-                    <exclusion>
-                         <groupId>org.springframework</groupId>
-                         <artifactId>spring-asm</artifactId>
-                    </exclusion>
-                    <exclusion>
-                         <groupId>org.springframework</groupId>
-                         <artifactId>spring-beans</artifactId>
-                    </exclusion>
-                    <exclusion>
-                         <groupId>org.springframework</groupId>
-                         <artifactId>spring-context</artifactId>
-                    </exclusion>
-                    <exclusion>
-                         <groupId>org.springframework</groupId>
-                         <artifactId>spring-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                         <groupId>org.springframework</groupId>
-                         <artifactId>spring-expression</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-tx</artifactId>
-                    </exclusion>
-                    <exclusion>
-                         <groupId>org.springframework</groupId>
-                         <artifactId>spring-jms</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.cxf.xjcplugins</groupId>
                 <artifactId>cxf-xjc-dv</artifactId>
                 <version>${version.org.apache.cxf.xjcplugins}</version>
                 <exclusions>
