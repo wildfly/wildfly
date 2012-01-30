@@ -1,5 +1,6 @@
 package org.jboss.as.webservices.dmr;
 
+import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -25,14 +26,13 @@ import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
-final class WebservicesSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>> {
+final class WebservicesSubsystemParser implements XMLElementReader<List<ModelNode>> {
 
     private static final WebservicesSubsystemParser INSTANCE = new WebservicesSubsystemParser();
 
