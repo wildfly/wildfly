@@ -22,12 +22,16 @@
 
 package org.jboss.as.modcluster;
 
+import java.util.List;
 import java.util.Locale;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * {@code OperationHandler} responsible for defining the accesslog entry.
@@ -38,8 +42,12 @@ class ModClusterAddSSL extends AbstractAddStepHandler implements DescriptionProv
 
     static final ModClusterAddSSL INSTANCE = new ModClusterAddSSL();
 
-    private ModClusterAddSSL() {
-        //
+    @Override
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
+            ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
+            throws OperationFailedException {
+        // need to set reload-required on the server
+        context.reloadRequired();
     }
 
     @Override
