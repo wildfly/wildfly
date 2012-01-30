@@ -73,8 +73,8 @@ public final class WSExtension implements Extension {
     @Override
     public void initialize(final ExtensionContext context) {
         final boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
-        subsystem.registerXMLElementWriter(WebservicesSubsystemParser.getInstance());
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 1);
+        subsystem.registerXMLElementWriter(WSSubsystemWriter.getInstance());
         // ws subsystem
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(WSSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, WSSubsystemAdd.INSTANCE, WSSubsystemProviders.SUBSYSTEM_ADD, false);
@@ -116,7 +116,7 @@ public final class WSExtension implements Extension {
 
         if (registerRuntimeOnly) {
             final ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(WSSubsystemProviders.DEPLOYMENT_DESCRIPTION);
-            // ws endpoint children
+            // ws endpoints
             final ManagementResourceRegistration endpoints = deployments.registerSubModel(endpointPath, WSSubsystemProviders.ENDPOINT_DESCRIPTION);
             for (final String attributeName : WSEndpointMetrics.ATTRIBUTES) {
                 endpoints.registerMetric(attributeName, WSEndpointMetrics.INSTANCE);
@@ -125,7 +125,7 @@ public final class WSExtension implements Extension {
     }
 
     @Override
-    public void initializeParsers(ExtensionParsingContext context) {
+    public void initializeParsers(final ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.WEBSERVICES_1_0.getUriString(), WebservicesSubsystemParser.getInstance());
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.WEBSERVICES_1_1.getUriString(), WebservicesSubsystemParser.getInstance());
     }
