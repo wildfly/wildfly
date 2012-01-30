@@ -1,7 +1,7 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.clustering.AsynchronousService;
 import org.jboss.as.clustering.jgroups.ChannelFactory;
+import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.Value;
 import org.jgroups.Channel;

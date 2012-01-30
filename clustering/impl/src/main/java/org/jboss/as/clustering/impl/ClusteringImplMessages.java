@@ -20,10 +20,12 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering;
+package org.jboss.as.clustering.impl;
 
 import java.util.Collection;
 
+import org.jboss.as.clustering.ClusterNode;
+import org.jboss.as.clustering.ClusteringApiMessages;
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;

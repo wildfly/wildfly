@@ -34,8 +34,8 @@ import java.util.concurrent.ThreadFactory;
 
 import javax.management.MBeanServer;
 
-import org.jboss.as.clustering.ManagedExecutorService;
-import org.jboss.as.clustering.ManagedScheduledExecutorService;
+import org.jboss.as.clustering.concurrent.ManagedExecutorService;
+import org.jboss.as.clustering.concurrent.ManagedScheduledExecutorService;
 import org.jboss.as.network.SocketBinding;
 import org.jgroups.Channel;
 import org.jgroups.ChannelListener;

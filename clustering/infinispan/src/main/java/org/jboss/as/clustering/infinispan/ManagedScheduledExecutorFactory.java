@@ -25,7 +25,7 @@ import java.util.Properties;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.infinispan.executors.ScheduledExecutorFactory;
-import org.jboss.as.clustering.ManagedScheduledExecutorService;
+import org.jboss.as.clustering.concurrent.ManagedScheduledExecutorService;
 
 /**
  * Executor factory that produces {@link ManagedScheduledExecutorService} instances.

@@ -58,7 +58,7 @@ import org.infinispan.remoting.transport.jgroups.JGroupsChannelLookup;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.infinispan.transaction.TransactionMode;
 import org.infinispan.transaction.tm.BatchModeTransactionManager;
-import org.jboss.as.clustering.CoreGroupCommunicationService;
+import org.jboss.as.clustering.impl.CoreGroupCommunicationService;
 import org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.TransactionManagerProvider;
 import org.jboss.as.clustering.infinispan.subsystem.CacheAdd;
@@ -109,9 +109,8 @@ public class SessionTestUtil {
             Transport transport = container.getCache().getCacheManager().getTransport();
             if (transport != null) {
                 Channel channel = ((org.infinispan.remoting.transport.jgroups.JGroupsTransport) transport).getChannel();
-                this.service = new CoreGroupCommunicationService();
+                this.service = new CoreGroupCommunicationService(Integer.valueOf(0).shortValue());
                 service.setChannel(channel);
-                service.setScopeId(Integer.valueOf(0).shortValue());
                 this.lockManager = new SharedLocalYieldingClusterLockManager("lock", service, service);
             } else {
                 this.service = null;

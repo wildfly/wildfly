@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering;
+package org.jboss.as.clustering.impl;
 
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
@@ -28,9 +28,13 @@ import static org.jboss.logging.Logger.Level.WARN;
 
 import java.util.Collection;
 
-import org.jboss.as.clustering.CoreGroupCommunicationService.GroupView;
+import org.jboss.as.clustering.ClusterNode;
+import org.jboss.as.clustering.ClusteringApiLogger;
+import org.jboss.as.clustering.GroupMembershipListener;
+import org.jboss.as.clustering.impl.CoreGroupCommunicationService.GroupView;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
+import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 import org.jgroups.Address;
@@ -41,7 +45,9 @@ import org.jgroups.Address;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @MessageLogger(projectCode = "JBAS")
-interface ClusteringImplLogger extends ClusteringApiLogger {
+public interface ClusteringImplLogger extends ClusteringApiLogger {
+
+    ClusteringImplLogger ROOT_LOGGER = Logger.getMessageLogger(ClusteringImplLogger.class, ROOT_LOGGER_CATEGORY);
 
     /**
      * Logs an error message indicating an error occurred while destroying the service.
@@ -199,4 +205,8 @@ interface ClusteringImplLogger extends ClusteringApiLogger {
     @LogMessage(level = INFO)
     @Message(id = 10254, value = "Suspected member: %s")
     void suspectedMember(Address suspectedMember);
+
+    @LogMessage(level = WARN)
+    @Message(id = 10255, value = "Failed to stop lock manager")
+    void lockManagerStopFailed(@Cause Throwable cause);
 }

@@ -19,9 +19,9 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.clustering;
+package org.jboss.as.clustering.impl;
 
-import static org.jboss.as.clustering.ClusteringImplMessages.MESSAGES;
+import static org.jboss.as.clustering.impl.ClusteringImplMessages.MESSAGES;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -54,8 +54,21 @@ import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 
+import org.jboss.as.clustering.ClusterNode;
+import org.jboss.as.clustering.GroupCommunicationService;
+import org.jboss.as.clustering.GroupMembershipListener;
+import org.jboss.as.clustering.GroupMembershipNotifier;
+import org.jboss.as.clustering.GroupRpcDispatcher;
+import org.jboss.as.clustering.GroupStateTransferService;
+import org.jboss.as.clustering.ResponseFilter;
+import org.jboss.as.clustering.SerializableStateTransferResult;
+import org.jboss.as.clustering.StateTransferProvider;
+import org.jboss.as.clustering.StateTransferResult;
+import org.jboss.as.clustering.StreamStateTransferResult;
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.ClassLoaderAwareUpHandler;
+import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
+import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.logging.Logger;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
@@ -63,6 +76,13 @@ import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.SimpleClassResolver;
 import org.jboss.marshalling.Unmarshaller;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 import org.jgroups.Address;
 import org.jgroups.Channel;
 import org.jgroups.Event;
@@ -101,7 +121,7 @@ import org.jgroups.util.RspList;
  * @author <a href="mailto:galder.zamarreno@jboss.com">Galder Zamarreno</a>
  * @author Paul Ferraro
  */
-public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupMembershipNotifier, GroupStateTransferService {
+public class CoreGroupCommunicationService extends AsynchronousService<CoreGroupCommunicationService> implements GroupRpcDispatcher, GroupMembershipNotifier, GroupStateTransferService {
     // Constants -----------------------------------------------------
 
     private static final byte NULL_VALUE = 0;
@@ -125,6 +145,55 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
         }
     }
 
+    public static ServiceName getServiceName(String name) {
+        return ServiceName.JBOSS.append("cluster").append(name);
+    }
+
+    private final InjectedValue<Channel> channelRef = new InjectedValue<Channel>();
+
+    public CoreGroupCommunicationService(short scope) {
+        this.scopeId = scope;
+    }
+
+    public ServiceBuilder<CoreGroupCommunicationService> build(ServiceTarget target, String name) {
+        return target.addService(getServiceName(name), this)
+            .addDependency(ChannelService.getServiceName(name), Channel.class, this.channelRef)
+        ;
+    }
+
+    /**
+     * {@inheritDoc}
+     * @see org.jboss.msc.value.Value#getValue()
+     */
+    @Override
+    public CoreGroupCommunicationService getValue() {
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     * @see org.jboss.msc.service.Service#start(org.jboss.msc.service.StartContext)
+     */
+    @Override
+    public void start(StartContext context) throws StartException {
+        this.setChannel(this.channelRef.getValue());
+
+        try {
+            this.start();
+        } catch (Exception e) {
+            throw new StartException(e);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     * @see org.jboss.msc.service.Service#stop(org.jboss.msc.service.StopContext)
+     */
+    @Override
+    public void stop(StopContext context) {
+        this.stop();
+    }
+
     // Constants -----------------------------------------------------
 
     // Attributes ----------------------------------------------------
@@ -146,7 +215,7 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
     private volatile GroupView groupView = new GroupView();
 
     private long method_call_timeout = 60000;
-    Short scopeId;
+    final short scopeId;
     private RpcDispatcher dispatcher = null;
     final Map<String, Object> rpcHandlers = new ConcurrentHashMap<String, Object>();
     private boolean directlyInvokeLocal;
@@ -715,14 +784,6 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
         return buff.toString();
     }
 
-    public Short getScopeId() {
-        return scopeId;
-    }
-
-    public void setScopeId(Short scopeId) {
-        this.scopeId = scopeId;
-    }
-
     public int getMaxHistoryLength() {
         return maxHistoryLength;
     }
@@ -877,10 +938,6 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
     }
 
     protected void startService() throws Exception {
-        if (this.scopeId == null) {
-            throw MESSAGES.varNotSet("scopeId", "start()");
-        }
-
         this.stateIdPrefix = getClass().getName() + "." + this.scopeId + ".";
 
         if (this.channel == null || !this.channel.isOpen()) {
@@ -892,7 +949,7 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
         // Subscribe to events generated by the channel
         MembershipListener meml = new MembershipListenerImpl();
         MessageListener msgl = this.stateIdPrefix == null ? null : new MessageListenerImpl();
-        this.dispatcher = new RpcHandler(this.scopeId.shortValue(), this.channel, msgl, meml, new RequestMarshallerImpl(),
+        this.dispatcher = new RpcHandler(this.scopeId, this.channel, msgl, meml, new RequestMarshallerImpl(),
                 new ResponseMarshallerImpl());
 
         if (!this.channel.isConnected()) {

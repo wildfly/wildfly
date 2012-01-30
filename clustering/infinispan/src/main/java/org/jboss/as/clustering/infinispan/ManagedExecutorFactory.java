@@ -25,7 +25,7 @@ import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
-import org.jboss.as.clustering.ManagedExecutorService;
+import org.jboss.as.clustering.concurrent.ManagedExecutorService;
 
 /**
  * Executor factory that produces {@link ManagedExecutorService} instances.

@@ -30,8 +30,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.executors.ExecutorFactory;
 import org.infinispan.executors.ScheduledExecutorFactory;
-import org.jboss.as.clustering.ManagedExecutorService;
-import org.jboss.as.clustering.ManagedScheduledExecutorService;
+import org.jboss.as.clustering.concurrent.ManagedExecutorService;
+import org.jboss.as.clustering.concurrent.ManagedScheduledExecutorService;
 
 import static org.jboss.as.clustering.infinispan.InfinispanMessages.MESSAGES;
 

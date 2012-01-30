@@ -36,12 +36,12 @@ import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStarted
 import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStopped;
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStartedEvent;
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStoppedEvent;
-import org.jboss.as.clustering.AsynchronousService;
 import org.jboss.as.clustering.infinispan.ChannelProvider;
 import org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.ExecutorProvider;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
+import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
 import org.jgroups.Channel;

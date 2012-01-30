@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering;
+package org.jboss.as.clustering.msc;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -37,38 +37,61 @@ import org.jboss.msc.service.StopContext;
 public abstract class AsynchronousService<T> implements Service<T> {
 
     private final Executor executor = Executors.newCachedThreadPool();
+    private final boolean startAsynchronously;
+    private final boolean stopAsynchronously;
+
+    protected AsynchronousService() {
+        this(true, true);
+    }
+
+    protected AsynchronousService(boolean startAsynchronously, boolean stopAsynchronously) {
+        this.startAsynchronously = startAsynchronously;
+        this.stopAsynchronously = stopAsynchronously;
+    }
 
     @Override
     public void start(final StartContext context) throws StartException {
-        Runnable task = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    AsynchronousService.this.start();
-                    context.complete();
-                } catch (Exception e) {
-                    context.failed(new StartException(e));
+        if (this.startAsynchronously) {
+            Runnable task = new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        AsynchronousService.this.start();
+                        context.complete();
+                    } catch (Exception e) {
+                        context.failed(new StartException(e));
+                    }
                 }
+            };
+            context.asynchronous();
+            this.executor.execute(task);
+        } else {
+            try {
+                this.start();
+            } catch (Exception e) {
+                throw new StartException(e);
             }
-        };
-        context.asynchronous();
-        this.executor.execute(task);
+        }
     }
 
     @Override
     public void stop(final StopContext context) {
-        Runnable task = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    AsynchronousService.this.stop();
-                } finally {
-                    context.complete();
+        if (this.stopAsynchronously) {
+            Runnable task = new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        AsynchronousService.this.stop();
+                    } finally {
+                        context.complete();
+                    }
                 }
-            }
-        };
-        context.asynchronous();
-        this.executor.execute(task);
+            };
+            context.asynchronous();
+            this.executor.execute(task);
+        } else {
+            this.stop();
+        }
     }
 
     protected abstract void start() throws Exception;

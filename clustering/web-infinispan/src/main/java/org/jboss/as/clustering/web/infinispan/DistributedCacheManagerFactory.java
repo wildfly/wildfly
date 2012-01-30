@@ -30,14 +30,14 @@ import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.jboss.as.clustering.CoreGroupCommunicationServiceService;
+import org.jboss.as.clustering.impl.CoreGroupCommunicationService;
 import org.jboss.as.clustering.infinispan.atomic.AtomicMapCache;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.as.clustering.infinispan.invoker.RetryingCacheInvoker;
 import org.jboss.as.clustering.infinispan.subsystem.CacheConfigurationService;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
 import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager;
-import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManagerService;
+import org.jboss.as.clustering.lock.impl.SharedLocalYieldingClusterLockManagerService;
 import org.jboss.as.clustering.registry.Registry;
 import org.jboss.as.clustering.registry.RegistryService;
 import org.jboss.as.clustering.web.BatchingManager;
@@ -115,7 +115,7 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
         ServiceName registryServiceName = cacheServiceName.append("registry");
         synchronized (this) {
             if (serviceContainer.getService(lockManagerServiceName) == null) {
-                new CoreGroupCommunicationServiceService(SCOPE_ID).build(target, container).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+                new CoreGroupCommunicationService(SCOPE_ID).build(target, container).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
                 new SharedLocalYieldingClusterLockManagerService(container).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
             }
             if (serviceContainer.getService(registryServiceName) == null) {
