@@ -1024,8 +1024,7 @@ final class OperationContextImpl extends AbstractOperationContext {
 
         private void checkModeTransition(Mode mode) {
             if (mode == Mode.REMOVE) {
-                ControllerLogger.ROOT_LOGGER.warn(MESSAGES.useOperationContextRemoveService());
-                throw new IllegalArgumentException(MESSAGES.useOperationContextRemoveService());
+                throw MESSAGES.useOperationContextRemoveService();
             }
         }
 
