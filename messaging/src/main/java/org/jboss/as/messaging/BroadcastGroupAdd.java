@@ -105,6 +105,7 @@ public class BroadcastGroupAdd extends AbstractAddStepHandler implements Descrip
                 final String localAddress = localAddrNode.isDefined() ? localAddrNode.asString() : null;
                 final String groupAddress = CommonAttributes.GROUP_ADDRESS.resolveModelAttribute(context, model).asString();
                 final int groupPort = CommonAttributes.GROUP_PORT.resolveModelAttribute(context, model).asInt();
+                final int localBindPort = CommonAttributes.LOCAL_BIND_PORT.resolveModelAttribute(context, model).asInt();
 
                 try {
 
@@ -113,7 +114,7 @@ public class BroadcastGroupAdd extends AbstractAddStepHandler implements Descrip
                     final NetworkInterfaceBinding b = new NetworkInterfaceBinding(Collections.singleton(intf), inet);
                     final InetAddress group = InetAddress.getByName(groupAddress);
 
-                    final SocketBinding socketBinding = new SocketBinding(name, -1, false, group, groupPort, b, null, null);
+                    final SocketBinding socketBinding = new SocketBinding(name, localBindPort, false, group, groupPort, b, null, null);
 
                     final GroupBindingService bindingService = new GroupBindingService();
                     target.addService(GroupBindingService.getBroadcastBaseServiceName(hqServiceName).append(name), bindingService)
