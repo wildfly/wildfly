@@ -24,6 +24,7 @@ package org.jboss.as.server;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.security.Security;
 import java.util.Map;
 import java.util.Properties;
 
@@ -116,6 +117,20 @@ class SecurityActions {
             return AccessController.doPrivileged(new PrivilegedAction<Map<String, String>>() {
                 public Map<String, String> run() {
                     return System.getenv();
+                }
+            });
+        }
+    }
+
+    static void setSecurityProperty(final String key, final String value){
+        if (System.getSecurityManager() == null) {
+           Security.setProperty(key, value);
+        } else {
+           AccessController.doPrivileged(new PrivilegedAction<Void>() {
+               @Override
+                public Void run() {
+                    Security.setProperty(key, value);
+                    return null;
                 }
             });
         }
