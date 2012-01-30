@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.remote;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,14 +81,14 @@ public class DefaultEjbClientContextService implements Service<EJBClientContext>
         // handle manual overrides of EJB client context selector by user code on the server side.
         // Setting this up via interceptor isn't a good idea too since that will end up overriding
         // the selector which the user code might have set intentionally. So let this be here for now
-        previousSelector = EJBClientContext.setSelector(this.tcclEJBClientContextSelector.getValue());
+        previousSelector = AccessController.doPrivileged(new SetSelectorAction(this.tcclEJBClientContextSelector.getValue()));
     }
 
     @Override
     public synchronized void stop(final StopContext context) {
         this.context = null;
         if (this.previousSelector != null) {
-            EJBClientContext.setSelector(this.previousSelector);
+            AccessController.doPrivileged(new SetSelectorAction(previousSelector));
         }
     }
 
@@ -107,5 +109,19 @@ public class DefaultEjbClientContextService implements Service<EJBClientContext>
 
     public Injector<TCCLBasedEJBClientContextSelector> getTCCLBasedEJBClientContextSelectorInjector() {
         return this.tcclEJBClientContextSelector;
+    }
+
+    private static final class SetSelectorAction implements PrivilegedAction<ContextSelector<EJBClientContext>> {
+
+        private final ContextSelector<EJBClientContext> selector;
+
+        private SetSelectorAction(final ContextSelector<EJBClientContext> selector) {
+            this.selector = selector;
+        }
+
+        @Override
+        public ContextSelector<EJBClientContext> run() {
+            return EJBClientContext.setSelector(selector);
+        }
     }
 }
