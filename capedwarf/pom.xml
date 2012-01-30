@@ -70,6 +70,10 @@
 
         <dependency>
             <groupId>org.jboss.capedwarf.blue</groupId>
+            <artifactId>capedwarf-admin</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.capedwarf.blue</groupId>
             <artifactId>capedwarf-appidentity</artifactId>
         </dependency>
         <dependency>

@@ -1,12 +1,14 @@
 package org.jboss.as.capedwarf.deployment;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.capedwarf.admin.CustomResourceResolver;
 import org.jboss.capedwarf.appidentity.CDIListener;
 import org.jboss.capedwarf.appidentity.GAEFilter;
 import org.jboss.capedwarf.users.AuthServlet;
 import org.jboss.metadata.javaee.spec.Environment;
 import org.jboss.metadata.javaee.spec.EnvironmentRefsGroupMetaData;
 import org.jboss.metadata.javaee.spec.MutableRemoteEnvironment;
+import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.javaee.spec.ResourceReferenceMetaData;
 import org.jboss.metadata.javaee.spec.ResourceReferencesMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
@@ -18,6 +20,7 @@ import org.jboss.metadata.web.spec.FiltersMetaData;
 import org.jboss.metadata.web.spec.ListenerMetaData;
 import org.jboss.metadata.web.spec.ServletMappingMetaData;
 
+import javax.faces.view.facelets.ResourceResolver;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -52,6 +55,7 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
     @Override
     protected void doDeploy(DeploymentUnit unit, JBossWebMetaData webMetaData, Type type) {
         if (type == Type.MERGED) {
+            addContextParamsTo(webMetaData);
             addListenerTo(webMetaData);
 
             addFilterTo(webMetaData);
@@ -62,6 +66,19 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
 
             addResourceReference(webMetaData);
         }
+    }
+
+    private void addContextParamsTo(JBossWebMetaData webMetaData) {
+        ParamValueMetaData param = new ParamValueMetaData();
+        param.setParamName(ResourceResolver.FACELETS_RESOURCE_RESOLVER_PARAM_NAME);
+        param.setParamValue(CustomResourceResolver.class.getName());
+
+        List<ParamValueMetaData> contextParams = webMetaData.getContextParams();
+        if (contextParams == null) {
+            contextParams = new ArrayList<ParamValueMetaData>();
+            webMetaData.setContextParams(contextParams);
+        }
+        contextParams.add(param);
     }
 
     private void addListenerTo(JBossWebMetaData webMetaData) {
