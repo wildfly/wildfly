@@ -32,10 +32,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.security.Constants.AUTHENTICATION;
-import static org.jboss.as.security.Constants.CODE;
-import static org.jboss.as.security.Constants.FLAG;
-import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
+import static org.jboss.as.security.Constants.*;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -45,6 +42,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.security.Constants;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.junit.AfterClass;
 
 /**
@@ -56,6 +54,8 @@ public class SecurityTest {
 
     protected static String securityDomain = "web-tests";
 
+    private static final Logger log = Logger.getLogger(SecurityTest.class);
+    
     // this is removing the security domain after each test so I have to disable it
     @AfterClass
     public static void after() throws Exception {
@@ -89,6 +89,50 @@ public class SecurityTest {
 
 
         applyUpdates(updates, client);
+    }
+
+    public static void createSimpleRoleMappingSecurityDomain() throws Exception {
+        
+        log.debug("start of createSimpleRoleMappingSecurityDomain");
+
+        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
+
+        final List<ModelNode> updates = new ArrayList<ModelNode>();
+        ModelNode op = new ModelNode();
+
+        op.get(OP).set(ADD);
+        op.get(OP_ADDR).add(SUBSYSTEM, "security");
+        op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
+        updates.add(op);
+
+        op = new ModelNode();
+        op.get(OP).set(ADD);
+        op.get(OP_ADDR).add(SUBSYSTEM, "security");
+        op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
+        op.get(OP_ADDR).add(AUTHENTICATION, Constants.CLASSIC);
+        op.get(OP_ADDR).add(MAPPING, CLASSIC);
+
+        ModelNode loginModule = op.get(Constants.LOGIN_MODULES).add();
+        loginModule.get(CODE).set("UsersRoles");
+        loginModule.get(FLAG).set("required");
+
+        ModelNode mappingModule =op.get(MAPPING_MODULES).add();
+        mappingModule.get(CODE).set("SimpleRoles"); // see:  https://docs.jboss.org/author/display/AS71/Security+subsystem+configuration
+        mappingModule.get(TYPE).set("role");
+        ModelNode mappingOptions = mappingModule.get(MODULE_OPTIONS);
+        ModelNode moduleOption = mappingOptions.add();
+        moduleOption.add("peter", "superuser,gooduser");
+
+        op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+        updates.add(op);
+
+        try {
+            applyUpdates(updates, client);
+        }
+        catch (Exception e) {
+            log.error(e);
+        }
+        log.debug("end of createSimpleRoleMappingSecurityDomain");
     }
 
     public static void removeSecurityDomain() throws Exception {
