@@ -41,7 +41,7 @@ import org.junit.Assert;
 public class WebservicesSubsystemParserTest extends TestCase {
 
     private static final String namespace = "urn:jboss:domain:webservices:1.0";
-    private static final WebservicesSubsystemParser parser = WebservicesSubsystemParser.getInstance();
+    private static final WSSubsystemReader parser = WSSubsystemReader.getInstance();
 
     public void testParse() throws Exception {               
         final List<ModelNode> operations = new ArrayList<ModelNode>();
