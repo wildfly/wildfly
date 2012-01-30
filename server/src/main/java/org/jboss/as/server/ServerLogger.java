@@ -45,7 +45,7 @@ import org.jboss.modules.ModuleIdentifier;
 
 /**
  * This module is using message IDs in the range 15700-15999.
- * This file is using the subset 15850-15875 for server logger messages.
+ * This file is using the subset 15850-15899 and 15950-15999 for server logger messages.
  * See http://community.jboss.org/docs/DOC-16810 for the full list of
  * currently reserved JBAS message id blocks.
  *
@@ -76,11 +76,6 @@ public interface ServerLogger extends BasicLogger {
     ServerLogger DEPLOYMENT_LOGGER = Logger.getMessageLogger(ServerLogger.class, "org.jboss.as.server.deployment");
 
     /**
-     * A logger with the category {@code org.jboss.as.deployment.module}.
-     */
-    ServerLogger DEPLOYMENT_MODULE_LOGGER = Logger.getMessageLogger(ServerLogger.class, "org.jboss.as.deployment.module");
-
-    /**
      * Logger for private APIs.
      */
     ServerLogger PRIVATE_DEP_LOGGER = Logger.getMessageLogger(ServerLogger.class, "org.jboss.as.dependency.private");
@@ -100,26 +95,8 @@ public interface ServerLogger extends BasicLogger {
     ServerLogger NETWORK_LOGGER = Logger.getMessageLogger(ServerLogger.class, "org.jboss.as.server.net");
 
     /**
-     * Logs an informational message indicating the server is starting.
-     *
-     * @param prettyVersion  the server version.
-     */
-    @LogMessage(level = INFO)
-    @Message("%s starting")
-    void serverStarting(String prettyVersion);
-
-    /**
-     * Logs an informational message indicating the server is stopped.
-     *
-     * @param prettyVersion  the server version.
-     * @param time     the time it took to stop.
-     */
-    @LogMessage(level = INFO)
-    @Message("%s stopped in %dms")
-    void serverStopped(String prettyVersion, int time);
-
-    /**
      * Log message for when a jboss-deployment-structure.xml file is ignored
+     * @param file name of the ignored file
      */
     @LogMessage(level = WARN)
     @Message(id = 15850, value = "%s in subdeployment ignored. jboss-deployment-structure.xml is only parsed for top level deployments.")
@@ -127,6 +104,7 @@ public interface ServerLogger extends BasicLogger {
 
     /**
      * Message for when a pre-computed annotation index cannot be loaded
+     * @param index name of the annotation index
      */
     @LogMessage(level = ERROR)
     @Message(id = 15851, value = "Could not read provided index: %s")
@@ -319,4 +297,23 @@ public interface ServerLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 15898, value = "A server name configuration was provided both via system propert %s ('%s') and via the xml configuration ('%s'). The xml configuration valid will be used.")
     void duplicateServerNameConfiguration(String systemProperty, String rawServerProp, String processName);
+
+    /**
+     * Logs an informational message indicating the server is starting.
+     *
+     * @param prettyVersion  the server version.
+     */
+    @LogMessage(level = INFO)
+    @Message(id = 15899, value = "%s starting")
+    void serverStarting(String prettyVersion);
+
+    /**
+     * Logs an informational message indicating the server is stopped.
+     *
+     * @param prettyVersion  the server version.
+     * @param time     the time it took to stop.
+     */
+    @LogMessage(level = INFO)
+    @Message(id = 15950, value = "%s stopped in %dms")
+    void serverStopped(String prettyVersion, int time);
 }
