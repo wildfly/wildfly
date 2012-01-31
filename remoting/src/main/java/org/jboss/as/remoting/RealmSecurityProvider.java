@@ -239,7 +239,7 @@ public class RealmSecurityProvider implements RemotingSecurityProvider {
                     }
 
                 }
-            }, realm.getSubjectSupplemental());
+            }, realm != null ? realm.getSubjectSupplemental() : null);
         }
 
         // In this calls only the AuthorizeCallback is needed, we are not making use if an authorization ID just yet
@@ -424,7 +424,11 @@ public class RealmSecurityProvider implements RemotingSecurityProvider {
             Set<UserPrincipal> remotingUsers = subject.getPrincipals(UserPrincipal.class);
             Set<RealmUser> realmUsers = new HashSet<RealmUser>(remotingUsers.size());
             for (UserPrincipal current : remotingUsers) {
-                realmUsers.add(new RealmUser(realm.getName(), current.getName()));
+                if (realm != null) {
+                    realmUsers.add(new RealmUser(realm.getName(), current.getName()));
+                } else {
+                    realmUsers.add(new RealmUser(current.getName()));
+                }
             }
             subject.getPrincipals().addAll(realmUsers);
 
