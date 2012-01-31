@@ -64,13 +64,8 @@ class JacORBSubsystemDefinitions {
     private static final ParameterValidator SSL_CONFIG_VALIDATOR =
             new EnumValidator<SSLConfigValue>(SSLConfigValue.class, true, false);
 
-    // enum and validator for the standard jacorb attributes that use on/off strings to enable and disable properties.
-    private enum OnOffValue {OFF, ON}
-
-    private static final ParameterValidator ON_OFF_VALIDATOR = new EnumValidator<OnOffValue>(OnOffValue.class, true, false);
-
-    // enum for the tx initializer configuration.
-    private enum TxInitializerValue {ON, OFF, SPEC}
+    private static final ParameterValidator ON_OFF_VALIDATOR = new EnumValidator<AllowedValues>(
+            AllowedValues.class, true, false, AllowedValues.ON, AllowedValues.OFF);
 
     // orb attribute definitions.
     public static final SimpleAttributeDefinition ORB_NAME = new SimpleAttributeDefinitionBuilder(
@@ -189,7 +184,7 @@ class JacORBSubsystemDefinitions {
     public static final SimpleAttributeDefinition ORB_INIT_TX = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.ORB_INIT_TRANSACTIONS, ModelType.STRING, true)
             .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
-            .setValidator(new EnumValidator<TxInitializerValue>(TxInitializerValue.class, true, false))
+            .setValidator(new EnumValidator<AllowedValues>(AllowedValues.class, true, false))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
@@ -323,28 +318,28 @@ class JacORBSubsystemDefinitions {
 
     public static final SimpleAttributeDefinition SECURITY_CLIENT_SUPPORTS = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.SECURITY_CLIENT_SUPPORTS, ModelType.STRING, true)
-            .setDefaultValue(new ModelNode().set("MutualAuth"))
+            .setDefaultValue(new ModelNode().set(SSLConfigValue.MUTUALAUTH.toString()))
             .setValidator(SSL_CONFIG_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     public static final SimpleAttributeDefinition SECURITY_CLIENT_REQUIRES = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.SECURITY_CLIENT_REQUIRES, ModelType.STRING, true)
-            .setDefaultValue(new ModelNode().set("None"))
+            .setDefaultValue(new ModelNode().set(SSLConfigValue.NONE.toString()))
             .setValidator(SSL_CONFIG_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     public static final SimpleAttributeDefinition SECURITY_SERVER_SUPPORTS = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.SECURITY_SERVER_SUPPORTS, ModelType.STRING, true)
-            .setDefaultValue(new ModelNode().set("MutualAuth"))
+            .setDefaultValue(new ModelNode().set(SSLConfigValue.MUTUALAUTH.toString()))
             .setValidator(SSL_CONFIG_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     public static final SimpleAttributeDefinition SECURITY_SERVER_REQUIRES = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.SECURITY_SERVER_REQUIRES, ModelType.STRING, true)
-            .setDefaultValue(new ModelNode().set("None"))
+            .setDefaultValue(new ModelNode().set(SSLConfigValue.NONE.toString()))
             .setValidator(SSL_CONFIG_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
