@@ -65,7 +65,7 @@ public abstract class AbstractControllerTestBase {
 
     private ServiceContainer container;
     private ModelController controller;
-    private final ProcessType processType;
+    protected final ProcessType processType;
 
     protected AbstractControllerTestBase(ProcessType processType) {
         this.processType = processType;
