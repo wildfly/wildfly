@@ -447,13 +447,19 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
 
     private void buildCacheStore(LoaderConfigurationBuilder builder, String name, ModelNode store, String storeKey, List<Dependency<?>> dependencies) {
         final Properties properties = new TypedProperties();
-        if (store.hasDefined(ModelKeys.PROPERTIES)) {
-            for (Property property : store.get(ModelKeys.PROPERTIES).asPropertyList()) {
+        if (store.hasDefined(ModelKeys.PROPERTY)) {
+            for (Property property : store.get(ModelKeys.PROPERTY).asPropertyList()) {
+                // the format of the property elements
+                //  "property" => {
+                //       "relative-to" => {"value" => "fred"},
+                //   }
                 String propertyName = property.getName();
-                String propertyValue = property.getValue().asString();
+                Property complexValue = property.getValue().asProperty();
+                String propertyValue = complexValue.getValue().asString();
                 properties.setProperty(propertyName, propertyValue);
             }
         }
+        log.debugf("Initializing cache store for cache %s with properties: %s", name, properties.toString());
         builder.withProperties(properties);
 
         if (storeKey.equals(ModelKeys.FILE_STORE)) {

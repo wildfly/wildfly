@@ -174,6 +174,10 @@ public class CacheConfigOperationHandlers {
 
             // Process attributes
             for(final AttributeDefinition attribute : attributes) {
+                // we use PROPERTIES only to allow the user to pass in a list of properties on store add commands
+                // don't copy these into the model
+                if (attribute.getName().equals(CommonAttributes.PROPERTIES.getName()))
+                    continue ;
                 attribute.validateAndSet(operation, subModel);
             }
 
