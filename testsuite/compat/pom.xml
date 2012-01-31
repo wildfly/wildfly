@@ -32,14 +32,15 @@
         <version>7.1.1.Final-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jboss-as-testsuite-integration-compat</artifactId>
+    <artifactId>jboss-as-testsuite-compat</artifactId>
     <name>JBoss Application Server Test Suite: Compatibility Tests</name>
     <properties>
 
         <!-- This project's testsuite dir. To be changed for every submodule (until we figure out how to do it automatically). -->
-        <jbossas.ts.dir>${basedir}/../..</jbossas.ts.dir>
+        <jbossas.ts.dir>${basedir}/..</jbossas.ts.dir>
         
-        <!-- ${jbossas.project.dir} defined in /testsuite . -->
+        <!-- ${jbossas.project.dir} defined in /testsuite. But for separated runs runs, let's duplicate it here. -->
+        <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
 
         <!-- Used to provide an absolute location for the distribution under test. -->
         <!-- This value is overridden in modules with the correct relative pathname. -->
