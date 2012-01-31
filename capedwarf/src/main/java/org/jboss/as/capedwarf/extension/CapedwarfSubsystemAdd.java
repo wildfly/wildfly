@@ -89,7 +89,7 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         context.addStep(new AbstractDeploymentChainStep() {
             public void execute(DeploymentProcessorTarget processorTarget) {
-                final TempDir tempDir = createTempDir(context);
+                final TempDir tempDir = createTempDir(context.getServiceTarget());
 
                 final int initialPhaseOrder = Math.min(Phase.PARSE_WEB_DEPLOYMENT, Phase.PARSE_PERSISTENCE_UNIT);
                 processorTarget.addDeploymentProcessor(Phase.PARSE, initialPhaseOrder - 20, new CapedwarfInitializationProcessor());
@@ -108,7 +108,7 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     }
 
-    protected static TempDir createTempDir(OperationContext context) {
+    protected static TempDir createTempDir(final ServiceTarget serviceTarget) {
         final TempDir tempDir;
         try {
             tempDir = TempFileProviderService.provider().createTempDir(CAPEDWARF);
@@ -116,7 +116,6 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
             throw new IllegalArgumentException("Cannot create temp dir for CapeDwarf sub-system!", e);
         }
 
-        final ServiceTarget serviceTarget = context.getServiceTarget();
         final ServiceBuilder<TempDir> builder = serviceTarget.addService(ServiceName.JBOSS.append(CAPEDWARF).append("tempDir"), new Service<TempDir>() {
             public void start(StartContext context) throws StartException {
             }
