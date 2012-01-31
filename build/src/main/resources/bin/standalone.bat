@@ -60,13 +60,36 @@ if "x%JAVA_HOME%" == "x" (
   set "JAVA=%JAVA_HOME%\bin\java"
 )
 
-rem Add -server to the JVM options, if supported
-"%JAVA%" -server -version 2>&1 | findstr /I hotspot > nul
-if not errorlevel == 1 (
-  set "JAVA_OPTS=%JAVA_OPTS% -server"
+if not "%PRESERVE_JAVA_OPTS%" == "true" (
+  rem Add -client to the JVM options, if supported (32 bit VM), and not overriden
+  echo "%JAVA_OPTS%" | findstr /I \-server > nul
+  if errorlevel == 1 (
+    "%JAVA%" -client -version 2>&1 | findstr /I /C:"Client VM" > nul
+    if not errorlevel == 1 (
+      set "JAVA_OPTS=-client %JAVA_OPTS%"
+    )
+  )
+
+  rem Add compressed oops, if supported (64 bit VM), and not overriden
+  echo "%JAVA_OPTS%" | findstr /I "\-XX:\-UseCompressedOops \-client" > nul
+  if errorlevel == 1 (
+    "%JAVA%" -XX:+UseCompressedOops -version > nul 2>&1
+    if not errorlevel == 1 (
+      set "JAVA_OPTS=-XX:+UseCompressedOops %JAVA_OPTS%"
+    )
+  )
+
+  rem Add compressed oops, if supported (64 bit VM), and not overriden
+  echo "%JAVA_OPTS%" | findstr /I "\-XX:\-TieredCompilation \-client" > nul
+  if errorlevel == 1 (
+    "%JAVA%" -XX:+TieredCompilation -version > nul 2>&1
+    if not errorlevel == 1 (
+      set "JAVA_OPTS=-XX:+TieredCompilation %JAVA_OPTS%"
+    )
+  )
 )
 
-rem Find run.jar, or we can't continue
+rem Find jboss-modules.jar, or we can't continue
 if exist "%JBOSS_HOME%\jboss-modules.jar" (
     set "RUNJAR=%JBOSS_HOME%\jboss-modules.jar"
 ) else (
