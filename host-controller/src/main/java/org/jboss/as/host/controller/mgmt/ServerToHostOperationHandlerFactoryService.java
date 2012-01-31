@@ -35,6 +35,7 @@ import java.util.concurrent.ExecutorService;
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.ActiveOperation.ResultHandler;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
@@ -120,13 +121,26 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
         return null;
     }
 
+    /**
+     * The handler factor for a registered server.
+     */
     private class ServerHandlerFactory implements ManagementRequestHandlerFactory {
+
+        private final String serverProcessName;
+        private ServerHandlerFactory(String serverProcessName) {
+            this.serverProcessName = serverProcessName;
+        }
 
         @Override
         public ManagementRequestHandler<?, ?> resolveHandler(RequestHandlerChain handlers, ManagementRequestHeader header) {
-            if(header.getOperationId() == DomainServerProtocol.GET_FILE_REQUEST) {
-                handlers.registerActiveOperation(header.getBatchId(), null);
-                return new GetFileOperation();
+            byte operationId = header.getOperationId();
+            switch (operationId) {
+                case DomainServerProtocol.GET_FILE_REQUEST:
+                    handlers.registerActiveOperation(header.getBatchId(), null);
+                    return new GetFileOperation();
+                case DomainServerProtocol.SERVER_STARTED_REQUEST:
+                    handlers.registerActiveOperation(header.getBatchId(), callback.getValue());
+                    return new ServerStartedHandler(serverProcessName);
             }
             return handlers.resolveNext();
         }
@@ -165,7 +179,7 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
                     @Override
                     public void run() {
                         // Create the server mgmt handler
-                        final ManagementChannelHandler handler = new ManagementChannelHandler(channel, executorService, new ServerHandlerFactory());
+                        final ManagementChannelHandler handler = new ManagementChannelHandler(channel, executorService, new ServerHandlerFactory(serverName));
                         ServerToHostOperationHandlerFactoryService.this.callback.getValue().serverCommunicationRegistered(serverName, handler, new ServerInventory.ProxyCreatedCallback() {
                             @Override
                             public void proxyOperationHandlerCreated(final ManagementRequestHandlerFactory handlerFactory) {
@@ -211,6 +225,25 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
         }
     }
 
+    private class ServerStartedHandler implements ManagementRequestHandler<Void, ServerInventory> {
+
+        private final String serverProcessName;
+        private ServerStartedHandler(String serverProcessName) {
+            this.serverProcessName = serverProcessName;
+        }
+
+        @Override
+        public void handleRequest(final DataInput input, final ResultHandler<Void> resultHandler, final ManagementRequestContext<ServerInventory> context) throws IOException {
+            expectHeader(input, DomainServerProtocol.PARAM_SERVER_NAME);
+            final String serverName = input.readUTF();
+            if(this.serverProcessName.equals(serverName)) {
+                context.getAttachment().serverStarted(serverName);
+            } else {
+                throw new IOException("illegal server name " + serverName);
+            }
+
+        }
+    }
 
     protected static void safeWriteResponse(final Channel channel, final ManagementProtocolHeader header, final Exception error) {
         if(header.getType() == ManagementProtocol.TYPE_REQUEST) {

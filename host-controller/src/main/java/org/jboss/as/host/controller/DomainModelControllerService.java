@@ -493,12 +493,17 @@ public class DomainModelControllerService extends AbstractControllerService impl
             serverInventory.serverCommunicationRegistered(serverProcessName, channelHandler, callback);
         }
 
-        public void serverProcessAdded(String processName) {
-            serverInventory.serverProcessAdded(processName);
+        public void serverProcessAdded(String serverProcessName) {
+            serverInventory.serverProcessAdded(serverProcessName);
         }
 
         public void serverStartFailed(String serverProcessName) {
             serverInventory.serverStartFailed(serverProcessName);
+        }
+
+        @Override
+        public void serverStarted(String serverProcessName) {
+            serverInventory.serverStarted(serverProcessName);
         }
 
         public void serverProcessStopped(String serverProcessName) {

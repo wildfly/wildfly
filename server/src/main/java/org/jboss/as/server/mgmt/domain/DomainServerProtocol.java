@@ -29,6 +29,8 @@ public interface DomainServerProtocol {
     byte REGISTER_REQUEST = 0x00;
     byte PARAM_SERVER_NAME = 0x01;
 
+    byte SERVER_STARTED_REQUEST = 0x02;
+
     byte GET_SERVER_MODEL_REQUEST = 0x20;
     byte RETURN_SERVER_MODEL = 0x21;
     byte GET_SERVER_MODEL_RESPONSE = 0x22;

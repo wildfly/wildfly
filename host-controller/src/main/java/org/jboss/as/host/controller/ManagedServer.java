@@ -32,13 +32,21 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
+import org.jboss.as.controller.remote.RemoteProxyController;
 import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
+import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
+import org.jboss.as.protocol.mgmt.ManagementRequestHandlerFactory;
+import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.server.ServerStartTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.marshalling.Marshaller;
@@ -99,12 +107,13 @@ class ManagedServer {
     private final String serverName;
     private final String serverProcessName;
     private final String hostControllerName;
+    private final PathElement serverPath;
 
     private final InetSocketAddress managementSocket;
     private final ProcessControllerClient processControllerClient;
     private final ManagedServer.ManagedServerBootConfiguration bootConfiguration;
 
-    private ManagementChannelHandler channelAssociation;
+    private volatile RemoteProxyController proxyController;
     private volatile int respawnCount;
 
     private volatile InternalState requiredState = InternalState.STOPPED;
@@ -130,6 +139,7 @@ class ManagedServer {
         final byte[] authKey = new byte[16];
         new Random(new SecureRandom().nextLong()).nextBytes(authKey);
         this.authKey = authKey;
+        serverPath = PathElement.pathElement(RUNNING_SERVER, serverName);
     }
 
     byte[] getAuthKey() {
@@ -138,6 +148,10 @@ class ManagedServer {
 
     public String getServerName() {
         return serverName;
+    }
+
+    public ProxyController getProxyController() {
+        return proxyController;
     }
 
     /**
@@ -259,22 +273,36 @@ class ManagedServer {
     }
 
     /**
-     * Register the management channel.
      *
-     * @param task the transition task
-     * @param mgmtChannel the channel
+     * @param channelAssociation
+     * @return
      */
-    protected synchronized void callbackRegistered(final TransitionTask task, final ManagementChannelHandler mgmtChannel) {
-        channelAssociation = mgmtChannel;
-        // TODO use the mgmt protocol to signal if the server is started
+    protected synchronized RemoteProxyController channelRegistered(final ManagementChannelHandler channelAssociation) {
+        internalSetState(new TransitionTask() {
+            @Override
+            public void execute(final ManagedServer server) throws Exception {
+                server.proxyController = RemoteProxyController.create(channelAssociation,
+                    PathAddress.pathAddress(PathElement.pathElement(HOST, hostControllerName), serverPath),
+                    ProxyOperationAddressTranslator.SERVER);
+            }
+        // TODO we just check that we are in the correct state, perhaps introuce a new state
+        }, InternalState.SERVER_STARTING, InternalState.SERVER_STARTING);
+        return proxyController;
+    }
+
+    protected synchronized void serverStarted(final TransitionTask task) {
         internalSetState(task, InternalState.SERVER_STARTING, InternalState.SERVER_STARTED);
+    }
+
+    protected synchronized void serverStartFailed() {
+        internalSetState(null, InternalState.SERVER_STARTING, InternalState.FAILED);
     }
 
     /**
      * Unregister the mgmt channel.
      */
     protected synchronized void callbackUnregistered() {
-        this.channelAssociation = null;
+        this.proxyController = null;
     }
 
     /**

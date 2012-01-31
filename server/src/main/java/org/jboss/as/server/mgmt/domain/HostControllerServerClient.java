@@ -96,6 +96,8 @@ public class HostControllerServerClient implements Service<HostControllerServerC
                 public void completed(Void result) {
                     remoteFileRepositoryValue.getValue().setRemoteFileRepositoryExecutor(new RemoteFileRepositoryExecutorImpl());
                     context.complete();
+                    // TODO proper notification
+                    started();
                 }
 
                 @Override
@@ -140,6 +142,18 @@ public class HostControllerServerClient implements Service<HostControllerServerC
         return serverProcessName;
     }
 
+    public synchronized void started() {
+        final ManagementChannelHandler handler = this.handler;
+        if(handler == null) {
+            throw new IllegalStateException();
+        }
+        try {
+            handler.executeRequest(new ServerStartedRequest(), null);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     /** {@inheritDoc} */
     public synchronized HostControllerServerClient getValue() throws IllegalStateException {
         return this;
@@ -172,7 +186,31 @@ public class HostControllerServerClient implements Service<HostControllerServerC
 
         @Override
         public void handleRequest(DataInput input, ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<Void> voidManagementRequestContext) throws IOException {
+            // TODO don't require response ?
             resultHandler.done(null);
+        }
+
+    }
+
+    public class ServerStartedRequest extends AbstractManagementRequest<Void, Void> {
+
+        @Override
+        public byte getOperationType() {
+            return DomainServerProtocol.SERVER_STARTED_REQUEST;
+        }
+
+        @Override
+        protected void sendRequest(ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<Void> voidManagementRequestContext, FlushableDataOutput output) throws IOException {
+            output.write(DomainServerProtocol.PARAM_SERVER_NAME);
+            output.writeUTF(serverProcessName);
+            // TODO send some status information
+            // TODO just send a simple message, since don't wait for a response anyway
+            resultHandler.done(null);
+        }
+
+        @Override
+        public void handleRequest(DataInput input, ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<Void> voidManagementRequestContext) throws IOException {
+            //
         }
 
     }
