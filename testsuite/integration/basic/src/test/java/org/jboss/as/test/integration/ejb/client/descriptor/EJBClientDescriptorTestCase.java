@@ -134,9 +134,9 @@ public class EJBClientDescriptorTestCase {
 
         if (!outboundConnectionCreated) {
             final Map<String, String> connectionCreationOptions = new HashMap<String, String>();
-            connectionCreationOptions.put("SSL_ENABLED", "false");
-            connectionCreationOptions.put("SASL_POLICY_NOANONYMOUS", "false");
-
+            connectionCreationOptions.put("org.xnio.Options.SSL_ENABLED", "false");
+            connectionCreationOptions.put("org.xnio.Options.SASL_POLICY_NOANONYMOUS", "false");
+            logger.info("Creatng remote outbound connection " + outboundConnectionName);
             EJBManagementUtil.createRemoteOutboundConnection("localhost", 9999, outboundConnectionName, outboundSocketName, connectionCreationOptions, Authentication.getCallbackHandler());
             outboundConnectionCreated = true;
             logger.info("Created remote outbound connection " + outboundConnectionName);

@@ -52,10 +52,8 @@ abstract class AbstractOutboundConnectionResourceDefinition extends SimpleResour
     }
 
 
-    @Override
-    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerSubModel(PropertyResource.INSTANCE);
-    }
+
+    public abstract void registerChildren(ManagementResourceRegistration resourceRegistration);
 
     /**
      * Returns the write attribute handler for the <code>attribute</code>

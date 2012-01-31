@@ -121,10 +121,10 @@ public class RemotingExtension implements Extension {
         subsystem.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE, GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
         final ManagementResourceRegistration connector = subsystem.registerSubModel(ConnectorResource.INSTANCE);
-        connector.registerSubModel(PropertyResource.INSTANCE);
+        connector.registerSubModel(PropertyResource.INSTANCE_CONNECTOR);
         final ManagementResourceRegistration sasl = connector.registerSubModel(SaslResource.INSTANCE);
         sasl.registerSubModel(SaslPolicyResource.INSTANCE);
-        sasl.registerSubModel(PropertyResource.INSTANCE);
+        sasl.registerSubModel(PropertyResource.INSTANCE_CONNECTOR);
 
         // remote outbound connection
         subsystem.registerSubModel(RemoteOutboundConnnectionResourceDefinition.INSTANCE);
