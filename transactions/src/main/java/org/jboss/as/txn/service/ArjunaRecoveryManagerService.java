@@ -47,6 +47,7 @@ import com.arjuna.ats.internal.jts.recovery.transactions.ServerTransactionRecove
 import com.arjuna.ats.internal.jts.recovery.transactions.TopLevelTransactionRecoveryModule;
 import com.arjuna.ats.internal.txoj.recovery.TORecoveryModule;
 import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
+import com.arjuna.orbportability.internal.utils.PostInitLoader;
 
 import static org.jboss.as.txn.TransactionMessages.MESSAGES;
 
@@ -111,6 +112,8 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
             this.recoveryManagerService = recoveryManagerService;
         } else {
             final ORB orb = orbInjector.getValue();
+            new PostInitLoader(PostInitLoader.generateORBPropertyName("com.arjuna.orbportability.orb"), orb);
+
             recoveryExtensions.add(TopLevelTransactionRecoveryModule.class.getName());
             recoveryExtensions.add(ServerTransactionRecoveryModule.class.getName());
             recoveryExtensions.add(com.arjuna.ats.internal.jta.recovery.jts.XARecoveryModule.class.getName());

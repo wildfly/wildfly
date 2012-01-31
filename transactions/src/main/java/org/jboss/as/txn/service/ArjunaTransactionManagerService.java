@@ -22,6 +22,8 @@
 
 package org.jboss.as.txn.service;
 
+import static org.jboss.as.txn.TransactionMessages.MESSAGES;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -47,8 +49,7 @@ import com.arjuna.ats.internal.jta.recovery.arjunacore.JTANodeNameXAResourceOrph
 import com.arjuna.ats.internal.jta.recovery.arjunacore.JTATransactionLogXAResourceOrphanFilter;
 import com.arjuna.ats.jta.common.JTAEnvironmentBean;
 import com.arjuna.ats.jta.common.jtaPropertyManager;
-
-import static org.jboss.as.txn.TransactionMessages.MESSAGES;
+import com.arjuna.orbportability.internal.utils.PostInitLoader;
 
 /**
  * A service for the proprietary Arjuna {@link com.arjuna.ats.jbossatx.jta.TransactionManagerService}
@@ -126,6 +127,8 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
             value = service;
         } else {
             final ORB orb = orbInjector.getValue();
+            new PostInitLoader(PostInitLoader.generateORBPropertyName("com.arjuna.orbportability.orb"), orb);
+
             // IIOP is enabled, so fire up JTS mode.
             jtaEnvironmentBean.setTransactionManagerClassName(com.arjuna.ats.jbossatx.jts.TransactionManagerDelegate.class.getName());
             jtaEnvironmentBean.setTransactionSynchronizationRegistryClassName(com.arjuna.ats.internal.jta.transaction.jts.TransactionSynchronizationRegistryImple.class.getName());
