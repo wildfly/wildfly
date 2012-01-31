@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.ejb.timerservice.simple;
 
+import java.util.Date;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -30,11 +32,13 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import javax.ejb.Timer;
+import javax.ejb.TimerConfig;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 /**
- * Tests that an @Timout method is called when a timer is created programatically.
+ * Tests that an @Timeout method is called when a timer is created programatically.
  *
  * @author Stuart Douglas
  */
@@ -46,24 +50,68 @@ public class SimpleTimerServiceTestCase {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "testTimerServiceSimple.war");
         war.addPackage(SimpleTimerServiceTestCase.class.getPackage());
         return war;
-
     }
 
     @Test
     public void testAnnotationTimeoutMethod() throws NamingException {
         InitialContext ctx = new InitialContext();
         AnnotationTimerServiceBean bean = (AnnotationTimerServiceBean) ctx.lookup("java:module/" + AnnotationTimerServiceBean.class.getSimpleName());
-        bean.createTimer();
+        bean.resetTimerServiceCalled();
+        bean.getTimerService().createTimer(100, "info");
         Assert.assertTrue(AnnotationTimerServiceBean.awaitTimerCall());
+        
+        bean.resetTimerServiceCalled();
+        long ts = (new Date()).getTime() + 100L;
+        bean.getTimerService().createTimer(new Date(ts), "info");
+        Assert.assertTrue(AnnotationTimerServiceBean.awaitTimerCall());
+      
+        Assert.assertEquals(bean.getTimerInfo(), "info");
+        Assert.assertFalse(bean.isCalendar());
+        Assert.assertTrue(bean.isPersistent());
     }
 
     @Test
     public void testTimedObjectTimeoutMethod() throws NamingException {
         InitialContext ctx = new InitialContext();
         TimedObjectTimerServiceBean bean = (TimedObjectTimerServiceBean) ctx.lookup("java:module/" + TimedObjectTimerServiceBean.class.getSimpleName());
-        bean.createTimer();
+        bean.resetTimerServiceCalled();
+        bean.getTimerService().createTimer(100, "info");
         Assert.assertTrue(TimedObjectTimerServiceBean.awaitTimerCall());
+        
+        bean.resetTimerServiceCalled();
+        long ts = (new Date()).getTime() + 100L;
+        TimerConfig timerConfig = new TimerConfig();
+        timerConfig.setInfo("info");
+        bean.getTimerService().createSingleActionTimer(new Date(ts), timerConfig);
+        Assert.assertTrue(AnnotationTimerServiceBean.awaitTimerCall());
+        
+        Assert.assertEquals(bean.getTimerInfo(), "info");
+        Assert.assertFalse(bean.isCalendar());
+        Assert.assertTrue(bean.isPersistent());
     }
 
+    @Test
+    public void testIntervalTimer() throws NamingException {
+        InitialContext ctx = new InitialContext();
+        TimerConfig timerConfig = new TimerConfig();
+        timerConfig.setInfo("info");
+        
+        AnnotationTimerServiceBean bean1 = (AnnotationTimerServiceBean) ctx.lookup("java:module/" + AnnotationTimerServiceBean.class.getSimpleName());
+        bean1.resetTimerServiceCalled();
+        long ts = (new Date()).getTime() + 100L;
+        Timer timer1 = bean1.getTimerService().createIntervalTimer(new Date(ts), 100, timerConfig);
+        Assert.assertTrue(AnnotationTimerServiceBean.awaitTimerCall());
+        bean1.resetTimerServiceCalled();
+        Assert.assertTrue(AnnotationTimerServiceBean.awaitTimerCall());
+        timer1.cancel();
+        
+        TimedObjectTimerServiceBean bean2 = (TimedObjectTimerServiceBean) ctx.lookup("java:module/" + TimedObjectTimerServiceBean.class.getSimpleName());
+        bean2.resetTimerServiceCalled();
+        Timer timer2 = bean2.getTimerService().createIntervalTimer(100, 100, timerConfig);
+        Assert.assertTrue(TimedObjectTimerServiceBean.awaitTimerCall());
+        bean2.resetTimerServiceCalled();
+        Assert.assertTrue(TimedObjectTimerServiceBean.awaitTimerCall());
+        timer2.cancel();
+    }
 
 }

@@ -22,10 +22,14 @@
 package org.jboss.as.test.integration.ejb.timerservice.simple;
 
 import javax.annotation.Resource;
+import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TimedObject;
 import javax.ejb.Timer;
 import javax.ejb.TimerService;
+
+import org.python.modules.synchronize;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -35,15 +39,24 @@ import java.util.concurrent.TimeUnit;
 @Stateless
 public class TimedObjectTimerServiceBean implements TimedObject {
 
-    private static final CountDownLatch latch = new CountDownLatch(1);
+    private static CountDownLatch latch = new CountDownLatch(1);
 
     private static boolean timerServiceCalled = false;
 
     @Resource
-    private TimerService timerService;
+    private SessionContext sessionContext;
 
-    public void createTimer() {
-        timerService.createTimer(100, null);
+    private TimerService timerService;
+    
+    private String timerInfo;
+    private boolean isPersistent;
+    private boolean isCalendar;
+
+    public synchronized TimerService getTimerService() {
+        if (timerService == null) {
+            timerService = (TimerService) sessionContext.lookup("java:comp/TimerService");
+        }
+        return timerService;
     }
 
     public static boolean awaitTimerCall() {
@@ -55,8 +68,27 @@ public class TimedObjectTimerServiceBean implements TimedObject {
         return timerServiceCalled;
     }
 
+    public void resetTimerServiceCalled() {
+        timerServiceCalled = false;
+        latch = new CountDownLatch(1);
+    }
+    
+    public String getTimerInfo() {
+        return timerInfo;
+    }
+    public boolean isPersistent() {
+        return isPersistent;
+    }
+    public boolean isCalendar() {
+        return isCalendar;
+    }
+
     @Override
     public void ejbTimeout(final Timer timer) {
+        timerInfo = (String) timer.getInfo();
+        isPersistent = timer.isPersistent();
+        isCalendar = timer.isCalendarTimer();
+
         timerServiceCalled = true;
         latch.countDown();
     }
