@@ -22,31 +22,21 @@
 
 package org.jboss.as.domain.controller.operations.coordination;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
-import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.dmr.ModelNode;
 
@@ -85,7 +75,9 @@ public class OperationSlaveStepHandler {
             throw new OperationFailedException(new ModelNode().set(MESSAGES.noHandlerForOperation(operationName, originalAddress)));
         }
 
-        HostControllerExecutionSupport hostControllerExecutionSupport = parseOperation(operation, null, new LazyDomainModelProvider(context));
+        HostControllerExecutionSupport hostControllerExecutionSupport =
+                HostControllerExecutionSupport.Factory.create(operation, localHostControllerInfo.getLocalHostName(),
+                        new LazyDomainModelProvider(context), ignoredDomainResourceRegistry);
         ModelNode domainOp = hostControllerExecutionSupport.getDomainOperation();
 
         if (domainOp != null) {
@@ -114,76 +106,8 @@ public class OperationSlaveStepHandler {
         }
     }
 
-    private String getLocalHostName() {
-        return localHostControllerInfo.getLocalHostName();
-    }
-
-    private HostControllerExecutionSupport parseOperation(ModelNode operation, Integer index, LazyDomainModelProvider domainModelProvider) {
-
-        String targetHost = null;
-        String runningServerTarget = null;
-        ModelNode runningServerOp = null;
-
-        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        if (address.size() > 0) {
-            PathElement first = address.getElement(0);
-            if (HOST.equals(first.getKey())) {
-                targetHost = first.getValue();
-                if (address.size() > 1 && RUNNING_SERVER.equals(address.getElement(1).getKey())) {
-                    runningServerTarget = address.getElement(1).getValue();
-                    ModelNode relativeAddress = new ModelNode();
-                    for (int i = 2; i < address.size(); i++) {
-                        PathElement element = address.getElement(i);
-                        relativeAddress.add(element.getKey(), element.getValue());
-                    }
-                    runningServerOp = operation.clone();
-                    runningServerOp.get(OP_ADDR).set(relativeAddress);
-                }
-            }
-        }
-
-        HostControllerExecutionSupport result;
-
-        if (targetHost != null && !getLocalHostName().equals(targetHost)) {
-            // ParsedOp representing another host
-            result = HostControllerExecutionSupport.Factory.createIgnoredOperationSupport(index);
-        }
-        else if (runningServerTarget != null) {
-            // ParsedOp representing a server op
-            final ModelNode domainModel = domainModelProvider.getDomainModel();
-            final String serverGroup = domainModel.require(HOST).require(targetHost).require(SERVER_CONFIG).require(runningServerTarget).require(GROUP).asString();
-            final ServerIdentity serverIdentity = new ServerIdentity(targetHost, serverGroup, runningServerTarget);
-            result = HostControllerExecutionSupport.Factory.createDirectServerOperationExecutionSupport(index,
-                    serverIdentity, runningServerOp);
-        }
-        else if (COMPOSITE.equals(operation.require(OP).asString())) {
-            // Recurse into the steps to see what's required
-            if (operation.hasDefined(STEPS)) {
-                int stepNum = 0;
-                List<HostControllerExecutionSupport> parsedSteps = new ArrayList<HostControllerExecutionSupport>();
-                for (ModelNode step : operation.get(STEPS).asList()) {
-                    parsedSteps.add(parseOperation(step, stepNum++, domainModelProvider));
-                }
-                result = HostControllerExecutionSupport.Factory.createCompositeOperationExecutionSupport(index, parsedSteps);
-            }
-            else {
-                // Will fail later
-                result = HostControllerExecutionSupport.Factory.createDomainOperationExecutionSupport(index, operation, address);
-            }
-        }
-        else if (targetHost == null && ignoredDomainResourceRegistry.isResourceExcluded(address)) {
-            result = HostControllerExecutionSupport.Factory.createIgnoredOperationSupport(index);
-        }
-        else {
-            // ParsedOp for this host
-            result = HostControllerExecutionSupport.Factory.createDomainOperationExecutionSupport(index, operation, address);
-        }
-
-        return result;
-    }
-
     /** Lazily provides a copy of the domain model */
-    private static class LazyDomainModelProvider {
+    private static class LazyDomainModelProvider implements HostControllerExecutionSupport.DomainModelProvider {
         private final OperationContext context;
         private ModelNode domainModel;
 
@@ -191,7 +115,7 @@ public class OperationSlaveStepHandler {
             this.context = context;
         }
 
-        private ModelNode getDomainModel() {
+        public ModelNode getDomainModel() {
             if (domainModel == null) {
                 domainModel = Resource.Tools.readModel(context.getRootResource());
             }
