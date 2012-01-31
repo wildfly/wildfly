@@ -6,20 +6,19 @@
 
     <target name="build-iiop" description="Builds server configurations for IIOP tests">
 
-        <echo message="Building config iiop-client"/>
+        <echo message="Building config jbossas-iiop-client"/>
         <copy todir="target/jbossas-iiop-client">
             <fileset dir="target/jbossas"/>
         </copy>
-        <add-jts name="iiop-client"/>
+        <ts.config-as.add-jts name="jbossas-iiop-client"/>
 
 
-        <echo message="Building config iiop-server"/>
-        <build-server-config name="iiop-server"/>
-        <copy todir="target/iiop-server">
+        <echo message="Building config jbossas-iiop-server"/>
+        <copy todir="target/jbossas-iiop-server">
             <fileset dir="target/jbossas"/>
         </copy>
-        <add-jts name="iiop-server"/>
-        <add-port-offset name="iiop-server" offset="100" nativePort="9999" httpPort="9990"/>
+        <ts.config-as.add-jts name="jbossas-iiop-server"/>
+        <ts.config-as.add-port-offset name="jbossas-iiop-server" offset="100" nativePort="9999" httpPort="9990"/>
 
     </target>
 
