@@ -74,6 +74,7 @@ import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -716,7 +717,9 @@ public class GlobalOperationHandlers {
             if (operations.size() > 0) {
                 for (final Entry<String, OperationEntry> entry : operations.entrySet()) {
                     if (entry.getValue().getType() == OperationEntry.EntryType.PUBLIC) {
-                        result.add(entry.getKey());
+                        if ( context.getProcessType() == ProcessType.DOMAIN_SERVER ? entry.getValue().getFlags().contains(Flag.RUNTIME_ONLY) : true ) {
+                            result.add(entry.getKey());
+                        }
                     }
                 }
             } else {
@@ -739,7 +742,7 @@ public class GlobalOperationHandlers {
 
             final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
             OperationEntry operationEntry = registry.getOperationEntry(PathAddress.EMPTY_ADDRESS, operationName);
-            if (operationEntry == null) {
+            if (operationEntry == null || (context.getProcessType() == ProcessType.DOMAIN_SERVER && !operationEntry.getFlags().contains(Flag.RUNTIME_ONLY))) {
                 throw new OperationFailedException(new ModelNode().set(MESSAGES.operationNotRegistered(operationName,
                         PathAddress.pathAddress(operation.require(OP_ADDR)))));
             } else {
@@ -828,8 +831,10 @@ public class GlobalOperationHandlers {
             if (ops) {
                 for (final Map.Entry<String, OperationEntry> entry : registry.getOperationDescriptions(PathAddress.EMPTY_ADDRESS, inheritedOps).entrySet()) {
                     if (entry.getValue().getType() == OperationEntry.EntryType.PUBLIC) {
-                        final DescriptionProvider provider = entry.getValue().getDescriptionProvider();
-                        operations.put(entry.getKey(), provider.getModelDescription(locale));
+                        if ( context.getProcessType() == ProcessType.DOMAIN_SERVER ? entry.getValue().getFlags().contains(Flag.RUNTIME_ONLY) : true ) {
+                            final DescriptionProvider provider = entry.getValue().getDescriptionProvider();
+                            operations.put(entry.getKey(), provider.getModelDescription(locale));
+                        }
                     }
                 }
             }

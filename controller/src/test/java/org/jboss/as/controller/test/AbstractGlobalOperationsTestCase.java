@@ -60,6 +60,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
@@ -78,6 +79,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -130,14 +132,14 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
 
     @Override
     protected void initModel(ManagementResourceRegistration rootRegistration) {
-        rootRegistration.registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
-        rootRegistration.registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
-        rootRegistration.registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true);
-        rootRegistration.registerOperationHandler(READ_CHILDREN_NAMES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_NAMES, CommonProviders.READ_CHILDREN_NAMES_PROVIDER, true);
-        rootRegistration.registerOperationHandler(READ_CHILDREN_TYPES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_TYPES, CommonProviders.READ_CHILDREN_TYPES_PROVIDER, true);
-        rootRegistration.registerOperationHandler(READ_CHILDREN_RESOURCES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_RESOURCES, CommonProviders.READ_CHILDREN_RESOURCES_PROVIDER, true);
-        rootRegistration.registerOperationHandler(READ_OPERATION_NAMES_OPERATION, GlobalOperationHandlers.READ_OPERATION_NAMES, CommonProviders.READ_OPERATION_NAMES_PROVIDER, true);
-        rootRegistration.registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true);
+        rootRegistration.registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true, EnumSet.of(Flag.RUNTIME_ONLY));
+        rootRegistration.registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true, EnumSet.of(Flag.RUNTIME_ONLY));
+        rootRegistration.registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true, EnumSet.of(Flag.RUNTIME_ONLY));
+        rootRegistration.registerOperationHandler(READ_CHILDREN_NAMES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_NAMES, CommonProviders.READ_CHILDREN_NAMES_PROVIDER, true, EnumSet.of(Flag.RUNTIME_ONLY));
+        rootRegistration.registerOperationHandler(READ_CHILDREN_TYPES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_TYPES, CommonProviders.READ_CHILDREN_TYPES_PROVIDER, true, EnumSet.of(Flag.RUNTIME_ONLY));
+        rootRegistration.registerOperationHandler(READ_CHILDREN_RESOURCES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_RESOURCES, CommonProviders.READ_CHILDREN_RESOURCES_PROVIDER, true, EnumSet.of(Flag.RUNTIME_ONLY));
+        rootRegistration.registerOperationHandler(READ_OPERATION_NAMES_OPERATION, GlobalOperationHandlers.READ_OPERATION_NAMES, CommonProviders.READ_OPERATION_NAMES_PROVIDER, true, EnumSet.of(Flag.RUNTIME_ONLY));
+        rootRegistration.registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true, EnumSet.of(Flag.RUNTIME_ONLY));
         rootRegistration.registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
         rootRegistration.registerOperationHandler("setup", new OperationStepHandler() {
             @Override
@@ -491,7 +493,7 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
             assertTrue(ops.contains(READ_OPERATION_NAMES_OPERATION));
             assertTrue(ops.contains(READ_RESOURCE_DESCRIPTION_OPERATION));
             assertTrue(ops.contains(READ_RESOURCE_OPERATION));
-            assertTrue(ops.contains(WRITE_ATTRIBUTE_OPERATION));
+            assertEquals(processType == ProcessType.DOMAIN_SERVER ? false : true, ops.contains(WRITE_ATTRIBUTE_OPERATION));
             for (String op : ops) {
                 assertEquals(op, result.require(OPERATIONS).require(op).require(OPERATION_NAME).asString());
             }
@@ -559,9 +561,10 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
         if (operations) {
             assertTrue(result.require(OPERATIONS).isDefined());
             Set<String> ops = result.require(OPERATIONS).keys();
-            assertEquals(11, ops.size());
-            assertTrue(ops.contains("testA1-1"));
-            assertTrue(ops.contains("testA1-2"));
+            assertEquals(processType == ProcessType.DOMAIN_SERVER ? 8 : 11, ops.size());
+            boolean runtimeOnly = processType != ProcessType.DOMAIN_SERVER;
+            assertEquals(runtimeOnly, ops.contains("testA1-1"));
+            assertEquals(runtimeOnly, ops.contains("testA1-2"));
             assertTrue(ops.contains(READ_RESOURCE_OPERATION));
             assertTrue(ops.contains(READ_ATTRIBUTE_OPERATION));
             assertTrue(ops.contains(READ_RESOURCE_DESCRIPTION_OPERATION));
@@ -570,7 +573,7 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
             assertTrue(ops.contains(READ_CHILDREN_RESOURCES_OPERATION));
             assertTrue(ops.contains(READ_OPERATION_NAMES_OPERATION));
             assertTrue(ops.contains(READ_OPERATION_DESCRIPTION_OPERATION));
-            assertTrue(ops.contains(WRITE_ATTRIBUTE_OPERATION));
+            assertEquals(runtimeOnly, ops.contains(WRITE_ATTRIBUTE_OPERATION));
 
         } else {
             assertFalse(result.get(OPERATIONS).isDefined());
@@ -599,7 +602,7 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
         if (result.has(OPERATIONS)) {
             assertTrue(result.require(OPERATIONS).isDefined());
             Set<String> ops = result.require(OPERATIONS).keys();
-            assertEquals(9, ops.size());
+            assertEquals(processType == ProcessType.DOMAIN_SERVER ? 8 : 9, ops.size());
             assertTrue(ops.contains(READ_RESOURCE_OPERATION));
             assertTrue(ops.contains(READ_ATTRIBUTE_OPERATION));
             assertTrue(ops.contains(READ_RESOURCE_DESCRIPTION_OPERATION));
@@ -608,7 +611,7 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
             assertTrue(ops.contains(READ_CHILDREN_RESOURCES_OPERATION));
             assertTrue(ops.contains(READ_OPERATION_NAMES_OPERATION));
             assertTrue(ops.contains(READ_OPERATION_DESCRIPTION_OPERATION));
-            assertTrue(ops.contains(WRITE_ATTRIBUTE_OPERATION));
+            assertEquals(processType != ProcessType.DOMAIN_SERVER, ops.contains(WRITE_ATTRIBUTE_OPERATION));
 
         }
 
@@ -624,7 +627,7 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
         if (result.has(OPERATIONS)) {
             assertTrue(result.require(OPERATIONS).isDefined());
             Set<String> ops = result.require(OPERATIONS).keys();
-            assertEquals(9, ops.size());
+            assertEquals(processType == ProcessType.DOMAIN_SERVER ? 8 : 9, ops.size());
             assertTrue(ops.contains(READ_RESOURCE_OPERATION));
             assertTrue(ops.contains(READ_ATTRIBUTE_OPERATION));
             assertTrue(ops.contains(READ_RESOURCE_DESCRIPTION_OPERATION));
@@ -633,7 +636,7 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
             assertTrue(ops.contains(READ_CHILDREN_RESOURCES_OPERATION));
             assertTrue(ops.contains(READ_OPERATION_NAMES_OPERATION));
             assertTrue(ops.contains(READ_OPERATION_DESCRIPTION_OPERATION));
-            assertTrue(ops.contains(WRITE_ATTRIBUTE_OPERATION));
+            assertEquals(processType != ProcessType.DOMAIN_SERVER, ops.contains(WRITE_ATTRIBUTE_OPERATION));
         }
     }
 
