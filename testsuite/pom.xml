@@ -264,6 +264,8 @@
                 <configuration>
                     <compilerArgument>-Djava.endorsed.dirs=${project.build.directory}/endorsed</compilerArgument>
                 </configuration>
+                <!-- Don't compile src/main/java - nothing to do. -->
+                <executions><execution><id>default-compile</id><phase>none</phase></execution></executions>
             </plugin>
 
             <!--
@@ -461,6 +463,13 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <executions><execution><id>check-style</id><phase>none</phase></execution></executions>
+            </plugin>
+            
+            <!-- Don't install - nothing to do. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <executions><execution><id>default-install</id><phase>none</phase></execution></executions>
             </plugin>
 
         </plugins>
