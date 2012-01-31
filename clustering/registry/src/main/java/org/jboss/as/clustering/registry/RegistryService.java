@@ -161,7 +161,8 @@ public class RegistryService<K, V> extends AsynchronousService<Registry<K, V>> i
             Operation<Void> operation = new Operation<Void>() {
                 @Override
                 public Void invoke(Cache<Address, Map.Entry<K, V>> cache) {
-                    cache.getAdvancedCache().withFlags(Flag.SKIP_REMOTE_LOOKUP).remove(getLocalAddress(cache));
+                    // Add SKIP_LOCKING flag to so that we aren't blocked by state transfer lock
+                    cache.getAdvancedCache().withFlags(Flag.SKIP_REMOTE_LOOKUP, Flag.SKIP_LOCKING).removeAsync(getLocalAddress(cache));
                     return null;
                 }
             };
@@ -192,8 +193,7 @@ public class RegistryService<K, V> extends AsynchronousService<Registry<K, V>> i
                     }
                 }
                 // Restore our entry in cache if we are joining (result of a split/merge)
-                Address localAddress = event.getLocalAddress();
-                if (!oldMembers.contains(localAddress) && newMembers.contains(localAddress)) {
+                if (event.isMergeView()) {
                     RegistryService.this.addCacheEntry(cache);
                 }
                 return removed;
