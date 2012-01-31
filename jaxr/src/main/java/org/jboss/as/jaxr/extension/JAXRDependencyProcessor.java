@@ -32,6 +32,7 @@ import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
+import org.jboss.modules.filter.PathFilters;
 
 /**
  * Deployment processor which adds module dependencies for JAXR.
@@ -41,7 +42,7 @@ import org.jboss.modules.ModuleLoader;
  */
 public class JAXRDependencyProcessor implements DeploymentUnitProcessor {
 
-    public static ModuleIdentifier APACHE_SCOUT = ModuleIdentifier.create("org.apache.ws.scout");
+    public static ModuleIdentifier APACHE_SCOUT = ModuleIdentifier.create("org.apache.juddi.scout");
     public static ModuleIdentifier JBOSS_JAXR = ModuleIdentifier.create("org.jboss.as.jaxr");
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -49,13 +50,14 @@ public class JAXRDependencyProcessor implements DeploymentUnitProcessor {
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-        addDepdenency(moduleSpecification, moduleLoader, APACHE_SCOUT);
-        addDepdenency(moduleSpecification, moduleLoader, JBOSS_JAXR);
-
+        addDependency(moduleSpecification, moduleLoader, APACHE_SCOUT);
+        addDependency(moduleSpecification, moduleLoader, JBOSS_JAXR);
     }
 
-    private void addDepdenency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader, ModuleIdentifier moduleIdentifier) {
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, true));
+    private void addDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader, ModuleIdentifier moduleIdentifier) {
+        ModuleDependency moduleDep = new ModuleDependency(moduleLoader, moduleIdentifier, false, false, true);
+        moduleDep.addImportFilter(PathFilters.getMetaInfFilter(), true);
+        moduleSpecification.addSystemDependency(moduleDep);
     }
 
     @Override

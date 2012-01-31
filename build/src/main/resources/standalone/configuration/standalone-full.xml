@@ -11,6 +11,7 @@
         <extension module="org.jboss.as.ee"/>
         <extension module="org.jboss.as.ejb3"/>
         <extension module="org.jboss.as.jacorb"/>
+        <extension module="org.jboss.as.jaxr"/>
         <extension module="org.jboss.as.jaxrs"/>
         <extension module="org.jboss.as.jdr"/>
         <extension module="org.jboss.as.jmx"/>
@@ -171,6 +172,10 @@
             </cache-container>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jacorb:1.1"/>
+        <subsystem xmlns="urn:jboss:domain:jaxr:1.0">
+            <connection-factory jndi-name="java:jboss/jaxr/ConnectionFactory"/>
+            <properties/>
+        </subsystem>
         <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
         <subsystem xmlns="urn:jboss:domain:jca:1.1">
             <archive-validation enabled="false"/>

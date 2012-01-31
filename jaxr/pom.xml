@@ -36,10 +36,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.apache.ws.scout</groupId>
-            <artifactId>scout</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-naming</artifactId>
         </dependency>
@@ -51,6 +47,10 @@
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-subsystem-test</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.juddi.scout</groupId>
+            <artifactId>scout</artifactId>
         </dependency>
     </dependencies>
 </project>

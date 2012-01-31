@@ -465,6 +465,10 @@
             <maven-resource group="commons-collections" artifact="commons-collections" />
         </module-def>
 
+      <module-def name="org.apache.commons.configuration">
+          <maven-resource group="commons-configuration" artifact="commons-configuration" />
+      </module-def>
+
         <module-def name="org.apache.commons.io">
             <maven-resource group="commons-io" artifact="commons-io"/>
         </module-def>
@@ -522,6 +526,14 @@
         <module-def name="org.apache.james.mime4j">
             <maven-resource group="org.apache.james" artifact="apache-mime4j"/>
         </module-def>
+    	
+        <module-def name="org.apache.juddi.juddi-client">
+            <maven-resource group="org.apache.juddi" artifact="juddi-client"/>
+        </module-def>
+
+        <module-def name="org.apache.juddi.uddi-ws">
+            <maven-resource group="org.apache.juddi" artifact="uddi-ws"/>
+        </module-def>
 
         <module-def name="org.apache.neethi">
             <maven-resource group="org.apache.neethi" artifact="neethi"/>
@@ -535,8 +547,8 @@
             <maven-resource group="org.apache.velocity" artifact="velocity" />
         </module-def>
 
-        <module-def name="org.apache.ws.scout">
-            <maven-resource group="org.apache.ws.scout" artifact="scout"/>
+        <module-def name="org.apache.juddi.scout">
+            <maven-resource group="org.apache.juddi.scout" artifact="scout"/>
         </module-def>
 
         <module-def name="org.apache.xalan">

@@ -27,12 +27,14 @@ package org.jboss.as.jaxr;
  * An enumeration of the supported JAXR subsystem namespaces.
  *
  * @author Thomas.Diesler@jboss.com
+ * @aithor Kurt.Stam@jboss.com
  * @since 07-Nov-2011
  */
 public interface ModelConstants {
 
-    String CONNECTION_FACTORY = "connection-factory";
-    String PUBLISH_URL = "publish-url";
-    String QUERY_URL = "query-url";
+    String CONNECTION_FACTORY = "jndi-name";
+    String CONNECTION_FACTORY_IMPL = "class";
+    String VALUE = "value";
+    String PROPERTY = "property";
 
 }

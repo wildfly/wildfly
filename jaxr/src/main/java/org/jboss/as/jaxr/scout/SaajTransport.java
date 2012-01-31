@@ -23,6 +23,7 @@ package org.jboss.as.jaxr.scout;
 
 import org.apache.ws.scout.registry.RegistryException;
 import org.apache.ws.scout.transport.Transport;
+import org.apache.ws.scout.transport.TransportException;
 import org.jboss.logging.Logger;
 import org.jboss.util.xml.DOMWriter;
 import org.w3c.dom.Document;
@@ -50,6 +51,8 @@ import java.io.StringWriter;
 import java.net.URI;
 
 /**
+ * @deprecated, this class will be moved into the Scout project.
+ *
  * Transport based on SAAJ
  *
  * @author Anil Saldhana (anil@apache.org)
@@ -61,7 +64,7 @@ public class SaajTransport implements Transport {
 
     private static Logger log = Logger.getLogger(SaajTransport.class);
 
-    public Element send(Element request, URI endpointURL) throws RegistryException {
+    public Element send(Element request, URI endpointURL) throws TransportException {
         String requestMessage = DOMWriter.printNode(request, true);
         log.debugf("Request message: %s\n%s", endpointURL, requestMessage);
 
@@ -83,14 +86,14 @@ public class SaajTransport implements Transport {
             response = getFirstChildElement(soapBody);
         } catch (Exception ex) {
             log.errorf(ex, "Exception::");
-            throw new RegistryException(ex);
+            throw new TransportException(ex);
         }
 
         log.debugf("Response message: %s", DOMWriter.printNode(response, true));
         return response;
     }
 
-    public String send(String request, URI endpointURL) throws RegistryException {
+    public String send(String request, URI endpointURL) throws TransportException {
         Element reqEl = getElement(request);
         Element respEl = this.send(reqEl, endpointURL);
         StringWriter sw = new StringWriter();
