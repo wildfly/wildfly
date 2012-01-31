@@ -49,8 +49,7 @@ public class SnapshotTakeHandler implements OperationStepHandler, DescriptionPro
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         try {
             String name = persister.snapshot();
-            ModelNode result = context.getResult();
-            result.get().set(name);
+            context.getResult().get().set(name);
             context.completeStep();
         } catch (ConfigurationPersistenceException e) {
             throw new OperationFailedException(e.getMessage(), new ModelNode().set(e.getMessage()));
