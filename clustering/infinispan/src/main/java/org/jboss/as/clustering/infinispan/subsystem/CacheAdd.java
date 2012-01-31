@@ -176,7 +176,8 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         ModelNode container = rootResource.navigate(containerAddress).getModel();
 
         // get default cache of the container and start mode
-        String defaultCache = container.require(ModelKeys.DEFAULT_CACHE).asString();
+        // AS7-3488 make default-cache no required attribute
+        String defaultCache = container.get(ModelKeys.DEFAULT_CACHE).asString();
         ServiceController.Mode initialMode = model.hasDefined(ModelKeys.START) ? StartMode.valueOf(model.get(ModelKeys.START).asString()).getMode() : ServiceController.Mode.ON_DEMAND;
 
         // install the cache configuration service (configures a cache)

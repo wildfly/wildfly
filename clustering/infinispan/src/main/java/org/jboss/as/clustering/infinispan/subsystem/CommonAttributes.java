@@ -36,7 +36,8 @@ public interface CommonAttributes {
     SimpleAttributeDefinition CONCURRENCY_LEVEL = new SimpleAttributeDefinition(ModelKeys.CONCURRENCY_LEVEL,
             new ModelNode().set(intDefault), ModelType.INT, true);
     SimpleAttributeDefinition DATA_SOURCE = new SimpleAttributeDefinition(ModelKeys.DATASOURCE, ModelType.STRING, true);
-    SimpleAttributeDefinition DEFAULT_CACHE = new SimpleAttributeDefinition(ModelKeys.DEFAULT_CACHE, ModelType.STRING, false);
+    // make default-cache non required (AS7-3488)
+    SimpleAttributeDefinition DEFAULT_CACHE = new SimpleAttributeDefinition(ModelKeys.DEFAULT_CACHE, ModelType.STRING, true);
     SimpleAttributeDefinition DEFAULT_CACHE_CONTAINER = new SimpleAttributeDefinition(ModelKeys.DEFAULT_CACHE_CONTAINER, ModelType.STRING, false);
     SimpleAttributeDefinition EAGER_LOCKING = new SimpleAttributeDefinition(ModelKeys.EAGER_LOCKING,
             new ModelNode().set(booleanDefault), ModelType.BOOLEAN,  true);
