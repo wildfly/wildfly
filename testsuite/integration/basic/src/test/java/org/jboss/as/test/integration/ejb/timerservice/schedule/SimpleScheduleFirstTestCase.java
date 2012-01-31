@@ -59,9 +59,14 @@ public class SimpleScheduleFirstTestCase {
         InitialContext ctx = new InitialContext();
         SimpleScheduleBean bean = (SimpleScheduleBean)ctx.lookup("java:module/" + SimpleScheduleBean.class.getSimpleName());
         Assert.assertTrue(SimpleScheduleBean.awaitTimerCall());
+        
+        Assert.assertEquals("info", bean.getTimerInfo());
+        Assert.assertEquals("Europe/Prague", bean.getTimezone());
+        Assert.assertTrue(bean.isCalendar());
+        Assert.assertFalse(bean.isPersistent());
 
         final SingletonScheduleBean singletonBean = (SingletonScheduleBean) ctx.lookup("java:module/" + SingletonScheduleBean.class.getSimpleName());
-        Assert.assertTrue(SingletonScheduleBean.awaitTimerCall());
+        Assert.assertTrue(SingletonScheduleBean.awaitTimerCall());        
     }
 
 
@@ -70,6 +75,11 @@ public class SimpleScheduleFirstTestCase {
         InitialContext ctx = new InitialContext();
         SimpleSchedulesBean bean = (SimpleSchedulesBean)ctx.lookup("java:module/" + SimpleSchedulesBean.class.getSimpleName());
         Assert.assertTrue(SimpleSchedulesBean.awaitTimerCall());
+        Assert.assertEquals(2,bean.getTimers().size());
+        
+        Assert.assertEquals("info", bean.getTimerInfo());
+        Assert.assertTrue(bean.isCalendar());
+        Assert.assertTrue(bean.isPersistent());
     }
 
 
