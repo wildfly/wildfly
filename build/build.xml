@@ -51,6 +51,15 @@
         <!-- These files contain digested passwords, which should not be visible to external users -->
         <chmod perm="600" file="${output.dir}/domain/configuration/mgmt-users.properties"/>
         <chmod perm="600" file="${output.dir}/standalone/configuration/mgmt-users.properties"/>
+
+        <!-- Copy the JBoss AS7 EJB specific schemas to the JBOSS_HOME/docs/schema folder -->
+        <unzip src="${org.jboss.as:jboss-as-ejb3:jar}" dest="${output.dir}/docs/schema/">
+            <patternset>
+                <include name="*.xsd"/>
+            </patternset>
+            <mapper type="flatten"/>
+        </unzip>
+
     </target>
 
     <target name="copy-standalone" description="Copy all standard configurations">
@@ -83,6 +92,16 @@
     <target name="create-ext-content">
         <mkdir dir="${output.dir}/modules/org/jboss/integration/ext-content/main/bundled"/>
         <copy file="${org.jboss.seam.integration:jboss-seam-int-jbossas:jar}" tofile="${output.dir}/modules/org/jboss/integration/ext-content/main/bundled/jboss-seam-int.jar"/>
+
+        <!-- Copy the EJB specific schemas to the JBOSS_HOME/docs/schema folder -->
+        <unzip src="${org.jboss.metadata:jboss-metadata-ejb:jar}" dest="${output.dir}/docs/schema/">
+            <patternset>
+                <include name="schema/ejb-jar*.xsd"/>
+                <include name="schema/jboss-ejb3*.xsd"/>
+                <include name="dtd/ejb-jar*.dtd"/>
+            </patternset>
+            <mapper type="flatten"/>
+        </unzip>
     </target>
 
     <target name="minimalistic" depends="base, copy-standalone-minimalistic"/>
