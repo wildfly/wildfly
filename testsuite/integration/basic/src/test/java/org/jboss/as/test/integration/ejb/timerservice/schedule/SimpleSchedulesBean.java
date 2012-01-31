@@ -21,9 +21,15 @@
  */
 package org.jboss.as.test.integration.ejb.timerservice.schedule;
 
+import javax.annotation.Resource;
 import javax.ejb.Schedule;
 import javax.ejb.Schedules;
 import javax.ejb.Stateless;
+import javax.ejb.Timer;
+import javax.ejb.TimerService;
+
+import java.io.Serializable;
+import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -36,14 +42,42 @@ public class SimpleSchedulesBean {
     private static final CountDownLatch latch = new CountDownLatch(1);
 
     private static boolean timerServiceCalled = false;
+    
+    private String timerInfo;
+    private boolean isPersistent;
+    private boolean isCalendar;
+    
+    @Resource
+    private TimerService timerService;
+    
+    public String getTimerInfo() {
+        return timerInfo;
+    }
+    public boolean isPersistent() {
+        return isPersistent;
+    }
+    public boolean isCalendar() {
+        return isCalendar;
+    }
 
-    @Schedules(@Schedule(second="*", minute = "*", hour = "*"))
-    public void timeout() {
+    @Schedules({
+            @Schedule(second="0/2", minute = "*", hour = "*", info = "info"),
+            @Schedule(second="1/2", minute = "*", hour = "*", info = "info")
+    })
+    public void timeout(Timer timer) {
+        timerInfo = (String) timer.getInfo();
+        isPersistent = timer.isPersistent();
+        isCalendar = timer.isCalendarTimer();
+        
         timerServiceCalled = true;
         latch.countDown();
     }
+    
+    public Collection<Timer> getTimers() {
+        return timerService.getTimers();
+    }
 
-    public static boolean awaitTimerCall() {
+    public static boolean awaitTimerCall() {       
         try {
             latch.await(2, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
