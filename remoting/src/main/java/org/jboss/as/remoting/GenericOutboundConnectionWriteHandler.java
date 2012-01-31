@@ -40,7 +40,7 @@ class GenericOutboundConnectionWriteHandler extends AbstractWriteAttributeHandle
     static final GenericOutboundConnectionWriteHandler INSTANCE = new GenericOutboundConnectionWriteHandler();
 
     private GenericOutboundConnectionWriteHandler() {
-        super(AbstractOutboundConnectionResourceDefinition.CONNECTION_CREATION_OPTIONS, GenericOutboundConnectionResourceDefinition.URI);
+        super(GenericOutboundConnectionResourceDefinition.URI);
     }
 
     @Override
@@ -67,16 +67,14 @@ class GenericOutboundConnectionWriteHandler extends AbstractWriteAttributeHandle
         ServiceController sc = registry.getService(serviceName);
         if (sc != null && sc.getState() == ServiceController.State.UP) {
             GenericOutboundConnectionService svc = GenericOutboundConnectionService.class.cast(sc.getValue());
-            if (AbstractOutboundConnectionResourceDefinition.CONNECTION_CREATION_OPTIONS.getName().equals(attributeName)) {
-                svc.setConnectionCreationOptions(AbstractOutboundConnectionAddHandler.getConnectionCreationOptions(model));
-            } else if (GenericOutboundConnectionResourceDefinition.URI.getName().equals(attributeName)) {
+            if (GenericOutboundConnectionResourceDefinition.URI.getName().equals(attributeName)) {
                 svc.setDestination(GenericOutboundConnectionAdd.INSTANCE.getDestinationURI(context, model));
             }
         } else {
             // Service isn't up so we can bounce it
             context.removeService(serviceName); // safe even if the service doesn't exist
             // install the service with new values
-            GenericOutboundConnectionAdd.INSTANCE.installRuntimeService(context, connectionName, model, null);
+            GenericOutboundConnectionAdd.INSTANCE.installRuntimeService(context, operation, null);
         }
     }
 }

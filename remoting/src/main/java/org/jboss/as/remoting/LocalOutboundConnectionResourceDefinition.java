@@ -52,6 +52,11 @@ class LocalOutboundConnectionResourceDefinition extends AbstractOutboundConnecti
     }
 
     @Override
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerSubModel(new PropertyResource(CommonAttributes.LOCAL_OUTBOUND_CONNECTION));
+    }
+
+    @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         super.registerAttributes(resourceRegistration);
         resourceRegistration.registerReadWriteAttribute(OUTBOUND_SOCKET_BINDING_REF, null, LocalOutboundConnectionWriteHandler.INSTANCE);

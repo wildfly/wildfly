@@ -296,7 +296,8 @@ public final class ParseUtils {
         String name = null;
         String value = null;
         for (int i = 0; i < cnt; i++) {
-            if (reader.getAttributeNamespace(i) != null) {
+            String uri = reader.getAttributeNamespace(i);
+            if (uri != null&&!"".equals(XMLConstants.NULL_NS_URI)) {
                 throw unexpectedAttribute(reader, i);
             }
             final String localName = reader.getAttributeLocalName(i);
