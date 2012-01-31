@@ -23,15 +23,17 @@
   -->
 
 <project>
-    <target name="build-jars" description="Build the deployments.">
-    <copy file="${org.hibernate:hibernate-core:jar}" tofile="${tests.output.dir}/test-libs/hibernate3-core.jar"/>
-    <copy file="${org.hibernate:hibernate-envers:jar}" tofile="${tests.output.dir}/test-libs/hibernate3-envers.jar"/>
+    <target name="copy-jars" description="Copy jars to be tested.">
+    <copy file="${org.hibernate:hibernate-core:jar}"                tofile="${tests.output.dir}/test-libs/hibernate3-core.jar"/>
+    <copy file="${org.hibernate:hibernate-envers:jar}"              tofile="${tests.output.dir}/test-libs/hibernate3-envers.jar"/>
     <copy file="${org.hibernate:hibernate-commons-annotations:jar}" tofile="${tests.output.dir}/test-libs/hibernate3-commons-annotations.jar"/>
-    <copy file="${org.hibernate:hibernate-entitymanager:jar}" tofile="${tests.output.dir}/test-libs/hibernate3-entitymanager.jar"/>
-    <copy file="${dom4j:dom4j:jar}" tofile="${tests.output.dir}/test-libs/dom4j.jar"/>
-    <!--copy file="${org.slf4j:slf4j-simple:jar}" tofile="${tests.output.dir}/test-libs/slf4j.jar"/>
-    <copy file="${org.slf4j:slf4j-api:jar}"     tofile="${tests.output.dir}/test-libs/slf4j-api.jar"/-->
-    <copy file="${commons-collections:commons-collections:jar}" tofile="${tests.output.dir}/test-libs/commons-collections.jar"/>
-    <copy file="${antlr:antlr:jar}" tofile="${tests.output.dir}/test-libs/antlr.jar"/>
+    <copy file="${org.hibernate:hibernate-entitymanager:jar}"       tofile="${tests.output.dir}/test-libs/hibernate3-entitymanager.jar"/>
+    <copy file="${dom4j:dom4j:jar}"                                 tofile="${tests.output.dir}/test-libs/dom4j.jar"/>
+    <!--
+    <copy file="${org.slf4j:slf4j-simple:jar}"                      tofile="${tests.output.dir}/test-libs/slf4j.jar"/>
+    <copy file="${org.slf4j:slf4j-api:jar}"                         tofile="${tests.output.dir}/test-libs/slf4j-api.jar"/>
+    -->
+    <copy file="${commons-collections:commons-collections:jar}"     tofile="${tests.output.dir}/test-libs/commons-collections.jar"/>
+    <copy file="${antlr:antlr:jar}"                                 tofile="${tests.output.dir}/test-libs/antlr.jar"/>
     </target>
 </project>

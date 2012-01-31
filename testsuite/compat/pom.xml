@@ -32,13 +32,19 @@
         <version>7.1.0.Final-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jboss-as-testsuite-integration-compat</artifactId>
+    <artifactId>jboss-as-testsuite-compat</artifactId>
     <name>JBoss Application Server Test Suite: Compatibility Tests</name>
     <properties>
 
-        <!-- used to provide an absolute location for the distribution under test -->
-        <!-- this value is overridden in modules with the correct relative pathname -->
-        <jboss.dist>${project.basedir}/../../build/target/jboss-as-${jboss.as.release.version}</jboss.dist>
+        <!-- This project's testsuite dir. To be changed for every submodule (until we figure out how to do it automatically). -->
+        <jbossas.ts.dir>${basedir}/..</jbossas.ts.dir>
+        
+        <!-- ${jbossas.project.dir} defined in /testsuite. But for separated runs runs, let's duplicate it here. -->
+        <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
+
+        <!-- Used to provide an absolute location for the distribution under test. -->
+        <!-- This value is overridden in modules with the correct relative pathname. -->
+        <jboss.dist>${jbossas.project.dir}/build/target/jboss-as-${jboss.as.release.version}</jboss.dist>
         <jboss.home>${jboss.dist}</jboss.home>
 
         <!-- Used to provide an absolute location for the XSLT scripts. -->
@@ -97,17 +103,14 @@
                 <inherited>false</inherited>
                 <executions>
                     <execution>
-                        <id>build-jars</id>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
+                        <id>ts.compat.copy-jars</id> <goals><goal>run</goal></goals>
                         <phase>test-compile</phase>
                         <configuration>
                             <tasks>
                                 <property name="tests.resources.dir" value="${basedir}/src/test/resources"/>
-                                <property name="tests.output.dir" value="${project.build.directory}"/>
+                                <property name="tests.output.dir"    value="${project.build.directory}"/>
                                 <ant antfile="src/test/scripts/build-jars.xml">
-                                    <target name="build-jars"/>
+                                    <target name="copy-jars"/>
                                 </ant>
                             </tasks>
                         </configuration>

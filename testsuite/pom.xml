@@ -276,6 +276,8 @@
                 <configuration>
                     <compilerArgument>-Djava.endorsed.dirs=${project.build.directory}/endorsed</compilerArgument>
                 </configuration>
+                <!-- Don't compile src/main/java - nothing to do. -->
+                <executions><execution><id>default-compile</id><phase>none</phase></execution></executions>
             </plugin>
 
             <!--
@@ -286,8 +288,10 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions combine.children="append">
+                    <!-- Copy AS from ${jboss.home} to testsuite/target/jbossas -->
                     <execution>
-                        <id>build-jbossas.server</id>
+                        <id>ts.copy-jbossas.from-dist</id>
+                        <inherited>false</inherited>
                         <phase>generate-test-resources</phase>
                         <goals><goal>copy-resources</goal></goals>
                         <configuration>
@@ -304,6 +308,22 @@
                             </resources>
                         </configuration>
                     </execution>
+                    <!-- Copy that AS  ../target/jbossas into current_submodule/target/jbossas . This is executed recursively in submodules. -->
+                    <execution>
+                        <id>ts.copy-jbossas.groups</id>
+                        <inherited>true</inherited>
+                        <phase>generate-test-resources</phase>
+                        <goals><goal>copy-resources</goal></goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/jbossas</outputDirectory>
+                            <overwrite>true</overwrite>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/../target/jbossas</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
 
@@ -315,7 +335,7 @@
                 <artifactId>xml-maven-plugin</artifactId>
                 <executions combine.children="append">
                     <execution>
-                        <id>update-ip-addresses-jbossas.server</id>
+                        <id>ts.config-as.ip-addresses</id>
                         <phase>process-test-resources</phase>
                         <goals><goal>transform</goal></goals>
                         <inherited>false</inherited>
@@ -436,6 +456,13 @@
                 </dependencies>
             </plugin>
 
+            <!-- Don't create jars - nothing to do. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions><execution><id>default-jar</id><phase>none</phase></execution></executions>
+            </plugin>
+
             <!-- Don't create source jars - nothing to do. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -448,6 +475,13 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <executions><execution><id>check-style</id><phase>none</phase></execution></executions>
+            </plugin>
+            
+            <!-- Don't install - nothing to do. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <executions><execution><id>default-install</id><phase>none</phase></execution></executions>
             </plugin>
 
         </plugins>

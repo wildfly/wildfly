@@ -45,7 +45,7 @@
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>copy-mgmt-users</id>
+                        <id>ts.config-as.copy-mgmt-users</id>
                         <phase>generate-test-resources</phase>
                         <goals><goal>copy-resources</goal></goals>
                         <configuration>
