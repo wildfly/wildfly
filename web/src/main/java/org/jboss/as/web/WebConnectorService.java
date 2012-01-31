@@ -52,7 +52,6 @@ class WebConnectorService implements Service<Connector> {
 
     private volatile String protocol = "HTTP/1.1";
     private volatile String scheme = "http";
-    private final String unmaskedPassword;
 
     private Boolean enableLookups = null;
     private String proxyName = null;
@@ -71,10 +70,9 @@ class WebConnectorService implements Service<Connector> {
     private final InjectedValue<SocketBinding> binding = new InjectedValue<SocketBinding>();
     private final InjectedValue<WebServer> server = new InjectedValue<WebServer>();
 
-    public WebConnectorService(String protocol, String scheme, String unmaskedPassword) {
+    public WebConnectorService(String protocol, String scheme) {
         if(protocol != null) this.protocol = protocol;
         if(scheme != null) this.scheme = scheme;
-        this.unmaskedPassword = unmaskedPassword;
     }
 
     /**
@@ -158,7 +156,7 @@ class WebConnectorService implements Service<Connector> {
                     try {
                         if (ssl.hasDefined(Constants.PASSWORD)) {
                             Method m = connector.getProtocolHandler().getClass().getMethod("setSSLPassword", String.class);
-                            m.invoke(connector.getProtocolHandler(), unmaskedPassword);
+                            m.invoke(connector.getProtocolHandler(), ssl.get(Constants.PASSWORD).asString());
                         }
                         if (ssl.hasDefined(Constants.CERTIFICATE_KEY_FILE)) {
                             Method m = connector.getProtocolHandler().getClass().getMethod("setSSLCertificateKeyFile", String.class);
@@ -182,7 +180,7 @@ class WebConnectorService implements Service<Connector> {
                         }
                         if (ssl.hasDefined(Constants.CERTIFICATE_FILE)) {
                             Method m = connector.getProtocolHandler().getClass().getMethod("setSSLCertificateFile", String.class);
-                            m.invoke(connector.getProtocolHandler(), ssl.get(Constants.CERTIFICATE_FILE).asString());
+                            m.invoke(connector.getProtocolHandler(), ssl.get(Constants.CERTIFICATE_FILE));
                         }
                         if (ssl.hasDefined(Constants.CA_CERTIFICATE_FILE)) {
                             Method m = connector.getProtocolHandler().getClass().getMethod("setSSLCACertificateFile", String.class);
@@ -204,7 +202,7 @@ class WebConnectorService implements Service<Connector> {
                         }
                         if (ssl.hasDefined(Constants.PASSWORD)) {
                             Method m = connector.getProtocolHandler().getClass().getMethod("setKeypass", String.class);
-                            m.invoke(connector.getProtocolHandler(), unmaskedPassword);
+                            m.invoke(connector.getProtocolHandler(), ssl.get(Constants.PASSWORD).asString());
                         }
                         if (ssl.hasDefined(Constants.CERTIFICATE_KEY_FILE)) {
                             Method m = connector.getProtocolHandler().getClass().getMethod("setKeystore", String.class);
@@ -275,6 +273,8 @@ class WebConnectorService implements Service<Connector> {
         // Register the binding after the connector is started
         binding.getSocketBindings().getNamedRegistry().registerBinding(new ConnectorBinding(binding));
     }
+
+
 
     /** {@inheritDoc} */
     public synchronized void stop(StopContext context) {

@@ -46,6 +46,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -443,10 +444,12 @@ class WebSubsystemDescriptions {
         node.get(type, Constants.PASSWORD, TYPE).set(ModelType.STRING);
         node.get(type, Constants.PASSWORD, DESCRIPTION).set(bundle.getString("web.connector.ssl.password"));
         node.get(type, Constants.PASSWORD, REQUIRED).set(false);
+        node.get(type, Constants.PASSWORD, ModelDescriptionConstants.EXPRESSIONS_ALLOWED).set(true);
 
         node.get(type, Constants.CERTIFICATE_KEY_FILE, TYPE).set(ModelType.STRING);
         node.get(type, Constants.CERTIFICATE_KEY_FILE, DESCRIPTION).set(bundle.getString("web.connector.ssl.certificate-key-file"));
         node.get(type, Constants.CERTIFICATE_KEY_FILE, REQUIRED).set(false);
+        node.get(type, Constants.CERTIFICATE_KEY_FILE, ModelDescriptionConstants.EXPRESSIONS_ALLOWED).set(true);
 
         node.get(type, Constants.CIPHER_SUITE, TYPE).set(ModelType.STRING);
         node.get(type, Constants.CIPHER_SUITE, DESCRIPTION).set(bundle.getString("web.connector.ssl.cipher-suite"));
@@ -467,10 +470,17 @@ class WebSubsystemDescriptions {
         node.get(type, Constants.CERTIFICATE_FILE, TYPE).set(ModelType.STRING);
         node.get(type, Constants.CERTIFICATE_FILE, DESCRIPTION).set(bundle.getString("web.connector.ssl.certificate-file"));
         node.get(type, Constants.CERTIFICATE_FILE, REQUIRED).set(false);
+        node.get(type, Constants.CERTIFICATE_FILE, ModelDescriptionConstants.EXPRESSIONS_ALLOWED).set(true);
 
         node.get(type, Constants.CA_CERTIFICATE_FILE, TYPE).set(ModelType.STRING);
         node.get(type, Constants.CA_CERTIFICATE_FILE, DESCRIPTION).set(bundle.getString("web.connector.ssl.ca-certificate-file"));
         node.get(type, Constants.CA_CERTIFICATE_FILE, REQUIRED).set(false);
+        node.get(type, Constants.CA_CERTIFICATE_FILE, ModelDescriptionConstants.EXPRESSIONS_ALLOWED).set(true);
+
+        node.get(type, Constants.CA_CERTIFICATE_PASSWORD, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.CA_CERTIFICATE_PASSWORD, DESCRIPTION).set(bundle.getString("web.connector.ssl.ca-certificate-file"));
+        node.get(type, Constants.CA_CERTIFICATE_PASSWORD, REQUIRED).set(false);
+        node.get(type, Constants.CA_CERTIFICATE_PASSWORD, ModelDescriptionConstants.EXPRESSIONS_ALLOWED).set(true);
 
         node.get(type, Constants.CA_REVOCATION_URL, TYPE).set(ModelType.STRING);
         node.get(type, Constants.CA_REVOCATION_URL, DESCRIPTION).set(bundle.getString("web.connector.ssl.ca-revocation-url"));
