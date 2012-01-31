@@ -78,7 +78,11 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
     }
 
     private static void populate(ModelNode source, ModelNode target) {
-        target.get(ModelKeys.DEFAULT_CACHE).set(source.require(ModelKeys.DEFAULT_CACHE));
+        // AS7-3488 make default-cache non required attrinbute
+        // target.get(ModelKeys.DEFAULT_CACHE).set(source.get(ModelKeys.DEFAULT_CACHE));
+        if (source.hasDefined(ModelKeys.DEFAULT_CACHE)) {
+            target.get(ModelKeys.DEFAULT_CACHE).set(source.get(ModelKeys.DEFAULT_CACHE));
+        }
         if (source.hasDefined(ModelKeys.ALIASES)) {
             target.get(ModelKeys.ALIASES).set(source.get(ModelKeys.ALIASES));
         }
@@ -112,7 +116,8 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
 
-        String defaultCache = model.require(ModelKeys.DEFAULT_CACHE).asString();
+        // make default cache non required (AS7-3488)
+        String defaultCache = model.get(ModelKeys.DEFAULT_CACHE).asString();
 
         boolean hasTransport = model.hasDefined(ModelKeys.TRANSPORT) && model.get(ModelKeys.TRANSPORT).hasDefined(ModelKeys.TRANSPORT_NAME);
         Transport transportConfig = hasTransport ? new Transport() : null;

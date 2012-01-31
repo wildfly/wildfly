@@ -94,7 +94,7 @@
                 <xs:documentation></xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="default-cache" type="xs:string" use="required">
+        <xs:attribute name="default-cache" type="xs:string">
             <xs:annotation>
                 <xs:documentation></xs:documentation>
             </xs:annotation>

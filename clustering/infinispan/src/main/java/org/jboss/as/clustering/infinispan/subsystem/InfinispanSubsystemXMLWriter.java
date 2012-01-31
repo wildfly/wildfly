@@ -61,7 +61,9 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
 
                 writer.writeStartElement(Element.CACHE_CONTAINER.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), containerName);
-                this.writeRequired(writer, Attribute.DEFAULT_CACHE, container, ModelKeys.DEFAULT_CACHE);
+                // AS7-3488 make default-cache a non required attribute
+                // this.writeRequired(writer, Attribute.DEFAULT_CACHE, container, ModelKeys.DEFAULT_CACHE);
+                this.writeOptional(writer, Attribute.DEFAULT_CACHE, container, ModelKeys.DEFAULT_CACHE);
                 this.writeAliases(writer, Attribute.ALIASES, container, ModelKeys.ALIASES);
                 this.writeOptional(writer, Attribute.JNDI_NAME, container, ModelKeys.JNDI_NAME);
                 this.writeOptional(writer, Attribute.START, container, ModelKeys.START);
