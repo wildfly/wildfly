@@ -425,7 +425,7 @@ class ModClusterSubsystemDescriptions {
         node.get(type, CommonAttributes.STICKY_SESSION_FORCE, TYPE).set(ModelType.BOOLEAN);
         node.get(type, CommonAttributes.STICKY_SESSION_FORCE, DESCRIPTION).set(bundle.getString("modcluster.configuration.sticky-session-force"));
         node.get(type, CommonAttributes.STICKY_SESSION_FORCE, REQUIRED).set(false);
-        node.get(type, CommonAttributes.STICKY_SESSION_FORCE, DEFAULT).set(true);
+        node.get(type, CommonAttributes.STICKY_SESSION_FORCE, DEFAULT).set(false);
 
         node.get(type, CommonAttributes.WORKER_TIMEOUT, TYPE).set(ModelType.INT);
         node.get(type, CommonAttributes.WORKER_TIMEOUT, DESCRIPTION).set(bundle.getString("modcluster.configuration.worker-timeout"));
