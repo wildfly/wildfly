@@ -48,7 +48,6 @@ import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.omg.CORBA.ORB;
@@ -71,8 +70,6 @@ import org.omg.PortableServer.POA;
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
 public class JacORBSubsystemAdd extends AbstractAddStepHandler {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.jacorb");
 
     private static final String JACORB_SOCKET_BINDING = "jacorb";
 
@@ -105,7 +102,7 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
                                   ServiceVerificationHandler verificationHandler,
                                   List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-        log.info("Activating JacORB Subsystem");
+        JacORBLogger.ROOT_LOGGER.activatingSubsystem();
 
         // set the ORBUseDynamicStub system property.
         SecurityActions.setSystemProperty("org.jboss.com.sun.CORBA.ORBUseDynamicStub", "true");
@@ -285,7 +282,7 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
             // if SSL is to be used, check if a security domain has been specified.
             String securityDomain = props.getProperty(JacORBSubsystemConstants.SECURITY_SECURITY_DOMAIN);
             if (securityDomain == null || securityDomain.isEmpty())
-                throw new OperationFailedException("SSL support has been enabled but no security domain has been specified.");
+                throw JacORBMessages.MESSAGES.noSecurityDomainSpecified();
 
             // add the domain socket factories.
             props.setProperty(JacORBSubsystemConstants.JACORB_SSL_SOCKET_FACTORY, DomainSocketFactory.class.getName());

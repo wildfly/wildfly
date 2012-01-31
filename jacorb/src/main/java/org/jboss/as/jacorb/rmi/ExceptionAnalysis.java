@@ -21,6 +21,8 @@
  */
 package org.jboss.as.jacorb.rmi;
 
+import org.jboss.as.jacorb.JacORBMessages;
+
 /**
  * Exception analysis.
  * <p/>
@@ -30,9 +32,6 @@ package org.jboss.as.jacorb.rmi;
  * @author <a href="mailto:osh@sparre.dk">Ole Husgaard</a>
  */
 public class ExceptionAnalysis extends ValueAnalysis {
-
-    private static final org.jboss.logging.Logger logger =
-            org.jboss.logging.Logger.getLogger(ExceptionAnalysis.class);
 
     private static WorkCacheManager cache
             = new WorkCacheManager(ExceptionAnalysis.class);
@@ -46,7 +45,6 @@ public class ExceptionAnalysis extends ValueAnalysis {
 
     protected ExceptionAnalysis(Class cls) {
         super(cls);
-        logger.debug("ExceptionAnalysis(\"" + cls.getName() + "\") entered.");
     }
 
     protected void doAnalyze() throws RMIIIOPViolationException {
@@ -54,9 +52,7 @@ public class ExceptionAnalysis extends ValueAnalysis {
 
         if (!Exception.class.isAssignableFrom(cls) ||
                 RuntimeException.class.isAssignableFrom(cls))
-            throw new RMIIIOPViolationException(
-                    "Exception type " + cls.getName() +
-                            " must be a checked exception class.", "1.2.6");
+            throw JacORBMessages.MESSAGES.badRMIIIOPExceptionType(cls.getName(), "1.2.6");
 
         // calculate exceptionRepositoryId
         StringBuffer b = new StringBuffer("IDL:");

@@ -21,16 +21,16 @@
  */
 package org.jboss.as.jacorb.rmi.ir;
 
-import org.omg.CORBA.TypeCode;
-import org.omg.CORBA.TypeCodePackage.BadKind;
-import org.omg.CORBA.IRObject;
+import org.jboss.as.jacorb.JacORBMessages;
+import org.omg.CORBA.DefinitionKind;
 import org.omg.CORBA.IDLType;
 import org.omg.CORBA.IDLTypeHelper;
-import org.omg.CORBA.DefinitionKind;
+import org.omg.CORBA.IRObject;
+import org.omg.CORBA.TypeCode;
+import org.omg.CORBA.TypeCodePackage.BadKind;
 import org.omg.CORBA.ValueBoxDef;
 import org.omg.CORBA.ValueBoxDefOperations;
 import org.omg.CORBA.ValueBoxDefPOATie;
-import org.omg.CORBA.BAD_INV_ORDER;
 
 /**
  * ValueBoxDef IR object.
@@ -62,8 +62,7 @@ class ValueBoxDefImpl extends TypedefDefImpl implements ValueBoxDefOperations {
             original_type_def = IDLTypeImpl.getIDLType(type().content_type(),
                     repository);
         } catch (BadKind ex) {
-            throw new RuntimeException("Bad kind " + type().kind().value() +
-                    " for TypeCode.content_type()");
+            throw JacORBMessages.MESSAGES.badKindForTypeCode(type().kind().value());
         }
 
         getReference();
@@ -74,7 +73,7 @@ class ValueBoxDefImpl extends TypedefDefImpl implements ValueBoxDefOperations {
     }
 
     public void original_type_def(IDLType arg) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     /**

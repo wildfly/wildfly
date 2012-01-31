@@ -21,6 +21,7 @@
  */
 package org.jboss.as.jacorb.tm;
 
+import org.jboss.as.jacorb.JacORBMessages;
 import org.omg.CORBA.LocalObject;
 import org.omg.IOP.Codec;
 import org.omg.IOP.ENCODING_CDR_ENCAPS;
@@ -34,6 +35,7 @@ import org.omg.PortableInterceptor.ORBInitializer;
  *
  * @author <a href="mailto:reverbel@ime.usp.br">Francisco Reverbel</a>
  */
+@SuppressWarnings("unused")
 public class TxServerInterceptorInitializer extends LocalObject implements ORBInitializer {
     static final long serialVersionUID = -547674655727747575L;
 
@@ -63,7 +65,7 @@ public class TxServerInterceptorInitializer extends LocalObject implements ORBIn
             TxServerInterceptor interceptor = new TxServerInterceptor();
             info.add_server_request_interceptor(interceptor);
         } catch (Exception e) {
-            throw new RuntimeException("Unexpected " + e);
+            throw JacORBMessages.MESSAGES.unexpectedException(e);
         }
     }
 

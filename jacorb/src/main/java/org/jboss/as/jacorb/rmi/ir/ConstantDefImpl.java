@@ -21,20 +21,20 @@
  */
 package org.jboss.as.jacorb.rmi.ir;
 
+import org.jboss.as.jacorb.JacORBMessages;
 import org.omg.CORBA.Any;
-import org.omg.CORBA.TypeCode;
-import org.omg.CORBA.IRObject;
+import org.omg.CORBA.ConstantDef;
+import org.omg.CORBA.ConstantDefOperations;
+import org.omg.CORBA.ConstantDefPOATie;
+import org.omg.CORBA.ConstantDescription;
+import org.omg.CORBA.ConstantDescriptionHelper;
 import org.omg.CORBA.ContainedOperations;
 import org.omg.CORBA.ContainedPackage.Description;
 import org.omg.CORBA.DefinitionKind;
 import org.omg.CORBA.IDLType;
 import org.omg.CORBA.IDLTypeHelper;
-import org.omg.CORBA.ConstantDef;
-import org.omg.CORBA.ConstantDefOperations;
-import org.omg.CORBA.ConstantDescription;
-import org.omg.CORBA.ConstantDescriptionHelper;
-import org.omg.CORBA.ConstantDefPOATie;
-import org.omg.CORBA.BAD_INV_ORDER;
+import org.omg.CORBA.IRObject;
+import org.omg.CORBA.TypeCode;
 
 /**
  * Constant IR object.
@@ -43,8 +43,6 @@ import org.omg.CORBA.BAD_INV_ORDER;
  * @version $Revision: 81018 $
  */
 public class ConstantDefImpl extends ContainedImpl implements ConstantDefOperations {
-    private static final org.jboss.logging.Logger logger = org.jboss.logging.Logger.getLogger(ConstantDefImpl.class);
-
 
     ConstantDefImpl(String id, String name, String version,
                     TypeCode typeCode, Any value,
@@ -68,11 +66,6 @@ public class ConstantDefImpl extends ContainedImpl implements ConstantDefOperati
             throws IRConstructionException {
         // Get my type definition: It should have been created now.
         type_def = IDLTypeImpl.getIDLType(typeCode, repository);
-        if (type_def == null)
-            logger.debug("Got type_def: [NULL]");
-        else
-            logger.debug("Got type_def: [" + type_def.toString() + "]");
-
         getReference();
     }
 
@@ -80,37 +73,29 @@ public class ConstantDefImpl extends ContainedImpl implements ConstantDefOperati
     // ConstantDefOperations implementation ----------------------------
 
     public TypeCode type() {
-        logger.debug("ConstantDefImpl.type(): entered.");
         return typeCode;
     }
 
     public IDLType type_def() {
-        logger.debug("ConstantDefImpl.type_def(): entered.");
-        try {
-            return IDLTypeHelper.narrow(type_def.getReference());
-        } finally {
-            logger.debug("ConstantDefImpl.type_def(): returning.");
-        }
+        return IDLTypeHelper.narrow(type_def.getReference());
     }
 
     public void type_def(IDLType arg) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public Any value() {
-        logger.debug("ConstantDefImpl.value(): entered.");
         return value;
     }
 
     public void value(Any arg) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
 
     // ContainedImpl implementation ----------------------------------
 
     public Description describe() {
-        logger.debug("ConstantDefImpl.describe(): entered.");
         String defined_in_id = "IR";
 
         if (defined_in instanceof ContainedOperations)

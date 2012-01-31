@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.jacorb.JacORBLogger;
+import org.jboss.as.jacorb.JacORBMessages;
 import org.jboss.as.jacorb.rmi.AttributeAnalysis;
 import org.jboss.as.jacorb.rmi.ConstantAnalysis;
 import org.jboss.as.jacorb.rmi.ContainerAnalysis;
@@ -149,12 +151,6 @@ public class InterfaceRepository {
      */
     private ValueDefImpl javaxRmiCORBAClassDesc = null;
 
-    /**
-     * Static logger used by the interface repository.
-     */
-    private static final org.jboss.logging.Logger logger =
-            org.jboss.logging.Logger.getLogger(InterfaceRepository.class);
-
     public InterfaceRepository(ORB orb, POA poa, String name) {
         this.orb = orb;
         this.poa = poa;
@@ -221,14 +217,12 @@ public class InterfaceRepository {
     private TypeCode getConstantTypeCode(Class cls)
             throws IRConstructionException {
         if (cls == null)
-            throw new IllegalArgumentException("Null class");
+            throw JacORBMessages.MESSAGES.invalidNullClass();
 
-        TypeCode ret = (TypeCode) constantTypeCodeMap.get(cls);
+        TypeCode ret = constantTypeCodeMap.get(cls);
 
         if (ret == null)
-            throw new IRConstructionException("Bad class \"" + cls.getName() +
-                    "\" for a constant.");
-
+            throw JacORBMessages.MESSAGES.badClassForConstant(cls.getName());
         return ret;
     }
 
@@ -247,7 +241,7 @@ public class InterfaceRepository {
     private TypeCode getTypeCode(Class cls)
             throws IRConstructionException, RMIIIOPViolationException {
         if (cls == null)
-            throw new IllegalArgumentException("Null class");
+            throw JacORBMessages.MESSAGES.invalidNullClass();
 
         TypeCode ret = (TypeCode) typeCodeMap.get(cls);
 
@@ -270,8 +264,7 @@ public class InterfaceRepository {
                 ret = (TypeCode) typeCodeMap.get(cls);
 
                 if (ret == null)
-                    throw new IRConstructionException("TypeCode for class " +
-                            cls.getName() + " unknown.");
+                    throw JacORBMessages.MESSAGES.unknownTypeCodeForClass(cls.getName());
                 else
                     return ret;
             }
@@ -291,15 +284,13 @@ public class InterfaceRepository {
     private void addTypeCode(Class cls, TypeCode typeCode)
             throws IRConstructionException {
         if (cls == null)
-            throw new IllegalArgumentException("Null class");
+            throw JacORBMessages.MESSAGES.invalidNullClass();
 
         TypeCode tc = (TypeCode) typeCodeMap.get(cls);
 
         if (tc != null)
-            throw new IllegalArgumentException("Class " + cls.getName() +
-                    " already has TypeCode.");
+            throw JacORBMessages.MESSAGES.duplicateTypeCodeForClass(cls.getName());
 
-        logger.trace("InterfaceRepository: added typecode for " + cls.getName());
         typeCodeMap.put(cls, typeCode);
     }
 
@@ -430,10 +421,7 @@ public class InterfaceRepository {
 
             // Warn if it does not conform to the specification.
             if (!"RMI:javax.rmi.CORBA.ClassDesc:B7C4E3FC9EBDC311:CFBF02CF5294176B".equals(val.id()))
-                logger.debug("Compatibility problem: Class " +
-                        "javax.rmi.CORBA.ClassDesc does not conform " +
-                        "to the Java(TM) Language to IDL Mapping " +
-                        "Specification (01-06-07), section 1.3.5.11.");
+                JacORBLogger.ROOT_LOGGER.warnClassDescDoesNotConformToSpec();
 
             javaxRmiCORBAClassDesc = val;
         }
@@ -494,14 +482,13 @@ public class InterfaceRepository {
         if (contained instanceof LocalContainer)
             next = (LocalContainer) contained;
         else if (contained != null)
-            throw new IRConstructionException("Name collision while creating package.");
+            throw JacORBMessages.MESSAGES.collisionWhileCreatingPackage();
 
         if (next == null) {
             String id = "IDL:" + previous + ":1.0";
 
             // Create module
             ModuleDefImpl m = new ModuleDefImpl(id, base, "1.0", c, impl);
-            logger.trace("Created module \"" + id + "\".");
 
             c.add(base, m);
 
@@ -511,7 +498,7 @@ public class InterfaceRepository {
             next = (LocalContainer) c._lookup(base); // Better be there now...
         } else // Check that next _is_ a module
             if (next.def_kind() != DefinitionKind.dk_Module)
-                throw new IRConstructionException("Name collision while creating package.");
+                throw JacORBMessages.MESSAGES.collisionWhileCreatingPackage();
 
         return ensurePackageExists(next, previous, remainder);
     }
@@ -529,13 +516,11 @@ public class InterfaceRepository {
             String cName = consts[i].getIDLName();
 
             Class cls = consts[i].getType();
-            logger.trace("Constant[" + i + "] class: " + cls.getName());
             TypeCode typeCode = getConstantTypeCode(cls);
 
             Any value = orb.create_any();
             consts[i].insertValue(value);
 
-            logger.trace("Adding constant: " + cid);
             cDef = new ConstantDefImpl(cid, cName, "1.0",
                     typeCode, value, container, impl);
             container.add(cName, cDef);
@@ -549,18 +534,13 @@ public class InterfaceRepository {
                                ContainerAnalysis ca)
             throws RMIIIOPViolationException, IRConstructionException {
         AttributeAnalysis[] attrs = ca.getAttributes();
-        logger.trace("Attribute count: " + attrs.length);
         for (int i = 0; i < attrs.length; ++i) {
             AttributeDefImpl aDef;
             String aid = ca.getMemberRepositoryId(attrs[i].getJavaName());
             String aName = attrs[i].getIDLName();
 
             Class cls = attrs[i].getCls();
-            logger.trace("Attribute[" + i + "] class: " + cls.getName());
-
             TypeCode typeCode = getTypeCode(cls);
-
-            logger.trace("Adding: " + aid);
             aDef = new AttributeDefImpl(aid, aName, "1.0", attrs[i].getMode(),
                     typeCode, container, impl);
             container.add(aName, aDef);
@@ -574,14 +554,12 @@ public class InterfaceRepository {
                                ContainerAnalysis ca)
             throws RMIIIOPViolationException, IRConstructionException {
         OperationAnalysis[] ops = ca.getOperations();
-        logger.debug("Operation count: " + ops.length);
         for (int i = 0; i < ops.length; ++i) {
             OperationDefImpl oDef;
             String oName = ops[i].getIDLName();
             String oid = ca.getMemberRepositoryId(oName);
 
             Class cls = ops[i].getReturnType();
-            logger.debug("Operation[" + i + "] return type class: " + cls.getName());
             TypeCode typeCode = getTypeCode(cls);
 
             ParameterAnalysis[] ps = ops[i].getParameters();
@@ -600,7 +578,6 @@ public class InterfaceRepository {
                 exceptions[j] = ExceptionDefHelper.narrow(e.getReference());
             }
 
-            logger.debug("Adding: " + oid);
             oDef = new OperationDefImpl(oid, oName, "1.0", container,
                     typeCode, params, exceptions, impl);
             container.add(oName, oDef);
@@ -614,13 +591,11 @@ public class InterfaceRepository {
      */
     private String[] addInterfaces(ContainerAnalysis ca)
             throws RMIIIOPViolationException, IRConstructionException {
-        logger.trace("Adding interfaces: ");
         InterfaceAnalysis[] interfaces = ca.getInterfaces();
         List base_interfaces = new ArrayList();
         for (int i = 0; i < interfaces.length; ++i) {
             InterfaceDefImpl idi = addInterface(interfaces[i]);
             base_interfaces.add(idi.id());
-            logger.trace("                   " + idi.id());
         }
         String[] strArr = new String[base_interfaces.size()];
         return (String[]) base_interfaces.toArray(strArr);
@@ -633,13 +608,11 @@ public class InterfaceRepository {
      */
     private String[] addAbstractBaseValuetypes(ContainerAnalysis ca)
             throws RMIIIOPViolationException, IRConstructionException {
-        logger.trace("Adding abstract valuetypes: ");
         ValueAnalysis[] abstractValuetypes = ca.getAbstractBaseValuetypes();
         List abstract_base_valuetypes = new ArrayList();
         for (int i = 0; i < abstractValuetypes.length; ++i) {
             ValueDefImpl vdi = addValue(abstractValuetypes[i]);
             abstract_base_valuetypes.add(vdi.id());
-            logger.trace("                   " + vdi.id());
         }
         String[] strArr = new String[abstract_base_valuetypes.size()];
         return (String[]) abstract_base_valuetypes.toArray(strArr);
@@ -691,7 +664,7 @@ public class InterfaceRepository {
     private ValueBoxDefImpl addArray(Class cls)
             throws RMIIIOPViolationException, IRConstructionException {
         if (!cls.isArray())
-            throw new IllegalArgumentException("Not an array class.");
+            throw JacORBMessages.MESSAGES.classIsNotArray(cls.getName());
 
         ValueBoxDefImpl vbDef;
 
@@ -738,8 +711,7 @@ public class InterfaceRepository {
                 typeName = "double";
                 typeCode = orb.get_primitive_tc(TCKind.tk_double);
             } else {
-                throw new IRConstructionException("Unknown primitive type for " +
-                        "array type: " + cls.getName());
+                throw JacORBMessages.MESSAGES.unknownPrimitiveType(compType.getName());
             }
 
             moduleName = "org.omg.boxedRMI";
@@ -821,9 +793,6 @@ public class InterfaceRepository {
         if (iDef != null)
             return iDef; // Yes, just return it.
 
-        if (ia.isAbstractInterface())
-            logger.trace("Adding abstract interface: " + ia.getRepositoryId());
-
         // Get module to add interface to.
         ModuleDefImpl m = ensurePackageExists(cls.getPackage().getName());
 
@@ -851,7 +820,6 @@ public class InterfaceRepository {
         // Fill in operations
         addOperations(iDef, ia);
 
-        logger.trace("Added interface: " + ia.getRepositoryId());
         return iDef;
     }
 
@@ -903,7 +871,6 @@ public class InterfaceRepository {
                 baseTypeCode,
                 impl);
         addTypeCode(cls, vDef.type());
-        logger.debug("Value: base=" + base);
         m.add(base, vDef);
         valueMap.put(cls, vDef); // Remember we mapped this.
 
@@ -912,19 +879,16 @@ public class InterfaceRepository {
 
         // Add value members
         ValueMemberAnalysis[] vmas = va.getMembers();
-        logger.debug("Value member count: " + vmas.length);
         for (int i = 0; i < vmas.length; ++i) {
             ValueMemberDefImpl vmDef;
             String vmid = va.getMemberRepositoryId(vmas[i].getJavaName());
             String vmName = vmas[i].getIDLName();
 
             Class vmCls = vmas[i].getCls();
-            logger.debug("ValueMembers[" + i + "] class: " + vmCls.getName());
             TypeCode typeCode = getTypeCode(vmCls);
 
             boolean vmPublic = vmas[i].isPublic();
 
-            logger.debug("Adding value member: " + vmid);
             vmDef = new ValueMemberDefImpl(vmid, vmName, "1.0",
                     typeCode, vmPublic, vDef, impl);
             vDef.add(vmName, vmDef);
@@ -970,7 +934,6 @@ public class InterfaceRepository {
 
         eDef = new ExceptionDefImpl(ea.getExceptionRepositoryId(), base, "1.0",
                 typeCode, vDef, m, impl);
-        logger.debug("Exception: base=" + base);
         m.add(base, eDef);
         exceptionMap.put(cls, eDef); // Remember we mapped this.
 

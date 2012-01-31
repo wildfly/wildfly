@@ -37,6 +37,7 @@ import java.util.Properties;
 import javax.naming.ConfigurationException;
 import javax.naming.Context;
 
+import org.jboss.as.jacorb.JacORBMessages;
 import org.omg.CORBA.ORB;
 
 /**
@@ -104,16 +105,11 @@ public class CorbaUtils {
         } catch (InvocationTargetException e) {
             Throwable realException = e.getTargetException();
             // realException.printStackTrace();
-
-            ConfigurationException ce = new ConfigurationException(
-                    "Problem with PortableRemoteObject.toStub(); object not exported or stub not found");
+            ConfigurationException ce = JacORBMessages.MESSAGES.problemInvokingPortableRemoteObjectToStub();
             ce.setRootCause(realException);
             throw ce;
-
         } catch (IllegalAccessException e) {
-            ConfigurationException ce = new ConfigurationException(
-                    "Cannot invoke javax.rmi.PortableRemoteObject.toStub(java.rmi.Remote)");
-
+            ConfigurationException ce = JacORBMessages.MESSAGES.cannotInvokePortableRemoteObjectToStub();
             ce.setRootCause(e);
             throw ce;
         }
@@ -134,16 +130,14 @@ public class CorbaUtils {
             // realException.printStackTrace();
 
             if (!(realException instanceof java.rmi.RemoteException)) {
-                ConfigurationException ce = new ConfigurationException(
-                        "Problem invoking javax.rmi.CORBA.Stub.connect()");
+                ConfigurationException ce = JacORBMessages.MESSAGES.problemInvokingStubConnect();
                 ce.setRootCause(realException);
                 throw ce;
             }
             // ignore RemoteException because stub might have already
             // been connected
         } catch (IllegalAccessException e) {
-            ConfigurationException ce = new ConfigurationException(
-                    "Cannot invoke javax.rmi.CORBA.Stub.connect()");
+            ConfigurationException ce = JacORBMessages.MESSAGES.cannotInvokeStubConnect();
             ce.setRootCause(e);
             throw ce;
         }
@@ -260,11 +254,9 @@ public class CorbaUtils {
         // Get javax.rmi.CORBA.Stub.connect(org.omg.CORBA.ORB) method
 
         try {
-            connectMethod = corbaStubClass.getMethod("connect",
-                    new Class[]{org.omg.CORBA.ORB.class});
+            connectMethod = corbaStubClass.getMethod("connect", new Class[]{org.omg.CORBA.ORB.class});
         } catch (NoSuchMethodException e) {
-            throw new IllegalStateException(
-                    "No method definition for javax.rmi.CORBA.Stub.connect(org.omg.CORBA.ORB)");
+            throw JacORBMessages.MESSAGES.noMethodDefForStubConnect();
         }
 
         // Get javax.rmi.PortableRemoteObject method
@@ -272,12 +264,10 @@ public class CorbaUtils {
 
         // Get javax.rmi.PortableRemoteObject(java.rmi.Remote) method
         try {
-            toStubMethod = proClass.getMethod("toStub",
-                    new Class[]{java.rmi.Remote.class});
+            toStubMethod = proClass.getMethod("toStub", new Class[]{java.rmi.Remote.class});
 
         } catch (NoSuchMethodException e) {
-            throw new IllegalStateException(
-                    "No method definition for javax.rmi.PortableRemoteObject.toStub(java.rmi.Remote)");
+            throw JacORBMessages.MESSAGES.noMethodDefForPortableRemoteObjectToStub();
         }
     }
 

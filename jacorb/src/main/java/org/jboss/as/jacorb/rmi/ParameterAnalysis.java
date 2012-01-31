@@ -34,8 +34,6 @@ import org.omg.CORBA.ParameterMode;
  */
 public class ParameterAnalysis extends AbstractAnalysis {
 
-    private static final org.jboss.logging.Logger logger = org.jboss.logging.Logger.getLogger(ParameterAnalysis.class);
-
     /**
      * Java type of parameter.
      */
@@ -48,12 +46,8 @@ public class ParameterAnalysis extends AbstractAnalysis {
 
     ParameterAnalysis(final String javaName, final Class cls)  throws RMIIIOPViolationException {
         super(javaName);
-
         this.cls = cls;
-
         typeIDLName = Util.getTypeIDLName(cls);
-        logger.debug("ParameterAnalysis(): cls=[" + cls.getName() +
-                "] typeIDLName=[" + typeIDLName + "].");
     }
 
 
@@ -76,8 +70,6 @@ public class ParameterAnalysis extends AbstractAnalysis {
      * Return the IDL type name of my parameter type.
      */
     public String getTypeIDLName() {
-        logger.debug("ParameterAnalysis.getTypeIDLName(): cls=[" + cls.getName() +
-                "] typeIDLName=[" + typeIDLName + "].");
         return typeIDLName;
     }
 

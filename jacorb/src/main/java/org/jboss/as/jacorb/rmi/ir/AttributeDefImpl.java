@@ -21,21 +21,21 @@
  */
 package org.jboss.as.jacorb.rmi.ir;
 
+import org.jboss.as.jacorb.JacORBMessages;
 import org.omg.CORBA.Any;
-import org.omg.CORBA.TypeCode;
-import org.omg.CORBA.IRObject;
+import org.omg.CORBA.AttributeDef;
+import org.omg.CORBA.AttributeDefOperations;
+import org.omg.CORBA.AttributeDefPOATie;
+import org.omg.CORBA.AttributeDescription;
+import org.omg.CORBA.AttributeDescriptionHelper;
+import org.omg.CORBA.AttributeMode;
 import org.omg.CORBA.ContainedOperations;
 import org.omg.CORBA.ContainedPackage.Description;
 import org.omg.CORBA.DefinitionKind;
 import org.omg.CORBA.IDLType;
 import org.omg.CORBA.IDLTypeHelper;
-import org.omg.CORBA.AttributeDef;
-import org.omg.CORBA.AttributeDefOperations;
-import org.omg.CORBA.AttributeMode;
-import org.omg.CORBA.AttributeDescription;
-import org.omg.CORBA.AttributeDescriptionHelper;
-import org.omg.CORBA.AttributeDefPOATie;
-import org.omg.CORBA.BAD_INV_ORDER;
+import org.omg.CORBA.IRObject;
+import org.omg.CORBA.TypeCode;
 
 /**
  * Attribute IR object.
@@ -97,7 +97,7 @@ public class AttributeDefImpl
     }
 
     public void type_def(IDLType arg) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public AttributeMode mode() {
@@ -105,7 +105,7 @@ public class AttributeDefImpl
     }
 
     public void mode(AttributeMode arg) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
 

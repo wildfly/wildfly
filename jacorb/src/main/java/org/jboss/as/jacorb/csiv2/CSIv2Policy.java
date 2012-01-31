@@ -22,9 +22,10 @@
 
 package org.jboss.as.jacorb.csiv2;
 
+import org.jboss.as.jacorb.JacORBLogger;
+import org.jboss.as.jacorb.JacORBMessages;
 import org.jboss.as.jacorb.JacORBSubsystemConstants;
 import org.jboss.as.jacorb.service.CorbaORBService;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.ejb.jboss.IORSecurityConfigMetaData;
 import org.omg.CORBA.LocalObject;
 import org.omg.CORBA.ORB;
@@ -41,8 +42,6 @@ import org.omg.IOP.TaggedComponent;
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
 public class CSIv2Policy extends LocalObject implements Policy {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.jacorb");
 
     // TODO: contact request@omg.org to get a policy type
     public static final int TYPE = 0x87654321;
@@ -72,9 +71,7 @@ public class CSIv2Policy extends LocalObject implements Policy {
      * @param codec    the {@code Codec} used to encode the metadata when creating the tagged components.
      */
     public CSIv2Policy(IORSecurityConfigMetaData metadata, Codec codec) {
-        if (log.isDebugEnabled()) {
-            log.debug(metadata);
-        }
+        JacORBLogger.ROOT_LOGGER.debugIORSecurityConfigMetaData(metadata);
 
         // convert the ior metadata to a cached security tagged component.
         try {
@@ -85,7 +82,7 @@ public class CSIv2Policy extends LocalObject implements Policy {
             this.sslTaggedComponent = CSIv2Util.createSSLTaggedComponent(metadata, codec, sslPort, orb);
             this.secTaggedComponent = CSIv2Util.createSecurityTaggedComponent(metadata, codec, sslPort, orb);
         } catch (Exception e) {
-            throw new RuntimeException("Unexpected exception " + e);
+            throw JacORBMessages.MESSAGES.unexpectedException(e);
         }
     }
 

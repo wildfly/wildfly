@@ -29,6 +29,8 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.xa.XAResource;
 
+import org.jboss.as.jacorb.JacORBMessages;
+
 /**
  * A ForeignTransaction, a marker for when we would have to import a
  * transaction from another vendor. Which we don't do at the moment.
@@ -43,31 +45,31 @@ public class ForeignTransaction implements Transaction {
 
     public void commit() throws RollbackException, HeuristicMixedException, HeuristicRollbackException,
             SecurityException, SystemException {
-        throw new UnsupportedOperationException("Foreign Transaction");
+        throw JacORBMessages.MESSAGES.foreignTransaction();
     }
 
     public void rollback() throws IllegalStateException, SystemException {
-        throw new UnsupportedOperationException("Foreign Transaction");
+        throw JacORBMessages.MESSAGES.foreignTransaction();
     }
 
     public void setRollbackOnly() throws IllegalStateException, SystemException {
-        throw new UnsupportedOperationException("Foreign Transaction");
+        throw JacORBMessages.MESSAGES.foreignTransaction();
     }
 
     public int getStatus() throws SystemException {
-        throw new UnsupportedOperationException("Foreign Transaction");
+        throw JacORBMessages.MESSAGES.foreignTransaction();
     }
 
     public boolean enlistResource(XAResource xaRes) throws RollbackException, IllegalStateException, SystemException {
-        throw new UnsupportedOperationException("Foreign Transaction");
+        throw JacORBMessages.MESSAGES.foreignTransaction();
     }
 
     public boolean delistResource(XAResource xaRes, int flag) throws IllegalStateException, SystemException {
-        throw new UnsupportedOperationException("Foreign Transaction");
+        throw JacORBMessages.MESSAGES.foreignTransaction();
     }
 
     public void registerSynchronization(Synchronization sync) throws RollbackException, IllegalStateException,
             SystemException {
-        throw new UnsupportedOperationException("Foreign Transaction");
+        throw JacORBMessages.MESSAGES.foreignTransaction();
     }
 }

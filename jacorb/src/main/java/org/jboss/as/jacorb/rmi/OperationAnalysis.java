@@ -28,6 +28,8 @@ import java.lang.reflect.Method;
 
 import java.util.ArrayList;
 
+import org.jboss.as.jacorb.JacORBMessages;
+
 
 /**
  * Operation analysis.
@@ -39,8 +41,6 @@ import java.util.ArrayList;
  * @version $Revision: 81018 $
  */
 public class OperationAnalysis  extends AbstractAnalysis {
-
-    private static final org.jboss.logging.Logger logger =  org.jboss.logging.Logger.getLogger(OperationAnalysis.class);
 
     /**
      * The Method that this OperationAnalysis is mapping.
@@ -59,7 +59,6 @@ public class OperationAnalysis  extends AbstractAnalysis {
 
     OperationAnalysis(final Method method)  throws RMIIIOPViolationException {
         super(method.getName());
-        logger.debug("new OperationAnalysis: " + method.getName());
         this.method = method;
 
         // Check if valid return type, IF it is a remote interface.
@@ -79,13 +78,9 @@ public class OperationAnalysis  extends AbstractAnalysis {
                     !RemoteException.class.isAssignableFrom(ex[i]))
                 a.add(ExceptionAnalysis.getExceptionAnalysis(ex[i])); // map this
         }
-        if (!gotRemoteException &&
-                Remote.class.isAssignableFrom(method.getDeclaringClass()))
-            throw new RMIIIOPViolationException(
-                    "All interface methods must throw java.rmi.RemoteException, " +
-                            "or a superclass of java.rmi.RemoteException, but method " +
-                            getJavaName() + " of interface " +
-                            method.getDeclaringClass().getName() + " does not.", "1.2.3");
+        if (!gotRemoteException && Remote.class.isAssignableFrom(method.getDeclaringClass()))
+            throw JacORBMessages.MESSAGES.badRMIIIOPMethodSignature(getJavaName(), method.getDeclaringClass().getName(),
+                    "1.2.3");
         final ExceptionAnalysis[] exceptions = new ExceptionAnalysis[a.size()];
         mappedExceptions = (ExceptionAnalysis[]) a.toArray(exceptions);
 
@@ -93,8 +88,6 @@ public class OperationAnalysis  extends AbstractAnalysis {
         Class[] params = method.getParameterTypes();
         parameters = new ParameterAnalysis[params.length];
         for (int i = 0; i < params.length; ++i) {
-            logger.debug("OperationAnalysis: " + method.getName() +
-                    " has parameter [" + params[i].getName() + "]");
             parameters[i] = new ParameterAnalysis("param" + (i + 1), params[i]);
         }
     }

@@ -32,6 +32,8 @@ import java.util.Vector;
 import javax.naming.Name;
 import javax.naming.NamingException;
 
+import org.jboss.as.jacorb.JacORBMessages;
+
 /**
  * Extract components of an "iiop" or "iiopname" URL.
  * <p/>
@@ -89,15 +91,13 @@ public final class IiopUrl {
             } else {
                 int dot = hostPortVers.indexOf('.');
                 if (dot < 0) {
-                    throw new MalformedURLException(
-                            "invalid version: " + hostPortVers);
+                    throw JacORBMessages.MESSAGES.invalidIIOPURLVersion(hostPortVers);
                 }
                 try {
                     major = Integer.parseInt(hostPortVers.substring(0, dot));
                     minor = Integer.parseInt(hostPortVers.substring(dot + 1, at));
                 } catch (NumberFormatException e) {
-                    throw new MalformedURLException(
-                            "Nonnumeric version: " + hostPortVers);
+                    throw JacORBMessages.MESSAGES.invalidIIOPURLVersion(hostPortVers);
                 }
                 start = at + 1;  // skip '@' sign
             }
@@ -110,8 +110,7 @@ public final class IiopUrl {
             if (hostPortVers.startsWith("[", start)) {  // at IPv6 literal
                 int brac = hostPortVers.indexOf(']', start + 1);
                 if (brac < 0 || brac > slash) {
-                    throw new IllegalArgumentException(
-                            "IiopURL: name is an Invalid URL: " + hostPortVers);
+                    throw JacORBMessages.MESSAGES.invalidURL("iiopname", hostPortVers);
                 }
 
                 // include brackets
@@ -133,8 +132,7 @@ public final class IiopUrl {
                     port = Integer.parseInt(hostPortVers.
                             substring(start, slash));
                 } else {
-                    throw new IllegalArgumentException(
-                            "IiopURL: name is an Invalid URL: " + hostPortVers);
+                    throw JacORBMessages.MESSAGES.invalidURL("iiopname", hostPortVers);
                 }
             }
             start = slash;
@@ -175,7 +173,7 @@ public final class IiopUrl {
             oldFormat = true;
             addrStart = 7;
         } else {
-            throw new MalformedURLException("Invalid iiop/iiopname URL: " + url);
+            throw JacORBMessages.MESSAGES.invalidURL("iiop/iiopname", url);
         }
         int addrEnd = url.indexOf('/', addrStart);
         if (addrEnd < 0) {
@@ -200,23 +198,4 @@ public final class IiopUrl {
             }
         }
     }
-
-    // for testing only
-    /*public static void main(String[] args) {
-        try {
-            IiopUrl url = new IiopUrl(args[0]);
-            Vector addrs = url.getAddresses();
-            String name = url.getStringName();
-
-            for (int i = 0; i < addrs.size(); i++) {
-                Address addr = (Address)addrs.elementAt(i);
-                System.out.println("host: " + addr.host);
-                System.out.println("port: " + addr.port);
-                System.out.println("version: " + addr.major + " " + addr.minor);
-            }
-            System.out.println("name: " + name);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-    } */
 }

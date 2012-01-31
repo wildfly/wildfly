@@ -23,8 +23,9 @@
 package org.jboss.as.jacorb.service;
 
 import org.jacorb.config.Configuration;
+import org.jboss.as.jacorb.JacORBLogger;
+import org.jboss.as.jacorb.JacORBMessages;
 import org.jboss.as.jacorb.naming.CorbaNamingContext;
-import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -46,8 +47,6 @@ import org.omg.PortableServer.POA;
  */
 public class CorbaNamingService implements Service<NamingContextExt> {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.jacorb");
-
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("jacorb", "naming-service");
 
     private final InjectedValue<POA> rootPOAInjector = new InjectedValue<POA>();
@@ -60,7 +59,7 @@ public class CorbaNamingService implements Service<NamingContextExt> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        log.debugf("Starting Service " + context.getController().getName().getCanonicalName());
+        JacORBLogger.ROOT_LOGGER.debugServiceStartup(context.getController().getName().getCanonicalName());
 
         ORB orb = orbInjector.getValue();
         POA rootPOA = rootPOAInjector.getValue();
@@ -83,19 +82,19 @@ public class CorbaNamingService implements Service<NamingContextExt> {
             namingService = NamingContextExtHelper.narrow(namingPOA.create_reference_with_id(rootContextId,
                     "IDL:omg.org/CosNaming/NamingContextExt:1.0"));
         } catch (Exception e) {
-            throw new StartException("Failed to start the CORBA Naming Service", e);
+            throw JacORBMessages.MESSAGES.failedToStartJBossCOSNaming(e);
         }
 
         // bind the corba naming service to JNDI.
         CorbaServiceUtil.bindObject(context.getChildTarget(), "corbanaming", namingService);
 
-        log.info("CORBA Naming Service Started");
-        log.debugf("Naming: [" + orb.object_to_string(namingService) + "]");
+        JacORBLogger.ROOT_LOGGER.corbaNamingServiceStarted();
+        JacORBLogger.ROOT_LOGGER.debugNamingServiceIOR(orb.object_to_string(namingService));
     }
 
     @Override
     public void stop(StopContext context) {
-        log.debugf("Stopping Service " + context.getController().getName().getCanonicalName());
+        JacORBLogger.ROOT_LOGGER.debugServiceStop(context.getController().getName().getCanonicalName());
     }
 
     @Override

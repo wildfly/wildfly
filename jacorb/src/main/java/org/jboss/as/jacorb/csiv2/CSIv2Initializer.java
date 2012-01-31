@@ -24,6 +24,7 @@ package org.jboss.as.jacorb.csiv2;
 
 import org.jacorb.security.ssl.SSLPolicyFactory;
 import org.jacorb.ssl.SSL_POLICY_TYPE;
+import org.jboss.as.jacorb.JacORBMessages;
 import org.omg.CORBA.LocalObject;
 import org.omg.IOP.Codec;
 import org.omg.IOP.ENCODING_CDR_ENCAPS;
@@ -63,7 +64,7 @@ public class CSIv2Initializer extends LocalObject implements ORBInitializer {
             info.register_policy_factory(CSIv2Policy.TYPE, new CSIv2PolicyFactory(codec));
             info.register_policy_factory(SSL_POLICY_TYPE.value, new SSLPolicyFactory());
         } catch (Exception e) {
-            throw new RuntimeException("Unexpected " + e);
+            throw JacORBMessages.MESSAGES.unexpectedException(e);
         }
     }
 }

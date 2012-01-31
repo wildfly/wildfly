@@ -21,34 +21,34 @@
  */
 package org.jboss.as.jacorb.rmi.ir;
 
-import org.omg.CORBA.ExceptionDefOperations;
-import org.omg.CORBA.ExceptionDefPOATie;
+import org.jboss.as.jacorb.JacORBMessages;
+import org.omg.CORBA.AliasDef;
 import org.omg.CORBA.Any;
-import org.omg.CORBA.TypeCode;
-import org.omg.CORBA.IRObject;
+import org.omg.CORBA.ConstantDef;
 import org.omg.CORBA.Contained;
 import org.omg.CORBA.ContainedOperations;
 import org.omg.CORBA.ContainedPackage.Description;
-import org.omg.CORBA.IDLType;
-import org.omg.CORBA.IDLTypeHelper;
 import org.omg.CORBA.DefinitionKind;
-import org.omg.CORBA.StructMember;
-import org.omg.CORBA.UnionMember;
-import org.omg.CORBA.InterfaceDef;
-import org.omg.CORBA.ConstantDef;
 import org.omg.CORBA.EnumDef;
-import org.omg.CORBA.ValueDef;
-import org.omg.CORBA.ValueBoxDef;
-import org.omg.CORBA.Initializer;
-import org.omg.CORBA.StructDef;
-import org.omg.CORBA.UnionDef;
 import org.omg.CORBA.ExceptionDef;
-import org.omg.CORBA.AliasDef;
-import org.omg.CORBA.NativeDef;
-import org.omg.CORBA.ModuleDef;
+import org.omg.CORBA.ExceptionDefOperations;
+import org.omg.CORBA.ExceptionDefPOATie;
 import org.omg.CORBA.ExceptionDescription;
 import org.omg.CORBA.ExceptionDescriptionHelper;
-import org.omg.CORBA.BAD_INV_ORDER;
+import org.omg.CORBA.IDLType;
+import org.omg.CORBA.IDLTypeHelper;
+import org.omg.CORBA.IRObject;
+import org.omg.CORBA.Initializer;
+import org.omg.CORBA.InterfaceDef;
+import org.omg.CORBA.ModuleDef;
+import org.omg.CORBA.NativeDef;
+import org.omg.CORBA.StructDef;
+import org.omg.CORBA.StructMember;
+import org.omg.CORBA.TypeCode;
+import org.omg.CORBA.UnionDef;
+import org.omg.CORBA.UnionMember;
+import org.omg.CORBA.ValueBoxDef;
+import org.omg.CORBA.ValueDef;
 
 /**
  * Abstract base class for all contained IR entities.
@@ -101,8 +101,7 @@ class ExceptionDefImpl
 
     public void add(String name, LocalContained contained)
             throws IRConstructionException {
-        throw new RuntimeException("Should never reach this point.");
-        //delegate.add(name, contained);
+        throw new UnsupportedOperationException();
     }
 
     // ContainerOperations implementation ----------------------------
@@ -250,7 +249,7 @@ class ExceptionDefImpl
     }
 
     public void members(StructMember[] arg) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     // Package protected ---------------------------------------------

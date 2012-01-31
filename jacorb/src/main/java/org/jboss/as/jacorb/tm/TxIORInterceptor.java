@@ -21,7 +21,7 @@
  */
 package org.jboss.as.jacorb.tm;
 
-import org.jboss.util.NestedRuntimeException;
+import org.jboss.as.jacorb.JacORBMessages;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.LocalObject;
 import org.omg.CORBA.ORB;
@@ -37,6 +37,7 @@ import org.omg.PortableInterceptor.IORInterceptor;
  *
  * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
  */
+@SuppressWarnings("unused")
 public class TxIORInterceptor extends LocalObject implements IORInterceptor {
     /**
      * @since 4.0.1
@@ -75,7 +76,7 @@ public class TxIORInterceptor extends LocalObject implements IORInterceptor {
             taggedComponentData = codec.encode_value(any);
             info.add_ior_component(new TaggedComponent(TAG_OTS_POLICY, taggedComponentData));
         } catch (InvalidTypeForEncoding e) {
-            throw new NestedRuntimeException("Exception during encoding", e);
+            throw JacORBMessages.MESSAGES.errorEncodingContext(e);
         }
     }
 }

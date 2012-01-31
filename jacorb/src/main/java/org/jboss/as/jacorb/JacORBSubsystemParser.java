@@ -343,8 +343,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
                 if (definition != null && JacORBSubsystemDefinitions.ORB_INIT_ATTRIBUTES.contains(definition))
                     node.get(definition.getName()).set("on");
                 else
-                    throw new XMLStreamException(
-                            "Unexpected element value. Should be one of [security,transactions]");
+                    throw JacORBMessages.MESSAGES.invalidInitializerConfig(initializer, reader.getLocation());
             }
         }
     }
@@ -486,7 +485,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
                 case SECURITY_SERVER_REQUIRES:
                     SSLConfigValue value = SSLConfigValue.fromValue(attrValue);
                     if (value == null)
-                        throw new XMLStreamException("Invalid SSL config option. Should be one of [0,20,40,60]");
+                        throw JacORBMessages.MESSAGES.invalidSSLConfig(attrValue, reader.getLocation());
                     attrValue = value.toString();
                 default:
                     SimpleAttributeDefinition definition = ((SimpleAttributeDefinition) JacORBSubsystemDefinitions.

@@ -21,50 +21,49 @@
  */
 package org.jboss.as.jacorb.rmi.ir;
 
-import org.omg.CORBA.ValueDef;
-import org.omg.CORBA.ValueDefOperations;
-import org.omg.CORBA.ValueDefPOATie;
-import org.omg.CORBA.ValueDefHelper;
-import org.omg.CORBA.ValueDescription;
-import org.omg.CORBA.ValueDescriptionHelper;
-import org.omg.CORBA.ValueMemberDef;
-import org.omg.CORBA.ValueMember;
+import org.jboss.as.jacorb.JacORBMessages;
+import org.omg.CORBA.AliasDef;
 import org.omg.CORBA.Any;
-import org.omg.CORBA.TypeCode;
-import org.omg.CORBA.TypeCodePackage.BadKind;
-import org.omg.CORBA.TCKind;
-import org.omg.CORBA.IRObject;
+import org.omg.CORBA.AttributeDef;
+import org.omg.CORBA.AttributeDescription;
+import org.omg.CORBA.AttributeMode;
+import org.omg.CORBA.ConstantDef;
 import org.omg.CORBA.Contained;
 import org.omg.CORBA.ContainedPackage.Description;
 import org.omg.CORBA.DefinitionKind;
-import org.omg.CORBA.IDLType;
-import org.omg.CORBA.StructMember;
-import org.omg.CORBA.UnionMember;
-import org.omg.CORBA.ConstantDef;
 import org.omg.CORBA.EnumDef;
-import org.omg.CORBA.ValueBoxDef;
+import org.omg.CORBA.ExceptionDef;
+import org.omg.CORBA.IDLType;
+import org.omg.CORBA.IRObject;
+import org.omg.CORBA.Initializer;
 import org.omg.CORBA.InterfaceDef;
 import org.omg.CORBA.InterfaceDefHelper;
-import org.omg.CORBA.Initializer;
-import org.omg.CORBA.StructDef;
-import org.omg.CORBA.UnionDef;
 import org.omg.CORBA.ModuleDef;
-import org.omg.CORBA.AliasDef;
 import org.omg.CORBA.NativeDef;
 import org.omg.CORBA.OperationDef;
+import org.omg.CORBA.OperationDescription;
 import org.omg.CORBA.OperationMode;
 import org.omg.CORBA.ParameterDescription;
-import org.omg.CORBA.AttributeDef;
-import org.omg.CORBA.AttributeMode;
-import org.omg.CORBA.ExceptionDef;
-import org.omg.CORBA.OperationDescription;
-import org.omg.CORBA.AttributeDescription;
-import org.omg.CORBA.BAD_INV_ORDER;
-import org.omg.CORBA.VM_NONE;
-import org.omg.CORBA.VM_CUSTOM;
+import org.omg.CORBA.StructDef;
+import org.omg.CORBA.StructMember;
+import org.omg.CORBA.TCKind;
+import org.omg.CORBA.TypeCode;
+import org.omg.CORBA.TypeCodePackage.BadKind;
+import org.omg.CORBA.UnionDef;
+import org.omg.CORBA.UnionMember;
 import org.omg.CORBA.VM_ABSTRACT;
-
+import org.omg.CORBA.VM_CUSTOM;
+import org.omg.CORBA.VM_NONE;
+import org.omg.CORBA.ValueBoxDef;
+import org.omg.CORBA.ValueDef;
+import org.omg.CORBA.ValueDefHelper;
+import org.omg.CORBA.ValueDefOperations;
+import org.omg.CORBA.ValueDefPOATie;
 import org.omg.CORBA.ValueDefPackage.FullValueDescription;
+import org.omg.CORBA.ValueDescription;
+import org.omg.CORBA.ValueDescriptionHelper;
+import org.omg.CORBA.ValueMember;
+import org.omg.CORBA.ValueMemberDef;
 
 /**
  * Interface IR object.
@@ -73,9 +72,6 @@ import org.omg.CORBA.ValueDefPackage.FullValueDescription;
  * @version $Revision: 81018 $
  */
 class ValueDefImpl  extends ContainedImpl  implements ValueDefOperations, LocalContainer, LocalContainedIDLType {
-
-    private static final org.jboss.logging.Logger logger =
-            org.jboss.logging.Logger.getLogger(ValueDefImpl.class);
 
     // Constructors --------------------------------------------------
 
@@ -138,29 +134,14 @@ class ValueDefImpl  extends ContainedImpl  implements ValueDefOperations, LocalC
         getReference();
         delegate.allDone();
 
-        logger.debug("ValueDefImpl.allDone(): baseValueTypeCode is " +
-                ((baseValueTypeCode == null) ? "null" : "NOT null"));
-        if (baseValueTypeCode != null)
-            logger.debug("ValueDefImpl.allDone(): " +
-                    "baseValueTypeCode.kind().value()=" +
-                    baseValueTypeCode.kind().value());
-        if (baseValueTypeCode != null &&
-                baseValueTypeCode.kind() != TCKind.tk_null) {
+        if (baseValueTypeCode != null && baseValueTypeCode.kind() != TCKind.tk_null) {
             try {
                 baseValue = baseValueTypeCode.id();
-                logger.debug("ValueDefImpl.allDone(): baseValue=\""
-                        + baseValue + "\".");
             } catch (BadKind ex) {
-                throw new IRConstructionException(
-                        "Bad kind for super-valuetype of " + id());
+                throw JacORBMessages.MESSAGES.badKindForSuperValueType(id());
             }
             Contained c = repository.lookup_id(baseValue);
-            logger.debug("ValueDefImpl.allDone(): c is " +
-                    ((c == null) ? "null" : "NOT null"));
             base_value_ref = ValueDefHelper.narrow(c);
-            logger.debug("ValueDefImpl.allDone(): base_value_ref is " +
-                    ((base_value_ref == null) ? "null" : "NOT null"));
-            //base_value_ref = ValueDefHelper.narrow(repository.lookup_id(baseValue));
         } else
             baseValue = "IDL:omg.org/CORBA/ValueBase:1.0"; // TODO: is this right?
 
@@ -170,10 +151,7 @@ class ValueDefImpl  extends ContainedImpl  implements ValueDefOperations, LocalC
             InterfaceDef iDef = InterfaceDefHelper.narrow(
                     repository.lookup_id(supported_interfaces[i]));
             if (iDef == null)
-                throw new IRConstructionException(
-                        "ValueDef \"" + id() + "\" unable to resolve " +
-                                "reference to implemented interface \"" +
-                                supported_interfaces[i] + "\".");
+                throw JacORBMessages.MESSAGES.errorResolvingRefToImplementedInterface(id(), supported_interfaces[i]);
             supported_interfaces_ref[i] = iDef;
         }
 
@@ -184,10 +162,7 @@ class ValueDefImpl  extends ContainedImpl  implements ValueDefOperations, LocalC
             ValueDef vDef = ValueDefHelper.narrow(
                     repository.lookup_id(abstract_base_valuetypes[i]));
             if (vDef == null)
-                throw new IRConstructionException(
-                        "ValueDef \"" + id() + "\" unable to resolve " +
-                                "reference to abstract base valuetype \"" +
-                                abstract_base_valuetypes[i] + "\".");
+                throw JacORBMessages.MESSAGES.errorResolvingRefToAbstractValuetype(id(), abstract_base_valuetypes[i]);
             abstract_base_valuetypes_ref[i] = vDef;
         }
     }
@@ -201,24 +176,12 @@ class ValueDefImpl  extends ContainedImpl  implements ValueDefOperations, LocalC
     // ContainerOperations implementation ----------------------------
 
     public Contained lookup(String search_name) {
-        logger.debug("ValueDefImpl.lookup(\"" + search_name + "\") entered.");
-        Contained res = delegate.lookup(search_name);
-        logger.debug("ValueDefImpl.lookup(\"" + search_name +
-                "\") returning " + ((res == null) ? "null" : "non-null"));
-        return res;
-        //return delegate.lookup(search_name);
+        return delegate.lookup(search_name);
     }
 
     public Contained[] contents(DefinitionKind limit_type,
                                 boolean exclude_inherited) {
-        logger.debug("ValueDefImpl.contents() entered.");
-        Contained[] res = delegate.contents(limit_type, exclude_inherited);
-        logger.debug("ValueDefImpl.contents() " + res.length +
-                " contained to return.");
-        for (int i = 0; i < res.length; ++i)
-            logger.debug("  ValueDefImpl.contents() [" + i + "]: " + res[i].id());
-        return res;
-        //return delegate.contents(limit_type, exclude_inherited);
+        return delegate.contents(limit_type, exclude_inherited);
     }
 
     public Contained[] lookup_name(String search_name, int levels_to_search,
@@ -308,7 +271,7 @@ class ValueDefImpl  extends ContainedImpl  implements ValueDefOperations, LocalC
     }
 
     public void supported_interfaces(InterfaceDef[] arg) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public Initializer[] initializers() {
@@ -318,21 +281,15 @@ class ValueDefImpl  extends ContainedImpl  implements ValueDefOperations, LocalC
     }
 
     public void initializers(Initializer[] arg) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public ValueDef base_value() {
-        logger.debug("ValueDefImpl[" + id + "].base_value() entered.");
-        if (base_value_ref == null)
-            logger.debug("ValueDefImpl[" + id + "].base_value() returning NULL.");
-        else
-            logger.debug("ValueDefImpl[" + id + "].base_value() returning \"" +
-                    base_value_ref.id() + "\".");
         return base_value_ref;
     }
 
     public void base_value(ValueDef arg) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public ValueDef[] abstract_base_values() {
@@ -340,7 +297,7 @@ class ValueDefImpl  extends ContainedImpl  implements ValueDefOperations, LocalC
     }
 
     public void abstract_base_values(ValueDef[] arg) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public boolean is_abstract() {
@@ -348,7 +305,7 @@ class ValueDefImpl  extends ContainedImpl  implements ValueDefOperations, LocalC
     }
 
     public void is_abstract(boolean arg) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public boolean is_custom() {
@@ -356,7 +313,7 @@ class ValueDefImpl  extends ContainedImpl  implements ValueDefOperations, LocalC
     }
 
     public void is_custom(boolean arg) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public boolean is_truncatable() {
@@ -364,7 +321,7 @@ class ValueDefImpl  extends ContainedImpl  implements ValueDefOperations, LocalC
     }
 
     public void is_truncatable(boolean arg) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public boolean is_a(String id) {
@@ -404,12 +361,12 @@ class ValueDefImpl  extends ContainedImpl  implements ValueDefOperations, LocalC
     public ValueMemberDef create_value_member(String id, String name,
                                               String version, IDLType type,
                                               short access) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public AttributeDef create_attribute(String id, String name, String version,
                                          IDLType type, AttributeMode mode) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public OperationDef create_operation(String id, String name, String version,
@@ -417,14 +374,13 @@ class ValueDefImpl  extends ContainedImpl  implements ValueDefOperations, LocalC
                                          ParameterDescription[] params,
                                          ExceptionDef[] exceptions,
                                          String[] contexts) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
 
     // IDLTypeOperations implementation ------------------------------
 
     public TypeCode type() {
-        logger.debug("ValueDefImpl.type() entered.");
         if (typeCode == null) {
             short modifier = VM_NONE.value;
             if (is_custom)
@@ -436,7 +392,6 @@ class ValueDefImpl  extends ContainedImpl  implements ValueDefOperations, LocalC
                     baseValueTypeCode,
                     getValueMembersForTypeCode());
         }
-        logger.debug("ValueDefImpl.type() returning.");
         return typeCode;
     }
 
