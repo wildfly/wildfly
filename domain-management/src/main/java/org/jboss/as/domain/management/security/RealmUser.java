@@ -33,6 +33,11 @@ public class RealmUser extends DomainManagementPrincipal {
 
     private final String realm;
 
+    public RealmUser(final String name) {
+        super(name);
+        this.realm = null;
+    }
+
     public RealmUser(final String realm, final String name) {
         super(name);
         if (name == null) {
@@ -46,7 +51,7 @@ public class RealmUser extends DomainManagementPrincipal {
     }
 
     public String getFullName() {
-        return getName() + "@" + realm;
+        return realm == null ? getName() : getName() + "@" + realm;
     }
 
     @Override
@@ -56,7 +61,7 @@ public class RealmUser extends DomainManagementPrincipal {
 
     @Override
     public int hashCode() {
-        return (super.hashCode() + 31) * realm.hashCode();
+        return (super.hashCode() + 31) * (realm == null ? 101 : realm.hashCode());
     }
 
     @Override
