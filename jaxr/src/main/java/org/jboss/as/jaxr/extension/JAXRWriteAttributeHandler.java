@@ -42,8 +42,7 @@ import org.jboss.dmr.ModelType;
 public class JAXRWriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {
 
     static AttributeDefinition CONNECTION_FACTORY_ATTRIBUTE = new JAXRAttributeDefinition(ModelConstants.CONNECTION_FACTORY);
-    static AttributeDefinition PUBLISH_URL_ATTRIBUTE = new JAXRAttributeDefinition(ModelConstants.PUBLISH_URL);
-    static AttributeDefinition QUERY_URL_ATTRIBUTE = new JAXRAttributeDefinition(ModelConstants.QUERY_URL);
+    static AttributeDefinition CONNECTION_FACTORY_IMPL_ATTRIBUTE = new JAXRAttributeDefinition(ModelConstants.CONNECTION_FACTORY_IMPL);
 
     private final JAXRConfiguration config;
 
@@ -53,8 +52,7 @@ public class JAXRWriteAttributeHandler extends AbstractWriteAttributeHandler<Voi
 
     void registerAttributes(final ManagementResourceRegistration registry) {
         registry.registerReadWriteAttribute(CONNECTION_FACTORY_ATTRIBUTE, null, this);
-        registry.registerReadWriteAttribute(PUBLISH_URL_ATTRIBUTE, null, this);
-        registry.registerReadWriteAttribute(QUERY_URL_ATTRIBUTE, null, this);
+        registry.registerReadWriteAttribute(CONNECTION_FACTORY_IMPL_ATTRIBUTE, null, this);
     }
 
     @Override

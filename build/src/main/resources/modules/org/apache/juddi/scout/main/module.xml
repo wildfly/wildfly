@@ -34,7 +34,7 @@
         <module name="javax.xml.registry.api"/>
         <module name="org.apache.commons.logging"/>
         <module name="org.apache.juddi.juddi-client"/>
-        <module name="org.apache.juddi.uddi-ws"/>
+        <module name="org.apache.juddi.uddi-ws" export="true"/>
         <module name="org.apache.commons.configuration"/>
         <module name="org.apache.commons.lang"/>
     </dependencies>
