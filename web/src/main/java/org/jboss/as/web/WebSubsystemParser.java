@@ -42,6 +42,7 @@ import java.util.List;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -893,10 +894,10 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 ssl.get(KEY_ALIAS).set(value);
                 break;
             case PASSWORD:
-                ssl.get(PASSWORD).set(value);
+                ssl.get(PASSWORD).set(ParseUtils.parsePossibleExpression(value));
                 break;
             case CERTIFICATE_KEY_FILE:
-                ssl.get(CERTIFICATE_KEY_FILE).set(value);
+                ssl.get(CERTIFICATE_KEY_FILE).set(ParseUtils.parsePossibleExpression(value));
                 break;
             case CIPHER_SUITE:
                 ssl.get(CIPHER_SUITE).set(value);
@@ -911,10 +912,10 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 ssl.get(VERIFY_DEPTH).set(Integer.valueOf(value));
                 break;
             case CERTIFICATE_FILE:
-                ssl.get(CERTIFICATE_FILE).set(value);
+                ssl.get(CERTIFICATE_FILE).set(ParseUtils.parsePossibleExpression(value));
                 break;
             case CA_CERTIFICATE_FILE:
-                ssl.get(CA_CERTIFICATE_FILE).set(value);
+                ssl.get(CA_CERTIFICATE_FILE).set(ParseUtils.parsePossibleExpression(value));
                 break;
             case CA_REVOCATION_URL:
                 ssl.get(CA_REVOCATION_URL).set(value);
@@ -926,7 +927,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 ssl.get(SESSION_TIMEOUT).set(value);
                 break;
             case CA_CERTIFICATE_PASSWORD:
-                ssl.get(CA_CERTIFICATE_PASSWORD).set(value);
+                ssl.get(CA_CERTIFICATE_PASSWORD).set(ParseUtils.parsePossibleExpression(value));
                 break;
             case KEYSTORE_TYPE:
                 ssl.get(KEYSTORE_TYPE).set(value);
