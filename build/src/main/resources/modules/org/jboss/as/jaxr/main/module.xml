@@ -34,7 +34,12 @@
     <dependencies>
         <module name="javax.api"/>
         <module name="javax.xml.soap.api"/>
-        <module name="org.apache.ws.scout"/>
+        <module name="javax.xml.registry.api"/>
+        <module name="org.apache.juddi.scout"/>
+        <module name="org.apache.juddi.juddi-client"/>
+        <module name="org.apache.juddi.uddi-ws"/>
+        <module name="org.apache.commons.configuration"/>
+        <module name="org.apache.commons.lang"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.naming"/>
         <module name="org.jboss.as.server"/>

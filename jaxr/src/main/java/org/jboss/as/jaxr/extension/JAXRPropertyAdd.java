@@ -21,6 +21,7 @@
  */
 package org.jboss.as.jaxr.extension;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -32,19 +33,32 @@ import org.jboss.as.jaxr.JAXRConfiguration;
 import org.jboss.as.jaxr.ModelConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
 
 /**
  * @author Kurt Stam
  */
 public class JAXRPropertyAdd extends AbstractAddStepHandler {
-    static final JAXRPropertyAdd INSTANCE = new JAXRPropertyAdd();
 
-    private JAXRPropertyAdd() {
+    private final JAXRConfiguration config;
+
+    public JAXRPropertyAdd(JAXRConfiguration config) {
+        this.config = config;
     }
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         model.get(ModelConstants.VALUE).set(operation.get(ModelConstants.VALUE));
+        ModelNode propertyNode = operation.get("address");
+        //System.out.println(propertyNode.asString());
+        List<Property> properties = propertyNode.asPropertyList();
+        for (Property property : properties) {
+            if (property.getName().equals(ModelConstants.PROPERTY)) {
+                config.applyUpdateToConfig(
+                        property.getValue().asString(),
+                        operation.get(ModelConstants.VALUE).asString());
+            }
+        }
     }
 
     static DescriptionProvider DESCRIPTION = new DescriptionProvider() {

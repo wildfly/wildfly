@@ -21,30 +21,34 @@
  */
 package org.jboss.as.jaxr;
 
+import java.util.Locale;
+import java.util.Properties;
+import java.util.ResourceBundle;
+
 import org.jboss.msc.service.ServiceName;
 
 /**
  * The configuration of the JAXR subsystem.
  *
  * @author Thomas.Diesler@jboss.com
+ * @author Kurt Stam
  * @since 26-Oct-2011
  */
 public class JAXRConfiguration {
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("jaxr", "configuration");
 
-    public static String[] REQUIRED_ATTRIBUTES = new String[]{
+    public static String[] OPTIONAL_ATTRIBUTES = new String[]{
             ModelConstants.CONNECTION_FACTORY,
-            ModelConstants.PUBLISH_URL,
-            ModelConstants.QUERY_URL
+            ModelConstants.CONNECTION_FACTORY_IMPL
     };
 
     // Context to which JAXR ConnectionFactory to bind to
     private String connectionFactoryBinding;
-    // The jUDDI server publish URL
-    private String publishURL;
-    // The jUDDI server publish URL
-    private String queryURL;
+    // Connection factory Implementation class
+    private String connectionFactoryImplementation;
+    // JAXR Properties
+    private Properties properties = new Properties();
 
     public JAXRConfiguration() {
         init();
@@ -54,16 +58,18 @@ public class JAXRConfiguration {
         connectionFactoryBinding = null;
     }
 
+    public static ResourceBundle getResourceBundle(Locale locale) {
+        return ResourceBundle.getBundle(JAXRConstants.RESOURCE_NAME, locale != null ? locale : Locale.getDefault());
+    }
+
     public void applyUpdateToConfig(String attributeName, String attributeValue) {
         if (attributeValue != null) {
             if (attributeName.equals(ModelConstants.CONNECTION_FACTORY)) {
                 setConnectionFactoryBinding(attributeValue);
-            } else if (attributeName.equals(ModelConstants.PUBLISH_URL)) {
-                setPublishURL(attributeValue);
-            } else if (attributeName.equals(ModelConstants.QUERY_URL)) {
-                setQueryURL(attributeValue);
+            } else if (attributeName.equals(ModelConstants.CONNECTION_FACTORY_IMPL)) {
+                setConnectionFactoryImplementation(attributeValue);
             } else {
-                throw new IllegalArgumentException("Invalid attribute name: " + attributeName);
+                properties.setProperty(attributeName, attributeValue);
             }
         }
     }
@@ -76,19 +82,20 @@ public class JAXRConfiguration {
         this.connectionFactoryBinding = connectionFactoryBinding;
     }
 
-    public String getPublishURL() {
-        return publishURL;
+    public Properties getProperties() {
+        return properties;
     }
 
-    public void setPublishURL(String publishURL) {
-        this.publishURL = publishURL;
+    public void setProperties(Properties properties) {
+        this.properties = properties;
     }
 
-    public String getQueryURL() {
-        return queryURL;
+    public void setConnectionFactoryImplementation(String connectionFactoryImplementation) {
+        this.connectionFactoryImplementation = connectionFactoryImplementation;
     }
 
-    public void setQueryURL(String queryURL) {
-        this.queryURL = queryURL;
+    public String getConnectionFactoryImplementation() {
+        return connectionFactoryImplementation;
     }
+
 }
