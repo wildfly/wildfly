@@ -52,6 +52,11 @@ class RemoteOutboundConnnectionResourceDefinition extends AbstractOutboundConnec
     }
 
     @Override
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerSubModel(new PropertyResource(CommonAttributes.REMOTE_OUTBOUND_CONNECTION));
+    }
+
+    @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         super.registerAttributes(resourceRegistration);
         resourceRegistration.registerReadWriteAttribute(OUTBOUND_SOCKET_BINDING_REF, null, RemoteOutboundConnectionWriteHandler.INSTANCE);

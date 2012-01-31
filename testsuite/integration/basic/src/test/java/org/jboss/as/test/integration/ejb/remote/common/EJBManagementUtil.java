@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.ejb.remote.common;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -34,6 +35,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_REF;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import javax.security.auth.callback.CallbackHandler;
@@ -50,6 +52,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.ejb3.subsystem.EJB3Extension;
 import org.jboss.as.ejb3.subsystem.EJB3SubsystemModel;
 import org.jboss.as.remoting.RemotingExtension;
@@ -228,17 +231,21 @@ public class EJBManagementUtil {
 
             // set the other properties
             addRemoteOutboundConnection.get("outbound-socket-binding-ref").set(outboundSocketRef);
-            if (!connectionCreationOptions.isEmpty()) {
-                final ModelNode connectionCreationOptionsModel = addRemoteOutboundConnection.get("connection-creation-options");
-                for (final Map.Entry<String, String> entry : connectionCreationOptions.entrySet()) {
-                    final String optionName = entry.getKey();
-                    final String optionValue = entry.getValue();
-                    connectionCreationOptionsModel.get(optionName).set(optionValue);
-                }
-            }
+            final ModelNode op = Util.getEmptyOperation(COMPOSITE, new ModelNode());
+            final ModelNode steps = op.get(STEPS);
+            steps.add(addRemoteOutboundConnection);
 
             // execute the add operation
-            execute(modelControllerClient, addRemoteOutboundConnection);
+            if (!connectionCreationOptions.isEmpty()) {
+                for (Map.Entry<String, String> property : connectionCreationOptions.entrySet()) {
+                    ModelNode propertyOp = new ModelNode();
+                    propertyOp.get(OP).set(ADD);
+                    propertyOp.get(OP_ADDR).set(address.toModelNode()).add("property", property.getKey());
+                    propertyOp.get("value").set(property.getValue());
+                    steps.add(propertyOp);
+                }
+            }
+            execute(modelControllerClient, op);
 
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);

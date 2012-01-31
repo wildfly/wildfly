@@ -22,15 +22,9 @@
 
 package org.jboss.as.remoting;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.List;
-import java.util.Map;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
@@ -40,6 +34,12 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.remoting3.Endpoint;
 import org.xnio.OptionMap;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 /**
  * @author Jaikiran Pai
  */
@@ -47,7 +47,7 @@ class GenericOutboundConnectionAdd extends AbstractOutboundConnectionAddHandler 
 
     static final GenericOutboundConnectionAdd INSTANCE = new GenericOutboundConnectionAdd();
 
-    static ModelNode getAddOperation(final String connectionName, final String uri, final Map<String, String> connectionCreationOptions) {
+    static ModelNode getAddOperation(final String connectionName, final String uri, PathAddress address) {
         if (connectionName == null || connectionName.trim().isEmpty()) {
             throw new IllegalArgumentException("Connection name cannot be null or empty");
         }
@@ -56,23 +56,10 @@ class GenericOutboundConnectionAdd extends AbstractOutboundConnectionAddHandler 
         }
         final ModelNode addOperation = new ModelNode();
         addOperation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-        // /subsystem=remoting/outbound-connection=<connection-name>
-        final PathAddress address = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME),
-                PathElement.pathElement(CommonAttributes.OUTBOUND_CONNECTION, connectionName));
         addOperation.get(ModelDescriptionConstants.OP_ADDR).set(address.toModelNode());
 
         // set the other params
         addOperation.get(CommonAttributes.URI).set(uri);
-        // optional connection creation options
-        if (connectionCreationOptions != null) {
-            for (final Map.Entry<String, String> entry : connectionCreationOptions.entrySet()) {
-                if (entry.getKey() == null) {
-                    // skip
-                    continue;
-                }
-                addOperation.get(CommonAttributes.CONNECTION_CREATION_OPTIONS).add(entry.getKey(), entry.getValue());
-            }
-        }
 
         return addOperation;
     }
@@ -90,18 +77,20 @@ class GenericOutboundConnectionAdd extends AbstractOutboundConnectionAddHandler 
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        final String name = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
-        final ServiceController serviceController = installRuntimeService(context, name, model, verificationHandler);
+        final ServiceController serviceController = installRuntimeService(context, model, verificationHandler);
         newControllers.add(serviceController);
     }
 
-    ServiceController installRuntimeService(OperationContext context, final String connectionName, ModelNode outboundConnection,
+    ServiceController installRuntimeService(OperationContext context, ModelNode operation,
                                             ServiceVerificationHandler verificationHandler) throws OperationFailedException {
+        final PathAddress pathAddress = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final OptionMap connectionCreationOptions = ConnectorResource.getOptions(context, pathAddress);
+        final String connectionName = pathAddress.getLastElement().getValue();
 
-        // fetch the connection creation options from the model
-        final OptionMap connectionCreationOptions = getConnectionCreationOptions(outboundConnection);
+
+        //final OptionMap connectionCreationOptions = getConnectionCreationOptions(outboundConnection);
         // Get the destination URI
-        final URI uri = getDestinationURI(context, outboundConnection);
+        final URI uri = getDestinationURI(context, operation);
         // create the service
         final GenericOutboundConnectionService outboundRemotingConnectionService = new GenericOutboundConnectionService(connectionName, uri, connectionCreationOptions);
         final ServiceName serviceName = AbstractOutboundConnectionService.OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(connectionName);
