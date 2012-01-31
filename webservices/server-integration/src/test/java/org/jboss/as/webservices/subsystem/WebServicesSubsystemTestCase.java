@@ -23,19 +23,14 @@ package org.jboss.as.webservices.subsystem;
 
 import java.io.IOException;
 
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.as.webservices.dmr.WSExtension;
-import org.junit.Ignore;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-@Ignore("AS7-1804")
-public class WebServicesSubsystemTestCase extends AbstractSubsystemBaseTest {
+public final class WebServicesSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     public WebServicesSubsystemTestCase() {
         super(WSExtension.SUBSYSTEM_NAME, new WSExtension());
@@ -43,55 +38,20 @@ public class WebServicesSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        //This is copied from standalone-preview.xml. Testing more combinations would be good
         return
-            "<subsystem xmlns=\"urn:jboss:domain:webservices:1.0\">" +
-            "    <modify-wsdl-address>true</modify-wsdl-address>" +
-            "    <wsdl-host>localhost</wsdl-host>" +
-            "    <!--" +
-            "    <wsdl-port>8080</wsdl-port>" +
-            "    <wsdl-secure-port>8443</wsdl-secure-port>" +
-            "    -->" +
-            "    <endpoint-config xmlns:ws=\"urn:jboss:jbossws-jaxws-config:4.0\">" +
-            "       <ws:config-name>Standard-Endpoint-Config</ws:config-name>" +
-            "    </endpoint-config>" +
-            "    <endpoint-config xmlns:ws=\"urn:jboss:jbossws-jaxws-config:4.0\">" +
-            "       <ws:config-name>Recording-Endpoint-Config</ws:config-name>" +
-            "       <ws:pre-handler-chains>" +
-            "           <handler-chain xmlns=\"http://java.sun.com/xml/ns/javaee\">" +
-            "               <protocol-bindings>##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM</protocol-bindings>" +
-            "               <handler>" +
-            "                   <handler-name>RecordingHandler</handler-name>" +
-            "                   <handler-class>org.jboss.ws.common.invocation.RecordingServerHandler</handler-class>" +
-            "               </handler>" +
-            "           </handler-chain>" +
-            "       </ws:pre-handler-chains>" +
+            "<subsystem xmlns=\"urn:jboss:domain:webservices:1.1\">" + 
+            "    <modify-wsdl-address>true</modify-wsdl-address>" + 
+            "    <wsdl-host>${jboss.bind.address:127.0.0.1}</wsdl-host>" + 
+            "    <wsdl-port>8080</wsdl-port>" + 
+            "    <wsdl-secure-port>8443</wsdl-secure-port>" + 
+            "    <endpoint-config name=\"Standard-Endpoint-Config\"/>" + 
+            "    <endpoint-config name=\"Recording-Endpoint-Config\">" + 
+            "        <pre-handler-chain name=\"recording-handlers\" protocol-bindings=\"##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM\">" +
+            "            <handler name=\"RecordingHandler\" class=\"org.jboss.ws.common.invocation.RecordingServerHandler\"/>" + 
+            "        </pre-handler-chain>" +
+            "        <property name=\"foo\" value=\"bar\"/>" + 
             "    </endpoint-config>" +
             "</subsystem>";
-
-    }
-
-    protected AdditionalInitialization createAdditionalInitialization() {
-        return new AdditionalInitialization(){
-            @Override
-            protected OperationContext.Type getType() {
-                return OperationContext.Type.MANAGEMENT;
-            }
-
-
-            @Override
-            protected ValidationConfiguration getModelValidationConfiguration() {
-                //TODO fix providers https://issues.jboss.org/browse/AS7-1804
-                return null;
-            }
-
-
-            @Override
-            protected boolean isValidateOperations() {
-                //TODO fix providers https://issues.jboss.org/browse/AS7-1804
-                return false;
-            }
-        };
     }
 
 }

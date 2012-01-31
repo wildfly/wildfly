@@ -48,7 +48,7 @@ import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONTEXT;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_NAME;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_TYPE;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_WSDL;
-import static org.jboss.as.webservices.dmr.Constants.HANDLER_CHAIN;
+import static org.jboss.as.webservices.dmr.Constants.HANDLER;
 import static org.jboss.as.webservices.dmr.Constants.MODIFY_WSDL_ADDRESS;
 import static org.jboss.as.webservices.dmr.Constants.POST_HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PRE_HANDLER_CHAIN;
@@ -262,10 +262,6 @@ final class WSSubsystemProviders {
             subsystem.get(ATTRIBUTES, WSDL_SECURE_PORT, NILLABLE).set(true);
 
             subsystem.get(CHILDREN, ENDPOINT_CONFIG, DESCRIPTION).set(bundle.getString("endpoint.config"));
-            subsystem.get(CHILDREN, ENDPOINT_CONFIG, REQUIRED).set(false);
-
-            subsystem.get(CHILDREN, ENDPOINT, DESCRIPTION).set(bundle.getString("endpoint"));
-            subsystem.get(CHILDREN, ENDPOINT, REQUIRED).set(false);
 
             return subsystem;
         }
@@ -417,16 +413,9 @@ final class WSSubsystemProviders {
             node.get(DESCRIPTION).set(bundle.getString("endpoint.config"));
             node.get(HEAD_COMMENT_ALLOWED).set(true);
             node.get(TAIL_COMMENT_ALLOWED).set(true);
-
             node.get(CHILDREN, PRE_HANDLER_CHAIN, DESCRIPTION).set(bundle.getString("endpoint.config.pre.handler.chain"));
-            node.get(CHILDREN, PRE_HANDLER_CHAIN, REQUIRED).set(false);
-
             node.get(CHILDREN, POST_HANDLER_CHAIN, DESCRIPTION).set(bundle.getString("endpoint.config.post.handler.chain"));
-            node.get(CHILDREN, POST_HANDLER_CHAIN, REQUIRED).set(false);
-
             node.get(CHILDREN, PROPERTY, DESCRIPTION).set(bundle.getString("endpoint.config.property"));
-            node.get(CHILDREN, PROPERTY, REQUIRED).set(false);
-
             return node;
         }
 
@@ -443,8 +432,7 @@ final class WSSubsystemProviders {
             node.get(ATTRIBUTES, PROTOCOL_BINDINGS, REQUIRED).set(false);
             node.get(ATTRIBUTES, PROTOCOL_BINDINGS, NILLABLE).set(true);
 
-            node.get(CHILDREN, HANDLER_CHAIN, DESCRIPTION).set(bundle.getString(handlerChainName));
-            node.get(CHILDREN, HANDLER_CHAIN, REQUIRED).set(false);
+            node.get(CHILDREN, HANDLER, DESCRIPTION).set(bundle.getString("handler"));
 
             return node;
         }
@@ -591,17 +579,17 @@ final class WSSubsystemProviders {
             op.get(REQUEST_PROPERTIES, WSDL_HOST, DESCRIPTION).set(bundle.getString("wsdl.host"));
             op.get(REQUEST_PROPERTIES, WSDL_HOST, TYPE).set(ModelType.STRING);
             op.get(REQUEST_PROPERTIES, WSDL_HOST, REQUIRED).set(false);
-            op.get(REQUEST_PROPERTIES, WSDL_HOST, NILLABLE).set(false);
+            op.get(REQUEST_PROPERTIES, WSDL_HOST, NILLABLE).set(true);
 
             op.get(REQUEST_PROPERTIES, WSDL_PORT, DESCRIPTION).set(bundle.getString("wsdl.port"));
             op.get(REQUEST_PROPERTIES, WSDL_PORT, TYPE).set(ModelType.INT);
             op.get(REQUEST_PROPERTIES, WSDL_PORT, REQUIRED).set(false);
-            op.get(REQUEST_PROPERTIES, WSDL_PORT, NILLABLE).set(false);
+            op.get(REQUEST_PROPERTIES, WSDL_PORT, NILLABLE).set(true);
 
             op.get(REQUEST_PROPERTIES, WSDL_SECURE_PORT, DESCRIPTION).set(bundle.getString("wsdl.secure.port"));
             op.get(REQUEST_PROPERTIES, WSDL_SECURE_PORT, TYPE).set(ModelType.INT);
             op.get(REQUEST_PROPERTIES, WSDL_SECURE_PORT, REQUIRED).set(false);
-            op.get(REQUEST_PROPERTIES, WSDL_SECURE_PORT, NILLABLE).set(false);
+            op.get(REQUEST_PROPERTIES, WSDL_SECURE_PORT, NILLABLE).set(true);
 
             op.get(REPLY_PROPERTIES).setEmptyObject();
 
