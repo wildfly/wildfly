@@ -439,4 +439,14 @@ public interface ConnectorMessages {
      */
     @Message(id = 10467, value = "Unknown operation %s")
     IllegalStateException unknownOperation(String attributeName);
+
+    /**
+     * A message indicating the driver is not installed
+     *
+     * @param driverName the driver name.
+     * @return the message.
+     */
+    @Message(id = 10468, value = "Driver named \"%s\" is not installed.")
+    String driverNotPresent(String driverName);
+
 }
