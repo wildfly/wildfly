@@ -65,8 +65,8 @@ public final class OperationEntry {
         /** A domain-level operation that should only be executed on the master HostController and not on the slaves,
          * even if the default behavior would indicate otherwise */
         MASTER_HOST_CONTROLLER_ONLY,
-        /** Operations with this flag do not affect the model. The main intention for this is to only make RUNTIME_ONLY methods on
-         * domain mode servers visible to end users. */
+        /** Operations with this flag do not affect the mode or change the installed services. The main intention for
+         * this is to only make RUNTIME_ONLY methods on domain mode servers visible to end users. */
         RUNTIME_ONLY
     }
 

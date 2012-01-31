@@ -119,7 +119,7 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
 
         final boolean forJMS = isJMS();
 
-        final EnumSet<OperationEntry.Flag> readOnly = EnumSet.of(OperationEntry.Flag.READ_ONLY);
+        final EnumSet<OperationEntry.Flag> readOnly = EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.RUNTIME_ONLY);
 
         registry.registerOperationHandler(LIST_MESSAGES, this, new DescriptionProvider() {
             @Override

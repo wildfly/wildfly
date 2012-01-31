@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
 
+import java.util.EnumSet;
 import java.util.List;
 
 import javax.xml.stream.XMLStreamConstants;
@@ -45,6 +46,7 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.staxmapper.XMLElementReader;
@@ -65,6 +67,7 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
     @Override
     public void initialize(ExtensionContext context) {
 
+        EnumSet<Flag> runtimeOnly = EnumSet.of(Flag.RUNTIME_ONLY);
         ROOT_LOGGER.debugf("Activating Mod_cluster Extension");
 
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, Namespace.CURRENT.getMajorVersion(), Namespace.CURRENT.getMinorVersion());
@@ -76,15 +79,17 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         // The following ops only affect the runtime and not the configuration, so don't register them on the Host Controller
         if (context.isRuntimeOnlyRegistrationValid()) {
             // Proxy related commands.
-            registration.registerOperationHandler("list-proxies", ModClusterListProxies.INSTANCE, ModClusterListProxies.INSTANCE, false);
-            registration.registerOperationHandler("read-proxies-info", ModClusterGetProxyInfo.INSTANCE, ModClusterGetProxyInfo.INSTANCE, false);
-            registration.registerOperationHandler("read-proxies-configuration", ModClusterGetProxyConfiguration.INSTANCE, ModClusterGetProxyConfiguration.INSTANCE, false);
+            registration.registerOperationHandler("list-proxies", ModClusterListProxies.INSTANCE, ModClusterListProxies.INSTANCE, false, runtimeOnly);
+            registration.registerOperationHandler("read-proxies-info", ModClusterGetProxyInfo.INSTANCE, ModClusterGetProxyInfo.INSTANCE, false, runtimeOnly);
+            registration.registerOperationHandler("read-proxies-configuration", ModClusterGetProxyConfiguration.INSTANCE, ModClusterGetProxyConfiguration.INSTANCE, false, runtimeOnly);
+
+            //These seem to be modifying the state so don't add the runtimeOnly stuff for now
             registration.registerOperationHandler("add-proxy", ModClusterAddProxy.INSTANCE, ModClusterAddProxy.INSTANCE, false);
             registration.registerOperationHandler("remove-proxy", ModClusterRemoveProxy.INSTANCE, ModClusterRemoveProxy.INSTANCE, false);
 
             // node related operations.
-            registration.registerOperationHandler("refresh", ModClusterRefresh.INSTANCE, ModClusterRefresh.INSTANCE, false);
-            registration.registerOperationHandler("reset", ModClusterReset.INSTANCE, ModClusterReset.INSTANCE, false);
+            registration.registerOperationHandler("refresh", ModClusterRefresh.INSTANCE, ModClusterRefresh.INSTANCE, false, runtimeOnly);
+            registration.registerOperationHandler("reset", ModClusterReset.INSTANCE, ModClusterReset.INSTANCE, false, runtimeOnly);
 
             // node (all contexts) related operations.
             registration.registerOperationHandler("enable", ModClusterEnable.INSTANCE, ModClusterEnable.INSTANCE, false);
@@ -143,10 +148,10 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         ssl.registerReadWriteAttribute(CommonAttributes.CA_REVOCATION_URL, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
 
         // Metric for the  dynamic-load-provider
-        configuration.registerOperationHandler("add-metric", ModClusterAddMetric.INSTANCE, ModClusterAddMetric.INSTANCE, false);
-        configuration.registerOperationHandler("add-custom-metric", ModClusterAddCustomMetric.INSTANCE, ModClusterAddCustomMetric.INSTANCE, false);
-        configuration.registerOperationHandler("remove-metric", ModClusterRemoveMetric.INSTANCE, ModClusterRemoveMetric.INSTANCE, false);
-        configuration.registerOperationHandler("remove-custom-metric", ModClusterRemoveCustomMetric.INSTANCE, ModClusterRemoveCustomMetric.INSTANCE, false);
+        configuration.registerOperationHandler("add-metric", ModClusterAddMetric.INSTANCE, ModClusterAddMetric.INSTANCE, false, runtimeOnly);
+        configuration.registerOperationHandler("add-custom-metric", ModClusterAddCustomMetric.INSTANCE, ModClusterAddCustomMetric.INSTANCE, false, runtimeOnly);
+        configuration.registerOperationHandler("remove-metric", ModClusterRemoveMetric.INSTANCE, ModClusterRemoveMetric.INSTANCE, false, runtimeOnly);
+        configuration.registerOperationHandler("remove-custom-metric", ModClusterRemoveCustomMetric.INSTANCE, ModClusterRemoveCustomMetric.INSTANCE, false, runtimeOnly);
 
         subsystem.registerXMLElementWriter(new ModClusterSubsystemXMLWriter());
     }

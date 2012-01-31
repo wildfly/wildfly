@@ -24,6 +24,7 @@ package org.jboss.as.security;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.security.Principal;
+import java.util.EnumSet;
 import java.util.Set;
 
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
@@ -36,6 +37,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.dmr.ModelNode;
@@ -70,10 +72,11 @@ public class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
         super.registerOperations(resourceRegistration);
 
         if (registerRuntimeOnly) {
+            EnumSet<Flag> runtimeOnly = EnumSet.of(Flag.RUNTIME_ONLY);
             resourceRegistration.registerOperationHandler(Constants.LIST_CACHED_PRINCIPALS,
-                    ListCachePrincipals.INSTANCE, SecuritySubsystemDescriptions.LIST_CACHED_PRINCIPALS);
+                    ListCachePrincipals.INSTANCE, SecuritySubsystemDescriptions.LIST_CACHED_PRINCIPALS, runtimeOnly);
             resourceRegistration.registerOperationHandler(Constants.FLUSH_CACHE, FlushOperation.INSTANCE,
-                    SecuritySubsystemDescriptions.FLUSH_CACHE);
+                    SecuritySubsystemDescriptions.FLUSH_CACHE, runtimeOnly);
         }
     }
 
