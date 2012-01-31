@@ -1184,6 +1184,10 @@
             <maven-bundle group="org.jboss.as" artifact="jboss-as-osgi-configadmin"/>
         </bundle-def>
 
+        <bundle-def name="javax.servlet25.api">
+            <maven-bundle group="org.jboss.osgi.http" artifact="jbosgi-http-api"/>
+        </bundle-def>
+
         <bundle-def name="org.jboss.osgi.logging">
             <maven-bundle group="org.jboss.osgi.logging" artifact="jboss-osgi-logging"/>
         </bundle-def>

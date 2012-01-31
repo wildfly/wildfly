@@ -170,9 +170,10 @@
         <version.org.jboss.msc.jboss-msc>1.0.2.GA</version.org.jboss.msc.jboss-msc>
         <version.org.jboss.netty>3.2.6.Final</version.org.jboss.netty>
         <version.org.jboss.osgi.framework>1.1.1-SNAPSHOT</version.org.jboss.osgi.framework>
+        <version.org.jboss.osgi.http>1.0.5</version.org.jboss.osgi.http>
         <version.org.jboss.osgi.logging>1.0.0</version.org.jboss.osgi.logging>
         <version.org.jboss.osgi.repository>1.0.3</version.org.jboss.osgi.repository>
-        <version.org.jboss.osgi.spi>1.0.28</version.org.jboss.osgi.spi>
+        <version.org.jboss.osgi.spi>2.0.3</version.org.jboss.osgi.spi>
         <version.org.jboss.remote-naming>1.0.0.Beta4</version.org.jboss.remote-naming>
         <version.org.jboss.remoting3>3.2.0.CR9</version.org.jboss.remoting3>
         <version.org.jboss.remoting3.remoting-jmx>1.0.0.Beta1</version.org.jboss.remoting3.remoting-jmx>
@@ -4247,6 +4248,18 @@
                 <groupId>org.jboss.osgi.framework</groupId>
                 <artifactId>jbosgi-framework-core</artifactId>
                 <version>${version.org.jboss.osgi.framework}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.osgi.http</groupId>
+                <artifactId>jbosgi-http-api</artifactId>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.servlet</groupId>
+                        <artifactId>servlet-api</artifactId>
+                    </exclusion>
+                </exclusions>
+                <version>${version.org.jboss.osgi.http}</version>
             </dependency>
 
             <dependency>
