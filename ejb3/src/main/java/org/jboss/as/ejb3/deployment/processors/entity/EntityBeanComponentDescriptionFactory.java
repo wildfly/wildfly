@@ -26,10 +26,9 @@ import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
-import org.jboss.as.ejb3.deployment.processors.EJBComponentDescriptionFactory;
+import org.jboss.as.ejb3.deployment.processors.AbstractDeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.metadata.ejb.spec.EntityBeanMetaData;
@@ -38,27 +37,16 @@ import org.jboss.msc.service.ServiceName;
 /**
  * @author Stuart Douglas
  */
-public class EntityBeanComponentDescriptionFactory extends EJBComponentDescriptionFactory {
+public class EntityBeanComponentDescriptionFactory extends AbstractDeploymentUnitProcessor {
 
     private static final Logger logger = Logger.getLogger(EntityBeanComponentDescriptionFactory.class);
 
-    /**
-     * If this is an appclient we want to make the components as not installable, so we can still look up which EJB's are in
-     * the deployment, but do not actuall install them
-     */
-    private final boolean appclient;
-
     public EntityBeanComponentDescriptionFactory(final boolean appclient) {
-        this.appclient = appclient;
+        super(appclient);
     }
 
     protected void mark(final DeploymentUnit deploymentUnit) {
         // BMP Entities do not need a mark
-    }
-
-    @Override
-    protected void processAnnotations(DeploymentUnit deploymentUnit, CompositeIndex compositeIndex) throws DeploymentUnitProcessingException {
-
     }
 
     @Override
@@ -82,7 +70,7 @@ public class EntityBeanComponentDescriptionFactory extends EJBComponentDescripti
 
         mark(deploymentUnit);
 
-        final EntityBeanComponentDescription description = createDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName());
+        final EntityBeanComponentDescription description = createDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName(), entity);
         description.setDeploymentDescriptorEnvironment(new DeploymentDescriptorEnvironment("java:comp/env/", entity));
 
         // add it to the ejb jar description
@@ -92,7 +80,6 @@ public class EntityBeanComponentDescriptionFactory extends EJBComponentDescripti
             // Add this component description to module description
             ejbJarDescription.getEEModuleDescription().addComponent(description);
         }
-        description.setDescriptorData(entity);
 
         description.setPersistenceType(entity.getPersistenceType());
         description.setReentrant(entity.isReentrant());
@@ -124,8 +111,8 @@ public class EntityBeanComponentDescriptionFactory extends EJBComponentDescripti
         return entity.isBMP();
     }
 
-    protected EntityBeanComponentDescription createDescription(final String beanName, final String beanClassName, final EjbJarDescription ejbJarDescription, final ServiceName serviceName) {
-        return new EntityBeanComponentDescription(beanName, beanClassName, ejbJarDescription, serviceName);
+    protected EntityBeanComponentDescription createDescription(final String beanName, final String beanClassName, final EjbJarDescription ejbJarDescription, final ServiceName serviceName, final EntityBeanMetaData beanMetaData) {
+        return new EntityBeanComponentDescription(beanName, beanClassName, ejbJarDescription, serviceName, beanMetaData);
     }
 
 }

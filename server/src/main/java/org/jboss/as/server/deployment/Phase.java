@@ -225,8 +225,8 @@ public enum Phase {
     public static final int PARSE_EJB_DEPLOYMENT                        = 0x1100;
     public static final int PARSE_APP_CLIENT_XML                        = 0x1101;
     public static final int PARSE_EJB_CLIENT_METADATA                   = 0x1102;
-    public static final int PARSE_SESSION_BEAN_CREATE_COMPONENT_DESCRIPTIONS     = 0x1150;
-    public static final int PARSE_MDB_CREATE_COMPONENT_DESCRIPTIONS     = 0x1151;
+    public static final int PARSE_CREATE_COMPONENT_DESCRIPTIONS         = 0x1150;
+    // described EJBs must be created after annotated EJBs
     public static final int PARSE_ENTITY_BEAN_CREATE_COMPONENT_DESCRIPTIONS = 0x1152;
     public static final int PARSE_CMP_ENTITY_BEAN_CREATE_COMPONENT_DESCRIPTIONS = 0x1153;
     public static final int PARSE_EJB_SESSION_BEAN_DD                   = 0x1200;

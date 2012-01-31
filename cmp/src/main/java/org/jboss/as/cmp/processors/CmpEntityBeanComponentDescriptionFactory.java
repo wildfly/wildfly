@@ -47,7 +47,7 @@ public class CmpEntityBeanComponentDescriptionFactory extends EntityBeanComponen
         return entity.isCMP();
     }
 
-    protected EntityBeanComponentDescription createDescription(final String beanName, final String beanClassName, final EjbJarDescription ejbJarDescription, final ServiceName serviceName) {
-        return new CmpEntityBeanComponentDescription(beanName, beanClassName, ejbJarDescription, serviceName);
+    protected EntityBeanComponentDescription createDescription(final String beanName, final String beanClassName, final EjbJarDescription ejbJarDescription, final ServiceName serviceName, final EntityBeanMetaData descriptorData) {
+        return new CmpEntityBeanComponentDescription(beanName, beanClassName, ejbJarDescription, serviceName, descriptorData);
     }
 }

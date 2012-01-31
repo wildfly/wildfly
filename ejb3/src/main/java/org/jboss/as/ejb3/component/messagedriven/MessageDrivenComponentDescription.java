@@ -83,8 +83,8 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
      */
     public MessageDrivenComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbJarDescription,
                                              final ServiceName deploymentUnitServiceName, final String messageListenerInterfaceName, final Properties activationProps,
-                                             final String defaultResourceAdapterName) {
-        super(componentName, componentClassName, ejbJarDescription, deploymentUnitServiceName);
+                                             final String defaultResourceAdapterName, final MessageDrivenBeanMetaData descriptorData) {
+        super(componentName, componentClassName, ejbJarDescription, deploymentUnitServiceName, descriptorData);
         if (messageListenerInterfaceName == null || messageListenerInterfaceName.isEmpty()) {
             throw EjbMessages.MESSAGES.stringParamCannotBeNullOrEmpty("Message listener interface");
         }

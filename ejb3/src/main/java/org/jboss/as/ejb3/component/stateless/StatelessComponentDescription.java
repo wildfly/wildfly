@@ -49,6 +49,7 @@ import org.jboss.as.ejb3.tx.TimerCMTTxInterceptor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassIndex;
+import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -68,8 +69,8 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
      * @param ejbModuleDescription the module description
      */
     public StatelessComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbModuleDescription,
-                                         final ServiceName deploymentUnitServiceName) {
-        super(componentName, componentClassName, ejbModuleDescription, deploymentUnitServiceName);
+                                         final ServiceName deploymentUnitServiceName, final SessionBeanMetaData descriptorData) {
+        super(componentName, componentClassName, ejbModuleDescription, deploymentUnitServiceName, descriptorData);
     }
 
     @Override
