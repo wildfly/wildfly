@@ -80,15 +80,15 @@ if [ "$PRESERVE_JAVA_OPTS" != "true" ]; then
     elif [ "x$JVM_D64_OPTION" != "x" ]; then
         JVM_OPTVERSION="-d64"
     elif $darwin && [ "x$SERVER_SET" = "x" ]; then
-        # Use 32-bit on Mac, unless server has been specified
-        "$JAVA" -d32 -version > /dev/null 2>&1 && PREPEND_JAVA_OPTS="-d32" && JVM_OPTVERSION="-d32"
+        # Use 32-bit on Mac, unless server has been specified or the user opts are incompatible
+        "$JAVA" -d32 $JAVA_OPTS -version > /dev/null 2>&1 && PREPEND_JAVA_OPTS="-d32" && JVM_OPTVERSION="-d32"
     fi
 
     CLIENT_VM=false
     if [ "x$CLIENT_SET" != "x" ]; then
         CLIENT_VM=true
     elif [ "x$SERVER_SET" = "x" ]; then
-        if $darwin && [ "$JVM_OPTVERSION" != "-d64" ]; then
+        if $darwin && [ "$JVM_OPTVERSION" = "-d32" ]; then
             # Prefer client for Macs, since they are primarily used for development
             CLIENT_VM=true
             PREPEND_JAVA_OPTS="$PREPEND_JAVA_OPTS -client"
