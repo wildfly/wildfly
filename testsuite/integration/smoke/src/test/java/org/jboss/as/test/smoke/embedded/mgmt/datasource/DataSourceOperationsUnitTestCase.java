@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.smoke.embedded.mgmt.datasource;
 
-import java.io.IOException;
+
 import java.util.List;
 import java.util.Properties;
 
@@ -37,7 +37,6 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.connector.subsystems.datasources.ModifiableXaDataSource;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.smoke.embedded.demos.fakejndi.FakeJndi;
 import org.jboss.as.test.smoke.modular.utils.PollingUtils;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
@@ -55,9 +54,6 @@ import static org.jboss.as.test.integration.management.util.ComplexPropertiesPar
 import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.nonXaDsProperties;
 import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.setOperationParams;
 import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.xaDsProperties;
-import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperationTestUtil.marshalAndReparseDsResources;
-import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperationTestUtil.testConnection;
-import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperationTestUtil.testConnectionXA;
 
 
 /**
@@ -70,7 +66,7 @@ import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperati
 @RunWith(Arquillian.class)
 @RunAsClient
 
-public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
+public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase{
 
     @Deployment
     public static Archive<?> getDeployment() {
@@ -80,7 +76,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
     }
 
     @AfterClass
-    public static void tearDown() throws IOException{
+    public static void tearDown() throws Exception{
     	closeModelControllerClient();
     }
 
@@ -117,7 +113,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
         testConnection("MyNewDs", getModelControllerClient());
 
-        List<ModelNode> newList = marshalAndReparseDsResources("data-source",getModelControllerClient());
+        List<ModelNode> newList = marshalAndReparseDsResources("data-source");
 
         remove(address);
 
@@ -163,7 +159,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
         testConnection("MyNewDs", getModelControllerClient());
 
-        List<ModelNode> newList = marshalAndReparseDsResources("data-source",getModelControllerClient());
+        List<ModelNode> newList = marshalAndReparseDsResources("data-source");
 
         remove(address);
 
@@ -218,7 +214,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
         executeOperation(operation2);
 
-        List<ModelNode> newList = marshalAndReparseDsResources("data-source",getModelControllerClient());
+        List<ModelNode> newList = marshalAndReparseDsResources("data-source");
 
         remove(address);
 
@@ -391,14 +387,14 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
         executeOperation(operation2);
 
-        List<ModelNode> newList = marshalAndReparseDsResources("xa-data-source",getModelControllerClient());
+        List<ModelNode> newList = marshalAndReparseDsResources("xa-data-source");
 
         remove(address);
 
         Assert.assertNotNull("Reparsing failed:",newList);
 
         // remove from xml too
-        marshalAndReparseDsResources("xa-data-source",getModelControllerClient());
+        marshalAndReparseDsResources("xa-data-source");
 
         Assert.assertNotNull(findNodeWithProperty(newList,"jndi-name","java:jboss/datasources/" + jndiDsName));
 
@@ -538,7 +534,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
 
 
-        List<ModelNode> newList = marshalAndReparseDsResources("xa-data-source",getModelControllerClient());
+        List<ModelNode> newList = marshalAndReparseDsResources("xa-data-source");
 
         remove(address);
 
@@ -595,7 +591,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
         executeOperation(datasourcePropertyOperation);
 
-        List<ModelNode> newList = marshalAndReparseDsResources("data-source",getModelControllerClient());
+        List<ModelNode> newList = marshalAndReparseDsResources("data-source");
 
         remove(address);
 
@@ -652,7 +648,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
         executeOperation(xaDatasourcePropertyOperation);
 
-        List<ModelNode> newList = marshalAndReparseDsResources("xa-data-source",getModelControllerClient());
+        List<ModelNode> newList = marshalAndReparseDsResources("xa-data-source");
 
         remove(address);
 

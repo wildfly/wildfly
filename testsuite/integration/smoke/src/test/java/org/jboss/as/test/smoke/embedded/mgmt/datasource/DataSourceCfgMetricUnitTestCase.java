@@ -22,66 +22,154 @@
 
 package org.jboss.as.test.smoke.embedded.mgmt.datasource;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-
-import java.io.IOException;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
-import junit.framework.Assert;
-import org.jboss.as.test.integration.management.util.MgmtOperationException;
+import static junit.framework.Assert.*;
 import org.junit.AfterClass;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
-import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
-import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
  * Datasource configuration and metrics unit test.
- * @author <a href="mailto:jeff.zhang@jboss.org">Jeff Zhang</a>
+ * 
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+public class DataSourceCfgMetricUnitTestCase  extends DsMgmtTestBase{
 
-public class DataSourceCfgMetricUnitTestCase  extends AbstractMgmtTestBase{
-
-    @Deployment
+	@Deployment
     public static Archive<?> getDeployment() {
     	initModelControllerClient("localhost",9999);
+    	setBaseAddress("data-source", "DS");
         return ShrinkWrapUtils.createEmptyJavaArchive("dummy");
     }
 
     @AfterClass
-    public static void tearDown()  throws IOException {
+    public static void tearDown()  throws Exception {
     	closeModelControllerClient();
     }
 
     @Test
-    public void testReadAttribute() throws IOException, MgmtOperationException {
-
-        final ModelNode address = new ModelNode();
-        address.add("subsystem", "datasources");
-        address.add("data-source", "java:jboss/datasources/ExampleDS");
-        address.protect();
-
-        final ModelNode operation = new ModelNode();
-        operation.get(OP).set("read-attribute");
-        operation.get("name").set("use-java-context");
-        operation.get(OP_ADDR).set(address);
-
-        final ModelNode result = executeOperation(operation);
-        Assert.assertTrue(result.asBoolean());
+    public void testDefaultDsAttributes()throws Exception {
+    	setModel("basic-attributes.xml");
+        assertTrue(readAttribute(baseAddress,"use-ccm").asBoolean());
+        assertTrue(readAttribute(baseAddress,"jta").asBoolean());
+        assertTrue(readAttribute(baseAddress,"use-java-context").asBoolean());
+        assertFalse(readAttribute(baseAddress,"spy").asBoolean());
+        removeDs();
+    } 
+    
+    @Test(expected=Exception.class)
+    public void testDsWithNoDriver()throws Exception {
+    	setBadModel("wrong-no-driver.xml");
     }
+    
+    @Test(expected=Exception.class)
+    public void testDsWithWrongTransactionIsolationType()throws Exception {
+    	setBadModel("wrong-transaction-isolation-type.xml");
+    }
+    
+    @Test
+    public void testValidationDefaultProperties()throws Exception {
+    	setModel("validation-properties.xml");
+        assertFalse(readAttribute(baseAddress,"use-fast-fail").asBoolean());
+        removeDs();
+    }   
+    
+    @Test(expected=Exception.class)
+    public void testWrongValidationProperties()throws Exception {
+    	setBadModel("wrong-validation-properties.xml");
+    }   
+    
+    @Test
+    @Ignore
+    public void testTimeoutDefaultProperties()throws Exception {
+    	setModel("timeout-properties.xml");
+        assertEquals(30000,readAttribute(baseAddress,"blocking-timeout-wait-millis").asInt());
+        assertFalse(readAttribute(baseAddress,"set-tx-query-timeout").asBoolean());
+        assertEquals(60,readAttribute(baseAddress,"use-try-lock").asInt());
+        assertEquals(5000,readAttribute(baseAddress,"allocation-retry-wait-millis").asInt());
+        assertEquals(0,readAttribute(baseAddress,"allocation-retry").asInt());
+        removeDs();
+    }
+    
+    @Test(expected=Exception.class)
+    public void testWrongBlckgTimeoutProperty()throws Exception {
+    	setBadModel("wrong-blckg-timeout-property.xml");
+    }  
+    
+    @Test(expected=Exception.class)
+    public void testWrongIdleMinsProperty()throws Exception {
+    	setBadModel("wrong-idle-mins-property.xml");
+    } 
+   
+    @Test(expected=Exception.class)
+    public void testWrongUseTryLockProperty()throws Exception {
+    	setBadModel("wrong-use-try-lock-property.xml");
+    } 
+    
+    @Test(expected=Exception.class)
+    public void testWrongAllocRetryProperty()throws Exception {
+    	setBadModel("wrong-alloc-retry-property.xml");
+    } 
+    
+    @Test(expected=Exception.class)
+    public void testWrongAllocRetryWaitProperty()throws Exception {
+    	setBadModel("wrong-alloc-retry-wait-property.xml");
+    } 
+    
+    @Test
+    public void testStatementDefaultProperties()throws Exception {
+    	setModel("statement-properties.xml");
+        assertEquals("\"NOWARN\"",readAttribute(baseAddress,"track-statements").asString());
+        assertFalse(readAttribute(baseAddress,"share-prepared-statements").asBoolean());
+        removeDs();
+    }   
+
+    @Test(expected=Exception.class)
+    public void testWrongTrckStmtProperty()throws Exception {
+    	setBadModel("wrong-trck-stmt-property.xml");
+    } 
+    
+    @Test(expected=Exception.class)
+    public void testWrongStmtCacheSizeProperty()throws Exception {
+    	setBadModel("wrong-stmt-cache-size-property.xml");
+    } 
+    
+    @Test
+    @Ignore
+    public void testPoolDefaultProperties()throws Exception {
+    	setModel("pool-properties.xml");
+        assertEquals("FailingConnectionOnly",readAttribute(baseAddress,"flush-strategy").asString());
+        assertFalse(readAttribute(baseAddress,"pool-prefill").asBoolean());
+        assertFalse(readAttribute(baseAddress,"pool-use-strict-min").asBoolean());
+        removeDs();
+    }   
+
+    @Test(expected=Exception.class)
+    @Ignore
+    public void testWrongFlushStrategyProperty()throws Exception {
+    	setBadModel("wrong-flush-strategy-property.xml");
+    } 
+    
+    @Test(expected=Exception.class)
+    public void testWrongMinPoolSizeProperty()throws Exception {
+    	setBadModel("wrong-min-pool-size-property.xml");
+    } 
+
+    @Test(expected=Exception.class)
+    public void testWrongMaxPoolSizeProperty()throws Exception {
+    	setBadModel("wrong-max-pool-size-property.xml");
+    } 
+    
+    @Test(expected=Exception.class)
+    public void testWrongMaxLessMinPoolSizeProperty()throws Exception {
+    	setBadModel("wrong-max-less-min-pool-size-property.xml");
+    } 
 }

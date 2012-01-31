@@ -24,7 +24,9 @@ package org.jboss.as.test.smoke.embedded.deployment.rar.examples;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension;
+import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension.ResourceAdapterSubsystemParser;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.smoke.embedded.deployment.rar.MultipleAdminObject1;
@@ -47,9 +49,6 @@ import java.util.List;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.test.smoke.embedded.deployment.rar.examples.ResourceAdapterTestUtilities.XmlToRAModelOperations;
-import static org.jboss.as.test.smoke.embedded.deployment.rar.examples.ResourceAdapterTestUtilities.operationListToCompositeOperation;
-import static org.jboss.as.test.smoke.embedded.deployment.rar.examples.ResourceAdapterTestUtilities.readResource;
 import static org.junit.Assert.assertNotNull;
 
 
@@ -67,8 +66,8 @@ public class AfterResourceCreationDeploymentTestCase extends AbstractMgmtTestBas
 	public JavaArchive setUpa() throws Exception{
         Thread.sleep(10000);
         initModelControllerClient("localhost",9999);
-        String xml=readResource("../test-classes/config/basic.xml");
-        List<ModelNode> operations=XmlToRAModelOperations(xml);
+        String xml=readXmlResource("../test-classes/config/basic.xml");
+        List<ModelNode> operations=XmlToModelOperations(xml,Namespace.CURRENT.getUriString(),new ResourceAdapterSubsystemParser());
         executeOperation(operationListToCompositeOperation(operations));
 
         //since it is created after deployment it needs activation
@@ -110,10 +109,7 @@ public class AfterResourceCreationDeploymentTestCase extends AbstractMgmtTestBas
         ResourceAdapterArchive raa =
                 ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName);
          JavaArchive ja = ShrinkWrap.create(JavaArchive.class,  "multiple.jar");
-        ja.addPackage(MultipleConnectionFactory1.class.getPackage()).
-        addClasses(AfterResourceCreationDeploymentTestCase.class,AbstractMgmtTestBase.class,MgmtOperationException.class,
-                ResourceAdapterTestUtilities.class, XMLElementReader.class, ResourceAdaptersExtension.class,
-                ResourceAdaptersExtension.ResourceAdapterSubsystemParser.class);
+        ja.addPackage(MultipleConnectionFactory1.class.getPackage());
         raa.addAsLibrary(ja);
 
         raa.addAsManifestResource("rar/" + deploymentName + "/META-INF/ra.xml", "ra.xml")

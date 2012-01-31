@@ -1,0 +1,13 @@
+<subsystem xmlns="urn:jboss:domain:datasources:1.0">
+            <datasources>
+                <datasource jndi-name="java:jboss/datasources/DS" 
+                            pool-name="DS">
+                    <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
+                    <driver>h2</driver>
+                    <timeout>
+                    	<use-try-lock>-1</use-try-lock>
+                    </timeout>
+                </datasource>
+            </datasources>
+</subsystem>
+                

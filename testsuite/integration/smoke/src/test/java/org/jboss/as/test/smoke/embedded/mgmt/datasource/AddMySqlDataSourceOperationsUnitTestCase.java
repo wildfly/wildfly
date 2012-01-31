@@ -22,27 +22,21 @@
 
 package org.jboss.as.test.smoke.embedded.mgmt.datasource;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
-import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperationTestUtil.marshalAndReparseDsResources;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.io.IOException;
 import java.io.File;
 import java.util.List;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.Node;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -55,7 +49,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 
-public class AddMySqlDataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
+public class AddMySqlDataSourceOperationsUnitTestCase extends DsMgmtTestBase{
 
     @Deployment(testable = false)
     public static Archive<?> getDeployment() {
@@ -65,7 +59,6 @@ public class AddMySqlDataSourceOperationsUnitTestCase extends AbstractMgmtTestBa
         if( ! jdbcJar.exists() )
             throw new IllegalStateException("Can't find " + jdbcJar + " using ${jbossas.ts.integ.dir} == " + System.getProperty("jbossas.ts.integ.dir") );
         Archive<?> archive = ShrinkWrap.createFromZipFile(JavaArchive.class, jdbcJar);
-        Node node = archive.get("META-INF");
         return archive;
     }
 
@@ -100,7 +93,7 @@ public class AddMySqlDataSourceOperationsUnitTestCase extends AbstractMgmtTestBa
         
         executeOperation(operation0);
         
-        List<ModelNode> newList = marshalAndReparseDsResources("data-source",getModelControllerClient());
+        List<ModelNode> newList = marshalAndReparseDsResources("data-source");
 
         remove(address);
         
