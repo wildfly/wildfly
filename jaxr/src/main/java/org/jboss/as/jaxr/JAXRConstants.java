@@ -57,8 +57,8 @@ public interface JAXRConstants {
     String UDDI_V3_VERSION              = "3.0";
     String UDDI_V2_NAMESPACE            = "urn:uddi-org:api_v2";
     String UDDI_V3_NAMESPACE            = "urn:uddi-org:api_v3";
-    String SCOUT_SAAJ_TRANSPORT         =  "org.jboss.as.jaxr.scout.SaajTransport";
-    String SCOUT_LOCAL_TRANSPORT        =  "org.apache.ws.scout.transport.LocalTransport";
+    String SCOUT_SAAJ_TRANSPORT         = "org.jboss.as.jaxr.scout.SaajTransport";
+    String SCOUT_LOCAL_TRANSPORT        = "org.apache.ws.scout.transport.LocalTransport";
 
     //Module properties
     String SUBSYSTEM_NAME               = "jaxr";
