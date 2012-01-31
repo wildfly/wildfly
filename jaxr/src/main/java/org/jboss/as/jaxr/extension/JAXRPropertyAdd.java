@@ -69,9 +69,9 @@ public class JAXRPropertyAdd extends AbstractAddStepHandler {
             ResourceBundle resbundle = JAXRConfiguration.getResourceBundle(locale);
             node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.ADD);
             node.get(ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("jaxr.property.add"));
-            node.get(ModelDescriptionConstants.PROPERTIES, ModelConstants.VALUE, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("jaxr.property.value"));
-            node.get(ModelDescriptionConstants.PROPERTIES, ModelConstants.VALUE, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
-            node.get(ModelDescriptionConstants.PROPERTIES, ModelConstants.VALUE, ModelDescriptionConstants.REQUIRED).set(true);
+            //node.get(ModelConstants.PROPERTY, ModelConstants.VALUE, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("jaxr.property.value"));
+            //node.get(ModelConstants.PROPERTY, ModelConstants.VALUE, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
+            //node.get(ModelConstants.PROPERTY, ModelConstants.VALUE, ModelDescriptionConstants.REQUIRED).set(true);
             return node;
         }
     };
