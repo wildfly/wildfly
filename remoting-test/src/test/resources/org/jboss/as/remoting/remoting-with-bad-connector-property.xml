@@ -10,7 +10,7 @@
 	 />
     <connector name="test-connector" socket-binding="test">
       <properties>
-         <property name="WORKER_ACCEPT_THREADS" value="1"/>
+         <property name="WORKER_ACCEPT_THREAD_BAD" value="1"/><!-- proper name is WORKER_ACCEPT_THREADS -->
       </properties>
     </connector>
 </subsystem>

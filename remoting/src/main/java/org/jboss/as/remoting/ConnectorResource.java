@@ -23,13 +23,21 @@ package org.jboss.as.remoting;
 
 import static org.jboss.as.remoting.CommonAttributes.CONNECTOR;
 
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelType;
+import org.xnio.Option;
+import org.xnio.OptionMap;
+
+import java.util.ListIterator;
+import java.util.Set;
 
 /**
  *
@@ -47,6 +55,28 @@ public class ConnectorResource extends SimpleResourceDefinition {
                 RemotingExtension.getResourceDescriptionResolver(CONNECTOR),
                 ConnectorAdd.INSTANCE,
                 ConnectorRemove.INSTANCE);
+    }
+
+    protected static OptionMap getOptions(OperationContext context, PathAddress pathAddress) {
+        final OptionMap optionMap;
+        Resource resource = context.getRootResource().navigate(pathAddress);
+        Set<Resource.ResourceEntry> entries = resource.getChildren(CommonAttributes.PROPERTY);
+        if (entries.size() > 0) {
+            OptionMap.Builder builder = OptionMap.builder();
+            final ClassLoader loader = SecurityActions.getClassLoader(ConnectorResource.class);
+            for (Resource.ResourceEntry entry : entries) {
+                String name = entry.getName();
+                if (!name.contains(".")){
+                    name = "org.xnio.Options."+name;
+                }
+                final Option option = Option.fromString(name, loader);
+                builder.set(option, option.parseValue(entry.getModel().get(CommonAttributes.VALUE).asString(), loader));
+            }
+            optionMap = builder.getMap();
+        } else {
+            optionMap = OptionMap.EMPTY;
+        }
+        return optionMap;
     }
 
     @Override
