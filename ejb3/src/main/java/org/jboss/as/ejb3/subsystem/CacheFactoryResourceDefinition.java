@@ -73,7 +73,7 @@ public class CacheFactoryResourceDefinition extends SimpleResourceDefinition {
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         ReloadRequiredWriteAttributeHandler handler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
         for (AttributeDefinition attribute: ATTRIBUTES) {
-            resourceRegistration.registerReadOnlyAttribute(attribute,  handler);
+            resourceRegistration.registerReadWriteAttribute(attribute,  null, handler);
         }
     }
 
