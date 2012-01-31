@@ -169,7 +169,7 @@
 
             <echo message="Changing IP addresses for config @{name}"/>
 
-            <var name="cur-as.config.dir" value="@{output.dir}/@{name}/@{config.dir.name}"/>
+            <property name="cur-as.config.dir" value="@{output.dir}/@{name}/@{config.dir.name}"/>
 
             <!-- Process *.xml to *.xml.mod. -->
             <xslt destdir="@{output.dir}/@{name}/@{config.dir.name}"
@@ -215,7 +215,7 @@
         <sequential>
             <echo message="Changing IP addresses for config @{name}"/>
 
-            <var name="cur-as.config.dir" value="@{output.dir}/@{name}/@{config.dir.name}"/>
+            <property name="cur-as.config.dir" value="@{output.dir}/@{name}/@{config.dir.name}"/>
 
             <!-- Process *.xml to *.xml.mod. -->
             <xslt destdir="@{output.dir}/@{name}/@{config.dir.name}"

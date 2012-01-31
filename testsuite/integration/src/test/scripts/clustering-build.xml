@@ -8,18 +8,18 @@
 
         <echo message="Building config clustering-udp-0"/>
         <copy todir="target/jbossas-clustering-udp-0">
-            <fileset dir="target/jbossas">
+            <fileset dir="target/jbossas"/>
         </copy>
-        <change-ip-multicast-addresses name="clustering-udp-0" node="${node0}" mcastaddr="${udpGroup}"/>
-        <add-port-offset name="clustering-udp-0" />
+        <ts.config-as.ip-with-multicast name="jbossas-clustering-udp-0" node="${node0}" mcastaddr="${udpGroup}"/>
+        <ts.config-as.add-port-offset name="jbossas-clustering-udp-0" />
 
 
         <echo message="Building config clustering-udp-1"/>
         <copy todir="target/jbossas-clustering-udp-1">
-            <fileset dir="target/jbossas">
+            <fileset dir="target/jbossas"/>
         </copy>
-        <change-ip-multicast-addresses name="clustering-udp-1" node="${node1}" mcastaddr="${udpGroup}"/>
-        <add-port-offset name="clustering-udp-1" offset="100" nativePort="9999" httpPort="9990"/>
+        <ts.config-as.ip-with-multicast name="jbossas-clustering-udp-1" node="${node1}" mcastaddr="${udpGroup}"/>
+        <ts.config-as.add-port-offset name="jbossas-clustering-udp-1" offset="100" nativePort="9999" httpPort="9990"/>
 
     </target>
 

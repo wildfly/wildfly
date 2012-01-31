@@ -8,7 +8,7 @@
 
         <echo message="Building config iiop-client"/>
         <copy todir="target/jbossas-iiop-client">
-            <fileset dir="target/jbossas">
+            <fileset dir="target/jbossas"/>
         </copy>
         <add-jts name="iiop-client"/>
 
@@ -16,7 +16,7 @@
         <echo message="Building config iiop-server"/>
         <build-server-config name="iiop-server"/>
         <copy todir="target/iiop-server">
-            <fileset dir="target/jbossas">
+            <fileset dir="target/jbossas"/>
         </copy>
         <add-jts name="iiop-server"/>
         <add-port-offset name="iiop-server" offset="100" nativePort="9999" httpPort="9990"/>

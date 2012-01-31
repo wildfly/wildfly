@@ -512,6 +512,34 @@
         </profile>
 
         <profile>
+            <id>integ.module.profile</id>
+            <activation><property><name>integ.module</name></property></activation>
+            <modules>
+                <module>integration</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>integ-basic.module.profile</id>
+            <activation><property><name>ts.basic</name></property></activation>
+            <modules><module>integration</module></modules>
+        </profile>
+        <profile>
+            <id>integ-clust.module.profile</id>
+            <activation><property><name>ts.clust</name></property></activation>
+            <modules><module>integration</module></modules>
+        </profile>
+        <profile>
+            <id>integ-iiop.module.profile</id>
+            <activation><property><name>ts.iiop</name></property></activation>
+            <modules><module>integration</module></modules>
+        </profile>
+        <profile>
+            <id>integ-xts.module.profile</id>
+            <activation><property><name>ts.xts</name></property></activation>
+            <modules><module>integration</module></modules>
+        </profile>
+
+        <profile>
             <id>benchmark.module.profile</id>
             <activation><property><name>benchmark.module</name></property></activation>
             <modules><module>benchmark</module></modules>
