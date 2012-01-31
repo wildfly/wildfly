@@ -52,6 +52,7 @@ import javax.xml.stream.XMLStreamReader;
 
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
+
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CompositeOperationHandler;
@@ -972,6 +973,12 @@ public abstract class AbstractSubsystemTest {
         public void registerOperationHandler(String operationName, OperationStepHandler handler,
                 DescriptionProvider descriptionProvider, boolean inherited, EntryType entryType) {
         }
+
+        @Override
+        public void registerOperationHandler(String operationName, OperationStepHandler handler,
+                DescriptionProvider descriptionProvider, boolean inherited, EnumSet<Flag> flags) {
+        }
+
 
         @Override
         public void registerOperationHandler(String operationName, OperationStepHandler handler,

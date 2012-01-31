@@ -47,12 +47,14 @@ import static org.jboss.as.platform.mbean.PlatformMBeanConstants.RUNTIME_PATH;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.THREADING_PATH;
 
 import java.lang.management.ManagementFactory;
+import java.util.EnumSet;
 import java.util.Locale;
 
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -62,6 +64,8 @@ import org.jboss.dmr.ModelNode;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class PlatformMBeanResourceRegistrar {
+
+    private static EnumSet RUNTIME_ONLY_FLAG = EnumSet.of(Flag.RUNTIME_ONLY);
 
     public static void registerPlatformMBeanResources(final ManagementResourceRegistration parent) {
 
@@ -89,7 +93,7 @@ public class PlatformMBeanResourceRegistrar {
                     return PlatformMBeanDescriptions.getCompilationResource(locale);
                 }
             });
-            compilation.registerOperationHandler(READ_RESOURCE_OPERATION, CompilationMXBeanReadResourceHandler.INSTANCE, CommonProviders.READ_RESOURCE_PROVIDER);
+            compilation.registerOperationHandler(READ_RESOURCE_OPERATION, CompilationMXBeanReadResourceHandler.INSTANCE, CommonProviders.READ_RESOURCE_PROVIDER, RUNTIME_ONLY_FLAG);
             CompilationMXBeanAttributeHandler.INSTANCE.register(compilation);
         }
 
@@ -131,7 +135,7 @@ public class PlatformMBeanResourceRegistrar {
             }
         });
         MemoryMXBeanAttributeHandler.INSTANCE.register(memory);
-        memory.registerOperationHandler(PlatformMBeanConstants.GC, MemoryMXBeanGCHandler.INSTANCE, MemoryMXBeanGCHandler.INSTANCE);
+        memory.registerOperationHandler(PlatformMBeanConstants.GC, MemoryMXBeanGCHandler.INSTANCE, MemoryMXBeanGCHandler.INSTANCE, RUNTIME_ONLY_FLAG);
         // TODO notifications
 
         // Memory Pool
@@ -147,8 +151,8 @@ public class PlatformMBeanResourceRegistrar {
                 return PlatformMBeanDescriptions.getMemoryPoolResource(locale);
             }
         });
-        memPool.registerOperationHandler(READ_RESOURCE_OPERATION, MemoryPoolMXBeanReadResourceHandler.INSTANCE, CommonProviders.READ_RESOURCE_PROVIDER);
-        memPool.registerOperationHandler(RESET_PEAK_USAGE, MemoryPoolMXBeanResetPeakUsageHandler.INSTANCE, MemoryPoolMXBeanResetPeakUsageHandler.INSTANCE);
+        memPool.registerOperationHandler(READ_RESOURCE_OPERATION, MemoryPoolMXBeanReadResourceHandler.INSTANCE, CommonProviders.READ_RESOURCE_PROVIDER, RUNTIME_ONLY_FLAG);
+        memPool.registerOperationHandler(RESET_PEAK_USAGE, MemoryPoolMXBeanResetPeakUsageHandler.INSTANCE, MemoryPoolMXBeanResetPeakUsageHandler.INSTANCE, RUNTIME_ONLY_FLAG);
         MemoryPoolMXBeanAttributeHandler.INSTANCE.register(memPool);
 
         // Operating System
@@ -158,7 +162,7 @@ public class PlatformMBeanResourceRegistrar {
                 return PlatformMBeanDescriptions.getOperatingSystemResource(locale);
             }
         });
-        opSys.registerOperationHandler(READ_RESOURCE_OPERATION, OperatingSystemMXBeanReadResourceHandler.INSTANCE, CommonProviders.READ_RESOURCE_PROVIDER);
+        opSys.registerOperationHandler(READ_RESOURCE_OPERATION, OperatingSystemMXBeanReadResourceHandler.INSTANCE, CommonProviders.READ_RESOURCE_PROVIDER, RUNTIME_ONLY_FLAG);
         OperatingSystemMXBeanAttributeHandler.INSTANCE.register(opSys);
 
         // Runtime
@@ -168,7 +172,7 @@ public class PlatformMBeanResourceRegistrar {
                 return PlatformMBeanDescriptions.getRuntimeResource(locale);
             }
         });
-        runtime.registerOperationHandler(READ_RESOURCE_OPERATION, RuntimeMXBeanReadResourceHandler.INSTANCE, CommonProviders.READ_RESOURCE_PROVIDER);
+        runtime.registerOperationHandler(READ_RESOURCE_OPERATION, RuntimeMXBeanReadResourceHandler.INSTANCE, CommonProviders.READ_RESOURCE_PROVIDER, RUNTIME_ONLY_FLAG);
         RuntimeMXBeanAttributeHandler.INSTANCE.register(runtime);
 
         // Threads
@@ -178,18 +182,18 @@ public class PlatformMBeanResourceRegistrar {
                 return PlatformMBeanDescriptions.getThreadingResource(locale);
             }
         });
-        threads.registerOperationHandler(READ_RESOURCE_OPERATION, ThreadMXBeanReadResourceHandler.INSTANCE, CommonProviders.READ_RESOURCE_PROVIDER);
+        threads.registerOperationHandler(READ_RESOURCE_OPERATION, ThreadMXBeanReadResourceHandler.INSTANCE, CommonProviders.READ_RESOURCE_PROVIDER, RUNTIME_ONLY_FLAG);
         threads.registerOperationHandler(RESET_PEAK_THREAD_COUNT, ThreadMXBeanResetPeakThreadCountHandler.INSTANCE,
-                ThreadMXBeanResetPeakThreadCountHandler.INSTANCE);
+                ThreadMXBeanResetPeakThreadCountHandler.INSTANCE, RUNTIME_ONLY_FLAG);
         threads.registerOperationHandler(FIND_DEADLOCKED_THREADS, ThreadMXBeanFindDeadlockedThreadsHandler.INSTANCE,
-                ThreadMXBeanFindDeadlockedThreadsHandler.INSTANCE);
+                ThreadMXBeanFindDeadlockedThreadsHandler.INSTANCE, RUNTIME_ONLY_FLAG);
         threads.registerOperationHandler(FIND_MONITOR_DEADLOCKED_THREADS, ThreadMXBeanFindMonitorDeadlockedThreadsHandler.INSTANCE,
-                ThreadMXBeanFindMonitorDeadlockedThreadsHandler.INSTANCE);
-        threads.registerOperationHandler(GET_THREAD_INFO, ThreadMXBeanThreadInfoHandler.INSTANCE, ThreadMXBeanThreadInfoHandler.INSTANCE);
-        threads.registerOperationHandler(GET_THREAD_INFOS, ThreadMXBeanThreadInfosHandler.INSTANCE, ThreadMXBeanThreadInfosHandler.INSTANCE);
-        threads.registerOperationHandler(GET_THREAD_CPU_TIME, ThreadMXBeanCpuTimeHandler.INSTANCE, ThreadMXBeanCpuTimeHandler.INSTANCE);
-        threads.registerOperationHandler(GET_THREAD_USER_TIME, ThreadMXBeanUserTimeHandler.INSTANCE, ThreadMXBeanUserTimeHandler.INSTANCE);
-        threads.registerOperationHandler(DUMP_ALL_THREADS, ThreadMXBeanDumpAllThreadsHandler.INSTANCE, ThreadMXBeanDumpAllThreadsHandler.INSTANCE);
+                ThreadMXBeanFindMonitorDeadlockedThreadsHandler.INSTANCE, RUNTIME_ONLY_FLAG);
+        threads.registerOperationHandler(GET_THREAD_INFO, ThreadMXBeanThreadInfoHandler.INSTANCE, ThreadMXBeanThreadInfoHandler.INSTANCE, RUNTIME_ONLY_FLAG);
+        threads.registerOperationHandler(GET_THREAD_INFOS, ThreadMXBeanThreadInfosHandler.INSTANCE, ThreadMXBeanThreadInfosHandler.INSTANCE, RUNTIME_ONLY_FLAG);
+        threads.registerOperationHandler(GET_THREAD_CPU_TIME, ThreadMXBeanCpuTimeHandler.INSTANCE, ThreadMXBeanCpuTimeHandler.INSTANCE, RUNTIME_ONLY_FLAG);
+        threads.registerOperationHandler(GET_THREAD_USER_TIME, ThreadMXBeanUserTimeHandler.INSTANCE, ThreadMXBeanUserTimeHandler.INSTANCE, RUNTIME_ONLY_FLAG);
+        threads.registerOperationHandler(DUMP_ALL_THREADS, ThreadMXBeanDumpAllThreadsHandler.INSTANCE, ThreadMXBeanDumpAllThreadsHandler.INSTANCE, RUNTIME_ONLY_FLAG);
         ThreadMXBeanAttributeHandler.INSTANCE.register(threads);
 
         if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6) {

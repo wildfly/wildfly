@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.registry;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 import java.util.EnumSet;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -32,8 +34,6 @@ import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
-
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * A registration for a management resource which consists of a resource description plus registered operation handlers.
@@ -184,6 +184,19 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @throws IllegalArgumentException if either parameter is {@code null}
      */
     void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, OperationEntry.EntryType entryType);
+
+
+    /**
+     * Register an operation handler for this resource.
+     *
+     * @param operationName the operation name
+     * @param handler the operation handler
+     * @param descriptionProvider the description provider for this operation
+     * @param inherited {@code true} if the operation is inherited to child nodes, {@code false} otherwise
+     * @param flags operational modifier flags for this operation (e.g. read-only)
+     * @throws IllegalArgumentException if either parameter is {@code null}
+     */
+    void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, EnumSet<OperationEntry.Flag> flags);
 
     /**
      * Register an operation handler for this resource.
