@@ -121,7 +121,8 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
     }
 
     @Override
-    public void undeploy(DeploymentUnit context) {
+    public void undeploy(DeploymentUnit du) {
+
     }
 
     private void handleJarDeployment(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -245,6 +246,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
             for (PersistenceUnitMetadataHolder holder : puList) {
                 setAnnotationIndexes(holder, deploymentUnit);
                 for (PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
+
                     pu.setClassLoader(classLoader);
                     pu.setTempClassLoaderFactory(new TempClassLoaderFactoryImpl(classLoader));
                     try {

@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.jpa.epcpropagation;
 
+import javax.persistence.EntityManager;
+
 /**
  * @author Scott Marlow
  */
@@ -35,6 +37,10 @@ public abstract class AbstractStatefulInterface implements StatefulInterface {
     }
 
     public StatefulInterface createSFSBOnInvocation() throws Exception {
+        return null;
+    }
+
+    public EntityManager getExtendedPersistenceContext() {
         return null;
     }
 

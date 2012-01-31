@@ -33,10 +33,11 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContextType;
 
 import org.jboss.as.ee.component.InjectionSource;
+import org.jboss.as.jpa.container.CreatedEntityManagers;
 import org.jboss.as.jpa.container.EntityManagerUnwrappedTargetInvocationHandler;
 import org.jboss.as.jpa.container.ExtendedEntityManager;
+import org.jboss.as.jpa.container.ReferenceCountedEntityManager;
 import org.jboss.as.jpa.container.SFSBCallStack;
-import org.jboss.as.jpa.container.SFSBXPCMap;
 import org.jboss.as.jpa.container.TransactionScopedEntityManager;
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
@@ -74,14 +75,13 @@ public class PersistenceContextInjectionSource extends InjectionSource {
      * @param scopedPuName      the fully scoped reference to the persistence.xml
      * @param injectionTypeName is normally "javax.persistence.EntityManager" but could be a different target class
      *                          for example "org.hibernate.Session" in which case, EntityManager.unwrap(org.hibernate.Session.class is called)
-     * @param sfsbxpcMap        TODO: refactor to only pass in for type == PersistenceContextType.EXTENDED
      * @param pu
      */
-    public PersistenceContextInjectionSource(final PersistenceContextType type, final Map properties, final ServiceName puServiceName, final DeploymentUnit deploymentUnit, final String scopedPuName, final String injectionTypeName, final SFSBXPCMap sfsbxpcMap, final PersistenceUnitMetadata pu) {
+    public PersistenceContextInjectionSource(final PersistenceContextType type, final Map properties, final ServiceName puServiceName, final DeploymentUnit deploymentUnit, final String scopedPuName, final String injectionTypeName, final PersistenceUnitMetadata pu) {
 
         this.type = type;
 
-        injectable = new PersistenceContextJndiInjectable(puServiceName, deploymentUnit, this.type, properties, scopedPuName, injectionTypeName, sfsbxpcMap, pu);
+        injectable = new PersistenceContextJndiInjectable(puServiceName, deploymentUnit, this.type, properties, scopedPuName, injectionTypeName, pu);
         this.puServiceName = puServiceName;
     }
 
@@ -111,7 +111,6 @@ public class PersistenceContextInjectionSource extends InjectionSource {
         private final Map properties;
         private final String unitName;
         private final String injectionTypeName;
-        private final SFSBXPCMap sfsbxpcMap;
         private final PersistenceUnitMetadata pu;
 
         private static final String ENTITY_MANAGER_CLASS = "javax.persistence.EntityManager";
@@ -123,7 +122,6 @@ public class PersistenceContextInjectionSource extends InjectionSource {
             final Map properties,
             final String unitName,
             final String injectionTypeName,
-            final SFSBXPCMap sfsbxpcMap,
             final PersistenceUnitMetadata pu) {
 
             this.puServiceName = puServiceName;
@@ -132,7 +130,6 @@ public class PersistenceContextInjectionSource extends InjectionSource {
             this.properties = properties;
             this.unitName = unitName;
             this.injectionTypeName = injectionTypeName;
-            this.sfsbxpcMap = sfsbxpcMap;
             this.pu = pu;
         }
 
@@ -149,25 +146,28 @@ public class PersistenceContextInjectionSource extends InjectionSource {
                     JPA_LOGGER.debugf("created new TransactionScopedEntityManager for unit name=%s", unitName);
             } else {
                 // handle PersistenceContextType.EXTENDED
-                EntityManager entityManager1 = SFSBCallStack.findPersistenceContext(unitName, sfsbxpcMap);
+                ReferenceCountedEntityManager entityManager1 = SFSBCallStack.findPersistenceContext(unitName);
                 if (entityManager1 == null) {
-                    entityManager1 = emf.createEntityManager(properties);
-                    entityManager = new ExtendedEntityManager(unitName, entityManager1);
+                    EntityManager tmpEm = emf.createEntityManager(properties);
+                    entityManager = new ExtendedEntityManager(unitName, tmpEm);
+                    entityManager1 = new ReferenceCountedEntityManager((ExtendedEntityManager)entityManager);
                     if (JPA_LOGGER.isDebugEnabled())
                         JPA_LOGGER.debugf("created new ExtendedEntityManager for unit name=%s", unitName);
 
                 } else {
-                    entityManager = entityManager1;
+                    entityManager1.increaseReferenceCount();
+                    entityManager = entityManager1.getEntityManager();
                     if (JPA_LOGGER.isDebugEnabled())
-                        JPA_LOGGER.debugf("inherited existing ExtendedEntityManager from SFSB invocation stack, unit name=%s", unitName);
+                    JPA_LOGGER.debugf("inherited existing ExtendedEntityManager from SFSB invocation stack, unit name=%s, " +
+                        "%d beans sharing ExtendedEntityManager", unitName, entityManager1.getReferenceCount());
                 }
 
                 // register the EntityManager on TL so that SFSBCreateInterceptor will see it.
                 // this is important for creating a new XPC or inheriting existing XPC from SFSBCallStack
-                SFSBXPCMap.registerPersistenceContext(entityManager);
+                CreatedEntityManagers.registerPersistenceContext(entityManager1);
 
                 //register the pc so it is accessible to other SFSB's during the creation process
-                SFSBCallStack.extendedPersistenceContextCreated(unitName, entityManager);
+                SFSBCallStack.extendedPersistenceContextCreated(unitName, entityManager1);
 
             }
 

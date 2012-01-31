@@ -1,9 +1,9 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
-  *
+ *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation; either version 2.1 of
@@ -19,31 +19,54 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.jpa.epcpropagation;
 
-import javax.ejb.Local;
-import javax.persistence.EntityManager;
+package org.jboss.as.test.clustering.unmanaged.ejb3.xpc.bean;
+
+import java.io.Serializable;
+
+import javax.persistence.Entity;
+import javax.persistence.Id;
 
 /**
- * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>
+ * Employee entity class
+ *
+ * @author Scott Marlow
  */
-@Local
-public interface StatefulInterface {
-    public boolean execute(Integer id, String name) throws Exception;
+@Entity
+public class Employee implements Serializable {
+    @Id
+    private int id;
 
-    public String getPostConstructErrorMessage() throws Exception;
+    private String name;
 
-    /**
-     *
-     * @param id
-     * @param name
-     * @return true for success
-     * @throws Exception
-     */
-    boolean createEntity(Integer id, String name) throws Exception;
+    private String address;
 
-    StatefulInterface createSFSBOnInvocation() throws Exception;
+    public String getName() {
+        return name;
+    }
 
-    EntityManager getExtendedPersistenceContext();
-    void finishUp() throws Exception;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public int getId() {
+
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String toString() {
+        return name;
+    }
 }

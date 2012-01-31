@@ -40,7 +40,7 @@ import javax.transaction.UserTransaction;
 @Stateful
 @TransactionManagement(TransactionManagementType.BEAN)
 @Local
-public class EPCStatefulBean implements StatefulInterface {
+public class EPCStatefulBean extends AbstractStatefulInterface  implements StatefulInterface {
 
     @PersistenceContext(type = PersistenceContextType.EXTENDED, unitName = "mypc")
     EntityManager em;
@@ -99,9 +99,5 @@ public class EPCStatefulBean implements StatefulInterface {
         return null;
     }
 
-    @Override
-    public void finishUp() throws Exception {
-
-    }
 
 }

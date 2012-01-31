@@ -22,8 +22,6 @@
 
 package org.jboss.as.jpa.service;
 
-import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
-
 import java.util.Map;
 
 import javax.persistence.EntityManagerFactory;
@@ -42,6 +40,8 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+
+import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
 
 /**
  * Persistence Unit service that is created for each deployed persistence unit that will be referenced by the
@@ -65,7 +65,8 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
 
     private volatile EntityManagerFactory entityManagerFactory;
 
-    public PersistenceUnitServiceImpl(final PersistenceUnitMetadata pu, final PersistenceProviderAdaptor persistenceProviderAdaptor, final PersistenceProvider persistenceProvider) {
+    public PersistenceUnitServiceImpl(final PersistenceUnitMetadata pu, final PersistenceProviderAdaptor persistenceProviderAdaptor,
+                                      final PersistenceProvider persistenceProvider) {
         this.pu = pu;
         this.persistenceProviderAdaptor = persistenceProviderAdaptor;
         this.persistenceProvider = persistenceProvider;
@@ -164,5 +165,4 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
             }
         }
     }
-
 }

@@ -20,23 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.jpa.spi;
+package org.jboss.as.test.clustering.unmanaged.ejb3.xpc.bean;
+
+import javax.ejb.Remove;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 
 /**
- * Registry of started persistence unit services.
+ * Interface to see if that helps avoid the
+ * error:
  *
- * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * JBAS014134: EJB Invocation failed on component StatefulBean for method
+ * public org.jboss.as.test.clustering.unmanaged.ejb3.xpc.bean.Employee
+ * org.jboss.as.test.clustering.unmanaged.ejb3.xpc.bean.StatefulBean.getEmployee(int):
+ * java.lang.IllegalArgumentException: object is not an instance of declaring class
+ *
+ * @author Scott Marlow
  */
-public interface PersistenceUnitServiceRegistry {
+public interface Stateful {
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    void createEmployee(String name, String address, int id);
 
-    /**
-     * Get the persistence unit service associated with the given management resource name.
-     *
-     * @param persistenceUnitResourceName the name of the management resource representing persistence unit, as was previously
-     *                                    provided to {@link ManagementAdaptor#createPersistenceUnitResource(String)}
-     * @return a PersistenceUnitService or {@code null} if the persistence unit service has not been started or has been stopped
-     */
-    PersistenceUnitService getPersistenceUnitService(String persistenceUnitResourceName);
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    Employee getEmployee(int id);
 
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    Employee getSecondBeanEmployee(int id);
 
+    @Remove
+    void destroy();
 }

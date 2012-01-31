@@ -40,7 +40,6 @@ import org.jboss.as.ee.component.LookupInjectionSource;
 import org.jboss.as.ee.component.ResourceInjectionTarget;
 import org.jboss.as.ee.component.deployers.AbstractDeploymentDescriptorBindingsProcessor;
 import org.jboss.as.jpa.container.PersistenceUnitSearch;
-import org.jboss.as.jpa.container.SFSBXPCMap;
 import org.jboss.as.jpa.injectors.PersistenceContextInjectionSource;
 import org.jboss.as.jpa.injectors.PersistenceUnitInjectionSource;
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
@@ -210,7 +209,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
         PersistenceUnitMetadata pu = getPersistenceUnit(deploymentUnit, unitName);
         String scopedPuName = pu.getScopedPersistenceUnitName();
         ServiceName puServiceName = getPuServiceName(scopedPuName);
-        return new PersistenceContextInjectionSource(type, properties, puServiceName, deploymentUnit, scopedPuName, EntityManager.class.getName(), SFSBXPCMap.getXpcMap(deploymentUnit), pu);
+        return new PersistenceContextInjectionSource(type, properties, puServiceName, deploymentUnit, scopedPuName, EntityManager.class.getName(), pu);
     }
 
     private PersistenceUnitMetadata getPersistenceUnit(final DeploymentUnit deploymentUnit, final String puName)

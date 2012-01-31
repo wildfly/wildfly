@@ -22,17 +22,11 @@
 
 package org.jboss.as.jpa.interceptor;
 
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
-import java.util.List;
-
-import javax.persistence.EntityManager;
-
-import org.jboss.as.ee.component.ComponentInstance;
-import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
-import org.jboss.as.jpa.container.ExtendedEntityManager;
-import org.jboss.as.jpa.container.SFSBXPCMap;
-import org.jboss.as.jpa.ejb3.SFSBContextHandleImpl;
+import org.jboss.as.jpa.container.ReferenceCountedEntityManager;
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
@@ -46,45 +40,28 @@ import org.jboss.invocation.InterceptorFactoryContext;
  */
 public class SFSBDestroyInterceptor implements Interceptor {
 
-    private final SFSBXPCMap sfsbxpcMap;
+    private final Map<String, ReferenceCountedEntityManager> entityManagers;
 
-    private SFSBDestroyInterceptor(final SFSBXPCMap sfsbxpcMap) {
-        this.sfsbxpcMap = sfsbxpcMap;
+    private SFSBDestroyInterceptor(final Map<String, ReferenceCountedEntityManager> entityManagers) {
+        this.entityManagers = entityManagers;
     }
 
     @Override
     public Object processInvocation(InterceptorContext interceptorContext) throws Exception {
         try {
-
             return interceptorContext.proceed();
         } finally {
-            StatefulSessionComponentInstance sfsb = (StatefulSessionComponentInstance) interceptorContext.getPrivateData(ComponentInstance.class);
-            SFSBContextHandleImpl sfsbContextHandle = new SFSBContextHandleImpl(sfsb);
-            List<EntityManager> readyToClose = sfsbxpcMap.remove(sfsbContextHandle);
-            if (readyToClose != null && readyToClose.size() > 0) {
-                for (EntityManager entityManager : readyToClose) {
-                    if (entityManager instanceof ExtendedEntityManager) {
-                        // TODO:  continue iterating through remaining entity managers and chain any exceptions
-                        ((ExtendedEntityManager) entityManager).containerClose();
-                    } else {
-                        throw MESSAGES.cannotCloseNonExtendedEntityManager(entityManager.getClass().getName());
-                    }
-                }
+            for(Map.Entry<String, ReferenceCountedEntityManager> entry : entityManagers.entrySet()) {
+                entry.getValue().close();
             }
         }
     }
 
     public static class Factory implements InterceptorFactory {
 
-        private final SFSBXPCMap sfsbxpcMap;
-
-        public Factory(final SFSBXPCMap sfsbxpcMap) {
-            this.sfsbxpcMap = sfsbxpcMap;
-        }
-
         @Override
         public Interceptor create(final InterceptorFactoryContext context) {
-            return new SFSBDestroyInterceptor(sfsbxpcMap);
+            return new SFSBDestroyInterceptor((Map<String, ReferenceCountedEntityManager>) ((AtomicReference<ManagedReference>) context.getContextData().get(SFSBInvocationInterceptor.CONTEXT_KEY)).get().getInstance());
         }
     }
 }

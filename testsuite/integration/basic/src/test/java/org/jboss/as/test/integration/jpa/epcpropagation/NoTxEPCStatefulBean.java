@@ -100,6 +100,10 @@ public class NoTxEPCStatefulBean extends AbstractStatefulInterface {
         return interfaceType.cast(sessionContext.lookup("java:module/" + beanName + "!" + interfaceType.getName()));
     }
 
+    public EntityManager getExtendedPersistenceContext() {
+        return em;
+    }
+
     @Remove
     public void finishUp() {
     }

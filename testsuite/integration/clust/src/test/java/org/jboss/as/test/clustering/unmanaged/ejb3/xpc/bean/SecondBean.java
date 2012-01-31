@@ -1,9 +1,9 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
-  *
+ *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation; either version 2.1 of
@@ -19,31 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.jpa.epcpropagation;
 
-import javax.ejb.Local;
+package org.jboss.as.test.clustering.unmanaged.ejb3.xpc.bean;
+
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
+import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceContextType;
+
+import org.jboss.ejb3.annotation.Clustered;
 
 /**
- * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>
+ * test bean that uses the same extended persistence context as StatefulBean and therefor should always be able to
+ * retrieve the same entities that are only in the extended persistence context (purposely not persisted to the database).
+ *
+ * @author Scott Marlow
  */
-@Local
-public interface StatefulInterface {
-    public boolean execute(Integer id, String name) throws Exception;
+@Clustered
+@javax.ejb.Stateful
+public class SecondBean {
+    @PersistenceContext(unitName = "mypc", type = PersistenceContextType.EXTENDED)
+        EntityManager em;
 
-    public String getPostConstructErrorMessage() throws Exception;
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public Employee getEmployee(int id) {
+        return em.find(Employee.class, id, LockModeType.NONE);
+    }
 
-    /**
-     *
-     * @param id
-     * @param name
-     * @return true for success
-     * @throws Exception
-     */
-    boolean createEntity(Integer id, String name) throws Exception;
-
-    StatefulInterface createSFSBOnInvocation() throws Exception;
-
-    EntityManager getExtendedPersistenceContext();
-    void finishUp() throws Exception;
 }

@@ -22,16 +22,16 @@
 
 package org.jboss.as.jpa;
 
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
+
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
-
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.INFO;
-import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * Date: 07.06.2011
@@ -48,7 +48,7 @@ public interface JpaLogger extends BasicLogger {
     /**
      * A logger with the category {@code org.jboss.jpa}.
      */
-    JpaLogger JPA_LOGGER = Logger.getMessageLogger(JpaLogger.class, "org.jboss.jpa");
+    JpaLogger JPA_LOGGER = Logger.getMessageLogger(JpaLogger.class, "org.jboss.as.jpa");
 
     /**
      * Logs a warning message indicating duplicate persistence.xml files were found.
@@ -59,9 +59,9 @@ public interface JpaLogger extends BasicLogger {
      */
     @LogMessage(level = WARN)
     @Message(id = 11400, value = "Duplicate Persistence Unit definition for %s " +
-            "in application.  One of the duplicate persistence.xml should be removed from the application." +
-            " Application deployment will continue with the persistence.xml definitions from %s used.  " +
-            "The persistence.xml definitions from %s will be ignored.")
+        "in application.  One of the duplicate persistence.xml should be removed from the application." +
+        " Application deployment will continue with the persistence.xml definitions from %s used.  " +
+        "The persistence.xml definitions from %s will be ignored.")
     void duplicatePersistenceUnitDefinition(String puName, String ogPuName, String dupPuName);
 
     /**
