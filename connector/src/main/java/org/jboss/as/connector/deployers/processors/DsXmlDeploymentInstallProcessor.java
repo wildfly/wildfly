@@ -24,9 +24,7 @@ package org.jboss.as.connector.deployers.processors;
 
 import java.sql.Driver;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import org.jboss.as.connector.ConnectorLogger;
@@ -47,7 +45,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.ManagedReferenceFactory;
@@ -61,10 +58,12 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.dmr.ModelNode;
+import org.jboss.jca.common.api.metadata.Defaults;
+import org.jboss.jca.common.api.metadata.common.CommonXaPool;
 import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.DataSources;
 import org.jboss.jca.common.api.metadata.ds.XaDataSource;
+import org.jboss.jca.common.metadata.common.CommonXaPoolImpl;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
@@ -215,6 +214,19 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
     }
 
     private ModifiableXaDataSource buildXaDataSource(XaDataSource xads) throws org.jboss.jca.common.api.validator.ValidateException {
+        final CommonXaPool xaPool;
+        if (xads.getXaPool() == null) {
+            xaPool = new CommonXaPoolImpl(Defaults.MIN_POOL_SIZE, Defaults.MAX_POOL_SIZE, Defaults.PREFILL, Defaults.USE_STRICT_MIN, Defaults.FLUSH_STRATEGY,
+                    Defaults.IS_SAME_RM_OVERRIDE, Defaults.INTERLEAVING, Defaults.PAD_XID, Defaults.WRAP_XA_RESOURCE, Defaults.NO_TX_SEPARATE_POOL);
+        } else {
+            final CommonXaPool p = xads.getXaPool();
+            xaPool = new CommonXaPoolImpl(getDef(p.getMinPoolSize(), Defaults.MIN_POOL_SIZE), getDef(p.getMaxPoolSize(), Defaults.MAX_POOL_SIZE), getDef(p.isPrefill(), Defaults.PREFILL),
+                    getDef(p.isUseStrictMin(), Defaults.USE_STRICT_MIN), getDef(p.getFlushStrategy(), Defaults.FLUSH_STRATEGY), getDef(p.isSameRmOverride(),
+                    Defaults.IS_SAME_RM_OVERRIDE), getDef(p.isInterleaving(), Defaults.INTERLEAVING), getDef(p.isPadXid(), Defaults.PAD_XID)
+                    , getDef(p.isWrapXaResource(), Defaults.WRAP_XA_RESOURCE), getDef(p.isNoTxSeparatePool(), Defaults.NO_TX_SEPARATE_POOL));
+        }
+
+
         return new ModifiableXaDataSource(xads.getTransactionIsolation(),
                 xads.getTimeOut(), xads.getSecurity(),
                 xads.getStatement(), xads.getValidation(),
@@ -222,8 +234,13 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                 xads.isUseJavaContext(), xads.getPoolName(), xads.isEnabled(), xads.getJndiName(),
                 xads.isSpy(), xads.isUseCcm(),
                 xads.getXaDataSourceProperty(), xads.getXaDataSourceClass(), xads.getDriver(),
-                xads.getNewConnectionSql(), xads.getXaPool(), xads.getRecovery());
+                xads.getNewConnectionSql(), xaPool, xads.getRecovery());
     }
+
+    private <T> T getDef(T value, T def) {
+        return value != null ? value : def;
+    }
+
 
     private void startDataSource(final AbstractDataSourceService dataSourceService,
                                  final String jndiName,
@@ -359,8 +376,8 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
         synchronized (root) {
             final PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, DataSourcesExtension.SUBSYSTEM_NAME));
             getOrCreate(root, subsystemAddress);
-            final  PathAddress address;
-            if(xa) {
+            final PathAddress address;
+            if (xa) {
                 address = subsystemAddress.append(PathElement.pathElement(XA_DATA_SOURCE));
             } else {
                 address = subsystemAddress.append(PathElement.pathElement(DATA_SOURCE));
