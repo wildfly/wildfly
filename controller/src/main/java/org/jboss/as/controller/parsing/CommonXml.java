@@ -98,7 +98,6 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.interfaces.InetAddressUtil;
 import org.jboss.as.controller.operations.common.JVMHandlers;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
@@ -149,10 +148,6 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     private static final char[] NEW_LINE = new char[]{'\n'};
 
     protected CommonXml() {
-    }
-
-    protected String getDefaultName() {
-        return InetAddressUtil.getLocalHostName();
     }
 
     protected void parseNamespaces(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> nodes) {
