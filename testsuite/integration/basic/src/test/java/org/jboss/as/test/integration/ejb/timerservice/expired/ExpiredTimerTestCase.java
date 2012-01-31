@@ -29,7 +29,6 @@ import javax.ejb.EJB;
 import javax.ejb.NoMoreTimeoutsException;
 import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.TimerConfig;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.logging.Logger;
@@ -46,37 +45,58 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class ExpiredTimerTestCase {
 
-    private static final Logger logger = Logger.getLogger(ExpiredTimerTestCase.class);
-
+    private static final Logger log = Logger.getLogger(ExpiredTimerTestCase.class);
+   
     @EJB(mappedName = "java:module/SingletonBean")
     private SingletonBean bean;
 
     @Deployment
-    public static Archive createDeployment() {
-        final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "expired-timer-test.jar");
-        ejbJar.addPackage(ExpiredTimerTestCase.class.getPackage());
-        return ejbJar;
+    public static Archive<?> createDeployment() {
+        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "expired-timer-test.jar");
+        jar.addPackage(ExpiredTimerTestCase.class.getPackage());
+        log.info(jar.toString(true));
+        return jar;
     }
 
     @Test
     public void testInvocationOnExpiredTimer() throws Exception {
+        
         final CountDownLatch timeoutNotifier = new CountDownLatch(1);
-        this.bean.createSingleActionTimer(300, new TimerConfig(null, false), timeoutNotifier);
+        final CountDownLatch timeoutWaiter = new CountDownLatch(1);
+        this.bean.createSingleActionTimer(300, new TimerConfig(null, false), timeoutNotifier, timeoutWaiter);
+        
         // wait for the timeout to be invoked
         final boolean timeoutInvoked = timeoutNotifier.await(5, TimeUnit.SECONDS);
-        Assert.assertTrue("Timeout method was not invoked (within 5 seconds)", timeoutInvoked);
-
-        //as we can't be exactly sure when the timeout method is finished
-        //we invoke in a loop, can check the exception type.
+        Assert.assertTrue("timeout method was not invoked (within 5 seconds)", timeoutInvoked);
+                    
+        // the timer stays in timeout method - checking how the invoke of method getNext and getTimeRemaining behave
+        try {
+            bean.invokeTimeRemaining();
+            Assert.fail("Expecting exception " + NoMoreTimeoutsException.class.getSimpleName());
+        } catch (NoMoreTimeoutsException e) {
+            log.info("Expected exception " + e.getClass().getSimpleName() + " was thrown on method getTimeRemaining");
+        }
+        try {
+            bean.invokeGetNext();
+            Assert.fail("Expecting exception " + NoMoreTimeoutsException.class.getSimpleName());
+        } catch (NoMoreTimeoutsException e) {
+            log.info("Expected exception " + e.getClass().getSimpleName() + " was thrown on method getNextTimeout");
+        }
+        
+        // the timeout can finish
+        timeoutWaiter.countDown();
+        
+        // as we can't be exactly sure when the timeout method is finished in this moment
+        // we invoke in a loop, can check the exception type.
         int count = 0;
         boolean passed = false;
         while (count < 20 && !passed) {
             try {
-                this.bean.invokeOnExpiredTimer();
+                bean.invokeTimeRemaining();
                 Assert.fail("Expected to fail on invoking on an expired timer");
             } catch (NoSuchObjectLocalException nsole) {
                 // expected
-                logger.info("Got the expected exception " + nsole);
+                log.info("Got the expected exception " + nsole);
                 passed = true;
             } catch (NoMoreTimeoutsException e) {
                 //this will be thrown if the timer is still active
