@@ -79,7 +79,7 @@ public class RaAdd implements OperationStepHandler {
                     final ServiceTarget serviceTarget = context.getServiceTarget();
                     final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
 
-                    ModifiableResourceAdapter resourceAdapter = RaOperationUtil.buildResourceAdaptersObject(operation);
+                    ModifiableResourceAdapter resourceAdapter = RaOperationUtil.buildResourceAdaptersObject(context, operation);
 
                     final ServiceController<?> resourceAdaptersService = context.getServiceRegistry(false).getService(
                             ConnectorServices.RESOURCEADAPTERS_SERVICE);
