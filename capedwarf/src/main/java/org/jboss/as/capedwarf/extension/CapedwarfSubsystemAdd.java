@@ -39,9 +39,20 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.server.deployment.module.TempFileProviderService;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.vfs.TempDir;
+import org.jboss.vfs.VFSUtils;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -53,6 +64,7 @@ import java.util.List;
 class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     static final CapedwarfSubsystemAdd INSTANCE = new CapedwarfSubsystemAdd();
+    static final String CAPEDWARF = "capedwarf";
 
     private CapedwarfSubsystemAdd() {
     }
@@ -77,9 +89,12 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         context.addStep(new AbstractDeploymentChainStep() {
             public void execute(DeploymentProcessorTarget processorTarget) {
+                final TempDir tempDir = createTempDir(context);
+
                 final int initialPhaseOrder = Math.min(Phase.PARSE_WEB_DEPLOYMENT, Phase.PARSE_PERSISTENCE_UNIT);
                 processorTarget.addDeploymentProcessor(Phase.PARSE, initialPhaseOrder - 20, new CapedwarfInitializationProcessor());
-                processorTarget.addDeploymentProcessor(Phase.PARSE, initialPhaseOrder - 10, new CapedwarfPersistenceModificationProcessor(context.getServiceTarget())); // before persistence.xml parsing
+                // processorTarget.addDeploymentProcessor(Phase.PARSE, initialPhaseOrder - 15, new CapedwarfJsfProcessor(tempDir)); // before jsf parsing
+                processorTarget.addDeploymentProcessor(Phase.PARSE, initialPhaseOrder - 10, new CapedwarfPersistenceModificationProcessor(tempDir)); // before persistence.xml parsing
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_DEPLOYMENT + 1, new CapedwarfWebCleanupProcessor()); // right after web.xml parsing
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_MERGE_METADATA + 1, new CapedwarfWebComponentsDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WELD_WEB_INTEGRATION - 10, new CapedwarfWeldParseProcessor()); // before Weld web integration
@@ -91,5 +106,30 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
             }
         }, OperationContext.Stage.RUNTIME);
 
+    }
+
+    protected static TempDir createTempDir(OperationContext context) {
+        final TempDir tempDir;
+        try {
+            tempDir = TempFileProviderService.provider().createTempDir(CAPEDWARF);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Cannot create temp dir for CapeDwarf sub-system!", e);
+        }
+
+        final ServiceTarget serviceTarget = context.getServiceTarget();
+        final ServiceBuilder<TempDir> builder = serviceTarget.addService(ServiceName.JBOSS.append(CAPEDWARF).append("tempDir"), new Service<TempDir>() {
+            public void start(StartContext context) throws StartException {
+            }
+
+            public void stop(StopContext context) {
+                VFSUtils.safeClose(tempDir);
+            }
+
+            public TempDir getValue() throws IllegalStateException, IllegalArgumentException {
+                return tempDir;
+            }
+        });
+        builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+        return tempDir;
     }
 }

@@ -27,6 +27,7 @@ import java.util.List;
 
 /**
  * Add GAE filter and auth servlet.
+ * Enable Faces, if not yet configured.
  *
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -36,19 +37,30 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
     private static final String GAE_FILTER_NAME = "GAEFilter";
     private static final String AUTH_SERVLET_NAME = "authservlet";
 
+    private static final String FACES_SERVLET_CLASS = "javax.faces.webapp.FacesServlet";
+    private static final String FACES_SERVLET_NAME = "_FacesServlet";
+    private static final String FACES_SERVLET_PATTERN = "*.jsf";
+    private static final String FACES_LISTENER_CLASS = "com.sun.faces.config.ConfigureListener";
+
     private final ListenerMetaData CDI_LISTENER;
     private final FilterMetaData GAE_FILTER;
     private final FilterMappingMetaData GAE_FILTER_MAPPING;
     private final JBossServletMetaData GAE_SERVLET;
     private final ServletMappingMetaData GAE_SERVLET_MAPPING;
+    private final JBossServletMetaData FACES_SERVLET;
+    private final ListenerMetaData FACES_LISTENER;
+    private final ServletMappingMetaData FACES_SERVLET_MAPPING;
     private final ResourceReferenceMetaData INFINISPAN_REF;
 
     public CapedwarfWebComponentsDeploymentProcessor() {
-        CDI_LISTENER = createListener();
-        GAE_FILTER = createFilter();
-        GAE_FILTER_MAPPING = createFilterMapping();
+        CDI_LISTENER = createCdiListener();
+        GAE_FILTER = createGaeFilter();
+        GAE_FILTER_MAPPING = createGaeFilterMapping();
         GAE_SERVLET = createAuthServlet();
         GAE_SERVLET_MAPPING = createAuthServletMapping();
+        FACES_SERVLET = createFacesServlet();
+        FACES_LISTENER = createFacesListener();
+        FACES_SERVLET_MAPPING = createFacesServletMapping();
         INFINISPAN_REF = createInfinispanRef();
     }
 
@@ -56,13 +68,18 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
     protected void doDeploy(DeploymentUnit unit, JBossWebMetaData webMetaData, Type type) {
         if (type == Type.MERGED) {
             addContextParamsTo(webMetaData);
-            addListenerTo(webMetaData);
+            addCdiListenerTo(webMetaData);
 
-            addFilterTo(webMetaData);
-            addFilterMappingTo(webMetaData);
+            addGaeFilterTo(webMetaData);
+            addGaeFilterMappingTo(webMetaData);
 
             addAuthServletTo(webMetaData);
             addAuthServletMappingTo(webMetaData);
+
+            if (addFacesServlet(webMetaData)) {
+                addFacesMappingTo(webMetaData);
+                // addFacesListenerTo(webMetaData);
+            }
 
             addResourceReference(webMetaData);
         }
@@ -81,13 +98,24 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
         contextParams.add(param);
     }
 
-    private void addListenerTo(JBossWebMetaData webMetaData) {
+    private void addCdiListenerTo(JBossWebMetaData webMetaData) {
         getListeners(webMetaData).add(CDI_LISTENER);
     }
 
-    private ListenerMetaData createListener() {
+    @SuppressWarnings("UnusedDeclaration")
+    private void addFacesListenerTo(JBossWebMetaData webMetaData) {
+        getListeners(webMetaData).add(FACES_LISTENER);
+    }
+
+    private ListenerMetaData createCdiListener() {
         ListenerMetaData listener = new ListenerMetaData();
         listener.setListenerClass(CDIListener.class.getName());
+        return listener;
+    }
+
+    private ListenerMetaData createFacesListener() {
+        ListenerMetaData listener = new ListenerMetaData();
+        listener.setListenerClass(FACES_LISTENER_CLASS);
         return listener;
     }
 
@@ -100,11 +128,11 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
         return listeners;
     }
 
-    private void addFilterTo(JBossWebMetaData webMetaData) {
+    private void addGaeFilterTo(JBossWebMetaData webMetaData) {
         getFilters(webMetaData).add(GAE_FILTER);
     }
 
-    private FilterMetaData createFilter() {
+    private FilterMetaData createGaeFilter() {
         FilterMetaData filter = new FilterMetaData();
         filter.setFilterName(GAE_FILTER_NAME);
         filter.setFilterClass(GAEFilter.class.getName());
@@ -120,11 +148,11 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
         return filters;
     }
 
-    private void addFilterMappingTo(JBossWebMetaData webMetaData) {
+    private void addGaeFilterMappingTo(JBossWebMetaData webMetaData) {
         getFilterMappings(webMetaData).add(0, GAE_FILTER_MAPPING);
     }
 
-    private FilterMappingMetaData createFilterMapping() {
+    private FilterMappingMetaData createGaeFilterMapping() {
         FilterMappingMetaData filterMapping = new FilterMappingMetaData();
         filterMapping.setFilterName(GAE_FILTER_NAME);
         filterMapping.setUrlPatterns(Collections.singletonList("/*"));
@@ -144,6 +172,16 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
         getServlets(webMetaData).add(GAE_SERVLET);
     }
 
+    private boolean addFacesServlet(JBossWebMetaData webMetaData) {
+        final JBossServletsMetaData servlets = getServlets(webMetaData);
+        for (JBossServletMetaData servlet : servlets) {
+            if (FACES_SERVLET_CLASS.equals(servlet.getServletClass()))
+                return false;
+        }
+        servlets.add(FACES_SERVLET);
+        return true;
+    }
+
     private JBossServletsMetaData getServlets(JBossWebMetaData webMetaData) {
         JBossServletsMetaData servletsMetaData = webMetaData.getServlets();
         if (servletsMetaData == null) {
@@ -161,8 +199,20 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
         return servlet;
     }
 
+    private JBossServletMetaData createFacesServlet() {
+        JBossServletMetaData servlet = new JBossServletMetaData();
+        servlet.setServletName(FACES_SERVLET_NAME);
+        servlet.setServletClass(FACES_SERVLET_CLASS);
+        servlet.setEnabled(true);
+        return servlet;
+    }
+
     private void addAuthServletMappingTo(JBossWebMetaData webMetaData) {
         getServletMappings(webMetaData).add(GAE_SERVLET_MAPPING);
+    }
+
+    private void addFacesMappingTo(JBossWebMetaData webMetaData) {
+        getServletMappings(webMetaData).add(FACES_SERVLET_MAPPING);
     }
 
     private List<ServletMappingMetaData> getServletMappings(JBossWebMetaData webMetaData) {
@@ -178,6 +228,13 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
         ServletMappingMetaData servletMapping = new ServletMappingMetaData();
         servletMapping.setServletName(AUTH_SERVLET_NAME);
         servletMapping.setUrlPatterns(Collections.singletonList(AuthServlet.SERVLET_URI + "/*"));   // TODO: introduce AuthServlet.URL_PATTERN
+        return servletMapping;
+    }
+
+    private ServletMappingMetaData createFacesServletMapping() {
+        ServletMappingMetaData servletMapping = new ServletMappingMetaData();
+        servletMapping.setServletName(FACES_SERVLET_NAME);
+        servletMapping.setUrlPatterns(Collections.singletonList(FACES_SERVLET_PATTERN));
         return servletMapping;
     }
 

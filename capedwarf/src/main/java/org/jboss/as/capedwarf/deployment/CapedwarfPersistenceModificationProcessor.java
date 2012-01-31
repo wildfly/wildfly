@@ -27,34 +27,17 @@ import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.as.server.deployment.module.TempFileProviderService;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
 import org.jboss.vfs.TempDir;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
-import org.jboss.vfs.spi.FileSystem;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.security.CodeSigner;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.Random;
 
 /**
@@ -78,25 +61,8 @@ public class CapedwarfPersistenceModificationProcessor extends CapedwarfPersiste
 
     final TempDir tempDir;
 
-    public CapedwarfPersistenceModificationProcessor(ServiceTarget serviceTarget) {
-        try {
-            tempDir = TempFileProviderService.provider().createTempDir(CAPEDWARF);
-            final ServiceBuilder<TempDir> builder = serviceTarget.addService(ServiceName.JBOSS.append(CAPEDWARF).append("tempDir"), new Service<TempDir>() {
-                public void start(StartContext context) throws StartException {
-                }
-
-                public void stop(StopContext context) {
-                    VFSUtils.safeClose(tempDir);
-                }
-
-                public TempDir getValue() throws IllegalStateException, IllegalArgumentException {
-                    return tempDir;
-                }
-            });
-            builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
-        } catch (Exception e) {
-            throw new IllegalArgumentException(e);
-        }
+    public CapedwarfPersistenceModificationProcessor(TempDir tempDir) {
+        this.tempDir = tempDir;
     }
 
     protected void modifyPersistenceInfo(DeploymentUnit unit, ResourceRoot resourceRoot, ResourceType type) throws IOException {
@@ -113,7 +79,9 @@ public class CapedwarfPersistenceModificationProcessor extends CapedwarfPersiste
             if (stream != null) {
                 final File modifiedFile = tempDir.createFile(Long.toHexString(rng.nextLong()) + "_" + PERSISTENCE_XML, stream);
                 final VirtualFile parent = persistenceXml.getParent();
-                final Closeable closeable = VFS.mount(parent, new ModifiedFileSystem(parent.getPhysicalFile(), modifiedFile));
+                final ModifiedFileSystem mfs = ModifiedFileSystem.get(unit, parent.getPhysicalFile());
+                mfs.addFile(PERSISTENCE_XML, modifiedFile);
+                final Closeable closeable = VFS.mount(parent, mfs);
                 unit.addToAttachmentList(ASSEMBLY_HANDLE, closeable);
             }
         }
@@ -152,90 +120,6 @@ public class CapedwarfPersistenceModificationProcessor extends CapedwarfPersiste
     public void undeploy(DeploymentUnit context) {
         final AttachmentList<Closeable> closeables = context.getAttachment(ASSEMBLY_HANDLE);
         VFSUtils.safeClose(closeables);
-    }
-
-    /**
-     * Modified persistence.xml FS.
-     *
-     * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
-     */
-    private static class ModifiedFileSystem implements FileSystem {
-
-        private File root;
-        private File persistenceXml;
-
-        ModifiedFileSystem(File root, File persistenceXml) {
-            this.root = root;
-            this.persistenceXml = persistenceXml;
-        }
-
-        protected File getFileInternal(VirtualFile mountPoint, VirtualFile target) {
-            if (mountPoint.equals(target))
-                return root;
-
-            final String path = target.getPathNameRelativeTo(mountPoint);
-            if (PERSISTENCE_XML.equals(path))
-                return persistenceXml;
-            else {
-                return new File(root, path);
-            }
-        }
-
-        public File getFile(VirtualFile mountPoint, VirtualFile target) throws IOException {
-            return getFileInternal(mountPoint, target);
-        }
-
-        public InputStream openInputStream(VirtualFile mountPoint, VirtualFile target) throws IOException {
-            return new FileInputStream(getFileInternal(mountPoint, target));
-        }
-
-        public boolean isReadOnly() {
-            return true;
-        }
-
-        public boolean delete(VirtualFile mountPoint, VirtualFile target) {
-            return getFileInternal(mountPoint, target).delete();
-        }
-
-        public long getSize(VirtualFile mountPoint, VirtualFile target) {
-            return getFileInternal(mountPoint, target).length();
-        }
-
-        public long getLastModified(VirtualFile mountPoint, VirtualFile target) {
-            return getFileInternal(mountPoint, target).lastModified();
-        }
-
-        public boolean exists(VirtualFile mountPoint, VirtualFile target) {
-            return getFileInternal(mountPoint, target).exists();
-        }
-
-        public boolean isFile(VirtualFile mountPoint, VirtualFile target) {
-            return getFileInternal(mountPoint, target).isFile();
-        }
-
-        public boolean isDirectory(VirtualFile mountPoint, VirtualFile target) {
-            return getFileInternal(mountPoint, target).isDirectory();
-        }
-
-        public List<String> getDirectoryEntries(VirtualFile mountPoint, VirtualFile target) {
-            final File file = getFileInternal(mountPoint, target);
-            final String[] names = file.list();
-            return names == null ? Collections.<String>emptyList() : Arrays.asList(names);
-        }
-
-        public CodeSigner[] getCodeSigners(VirtualFile mountPoint, VirtualFile target) {
-            return null;
-        }
-
-        public void close() throws IOException {
-        }
-
-        public File getMountSource() {
-            return root;
-        }
-
-        public URI getRootURI() throws URISyntaxException {
-            return root.toURI();
-        }
+        ModifiedFileSystem.remove(context);
     }
 }
