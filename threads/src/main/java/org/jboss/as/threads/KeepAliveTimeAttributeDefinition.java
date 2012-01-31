@@ -59,20 +59,17 @@ class KeepAliveTimeAttributeDefinition extends SimpleAttributeDefinition {
                         return;
                     }
                     if(value.getType() != ModelType.OBJECT) {
-                        throw new OperationFailedException("Attribute " + parameterName +
-                                " expects values of type OBJECT but got " + value + " of type " + value.getType());
+                        throw ThreadsMessages.MESSAGES.invalidKeepAliveType(parameterName, ModelType.OBJECT, value, value.getType());
                     }
                     final Set<String> keys = value.keys();
                     if(keys.size() != 2) {
-                        throw new OperationFailedException("Attribute " + parameterName +
-                                " expects values consisting of '" + TIME +
-                                "' and '" + UNIT + "' but the new value consists of " + keys);
+                        throw ThreadsMessages.MESSAGES.invalidKeepAliveKeys(parameterName, TIME, UNIT, keys);
                     }
                     if (!keys.contains(TIME)) {
-                        throw new OperationFailedException("Missing '" + TIME + "' for '" + parameterName + "'");
+                        throw ThreadsMessages.MESSAGES.missingKeepAliveTime(TIME, parameterName);
                     }
                     if (!keys.contains(UNIT)) {
-                        throw new OperationFailedException("Missing '" + UNIT + "' for '" + parameterName + "'");
+                        throw ThreadsMessages.MESSAGES.missingKeepAliveUnit(UNIT, parameterName);
                     }
                 }
                 @Override

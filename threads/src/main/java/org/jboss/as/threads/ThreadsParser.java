@@ -62,7 +62,6 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -74,8 +73,6 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  */
 public final class ThreadsParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
         XMLElementWriter<SubsystemMarshallingContext> {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.threads");
 
     static final ThreadsParser INSTANCE = new ThreadsParser();
 
@@ -816,7 +813,7 @@ public final class ThreadsParser implements XMLStreamConstants, XMLElementReader
                     try {
                         count = new BigDecimal(value);
                         if (count.compareTo(BigDecimal.ZERO) < 0) {
-                            throw new XMLStreamException(attribute.getLocalName() + " must be greater than or equal to zero", reader.getLocation());
+                            throw ThreadsMessages.MESSAGES.countMustBePositive(attribute, reader.getLocation());
                         }
                     } catch (NumberFormatException e) {
                         throw invalidAttributeValue(reader, i);
@@ -827,7 +824,7 @@ public final class ThreadsParser implements XMLStreamConstants, XMLElementReader
                     try {
                         perCpu = new BigDecimal(value);
                         if (perCpu.compareTo(BigDecimal.ZERO) < 0) {
-                            throw new XMLStreamException(attribute.getLocalName() + " must be greater than or equal to zero", reader.getLocation());
+                            throw ThreadsMessages.MESSAGES.perCpuMustBePositive(attribute, reader.getLocation());
                         }
                     } catch (NumberFormatException e) {
                         throw invalidAttributeValue(reader, i);
@@ -847,10 +844,8 @@ public final class ThreadsParser implements XMLStreamConstants, XMLElementReader
 
         int fullCount = getScaledCount(count, perCpu);
         if (!perCpu.equals(new BigDecimal(0))) {
-            log.warn(String.format("The '%s' attribute is no longer supported. The value [%f] of the '%s' attribute " +
-                    "is being combined with the value [%f] of the '%s' attribute and the current processor count [%d] " +
-                    "to derive a new value of [%d] for '%s'.", Attribute.PER_CPU, count, Attribute.COUNT,
-                    perCpu, Attribute.PER_CPU, Runtime.getRuntime().availableProcessors(), fullCount, Attribute.COUNT));
+            ThreadsLogger.ROOT_LOGGER.perCpuNotSupported(Attribute.PER_CPU, count, Attribute.COUNT,
+                    perCpu, Attribute.PER_CPU, Runtime.getRuntime().availableProcessors(), fullCount, Attribute.COUNT);
         }
 
         return String.valueOf(fullCount);

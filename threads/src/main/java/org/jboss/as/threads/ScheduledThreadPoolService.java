@@ -22,15 +22,15 @@
 
 package org.jboss.as.threads;
 
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
+
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
 
 /**
  * Service responsible for creating, starting and stopping a scheduled thread pool executor.
@@ -61,10 +61,7 @@ public final class ScheduledThreadPoolService implements Service<ManagedSchedule
     }
 
     public synchronized void stop(final StopContext context) {
-        final ManagedScheduledExecutorService executor = this.executor;
-        if (executor == null) {
-            throw new IllegalStateException();
-        }
+        final ManagedScheduledExecutorService executor = getValue();
         this.context = context;
         context.asynchronous();
         executor.internalShutdown();
@@ -74,7 +71,7 @@ public final class ScheduledThreadPoolService implements Service<ManagedSchedule
     public synchronized ManagedScheduledExecutorService getValue() throws IllegalStateException {
         final ManagedScheduledExecutorService value = this.executor;
         if (value == null) {
-            throw new IllegalStateException();
+            throw ThreadsMessages.MESSAGES.scheduledThreadPoolExecutorUninitialized();
         }
         return value;
     }
@@ -84,42 +81,27 @@ public final class ScheduledThreadPoolService implements Service<ManagedSchedule
     }
 
     public int getActiveCount() {
-        final ManagedScheduledExecutorService executor = this.executor;
-        if(executor == null) {
-            throw new IllegalStateException("The exector service hasn't been initialized.");
-        }
+        final ManagedScheduledExecutorService executor = getValue();
         return executor.getActiveCount();
     }
 
     public long getCompletedTaskCount() {
-        final ManagedScheduledExecutorService executor = this.executor;
-        if(executor == null) {
-            throw new IllegalStateException("The exector service hasn't been initialized.");
-        }
+        final ManagedScheduledExecutorService executor = getValue();
         return executor.getCompletedTaskCount();
     }
 
     public int getCurrentThreadCount() {
-        final ManagedScheduledExecutorService executor = this.executor;
-        if(executor == null) {
-            throw new IllegalStateException("The exector service hasn't been initialized.");
-        }
+        final ManagedScheduledExecutorService executor = getValue();
         return executor.getPoolSize();
     }
 
     public int getLargestThreadCount() {
-        final ManagedScheduledExecutorService executor = this.executor;
-        if(executor == null) {
-            throw new IllegalStateException("The exector service hasn't been initialized.");
-        }
+        final ManagedScheduledExecutorService executor = getValue();
         return executor.getLargestPoolSize();
     }
 
     public long getTaskCount() {
-        final ManagedScheduledExecutorService executor = this.executor;
-        if(executor == null) {
-            throw new IllegalStateException("The exector service hasn't been initialized.");
-        }
+        final ManagedScheduledExecutorService executor = getValue();
         return executor.getTaskCount();
     }
 

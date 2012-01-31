@@ -58,7 +58,7 @@ public class BoundedQueueThreadPoolMetricsHandler extends ThreadPoolMetricsHandl
             context.getResult().set(bounded.getRejectedCount());
         } else {
             // Programming bug. Throw a RuntimeException, not OFE, as this is not a client error
-            throw new IllegalStateException("Unsupported attribute '" + attributeName + "'");
+            throw ThreadsMessages.MESSAGES.unsupportedBoundedQueueThreadPoolMetric(attributeName);
         }
     }
 }

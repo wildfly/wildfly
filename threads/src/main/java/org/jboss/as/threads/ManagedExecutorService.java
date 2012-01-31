@@ -44,7 +44,7 @@ public abstract class ManagedExecutorService implements ExecutorService {
 
     public ManagedExecutorService(ExecutorService executor) {
         if(executor == null) {
-            throw new IllegalArgumentException("Executor is null.");
+            throw ThreadsMessages.MESSAGES.nullExecutor();
         }
         this.executor = protectExecutor(executor);
     }

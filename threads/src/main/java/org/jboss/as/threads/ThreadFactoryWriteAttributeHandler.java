@@ -51,32 +51,28 @@ public class ThreadFactoryWriteAttributeHandler extends ThreadsWriteAttributeOpe
         final ServiceName serviceName = ThreadsServices.threadFactoryName(name);
         ServiceController<?> controller = context.getServiceRegistry(true).getService(serviceName);
         if(controller == null) {
-            throw new OperationFailedException(new ModelNode().set("Service " + serviceName + " not found."));
+            throw ThreadsMessages.MESSAGES.threadFactoryServiceNotFound(serviceName);
         }
         return controller;
     }
 
     @Override
-    protected void applyOperation(final OperationContext context, ModelNode operation, String attributeName, ServiceController<?> service) {
+    protected void applyOperation(final OperationContext context, ModelNode operation, String attributeName,
+                                  ServiceController<?> service, boolean forRollback) throws OperationFailedException {
 
         final ThreadFactoryService tf = (ThreadFactoryService) service.getService();
-        try {
-            if (CommonAttributes.GROUP_NAME.equals(attributeName)) {
-                final ModelNode value = PoolAttributeDefinitions.GROUP_NAME.resolveModelAttribute(context, operation);
-                tf.setThreadGroupName(value.isDefined() ? value.asString() : null);
-            } else if(CommonAttributes.PRIORITY.equals(attributeName)) {
-                final ModelNode value = PoolAttributeDefinitions.PRIORITY.resolveModelAttribute(context, operation);
-                tf.setPriority(value.isDefined() ? value.asInt() : -1);
-            } else if(CommonAttributes.THREAD_NAME_PATTERN.equals(attributeName)) {
-                final ModelNode value = PoolAttributeDefinitions.THREAD_NAME_PATTERN.resolveModelAttribute(context, operation);
-                tf.setNamePattern(value.isDefined() ? value.asString() : null);
-            } else {
-                throw new IllegalArgumentException("Unexpected attribute '" + attributeName + "'");
-            }
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        if (CommonAttributes.GROUP_NAME.equals(attributeName)) {
+            final ModelNode value = PoolAttributeDefinitions.GROUP_NAME.resolveModelAttribute(context, operation);
+            tf.setThreadGroupName(value.isDefined() ? value.asString() : null);
+        } else if(CommonAttributes.PRIORITY.equals(attributeName)) {
+            final ModelNode value = PoolAttributeDefinitions.PRIORITY.resolveModelAttribute(context, operation);
+            tf.setPriority(value.isDefined() ? value.asInt() : -1);
+        } else if(CommonAttributes.THREAD_NAME_PATTERN.equals(attributeName)) {
+            final ModelNode value = PoolAttributeDefinitions.THREAD_NAME_PATTERN.resolveModelAttribute(context, operation);
+            tf.setNamePattern(value.isDefined() ? value.asString() : null);
+        } else if (!forRollback) {
+            // Programming bug. Throw a RuntimeException, not OFE, as this is not a client error
+            throw ThreadsMessages.MESSAGES.unsupportedThreadFactoryAttribute(attributeName);
         }
     }
 }

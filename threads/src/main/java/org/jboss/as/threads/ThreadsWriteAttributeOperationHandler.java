@@ -22,8 +22,14 @@
 
 package org.jboss.as.threads;
 
+import static org.jboss.as.threads.CommonAttributes.KEEPALIVE_TIME;
+import static org.jboss.as.threads.CommonAttributes.TIME;
+import static org.jboss.as.threads.CommonAttributes.UNIT;
+
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -81,7 +87,7 @@ public abstract class ThreadsWriteAttributeOperationHandler extends AbstractWrit
             } else {
                 // Actually apply the update
                 final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-                applyOperation(context, model, attributeName, service);
+                applyOperation(context, model, attributeName, service, false);
                 handbackHolder.setHandback(Boolean.TRUE);
                 return false;
             }
@@ -99,7 +105,7 @@ public abstract class ThreadsWriteAttributeOperationHandler extends AbstractWrit
                 // Create and execute a write-attribute operation that uses the valueToRestore
                 ModelNode revertModel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().clone();
                 revertModel.get(attributeName).set(valueToRestore);
-                applyOperation(context, revertModel, attributeName, service);
+                applyOperation(context, revertModel, attributeName, service, true);
             }
         }
     }
@@ -112,5 +118,25 @@ public abstract class ThreadsWriteAttributeOperationHandler extends AbstractWrit
 
     protected abstract ServiceController<?> getService(final OperationContext context, final ModelNode model) throws OperationFailedException;
 
-    protected abstract void applyOperation(final OperationContext context, ModelNode operation, String attributeName, ServiceController<?> service) throws OperationFailedException;
+    protected abstract void applyOperation(final OperationContext context, ModelNode operation, String attributeName,
+                                           ServiceController<?> service, boolean forRollback) throws OperationFailedException;
+
+
+    static TimeSpec getTimeSpec(OperationContext context, ModelNode model, TimeUnit defaultUnit) throws OperationFailedException {
+        ModelNode value = PoolAttributeDefinitions.KEEPALIVE_TIME.resolveModelAttribute(context, model);
+        if (!value.hasDefined(TIME)) {
+            throw ThreadsMessages.MESSAGES.missingTimeSpecTime(TIME, KEEPALIVE_TIME);
+        }
+        final TimeUnit unit;
+        if (!value.hasDefined(UNIT)) {
+            unit = defaultUnit;
+        } else {
+            try {
+            unit = Enum.valueOf(TimeUnit.class, value.get(UNIT).asString());
+            } catch(IllegalArgumentException e) {
+                throw ThreadsMessages.MESSAGES.failedToParseUnit(UNIT, Arrays.asList(TimeUnit.values()));
+            }
+        }
+        return new TimeSpec(unit, value.get(TIME).asLong());
+    }
 }

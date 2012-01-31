@@ -105,7 +105,7 @@ class ThreadPoolManagementUtils {
 
     }
 
-    static <T> void removeThreadPoolService(final String threadPoolName,
+    static void removeThreadPoolService(final String threadPoolName,
                                              final ServiceName serviceNameBase,
                                              final String threadFactoryName,
                                              final ThreadFactoryResolver threadFactoryResolver,
@@ -113,7 +113,7 @@ class ThreadPoolManagementUtils {
         removeThreadPoolService(threadPoolName, serviceNameBase, threadFactoryName, threadFactoryResolver, null, null, operationContext);
     }
 
-    static <T> void removeThreadPoolService(final String threadPoolName,
+    static void removeThreadPoolService(final String threadPoolName,
                                              final ServiceName serviceNameBase,
                                              final String threadFactoryName,
                                              final ThreadFactoryResolver threadFactoryResolver,
@@ -185,10 +185,10 @@ class ThreadPoolManagementUtils {
         if (model.hasDefined(KEEPALIVE_TIME)) {
             ModelNode keepaliveTime = model.get(KEEPALIVE_TIME);
             if (!keepaliveTime.hasDefined(TIME)) {
-                throw new IllegalArgumentException("Missing '" + TIME + "' for '" + KEEPALIVE_TIME + "'");
+                throw ThreadsMessages.MESSAGES.missingKeepAliveTime(TIME, KEEPALIVE_TIME);
             }
             if (!keepaliveTime.hasDefined(UNIT)) {
-                throw new IllegalArgumentException("Missing '" + UNIT + "' for '" + KEEPALIVE_TIME + "'");
+                throw ThreadsMessages.MESSAGES.missingKeepAliveUnit(UNIT, KEEPALIVE_TIME);
             }
             params.keepAliveTime = new TimeSpec(Enum.valueOf(TimeUnit.class, keepaliveTime.get(UNIT).asString()), keepaliveTime.get(TIME).asLong());
         }
