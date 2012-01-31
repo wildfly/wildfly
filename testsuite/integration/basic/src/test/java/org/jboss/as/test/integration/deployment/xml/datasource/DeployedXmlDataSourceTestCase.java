@@ -67,7 +67,7 @@ public class DeployedXmlDataSourceTestCase {
     @Deployment
     public static Archive<?> deploy() {
         return ShrinkWrap.create(JavaArchive.class, "testDsXmlDeployment.jar")
-                .addPackage(DeployedXmlDataSourceTestCase.class.getPackage())
+                .addClass(DeployedXmlDataSourceTestCase.class)
                 .addAsManifestResource(DeployedXmlDataSourceTestCase.class.getPackage(), "MANIFEST.MF", "MANIFEST.MF");
     }
 

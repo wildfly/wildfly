@@ -68,7 +68,7 @@ public class DeployedXmlJMSManagementTestCase {
     @Deployment
     public static Archive<?> deploy() {
         return ShrinkWrap.create(JavaArchive.class, "testJMSXmlDeployment.jar")
-                .addPackage(DeployedXmlJMSManagementTestCase.class.getPackage())
+                .addClass(DeployedXmlJMSManagementTestCase.class)
                 .addAsManifestResource(DeployedXmlJMSManagementTestCase.class.getPackage(), "MANIFEST.MF", "MANIFEST.MF");
     }
 
