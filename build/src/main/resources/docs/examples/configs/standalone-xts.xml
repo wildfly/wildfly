@@ -4,18 +4,21 @@
 
     <extensions>
         <extension module="org.jboss.as.clustering.infinispan"/>
-        <extension module="org.jboss.as.connector"/>
+        <extension module="org.jboss.as.cmp"/>
         <extension module="org.jboss.as.configadmin"/>
+        <extension module="org.jboss.as.connector"/>
         <extension module="org.jboss.as.deployment-scanner"/>
         <extension module="org.jboss.as.ee"/>
         <extension module="org.jboss.as.ejb3"/>
-        <extension module="org.jboss.as.jaxr"/>
+        <extension module="org.jboss.as.jacorb"/>
         <extension module="org.jboss.as.jaxrs"/>
         <extension module="org.jboss.as.jdr"/>
         <extension module="org.jboss.as.jmx"/>
         <extension module="org.jboss.as.jpa"/>
+        <extension module="org.jboss.as.jsr77"/>
         <extension module="org.jboss.as.logging"/>
         <extension module="org.jboss.as.mail"/>
+        <extension module="org.jboss.as.messaging"/>
         <extension module="org.jboss.as.naming"/>
         <extension module="org.jboss.as.osgi"/>
         <extension module="org.jboss.as.pojo"/>
@@ -87,11 +90,12 @@
                 </handlers>
             </root-logger>
         </subsystem>
+        <subsystem xmlns="urn:jboss:domain:cmp:1.0"/>
         <subsystem xmlns="urn:jboss:domain:configadmin:1.0"/>
         <subsystem xmlns="urn:jboss:domain:datasources:1.0">
             <datasources>
                 <datasource jndi-name="java:jboss/datasources/ExampleDS" enabled="true" use-java-context="true"
-                            pool-name="ExampleDS">
+                            pool-name="H2DS">
                     <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
                     <driver>h2</driver>
                     <pool></pool>
@@ -147,6 +151,7 @@
                     <keepalive-time time="100" unit="milliseconds"/>
                 </thread-pool>
             </thread-pools>
+            <iiop enable-by-default="true" use-qualified-name="true"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:infinispan:1.1" default-cache-container="hibernate">
             <cache-container name="hibernate" default-cache="local-query">
@@ -166,10 +171,7 @@
                 </local-cache>
             </cache-container>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:jaxr:1.0">
-            <connection-factory jndi-name="java:jboss/jaxr/ConnectionFactory"/>
-            <juddi-server publish-url="http://localhost:8080/juddi/publish" query-url="http://localhost:8080/juddi/query"/>
-        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:jacorb:1.1"/>
         <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
         <subsystem xmlns="urn:jboss:domain:jca:1.1">
             <archive-validation enabled="false"/>
@@ -188,19 +190,105 @@
                     <keepalive-time time="10" unit="seconds"/>
                 </long-running-threads>
             </default-workmanager>
+            <cached-connection-manager/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jdr:1.0"/>
         <subsystem xmlns="urn:jboss:domain:jmx:1.1">
             <show-model value="true"/>
             <remoting-connector/>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:jpa:1.0">
+         <subsystem xmlns="urn:jboss:domain:jpa:1.0">
             <jpa default-datasource=""/>
         </subsystem>
+        <subsystem xmlns="urn:jboss:domain:jsr77:1.0"/>
         <subsystem xmlns="urn:jboss:domain:mail:1.0">
             <mail-session jndi-name="java:jboss/mail/Default">
                 <smtp-server outbound-socket-binding-ref="mail-smtp"/>
             </mail-session>
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:messaging:1.1">
+            <hornetq-server>
+                <!-- disable messaging persistence -->
+                <persistence-enabled>false</persistence-enabled>
+                <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
+                <journal-file-size>102400</journal-file-size>
+                <journal-min-files>2</journal-min-files>
+
+                <connectors>
+                    <netty-connector name="netty" socket-binding="messaging"/>
+                    <netty-connector name="netty-throughput" socket-binding="messaging-throughput">
+                        <param key="batch-delay" value="50"/>
+                    </netty-connector>
+                    <in-vm-connector name="in-vm" server-id="0"/>
+                </connectors>
+
+                <acceptors>
+                    <netty-acceptor name="netty" socket-binding="messaging"/>
+                    <netty-acceptor name="netty-throughput" socket-binding="messaging-throughput">
+                        <param key="batch-delay" value="50"/>
+                        <param key="direct-deliver" value="false"/>
+                    </netty-acceptor>
+                    <in-vm-acceptor name="in-vm" server-id="0"/>
+                </acceptors>
+
+                <security-settings>
+                    <security-setting match="#">
+                        <permission type="send" roles="guest"/>
+                        <permission type="consume" roles="guest"/>
+                        <permission type="createNonDurableQueue" roles="guest"/>
+                        <permission type="deleteNonDurableQueue" roles="guest"/>
+                    </security-setting>
+                </security-settings>
+
+                <address-settings>
+                    <!--default for catch all-->
+                    <address-setting match="#">
+                        <dead-letter-address>jms.queue.DLQ</dead-letter-address>
+                        <expiry-address>jms.queue.ExpiryQueue</expiry-address>
+                        <redelivery-delay>0</redelivery-delay>
+                        <max-size-bytes>10485760</max-size-bytes>
+                        <message-counter-history-day-limit>10</message-counter-history-day-limit>
+                        <address-full-policy>BLOCK</address-full-policy>
+                    </address-setting>
+                </address-settings>
+
+                <jms-connection-factories>
+                    <connection-factory name="InVmConnectionFactory">
+                        <connectors>
+                            <connector-ref connector-name="in-vm"/>
+                        </connectors>
+                        <entries>
+                            <entry name="java:/ConnectionFactory"/>
+                        </entries>
+                    </connection-factory>
+                    <connection-factory name="RemoteConnectionFactory">
+                        <connectors>
+                            <connector-ref connector-name="netty"/>
+                        </connectors>
+                        <entries>
+                            <entry name="RemoteConnectionFactory"/>
+                        </entries>
+                    </connection-factory>
+                    <pooled-connection-factory name="hornetq-ra">
+                        <transaction mode="xa"/>
+                        <connectors>
+                            <connector-ref connector-name="in-vm"/>
+                        </connectors>
+                        <entries>
+                            <entry name="java:/JmsXA"/>
+                        </entries>
+                    </pooled-connection-factory>
+                </jms-connection-factories>
+
+                <jms-destinations>
+                    <jms-queue name="testQueue">
+                        <entry name="queue/test"/>
+                    </jms-queue>
+                    <jms-topic name="testTopic">
+                        <entry name="topic/test"/>
+                    </jms-topic>
+                </jms-destinations>
+            </hornetq-server>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:naming:1.1"/>
         <subsystem xmlns="urn:jboss:domain:osgi:1.2" activation="lazy">
@@ -221,7 +309,7 @@
             </capabilities>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
-        <subsystem xmlns="urn:jboss:domain:remoting:1.1">
+        <subsystem xmlns="urn:jboss:domain:remoting:1.0">
             <connector name="remoting-connector" socket-binding="remoting"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:resource-adapters:1.0"/>
