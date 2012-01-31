@@ -517,15 +517,17 @@
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
-            <xs:attribute name="plain-text" type="xs:boolean" default="false">
-                <xs:annotation>
-                    <xs:documentation>
-                        Are the credentials within the properties file stored in plain text, if not
-                        the {credential} is expected to be the hex encoded Digest hash
-                        of 'username : realm : password'.
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:attribute>        
+            <xs:extension base="propertiesFileType">
+                <xs:attribute name="plain-text" type="xs:boolean" default="false">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Are the credentials within the properties file stored in plain text, if not
+                            the {credential} is expected to be the hex encoded Digest hash
+                            of 'username : realm : password'.
+                        </xs:documentation>
+                    </xs:annotation>
+            </xs:attribute>
+            </xs:extension>
         </xs:complexContent>                                
     </xs:complexType>
 

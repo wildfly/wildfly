@@ -60,8 +60,8 @@ public class ManagementDescriptions {
         node.get(REQUEST_PROPERTIES, VERBOSE, NILLABLE).set(true);
         node.get(REQUEST_PROPERTIES, VERBOSE, DEFAULT).set(false);
 
-        node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("core.management.whoami.reply"));
         // TODO - Describe the response vales.
+        node.get(REPLY_PROPERTIES).setEmptyObject();
 
         return node;
 
