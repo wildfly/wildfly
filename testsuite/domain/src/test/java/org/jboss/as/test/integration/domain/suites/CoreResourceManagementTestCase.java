@@ -418,7 +418,39 @@ public class CoreResourceManagementTestCase {
 
     @Test
     public void testDomainSnapshot() throws Exception {
-        testSnapshot(new ModelNode().setEmptyList());
+        final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
+
+        ModelNode snapshotOperation = new ModelNode();
+        snapshotOperation.get(OP).set(SnapshotTakeHandler.OPERATION_NAME);
+        snapshotOperation.get(OP_ADDR).setEmptyList();
+        final String snapshot = validateResponse(masterClient.execute(snapshotOperation)).asString();
+        Assert.assertNotNull(snapshot);
+        Assert.assertFalse(snapshot.isEmpty());
+
+        ModelNode listSnapshotOperation = new ModelNode();
+        listSnapshotOperation.get(OP).set(SnapshotListHandler.OPERATION_NAME);
+        listSnapshotOperation.get(OP_ADDR).setEmptyList();
+        ModelNode listResult = validateResponse(masterClient.execute(listSnapshotOperation));
+        Set<String> snapshots = new HashSet<String>();
+        for (ModelNode curr : listResult.get(NAMES).asList()) {
+            snapshots.add(listResult.get(DIRECTORY).asString() + "/" + curr.asString());
+        }
+
+        Assert.assertTrue(snapshots.contains(snapshot));
+
+        ModelNode deleteSnapshotOperation = new ModelNode();
+        deleteSnapshotOperation.get(OP).set(SnapshotDeleteHandler.OPERATION_NAME);
+        deleteSnapshotOperation.get(OP_ADDR).setEmptyList();
+        deleteSnapshotOperation.get(NAME).set(snapshot.substring(snapshot.lastIndexOf("/")  + 1));
+        validateResponse(masterClient.execute(deleteSnapshotOperation), false);
+
+        listResult = validateResponse(masterClient.execute(listSnapshotOperation));
+        snapshots = new HashSet<String>();
+        for (ModelNode curr : listResult.get(NAMES).asList()) {
+            snapshots.add(listResult.get(DIRECTORY).asString() + "/" + curr.asString());
+        }
+
+        Assert.assertFalse(snapshots.contains(snapshot));
     }
 
     @Test

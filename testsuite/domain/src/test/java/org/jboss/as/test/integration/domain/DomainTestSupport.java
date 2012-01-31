@@ -22,11 +22,11 @@
 
 package org.jboss.as.test.integration.domain;
 
-import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
-import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
-import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
-import org.junit.Assert;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 import java.io.Closeable;
 import java.io.File;
@@ -36,11 +36,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
+import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
+import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
+import org.junit.Assert;
 
 /**
  * Utilities for running tests of domain mode.
@@ -134,6 +134,10 @@ public class DomainTestSupport {
     }
 
     public static ModelNode validateResponse(ModelNode response) {
+        return validateResponse(response, true);
+    }
+
+    public static ModelNode validateResponse(ModelNode response, boolean getResult) {
 
         if(! SUCCESS.equals(response.get(OUTCOME).asString())) {
             System.out.println("Failed response:");
@@ -141,8 +145,11 @@ public class DomainTestSupport {
             Assert.fail(response.get(FAILURE_DESCRIPTION).toString());
         }
 
-        Assert.assertTrue("result exists", response.has(RESULT));
-        return response.get(RESULT);
+        if (getResult) {
+            Assert.assertTrue("result exists", response.has(RESULT));
+            return response.get(RESULT);
+        }
+        return null;
     }
 
     public static ModelNode validateFailedResponse(ModelNode response) {
