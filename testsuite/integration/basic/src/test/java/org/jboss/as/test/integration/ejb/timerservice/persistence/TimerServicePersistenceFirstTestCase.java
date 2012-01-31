@@ -73,6 +73,13 @@ public class TimerServicePersistenceFirstTestCase {
         handle.getTimer().cancel();
     }
 
+    @Test
+    public void createNonPersistentTimer() throws NamingException {
+        InitialContext ctx = new InitialContext();
+        NonPersistentTimerServiceBean bean = (NonPersistentTimerServiceBean)ctx.lookup("java:module/" + NonPersistentTimerServiceBean.class.getSimpleName());
+        bean.createTimer();
+        Assert.assertTrue(NonPersistentTimerServiceBean.quickAwaitTimerCall());
+    }
 
 
 }

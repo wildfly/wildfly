@@ -33,7 +33,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests that an @Timout method is called when a timer is created programatically.
+ * Tests that an @Timeout method is called when a timer is created programatically.
  *
  * @author Stuart Douglas
  */
@@ -64,5 +64,12 @@ public class TimerServicePersistenceSecondTestCase {
         Assert.assertFalse(CancelledTimerServiceBean.quickAwaitTimerCall());
     }
 
+    /**
+     * The timer should not be restored, it was non-persistent one
+     */
+    @Test
+    public void testTimerServiceNonPersistent() throws NamingException {
+        Assert.assertFalse(NonPersistentTimerServiceBean.quickAwaitTimerCall());
+    }
 
 }
