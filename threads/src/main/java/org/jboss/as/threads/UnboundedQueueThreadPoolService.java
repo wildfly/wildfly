@@ -22,6 +22,10 @@
 
 package org.jboss.as.threads;
 
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -30,10 +34,6 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.EventListener;
 import org.jboss.threads.JBossThreadPoolExecutor;
-
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Service responsible for creating, starting and stopping a thread pool executor with an unbounded queue.
@@ -61,10 +61,7 @@ public class UnboundedQueueThreadPoolService implements Service<ManagedJBossThre
     }
 
     public synchronized void stop(final StopContext context) {
-        final ManagedJBossThreadPoolExecutorService executor = this.executor;
-        if (executor == null) {
-            throw new IllegalStateException();
-        }
+        final ManagedJBossThreadPoolExecutorService executor = getValue();
         context.asynchronous();
         executor.internalShutdown();
         executor.addShutdownListener(new EventListener<StopContext>() {
@@ -78,7 +75,7 @@ public class UnboundedQueueThreadPoolService implements Service<ManagedJBossThre
     public synchronized ManagedJBossThreadPoolExecutorService getValue() throws IllegalStateException {
         final ManagedJBossThreadPoolExecutorService value = this.executor;
         if (value == null) {
-            throw new IllegalStateException();
+            throw ThreadsMessages.MESSAGES.unboundedQueueThreadPoolExecutorUninitialized();
         }
         return value;
     }
@@ -104,58 +101,37 @@ public class UnboundedQueueThreadPoolService implements Service<ManagedJBossThre
     }
 
     public int getActiveCount() {
-        final ManagedJBossThreadPoolExecutorService executor = this.executor;
-        if(executor == null) {
-            throw new IllegalStateException("The exector service hasn't been initialized.");
-        }
+        final ManagedJBossThreadPoolExecutorService executor = getValue();
         return executor.getActiveCount();
     }
 
     public long getCompletedTaskCount() {
-        final ManagedJBossThreadPoolExecutorService executor = this.executor;
-        if(executor == null) {
-            throw new IllegalStateException("The exector service hasn't been initialized.");
-        }
+        final ManagedJBossThreadPoolExecutorService executor = getValue();
         return executor.getCompletedTaskCount();
     }
 
     public int getCurrentThreadCount() {
-        final ManagedJBossThreadPoolExecutorService executor = this.executor;
-        if(executor == null) {
-            throw new IllegalStateException("The exector service hasn't been initialized.");
-        }
+        final ManagedJBossThreadPoolExecutorService executor = getValue();
         return executor.getCurrentThreadCount();
     }
 
     public int getLargestPoolSize() {
-        final ManagedJBossThreadPoolExecutorService executor = this.executor;
-        if(executor == null) {
-            throw new IllegalStateException("The exector service hasn't been initialized.");
-        }
+        final ManagedJBossThreadPoolExecutorService executor = getValue();
         return executor.getLargestPoolSize();
     }
 
     public int getLargestThreadCount() {
-        final ManagedJBossThreadPoolExecutorService executor = this.executor;
-        if(executor == null) {
-            throw new IllegalStateException("The exector service hasn't been initialized.");
-        }
+        final ManagedJBossThreadPoolExecutorService executor = getValue();
         return executor.getLargestThreadCount();
     }
 
     public int getRejectedCount() {
-        final ManagedJBossThreadPoolExecutorService executor = this.executor;
-        if(executor == null) {
-            throw new IllegalStateException("The exector service hasn't been initialized.");
-        }
+        final ManagedJBossThreadPoolExecutorService executor = getValue();
         return executor.getRejectedCount();
     }
 
     public long getTaskCount() {
-        final ManagedJBossThreadPoolExecutorService executor = this.executor;
-        if(executor == null) {
-            throw new IllegalStateException("The exector service hasn't been initialized.");
-        }
+        final ManagedJBossThreadPoolExecutorService executor = getValue();
         return executor.getTaskCount();
     }
 

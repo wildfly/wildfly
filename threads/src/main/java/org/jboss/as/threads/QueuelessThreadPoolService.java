@@ -67,10 +67,7 @@ public class QueuelessThreadPoolService implements Service<ManagedQueuelessExecu
     }
 
     public synchronized void stop(final StopContext context) {
-        final ManagedQueuelessExecutorService executor = this.executor;
-        if (executor == null) {
-            throw new IllegalStateException();
-        }
+        final ManagedQueuelessExecutorService executor = getValue();
         context.asynchronous();
         executor.internalShutdown();
         executor.addShutdownListener(new EventListener<StopContext>() {
@@ -84,7 +81,7 @@ public class QueuelessThreadPoolService implements Service<ManagedQueuelessExecu
     public synchronized ManagedQueuelessExecutorService getValue() throws IllegalStateException {
         final ManagedQueuelessExecutorService value = this.executor;
         if (value == null) {
-            throw new IllegalStateException();
+            throw ThreadsMessages.MESSAGES.queuelessThreadPoolExecutorUninitialized();
         }
         return value;
     }
@@ -105,14 +102,6 @@ public class QueuelessThreadPoolService implements Service<ManagedQueuelessExecu
         }
     }
 
-    public synchronized void setBlocking(boolean blocking) {
-        this.blocking = blocking;
-        final ManagedQueuelessExecutorService executor = this.executor;
-        if(executor != null) {
-            executor.setBlocking(blocking);
-        }
-    }
-
     public synchronized void setKeepAlive(TimeSpec keepAliveSpec) {
         keepAlive = keepAliveSpec;
         final ManagedQueuelessExecutorService executor = this.executor;
@@ -123,26 +112,17 @@ public class QueuelessThreadPoolService implements Service<ManagedQueuelessExecu
     }
 
     public int getCurrentThreadCount() {
-        final ManagedQueuelessExecutorService executor = this.executor;
-        if(executor == null) {
-            throw new IllegalStateException("The exector service hasn't been initialized.");
-        }
+        final ManagedQueuelessExecutorService executor = getValue();
         return executor.getCurrentThreadCount();
     }
 
     public int getLargestThreadCount() {
-        final ManagedQueuelessExecutorService executor = this.executor;
-        if(executor == null) {
-            throw new IllegalStateException("The exector service hasn't been initialized.");
-        }
+        final ManagedQueuelessExecutorService executor = getValue();
         return executor.getLargestThreadCount();
     }
 
     public int getRejectedCount() {
-        final ManagedQueuelessExecutorService executor = this.executor;
-        if(executor == null) {
-            throw new IllegalStateException("The exector service hasn't been initialized.");
-        }
+        final ManagedQueuelessExecutorService executor = getValue();
         return executor.getRejectedCount();
     }
 

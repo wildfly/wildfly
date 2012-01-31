@@ -23,11 +23,7 @@ package org.jboss.as.threads;
 
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.threads.CommonAttributes.KEEPALIVE_TIME;
-import static org.jboss.as.threads.CommonAttributes.TIME;
-import static org.jboss.as.threads.CommonAttributes.UNIT;
 
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.OperationContext;
@@ -53,31 +49,20 @@ public class UnboundedQueueThreadPoolWriteAttributeHandler extends ThreadsWriteA
     }
 
     @Override
-    protected void applyOperation(final OperationContext context, ModelNode model, String attributeName, ServiceController<?> service) throws OperationFailedException {
+    protected void applyOperation(final OperationContext context, ModelNode model, String attributeName,
+                                  ServiceController<?> service, boolean forRollback) throws OperationFailedException {
 
         final UnboundedQueueThreadPoolService pool =  (UnboundedQueueThreadPoolService) service.getService();
 
         if (PoolAttributeDefinitions.KEEPALIVE_TIME.getName().equals(attributeName)) {
-            ModelNode value = PoolAttributeDefinitions.KEEPALIVE_TIME.resolveModelAttribute(context, model);
-            if (!value.hasDefined(TIME)) {
-                throw new IllegalArgumentException("Missing '" + TIME + "' for '" + KEEPALIVE_TIME + "'");
-            }
-            final TimeUnit unit;
-            if (!value.hasDefined(UNIT)) {
-                unit = pool.getKeepAliveUnit();
-            } else {
-                try {
-                unit = Enum.valueOf(TimeUnit.class, value.get(UNIT).asString());
-                } catch(IllegalArgumentException e) {
-                    throw new OperationFailedException(new ModelNode().set("Failed to parse '" + UNIT + "', allowed values are: " + Arrays.asList(TimeUnit.values())));
-                }
-            }
-            final TimeSpec spec = new TimeSpec(unit, value.get(TIME).asLong());
+            TimeUnit defaultUnit = pool.getKeepAliveUnit();
+            final TimeSpec spec = getTimeSpec(context, model, defaultUnit);
             pool.setKeepAlive(spec);
         } else if(PoolAttributeDefinitions.MAX_THREADS.getName().equals(attributeName)) {
             pool.setMaxThreads(PoolAttributeDefinitions.MAX_THREADS.resolveModelAttribute(context, model).asInt());
-        } else {
-            throw new IllegalArgumentException("Unexpected attribute '" + attributeName + "'");
+        } else if (!forRollback) {
+            // Programming bug. Throw a RuntimeException, not OFE, as this is not a client error
+            throw ThreadsMessages.MESSAGES.unsupportedUnboundedQueueThreadPoolAttribute(attributeName);
         }
     }
 
@@ -87,7 +72,7 @@ public class UnboundedQueueThreadPoolWriteAttributeHandler extends ThreadsWriteA
         final ServiceName serviceName = serviceNameBase.append(name);
         ServiceController<?> controller = context.getServiceRegistry(true).getService(serviceName);
         if(controller == null) {
-            throw new OperationFailedException(new ModelNode().set("Service " + serviceName + " not found."));
+            throw ThreadsMessages.MESSAGES.unboundedQueueThreadPoolServiceNotFound(serviceName);
         }
         return controller;
     }

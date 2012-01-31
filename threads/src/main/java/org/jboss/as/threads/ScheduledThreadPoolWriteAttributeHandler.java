@@ -47,10 +47,12 @@ public class ScheduledThreadPoolWriteAttributeHandler extends ThreadsWriteAttrib
     }
 
     @Override
-    protected void applyOperation(final OperationContext context, ModelNode operation, String attributeName, ServiceController<?> service) {
-
-        throw new IllegalArgumentException("Unexpected attribute '" + attributeName + "'");
-        //final UnboundedQueueThreadPoolService pool =  (UnboundedQueueThreadPoolService) service.getService();
+    protected void applyOperation(final OperationContext context, ModelNode operation, String attributeName,
+                                  ServiceController<?> service, boolean forRollback) {
+        if (!forRollback) {
+            // Programming bug. Throw a RuntimeException, not OFE, as this is not a client error
+            throw ThreadsMessages.MESSAGES.unsupportedScheduledThreadPoolAttribute(attributeName);
+        }
     }
 
     @Override
@@ -59,7 +61,7 @@ public class ScheduledThreadPoolWriteAttributeHandler extends ThreadsWriteAttrib
         final ServiceName serviceName = serviceNameBase.append(name);
         ServiceController<?> controller = context.getServiceRegistry(true).getService(serviceName);
         if(controller == null) {
-            throw new OperationFailedException(new ModelNode().set("Service " + serviceName + " not found."));
+            throw ThreadsMessages.MESSAGES.scheduledThreadPoolServiceNotFound(serviceName);
         }
         return controller;
     }

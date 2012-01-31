@@ -47,7 +47,7 @@ public final class TimeSpec implements Serializable {
      */
     public TimeSpec(final TimeUnit unit, final long duration) {
         if (unit == null) {
-            throw new IllegalArgumentException("unit is null");
+            throw ThreadsMessages.MESSAGES.nullUnit();
         }
         this.unit = unit;
         this.duration = duration;

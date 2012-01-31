@@ -74,7 +74,9 @@ public final class ThreadFactoryService implements Service<ThreadFactory> {
 
     public synchronized ThreadFactory getValue() throws IllegalStateException {
         final ThreadFactory value = this.value;
-        if (value == null) throw new IllegalStateException();
+        if (value == null) {
+            throw ThreadsMessages.MESSAGES.threadFactoryUninitialized();
+        }
         return value;
     }
 }

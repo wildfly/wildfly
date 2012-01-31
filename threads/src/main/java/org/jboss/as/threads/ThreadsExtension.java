@@ -21,45 +21,18 @@
  */
 package org.jboss.as.threads;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.threads.CommonAttributes.BOUNDED_QUEUE_THREAD_POOL;
-import static org.jboss.as.threads.CommonAttributes.QUEUELESS_THREAD_POOL;
-import static org.jboss.as.threads.CommonAttributes.SCHEDULED_THREAD_POOL;
 import static org.jboss.as.threads.CommonAttributes.THREADS;
-import static org.jboss.as.threads.CommonAttributes.THREAD_FACTORY;
-import static org.jboss.as.threads.CommonAttributes.UNBOUNDED_QUEUE_THREAD_POOL;
-import static org.jboss.as.threads.ThreadsDescriptionUtil.addBoundedQueueThreadPool;
-import static org.jboss.as.threads.ThreadsDescriptionUtil.addQueuelessThreadPool;
-import static org.jboss.as.threads.ThreadsDescriptionUtil.addScheduledThreadPool;
-import static org.jboss.as.threads.ThreadsDescriptionUtil.addThreadFactory;
-import static org.jboss.as.threads.ThreadsDescriptionUtil.addUnboundedQueueThreadPool;
-import static org.jboss.as.threads.ThreadsDescriptionUtil.pathAddress;
-
-import java.util.Locale;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.jboss.logging.Logger;
 
 /**
  * Extension for thread management.
@@ -68,8 +41,6 @@ import org.jboss.logging.Logger;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class ThreadsExtension implements Extension {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.threads");
 
     public static String SUBSYSTEM_NAME = "threads";
 
@@ -82,7 +53,7 @@ public class ThreadsExtension implements Extension {
     @Override
     public void initialize(final ExtensionContext context) {
 
-        log.debugf("Initializing Threading Extension");
+        ThreadsLogger.ROOT_LOGGER.debugf("Initializing Threading Extension");
 
         final boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
 
@@ -92,8 +63,6 @@ public class ThreadsExtension implements Extension {
 
         // Remoting subsystem description and operation handlers
         final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(new ThreadSubsystemResourceDefinition(registerRuntimeOnly));
-//        subsystem.registerOperationHandler(DESCRIBE, ThreadsSubsystemDescribeHandler.INSTANCE,
-//                ThreadsSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         subsystem.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE,
                 GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
     }
@@ -102,76 +71,6 @@ public class ThreadsExtension implements Extension {
     public void initializeParsers(final ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CURRENT.getUriString(), ThreadsParser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.THREADS_1_0.getUriString(), ThreadsParser.INSTANCE);
-    }
-
-    private static class ThreadsSubsystemDescribeHandler implements OperationStepHandler, DescriptionProvider {
-        static final ThreadsSubsystemDescribeHandler INSTANCE = new ThreadsSubsystemDescribeHandler();
-
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            ModelNode result = context.getResult();
-
-            result.add(Util.getEmptyOperation(ADD, pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME))));
-
-            final ModelNode model = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
-
-            addBoundedQueueThreadPools(result, model);
-            addQueuelessThreadPools(result, model);
-            addScheduledThreadPools(result, model);
-            addThreadFactories(result, model);
-            addUnboundedQueueThreadPools(result, model);
-
-            context.completeStep();
-        }
-
-        private void addBoundedQueueThreadPools(final ModelNode result, final ModelNode model) {
-            if (model.hasDefined(BOUNDED_QUEUE_THREAD_POOL)) {
-                ModelNode pools = model.get(BOUNDED_QUEUE_THREAD_POOL);
-                for (Property poolProp : pools.asPropertyList()) {
-                    addBoundedQueueThreadPool(result, poolProp.getValue(), PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME), PathElement.pathElement(BOUNDED_QUEUE_THREAD_POOL, poolProp.getName()));
-                }
-            }
-        }
-
-        private void addQueuelessThreadPools(final ModelNode result, final ModelNode model) {
-            if (model.hasDefined(QUEUELESS_THREAD_POOL)) {
-                ModelNode pools = model.get(QUEUELESS_THREAD_POOL);
-                for (Property poolProp : pools.asPropertyList()) {
-                    addQueuelessThreadPool(result, poolProp.getValue(), PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME), PathElement.pathElement(QUEUELESS_THREAD_POOL, poolProp.getName()));
-                }
-            }
-        }
-
-        private void addThreadFactories(final ModelNode result, final ModelNode model) {
-            if (model.hasDefined(THREAD_FACTORY)) {
-                ModelNode pools = model.get(THREAD_FACTORY);
-                for (Property poolProp : pools.asPropertyList()) {
-                    addThreadFactory(result, poolProp.getValue(), PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME), PathElement.pathElement(THREAD_FACTORY, poolProp.getName()));
-                }
-            }
-        }
-
-        private void addScheduledThreadPools(final ModelNode result, final ModelNode model) {
-            if (model.hasDefined(SCHEDULED_THREAD_POOL)) {
-                ModelNode pools = model.get(SCHEDULED_THREAD_POOL);
-                for (Property poolProp : pools.asPropertyList()) {
-                    addScheduledThreadPool(result, poolProp.getValue(), PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME), PathElement.pathElement(SCHEDULED_THREAD_POOL, poolProp.getName()));
-                }
-            }
-        }
-
-        private void addUnboundedQueueThreadPools(final ModelNode result, final ModelNode model) {
-            if (model.hasDefined(UNBOUNDED_QUEUE_THREAD_POOL)) {
-                ModelNode pools = model.get(UNBOUNDED_QUEUE_THREAD_POOL);
-                for (Property poolProp : pools.asPropertyList()) {
-                    addUnboundedQueueThreadPool(result, poolProp.getValue(), PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME), PathElement.pathElement(UNBOUNDED_QUEUE_THREAD_POOL, poolProp.getName()));
-                }
-            }
-        }
-
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return CommonDescriptions.getSubsystemDescribeOperation(locale);
-        }
     }
 
 }

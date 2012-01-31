@@ -71,10 +71,7 @@ public class BoundedQueueThreadPoolService implements Service<ManagedQueueExecut
     }
 
     public synchronized void stop(final StopContext context) {
-        final ManagedQueueExecutorService executor = this.executor;
-        if (executor == null) {
-            throw new IllegalStateException();
-        }
+        final ManagedQueueExecutorService executor = getValue();
         context.asynchronous();
         executor.internalShutdown();
         executor.addShutdownListener(new EventListener<StopContext>() {
@@ -88,7 +85,7 @@ public class BoundedQueueThreadPoolService implements Service<ManagedQueueExecut
     public synchronized ManagedQueueExecutorService getValue() throws IllegalStateException {
         final ManagedQueueExecutorService value = this.executor;
         if (value == null) {
-            throw new IllegalStateException();
+            throw ThreadsMessages.MESSAGES.boundedQueueThreadPoolExecutorUninitialized();
         }
         return value;
     }
@@ -117,19 +114,6 @@ public class BoundedQueueThreadPoolService implements Service<ManagedQueueExecut
         }
     }
 
-    public synchronized void setQueueLength(int queueLength) {
-        this.queueLength = queueLength;
-        // TODO:  update the executor queue
-    }
-
-    public synchronized void setBlocking(boolean blocking) {
-        this.blocking = blocking;
-        final ManagedQueueExecutorService executor = this.executor;
-        if(executor != null) {
-            executor.setBlocking(blocking);
-        }
-    }
-
     public synchronized void setKeepAlive(TimeSpec keepAlive) {
         this.keepAlive = keepAlive;
         final ManagedQueueExecutorService executor = this.executor;
@@ -147,18 +131,12 @@ public class BoundedQueueThreadPoolService implements Service<ManagedQueueExecut
     }
 
     public int getCurrentThreadCount() {
-        final ManagedQueueExecutorService executor = this.executor;
-        if(executor == null) {
-            throw new IllegalStateException("The exector service hasn't been initialized.");
-        }
+        final ManagedQueueExecutorService executor = getValue();
         return executor.getCurrentThreadCount();
     }
 
     public int getLargestThreadCount() {
-        final ManagedQueueExecutorService executor = this.executor;
-        if(executor == null) {
-            throw new IllegalStateException("The exector service hasn't been initialized.");
-        }
+        final ManagedQueueExecutorService executor = getValue();
         return executor.getLargestThreadCount();
     }
 
@@ -167,10 +145,7 @@ public class BoundedQueueThreadPoolService implements Service<ManagedQueueExecut
     }
 
     public int getRejectedCount() {
-        final ManagedQueueExecutorService executor = this.executor;
-        if(executor == null) {
-            throw new IllegalStateException("The exector service hasn't been initialized.");
-        }
+        final ManagedQueueExecutorService executor = getValue();
         return executor.getRejectedCount();
     }
 }
