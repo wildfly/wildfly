@@ -61,7 +61,7 @@ public class BroadcastGroupControlHandler extends AbstractHornetQComponentContro
                 return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, GET_CONNECTOR_PAIRS_AS_JSON,
                         CommonAttributes.BROADCAST_GROUP, ModelType.STRING, false);
             }
-        }, EnumSet.of(OperationEntry.Flag.READ_ONLY));
+        }, EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.RUNTIME_ONLY));
     }
 
     @Override

@@ -62,7 +62,7 @@ public class ClusterConnectionControlHandler extends AbstractHornetQComponentCon
 
         registry.registerReadOnlyAttribute(NODE_ID, this, AttributeAccess.Storage.RUNTIME);
 
-        final EnumSet<OperationEntry.Flag> readOnly = EnumSet.of(OperationEntry.Flag.READ_ONLY);
+        final EnumSet<OperationEntry.Flag> flags = EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.RUNTIME_ONLY);
 
         registry.registerOperationHandler(GET_STATIC_CONNECTORS_AS_JSON, this, new DescriptionProvider() {
             @Override
@@ -70,14 +70,14 @@ public class ClusterConnectionControlHandler extends AbstractHornetQComponentCon
                 return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, GET_STATIC_CONNECTORS_AS_JSON,
                         CommonAttributes.CLUSTER_CONNECTION, ModelType.STRING, false);
             }
-        }, readOnly);
+        }, flags);
 
         registry.registerOperationHandler(GET_NODES, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getGetNodes(locale);
             }
-        }, readOnly);
+        }, flags);
     }
 
     @Override
