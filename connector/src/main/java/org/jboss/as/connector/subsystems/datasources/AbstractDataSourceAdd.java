@@ -44,9 +44,11 @@ import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.SubjectFactory;
 
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -98,7 +100,17 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
         final String driverName = node.asString();
         final ServiceName driverServiceName = ServiceName.JBOSS.append("jdbc-driver", driverName.replaceAll("\\.", "_"));
-        if (driverServiceName != null) {
+        if (!context.isBooting()) {
+            final ServiceRegistry registry = context.getServiceRegistry(true);
+            final ServiceController<?> dataSourceController = registry.getService(driverServiceName);
+
+            if (driverServiceName != null && dataSourceController != null) {
+                dataSourceServiceBuilder.addDependency(driverServiceName, Driver.class,
+                        dataSourceService.getDriverInjector());
+            } else {
+                throw new OperationFailedException(MESSAGES.driverNotPresent(driverName));
+            }
+        } else {
             dataSourceServiceBuilder.addDependency(driverServiceName, Driver.class,
                     dataSourceService.getDriverInjector());
         }
