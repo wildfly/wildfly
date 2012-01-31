@@ -58,7 +58,7 @@ import org.jboss.msc.service.StopContext;
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
-public final class ResourceAdapterActivatorService extends AbstractResourceAdapterDeploymentService implements
+public final class  ResourceAdapterActivatorService extends AbstractResourceAdapterDeploymentService implements
         Service<ResourceAdapterDeployment> {
 
     private static final DeployersLogger DEPLOYERS_LOGGER = Logger.getMessageLogger(DeployersLogger.class, ResourceAdapterActivator.class.getName());
@@ -119,6 +119,7 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
      */
     @Override
     public void stop(StopContext context) {
+        super.stop(context);
         DEPLOYMENT_CONNECTOR_LOGGER.debugf("Stopping service %s", ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE);
         if (mdr != null && mdr.getValue() != null) {
             try {
