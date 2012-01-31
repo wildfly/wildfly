@@ -27,6 +27,7 @@ import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.jaxr.JAXRConfiguration;
+import org.jboss.as.jaxr.ModelConstants;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -45,7 +46,7 @@ public class JAXRPropertyRemove extends AbstractRemoveStepHandler {
             ModelNode node = new ModelNode();
             node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.REMOVE);
             node.get(ModelDescriptionConstants.DESCRIPTION).set(JAXRConfiguration.getResourceBundle(locale).getString("jaxr.property.remove"));
-            node.get(ModelDescriptionConstants.PROPERTIES).setEmptyObject();
+            //node.get(ModelConstants.PROPERTY).setEmptyObject();
             return node;
         }
     };
