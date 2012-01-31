@@ -23,6 +23,11 @@ package org.jboss.as.test.integration.ejb.timerservice.schedule;
 
 import javax.ejb.Schedule;
 import javax.ejb.Stateless;
+import javax.ejb.Timer;
+
+import org.jboss.logging.Logger;
+
+import java.io.Serializable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -31,14 +36,39 @@ import java.util.concurrent.TimeUnit;
  */
 @Stateless
 public class SimpleScheduleBean {
-
+    private static final Logger log = Logger.getLogger(SimpleScheduleBean.class);
     private static final CountDownLatch latch = new CountDownLatch(1);
 
     private static boolean timerServiceCalled = false;
+    
+    private String timerInfo;
+    private boolean isPersistent;
+    private boolean isCalendar;
+    private String timezone;
+    
+    public String getTimerInfo() {
+        return timerInfo;
+    }
+    public boolean isPersistent() {
+        return isPersistent;
+    }
+    public boolean isCalendar() {
+        return isCalendar;
+    }
+    public String getTimezone() {
+        return timezone;
+    }
 
 
-    @Schedule(second="*", minute = "*", hour = "*")
-    public void timeout() {
+    @Schedule(second="*", minute = "*", hour = "*", persistent = false, info = "info", timezone = "Europe/Prague")
+    public void timeout(Timer timer) {
+        timerInfo = (String) timer.getInfo();
+        log.info("timer info= " + timerInfo);
+        isPersistent = timer.isPersistent();
+        isCalendar = timer.isCalendarTimer();
+        timezone = timer.getSchedule().getTimezone();
+        log.info(timer.getSchedule().getEnd());
+        
         timerServiceCalled = true;
         latch.countDown();
     }
