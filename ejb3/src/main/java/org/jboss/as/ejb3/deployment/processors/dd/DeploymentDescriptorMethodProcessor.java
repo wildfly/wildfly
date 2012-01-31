@@ -174,7 +174,7 @@ public class DeploymentDescriptorMethodProcessor implements DeploymentUnitProces
             }
         }
 
-        if (metaData instanceof SessionBeanMetaData) {
+        if (component.isStateful()) {
 
             final SessionBeanMetaData sessionBeanMetadata = (SessionBeanMetaData) metaData;
             // pre-passivate(s) of the interceptor configured (if any) in the deployment descriptor
