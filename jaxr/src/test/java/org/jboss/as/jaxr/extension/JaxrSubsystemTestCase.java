@@ -40,7 +40,7 @@ public class JaxrSubsystemTestCase extends AbstractSubsystemBaseTest {
     protected String getSubsystemXml() throws IOException {
         return "<subsystem xmlns=\"urn:jboss:domain:jaxr:1.0\">" +
         "<connection-factory jndi-name=\"java:jboss/jaxr/ConnectionFactory\"/>" +
-        "<juddi-server publish-url=\"http://localhost:8080/juddi/publish\" query-url=\"http://localhost:8080/juddi/query\"/>" +
+        "<properties/>" +
         "</subsystem>";
     }
 
