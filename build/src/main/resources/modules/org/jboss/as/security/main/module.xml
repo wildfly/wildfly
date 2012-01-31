@@ -39,6 +39,7 @@
         <module name="org.infinispan"/>
         <module name="org.jboss.as.clustering.infinispan"/>
         <module name="org.jboss.as.controller"/>
+        <module name="org.jboss.as.domain-management"/>
         <module name="org.jboss.as.ee"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.naming"/>

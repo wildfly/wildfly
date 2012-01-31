@@ -125,6 +125,7 @@ public class JaasCallbackHandler implements Service<DomainCallbackHandler>, Doma
             });
             ctx.login();
             verifyPasswordCallback.setVerified(true);
+            subject.getPrivateCredentials().add(new PasswordCredential(userName, password));
             if (subjectCallback != null) {
                 // Only want to deliberately pass it back if authentication completed.
                 subjectCallback.setSubject(subject);

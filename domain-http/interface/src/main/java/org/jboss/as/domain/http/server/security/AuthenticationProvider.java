@@ -73,7 +73,7 @@ public class AuthenticationProvider {
                     Callback[] newCallbacks = new Callback[callbacks.length + 1];
                     System.arraycopy(callbacks, 0, newCallbacks, 0, callbacks.length);
                     SubjectCallback subjectCallBack = new SubjectCallback();
-                    newCallbacks[newCallbacks.length] = subjectCallBack;
+                    newCallbacks[newCallbacks.length - 1] = subjectCallBack;
                     callbackHandler.handle(newCallbacks);
                     subject = subjectCallBack.getSubject();
                 } else {
