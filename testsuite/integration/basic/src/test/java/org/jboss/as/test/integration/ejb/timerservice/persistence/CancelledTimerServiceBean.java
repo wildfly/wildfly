@@ -28,6 +28,7 @@ import javax.annotation.Resource;
 import javax.ejb.ScheduleExpression;
 import javax.ejb.Singleton;
 import javax.ejb.Timeout;
+import javax.ejb.TimerConfig;
 import javax.ejb.TimerHandle;
 import javax.ejb.TimerService;
 
@@ -51,7 +52,9 @@ public class CancelledTimerServiceBean {
         expression.hour("*");
         expression.dayOfMonth("*");
         expression.year("*");
-        return timerService.createCalendarTimer(expression).getHandle();
+        TimerConfig timerConfig = new TimerConfig();
+        timerConfig.setInfo(new String("info"));
+        return timerService.createCalendarTimer(expression, timerConfig).getHandle();
     }
 
     @Timeout
