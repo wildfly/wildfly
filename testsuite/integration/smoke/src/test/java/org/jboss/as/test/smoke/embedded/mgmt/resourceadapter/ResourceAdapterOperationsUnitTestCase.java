@@ -25,16 +25,15 @@ package org.jboss.as.test.smoke.embedded.mgmt.resourceadapter;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 
 import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.setOperationParams;
 import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.raCommonProperties;
 import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.raConnectionProperties;
 import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.raAdminProperties;
 import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.checkModelParams;
-import static org.jboss.as.test.smoke.embedded.deployment.rar.examples.ResourceAdapterTestUtilities.RAModelToXml;
-import static org.jboss.as.test.smoke.embedded.deployment.rar.examples.ResourceAdapterTestUtilities.XmlToRAModelOperations;
 
+import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
+import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension.ResourceAdapterSubsystemParser;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 
 import java.io.IOException;
@@ -154,7 +153,6 @@ public class ResourceAdapterOperationsUnitTestCase extends AbstractMgmtTestBase 
 
          executeOperation(operation31);
 
-         String xml=RAModelToXml("resource-adapter",getModelControllerClient());
          List<ModelNode> newList = marshalAndReparseRaResources("resource-adapter");
 
          remove(address);
@@ -163,16 +161,16 @@ public class ResourceAdapterOperationsUnitTestCase extends AbstractMgmtTestBase 
 
          ModelNode node=findNodeWithProperty(newList,"archive","some.rar");
          Assert.assertNotNull("There is no archive element:"+newList,node);
-        // Assert.assertTrue("node:"+node.asString()+";\nparams"+params,checkModelParams(node,params));
+         //Assert.assertTrue("compare failed, node:"+node.asString()+"\nparams:"+params,checkModelParams(node,params));
          Assert.assertEquals("beanvalidationgroups element is incorrect:"+node.get("beanvalidationgroups").asString(),node.get("beanvalidationgroups").asString(), "[\"Class0\",\"Class00\"]");
 
          node=findNodeWithProperty(newList,"jndi-name","java:jboss/name1");
          Assert.assertNotNull("There is no connection jndi-name element:"+newList,node);
-        // Assert.assertTrue("node:"+node.asString()+";\nparams"+conParams,checkModelParams(node,conParams));
+         //Assert.assertTrue("compare failed, node:"+node.asString()+"\nparams:"+conParams,checkModelParams(node,conParams));
 
          node=findNodeWithProperty(newList,"jndi-name","java:jboss/Name3");
          Assert.assertNotNull("There is no admin jndi-name element:"+newList,node);
-         Assert.assertTrue("node:"+node.asString()+";\nparams"+admParams,checkModelParams(node,admParams));
+         Assert.assertTrue("compare failed, node:"+node.asString()+"\nparams:"+admParams,checkModelParams(node,admParams));
 
          node=findNodeWithProperty(newList,"value","D");
          Assert.assertNotNull("There is no admin-object config-property element:"+newList,node);
@@ -197,8 +195,8 @@ public class ResourceAdapterOperationsUnitTestCase extends AbstractMgmtTestBase 
     }
 
     public List<ModelNode> marshalAndReparseRaResources(final String childType) throws Exception {
-
-    	return(XmlToRAModelOperations(RAModelToXml(childType,getModelControllerClient())));
+    	ResourceAdapterSubsystemParser parser=new ResourceAdapterSubsystemParser();
+    	return XmlToModelOperations(ModelToXml("resource-adapters",childType,parser),Namespace.CURRENT.getUriString(),parser);
     }
 
 }

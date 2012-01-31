@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.smoke.embedded.deployment.rar.configproperty;
+package org.jboss.as.test.smoke.embedded.deployment.rar.examples;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -27,7 +27,6 @@ import static org.junit.Assert.assertNotNull;
 
 import javax.naming.*;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -36,15 +35,15 @@ import org.junit.*;
 import org.junit.runner.RunWith;
 import org.jboss.dmr.*;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
-import org.jboss.as.test.smoke.embedded.deployment.rar.examples.BasicDeploymentTestCase;
-
-import java.net.*;
-import org.jboss.arquillian.container.test.api.*;
+import org.jboss.as.test.smoke.embedded.deployment.rar.configproperty.ConfigPropertyAdminObjectInterface;
+import org.jboss.as.test.smoke.embedded.deployment.rar.configproperty.ConfigPropertyConnection;
+import org.jboss.as.test.smoke.embedded.deployment.rar.configproperty.ConfigPropertyConnectionFactory;
 
 import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
 
 
 /**
@@ -157,7 +156,7 @@ public class ConfigPropertyTestCase extends AbstractMgmtTestBase{
                 ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName);
          JavaArchive ja = ShrinkWrap.create(JavaArchive.class,  "as7_1452.jar");
         ja.addPackage("org.jboss.as.test.smoke.embedded.deployment.rar.configproperty")
-        .addClasses(AbstractMgmtTestBase.class,MgmtOperationException.class);
+        .addClasses(ConfigPropertyTestCase.class, AbstractMgmtTestBase.class,MgmtOperationException.class,XMLElementReader.class,XMLElementWriter.class);
         raa.addAsLibrary(ja);
 
         raa.addAsManifestResource("rar/" + deploymentName + "/META-INF/ra.xml", "ra.xml")
