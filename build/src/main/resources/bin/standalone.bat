@@ -79,7 +79,7 @@ if not "%PRESERVE_JAVA_OPTS%" == "true" (
     )
   )
 
-  rem Add compressed oops, if supported (64 bit VM), and not overriden
+  rem Add tiered compilation, if supported (64 bit VM), and not overriden
   echo "%JAVA_OPTS%" | findstr /I "\-XX:\-TieredCompilation \-client" > nul
   if errorlevel == 1 (
     "%JAVA%" -XX:+TieredCompilation -version > nul 2>&1
