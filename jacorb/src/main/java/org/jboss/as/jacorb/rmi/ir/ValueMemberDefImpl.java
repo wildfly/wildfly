@@ -21,22 +21,22 @@
  */
 package org.jboss.as.jacorb.rmi.ir;
 
+import org.jboss.as.jacorb.JacORBMessages;
 import org.omg.CORBA.Any;
-import org.omg.CORBA.TypeCode;
-import org.omg.CORBA.IRObject;
 import org.omg.CORBA.ContainedOperations;
 import org.omg.CORBA.ContainedPackage.Description;
+import org.omg.CORBA.DefinitionKind;
 import org.omg.CORBA.IDLType;
 import org.omg.CORBA.IDLTypeHelper;
-import org.omg.CORBA.DefinitionKind;
+import org.omg.CORBA.IRObject;
+import org.omg.CORBA.PRIVATE_MEMBER;
+import org.omg.CORBA.PUBLIC_MEMBER;
+import org.omg.CORBA.TypeCode;
 import org.omg.CORBA.ValueMember;
-import org.omg.CORBA.ValueMemberHelper;
 import org.omg.CORBA.ValueMemberDef;
 import org.omg.CORBA.ValueMemberDefOperations;
 import org.omg.CORBA.ValueMemberDefPOATie;
-import org.omg.CORBA.PUBLIC_MEMBER;
-import org.omg.CORBA.PRIVATE_MEMBER;
-import org.omg.CORBA.BAD_INV_ORDER;
+import org.omg.CORBA.ValueMemberHelper;
 
 /**
  * ValueMemberDef IR object.
@@ -81,7 +81,7 @@ class ValueMemberDefImpl extends ContainedImpl implements ValueMemberDefOperatio
     }
 
     public void type_def(IDLType arg) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public short access() {
@@ -89,7 +89,7 @@ class ValueMemberDefImpl extends ContainedImpl implements ValueMemberDefOperatio
     }
 
     public void access(short arg) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public Description describe() {

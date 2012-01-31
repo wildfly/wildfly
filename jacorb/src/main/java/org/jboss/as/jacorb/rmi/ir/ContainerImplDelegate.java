@@ -21,33 +21,33 @@
  */
 package org.jboss.as.jacorb.rmi.ir;
 
-import org.omg.CORBA.ContainerOperations;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.jboss.as.jacorb.JacORBMessages;
+import org.omg.CORBA.AliasDef;
+import org.omg.CORBA.ConstantDef;
 import org.omg.CORBA.Contained;
 import org.omg.CORBA.ContainedHelper;
 import org.omg.CORBA.Container;
+import org.omg.CORBA.ContainerOperations;
 import org.omg.CORBA.ContainerPackage.Description;
-import org.omg.CORBA.IDLType;
 import org.omg.CORBA.DefinitionKind;
-import org.omg.CORBA.StructMember;
-import org.omg.CORBA.UnionMember;
-import org.omg.CORBA.InterfaceDef;
 import org.omg.CORBA.EnumDef;
-import org.omg.CORBA.ValueDef;
-import org.omg.CORBA.StructDef;
-import org.omg.CORBA.UnionDef;
-import org.omg.CORBA.ConstantDef;
-import org.omg.CORBA.ModuleDef;
-import org.omg.CORBA.ValueBoxDef;
-import org.omg.CORBA.Initializer;
-import org.omg.CORBA.AliasDef;
-import org.omg.CORBA.NativeDef;
 import org.omg.CORBA.ExceptionDef;
-import org.omg.CORBA.BAD_INV_ORDER;
-
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Collection;
-import java.util.ArrayList;
+import org.omg.CORBA.IDLType;
+import org.omg.CORBA.Initializer;
+import org.omg.CORBA.InterfaceDef;
+import org.omg.CORBA.ModuleDef;
+import org.omg.CORBA.NativeDef;
+import org.omg.CORBA.StructDef;
+import org.omg.CORBA.StructMember;
+import org.omg.CORBA.UnionDef;
+import org.omg.CORBA.UnionMember;
+import org.omg.CORBA.ValueBoxDef;
+import org.omg.CORBA.ValueDef;
 
 /**
  * Delegate for Container functionality.
@@ -63,9 +63,6 @@ class ContainerImplDelegate
 
     // Static --------------------------------------------------------
 
-    private static final org.jboss.logging.Logger logger =
-            org.jboss.logging.Logger.getLogger(ContainerImplDelegate.class);
-
     // Constructors --------------------------------------------------
 
     /**
@@ -80,16 +77,12 @@ class ContainerImplDelegate
     // LocalContainer delegation implementation ----------------------
 
     public LocalContained _lookup(String search_name) {
-        logger.debug("ContainerImplDelegate._lookup(\"" + search_name +
-                "\") entered.");
         if (search_name.startsWith("::"))
             return delegateFor.getRepository()._lookup(search_name.substring(2));
 
         int idx = search_name.indexOf("::");
         if (idx > 0) {
             String first = search_name.substring(0, idx);
-            logger.debug("ContainerImplDelegate._lookup(\"" + search_name +
-                    "\") looking for \"" + first + "\".");
             Object o = contMap.get(first);
 
             if (o == null || !(o instanceof LocalContainer))
@@ -233,39 +226,39 @@ class ContainerImplDelegate
     }
 
     public ModuleDef create_module(String id, String name, String version) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public ConstantDef create_constant(String id, String name, String version,
                                        IDLType type, org.omg.CORBA.Any value) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public StructDef create_struct(String id, String name, String version,
                                    StructMember[] members) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public UnionDef create_union(String id, String name, String version,
                                  IDLType discriminator_type,
                                  UnionMember[] members) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public EnumDef create_enum(String id, String name, String version,
                                String[] members) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public AliasDef create_alias(String id, String name, String version,
                                  IDLType original_type) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public InterfaceDef create_interface(String id, String name, String version,
                                          InterfaceDef[] base_interfaces,
                                          boolean is_abstract) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public ValueDef create_value(String id, String name, String version,
@@ -274,62 +267,54 @@ class ContainerImplDelegate
                                  ValueDef[] abstract_base_values,
                                  InterfaceDef[] supported_interfaces,
                                  Initializer[] initializers) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public ValueBoxDef create_value_box(String id, String name, String version,
                                         IDLType original_type_def) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public ExceptionDef create_exception(String id, String name, String version,
                                          StructMember[] members) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public NativeDef create_native(String id, String name, String version) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
 
     // Dummy IRObjectOperations implementation -----------------------
 
     public DefinitionKind def_kind() {
-        throw new RuntimeException("Should not be called.");
+        throw new UnsupportedOperationException();
     }
 
     public void destroy() {
-        throw new RuntimeException("Should not be called.");
+        throw new UnsupportedOperationException();
     }
 
 
     // Package protected ---------------------------------------------
 
-    void add(String name, LocalContained contained)
-            throws IRConstructionException {
+    void add(String name, LocalContained contained) throws IRConstructionException {
         if (contained.getRepository() != delegateFor.getRepository())
-            throw new IRConstructionException("Wrong repository");
+            throw JacORBMessages.MESSAGES.wrongInterfaceRepository();
         if (contMap.get(name) != null)
-            throw new IRConstructionException("Duplicate name: " + name);
+            throw JacORBMessages.MESSAGES.duplicateRepositoryName();
         cont.add(contained);
         contMap.put(name, contained);
-        logger.debug("ContainerDelegateImpl.add() added \"" + name + "\".");
     }
 
     /**
      * Finalize build process, and export.
      */
-    void allDone()
-            throws IRConstructionException {
-        logger.debug("ContainerDelegateImpl.allDone() entered ");
+    void allDone() throws IRConstructionException {
         for (int i = 0; i < cont.size(); ++i) {
             LocalContained item = (LocalContained) cont.get(i);
-
-            logger.debug("Container[" + item.id() + "].allDone() calling [" +
-                    item.id() + "].allDone()");
             item.allDone();
         }
-        logger.debug("ContainerDelegateImpl.allDone() done ");
     }
 
     // Protected -----------------------------------------------------

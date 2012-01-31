@@ -38,8 +38,9 @@ import org.jacorb.config.Configuration;
 import org.jacorb.config.ConfigurationException;
 import org.jacorb.orb.ORB;
 import org.jacorb.orb.factory.SocketFactory;
+import org.jboss.as.jacorb.JacORBLogger;
+import org.jboss.as.jacorb.JacORBMessages;
 import org.jboss.as.jacorb.JacORBSubsystemConstants;
-import org.jboss.logging.Logger;
 import org.jboss.security.JSSESecurityDomain;
 import org.jboss.security.SecurityConstants;
 import org.omg.CORBA.TIMEOUT;
@@ -73,8 +74,6 @@ import org.omg.CORBA.TIMEOUT;
  */
 public class DomainSocketFactory implements SocketFactory, Configurable {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.security");
-
     private SSLContext sslContext;
 
     private JSSESecurityDomain jsseSecurityDomain;
@@ -87,7 +86,7 @@ public class DomainSocketFactory implements SocketFactory, Configurable {
      * @param orb a reference to the running {@code org.jacorb.orb.ORB} instance.
      */
     public DomainSocketFactory(ORB orb) {
-        log.tracef("Creating socket factory: %s", this.getClass().getName());
+        JacORBLogger.ROOT_LOGGER.traceSocketFactoryCreation(this.getClass().getName());
     }
 
     @Override
@@ -131,18 +130,19 @@ public class DomainSocketFactory implements SocketFactory, Configurable {
         // get the configured security domain name.
         String securityDomain = configuration.getAttribute(JacORBSubsystemConstants.SECURITY_SECURITY_DOMAIN);
         if (securityDomain == null)
-            throw new ConfigurationException("Error configuring domain socket factory: security domain is null");
+            throw JacORBMessages.MESSAGES.errorConfiguringDomainSF();
 
         // use the security domain name to obtain the JSSE security domain.
         try {
             InitialContext context = new InitialContext();
             this.jsseSecurityDomain = (JSSESecurityDomain) context.lookup(SecurityConstants.JAAS_CONTEXT_ROOT +
                     securityDomain + "/jsse");
-            log.debugf("Obtained JSSE security domain with name %s", securityDomain);
+            JacORBLogger.ROOT_LOGGER.debugJSSEDomainRetrieval(securityDomain);
         } catch (NamingException ne) {
-            log.errorf("Failed to obtain JSSE security domain with name %s", securityDomain);
-            throw new ConfigurationException("Error configuring domain socket factory: failed to lookup JSSE security domain");
+            JacORBLogger.ROOT_LOGGER.failedToObtainJSSEDomain(securityDomain);
         }
+        if (this.jsseSecurityDomain == null)
+            throw JacORBMessages.MESSAGES.failedToLookupJSSEDomain();
     }
 
     /**

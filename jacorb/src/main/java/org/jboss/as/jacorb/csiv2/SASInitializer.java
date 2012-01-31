@@ -22,6 +22,7 @@
 
 package org.jboss.as.jacorb.csiv2;
 
+import org.jboss.as.jacorb.JacORBMessages;
 import org.jboss.as.jacorb.csiv2.idl.SASCurrent;
 import org.omg.CORBA.LocalObject;
 import org.omg.IOP.Codec;
@@ -49,7 +50,7 @@ public class SASInitializer extends LocalObject implements ORBInitializer {
             SASCurrent sasCurrent = new SASCurrentImpl();
             info.register_initial_reference("SASCurrent", sasCurrent);
         } catch (InvalidName e) {
-            throw new RuntimeException("Could not register initial reference for SASCurrent: " + e);
+            throw JacORBMessages.MESSAGES.errorRegisteringSASCurrentInitRef(e);
         }
     }
 
@@ -84,7 +85,7 @@ public class SASInitializer extends LocalObject implements ORBInitializer {
 //                          }
 //                       });
         } catch (Exception e) {
-            throw new RuntimeException("Unexpected " + e);
+            throw JacORBMessages.MESSAGES.unexpectedException(e);
         }
     }
 }

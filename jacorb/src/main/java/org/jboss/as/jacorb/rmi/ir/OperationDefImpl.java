@@ -21,25 +21,25 @@
  */
 package org.jboss.as.jacorb.rmi.ir;
 
+import org.jboss.as.jacorb.JacORBMessages;
 import org.omg.CORBA.Any;
-import org.omg.CORBA.TypeCode;
-import org.omg.CORBA.IDLType;
-import org.omg.CORBA.IDLTypeHelper;
-import org.omg.CORBA.IRObject;
+import org.omg.CORBA.ContainedOperations;
+import org.omg.CORBA.ContainedPackage.Description;
 import org.omg.CORBA.DefinitionKind;
-import org.omg.CORBA.OperationMode;
-import org.omg.CORBA.ParameterDescription;
-import org.omg.CORBA.OperationDescription;
-import org.omg.CORBA.OperationDescriptionHelper;
-import org.omg.CORBA.OperationDef;
-import org.omg.CORBA.OperationDefOperations;
-import org.omg.CORBA.OperationDefPOATie;
 import org.omg.CORBA.ExceptionDef;
 import org.omg.CORBA.ExceptionDescription;
 import org.omg.CORBA.ExceptionDescriptionHelper;
-import org.omg.CORBA.ContainedOperations;
-import org.omg.CORBA.ContainedPackage.Description;
-import org.omg.CORBA.BAD_INV_ORDER;
+import org.omg.CORBA.IDLType;
+import org.omg.CORBA.IDLTypeHelper;
+import org.omg.CORBA.IRObject;
+import org.omg.CORBA.OperationDef;
+import org.omg.CORBA.OperationDefOperations;
+import org.omg.CORBA.OperationDefPOATie;
+import org.omg.CORBA.OperationDescription;
+import org.omg.CORBA.OperationDescriptionHelper;
+import org.omg.CORBA.OperationMode;
+import org.omg.CORBA.ParameterDescription;
+import org.omg.CORBA.TypeCode;
 
 /**
  * OperationDef IR object.
@@ -115,7 +115,7 @@ class OperationDefImpl
     }
 
     public void result_def(IDLType arg) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public ParameterDescription[] params() {
@@ -123,7 +123,7 @@ class OperationDefImpl
     }
 
     public void params(ParameterDescription[] arg) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public OperationMode mode() {
@@ -132,7 +132,7 @@ class OperationDefImpl
     }
 
     public void mode(OperationMode arg) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public String[] contexts() {
@@ -141,7 +141,7 @@ class OperationDefImpl
     }
 
     public void contexts(String[] arg) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public ExceptionDef[] exceptions() {
@@ -149,7 +149,7 @@ class OperationDefImpl
     }
 
     public void exceptions(ExceptionDef[] arg) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     // ContainedImpl implementation ----------------------------------

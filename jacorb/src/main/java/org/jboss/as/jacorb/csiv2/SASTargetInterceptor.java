@@ -22,14 +22,13 @@
 
 package org.jboss.as.jacorb.csiv2;
 
+import org.jboss.as.jacorb.JacORBLogger;
+import org.jboss.as.jacorb.JacORBMessages;
 import org.jboss.as.jacorb.JacORBSubsystemConstants;
 import org.jboss.as.jacorb.service.CorbaORBService;
-import org.jboss.logging.Logger;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.LocalObject;
-import org.omg.CORBA.MARSHAL;
-import org.omg.CORBA.NO_PERMISSION;
 import org.omg.CORBA.ORB;
 import org.omg.CSI.CompleteEstablishContext;
 import org.omg.CSI.ContextError;
@@ -63,10 +62,6 @@ import org.omg.PortableInterceptor.ServerRequestInterceptor;
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
 public class SASTargetInterceptor extends LocalObject implements ServerRequestInterceptor {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.jacorb");
-
-    private static final boolean traceEnabled = log.isTraceEnabled();
 
     private static final int sasContextId = org.omg.IOP.SecurityAttributeService.value;
 
@@ -194,7 +189,7 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
         try {
             encapsulatedErrorToken = codec.encode_value(any);
         } catch (InvalidTypeForEncoding e) {
-            throw new RuntimeException("Unexpected exception: " + e);
+            throw JacORBMessages.MESSAGES.unexpectedException(e);
         }
 
         // initialize msgBodyCtxError.
@@ -327,9 +322,8 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
 
     @Override
     public void receive_request(ServerRequestInfo ri) {
-        if (traceEnabled) {
-            log.trace("receive_request " + ri.operation());
-        }
+        JacORBLogger.ROOT_LOGGER.traceReceiveRequest(ri.operation());
+
         CurrentRequestInfo threadLocal = (CurrentRequestInfo) threadLocalData.get();
 
         threadLocal.sasContextReceived = false;
@@ -352,37 +346,33 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
                     // should not happen, as stateful context requests are always negotiated down to stateless in this implementation.
                     long contextId = contextBody.in_context_msg().client_context_id;
                     threadLocal.sasReply = createMsgCtxError(contextId, 4 /* major status: no context */);
-                    throw new NO_PERMISSION("SAS context does not exist.");
+                    throw JacORBMessages.MESSAGES.missingSASContext();
                 } else if (contextBody.discriminator() == MTEstablishContext.value) {
                     EstablishContext message = contextBody.establish_msg();
                     threadLocal.contextId = message.client_context_id;
                     threadLocal.sasContextReceived = true;
 
                     if (message.client_authentication_token != null && message.client_authentication_token.length > 0) {
-                        if (traceEnabled) {
-                            log.trace("received client authentication token");
-                        }
+                        JacORBLogger.ROOT_LOGGER.authTokenReceived();
                         InitialContextToken authToken = CSIv2Util.decodeInitialContextToken(
                                 message.client_authentication_token, codec);
                         if (authToken == null) {
                             threadLocal.sasReply = createMsgCtxError(message.client_context_id, 2 /* major status: invalid mechanism */);
-                            throw new NO_PERMISSION("Could not decode initial context token.");
+                            throw JacORBMessages.MESSAGES.errorDecodingInitContextToken();
                         }
                         threadLocal.incomingUsername = authToken.username;
                         threadLocal.incomingPassword = authToken.password;
                         threadLocal.incomingTargetName = CSIv2Util.decodeGssExportedName(authToken.target_name);
                         if (threadLocal.incomingTargetName == null) {
                             threadLocal.sasReply = createMsgCtxError(message.client_context_id, 2 /* major status: invalid mechanism */);
-                            throw new NO_PERMISSION("Could not decode target name in initial context token.");
+                            throw JacORBMessages.MESSAGES.errorDecodingTargetInContextToken();
                         }
 
 
                         threadLocal.authenticationTokenReceived = true;
                     }
                     if (message.identity_token != null) {
-                        if (traceEnabled) {
-                            log.trace("received identity token");
-                        }
+                        JacORBLogger.ROOT_LOGGER.identityTokenReceived();
                         threadLocal.incomingIdentity = message.identity_token;
                         if (message.identity_token.discriminator() == ITTPrincipalName.value) {
                             // Extract the RFC2743-encoded name from CDR encapsulation.
@@ -395,7 +385,7 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
 
                             if (threadLocal.incomingPrincipalName == null) {
                                 threadLocal.sasReply = createMsgCtxError(message.client_context_id, 2 /* major status: invalid mechanism */);
-                                throw new NO_PERMISSION("Could not decode incoming principal name.");
+                                throw JacORBMessages.MESSAGES.errorDecodingPrincipalName();
                             }
                         }
                     }
@@ -407,17 +397,15 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
         } catch (BAD_PARAM e) {
             // no service context with sasContextId: do nothing.
         } catch (FormatMismatch e) {
-            throw new MARSHAL("Exception decoding context data in SASTargetInterceptor: " + e);
+            throw JacORBMessages.MESSAGES.errorDecodingContextData(this.name(), e);
         } catch (TypeMismatch e) {
-            throw new MARSHAL("Exception decoding context data in SASTargetInterceptor: " + e);
+            throw JacORBMessages.MESSAGES.errorDecodingContextData(this.name(), e);
         }
     }
 
     @Override
     public void send_reply(ServerRequestInfo ri) {
-        if (traceEnabled) {
-            log.trace("send_reply " + ri.operation());
-        }
+        JacORBLogger.ROOT_LOGGER.traceSendReply(ri.operation());
         CurrentRequestInfo threadLocal = (CurrentRequestInfo) threadLocalData.get();
 
         if (threadLocal.sasReply != null) {
@@ -425,16 +413,14 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
                 ServiceContext sc = new ServiceContext(sasContextId, codec.encode_value(threadLocal.sasReply));
                 ri.add_reply_service_context(sc, true);
             } catch (InvalidTypeForEncoding e) {
-                throw new MARSHAL("Unexpected exception: " + e);
+                throw JacORBMessages.MESSAGES.unexpectedException(e);
             }
         }
     }
 
     @Override
     public void send_exception(ServerRequestInfo ri) {
-        if (traceEnabled) {
-            log.trace("send_exception " + ri.operation() + ": ");
-        }
+        JacORBLogger.ROOT_LOGGER.traceSendException(ri.operation());
         CurrentRequestInfo threadLocal = (CurrentRequestInfo) threadLocalData.get();
 
         // The check below was added for interoperability  with IONA's ASP 6.0, which throws an
@@ -449,7 +435,7 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
                 ServiceContext sc = new ServiceContext(sasContextId, codec.encode_value(threadLocal.sasReply));
                 ri.add_reply_service_context(sc, true);
             } catch (InvalidTypeForEncoding e) {
-                throw new MARSHAL("Unexpected exception: " + e);
+                throw JacORBMessages.MESSAGES.unexpectedException(e);
             }
         }
     }

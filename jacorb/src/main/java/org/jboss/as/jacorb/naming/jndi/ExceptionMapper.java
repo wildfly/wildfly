@@ -37,6 +37,7 @@ import javax.naming.RefAddr;
 import javax.naming.Reference;
 import javax.naming.spi.NamingManager;
 
+import org.jboss.as.jacorb.JacORBMessages;
 import org.omg.CosNaming.NameComponent;
 import org.omg.CosNaming.NamingContext;
 import org.omg.CosNaming.NamingContextPackage.AlreadyBound;
@@ -58,8 +59,7 @@ public final class ExceptionMapper {
 
     private static final boolean debug = false;
 
-    public static NamingException mapException(Exception e,
-                                                     CNCtx ctx, NameComponent[] inputName) throws NamingException {
+    public static NamingException mapException(Exception e, CNCtx ctx, NameComponent[] inputName) throws NamingException {
         if (e instanceof NamingException) {
             return (NamingException) e;
         }
@@ -93,9 +93,7 @@ public final class ExceptionMapper {
                 // Wrap resolved NamingContext inside a CNCtx
                 // Guess that its name (which is relative to ctx)
                 // is the part of inputName minus rest_of_name
-                ne.setResolvedObj(new CNCtx(ctx._orb, ctx.orbTracker, nc,
-                        ctx._env,
-                        ctx.makeFullName(resolvedName)));
+                ne.setResolvedObj(new CNCtx(ctx._orb, nc, ctx._env, ctx.makeFullName(resolvedName)));
             } else {
                 ne.setResolvedObj(ctx);
             }
@@ -109,7 +107,7 @@ public final class ExceptionMapper {
         } else if (e instanceof NotEmpty) {
             ne = new ContextNotEmptyException();
         } else {
-            ne = new NamingException("Unknown reasons");
+            ne = new NamingException();
         }
 
         ne.setRootCause(e);
@@ -183,10 +181,6 @@ public final class ExceptionMapper {
         }
         cpe.setEnvironment(ctx._env);
 
-        if (debug) {
-            System.out.println("rest of name: " + cpe.getRemainingName());
-        }
-
         // Lookup resolved name to get resolved object
         final java.lang.Object resolvedObj =
                 (resolvedName != null) ? ctx.callResolve(resolvedName) : ctx;
@@ -225,8 +219,7 @@ public final class ExceptionMapper {
             } catch (NamingException ge) {
                 throw ge;
             } catch (Exception ge) {
-                NamingException ne = new NamingException(
-                        "problem generating object using object factory");
+                NamingException ne = JacORBMessages.MESSAGES.errorGeneratingObjectViaFactory();
                 ne.setRootCause(ge);
                 throw ne;
             }

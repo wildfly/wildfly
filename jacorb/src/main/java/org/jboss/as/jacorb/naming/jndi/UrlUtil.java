@@ -28,6 +28,8 @@ package org.jboss.as.jacorb.naming.jndi;
 import java.net.MalformedURLException;
 import java.io.UnsupportedEncodingException;
 
+import org.jboss.as.jacorb.JacORBMessages;
+
 /**
  * Utilities for dealing with URLs.
  *
@@ -48,7 +50,7 @@ public final class UrlUtil {
             return decode(s, "8859_1");
         } catch (UnsupportedEncodingException e) {
             // ISO-Latin-1 should always be available?
-            throw new MalformedURLException("ISO-Latin-1 decoder unavailable");
+            throw JacORBMessages.MESSAGES.unavailableISOLatin1Decoder();
         }
     }
 
@@ -76,7 +78,7 @@ public final class UrlUtil {
                             Integer.parseInt(s.substring(i, i + 2), 16);
 
                 } catch (Exception e) {
-                    throw new MalformedURLException("Invalid URI encoding: " + s);
+                    throw JacORBMessages.MESSAGES.invalidURIEncoding(s);
                 }
                 i++;  // skip first hex char; for loop will skip second one
             } else {

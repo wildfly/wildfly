@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 
+import org.jboss.as.jacorb.JacORBMessages;
+
 
 /**
  * Interface analysis.
@@ -45,9 +47,6 @@ public class InterfaceAnalysis extends ContainerAnalysis {
      */
     Map<String, OperationAnalysis> operationAnalysisMap;
 
-
-    private static final org.jboss.logging.Logger logger = org.jboss.logging.Logger.getLogger(InterfaceAnalysis.class);
-
     private static WorkCacheManager cache = new WorkCacheManager(InterfaceAnalysis.class);
 
     public static InterfaceAnalysis getInterfaceAnalysis(Class cls) throws RMIIIOPViolationException {
@@ -57,7 +56,6 @@ public class InterfaceAnalysis extends ContainerAnalysis {
 
     protected InterfaceAnalysis(Class cls) {
         super(cls);
-        logger.debug("new InterfaceAnalysis: " + cls.getName());
     }
 
     protected void doAnalyze() throws RMIIIOPViolationException {
@@ -76,8 +74,6 @@ public class InterfaceAnalysis extends ContainerAnalysis {
     }
 
     public String[] getAllTypeIds() {
-        if (allTypeIds == null)
-            logger.debug(cls + " null allTypeIds");
         return (String[]) allTypeIds.clone();
     }
 
@@ -85,9 +81,7 @@ public class InterfaceAnalysis extends ContainerAnalysis {
      * Return a list of all the entries contained here.
      */
     protected ArrayList getContainedEntries() {
-        final ArrayList ret = new ArrayList(constants.length +
-                attributes.length +
-                operations.length);
+        final ArrayList ret = new ArrayList(constants.length + attributes.length + operations.length);
 
         for (int i = 0; i < constants.length; ++i)
             ret.add(constants[i]);
@@ -104,11 +98,9 @@ public class InterfaceAnalysis extends ContainerAnalysis {
      * This will fill in the <code>operations</code> array.
      */
     protected void analyzeOperations() throws RMIIIOPViolationException {
-        logger.debug(cls + " analyzeOperations");
 
         if (!cls.isInterface())
-            throw new IllegalArgumentException("Class \"" + cls.getName() +
-                    "\" is not an interface.");
+            throw JacORBMessages.MESSAGES.notAnInterface(cls.getName());
 
         abstractInterface = RmiIdlUtil.isAbstractInterface(cls);
         calculateAllTypeIds();
@@ -126,7 +118,6 @@ public class InterfaceAnalysis extends ContainerAnalysis {
             }
         }
 
-        logger.debug(cls + " analyzeOperations operations=" + operations.length);
     }
 
     /**

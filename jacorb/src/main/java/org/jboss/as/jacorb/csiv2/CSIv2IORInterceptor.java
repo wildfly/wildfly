@@ -22,9 +22,10 @@
 
 package org.jboss.as.jacorb.csiv2;
 
+import org.jboss.as.jacorb.JacORBLogger;
+import org.jboss.as.jacorb.JacORBMessages;
 import org.jboss.as.jacorb.JacORBSubsystemConstants;
 import org.jboss.as.jacorb.service.CorbaORBService;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.ejb.jboss.IORSecurityConfigMetaData;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_PARAM;
@@ -52,8 +53,6 @@ import org.omg.SSLIOP.TAG_SSL_SEC_TRANS;
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
 public class CSIv2IORInterceptor extends LocalObject implements IORInterceptor {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.jacorb");
 
     // The minimum set of security options supported by the SSL mechanism (These options cannot be turned off, so they are always supported).
     private static final int MIN_SSL_OPTIONS = Integrity.value | DetectReplay.value | DetectMisordering.value;
@@ -85,8 +84,7 @@ public class CSIv2IORInterceptor extends LocalObject implements IORInterceptor {
             defaultCSIComponent = CSIv2Util.createSecurityTaggedComponent(new IORSecurityConfigMetaData(), codec,
                     sslPort, orb);
         } catch (InvalidTypeForEncoding e) {
-            log.warn("Caught unexcepted exception while encoding SSL component", e);
-            throw new RuntimeException(e);
+            throw JacORBMessages.MESSAGES.unexpectedException(e);
         }
     }
 
@@ -102,9 +100,9 @@ public class CSIv2IORInterceptor extends LocalObject implements IORInterceptor {
         try {
             csiv2Policy = (CSIv2Policy) info.get_effective_policy(CSIv2Policy.TYPE);
         } catch (BAD_PARAM e) {
-            log.debugf("No CSIv2Policy");
+            JacORBLogger.ROOT_LOGGER.csiv2PolicyNotFoundInIORInfo();
         } catch (Exception e) {
-            log.debugf("Error fetching CSIv2Policy", e);
+            JacORBLogger.ROOT_LOGGER.failedToFetchCSIv2Policy(e);
         }
 
         boolean interopIONA = "on".equalsIgnoreCase(CorbaORBService.getORBProperty(JacORBSubsystemConstants.INTEROP_IONA));

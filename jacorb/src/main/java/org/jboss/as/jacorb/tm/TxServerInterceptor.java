@@ -23,7 +23,8 @@ package org.jboss.as.jacorb.tm;
 
 import javax.transaction.Transaction;
 
-import org.jboss.logging.Logger;
+import org.jboss.as.jacorb.JacORBLogger;
+import org.jboss.as.jacorb.JacORBMessages;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.LocalObject;
@@ -49,23 +50,22 @@ import org.omg.PortableInterceptor.ServerRequestInterceptor;
  *
  * @author <a href="mailto:reverbel@ime.usp.br">Francisco Reverbel</a>
  */
+@SuppressWarnings("unused")
 public class TxServerInterceptor extends LocalObject implements ServerRequestInterceptor {
 
     static final long serialVersionUID = 7474707114565659371L;
 
-
-    private static final Logger log = Logger.getLogger(TxServerInterceptor.class);
-    private static final boolean traceEnabled = log.isTraceEnabled();
-
     private static final int txContextId = org.omg.IOP.TransactionService.value;
+
     private static int slotId;
+
     private static Codec codec;
+
     private static org.omg.PortableInterceptor.Current piCurrent = null;
 
 
     /**
-     * Called by <code>TxServerInterceptorInitializer</code>
-     * at ORB initialization time.
+     * Called by <code>TxServerInterceptorInitializer</code> at ORB initialization time.
      */
     static void init(int slotId, Codec codec, org.omg.PortableInterceptor.Current piCurrent) {
         TxServerInterceptor.slotId = slotId;
@@ -89,8 +89,7 @@ public class TxServerInterceptor extends LocalObject implements ServerRequestInt
                     tx = ForeignTransaction.INSTANCE;
                 }
             } catch (InvalidSlot e) {
-                throw new RuntimeException("Exception getting slot in " +
-                        "TxServerInterceptor: " + e);
+                throw JacORBMessages.MESSAGES.errorGettingSlotInTxInterceptor(e);
             }
 
         }
@@ -106,9 +105,7 @@ public class TxServerInterceptor extends LocalObject implements ServerRequestInt
     }
 
     public void receive_request_service_contexts(ServerRequestInfo ri) {
-        if (traceEnabled)
-            log.trace("Intercepting receive_request_service_contexts, " +
-                    "operation: " + ri.operation());
+        JacORBLogger.ROOT_LOGGER.traceReceiveRequestServiceContexts(ri.operation());
         try {
             ServiceContext sc = ri.get_request_service_context(txContextId);
             Any any = codec.decode_value(sc.context_data, PropagationContextHelper.type());
@@ -116,14 +113,11 @@ public class TxServerInterceptor extends LocalObject implements ServerRequestInt
         } catch (BAD_PARAM e) {
             // no service context with txContextId: do nothing
         } catch (FormatMismatch e) {
-            throw new RuntimeException("Exception decoding context data in " +
-                    "TxServerInterceptor: " + e);
+            throw JacORBMessages.MESSAGES.errorDecodingContextData(this.name(), e);
         } catch (TypeMismatch e) {
-            throw new RuntimeException("Exception decoding context data in " +
-                    "TxServerInterceptor: " + e);
+            throw JacORBMessages.MESSAGES.errorDecodingContextData(this.name(), e);
         } catch (InvalidSlot e) {
-            throw new RuntimeException("Exception setting slot in " +
-                    "TxServerInterceptor: " + e);
+            throw JacORBMessages.MESSAGES.errorSettingSlotInTxInterceptor(e);
         }
     }
 

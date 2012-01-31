@@ -21,7 +21,7 @@
  */
 package org.jboss.as.jacorb.tm;
 
-import org.jboss.util.NestedRuntimeException;
+import org.jboss.as.jacorb.JacORBMessages;
 import org.omg.CORBA.LocalObject;
 import org.omg.IOP.Codec;
 import org.omg.IOP.ENCODING_CDR_ENCAPS;
@@ -35,6 +35,7 @@ import org.omg.PortableInterceptor.ORBInitializer;
  *
  * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
  */
+@SuppressWarnings("unused")
 public class TxIORInterceptorInitializer extends LocalObject implements ORBInitializer {
     /**
      * @since 4.0.1
@@ -58,7 +59,7 @@ public class TxIORInterceptorInitializer extends LocalObject implements ORBIniti
             Codec codec = info.codec_factory().create_codec(encoding);
             info.add_ior_interceptor(new TxIORInterceptor(codec));
         } catch (Exception e) {
-            throw new NestedRuntimeException("Unexpected", e);
+            throw JacORBMessages.MESSAGES.unexpectedException(e);
         }
     }
 }

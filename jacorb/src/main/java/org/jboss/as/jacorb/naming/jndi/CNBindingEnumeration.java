@@ -33,6 +33,7 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.spi.NamingManager;
 
+import org.jboss.as.jacorb.JacORBMessages;
 import org.omg.CosNaming.BindingIterator;
 import org.omg.CosNaming.BindingIteratorHolder;
 import org.omg.CosNaming.BindingListHolder;
@@ -68,17 +69,15 @@ final class CNBindingEnumeration implements NamingEnumeration {
      */
     CNBindingEnumeration(CNCtx ctx, boolean isLookedUpCtx, Hashtable env) {
         // Get batch size to use
-        String batch = (env != null ?
-                (String) env.get(javax.naming.Context.BATCHSIZE) : null);
+        String batch = (env != null ? (String) env.get(javax.naming.Context.BATCHSIZE) : null);
         if (batch != null) {
             try {
                 batchsize = Integer.parseInt(batch);
             } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("Batch size not numeric: " + batch);
+                throw JacORBMessages.MESSAGES.illegalBatchSize(batch);
             }
         }
         _ctx = ctx;
-        _ctx.incEnumCount();
         this.isLookedUpCtx = isLookedUpCtx;
         _env = env;
         _bindingList = new BindingListHolder();
@@ -169,7 +168,6 @@ final class CNBindingEnumeration implements NamingEnumeration {
             _bindingIter = null;
         }
         if (_ctx != null) {
-            _ctx.decEnumCount();
 
             /**
              * context was obtained by CNCtx, the user doesn't have a handle to
@@ -199,8 +197,7 @@ final class CNBindingEnumeration implements NamingEnumeration {
             counter = 0; // reset
         } catch (Exception e) {
             more = false;
-            NamingException ne = new NamingException(
-                    "Problem getting binding list");
+            NamingException ne = JacORBMessages.MESSAGES.errorGettingBindingList();
             ne.setRootCause(e);
             throw ne;
         }
@@ -211,7 +208,6 @@ final class CNBindingEnumeration implements NamingEnumeration {
      * Constructs a JNDI Binding object from the COS Naming binding
      * object.
      *
-     * @throws NameNotFound    No objects under the name.
      * @throws CannotProceed   Unable to obtain a continuation context
      * @throws InvalidName     Name not understood.
      * @throws NamingException One of the above.
@@ -228,8 +224,7 @@ final class CNBindingEnumeration implements NamingEnumeration {
         } catch (NamingException e) {
             throw e;
         } catch (Exception e) {
-            NamingException ne = new NamingException(
-                    "problem generating object using object factory");
+            NamingException ne = JacORBMessages.MESSAGES.errorGeneratingObjectViaFactory();
             ne.setRootCause(e);
             throw ne;
         }

@@ -25,8 +25,6 @@ package org.jboss.as.jacorb.service;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
-import org.jboss.logging.Logger;
-
 /**
  * <p>
  * This class defines actions that must be executed in privileged blocks.
@@ -35,8 +33,6 @@ import org.jboss.logging.Logger;
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
 class SecurityActions {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.jacorb");
 
     /**
      * <p>

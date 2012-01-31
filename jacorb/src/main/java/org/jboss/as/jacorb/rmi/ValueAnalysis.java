@@ -33,6 +33,7 @@ import java.util.Comparator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.jboss.as.jacorb.JacORBMessages;
 import org.omg.CORBA.portable.IDLEntity;
 import org.omg.CORBA.portable.ValueBase;
 
@@ -45,8 +46,6 @@ import org.omg.CORBA.portable.ValueBase;
  * @author <a href="mailto:osh@sparre.dk">Ole Husgaard</a>
  */
 public class ValueAnalysis extends ContainerAnalysis {
-
-    private static final org.jboss.logging.Logger logger = org.jboss.logging.Logger.getLogger(ValueAnalysis.class);
 
     private static WorkCacheManager cache = new WorkCacheManager(ValueAnalysis.class);
 
@@ -88,7 +87,6 @@ public class ValueAnalysis extends ContainerAnalysis {
 
     protected ValueAnalysis(final Class cls) {
         super(cls);
-        logger.debug("ValueAnalysis(\"" + cls.getName() + "\") entered.");
     }
 
     public String getIDLModuleName() {
@@ -105,24 +103,16 @@ public class ValueAnalysis extends ContainerAnalysis {
         super.doAnalyze();
 
         if (cls == String.class)
-            throw new IllegalArgumentException(
-                    "Cannot analyze java.lang.String here: It is a " +
-                            "special case."); // 1.3.5.11
+            throw JacORBMessages.MESSAGES.cannotAnalyzeStringType();
 
         if (cls == Class.class)
-            throw new IllegalArgumentException(
-                    "Cannot analyze java.lang.Class here: It is a " +
-                            "special case."); // 1.3.5.10
+            throw JacORBMessages.MESSAGES.cannotAnalyzeClassType();
 
         if (Remote.class.isAssignableFrom(cls))
-            throw new RMIIIOPViolationException(
-                    "Value type " + cls.getName() +
-                            " cannot implement java.rmi.Remote.", "1.2.4");
+            throw JacORBMessages.MESSAGES.valueTypeCantImplementRemote(cls.getName(), "1.2.4");
 
         if (cls.getName().indexOf('$') != -1)
-            throw new RMIIIOPNotImplementedException(
-                    "Class " + cls.getName() + " has a '$', like " +
-                            "proxies or inner classes.");
+            throw JacORBMessages.MESSAGES.valueTypeCantBeProxy(cls.getName());
 
         externalizable = Externalizable.class.isAssignableFrom(cls);
 
@@ -156,8 +146,7 @@ public class ValueAnalysis extends ContainerAnalysis {
                 try {
                     serialPersistentFields = (ObjectStreamField[]) spf.get(null);
                 } catch (IllegalAccessException ex) {
-                    throw new RuntimeException("Unexpected IllegalException: " +
-                            ex.toString());
+                    throw JacORBMessages.MESSAGES.unexpectedException(ex);
                 }
 
                 // Mark this in the fields array
@@ -172,8 +161,7 @@ public class ValueAnalysis extends ContainerAnalysis {
             // Look for a writeObject Method
             Method wo = null;
             try {
-                wo = cls.getMethod("writeObject",
-                        new Class[]{java.io.OutputStream[].class});
+                wo = cls.getMethod("writeObject", new Class[]{java.io.OutputStream[].class});
             } catch (NoSuchMethodException ex) {
                 // ignore
             }
@@ -210,17 +198,11 @@ public class ValueAnalysis extends ContainerAnalysis {
         // Map all fields not flagged constant or serialPersistentField.
         SortedSet m = new TreeSet(new ValueMemberComparator());
 
-        logger.debug("ValueAnalysis(\"" + cls.getName() + "\"): " +
-                "fields.length=" + fields.length);
         for (int i = 0; i < fields.length; ++i) {
-            logger.debug("ValueAnalysis(\"" + cls.getName() + "\"): " +
-                    "Considering field[" + i + "] \"" + fields[i].getName() +
-                    "\"" + " f_flags=" + f_flags[i]);
             if (f_flags[i] != 0)
                 continue; // flagged
 
             int mods = fields[i].getModifiers();
-            logger.debug("ValueAnalysis(\"" + cls.getName() + "\"): mods=" + mods);
             if (Modifier.isStatic(mods) || Modifier.isTransient(mods))
                 continue; // don't map this
 
@@ -233,8 +215,6 @@ public class ValueAnalysis extends ContainerAnalysis {
 
         members = new ValueMemberAnalysis[m.size()];
         members = (ValueMemberAnalysis[]) m.toArray(members);
-        logger.debug("ValueAnalysis(\"" + cls.getName() + "\") value member count: "
-                + members.length);
 
         // Get superclass analysis
         Class superClass = cls.getSuperclass();
@@ -243,8 +223,6 @@ public class ValueAnalysis extends ContainerAnalysis {
         if (superClass == null)
             superAnalysis = null;
         else {
-            logger.debug("ValueAnalysis(\"" + cls.getName() + "\"): superclass: " +
-                    superClass.getName());
             superAnalysis = getValueAnalysis(superClass);
         }
 
@@ -252,8 +230,6 @@ public class ValueAnalysis extends ContainerAnalysis {
             abstractValue = true;
 
         fixupCaseNames();
-
-        logger.debug("ValueAnalysis(\"" + cls.getName() + "\") done.");
     }
 
     // Public --------------------------------------------------------

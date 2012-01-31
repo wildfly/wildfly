@@ -112,7 +112,7 @@ public enum ORBInitializer {
      * @return the {@code ORBInitializer} identified by the name. If no implementation can be found, the
      *         {@code ORBInitializer.UNKNOWN} type is returned.
      */
-    static ORBInitializer forName(final String initializerName) {
+    static ORBInitializer fromName(final String initializerName) {
         final ORBInitializer element = MAP.get(initializerName);
         return element == null ? UNKNOWN : element;
     }

@@ -21,6 +21,7 @@
  */
 package org.jboss.as.jacorb.rmi;
 
+import org.jboss.as.jacorb.JacORBMessages;
 import org.omg.CORBA.Any;
 
 
@@ -48,8 +49,7 @@ public class ConstantAnalysis
 
         if (type == Void.TYPE ||
                 !type.isPrimitive() && type != java.lang.String.class)
-            throw new IllegalArgumentException("Bad type for constant: " +
-                    type.getName());
+            throw JacORBMessages.MESSAGES.badConstantType(type.getName());
 
         this.type = type;
         this.value = value;

@@ -32,6 +32,8 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.WeakHashMap;
 
+import org.jboss.as.jacorb.JacORBMessages;
+
 
 /**
  * Instances of this class cache the most complex analyse types.
@@ -55,21 +57,18 @@ import java.util.WeakHashMap;
  */
 class WorkCacheManager {
 
-    private static final org.jboss.logging.Logger logger = org.jboss.logging.Logger.getLogger(WorkCacheManager.class);
-
     /**
      * Create a new work cache manager.
      *
      * @param cls The class of the analysis type we cache here.
      */
     WorkCacheManager(final Class cls) {
-        logger.debug("Class: " + cls.getName());
         // Find the constructor and initializer.
         try {
             constructor = cls.getDeclaredConstructor(new Class[]{Class.class});
             initializer = cls.getDeclaredMethod("doAnalyze", null);
         } catch (NoSuchMethodException ex) {
-            throw new IllegalArgumentException("Bad Class: " + ex.toString());
+            throw JacORBMessages.MESSAGES.unexpectedException(ex);
         }
 
         workDone = new WeakHashMap();

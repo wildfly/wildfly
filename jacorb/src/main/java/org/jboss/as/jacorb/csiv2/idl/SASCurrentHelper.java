@@ -22,6 +22,7 @@
 
 package org.jboss.as.jacorb.csiv2.idl;
 
+import org.jboss.as.jacorb.JacORBMessages;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.ORB;
 import org.omg.CORBA.Object;
@@ -67,7 +68,7 @@ public final class SASCurrentHelper {
         } else if (obj instanceof SASCurrent) {
             return (SASCurrent) obj;
         } else {
-            throw new org.omg.CORBA.BAD_PARAM("Narrow failed");
+            throw JacORBMessages.MESSAGES.sasCurrentNarrowFailed();
         }
     }
 
@@ -77,7 +78,7 @@ public final class SASCurrentHelper {
         } else if (obj instanceof SASCurrent) {
             return (SASCurrent) obj;
         } else {
-            throw new org.omg.CORBA.BAD_PARAM("Narrow failed");
+            throw JacORBMessages.MESSAGES.sasCurrentNarrowFailed();
         }
     }
 }
