@@ -673,7 +673,6 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
     }
 
     @Test
-    @Ignore("AS7-3316")
     public void testXaDsWithSystemProperties() throws Exception {
 
     	final ModelNode propAddress=new ModelNode();
