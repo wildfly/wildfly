@@ -46,36 +46,6 @@ class LocalOutboundConnectionAdd extends AbstractOutboundConnectionAddHandler {
 
     static final LocalOutboundConnectionAdd INSTANCE = new LocalOutboundConnectionAdd();
 
-    static ModelNode getAddOperation(final String connectionName, final String outboundSocketBindingRef, final Map<String, String> connectionCreationOptions) {
-        if (connectionName == null || connectionName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Connection name cannot be null or empty");
-        }
-        if (outboundSocketBindingRef == null || outboundSocketBindingRef.trim().isEmpty()) {
-            throw new IllegalArgumentException("Outbound socket binding reference cannot be null or empty for connection named " + connectionName);
-        }
-        final ModelNode addOperation = new ModelNode();
-        addOperation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-        // /subsystem=remoting/local-outbound-connection=<connection-name>
-        final PathAddress address = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME),
-                PathElement.pathElement(CommonAttributes.LOCAL_OUTBOUND_CONNECTION, connectionName));
-        addOperation.get(ModelDescriptionConstants.OP_ADDR).set(address.toModelNode());
-
-        // set the other params
-        addOperation.get(CommonAttributes.OUTBOUND_SOCKET_BINDING_REF).set(outboundSocketBindingRef);
-        // optional connection creation options
-        if (connectionCreationOptions != null) {
-            for (final Map.Entry<String, String> entry : connectionCreationOptions.entrySet()) {
-                if (entry.getKey() == null) {
-                    // skip
-                    continue;
-                }
-                addOperation.get(CommonAttributes.CONNECTION_CREATION_OPTIONS).add(entry.getKey(), entry.getValue());
-            }
-        }
-
-        return addOperation;
-    }
-
     private LocalOutboundConnectionAdd() {
 
     }
@@ -89,18 +59,16 @@ class LocalOutboundConnectionAdd extends AbstractOutboundConnectionAddHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        final String name = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
-        final ServiceController serviceController = installRuntimeService(context, name, model, verificationHandler);
+        final ServiceController serviceController = installRuntimeService(context, operation, verificationHandler);
         newControllers.add(serviceController);
     }
 
-    ServiceController installRuntimeService(OperationContext context, String connectionName, ModelNode outboundConnection,
-                                            ServiceVerificationHandler verificationHandler) throws OperationFailedException {
-
-        final String outboundSocketBindingRef = LocalOutboundConnectionResourceDefinition.OUTBOUND_SOCKET_BINDING_REF.resolveModelAttribute(context, outboundConnection).asString();
+    ServiceController installRuntimeService(OperationContext context, ModelNode operation, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
+        final String connectionName = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
+        final String outboundSocketBindingRef = LocalOutboundConnectionResourceDefinition.OUTBOUND_SOCKET_BINDING_REF.resolveModelAttribute(context, operation).asString();
         final ServiceName outboundSocketBindingDependency = OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(outboundSocketBindingRef);
         // fetch the connection creation options from the model
-        final OptionMap connectionCreationOptions = getConnectionCreationOptions(outboundConnection);
+        final OptionMap connectionCreationOptions = getConnectionCreationOptions(context,operation);
         // create the service
         final LocalOutboundConnectionService outboundConnectionService = new LocalOutboundConnectionService(connectionName, connectionCreationOptions);
         final ServiceName serviceName = AbstractOutboundConnectionService.OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(connectionName);

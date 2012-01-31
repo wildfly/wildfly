@@ -23,46 +23,22 @@
 package org.jboss.as.remoting;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.remoting.CommonAttributes.FORWARD_SECRECY;
-import static org.jboss.as.remoting.CommonAttributes.INCLUDE_MECHANISMS;
-import static org.jboss.as.remoting.CommonAttributes.NO_ACTIVE;
-import static org.jboss.as.remoting.CommonAttributes.NO_ANONYMOUS;
-import static org.jboss.as.remoting.CommonAttributes.NO_DICTIONARY;
-import static org.jboss.as.remoting.CommonAttributes.NO_PLAIN_TEXT;
-import static org.jboss.as.remoting.CommonAttributes.PASS_CREDENTIALS;
-import static org.jboss.as.remoting.CommonAttributes.POLICY;
-import static org.jboss.as.remoting.CommonAttributes.QOP;
-import static org.jboss.as.remoting.CommonAttributes.SASL;
 import static org.jboss.as.remoting.CommonAttributes.SECURITY_REALM;
-import static org.jboss.as.remoting.CommonAttributes.SERVER_AUTH;
-import static org.jboss.as.remoting.CommonAttributes.STRENGTH;
 
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.ListIterator;
-import java.util.Set;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.registry.Resource.ResourceEntry;
 import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.xnio.Option;
 import org.xnio.OptionMap;
-import org.xnio.Options;
-import org.xnio.Sequence;
-import org.xnio.sasl.SaslQop;
-import org.xnio.sasl.SaslStrength;
 
 /**
  * Add a connector to a remoting container.
@@ -99,24 +75,7 @@ public class ConnectorAdd extends AbstractAddStepHandler {
         final ServiceTarget target = context.getServiceTarget();
 
         final ServiceName socketBindingName = SocketBinding.JBOSS_BINDING_NAME.append(ConnectorResource.SOCKET_BINDING.resolveModelAttribute(context, model).asString());
-
-
-        final OptionMap optionMap;
-        Resource resource = findResource(context.getRootResource(), pathAddress);
-        Set<ResourceEntry> entries = resource.getChildren(CommonAttributes.PROPERTY);
-        if (entries.size() > 0) {
-            OptionMap.Builder builder = OptionMap.builder();
-            final ClassLoader loader = SecurityActions.getClassLoader(this.getClass());
-            for (ResourceEntry entry : entries) {
-                final Option option = Option.fromString(entry.getName(), loader);
-                builder.set(option, option.parseValue(entry.getModel().get(CommonAttributes.VALUE).asString(), loader));
-            }
-            optionMap = builder.getMap();
-        } else {
-            optionMap = OptionMap.EMPTY;
-        }
-
-
+        final OptionMap optionMap = ConnectorResource.getOptions(context, pathAddress);
         RemotingServices.installConnectorServicesForSocketBinding(target, RemotingServices.SUBSYSTEM_ENDPOINT, connectorName, socketBindingName, optionMap, verificationHandler, newControllers);
 
         //TODO AuthenticationHandler
@@ -140,15 +99,7 @@ public class ConnectorAdd extends AbstractAddStepHandler {
 //        }
     }
 
-    private Resource findResource(Resource rootResource, PathAddress address) {
-        Resource resource = rootResource;
-        for (ListIterator<PathElement> iterator = address.iterator() ; iterator.hasNext() ; ) {
-            resource = resource.getChild(iterator.next());
-        }
-        return resource;
-    }
-
-    static OptionMap createOptionMap(final ModelNode parameters) {
+   /* static OptionMap createOptionMap(final ModelNode parameters) {
         final OptionMap.Builder builder = OptionMap.builder();
 
         if (parameters.hasDefined(SASL)) {
@@ -186,4 +137,5 @@ public class ConnectorAdd extends AbstractAddStepHandler {
         }
         return set;
     }
+    */
 }
