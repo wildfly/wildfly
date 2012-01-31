@@ -50,7 +50,6 @@ class RemoteOutboundConnectionRemoveHandler extends AbstractRemoveStepHandler {
 
     @Override
     protected void recoverServices(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        final String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
-        RemoteOutboundConnectionAdd.INSTANCE.installRuntimeService(context, name, model, null);
+        RemoteOutboundConnectionAdd.INSTANCE.installRuntimeService(context,  model, null);
     }
 }

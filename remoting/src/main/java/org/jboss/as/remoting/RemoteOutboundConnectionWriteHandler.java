@@ -40,7 +40,7 @@ class RemoteOutboundConnectionWriteHandler extends AbstractWriteAttributeHandler
     static final RemoteOutboundConnectionWriteHandler INSTANCE = new RemoteOutboundConnectionWriteHandler();
 
     private RemoteOutboundConnectionWriteHandler() {
-        super(AbstractOutboundConnectionResourceDefinition.CONNECTION_CREATION_OPTIONS, RemoteOutboundConnnectionResourceDefinition.OUTBOUND_SOCKET_BINDING_REF);
+        super(RemoteOutboundConnnectionResourceDefinition.OUTBOUND_SOCKET_BINDING_REF);
     }
 
     @Override
@@ -69,18 +69,12 @@ class RemoteOutboundConnectionWriteHandler extends AbstractWriteAttributeHandler
         final ServiceRegistry registry = context.getServiceRegistry(true);
         ServiceController sc = registry.getService(serviceName);
         if (sc != null && sc.getState() == ServiceController.State.UP) {
-            RemoteOutboundConnectionService svc = RemoteOutboundConnectionService.class.cast(sc.getValue());
-            if (AbstractOutboundConnectionResourceDefinition.CONNECTION_CREATION_OPTIONS.getName().equals(attributeName)) {
-                svc.setConnectionCreationOptions(AbstractOutboundConnectionAddHandler.getConnectionCreationOptions(model));
-            } else {
-                // We can't change the socket binding ref on a running service
-                reloadRequired = true;
-            }
+            reloadRequired = true;
         } else {
             // Service isn't up so we can bounce it
             context.removeService(serviceName); // safe even if the service doesn't exist
             // install the service with new values
-            RemoteOutboundConnectionAdd.INSTANCE.installRuntimeService(context, connectionName, model, null);
+            RemoteOutboundConnectionAdd.INSTANCE.installRuntimeService(context, model, null);
         }
 
         return reloadRequired;
