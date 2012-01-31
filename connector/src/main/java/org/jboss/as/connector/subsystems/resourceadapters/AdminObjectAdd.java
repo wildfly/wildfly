@@ -81,7 +81,7 @@ public class AdminObjectAdd extends AbstractAddStepHandler implements Descriptio
         final String poolName = PathAddress.pathAddress(address).getLastElement().getValue();
 
 
-        final ModifiableAdminObject adminObjectValue = RaOperationUtil.buildAdminObjects(operation, poolName);
+        final ModifiableAdminObject adminObjectValue = RaOperationUtil.buildAdminObjects(context, operation, poolName);
 
 
         ServiceName serviceName = ServiceName.of(ConnectorServices.RA_SERVICE, archiveName, poolName);
