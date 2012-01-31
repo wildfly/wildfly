@@ -42,6 +42,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.text.JTextComponent;
 import org.jboss.as.cli.gui.ManagementModelNode.UserObject;
+import org.jboss.as.cli.gui.component.ListEditor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -293,10 +294,17 @@ public class OperationDialog extends JDialog {
                 return ((JComboBox)valueComponent).getSelectedItem().toString();
             }
 
+            if (valueComponent instanceof ListEditor) {
+                ModelNode list = ((ListEditor)valueComponent).getValue();
+                if (list.isDefined()) return list.asString();
+                return "";
+            }
+
             return null;
         }
 
         private void setInputComponent() {
+            this.label = makeLabel();
             if (type == ModelType.BOOLEAN) {
                 if (defaultValue == null) {
                     this.valueComponent = new JCheckBox(makeLabelString(false));
@@ -304,17 +312,19 @@ public class OperationDialog extends JDialog {
                     this.valueComponent = new JCheckBox(makeLabelString(false), defaultValue.asBoolean());
                 }
                 this.valueComponent.setToolTipText(description);
-                this.label = new JLabel();
+                this.label = new JLabel(); // checkbox doesn't need a label
             } else if (props.get("allowed").isDefined()) {
                 JComboBox comboBox = makeJComboBox(props.get("allowed").asList());
                 if (defaultValue != null) comboBox.setSelectedItem(defaultValue.asString());
                 this.valueComponent = comboBox;
-                this.label = makeLabel();
+            } else if (type == ModelType.LIST) {
+                ListEditor listEditor = new ListEditor(OperationDialog.this);
+                if (defaultValue != null) listEditor.setValue(defaultValue);
+                this.valueComponent = listEditor;
             } else {
                 JTextField textField = new JTextField(30);
                 if (defaultValue != null) textField.setText(defaultValue.asString());
                 this.valueComponent = textField;
-                this.label = makeLabel();
             }
 
         }
