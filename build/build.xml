@@ -1192,10 +1192,6 @@
             <maven-bundle group="org.jboss.osgi.repository" artifact="jbosgi-repository"/>
         </bundle-def>
 
-        <bundle-def name="org.osgi.compendium">
-            <maven-bundle group="org.osgi" artifact="org.osgi.compendium"/>
-        </bundle-def>
-
         <bundle-def name="org.osgi.enterprise">
             <maven-bundle group="org.osgi" artifact="org.osgi.enterprise"/>
         </bundle-def>

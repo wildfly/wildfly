@@ -129,6 +129,7 @@ public class FrameworkBootstrapService implements Service<Void> {
             ServiceTarget target = context.getChildTarget();
             AutoInstallIntegration.addService(target);
             FrameworkModuleIntegration.addService(target, props);
+            JAXPServiceProvider.addService(target);
             ModuleLoaderIntegration.addService(target);
             ModuleIdentityArtifactProvider.addService(target);
             SystemServicesIntegration.addService(target);
@@ -187,6 +188,7 @@ public class FrameworkBootstrapService implements Service<Void> {
             StringBuffer buffer = new StringBuffer();
             buffer.append("javax.api,");
             buffer.append("javax.inject.api,");
+            buffer.append("org.apache.xerces,");
             buffer.append("org.jboss.as.configadmin,");
             buffer.append("org.jboss.as.osgi,");
             buffer.append("org.jboss.logging,");
@@ -203,7 +205,8 @@ public class FrameworkBootstrapService implements Service<Void> {
             Set<String> sysPackages = new LinkedHashSet<String>();
             sysPackages.addAll(Arrays.asList(SystemPathsProvider.DEFAULT_SYSTEM_PACKAGES));
             sysPackages.addAll(Arrays.asList(SystemPathsProvider.DEFAULT_FRAMEWORK_PACKAGES));
-            sysPackages.add("javax.inject,");
+            sysPackages.add("javax.inject");
+            sysPackages.add("org.apache.xerces.jaxp");
             sysPackages.add("org.jboss.as.configadmin.service");
             sysPackages.add("org.jboss.as.osgi.service");
             sysPackages.add("org.jboss.logging;version=3.1.0");
