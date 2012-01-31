@@ -143,7 +143,7 @@ public interface ServerInventory {
     /**
      * Notification that a channel for communication with a managed server process has been registered.
      *
-     * @param serverProcessName  process name of the server
+     * @param serverProcessName the name of the server process
      * @param channelHandler remoting channel to use for communicating with the server
      * @param callback callback the listener is to invoke when an operation handler is available for handling
      *                 management operations from the server. The callback will be invoked before this method returns
@@ -151,9 +151,16 @@ public interface ServerInventory {
     void serverCommunicationRegistered(String serverProcessName, ManagementChannelHandler channelHandler, ProxyCreatedCallback callback);
 
     /**
+     * Notification that the server is started.
+     *
+     * @param serverProcessName the name of the server process
+     */
+    void serverStarted(String serverProcessName);
+
+    /**
      * Notification that the start of a server process has failed.
      *
-     * @param serverProcessName  the name of the server process
+     * @param serverProcessName the name of the server process
      */
     void serverStartFailed(String serverProcessName);
 
