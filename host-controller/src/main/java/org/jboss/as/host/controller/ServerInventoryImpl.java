@@ -22,6 +22,7 @@
 
 package org.jboss.as.host.controller;
 
+import org.jboss.as.controller.ProxyController;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
@@ -50,7 +51,6 @@ import javax.security.sasl.RealmCallback;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.remote.RemoteProxyController;
@@ -59,7 +59,6 @@ import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.process.ProcessMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
-import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
@@ -289,33 +288,20 @@ public class ServerInventoryImpl implements ServerInventory {
             ROOT_LOGGER.noServerAvailable(serverName);
             return;
         }
-
-        final Channel channel;
         try {
-            channel = channelAssociation.getChannel();
+            final Channel channel = channelAssociation.getChannel();
+            channel.addCloseHandler(new CloseHandler<Channel>() {
+
+                public void handleClose(final Channel closed, final IOException exception) {
+                    server.callbackUnregistered();
+                    domainController.unregisterRunningServer(server.getServerName());
+                }
+            });
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        channel.addCloseHandler(new CloseHandler<Channel>() {
-            public void handleClose(final Channel closed, final IOException exception) {
-                server.callbackUnregistered();
-                domainController.unregisterRunningServer(server.getServerName());
-            }
-        });
-
-        server.callbackRegistered(new ManagedServer.TransitionTask() {
-            @Override
-            public void execute(ManagedServer server) throws Exception {
-                final PathElement element = PathElement.pathElement(RUNNING_SERVER, server.getServerName());
-                final RemoteProxyController serverController = RemoteProxyController.create(channelAssociation,
-                        PathAddress.pathAddress(PathElement.pathElement(HOST, domainController.getLocalHostInfo().getLocalHostName()), element),
-                        ProxyOperationAddressTranslator.SERVER);
-
-                callback.proxyOperationHandlerCreated(serverController);
-                domainController.registerRunningServer(serverController);
-            }
-        }, channelAssociation);
+        final RemoteProxyController serverController = server.channelRegistered(channelAssociation);
+        callback.proxyOperationHandlerCreated(serverController);
     }
 
     @Override
@@ -342,6 +328,28 @@ public class ServerInventoryImpl implements ServerInventory {
     }
 
     @Override
+    public void serverStarted(String serverProcessName) {
+        final String serverName = ManagedServer.getServerName(serverProcessName);
+        final ManagedServer server = servers.get(serverName);
+        if(server == null) {
+            ROOT_LOGGER.noServerAvailable(serverName);
+            return;
+        }
+        server.serverStarted(new ManagedServer.TransitionTask() {
+            @Override
+            public void execute(ManagedServer server) throws Exception {
+                final ProxyController proxy = server.getProxyController();
+                if(proxy != null) {
+                    domainController.registerRunningServer(proxy);
+                }
+            }
+        });
+        synchronized (shutdownCondition) {
+            shutdownCondition.notifyAll();
+        }
+    }
+
+    @Override
     public void serverStartFailed(final String serverProcessName) {
         final String serverName = ManagedServer.getServerName(serverProcessName);
         final ManagedServer server = servers.get(serverName);
@@ -349,7 +357,7 @@ public class ServerInventoryImpl implements ServerInventory {
             ROOT_LOGGER.noServerAvailable(serverName);
             return;
         }
-        // server.serverStartFailed();
+        server.serverStartFailed();
         synchronized (shutdownCondition) {
             shutdownCondition.notifyAll();
         }
