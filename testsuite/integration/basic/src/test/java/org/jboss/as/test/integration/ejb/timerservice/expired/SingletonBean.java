@@ -25,21 +25,29 @@ package org.jboss.as.test.integration.ejb.timerservice.expired;
 import org.jboss.logging.Logger;
 
 import javax.annotation.Resource;
+import javax.ejb.ConcurrencyManagement;
+import javax.ejb.ConcurrencyManagementType;
+import javax.ejb.NoMoreTimeoutsException;
 import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.Singleton;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
 import javax.ejb.TimerConfig;
 import javax.ejb.TimerService;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Jaikiran Pai
  */
 @Singleton
+@ConcurrencyManagement(ConcurrencyManagementType.BEAN)
 public class SingletonBean {
 
-    private static final Logger logger = Logger.getLogger(SingletonBean.class);
+    private static final Logger log = Logger.getLogger(SingletonBean.class);
 
     @Resource
     private TimerService timerService;
@@ -47,20 +55,34 @@ public class SingletonBean {
     private Timer timer;
 
     private CountDownLatch timeoutNotifyingLatch;
+    private CountDownLatch timeoutWaiter;
 
-    public void createSingleActionTimer(final long delay, final TimerConfig config, final CountDownLatch timeoutNotifyingLatch) {
+    public void createSingleActionTimer(final long delay, final TimerConfig config, 
+            CountDownLatch timeoutNotifyingLatch, CountDownLatch timeoutWaiter) {
         this.timer = this.timerService.createSingleActionTimer(delay, config);
         this.timeoutNotifyingLatch = timeoutNotifyingLatch;
+        this.timeoutWaiter = timeoutWaiter;
     }
 
     @Timeout
-    private void onTimeout(final Timer timer) {
-        logger.info("Timeout invoked for " + this + " on timer " + timer);
+    private void onTimeout(final Timer timer) throws InterruptedException {
+        log.info("Timeout invoked for " + this + " on timer " + timer);
         this.timeoutNotifyingLatch.countDown();
+        log.debug("Waiting for timer will be permitted to continue");
+        this.timeoutWaiter.await(5, TimeUnit.SECONDS);
+        log.debug("End of onTimeout on singleton");
+    }
+    
+    public Timer getTimer() {
+        return this.timer;
     }
 
-    public void invokeOnExpiredTimer() throws NoSuchObjectLocalException {
+    public void invokeTimeRemaining() throws NoMoreTimeoutsException, NoSuchObjectLocalException {
         this.timer.getTimeRemaining();
+    }
+
+    public void invokeGetNext() throws NoMoreTimeoutsException, NoSuchObjectLocalException {
+        this.timer.getNextTimeout();
     }
 
 
