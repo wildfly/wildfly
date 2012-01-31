@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,35 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.security.remoting;
-
-import org.jboss.remoting3.Connection;
+package org.jboss.as.domain.management.security;
 
 /**
- * A simple context to associate the Remoting Connection with the current thread.
- *
- * This association is used to make use of the user identity already authenticated on the connection.
+ * A credential object to store the username and password in the Subject after the JAAS authentication.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class RemotingContext {
+public class PasswordCredential {
 
-    private static ThreadLocal<Connection> connection = new ThreadLocal<Connection>();
+    private final String userName;
+    private final char[] credential;
 
-    public static void setConnection(final Connection connection) {
-        RemotingContext.connection.set(connection);
+    PasswordCredential(final String userName, final char[] credential) {
+        this.userName = userName;
+        this.credential = credential;
     }
 
-    public static void clear() {
-        connection.set(null);
+    public String getUserName() {
+        return userName;
     }
 
-    public static Connection getConnection() {
-        return connection.get();
-    }
-
-    public static boolean isSet() {
-        return connection.get() != null;
+    public char[] getCredential() {
+        return credential.clone();
     }
 
 }
