@@ -116,7 +116,7 @@ public final class Main {
                 File realFile = new File(earPath);
 
                 if (!realFile.exists()) {
-                    throw MESSAGES.cannotFindAppClient(realFile.getAbsoluteFile());
+                    throw MESSAGES.cannotFindAppClientFile(realFile.getAbsoluteFile());
                 }
 
                 final Bootstrap bootstrap = Bootstrap.Factory.newInstance();

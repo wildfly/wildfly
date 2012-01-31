@@ -37,7 +37,9 @@ import org.jboss.logging.Param;
 import org.jboss.vfs.VirtualFile;
 
 /**
- * Date: 26.10.2011
+ * This module is using message IDs in the range 13200-14599. This file is using the subset 13220-13299 for
+ * non-logger messages. See http://community.jboss.org/docs/DOC-16810 for the full list of currently reserved
+ * JBAS message id blocks.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
@@ -49,7 +51,7 @@ public interface AppClientMessages {
      */
     AppClientMessages MESSAGES = Messages.getBundle(AppClientMessages.class);
 
-    @Message("Name of the app client configuration file to use (default is \"appclient.xml\")")
+    @Message(id = Message.NONE, value = "Name of the app client configuration file to use (default is \"appclient.xml\")")
     String argAppClientConfig();
 
     /**
@@ -57,7 +59,7 @@ public interface AppClientMessages {
      *
      * @return the instructions.
      */
-    @Message("Display this message and exit")
+    @Message(id = Message.NONE, value = "Display this message and exit")
     String argHelp();
 
     /**
@@ -65,7 +67,7 @@ public interface AppClientMessages {
      *
      * @return the instructions.
      */
-    @Message("Set the url of the application server instance to connect to")
+    @Message(id = Message.NONE, value = "Set the url of the application server instance to connect to")
     String argHost();
 
     /**
@@ -74,7 +76,7 @@ public interface AppClientMessages {
      *
      * @return the instructions.
      */
-    @Message("Load system properties from the given url")
+    @Message(id = Message.NONE, value = "Load system properties from the given url")
     String argProperties();
 
     /**
@@ -82,7 +84,7 @@ public interface AppClientMessages {
      *
      * @return the instructions.
      */
-    @Message("Set a system property")
+    @Message(id = Message.NONE, value = "Set a system property")
     String argSystemProperty();
 
     /**
@@ -91,7 +93,7 @@ public interface AppClientMessages {
      *
      * @return the instructions.
      */
-    @Message("Usage: ./appclient.sh [args...] myear.ear#appClient.jar [client args...]%n%nwhere args include:%n")
+    @Message(id = Message.NONE, value = "Usage: ./appclient.sh [args...] myear.ear#appClient.jar [client args...]%n%nwhere args include:%n")
     String argUsage();
 
     /**
@@ -99,7 +101,7 @@ public interface AppClientMessages {
      *
      * @return the instructions.
      */
-    @Message("Print version and exit")
+    @Message(id = Message.NONE, value = "Print version and exit")
     String argVersion();
 
     /**
@@ -107,7 +109,7 @@ public interface AppClientMessages {
      *
      * @return the message.
      */
-    @Message(id = 14420, value = "You must specify the application client to execute")
+    @Message(id = 13220, value = "You must specify the application client to execute")
     String appClientNotSpecified();
 
     /**
@@ -117,7 +119,7 @@ public interface AppClientMessages {
      *
      * @return the message.
      */
-    @Message(id = 14421, value = "Argument expected for option %s")
+    @Message(id = 13221, value = "Argument expected for option %s")
     String argumentExpected(String arg);
 
     /**
@@ -125,7 +127,7 @@ public interface AppClientMessages {
      *
      * @return an {@link RuntimeException} for the error.
      */
-    @Message(id = 14422, value = "Could not find application client jar in deployment")
+    @Message(id = 13222, value = "Could not find application client jar in deployment")
     RuntimeException cannotFindAppClient();
 
     /**
@@ -136,18 +138,8 @@ public interface AppClientMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 14423, value = "Could not find application client %s")
+    @Message(id = 13223, value = "Could not find application client %s")
     DeploymentUnitProcessingException cannotFindAppClient(String deploymentName);
-
-    /**
-     * Creates an exception indicating that the application client, represented by the {@code deploymentName}, could
-     * not be found.
-     *
-     * @param deploymentName the name of the deployment.
-     *
-     * @return a {@link RuntimeException} for the error.
-     */
-    RuntimeException cannotFindAppClient(File deploymentName);
 
     /**
      * Creates an exception indicating that the application client could not load the main class.
@@ -156,7 +148,7 @@ public interface AppClientMessages {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 14424, value = "Could not load application client main class")
+    @Message(id = 13224, value = "Could not load application client main class")
     RuntimeException cannotLoadAppClientMainClass(@Cause Throwable cause);
 
     /**
@@ -166,7 +158,7 @@ public interface AppClientMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 14425, value = "Could not load component class")
+    @Message(id = 13225, value = "Could not load component class")
     DeploymentUnitProcessingException cannotLoadComponentClass(@Cause Throwable cause);
 
     /**
@@ -176,7 +168,7 @@ public interface AppClientMessages {
      *
      * @return the message.
      */
-    @Message(id = 14426, value = "Unable to load properties from URL %s")
+    @Message(id = 13226, value = "Unable to load properties from URL %s")
     String cannotLoadProperties(URL url);
 
     /**
@@ -186,7 +178,7 @@ public interface AppClientMessages {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 14427, value = "Could not start app client %s as no main class was found")
+    @Message(id = 13227, value = "Could not start app client %s as no main class was found")
     RuntimeException cannotStartAppClient(String deploymentName);
 
     /**
@@ -197,7 +189,7 @@ public interface AppClientMessages {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 14428, value = "Could not start app client %s as no main method was found on main class %s")
+    @Message(id = 13228, value = "Could not start app client %s as no main method was found on main class %s")
     RuntimeException cannotStartAppClient(String deploymentName, Class<?> mainClass);
 
     /**
@@ -207,7 +199,7 @@ public interface AppClientMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14429, value = "Duplicate subsystem declaration")
+    @Message(id = 13229, value = "Duplicate subsystem declaration")
     XMLStreamException duplicateSubsystemDeclaration(@Param Location location);
 
     /**
@@ -220,7 +212,7 @@ public interface AppClientMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14430, value = "%s %s already declared")
+    @Message(id = 13230, value = "%s %s already declared")
     XMLStreamException elementAlreadyDeclared(String elementName, Object value, @Param Location location);
 
     /**
@@ -231,7 +223,7 @@ public interface AppClientMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 14431, value = "Failed to parse %s")
+    @Message(id = 13231, value = "Failed to parse %s")
     DeploymentUnitProcessingException failedToParseXml(@Cause Throwable cause, VirtualFile appXml);
 
     /**
@@ -243,7 +235,7 @@ public interface AppClientMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 14432, value = "Failed to parse %s at [%d,%d]")
+    @Message(id = 13232, value = "Failed to parse %s at [%d,%d]")
     DeploymentUnitProcessingException failedToParseXml(@Cause Throwable cause, VirtualFile appXml, int lineNumber, int columnNumber);
 
     /**
@@ -253,7 +245,7 @@ public interface AppClientMessages {
      *
      * @return the message.
      */
-    @Message(id = 14433, value = "Malformed URL provided for option %s")
+    @Message(id = 13233, value = "Malformed URL provided for option %s")
     String malformedUrl(String arg);
 
     /**
@@ -262,7 +254,7 @@ public interface AppClientMessages {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 14434, value = "More than one application client found and no app client name specified")
+    @Message(id = 13234, value = "More than one application client found and no app client name specified")
     RuntimeException multipleAppClientsFound();
 
     /**
@@ -272,7 +264,7 @@ public interface AppClientMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14435, value = "Model contains multiple %s nodes")
+    @Message(id = 13235, value = "Model contains multiple %s nodes")
     IllegalStateException multipleNodesFound(String nodeName);
 
     /**
@@ -282,21 +274,32 @@ public interface AppClientMessages {
      *
      * @return the message.
      */
-    @Message(id = 14436, value = "Unknown option %s")
+    @Message(id = 13236, value = "Unknown option %s")
     String unknownOption(String option);
 
     /**
      * A message indicating the callback handler could not be loaded
      *
      */
-    @Message(id = 14437, value = "Could not load callback-handler class %s")
+    @Message(id = 13237, value = "Could not load callback-handler class %s")
     DeploymentUnitProcessingException couldNotLoadCallbackClass(String clazz);
 
     /**
      * A message indicating the callback handler could not be instantiated
      *
      */
-    @Message(id = 14438, value = "Could not create instance of callback-handler class %s")
+    @Message(id = 13238, value = "Could not create instance of callback-handler class %s")
     DeploymentUnitProcessingException couldNotCreateCallbackHandler(String clazz);
+
+    /**
+     * Creates an exception indicating that the application client, represented by the {@code deploymentName}, could
+     * not be found.
+     *
+     * @param deploymentName the name of the deployment.
+     *
+     * @return a {@link RuntimeException} for the error.
+     */
+    @Message(id = 13239, value = "Could find application client %s")
+    RuntimeException cannotFindAppClientFile(File deploymentName);
 }
 

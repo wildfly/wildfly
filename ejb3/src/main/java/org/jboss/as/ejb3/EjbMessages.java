@@ -53,7 +53,9 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.StartException;
 
 /**
- * Date: 19.10.2011
+ * This module is using message IDs in the range 14100-14599. This file is using the subset 14300-14599 for
+ * non-logger messages. See http://community.jboss.org/docs/DOC-16810 for the full list of currently reserved
+ * JBAS message id blocks.
  *
  * @author <a href="mailto:Flemming.Harms@gmail.com">Flemming Harms</a>
  */
@@ -2026,4 +2028,9 @@ public interface EjbMessages {
      */
     @Message(id = 14558, value = "No EjbContext available as no EJB invocation is active")
     IllegalStateException noEjbContextAvailable();
+
+
+    // STOP!!! Don't not add message ids greater that 14599!!! If you need more first check what EjbLogger is
+    // using and take more (lower) numbers from the available range for this module. If the range for the module is
+    // all used, go to https://community.jboss.org/docs/DOC-16810 and allocate another block for this subsystem
 }

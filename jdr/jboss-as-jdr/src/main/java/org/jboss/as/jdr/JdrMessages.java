@@ -27,6 +27,10 @@ import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 
 /**
+ * This module is using message IDs in the range 13300-13399. This file is using the subset 13350-13399 for
+ * non-logger messages. See http://community.jboss.org/docs/DOC-16810 for the full list of currently reserved
+ * JBAS message id blocks.
+ *
  * @author Mike M. Clark
  * @author Jesse Jaggars
  */
@@ -37,7 +41,7 @@ interface JdrMessages {
      */
     JdrMessages MESSAGES = Messages.getBundle(JdrMessages.class);
 
-    @Message(value = "JBoss Home directory cannot be determined.")
+    @Message(id = 13350, value = "JBoss Home directory cannot be determined.")
     String jbossHomeNotSet();
 
     /**
@@ -47,15 +51,15 @@ interface JdrMessages {
      * @param var method variable that was <code>null</code>
      * @return  Exception describing the invalid parameter.
      */
-    @Message(value = "Parameter %s may not be null.")
+    @Message(id = 13351, value = "Parameter %s may not be null.")
     IllegalArgumentException varNull(String var);
 
-    @Message(value = "Display this message and exit")
+    @Message(id = Message.NONE, value = "Display this message and exit")
     String jdrHelpMessage();
 
-    @Message(value = "hostname that the management api is bound to. (default: localhost)")
+    @Message(id = Message.NONE, value = "hostname that the management api is bound to. (default: localhost)")
     String jdrHostnameMessage();
 
-    @Message(value = "port that the management api is bound to. (default: 9990)")
+    @Message(id = Message.NONE, value = "port that the management api is bound to. (default: 9990)")
     String jdrPortMessage();
 }

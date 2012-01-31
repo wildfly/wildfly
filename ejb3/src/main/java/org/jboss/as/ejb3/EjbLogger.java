@@ -48,7 +48,9 @@ import org.jboss.logging.MessageLogger;
 import org.jboss.remoting3.Channel;
 
 /**
- * Date: 19.10.2011
+ * This module is using message IDs in the range 14100-14599. This file is using the subset 14100-14149 for
+ * logger messages. See http://community.jboss.org/docs/DOC-16810 for the full list of currently reserved
+ * JBAS message id blocks.
  *
  * @author <a href="mailto:Flemming.Harms@gmail.com">Flemming Harms</a>
  */
@@ -71,7 +73,6 @@ public interface EjbLogger extends BasicLogger {
      * Logs an error message indicating an exception occurred while removing the an inactive bean.
      *
      * @param id    the session id that could not be removed
-     * @param cause the cause of the error.
      */
     @LogMessage(level = ERROR)
     @Message(id = 14100, value = "Failed to remove %s from cache")
