@@ -353,7 +353,7 @@
             </hornetq-server>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:modcluster:1.0">
-            <mod-cluster-config advertise-socket="modcluster" sticky-session-force="false"/>
+            <mod-cluster-config advertise-socket="modcluster"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:naming:1.1"/>
         <subsystem xmlns="urn:jboss:domain:osgi:1.2" activation="lazy">
