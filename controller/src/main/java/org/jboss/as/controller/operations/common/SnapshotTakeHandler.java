@@ -40,26 +40,16 @@ public class SnapshotTakeHandler implements OperationStepHandler, DescriptionPro
     public static final String OPERATION_NAME = "take-snapshot";
 
     private final ConfigurationPersister persister;
-    /** Slave DC should not take snapshot */
-    private final boolean takeSnapshot;
 
     public SnapshotTakeHandler(ConfigurationPersister persister) {
-        this(persister, true);
-    }
-
-    public SnapshotTakeHandler(ConfigurationPersister persiter, boolean takeSnapshot) {
-        this.persister = persiter;
-        this.takeSnapshot = takeSnapshot;
+        this.persister = persister;
     }
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         try {
-            if (takeSnapshot) {
-                String name = persister.snapshot();
-                context.getResult().get().set(name);
-            }
-
+            String name = persister.snapshot();
+            context.getResult().get().set(name);
             context.completeStep();
         } catch (ConfigurationPersistenceException e) {
             throw new OperationFailedException(e.getMessage(), new ModelNode().set(e.getMessage()));
