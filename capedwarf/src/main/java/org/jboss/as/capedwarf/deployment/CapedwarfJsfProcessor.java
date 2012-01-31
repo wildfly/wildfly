@@ -22,24 +22,13 @@
 
 package org.jboss.as.capedwarf.deployment;
 
-import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.as.server.deployment.AttachmentList;
-import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.vfs.TempDir;
-import org.jboss.vfs.VFS;
-import org.jboss.vfs.VFSUtils;
-import org.jboss.vfs.VirtualFile;
+import org.jboss.as.web.deployment.ScisMetaData;
 
-import java.io.ByteArrayInputStream;
-import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Random;
+import javax.servlet.ServletContainerInitializer;
+import java.util.Set;
 
 /**
  * Handle CapeDwarf JSF usage.
@@ -48,49 +37,24 @@ import java.util.Random;
  */
 public class CapedwarfJsfProcessor extends CapedwarfDeploymentUnitProcessor {
 
-    static final String FACES_CONFIG = "faces-config.xml";
-    static final Random rng = new Random();
-    static final AttachmentKey<AttachmentList<Closeable>> ASSEMBLY_HANDLE = AttachmentKey.createList(Closeable.class);
-
-    final TempDir tempDir;
-    volatile File configFile;
-
-    public CapedwarfJsfProcessor(TempDir tempDir) {
-        this.tempDir = tempDir;
-    }
-
-    protected File getTempConfigFile() throws IOException {
-        if (configFile == null) {
-            synchronized (this) {
-                if (configFile == null) {
-                    final InputStream stream = new ByteArrayInputStream("<faces-config />".getBytes());
-                    configFile = tempDir.createFile(Long.toHexString(rng.nextLong()) + "_" + FACES_CONFIG, stream);
-                }
-            }
-        }
-        return configFile;
-    }
+    private static final String FACES_INIT = "com.sun.faces.config.FacesInitializer";
 
     protected void doDeploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final DeploymentUnit unit = phaseContext.getDeploymentUnit();
-        final ResourceRoot deploymentRoot = unit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-        final VirtualFile parent = deploymentRoot.getRoot().getChild("WEB-INF");
-        if (parent.getChild(FACES_CONFIG).exists() == false) {
-            try {
-                final ModifiedFileSystem mfs = ModifiedFileSystem.get(unit, parent.getPhysicalFile());
-                mfs.addFile(FACES_CONFIG, getTempConfigFile());
-                final Closeable closeable = VFS.mount(parent, mfs);
-                unit.addToAttachmentList(ASSEMBLY_HANDLE, closeable);
-            } catch (IOException e) {
-                throw new DeploymentUnitProcessingException("Cannot mount CapeDwarf JFS usage.", e);
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final ScisMetaData scisMetaData = deploymentUnit.getAttachment(ScisMetaData.ATTACHMENT_KEY);
+        if (scisMetaData != null) {
+            ServletContainerInitializer key = null;
+            for (ServletContainerInitializer sci : scisMetaData.getScis()) {
+                if (FACES_INIT.equals(sci.getClass().getName())) {
+                    key = sci;
+                    break;
+                }
+            }
+            if (key != null) {
+                Set<Class<?>> classes = scisMetaData.getHandlesTypes().get(key);
+                if (classes != null)
+                    classes.add(Object.class); // hack
             }
         }
-    }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-        final AttachmentList<Closeable> closeables = context.getAttachment(ASSEMBLY_HANDLE);
-        VFSUtils.safeClose(closeables);
-        ModifiedFileSystem.remove(context);
     }
 }
