@@ -153,9 +153,9 @@
         <version.org.jboss.jandex>1.0.3.Final</version.org.jboss.jandex>
         <version.org.jboss.jboss-dmr>1.1.1.Final</version.org.jboss.jboss-dmr>
         <version.org.jboss.jboss-transaction-spi>7.0.0.CR2</version.org.jboss.jboss-transaction-spi>
-        <version.org.jboss.jbossts.jbossjts>4.16.1.Final</version.org.jboss.jbossts.jbossjts>
-        <version.org.jboss.jbossts.jbossjts-integration>4.16.1.Final</version.org.jboss.jbossts.jbossjts-integration>
-        <version.org.jboss.jbossts.jbossxts>4.16.1.Final</version.org.jboss.jbossts.jbossxts>
+        <version.org.jboss.jbossts.jbossjts>4.16.2.Final</version.org.jboss.jbossts.jbossjts>
+        <version.org.jboss.jbossts.jbossjts-integration>4.16.2.Final</version.org.jboss.jbossts.jbossjts-integration>
+        <version.org.jboss.jbossts.jbossxts>4.16.2.Final</version.org.jboss.jbossts.jbossxts>
         <version.org.jboss.jboss-vfs>3.1.0.CR1</version.org.jboss.jboss-vfs>
         <version.org.jboss.jsfunit>2.0.0.Beta1</version.org.jboss.jsfunit>
         <version.org.jboss.logging.jboss-logging>3.1.0.CR2</version.org.jboss.logging.jboss-logging>
