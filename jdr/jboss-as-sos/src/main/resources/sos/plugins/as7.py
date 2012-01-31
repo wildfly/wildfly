@@ -283,23 +283,6 @@ class AS7(Plugin, IndependentPlugin):
                             self.getOption("logsize"),
                             sub=(self.__jbossHome, 'JBOSSHOME'))
 
-                for deployment in find("*", os.path.join(path, "deployments")):
-                    self._get_tree_from_deployment(deployment)
-
-
-    def _get_tree_from_deployment(self, path):
-        tmp_dir = tempfile.mkdtemp()
-        try:
-            zf = zipfile.ZipFile(path)
-            zf.extractall(path=tmp_dir)
-            zf.close()
-            tree = DirTree(tmp_dir).as_string()
-            self.addStringAsFile(tree, "%s.tree.txt" % os.path.basename(path))
-        except zipfile.BadZipfile:
-            pass
-        os.rmdir(tmp_dir)
-
-
     def setup(self):
 
         ## We need to know where JBoss is installed and if we can't find it we
