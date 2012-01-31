@@ -23,8 +23,14 @@
 package org.jboss.as.domain.controller.operations.coordination;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 
 import java.util.ArrayList;
@@ -36,8 +42,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.domain.controller.ServerIdentity;
+import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -90,27 +98,100 @@ interface HostControllerExecutionSupport {
         Map<Set<ServerIdentity>, ModelNode> getServerOperations(ModelNode domainOp, PathAddress address);
     }
 
-    /** Provides factory methods for creating {@link HostControllerExecutionSupport} instances */
+    /** Provides a reference to a ModelNode representation of the domain model to {@link Factory} */
+    interface DomainModelProvider {
+        /**
+         * Gets a ModelNode representation of the domain model
+         * @return the model. Cannot be {@code null}
+         */
+        ModelNode getDomainModel();
+    }
+
+    /** Provides a factory method for creating {@link HostControllerExecutionSupport} instances */
     class Factory {
 
-        public static HostControllerExecutionSupport createIgnoredOperationSupport(int index) {
-            return new IgnoredOpExecutionSupport(index);
+        /**
+         * Create a HostControllerExecutionSupport for a given operation.
+         *
+         * @param operation the operation
+         * @param hostName the name of the host executing the operation
+         * @param domainModelProvider source for the domain model
+         * @param ignoredDomainResourceRegistry registry of resource addresses that should be ignored
+         *
+         * @return the HostControllerExecutionSupport
+         */
+        public static HostControllerExecutionSupport create(final ModelNode operation,
+                                                            final String hostName,
+                                                            final DomainModelProvider domainModelProvider,
+                                                            final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry) {
+            return create(operation, hostName, domainModelProvider, ignoredDomainResourceRegistry, null);
         }
 
-        public static HostControllerExecutionSupport createDirectServerOperationExecutionSupport(Integer index,
-                                                                                   ServerIdentity serverIdentity,
-                                                                                   ModelNode serverOp) {
-            return new DirectServerOpExecutionSupport(index, serverIdentity, serverOp);
-        }
+        private static HostControllerExecutionSupport create(final ModelNode operation,
+                                                            final String hostName,
+                                                            final DomainModelProvider domainModelProvider,
+                                                            final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
+                                                            final Integer index) {
+            String targetHost = null;
+            String runningServerTarget = null;
+            ModelNode runningServerOp = null;
 
-        public static HostControllerExecutionSupport createDomainOperationExecutionSupport(Integer index, ModelNode domainOp,
-                                                                                           final PathAddress domainOpAddress) {
-            return new DomainOpExecutionSupport(index, domainOp, domainOpAddress);
-        }
+            final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+            if (address.size() > 0) {
+                PathElement first = address.getElement(0);
+                if (HOST.equals(first.getKey())) {
+                    targetHost = first.getValue();
+                    if (address.size() > 1 && RUNNING_SERVER.equals(address.getElement(1).getKey())) {
+                        runningServerTarget = address.getElement(1).getValue();
+                        ModelNode relativeAddress = new ModelNode();
+                        for (int i = 2; i < address.size(); i++) {
+                            PathElement element = address.getElement(i);
+                            relativeAddress.add(element.getKey(), element.getValue());
+                        }
+                        runningServerOp = operation.clone();
+                        runningServerOp.get(OP_ADDR).set(relativeAddress);
+                    }
+                }
+            }
 
-        public static HostControllerExecutionSupport createCompositeOperationExecutionSupport(final Integer index,
-                                                                                              final List<HostControllerExecutionSupport> steps) {
-            return new MultiStepOpExecutionSupport(index, steps);
+            HostControllerExecutionSupport result;
+
+            if (targetHost != null && !hostName.equals(targetHost)) {
+                // ParsedOp representing another host
+                result = new IgnoredOpExecutionSupport(index);
+            }
+            else if (runningServerTarget != null) {
+                // ParsedOp representing a server op
+                final ModelNode domainModel = domainModelProvider.getDomainModel();
+                final String serverGroup = domainModel.require(HOST).require(targetHost).require(SERVER_CONFIG).require(runningServerTarget).require(GROUP).asString();
+                final ServerIdentity serverIdentity = new ServerIdentity(targetHost, serverGroup, runningServerTarget);
+                result = new DirectServerOpExecutionSupport(index, serverIdentity, runningServerOp);
+            }
+            else if (COMPOSITE.equals(operation.require(OP).asString())) {
+                // Recurse into the steps to see what's required
+                if (operation.hasDefined(STEPS)) {
+                    int stepNum = 0;
+                    List<HostControllerExecutionSupport> parsedSteps = new ArrayList<HostControllerExecutionSupport>();
+                    for (ModelNode step : operation.get(STEPS).asList()) {
+                        parsedSteps.add(create(step, hostName, domainModelProvider, ignoredDomainResourceRegistry, stepNum++));
+                    }
+                    result = new MultiStepOpExecutionSupport(index, parsedSteps);
+                }
+                else {
+                    // Will fail later
+                    result = new DomainOpExecutionSupport(index, operation, address);
+                }
+            }
+            else if (targetHost == null && ignoredDomainResourceRegistry.isResourceExcluded(address)) {
+                result = new IgnoredOpExecutionSupport(index);
+            }
+            else {
+                // ParsedOp for this host
+                result = new DomainOpExecutionSupport(index, operation, address);
+            }
+
+            return result;
+
         }
 
         private static class IgnoredOpExecutionSupport extends SimpleOpExecutionSupport {
