@@ -22,47 +22,22 @@
 
 package org.jboss.as.jacorb;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * <p>
- * Enumeration of the SSL configuration values. Each enum contains the corresponding JacORB value, which is represented
- * as an int.
+ * Enumeration of the allowed jacorb subsystem configuration values.
  * </p>
  *
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
-enum SSLConfigValue {
+enum AllowedValues {
 
-    NONE("None", "0"), SERVERAUTH("ServerAuth", "20"), CLIENTAUTH("ClientAuth", "40"), MUTUALAUTH("MutualAuth", "60");
+    ON("on"), OFF("off"), SPEC("spec");
 
     private String name;
-    private String jacorbValue;
 
-    SSLConfigValue(String name, String jacorbValue) {
+    AllowedValues(String name) {
         this.name = name;
-        this.jacorbValue = jacorbValue;
     }
-
-    public String getJacorbValue() {
-        return this.jacorbValue;
-    }
-
-    private static Map<String, SSLConfigValue> MAP;
-
-    static {
-        final Map<String, SSLConfigValue> map = new HashMap<String, SSLConfigValue>();
-        for (SSLConfigValue configValue : values()) {
-            map.put(configValue.getJacorbValue(), configValue);
-        }
-        MAP = map;
-    }
-
-    public static SSLConfigValue fromValue(String value) {
-        return MAP.get(value);
-    }
-
     @Override
     public String toString() {
         return this.name;

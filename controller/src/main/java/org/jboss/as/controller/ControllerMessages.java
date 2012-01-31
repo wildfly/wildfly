@@ -2377,4 +2377,16 @@ public interface ControllerMessages {
      */
     @Message(id = 14838, value = "Do not call ServiceController.setMode(REMOVE), use OperationContext.removeService() instead.")
     IllegalStateException useOperationContextRemoveService();
+
+    /**
+     * Creates an exception indicating that the value of the specified parameter does not match any of the allowed
+     * values.
+     *
+     * @param value the parameter value.
+     * @param parameterName the parameter name.
+     * @param allowedValues a set containing the allowed values.
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 14839, value="Invalid value %s for %s; legal values are %s")
+    OperationFailedException invalidEnumValue(String value, String parameterName, Set<?> allowedValues);
 }

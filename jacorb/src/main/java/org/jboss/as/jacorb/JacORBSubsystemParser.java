@@ -487,7 +487,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
                     SSLConfigValue value = SSLConfigValue.fromValue(attrValue);
                     if (value == null)
                         throw new XMLStreamException("Invalid SSL config option. Should be one of [0,20,40,60]");
-                    attrValue = value.name();
+                    attrValue = value.toString();
                 default:
                     SimpleAttributeDefinition definition = ((SimpleAttributeDefinition) JacORBSubsystemDefinitions.
                         valueOf(attribute.getLocalName()));
