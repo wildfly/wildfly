@@ -12,6 +12,9 @@ rem # variables that run.bat uses. It is recommended to use this file to
 rem # configure these variables, rather than modifying run.bat itself. 
 rem #
 
+rem Uncomment the following line to disable manipulation of JAVA_OPTS (JVM parameters)
+rem set PRESERVE_JAVA_OPTS=true
+
 if not "x%JAVA_OPTS%" == "x" (
   echo "JAVA_OPTS already set in environment; overriding default settings with values: %JAVA_OPTS%"
   goto JAVA_OPTS_SET
