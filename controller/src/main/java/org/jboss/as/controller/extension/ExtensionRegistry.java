@@ -724,6 +724,12 @@ public class ExtensionRegistry {
         }
 
         @Override
+        public void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, EnumSet<OperationEntry.Flag> flags) {
+            deployments.registerOperationHandler(operationName, handler, descriptionProvider, inherited, flags);
+            subdeployments.registerOperationHandler(operationName, handler, descriptionProvider, inherited, flags);
+        }
+
+        @Override
         public void unregisterOperationHandler(String operationName) {
             deployments.unregisterOperationHandler(operationName);
             subdeployments.unregisterOperationHandler(operationName);
