@@ -69,6 +69,7 @@ public class TimerServicePersistenceFirstTestCase {
         CancelledTimerServiceBean bean = (CancelledTimerServiceBean)ctx.lookup("java:module/" + CancelledTimerServiceBean.class.getSimpleName());
         TimerHandle handle = bean.createTimer();
         Assert.assertTrue(CancelledTimerServiceBean.awaitTimerCall());
+        Assert.assertEquals("info", handle.getTimer().getInfo());
         handle.getTimer().cancel();
     }
 
