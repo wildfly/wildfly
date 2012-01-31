@@ -308,6 +308,11 @@
                             <resources>
                                 <resource>
                                     <directory>${basedir}/../target/jbossas</directory>
+                                    <excludes>
+                                        <exclude>standalone/data</exclude>
+                                        <exclude>standalone/log</exclude>
+                                        <exclude>standalone/tmp</exclude>
+                                    </excludes>
                                 </resource>
                             </resources>
                         </configuration>
@@ -329,6 +334,7 @@
                         <inherited>false</inherited>
                         <configuration>
                             <transformationSets>
+                                <!-- IPs. -->
                                 <transformationSet>
                                     <dir>${basedir}/target/jbossas/standalone/configuration</dir>
                                     <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
@@ -337,14 +343,24 @@
                                         <include>standalone*.xml</include>
                                     </includes>
                                     <parameters>
-                                        <parameter>
-                                            <name>managementIPAddress</name>
-                                            <value>${node0}</value>
-                                        </parameter>
-                                        <parameter>
-                                            <name>publicIPAddress</name>
-                                            <value>${node0}</value>
-                                        </parameter>
+                                        <parameter><name>managementIPAddress</name><value>${node0}</value></parameter>
+                                        <parameter><name>publicIPAddress</name><value>${node0}</value></parameter>
+                                        <parameter><name>udpMcastAddress</name><value>${udpGroup}</value></parameter><!-- Only somewhere - TODO. -->
+                                    </parameters>
+                                </transformationSet>
+                                <!-- Datasource. -->
+                                <transformationSet>
+                                    <dir      >${basedir}/target/jbossas/standalone/configuration</dir>
+                                    <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
+                                    <stylesheet>${xslt.scripts.dir}/changeDatabase.xsl</stylesheet>
+                                    <includes>
+                                        <include>standalone*.xml</include>
+                                    </includes>
+                                    <parameters>
+                                        <parameter><name>ds.jdbc.driver.jar</name><value>${ds.jdbc.driver.jar}</value></parameter>
+                                        <parameter><name>ds.jdbc.url</name><value>${ds.jdbc.url}</value></parameter>
+                                        <parameter><name>ds.jdbc.user</name><value>${ds.jdbc.user}</value></parameter>
+                                        <parameter><name>ds.jdbc.pass</name><value>${ds.jdbc.pass}</value></parameter>
                                     </parameters>
                                 </transformationSet>
                             </transformationSets>

@@ -11,7 +11,7 @@
     </parent>
 
     <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-testsuite-integration-agg</artifactId>
+    <artifactId>jboss-as-ts-integ</artifactId>
     <packaging>pom</packaging>
     <version>7.1.1.Final-SNAPSHOT</version>
 
@@ -186,6 +186,22 @@
                                         <exclude>modules/</exclude>
                                         <exclude>bundles/</exclude>
                                     </excludes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <!-- Management users config. -->
+                    <execution>
+                        <id>ts.config-as.copy-mgmt-users</id>
+                        <phase>generate-test-resources</phase>
+                        <goals><goal>copy-resources</goal></goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/jbossas/standalone/configuration</outputDirectory>
+                            <overwrite>true</overwrite>
+                            <resources>
+                                <resource>
+                                    <directory>../shared/src/main/resources</directory>
+                                    <includes><include>mgmt-users.properties</include></includes>
                                 </resource>
                             </resources>
                         </configuration>

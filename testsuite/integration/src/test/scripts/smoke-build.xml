@@ -28,14 +28,7 @@
     <import file="common-targets.xml" as="common"/>
 
     <target name="build-smoke" description="Builds server configuration for smoke tests">
-        <build-server-config name="smoke"/>
 
-        <antcall target="changeDefaultDatabase">
-           <param name="server-config" value="smoke"/>
-           <propertyset refid="ds.properties"/>
-        </antcall>
-
-        <change-ip-addresses name="smoke" node="${node0}"/>
     </target>
 
 </project>

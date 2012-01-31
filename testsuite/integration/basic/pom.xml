@@ -6,7 +6,7 @@
 
     <parent>
         <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-testsuite-integration-agg</artifactId>
+        <artifactId>jboss-as-ts-integ</artifactId>
         <version>7.1.1.Final-SNAPSHOT</version>
     </parent>
 
@@ -14,7 +14,7 @@
     <!-- ******************************** Basic Integration ******************************* -->
     <!-- ********************************************************************************** -->
     <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-testsuite-integration-basic</artifactId>
+    <artifactId>jboss-as-ts-integ-basic</artifactId>
     <version>7.1.1.Final-SNAPSHOT</version>
 
     <name>JBoss Application Server Test Suite: Integration - Basic</name>
@@ -98,7 +98,10 @@
                                 <configuration>
                                     <target>
                                         <property name="tests.resources.dir" value="${basedir}/../src/test/resources"/>
-                                        <property name="tests.output.dir" value="${project.build.directory}"/>
+                                        <property name="tests.output.dir"    value="${project.build.directory}"/>
+                                        <ant antfile="${basedir}/../src/test/scripts/basic-integration-build.xml">
+                                            <target name="build-basic-integration"/>  <!-- TODO: Unify names, then call "recursively". -->
+                                        </ant>
                                     </target>
                                 </configuration>
                             </execution>

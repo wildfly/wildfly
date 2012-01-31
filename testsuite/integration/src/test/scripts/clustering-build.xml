@@ -7,22 +7,17 @@
     <target name="build-clustering-udp" description="Builds server configurations for UDP tests">
 
         <echo message="Building config clustering-udp-0"/>
-
-        <build-server-config name="clustering-udp-0"/>
-        <antcall target="changeDefaultDatabase">
-           <param name="server-config" value="clustering-udp-0"/>
-           <propertyset refid="ds.properties"/>
-        </antcall>
+        <copy todir="target/jbossas-clustering-udp-0">
+            <fileset dir="target/jbossas">
+        </copy>
         <change-ip-multicast-addresses name="clustering-udp-0" node="${node0}" mcastaddr="${udpGroup}"/>
         <add-port-offset name="clustering-udp-0" />
 
-        <echo message="Building config clustering-udp-1"/>
 
-        <build-server-config name="clustering-udp-1"/>
-        <antcall target="changeDefaultDatabase">
-           <param name="server-config" value="clustering-udp-1"/>
-           <propertyset refid="ds.properties"/>
-        </antcall>
+        <echo message="Building config clustering-udp-1"/>
+        <copy todir="target/jbossas-clustering-udp-1">
+            <fileset dir="target/jbossas">
+        </copy>
         <change-ip-multicast-addresses name="clustering-udp-1" node="${node1}" mcastaddr="${udpGroup}"/>
         <add-port-offset name="clustering-udp-1" offset="100" nativePort="9999" httpPort="9990"/>
 

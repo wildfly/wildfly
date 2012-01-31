@@ -7,23 +7,19 @@
     <target name="build-iiop" description="Builds server configurations for IIOP tests">
 
         <echo message="Building config iiop-client"/>
-
-        <build-server-config name="iiop-client"/>
-        <antcall target="changeDefaultDatabase">
-           <param name="server-config" value="iiop-client"/>
-           <propertyset refid="ds.properties"/>
-        </antcall>
+        <copy todir="target/jbossas-iiop-client">
+            <fileset dir="target/jbossas">
+        </copy>
         <add-jts name="iiop-client"/>
 
-        <echo message="Building config iiop-server"/>
 
+        <echo message="Building config iiop-server"/>
         <build-server-config name="iiop-server"/>
-        <antcall target="changeDefaultDatabase">
-           <param name="server-config" value="iiop-server"/>
-           <propertyset refid="ds.properties"/>
-        </antcall>
-        <add-port-offset name="iiop-server" offset="100" nativePort="9999" httpPort="9990"/>
+        <copy todir="target/iiop-server">
+            <fileset dir="target/jbossas">
+        </copy>
         <add-jts name="iiop-server"/>
+        <add-port-offset name="iiop-server" offset="100" nativePort="9999" httpPort="9990"/>
 
     </target>
 

@@ -6,7 +6,7 @@
 
     <parent>
         <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-testsuite-integration-agg</artifactId>
+        <artifactId>jboss-as-ts-integ</artifactId>
         <version>7.1.1.Final-SNAPSHOT</version>
     </parent>
 
@@ -14,7 +14,7 @@
     <!-- *********************************** IIOP       *********************************** -->
     <!-- ********************************************************************************** -->
     <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-testsuite-integration-iiop</artifactId>
+    <artifactId>jboss-as-ts-integ-iiop</artifactId>
     <version>7.1.1.Final-SNAPSHOT</version>
 
     <name>JBoss Application Server Test Suite: Integration - IIOP</name>
@@ -49,8 +49,10 @@
                     <name>!ts.noIIOP</name>
                 </property>
             </activation>
+            
             <properties>
             </properties>
+            
             <!--
                 Server configuration executions.
             -->
@@ -63,12 +65,10 @@
                             <execution>
                                 <id>build-clustering.server</id>
                                 <phase>process-test-resources</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
+                                <goals><goal>run</goal></goals>
                                 <configuration>
                                     <target>
-                                        <!-- build the UDP server configs in target-->
+                                        <!-- Configure IIOP server and client. -->
                                         <ant antfile="${jbossas.ts.integ.dir}/src/test/scripts/iiop-build.xml">
                                             <target name="build-iiop"/>
                                         </ant>
