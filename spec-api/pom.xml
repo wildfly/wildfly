@@ -130,7 +130,7 @@
     </dependency>
     <dependency>
        <groupId>org.osgi</groupId>
-       <artifactId>org.osgi.compendium</artifactId>
+       <artifactId>org.osgi.enterprise</artifactId>
     </dependency>
     <dependency>
       <groupId>javax.mail</groupId>

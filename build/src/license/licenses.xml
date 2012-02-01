@@ -2907,17 +2907,6 @@
     </dependency>
     <dependency>
       <groupId>org.osgi</groupId>
-      <artifactId>org.osgi.compendium</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License, Version 2.0</name>
-          <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>org.osgi</groupId>
       <artifactId>org.osgi.core</artifactId>
       <licenses>
         <license>
@@ -2927,6 +2916,17 @@
         </license>
       </licenses>
     </dependency>
+      <dependency>
+          <groupId>org.osgi</groupId>
+          <artifactId>org.osgi.enterprise</artifactId>
+          <licenses>
+              <license>
+                  <name>Apache License, Version 2.0</name>
+                  <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
+                  <distribution>repo</distribution>
+              </license>
+          </licenses>
+      </dependency>
     <dependency>
       <groupId>org.picketbox</groupId>
       <artifactId>picketbox</artifactId>

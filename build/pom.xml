@@ -1104,6 +1104,11 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.jboss.osgi.http</groupId>
+                    <artifactId>jbosgi-http-api</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.jboss.osgi.logging</groupId>
                     <artifactId>jboss-osgi-logging</artifactId>
                 </dependency>
@@ -1432,11 +1437,6 @@
                 <dependency>
                     <groupId>org.osgi</groupId>
                     <artifactId>org.osgi.core</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.osgi</groupId>
-                    <artifactId>org.osgi.compendium</artifactId>
                 </dependency>
 
                 <dependency>

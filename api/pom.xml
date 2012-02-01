@@ -147,10 +147,6 @@
     </dependency>
     <dependency>
       <groupId>org.osgi</groupId>
-      <artifactId>org.osgi.compendium</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.osgi</groupId>
       <artifactId>org.osgi.enterprise</artifactId>
     </dependency>
     <dependency>
