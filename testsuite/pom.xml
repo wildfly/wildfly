@@ -550,24 +550,31 @@
             <activation><property><name>compat.module</name></property></activation>
             <modules><module>compat</module></modules>
         </profile>
+        <profile>
+            <id>compat_.module.profile</id>
+            <activation><property><name>ts.compat</name></property></activation>
+            <modules><module>compat</module></modules>
+        </profile>
 
         <profile>
             <id>domain.module.profile</id>
             <activation><property><name>domain.module</name></property></activation>
             <modules><module>domain</module></modules>
         </profile>
-
-        <!-- Included by default.
         <profile>
-            <id>integration.module.profile</id>
-            <activation><property><name>integration.module</name></property></activation>
-            <modules><module>integration</module></modules>
+            <id>domain_.module.profile</id>
+            <activation><property><name>ts.domain</name></property></activation>
+            <modules><module>domain</module></modules>
         </profile>
-        -->
 
         <profile>
             <id>stress.module.profile</id>
             <activation><property><name>stress.module</name></property></activation>
+            <modules><module>stress</module></modules>
+        </profile>
+        <profile>
+            <id>stress_.module.profile</id>
+            <activation><property><name>ts.stress</name></property></activation>
             <modules><module>stress</module></modules>
         </profile>
 
@@ -578,11 +585,7 @@
         -->
         <profile>
             <id>jpda.profile</id>
-            <activation>
-                <property>
-                    <name>jpda</name>
-                </property>
-            </activation>
+            <activation><property><name>jpda</name></property></activation>
             <properties>
                 <surefire.jpda.args>-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y</surefire.jpda.args>
             </properties>
@@ -635,11 +638,7 @@
                 general profile used to help orchestrate database changes
             -->
             <id>ds.profile</id>
-            <activation>
-                <property>
-                    <name>ds</name>
-                </property>
-            </activation>
+            <activation><property><name>ds</name></property></activation>
             <dependencies>
                 <dependency>
                     <groupId>jdbcdrivers</groupId>
