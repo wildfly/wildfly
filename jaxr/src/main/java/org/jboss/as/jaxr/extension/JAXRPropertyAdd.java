@@ -32,7 +32,6 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.jaxr.JAXRConfiguration;
 import org.jboss.as.jaxr.ModelConstants;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 
 /**
@@ -50,7 +49,6 @@ public class JAXRPropertyAdd extends AbstractAddStepHandler {
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         model.get(ModelConstants.VALUE).set(operation.get(ModelConstants.VALUE));
         ModelNode propertyNode = operation.get("address");
-        //System.out.println(propertyNode.asString());
         List<Property> properties = propertyNode.asPropertyList();
         for (Property property : properties) {
             if (property.getName().equals(ModelConstants.PROPERTY)) {
