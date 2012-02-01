@@ -245,4 +245,12 @@ public interface WSLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 15583, value = "Ignoring <port-component-ref> without <service-endpoint-interface> and <port-qname>: %s")
     void ignoringPortComponentRef(Object o);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 15591, value = "Cannot register record processor with JMX server")
+    void cannotRegisterRecordProcessor();
+
+    @LogMessage(level = ERROR)
+    @Message(id = 15592, value = "Cannot unregister record processor with JMX server")
+    void cannotUnregisterRecordProcessor();
 }
