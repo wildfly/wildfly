@@ -66,11 +66,11 @@ public class HostControllerConnectionService implements Service<Channel> {
     private volatile ProtocolChannelClient client;
     private volatile Connection connection;
 
-    private final String serverName;
+    private final String userName;
     private final byte[] authKey;
 
     private HostControllerConnectionService(final String serverName, final byte[] authKey) {
-        this.serverName = serverName;
+        this.userName = "=" + serverName;
         this.authKey = authKey;
     }
 
@@ -131,7 +131,7 @@ public class HostControllerConnectionService implements Service<Channel> {
                     throw new UnsupportedCallbackException(current, "Realm choice not currently supported.");
                 } else if (current instanceof NameCallback) {
                     NameCallback ncb = (NameCallback) current;
-                    ncb.setName(serverName);
+                    ncb.setName(userName);
                 } else if (current instanceof PasswordCallback) {
                     PasswordCallback pcb = (PasswordCallback) current;
                     pcb.setPassword(new String(authKey).toCharArray());
