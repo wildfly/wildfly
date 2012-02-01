@@ -186,7 +186,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
         if (modelNode.hasDefined(JVM)) {
             writer.writeStartElement(Element.JVMS.getLocalName());
             for (final Property jvm : modelNode.get(JVM).asPropertyList()) {
-                writeJVMElement(writer, jvm.getName(), jvm.getValue());
+                JvmXml.writeJVMElement(writer, jvm.getName(), jvm.getValue());
             }
             writer.writeEndElement();
             writeNewLine(writer);
@@ -912,7 +912,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case JVM:
-                    parseJvm(reader, address, expectedNs, list, names);
+                    JvmXml.parseJvm(reader, address, expectedNs, list, names);
                     break;
                 default:
                     throw unexpectedElement(reader);
@@ -978,7 +978,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
                         throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
                     }
 
-                    parseJvm(reader, serverAddress, expectedNs, list, new HashSet<String>(), true);
+                    JvmXml.parseJvm(reader, serverAddress, expectedNs, list, new HashSet<String>(), true);
                     sawJvm = true;
                     break;
                 }
@@ -1028,7 +1028,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
                         throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
                     }
 
-                    parseJvm(reader, serverAddress, expectedNs, list, new HashSet<String>(), true);
+                    JvmXml.parseJvm(reader, serverAddress, expectedNs, list, new HashSet<String>(), true);
                     sawJvm = true;
                     break;
                 }
@@ -1266,7 +1266,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
             }
             if (server.hasDefined(JVM)) {
                 for (final Property jvm : server.get(JVM).asPropertyList()) {
-                    writeJVMElement(writer, jvm.getName(), jvm.getValue());
+                    JvmXml.writeJVMElement(writer, jvm.getName(), jvm.getValue());
                     break; // TODO just write the first !?
                 }
             }

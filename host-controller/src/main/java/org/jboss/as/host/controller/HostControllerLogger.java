@@ -24,7 +24,6 @@ package org.jboss.as.host.controller;
 
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
-import org.jboss.as.controller.parsing.JvmType;
 import org.jboss.as.server.ServerState;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;

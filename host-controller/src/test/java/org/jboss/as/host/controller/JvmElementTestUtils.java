@@ -21,9 +21,6 @@
  */
 package org.jboss.as.host.controller;
 
-import org.jboss.as.controller.parsing.JvmType;
-import org.jboss.as.host.controller.JvmElement;
-
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>

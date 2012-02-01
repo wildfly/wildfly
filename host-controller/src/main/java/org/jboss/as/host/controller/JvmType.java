@@ -19,14 +19,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.controller.parsing;
+package org.jboss.as.host.controller;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
-// TODO find a better package for this
 public enum JvmType {
     SUN,
     IBM,
