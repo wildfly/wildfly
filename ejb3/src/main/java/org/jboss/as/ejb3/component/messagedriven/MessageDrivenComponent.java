@@ -122,6 +122,11 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
             public void release(Object obj) {
                 // do nothing
             }
+
+            @Override
+            public ClassLoader getClassLoader() {
+                return ejbComponentCreateService.getComponentClass().getClassLoader();
+            }
         };
         this.endpointFactory = new JBossMessageEndpointFactory(getComponentClass().getClassLoader(), service);
     }
