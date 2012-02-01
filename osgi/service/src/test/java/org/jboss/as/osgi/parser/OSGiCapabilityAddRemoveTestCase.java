@@ -33,6 +33,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.osgi.parser.SubsystemState.OSGiCapability;
 import org.jboss.dmr.ModelNode;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -40,6 +41,7 @@ import org.mockito.Mockito;
  * @author David Bosschaert
  * @author Thomas.Diesler@jboss.com
  */
+@Ignore("[AS7-3556] Replace mocked subsystem model tests with functional tests")
 public class OSGiCapabilityAddRemoveTestCase extends ResourceAddRemoveTestBase {
     @Test
     public void testOSGiCapabilityAddRemove() throws Exception {
@@ -57,7 +59,7 @@ public class OSGiCapabilityAddRemoveTestCase extends ResourceAddRemoveTestBase {
         execute(addedSteps.get(0), context, op);
         Assert.assertEquals(1, stateService.getCapabilities().size());
         OSGiCapability module = stateService.getCapabilities().get(0);
-        Assert.assertEquals("org.acme.module1:main", module.getIdentifier().toString());
+        Assert.assertEquals("org.acme.module1", module.getIdentifier());
         Assert.assertEquals(new Integer(4), module.getStartLevel());
 
         execute(OSGiCapabilityRemove.INSTANCE, context, op);

@@ -37,7 +37,9 @@ import org.osgi.service.startlevel.StartLevel;
 /**
  * @author David Bosschaert
  */
+//@Ignore("[AS7-3556] Replace mocked subsystem model tests with functional tests")
 public class StartLevelHandlerTestCase {
+
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Test
     public void testReadHandler() throws Exception {

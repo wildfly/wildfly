@@ -21,8 +21,8 @@
  */
 package org.jboss.as.osgi.parser;
 
-import org.jboss.modules.ModuleIdentifier;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -38,6 +38,7 @@ import java.util.Observer;
 /**
  * @author David Bosschaert
  */
+@Ignore("[AS7-3556] Replace mocked subsystem model tests with functional tests")
 public class SubsystemStateTestCase {
 
     @Test
@@ -105,13 +106,12 @@ public class SubsystemStateTestCase {
         Assert.assertEquals("Precondition", 0, state.getCapabilities().size());
 
         Assert.assertEquals("Precondition", 0, arguments.size());
-        ModuleIdentifier id = ModuleIdentifier.fromString("hi");
-        SubsystemState.OSGiCapability m = new SubsystemState.OSGiCapability(id, 3);
+        SubsystemState.OSGiCapability m = new SubsystemState.OSGiCapability("hi", 3);
         state.addCapability(m);
 
         Assert.assertEquals(1, arguments.size());
         SubsystemState.ChangeEvent event = (SubsystemState.ChangeEvent) arguments.get(0);
-        assertEventEquals(id.toString(), false, SubsystemState.ChangeType.CAPABILITY, event);
+        assertEventEquals("hi", false, SubsystemState.ChangeType.CAPABILITY, event);
 
         Assert.assertEquals(Collections.singletonList(m), state.getCapabilities());
 
@@ -122,7 +122,7 @@ public class SubsystemStateTestCase {
 
         Assert.assertEquals(2, arguments.size());
         SubsystemState.ChangeEvent event2 = (SubsystemState.ChangeEvent) arguments.get(1);
-        assertEventEquals(id.toString(), true, SubsystemState.ChangeType.CAPABILITY, event2);
+        assertEventEquals("hi", true, SubsystemState.ChangeType.CAPABILITY, event2);
 
         Assert.assertEquals(0, state.getCapabilities().size());
     }
