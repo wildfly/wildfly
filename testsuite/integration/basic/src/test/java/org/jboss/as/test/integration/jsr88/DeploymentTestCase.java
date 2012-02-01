@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.smoke.jsr88;
+package org.jboss.as.test.integration.jsr88;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -27,14 +27,12 @@ import org.jboss.as.ee.deployment.spi.DeploymentManagerImpl;
 import org.jboss.as.ee.deployment.spi.DeploymentMetaData;
 import org.jboss.as.ee.deployment.spi.JarUtils;
 import org.jboss.as.ee.deployment.spi.factories.DeploymentFactoryImpl;
-import org.jboss.as.test.http.Authentication;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -44,7 +42,6 @@ import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
-import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
@@ -63,21 +60,20 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.jar.JarOutputStream;
 
+import static org.jboss.as.test.http.Authentication.PASSWORD;
+import static org.jboss.as.test.http.Authentication.USERNAME;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
  * Deployment API JSR-88 tests
  *
  * @author Thomas.Diesler@jboss.com
- * @since 02-Aug-2011
+ * @since 01-Feb-2012
  */
 @RunAsClient
 @RunWith(Arquillian.class)
-public class EnterpriseDeploymentTestCase {
+public class DeploymentTestCase {
 
     private static final long TIMEOUT = 10000;
     private static final String WAR_JBOSS_FILE = "WEB-INF/jboss-web.xml";
@@ -85,71 +81,23 @@ public class EnterpriseDeploymentTestCase {
     private static final String EAR_JBOSS_FILE = "META-INF/jboss-app.xml";
 
     @Test
-    public void testDeploymentManager() throws Exception {
-        DeploymentManager manager = getDeploymentManager();
-        assertNotNull("DeploymentManager not null", manager);
-        Target target = manager.getTargets()[0];
-        assertEquals("ServerDeploymentManager target", target.getDescription());
-    }
+    public void testDeployUndeployEAR() throws Exception {
 
-    @Test
-    public void testDistributeWebApp() throws Exception {
-        DeploymentManager manager = getDeploymentManager();
-        ProgressObject progress = jsr88Deploy(manager, getWebArchive());
-        TargetModuleID[] targetModules = progress.getResultTargetModuleIDs();
-        try {
-            DeploymentStatus state = progress.getDeploymentStatus();
-            assertEquals(StateType.COMPLETED, state.getState());
-            assertServletAccess("custom-context");
-        } finally {
-            jsr88Undeploy(manager, targetModules);
-        }
-        try {
-            assertServletAccess("custom-context");
-            fail("Test deployment not undeployed");
-        } catch (IOException e) {
-            // ignore
-        }
-    }
+        // [AS7-3474] JSR88 undeployment does not work
 
-    @Test
-    public void testDistributeBadWar() throws Exception {
-        DeploymentManager manager = getDeploymentManager();
-        ProgressObject progress = jsr88Deploy(manager, getBadWebArchive());
-        TargetModuleID[] targetModules = progress.getResultTargetModuleIDs();
-        try {
-            DeploymentStatus state = progress.getDeploymentStatus();
-            assertEquals(StateType.FAILED, state.getState());
-        } finally {
-            jsr88Undeploy(manager, targetModules);
-        }
-    }
-
-    @Test
-    public void testDistributeEjbApp() throws Exception {
-        DeploymentManager manager = getDeploymentManager();
-        ProgressObject progress = jsr88Deploy(manager, getEjbArchive());
-        TargetModuleID[] targetModules = progress.getResultTargetModuleIDs();
-        try {
-            DeploymentStatus state = progress.getDeploymentStatus();
-            assertEquals(StateType.COMPLETED, state.getState());
-        } finally {
-            jsr88Undeploy(manager, targetModules);
-        }
-    }
-
-    @Test
-    public void testDistributeEARApp() throws Exception {
         DeploymentManager manager = getDeploymentManager();
         ProgressObject progress = jsr88Deploy(manager, getEarArchive());
-        TargetModuleID[] targetModules = progress.getResultTargetModuleIDs();
-        try {
-            DeploymentStatus state = progress.getDeploymentStatus();
-            assertEquals(StateType.COMPLETED, state.getState());
-            assertServletAccess("custom-context");
-        } finally {
-            jsr88Undeploy(manager, targetModules);
-        }
+
+        DeploymentStatus state = progress.getDeploymentStatus();
+        assertEquals(StateType.COMPLETED, state.getState());
+        assertServletAccess("custom-context");
+
+        Target[] targets = manager.getTargets();
+        TargetModuleID[] targetModules = manager.getAvailableModules(ModuleType.EAR, targets);
+        assertEquals(1, targetModules.length);
+
+        jsr88Undeploy(manager, targetModules);
+
         try {
             assertServletAccess("custom-context");
             fail("Test deployment not undeployed");
@@ -158,118 +106,12 @@ public class EnterpriseDeploymentTestCase {
         }
     }
 
-    @Test
-    public void testListAvailableModules() throws Exception {
-        String uri = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7&serverHost=127.0.0.1&serverPort=9999";
-        DeploymentManager manager = getDeploymentManager(uri, Authentication.USERNAME, Authentication.PASSWORD);
-        Target[] targets = manager.getTargets();
-        TargetModuleID[] modules = manager.getAvailableModules(ModuleType.EAR, targets);
-        assertNull(modules);
-
-        ProgressObject progress = jsr88Deploy(manager, getEarArchive());
-        TargetModuleID[] targetModules = progress.getResultTargetModuleIDs();
-        try {
-            // Test getAvailableModules
-            modules = manager.getAvailableModules(ModuleType.EAR, targets);
-            assertNotNull(modules);
-            assertEquals(1, modules.length);
-
-            TargetModuleID targetModuleID = modules[0];
-            String moduleID = targetModuleID.getModuleID();
-            assertTrue("Ends with deployment-app.ear", moduleID.endsWith("deployment-app.ear"));
-
-            // Test getNonRunningModules
-            modules = manager.getNonRunningModules(ModuleType.EAR, targets);
-            assertEquals("non-running EAR modules count expected to be zero " + modules, 0, modules.length);
-
-            // Test getRunningModules
-            modules = manager.getRunningModules(ModuleType.EAR, targets);
-            assertEquals("running EAR modules count expected to be one " + modules, 1, modules.length);
-
-            targetModuleID = modules[0];
-            moduleID = targetModuleID.getModuleID();
-            assertTrue("Ends with deployment-app.ear", moduleID.endsWith("deployment-app.ear"));
-
-            ProgressObject operationProgress = manager.stop(modules);
-            awaitCompletion(operationProgress, TIMEOUT);
-
-            // Test getRunningModules
-            modules = manager.getRunningModules(ModuleType.EAR, targets);
-            assertEquals("after stopping deployment-app.ear, running EAR modules count expected to be zero" + modules, 0, modules.length);
-
-            // Test getNonRunningModules
-            modules = manager.getNonRunningModules(ModuleType.EAR, targets);
-            assertEquals("after stopping deployment-app.ear, non-running EAR modules count expected to be one" + modules,1, modules.length);
-
-            operationProgress = manager.start(modules);
-            awaitCompletion(operationProgress, TIMEOUT);
-
-            // Test getNonRunningModules
-            modules = manager.getNonRunningModules(ModuleType.EAR, targets);
-            assertEquals("after starting deployment-app.ear, non-running EAR modules count expected to be zero" + modules,0, modules.length);
-
-            // Test getRunningModules
-            modules = manager.getRunningModules(ModuleType.EAR, targets);
-            assertEquals("after starting deployment-app.ear, running EAR modules count expected to be one" , 1, modules.length);
-
-        } finally {
-            jsr88Undeploy(manager, targetModules);
-        }
-    }
-
-    @Test
-    @Ignore("[AS7-2771] ModelControllerClient operations don't fail on invalid username/password")
-    public void testListAvailableModulesUnauthorized() throws Exception {
-        DeploymentManager manager = getDeploymentManager("nobody", "nopass");
-        Target[] targets = manager.getTargets();
-        try {
-            manager.getAvailableModules(ModuleType.EAR, targets);
-            fail("TargetException expected");
-        } catch (TargetException ex) {
-            // expected
-        }
-    }
-
-    @Test
-    public void testListAvailableModulesWrongHost() throws Exception {
-        String uri = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7&serverHost=wrongHost";
-        DeploymentManager manager = getDeploymentManager(uri, Authentication.USERNAME, Authentication.PASSWORD);
-        Target[] targets = manager.getTargets();
-        try {
-            manager.getAvailableModules(ModuleType.EAR, targets);
-            fail("TargetException expected");
-        } catch (TargetException ex) {
-            // expected
-        }
-    }
-
-    @Test
-    public void testListAvailableModulesWrongPort() throws Exception {
-        String uri = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7&serverPort=9876";
-        DeploymentManager manager = getDeploymentManager(uri, Authentication.USERNAME, Authentication.PASSWORD);
-        Target[] targets = manager.getTargets();
-        try {
-            manager.getAvailableModules(ModuleType.EAR, targets);
-            fail("TargetException expected");
-        } catch (TargetException ex) {
-            // expected
-        }
-    }
-
     private DeploymentManager getDeploymentManager() throws Exception {
-        return getDeploymentManager(Authentication.USERNAME, Authentication.PASSWORD);
-    }
-
-    private DeploymentManager getDeploymentManager(String username, String password) throws Exception {
         String uri = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7";
-        return getDeploymentManager(uri, username, password);
-    }
-
-    private DeploymentManager getDeploymentManager(String uri, String username, String password) throws Exception {
         DeploymentFactoryImpl.register();
         DeploymentFactoryManager dfManager = DeploymentFactoryManager.getInstance();
         DeploymentFactory[] factories = dfManager.getDeploymentFactories();
-        DeploymentManager deploymentManager = factories[0].getDeploymentManager(uri, username, password);
+        DeploymentManager deploymentManager = factories[0].getDeploymentManager(uri, USERNAME, PASSWORD);
         return deploymentManager;
     }
 
@@ -371,13 +213,6 @@ public class EnterpriseDeploymentTestCase {
         WebArchive archive = ShrinkWrap.create(WebArchive.class, "deployment-web.war");
         archive.addClasses(SampleServlet.class);
         archive.setWebXML("jsr88/WEB-INF/web.xml");
-        return archive;
-    }
-
-    private Archive<?> getBadWebArchive() {
-        WebArchive archive = ShrinkWrap.create(WebArchive.class, "deployment-bad-web.war");
-        archive.addClasses(SampleServlet.class);
-        archive.setWebXML("jsr88/WEB-INF/badweb.xml");
         return archive;
     }
 

@@ -19,39 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.smoke.embedded.deployment;
+package org.jboss.as.test.smoke.jsr88;
 
-import javax.ejb.CreateException;
-import javax.ejb.SessionBean;
-import javax.ejb.SessionContext;
+import java.rmi.RemoteException;
 
-public class EchoBean implements SessionBean
+import javax.ejb.EJBObject;
+
+public interface Echo extends EJBObject
 {
-   /** The serialVersionUID */
-   private static final long serialVersionUID = 1L;
-
-   public String echo(String echo)
-   {
-      return echo;
-   }
-
-   public void ejbCreate() throws CreateException
-   {
-   }
-
-   public void ejbActivate()
-   {
-   }
-
-   public void ejbPassivate()
-   {
-   }
-
-   public void ejbRemove()
-   {
-   }
-
-   public void setSessionContext(SessionContext ctx)
-   {
-   }
+   String echo(String echo) throws RemoteException;
 }
