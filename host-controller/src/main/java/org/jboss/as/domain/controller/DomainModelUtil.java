@@ -178,25 +178,23 @@ public class DomainModelUtil {
 
     public static void initializeMasterDomainRegistry(final ManagementResourceRegistration root, final ExtensibleConfigurationPersister configurationPersister,
                                                                   final ContentRepository contentRepository, final HostFileRepository fileRepository,
-                                                                  final DomainController domainController, final UnregisteredHostChannelRegistry channelRegistry,
-                                                                  final ExtensionRegistry extensionRegistry) {
+                                                                  final DomainController domainController, final ExtensionRegistry extensionRegistry) {
         initializeDomainRegistry(root, configurationPersister, contentRepository, fileRepository, true, domainController,
-                channelRegistry, domainController.getLocalHostInfo(), extensionRegistry, null);
+                domainController.getLocalHostInfo(), extensionRegistry, null);
     }
 
     public static void initializeSlaveDomainRegistry(final ManagementResourceRegistration root, final ExtensibleConfigurationPersister configurationPersister,
                                                                  final ContentRepository contentRepository, final HostFileRepository fileRepository,
                                                                  final LocalHostControllerInfo hostControllerInfo, final ExtensionRegistry extensionRegistry,
                                                              final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry) {
-        initializeDomainRegistry(root, configurationPersister, contentRepository, fileRepository, false, null, null,
+        initializeDomainRegistry(root, configurationPersister, contentRepository, fileRepository, false, null,
                 hostControllerInfo, extensionRegistry, ignoredDomainResourceRegistry);
     }
 
     private static void initializeDomainRegistry(final ManagementResourceRegistration root, final ExtensibleConfigurationPersister configurationPersister,
                                                              final ContentRepository contentRepo, final HostFileRepository fileRepository, final boolean isMaster,
-                                                             final DomainController domainController, final UnregisteredHostChannelRegistry channelRegistry,
-                                                             final LocalHostControllerInfo hostControllerInfo, final ExtensionRegistry extensionRegistry,
-                                                             final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry) {
+                                                             final DomainController domainController, final LocalHostControllerInfo hostControllerInfo,
+                                                             final ExtensionRegistry extensionRegistry, final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry) {
 
         final EnumSet<OperationEntry.Flag> readOnly = EnumSet.of(OperationEntry.Flag.READ_ONLY);
         final EnumSet<OperationEntry.Flag> masterOnly = EnumSet.of(OperationEntry.Flag.MASTER_HOST_CONTROLLER_ONLY);
@@ -323,7 +321,7 @@ public class DomainModelUtil {
                     contentRepo, hostControllerInfo, ignoredDomainResourceRegistry);
             root.registerOperationHandler(ApplyRemoteMasterDomainModelHandler.OPERATION_NAME, armdmh, armdmh, false, OperationEntry.EntryType.PRIVATE);
         } else {
-            ReadMasterDomainModelHandler rmdmh = new ReadMasterDomainModelHandler(domainController, channelRegistry);
+            final ReadMasterDomainModelHandler rmdmh = ReadMasterDomainModelHandler.INSTANCE;
             root.registerOperationHandler(ReadMasterDomainModelHandler.OPERATION_NAME, rmdmh, rmdmh, false, OperationEntry.EntryType.PRIVATE, EnumSet.of(OperationEntry.Flag.READ_ONLY));
         }
     }

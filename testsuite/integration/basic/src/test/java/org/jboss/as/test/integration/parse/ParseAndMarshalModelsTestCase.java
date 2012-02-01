@@ -643,7 +643,7 @@ public class ParseAndMarshalModelsTestCase {
             public void setup(Resource resource, ManagementResourceRegistration rootRegistration) {
                 DomainModelUtil.updateCoreModel(resource, null);
                 DomainModelUtil.initializeMasterDomainRegistry(rootRegistration, persister, new MockContentRepository(), new MockFileRepository(),
-                        new MockDomainController(), null, extensionRegistry);
+                        new MockDomainController(), extensionRegistry);
             }
         });
 
@@ -913,7 +913,7 @@ public class ParseAndMarshalModelsTestCase {
          * Create the ServerAddHandler
          */
         protected MockLocalDomainControllerAddHandler() {
-            super(null, null, null, null, null, null, null, null);
+            super(null, null, null, null, null, null, null);
         }
 
         @Override
