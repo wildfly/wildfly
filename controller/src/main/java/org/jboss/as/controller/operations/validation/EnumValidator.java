@@ -73,8 +73,9 @@ public class EnumValidator<E extends Enum<E>> extends ModelTypeValidator impleme
     @Override
     public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
         super.validateParameter(parameterName, value);
-        if (value.isDefined()) {
-            String tuString = value.asString();
+        ModelType type = value.getType();
+        if (type == ModelType.STRING || type == ModelType.EXPRESSION) {
+            String tuString = value.resolve().asString(); // Sorry, no support for resolving against vault!
             E enumValue;
             try {
                 enumValue = Enum.valueOf(enumType, tuString.toUpperCase(Locale.ENGLISH));
@@ -84,6 +85,14 @@ public class EnumValidator<E extends Enum<E>> extends ModelTypeValidator impleme
             }
             if (enumValue == null || !allowedValues.contains(enumValue)) {
                 throw ControllerMessages.MESSAGES.invalidEnumValue(tuString, parameterName, toStringMap.keySet());
+            }
+            // Hack to store the allowed value in the model, not the user input
+            if (type != ModelType.EXPRESSION) {
+                try {
+                    value.set(enumValue.toString());
+                } catch (Exception e) {
+                    // node must be protected.
+                }
             }
         }
     }
