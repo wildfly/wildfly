@@ -44,16 +44,24 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
     public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
         context.startSubsystemElement(Namespace.CURRENT.getUri(), false);
         ModelNode model = context.getModelNode();
+
         if (model.isDefined()) {
             this.writeOptional(writer, Attribute.DEFAULT_STACK, model, ModelKeys.DEFAULT_STACK);
+            // each property represents a stack
             for (Property property: model.get(ModelKeys.STACK).asPropertyList()) {
                 writer.writeStartElement(Element.STACK.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
                 ModelNode stack = property.getValue();
-                this.writeProtocol(writer, stack.get(ModelKeys.TRANSPORT), Element.TRANSPORT);
-                if (stack.hasDefined(ModelKeys.PROTOCOLS)) {
-                    for (ModelNode protocol: stack.get(ModelKeys.PROTOCOLS).asList()) {
-                        this.writeProtocol(writer, protocol, Element.PROTOCOL);
+                // write the transport
+                if (stack.hasDefined(ModelKeys.TRANSPORT)) {
+                    ModelNode transport = stack.get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
+                    this.writeProtocol(writer, transport, Element.TRANSPORT);
+                }
+                // write the protocols in their correct order
+                if (stack.hasDefined(ModelKeys.PROTOCOL)) {
+//                  for (Property protocol: stack.get(ModelKeys.PROTOCOL).asPropertyList()) {
+                    for (Property protocol: ProtocolStackAdd.getOrderedProtocolPropertyList(stack)) {
+                        this.writeProtocol(writer, protocol.getValue(), Element.PROTOCOL);
                     }
                 }
                 writer.writeEndElement();
@@ -63,6 +71,7 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
     }
 
     private void writeProtocol(XMLExtendedStreamWriter writer, ModelNode protocol, Element element) throws XMLStreamException {
+
         writer.writeStartElement(element.getLocalName());
         this.writeRequired(writer, Attribute.TYPE, protocol, ModelKeys.TYPE);
         this.writeOptional(writer, Attribute.SHARED, protocol, ModelKeys.SHARED);
@@ -75,15 +84,24 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
         this.writeOptional(writer, Attribute.MACHINE, protocol, ModelKeys.MACHINE);
         this.writeOptional(writer, Attribute.RACK, protocol, ModelKeys.RACK);
         this.writeOptional(writer, Attribute.SITE, protocol, ModelKeys.SITE);
-        if (protocol.has(ModelKeys.PROPERTIES)) {
-            for (Property property: protocol.get(ModelKeys.PROPERTIES).asPropertyList()) {
+        this.writeProtocolProperties(writer, protocol);
+        writer.writeEndElement();
+    }
+
+    private void writeProtocolProperties(XMLExtendedStreamWriter writer, ModelNode protocol) throws XMLStreamException {
+        // the format of the property elements
+        //  "property" => {
+        //       "relative-to" => {"value" => "fred"},
+        //   }
+        if (protocol.hasDefined(ModelKeys.PROPERTY)) {
+            for (Property property: protocol.get(ModelKeys.PROPERTY).asPropertyList()) {
                 writer.writeStartElement(Element.PROPERTY.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
-                writer.writeCharacters(property.getValue().asString());
+                Property complexValue = property.getValue().asProperty();
+                writer.writeCharacters(complexValue.getValue().asString());
                 writer.writeEndElement();
             }
         }
-        writer.writeEndElement();
     }
 
     private void writeRequired(XMLExtendedStreamWriter writer, Attribute attribute, ModelNode model, String key) throws XMLStreamException {

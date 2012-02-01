@@ -21,6 +21,11 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 
@@ -31,6 +36,7 @@ import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.dmr.ModelNode;
@@ -38,24 +44,18 @@ import org.jboss.staxmapper.XMLElementReader;
 
 /**
  * Registers the JGroups subsystem.
+ *
  * @author Paul Ferraro
+ * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class JGroupsExtension implements Extension, DescriptionProvider {
+public class JGroupsExtension implements Extension {
 
     static final String SUBSYSTEM_NAME = "jgroups";
 
     private static final PathElement stacksPath = PathElement.pathElement(ModelKeys.STACK);
-    private static final JGroupsSubsystemAdd add = new JGroupsSubsystemAdd();
-    private static final JGroupsSubsystemRemove remove = new JGroupsSubsystemRemove();
-    private static final JGroupsSubsystemDescribe describe = new JGroupsSubsystemDescribe();
-    private static final ProtocolStackAdd stackAdd = new ProtocolStackAdd();
-    private static final ProtocolStackRemove stackRemove = new ProtocolStackRemove();
-    private static final DescriptionProvider stackDescription = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return JGroupsDescriptions.getProtocolStackDescription(locale);
-        }
-    };
+    private static final PathElement transportPath = PathElement.pathElement(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
+    private static final PathElement protocolPath = PathElement.pathElement(ModelKeys.PROTOCOL);
+    private static final PathElement protocolPropertyPath = PathElement.pathElement(ModelKeys.PROPERTY);
 
     /**
      * {@inheritDoc}
@@ -66,14 +66,31 @@ public class JGroupsExtension implements Extension, DescriptionProvider {
         SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, Namespace.CURRENT.getMajorVersion(), Namespace.CURRENT.getMinorVersion());
         subsystem.registerXMLElementWriter(new JGroupsSubsystemXMLWriter());
 
-        ManagementResourceRegistration registration = subsystem.registerSubsystemModel(this);
-        registration.registerOperationHandler(ModelDescriptionConstants.ADD, add, add, false);
-        registration.registerOperationHandler(ModelDescriptionConstants.REMOVE, remove, remove, false);
-        registration.registerOperationHandler(ModelDescriptionConstants.DESCRIBE, describe, describe, false, EntryType.PRIVATE);
+        ManagementResourceRegistration registration = subsystem.registerSubsystemModel(JGroupsSubsystemProviders.SUBSYSTEM_DESCRIBE);
+        registration.registerOperationHandler(ModelDescriptionConstants.ADD, JGroupsSubsystemAdd.INSTANCE, JGroupsSubsystemProviders.SUBSYSTEM_ADD, false);
+        registration.registerOperationHandler(ModelDescriptionConstants.REMOVE, JGroupsSubsystemRemove.INSTANCE, JGroupsSubsystemProviders.SUBSYSTEM_REMOVE, false);
+        registration.registerOperationHandler(ModelDescriptionConstants.DESCRIBE, JGroupsSubsystemDescribe.INSTANCE, JGroupsSubsystemProviders.SUBSYSTEM_DESCRIBE, false, EntryType.PRIVATE);
 
-        ManagementResourceRegistration stacks = registration.registerSubModel(stacksPath, stackDescription);
-        stacks.registerOperationHandler(ModelDescriptionConstants.ADD, stackAdd, stackAdd, false);
-        stacks.registerOperationHandler(ModelDescriptionConstants.REMOVE, stackRemove, stackRemove, false);
+        ManagementResourceRegistration stacks = registration.registerSubModel(stacksPath, JGroupsSubsystemProviders.STACK);
+        stacks.registerOperationHandler(ModelDescriptionConstants.ADD, ProtocolStackAdd.INSTANCE, JGroupsSubsystemProviders.STACK_ADD, false);
+        stacks.registerOperationHandler(ModelDescriptionConstants.REMOVE, ProtocolStackRemove.INSTANCE, JGroupsSubsystemProviders.STACK_REMOVE, false);
+        // register the add-protocol and remove-protocol handlers
+        stacks.registerOperationHandler(ModelKeys.ADD_PROTOCOL, StackConfigOperationHandlers.PROTOCOL_ADD, JGroupsSubsystemProviders.PROTOCOL_ADD);
+        stacks.registerOperationHandler(ModelKeys.REMOVE_PROTOCOL, StackConfigOperationHandlers.PROTOCOL_REMOVE, JGroupsSubsystemProviders.PROTOCOL_REMOVE);
+
+        // register the transport=TRANSPORT handlers
+        final ManagementResourceRegistration transport = stacks.registerSubModel(transportPath, JGroupsSubsystemProviders.TRANSPORT);
+        transport.registerOperationHandler(ADD, StackConfigOperationHandlers.TRANSPORT_ADD, JGroupsSubsystemProviders.TRANSPORT_ADD);
+        transport.registerOperationHandler(REMOVE, StackConfigOperationHandlers.REMOVE, JGroupsSubsystemProviders.TRANSPORT_REMOVE);
+        StackConfigOperationHandlers.TRANSPORT_ATTR.registerAttributes(transport);
+        createPropertyRegistration(transport);
+
+        // register the protocol=* handlers
+        final ManagementResourceRegistration protocol = stacks.registerSubModel(protocolPath, JGroupsSubsystemProviders.PROTOCOL);
+        protocol.registerOperationHandler(ADD, StackConfigOperationHandlers.PROTOCOL_ADD, JGroupsSubsystemProviders.PROTOCOL_ADD);
+        protocol.registerOperationHandler(ModelDescriptionConstants.REMOVE, StackConfigOperationHandlers.REMOVE, JGroupsSubsystemProviders.PROTOCOL_REMOVE);
+        StackConfigOperationHandlers.PROTOCOL_ATTR.registerAttributes(protocol);
+        JGroupsExtension.createPropertyRegistration(protocol);
     }
 
     /**
@@ -90,12 +107,12 @@ public class JGroupsExtension implements Extension, DescriptionProvider {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.jboss.as.controller.descriptions.DescriptionProvider#getModelDescription(java.util.Locale)
-     */
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return JGroupsDescriptions.getSubsystemDescription(locale);
+
+    static void createPropertyRegistration(final ManagementResourceRegistration parent) {
+        final ManagementResourceRegistration registration = parent.registerSubModel(protocolPropertyPath, JGroupsSubsystemProviders.PROTOCOL_PROPERTY);
+        registration.registerOperationHandler(ADD, StackConfigOperationHandlers.PROTOCOL_PROPERTY_ADD, JGroupsSubsystemProviders.PROTOCOL_PROPERTY_ADD);
+        registration.registerOperationHandler(REMOVE, StackConfigOperationHandlers.REMOVE, JGroupsSubsystemProviders.PROTOCOL_PROPERTY_REMOVE);
+        registration.registerReadWriteAttribute("value", null, StackConfigOperationHandlers.PROTOCOL_PROPERTY_ATTR, EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES));
     }
+
 }

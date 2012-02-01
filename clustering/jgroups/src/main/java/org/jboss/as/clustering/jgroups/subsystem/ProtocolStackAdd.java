@@ -36,6 +36,7 @@ import java.util.concurrent.ThreadFactory;
 
 import javax.management.MBeanServer;
 
+import com.sun.tools.internal.xjc.model.Model;
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.ProtocolConfiguration;
 import org.jboss.as.clustering.jgroups.ProtocolDefaults;
@@ -49,6 +50,7 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
@@ -66,7 +68,9 @@ import org.jboss.threads.JBossExecutors;
 /**
  * @author Paul Ferraro
  */
-public class ProtocolStackAdd extends AbstractAddStepHandler implements DescriptionProvider {
+public class ProtocolStackAdd extends AbstractAddStepHandler {
+
+    public static final ProtocolStackAdd INSTANCE = new ProtocolStackAdd();
 
     static ModelNode createOperation(ModelNode address, ModelNode existing) {
         ModelNode operation = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
@@ -75,18 +79,7 @@ public class ProtocolStackAdd extends AbstractAddStepHandler implements Descript
     }
 
     private static void populate(ModelNode source, ModelNode target) {
-        target.get(ModelKeys.TRANSPORT).set(source.require(ModelKeys.TRANSPORT));
-        if (source.hasDefined(ModelKeys.PROTOCOLS)) {
-            ModelNode protocols = target.get(ModelKeys.PROTOCOLS);
-            for (ModelNode protocol : source.get(ModelKeys.PROTOCOLS).asList()) {
-                protocols.add(protocol);
-            }
-        }
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return JGroupsDescriptions.getProtocolStackAddDescription(locale);
+        // nothing to do
     }
 
     @Override
@@ -96,9 +89,16 @@ public class ProtocolStackAdd extends AbstractAddStepHandler implements Descript
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+
+        // Because we use child resources in a read-only manner to configure the protocol stack, replace the local model with the full model
+        model = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
+
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
-        ModelNode transport = operation.get(ModelKeys.TRANSPORT);
+
+        // pick up the transport here
+        ModelNode transport = model.get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
+
         Transport transportConfig = new Transport(transport.require(ModelKeys.TYPE).asString());
         ProtocolStack stackConfig = new ProtocolStack(name, transportConfig);
 
@@ -130,14 +130,29 @@ public class ProtocolStackAdd extends AbstractAddStepHandler implements Descript
         if (transport.hasDefined(ModelKeys.THREAD_FACTORY)) {
             builder.addDependency(ThreadsServices.threadFactoryName(transport.get(ModelKeys.THREAD_FACTORY).asString()), ThreadFactory.class, transportConfig.getThreadFactoryInjector());
         }
-        for (ModelNode protocol : operation.get(ModelKeys.PROTOCOLS).asList()) {
-            Protocol protocolConfig = new Protocol(protocol.require(ModelKeys.TYPE).asString());
-            build(builder, protocol, protocolConfig);
+
+        // pick up the protocols here as a List<Property> where property is <name, ModelNode>
+        // we need to preserve the order of the protocols as maintained by PROTOCOLS
+        List<Property>  orderedProtocols =  getOrderedProtocolPropertyList(model) ;
+        for (Property protocol : orderedProtocols) {
+            Protocol protocolConfig = new Protocol(protocol.getValue().require(ModelKeys.TYPE).asString());
+            build(builder, protocol.getValue(), protocolConfig);
             stackConfig.getProtocols().add(protocolConfig);
         }
         builder.setInitialMode(ServiceController.Mode.ON_DEMAND);
 
         newControllers.add(builder.install());
+    }
+
+    public static List<Property> getOrderedProtocolPropertyList(ModelNode stack) {
+        ModelNode orderedProtocols = new ModelNode();
+        List<ModelNode> protocolOrdering = stack.get(ModelKeys.PROTOCOLS).asList();
+        ModelNode unorderedProtocols = stack.get(ModelKeys.PROTOCOL) ;
+        for (ModelNode protocolName : protocolOrdering) {
+            ModelNode protocolModel = unorderedProtocols.get(protocolName.asString());
+            orderedProtocols.add(protocolName.asString(), protocolModel) ;
+        }
+        return orderedProtocols.asPropertyList();
     }
 
     private void build(ServiceBuilder<ChannelFactory> builder, ModelNode protocol, Protocol protocolConfig) {
