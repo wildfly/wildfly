@@ -47,7 +47,8 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-arquillian-protocol-jmx</artifactId>
+            <artifactId>jboss-as-arquillian-extension</artifactId>
+            <type>pom</type>
         </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>
@@ -78,6 +79,11 @@
         <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-ejb-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.spec.javax.ejb</groupId>
+            <artifactId>jboss-ejb-api_3.1_spec</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

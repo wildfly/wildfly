@@ -125,14 +125,6 @@
       <artifactId>cdi-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.osgi</groupId>
-      <artifactId>org.osgi.core</artifactId>
-    </dependency>
-    <dependency>
-       <groupId>org.osgi</groupId>
-       <artifactId>org.osgi.compendium</artifactId>
-    </dependency>
-    <dependency>
       <groupId>javax.mail</groupId>
       <artifactId>mail</artifactId>
     </dependency>
@@ -155,4 +147,19 @@
     <module>test</module>
   </modules>
 
+    <profiles>
+        <profile>
+            <id>osgi-enabled</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.osgi</groupId>
+                    <artifactId>org.osgi.core</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.osgi</groupId>
+                    <artifactId>org.osgi.compendium</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>

@@ -690,11 +690,13 @@
                 <version>${project.version}</version>
             </dependency>
 
+            <!--
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-arquillian-protocol-jmx</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            -->
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
@@ -5856,7 +5858,6 @@
                 <module>messaging</module>
                 <module>modcluster</module>
                 <module>naming</module>
-                <module>osgi</module>
                 <module>pojo</module>
                 <module>remoting-test</module>
                 <module>sar</module>
@@ -5869,6 +5870,56 @@
                 <module>xts</module>
                 <module>testsuite/shared</module>
                 <module>testsuite</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>osgi-disabled</id>
+            <activation>
+                <property><name>disable-osgi</name></property>
+            </activation>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <artifactId>maven-enforcer-plugin</artifactId>
+                            <executions>
+                                <execution>
+                                    <id>ban-bad-dependencies</id>
+                                    <goals>
+                                        <goal>enforce</goal>
+                                    </goals>
+                                    <configuration>
+                                        <rules>
+                                            <bannedDependencies>
+                                                <searchTransitive>true</searchTransitive>
+                                                <excludes>
+                                                    <exclude>org.jboss.arquillian.testenricher:arquillian-testenricher-osgi</exclude>
+                                                    <exclude>org.jboss.osgi.deployment</exclude>
+                                                    <exclude>org.jboss.osgi.framework</exclude>
+                                                    <exclude>org.jboss.osgi.resolver</exclude>
+                                                    <exclude>org.jboss.osgi.spi</exclude>
+                                                    <exclude>org.jboss.osgi.vfs</exclude>
+                                                    <exclude>org.osgi</exclude>
+                                                </excludes>
+                                            </bannedDependencies>
+                                        </rules>
+                                    </configuration>
+                                </execution>
+                            </executions>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
+
+        <profile>
+            <id>osgi-enabled</id>
+            <activation>
+                <property><name>!disable-osgi</name></property>
+            </activation>
+            <modules>
+                <module>osgi</module>
             </modules>
         </profile>
     </profiles>

@@ -53,10 +53,6 @@
             <artifactId>jboss-logging-processor</artifactId>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>org.jboss.osgi.spi</groupId>
-            <artifactId>jbosgi-spi</artifactId>
-        </dependency>
 
         <!-- Test Dependencies -->
         <dependency>

@@ -28,6 +28,66 @@
 
     <target name="base" depends="clean-target, modules-minimalistic, copy-files, make-dirs"/>
 
+    <target name="configure-domain" depends="configure-domain-with-osgi,configure-domain-without-osgi">
+        <copy todir="${output.dir}">
+            <fileset dir="src/main/resources">
+                <include name="domain/**"/>
+                <exclude name="domain/configuration/domain.xml"/>
+            </fileset>
+        </copy>
+        <!-- These files contain digested passwords, which should not be visible to external users -->
+        <chmod perm="600" file="${output.dir}/domain/configuration/mgmt-users.properties"/>
+    </target>
+
+    <target name="configure-domain-with-osgi" unless="disable-osgi">
+        <xslt destdir="${output.dir}/domain/configuration"
+              style="src/main/resources/transformations/enable-osgi.xsl"
+              useimplicitfileset="false">
+            <fileset dir="src/main/resources">
+                <include name="domain/configuration/domain.xml"/>
+            </fileset>
+            <mapper type="flatten"/>
+        </xslt>
+    </target>
+
+    <target name="configure-domain-without-osgi" if="disable-osgi">
+        <copy todir="${output.dir}">
+            <fileset dir="src/main/resources">
+                <include name="domain/configuration/domain.xml"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="configure-standalone" depends="configure-standalone-with-osgi,configure-standalone-without-osgi">
+        <copy todir="${output.dir}">
+            <fileset dir="src/main/resources">
+                <include name="standalone/configuration/**.properties"/>
+                <include name="standalone/deployments/**"/>
+            </fileset>
+        </copy>
+        <!-- These files contain digested passwords, which should not be visible to external users -->
+        <chmod perm="600" file="${output.dir}/standalone/configuration/mgmt-users.properties"/>
+    </target>
+
+    <target name="configure-standalone-with-osgi" unless="disable-osgi">
+        <xslt destdir="${output.dir}/standalone/configuration"
+              style="src/main/resources/transformations/enable-osgi.xsl"
+              useimplicitfileset="false">
+            <fileset dir="src/main/resources">
+                <include name="standalone/configuration/**.xml"/>
+            </fileset>
+            <mapper type="flatten"/>
+        </xslt>
+    </target>
+
+    <target name="configure-standalone-without-osgi" if="disable-osgi">
+        <copy todir="${output.dir}">
+            <fileset dir="src/main/resources">
+                <include name="standalone/configuration/**.xml"/>
+            </fileset>
+        </copy>
+    </target>
+
     <target name="copy-files">
         <copy todir="${output.dir}">
             <fileset dir="src/main/resources">
@@ -37,9 +97,6 @@
                 <include name="appclient/**"/>
                 <include name="bin/**"/>
                 <include name="docs/**"/>
-                <include name="domain/**"/>
-                <include name="standalone/configuration/**.properties"/>
-                <include name="standalone/deployments/**"/>
                 <include name="welcome-content/**"/>
             </fileset>
         </copy>
@@ -48,18 +105,9 @@
                 <include name="**/*.sh"/>
             </fileset>
         </chmod>
-        <!-- These files contain digested passwords, which should not be visible to external users -->
-        <chmod perm="600" file="${output.dir}/domain/configuration/mgmt-users.properties"/>
-        <chmod perm="600" file="${output.dir}/standalone/configuration/mgmt-users.properties"/>
     </target>
 
-    <target name="copy-standalone" description="Copy all standard configurations">
-        <copy todir="${output.dir}">
-            <fileset dir="src/main/resources">
-                <include name="standalone/configuration/**.xml"/>
-            </fileset>
-        </copy>
-    </target>
+    <target name="copy-standalone" description="Copy all standard configurations" depends="configure-standalone"/>
 
     <target name="copy-standalone-minimalistic">
         <copy tofile="${output.dir}/standalone/configuration/standalone.xml" file="src/main/resources/docs/examples/configs/standalone-minimalistic.xml"/>
@@ -254,7 +302,43 @@
 
     </target>
 
-    <target name="modules" depends="modules-minimalistic">
+    <target name="modules-osgi" unless="disable-osgi">
+        <module-def name="org.jboss.as.configadmin">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-configadmin"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.osgi">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-osgi-service"/>
+        </module-def>
+
+        <module-def name="org.jboss.osgi.framework">
+            <maven-resource group="org.jboss.osgi.deployment" artifact="jbosgi-deployment"/>
+            <maven-resource group="org.jboss.osgi.framework" artifact="jbosgi-framework-core"/>
+            <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-api"/>
+            <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-spi"/>
+            <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-felix"/>
+            <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-metadata"/>
+        </module-def>
+
+        <module-def name="org.jboss.osgi.repository.api">
+            <maven-resource group="org.jboss.osgi.repository" artifact="jbosgi-repository-api"/>
+        </module-def>
+
+        <module-def name="org.jboss.osgi.spi">
+            <maven-resource group="org.jboss.osgi.spi" artifact="jbosgi-spi"/>
+        </module-def>
+
+        <module-def name="org.jboss.osgi.vfs">
+            <maven-resource group="org.jboss.osgi.vfs" artifact="jbosgi-vfs"/>
+            <maven-resource group="org.jboss.osgi.vfs" artifact="jbosgi-vfs30"/>
+        </module-def>
+
+        <module-def name="org.osgi.core">
+            <maven-resource group="org.osgi" artifact="org.osgi.core"/>
+        </module-def>
+    </target>
+
+    <target name="modules" depends="modules-minimalistic,modules-osgi">
         <!--
           ~ Complete list of modules to assemble.
           ~
@@ -700,10 +784,6 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-clustering-web-spi"/>
         </module-def>
 
-        <module-def name="org.jboss.as.configadmin">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-configadmin"/>
-        </module-def>
-
         <module-def name="org.jboss.as.cmp">
             <maven-resource group="org.jboss.as" artifact="jboss-as-cmp"/>
         </module-def>
@@ -813,10 +893,6 @@
 
         <module-def name="org.jboss.as.naming">
             <maven-resource group="org.jboss.as" artifact="jboss-as-naming"/>
-        </module-def>
-
-     	<module-def name="org.jboss.as.osgi">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-osgi-service"/>
         </module-def>
 
         <module-def name="org.jboss.as.sar">
@@ -935,28 +1011,6 @@
 
         <module-def name="org.jboss.netty">
             <maven-resource group="org.jboss.netty" artifact="netty"/>
-        </module-def>
-
-        <module-def name="org.jboss.osgi.framework">
-            <maven-resource group="org.jboss.osgi.deployment" artifact="jbosgi-deployment"/>
-            <maven-resource group="org.jboss.osgi.framework" artifact="jbosgi-framework-core"/>
-            <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-api"/>
-            <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-spi"/>
-            <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-felix"/>
-            <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-metadata"/>
-        </module-def>
-
-        <module-def name="org.jboss.osgi.repository.api">
-            <maven-resource group="org.jboss.osgi.repository" artifact="jbosgi-repository-api"/>
-        </module-def>
-
-        <module-def name="org.jboss.osgi.spi">
-            <maven-resource group="org.jboss.osgi.spi" artifact="jbosgi-spi"/>
-        </module-def>
-
-        <module-def name="org.jboss.osgi.vfs">
-            <maven-resource group="org.jboss.osgi.vfs" artifact="jbosgi-vfs"/>
-            <maven-resource group="org.jboss.osgi.vfs" artifact="jbosgi-vfs30"/>
         </module-def>
 
         <module-def name="org.jboss.remote-naming">
@@ -1109,10 +1163,6 @@
 
         <module-def name="org.omg.api" />
 
-        <module-def name="org.osgi.core">
-            <maven-resource group="org.osgi" artifact="org.osgi.core"/>
-        </module-def>
-
         <module-def name="org.picketlink">
             <maven-resource group="org.picketlink" artifact="picketlink-fed" jandex="true"/>
             <maven-resource group="org.picketlink" artifact="picketlink-bindings" jandex="true"/>
@@ -1213,5 +1263,5 @@
         <delete file="maven-ant-tasks.jar"/>
     </target>
 
-    <target name="all" depends="base, copy-standalone, modules, bundles, create-ext-content"/>
+    <target name="all" depends="base, copy-standalone, configure-domain, modules, bundles, create-ext-content"/>
 </project>

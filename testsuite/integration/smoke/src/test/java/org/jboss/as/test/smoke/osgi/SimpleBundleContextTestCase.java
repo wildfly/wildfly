@@ -16,9 +16,6 @@
  */
 package org.jboss.as.test.smoke.osgi;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.io.InputStream;
 
 import javax.inject.Inject;
@@ -35,6 +32,9 @@ import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Version;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Tests that a non OSGi module can have the system context injected
@@ -65,10 +65,10 @@ public class SimpleBundleContextTestCase {
     public void testBundleContextInjection() throws Exception {
 
         // Assert that the injected bundle
-        assertNotNull("BundleContext injected", bundleContext);
+        assertNotNull("BundleContext not injected", bundleContext);
 
         Bundle bundle = bundleContext.getBundle();
-        assertNotNull("Bundle not null", bundle);
+        assertNotNull("Bundle is null", bundle);
         assertEquals(Constants.SYSTEM_BUNDLE_SYMBOLICNAME, bundle.getSymbolicName());
         assertEquals(Version.emptyVersion, bundle.getVersion());
         assertEquals(0, bundle.getBundleId());

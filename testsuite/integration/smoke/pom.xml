@@ -68,6 +68,26 @@
 
 
     <profiles>
+        <profile>
+            <id>osgi-disabled</id>
+            <activation>
+                <property><name>disable-osgi</name></property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <testExcludes>
+                                <testExclude>org/jboss/as/test/smoke/configadmin/**/*.java</testExclude>
+                                <testExclude>org/jboss/as/test/smoke/osgi/**/*.java</testExclude>
+                                <testExclude>org/jboss/as/test/smoke/stilts/**/*.java</testExclude>
+                            </testExcludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
 
         <!-- ********************************************************************************** -->
         <!-- ****     Smoke tests                                                     ********* -->

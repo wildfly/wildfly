@@ -36,11 +36,34 @@
 
     <name>JBoss Application Server: Arquillian</name>
 
+    <dependencyManagement>
+        <!-- these dependencies should not be used outside of jboss-as-arquillian -->
+        <dependencies>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>jboss-as-arquillian-extension</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>jboss-as-arquillian-generic-extension</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>jboss-as-arquillian-osgi-extension</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <modules>
+        <module>abstract</module>
         <module>common</module>
         <module>container-managed</module>
         <module>container-remote</module>
-        <module>protocol-jmx</module>
+        <module>extension</module>
         <module>testenricher-msc</module>
         <module>testng-integration</module>
         <!--
@@ -69,4 +92,34 @@
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <!-- this profile is meant for IDE usage, normally some modules might not be included -->
+            <id>devel</id>
+            <modules>
+                <!-- not included, unless osgi-disabled is active -->
+                <module>generic</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>osgi-disabled</id>
+            <activation>
+                <property><name>disable-osgi</name></property>
+            </activation>
+            <modules>
+                <module>generic</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>osgi-enabled</id>
+            <activation>
+                <property><name>!disable-osgi</name></property>
+            </activation>
+            <modules>
+                <module>osgi</module>
+            </modules>
+        </profile>
+    </profiles>
 </project>

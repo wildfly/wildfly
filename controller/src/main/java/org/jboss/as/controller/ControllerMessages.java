@@ -544,16 +544,6 @@ public interface ControllerMessages {
      * Creates an exception indicating a failure to load a module.
      *
      * @param cause the cause of the error.
-     *
-     * @return a {@link XMLStreamException} for the error.
-     */
-    @Message(id = 14674, value = "Failed to load module")
-    XMLStreamException failedToLoadModule(@Cause Throwable cause);
-
-    /**
-     * Creates an exception indicating a failure to load a module.
-     *
-     * @param cause the cause of the error.
      * @param name  the module name.
      *
      * @return a {@link XMLStreamException} for the error.

@@ -846,16 +846,6 @@
 
                 <dependency>
                     <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-osgi-configadmin</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-osgi-service</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-security</artifactId>
                 </dependency>
 
@@ -1096,26 +1086,6 @@
                 <dependency>
                     <groupId>org.jboss.netty</groupId>
                     <artifactId>netty</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.jboss.osgi.framework</groupId>
-                    <artifactId>jbosgi-framework-core</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.jboss.osgi.logging</groupId>
-                    <artifactId>jboss-osgi-logging</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.jboss.osgi.repository</groupId>
-                    <artifactId>jbosgi-repository</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.jboss.osgi.spi</groupId>
-                    <artifactId>jbosgi-spi</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1430,21 +1400,6 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.osgi</groupId>
-                    <artifactId>org.osgi.core</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.osgi</groupId>
-                    <artifactId>org.osgi.compendium</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.osgi</groupId>
-                    <artifactId>org.osgi.enterprise</artifactId>
-                </dependency>
-
-                <dependency>
                     <groupId>org.picketlink</groupId>
                     <artifactId>picketlink-fed</artifactId>
                 </dependency>
@@ -1564,6 +1519,59 @@
             <properties>
                 <ant.target>minimalistic</ant.target>
             </properties>
+        </profile>
+
+        <profile>
+            <id>osgi-enabled</id>
+            <activation>
+                <property><name>!disable-osgi</name></property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-osgi-configadmin</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-osgi-service</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.osgi.framework</groupId>
+                    <artifactId>jbosgi-framework-core</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.osgi.logging</groupId>
+                    <artifactId>jboss-osgi-logging</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.osgi.repository</groupId>
+                    <artifactId>jbosgi-repository</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.osgi.spi</groupId>
+                    <artifactId>jbosgi-spi</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.osgi</groupId>
+                    <artifactId>org.osgi.core</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.osgi</groupId>
+                    <artifactId>org.osgi.compendium</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.osgi</groupId>
+                    <artifactId>org.osgi.enterprise</artifactId>
+                </dependency>
+            </dependencies>
         </profile>
 
         <profile>
