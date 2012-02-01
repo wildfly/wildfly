@@ -22,9 +22,12 @@
 package org.jboss.as.controller.remote;
 
 import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CALLER_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
 
 import java.io.DataInput;
 import java.io.IOException;
@@ -105,6 +108,10 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
         }
 
         protected ModelNode doExecute(final ModelNode operation, final int attachmentsLength, final ManagementRequestContext<Void> context) {
+            //Add a header to show that this operation comes from a user. If this is a host controller and the operation needs propagating to the
+            //servers it will be removed by DomainRolloutStepHandler
+            operation.get(OPERATION_HEADERS, CALLER_TYPE).set(USER);
+
             final ManagementRequestHeader header = ManagementRequestHeader.class.cast(context.getRequestHeader());
             final int batchId = header.getBatchId();
             final ModelNode result = new ModelNode();
