@@ -122,6 +122,7 @@
                                     <!-- Tests to execute. Overriden in webProfileExclusion.profile . -->
                                     <includes>
                                         <include>org/jboss/as/test/integration/jsf/jta/**/*TestCase*.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/iiop/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/*/security/**/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/ejb/mdb/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/ejb/pool/**/*TestCase*.java</include>
