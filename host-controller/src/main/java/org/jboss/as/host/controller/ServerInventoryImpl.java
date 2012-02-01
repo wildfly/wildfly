@@ -457,8 +457,9 @@ public class ServerInventoryImpl implements ServerInventory {
                     } else if (current instanceof NameCallback) {
                         NameCallback nameCallback = (NameCallback) current;
                         userName = nameCallback.getDefaultName();
-
-                        server = servers.get(userName);
+                        if (userName.startsWith("=")) {
+                            server = servers.get(userName.substring(1));
+                        }
                     } else if (current instanceof PasswordCallback) {
                         toRespondTo.add(current);
                     } else if (current instanceof VerifyPasswordCallback) {
