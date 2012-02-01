@@ -104,6 +104,7 @@
         <version.joda-time>1.6.2</version.joda-time>
         <version.junit>4.10</version.junit>
         <version.log4j>1.2.16</version.log4j>
+        <version.net.jcip>1.0</version.net.jcip>
         <version.net.sourceforge.cssparser>0.9.5</version.net.sourceforge.cssparser>
         <version.net.sourceforge.htmlunit>2.8</version.net.sourceforge.htmlunit>
         <version.net.sourceforge.nekohtml>1.9.14</version.net.sourceforge.nekohtml>
@@ -1419,6 +1420,12 @@
                         <artifactId>tools</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>net.jcip</groupId>
+                <artifactId>jcip-annotations</artifactId>
+                <version>${version.net.jcip}</version>
             </dependency>
 
             <dependency>
@@ -3142,11 +3149,6 @@
                     <exclusion>
                         <groupId>org.infinispan</groupId>
                         <artifactId>infinispan-core</artifactId>
-                    </exclusion>
-                    <!-- This can be removed after ISPN-1369 is fixed -->
-                    <exclusion>
-                        <groupId>c3p0</groupId>
-                        <artifactId>c3p0</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>

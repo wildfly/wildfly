@@ -17,7 +17,6 @@ import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.infinispan.Cache;
-import org.infinispan.client.hotrod.impl.ConfigurationProperties;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -33,13 +32,13 @@ import org.infinispan.loaders.jdbc.binary.JdbcBinaryCacheStore;
 import org.infinispan.loaders.jdbc.connectionfactory.ManagedConnectionFactory;
 import org.infinispan.loaders.jdbc.mixed.JdbcMixedCacheStore;
 import org.infinispan.loaders.jdbc.stringbased.JdbcStringBasedCacheStore;
-import org.infinispan.loaders.remote.RemoteCacheStore;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.transaction.LockingMode;
 import org.infinispan.transaction.tm.BatchModeTransactionManager;
 import org.infinispan.util.TypedProperties;
 import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.as.clustering.infinispan.InfinispanMessages;
+import org.jboss.as.clustering.infinispan.RemoteCacheStore;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -481,15 +480,15 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
             properties.setProperty("connectionFactoryClass", ManagedConnectionFactory.class.getName());
         } else if (storeKey.equals(ModelKeys.REMOTE_STORE)) {
             builder.cacheLoader(new RemoteCacheStore());
-            for(ModelNode server : store.require(ModelKeys.REMOTE_SERVERS).asList()) {
+            for (ModelNode server: store.require(ModelKeys.REMOTE_SERVERS).asList()) {
                 String outboundSocketBinding = server.get(ModelKeys.OUTBOUND_SOCKET_BINDING).asString();
                 Injector<OutboundSocketBinding> injector = new SimpleInjector<OutboundSocketBinding>() {
                     @Override
                     public void inject(OutboundSocketBinding value) {
                         try {
                             String address = value.getDestinationAddress().getHostAddress() + ":" + value.getDestinationPort();
-                            String serverList = properties.getProperty(ConfigurationProperties.SERVER_LIST);
-                            properties.setProperty(ConfigurationProperties.SERVER_LIST, (serverList == null) ? address : serverList + ";" + address);
+                            String serverList = properties.getProperty("serverList");
+                            properties.setProperty("serverList", (serverList == null) ? address : serverList + ";" + address);
                         } catch (UnknownHostException e) {
                             throw InfinispanMessages.MESSAGES.failedToInjectSocketBinding(e, value);
                         }
@@ -499,12 +498,15 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
             }
             if (store.hasDefined(ModelKeys.CACHE)) {
                 properties.setProperty("remoteCacheName", store.get(ModelKeys.CACHE).asString());
+                properties.setProperty("useDefaultRemoteCache", Boolean.toString(false));
+            } else {
+                properties.setProperty("useDefaultRemoteCache", Boolean.toString(true));
             }
             if (store.hasDefined(ModelKeys.SOCKET_TIMEOUT)) {
-                properties.setProperty(ConfigurationProperties.SO_TIMEOUT, store.require(ModelKeys.SOCKET_TIMEOUT).asString());
+                properties.setProperty("soTimeout", store.require(ModelKeys.SOCKET_TIMEOUT).asString());
             }
             if (store.hasDefined(ModelKeys.TCP_NO_DELAY)) {
-                properties.setProperty(ConfigurationProperties.TCP_NO_DELAY, store.require(ModelKeys.TCP_NO_DELAY).asString());
+                properties.setProperty("tcpNoDelay", store.require(ModelKeys.TCP_NO_DELAY).asString());
             }
         } else {
             String className = store.require(ModelKeys.CLASS).asString();
