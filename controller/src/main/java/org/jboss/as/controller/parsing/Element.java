@@ -64,7 +64,7 @@ public enum Element {
     HOST("host"),
     HTTP_INTERFACE("http-interface"),
 
-    IGNORED_RESOURCE("ignored-resource"),
+    IGNORED_RESOURCE("ignored-resources"),
     INCLUDE("include"),
     INSTANCE("instance"),
     INET_ADDRESS("inet-address"),

@@ -53,18 +53,18 @@
     <domain-controller>
         <!-- Remote domain controller configuration with a host and port -->
         <remote host="${jboss.test.host.master.address}" port="9999" security-realm="ManagementRealm">
-            <ignored-resource type="extension">
+            <ignored-resources type="extension">
                 <instance name="ignored"/>
-            </ignored-resource>
-            <ignored-resource type="profile">
+            </ignored-resources>
+            <ignored-resources type="profile">
                 <instance name="ignored"/>
-            </ignored-resource>
-            <ignored-resource type="socket-binding-group">
+            </ignored-resources>
+            <ignored-resources type="socket-binding-group">
                 <instance name="ignored"/>
-            </ignored-resource>
-            <ignored-resource type="foo" wildcard="true">
+            </ignored-resources>
+            <ignored-resources type="foo" wildcard="true">
                 <instance name="ignored"/>
-            </ignored-resource>
+            </ignored-resources>
         </remote>
     </domain-controller>
 
