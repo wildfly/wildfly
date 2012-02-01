@@ -102,8 +102,8 @@ public class ProtocolChannelClient implements Closeable {
     }
 
     public IoFuture<Connection> connect(CallbackHandler handler, Map<String, String> saslOptions, SSLContext sslContext) throws IOException {
-
         OptionMap.Builder builder = OptionMap.builder();
+        builder.addAll(configuration.getOptionMap());
         builder.set(SASL_POLICY_NOANONYMOUS, Boolean.FALSE);
         builder.set(SASL_POLICY_NOPLAINTEXT, Boolean.FALSE);
         if (isLocal() == false) {
