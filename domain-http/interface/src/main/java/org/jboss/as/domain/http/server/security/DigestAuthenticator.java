@@ -60,7 +60,11 @@ import org.jboss.sasl.util.HexConverter;
  */
 public class DigestAuthenticator extends Authenticator {
 
-    private final NonceFactory nonceFactory = new NonceFactory();
+    private static final String USE_CONNECTION_LOCAL_NONCES_PROPERTY = "org.jboss.domain.http.USE_LOCAL_NONCES";
+
+    private static final boolean USE_CONNECTION_LOCAL_NONCES = SecurityActions.getBoolean(USE_CONNECTION_LOCAL_NONCES_PROPERTY);
+
+    private final NonceFactory theNonceFactory = new NonceFactory();
 
     private final CallbackHandler callbackHandler;
 
@@ -111,7 +115,7 @@ public class DigestAuthenticator extends Authenticator {
         if (requestHeaders.containsKey(AUTHORIZATION_HEADER) == false) {
             Headers responseHeaders = httpExchange.getResponseHeaders();
 
-            responseHeaders.add(WWW_AUTHENTICATE_HEADER, CHALLENGE + " " + createChallenge(false));
+            responseHeaders.add(WWW_AUTHENTICATE_HEADER, CHALLENGE + " " + createChallenge(context, false));
 
             return new Authenticator.Retry(UNAUTHORIZED);
         }
@@ -130,16 +134,16 @@ public class DigestAuthenticator extends Authenticator {
         // INVALID - Username / Password verification failed - Nonce is irrelevant.
         if (principal == null) {
             if (challengeParameters.containsKey(NONCE)) {
-                nonceFactory.useNonce(challengeParameters.get(NONCE));
+                context.useNonce(challengeParameters.get(NONCE));
             }
 
             Headers responseHeaders = httpExchange.getResponseHeaders();
-            responseHeaders.add(WWW_AUTHENTICATE_HEADER, CHALLENGE + " " + createChallenge(false));
+            responseHeaders.add(WWW_AUTHENTICATE_HEADER, CHALLENGE + " " + createChallenge(context, false));
             return new Authenticator.Retry(UNAUTHORIZED);
         }
 
         // VALID - Verified username and password, Nonce is correct.
-        if (nonceFactory.useNonce(challengeParameters.get(NONCE))) {
+        if (context.useNonce(challengeParameters.get(NONCE))) {
             context.principal = principal;
 
             return new Authenticator.Success(principal);
@@ -147,7 +151,7 @@ public class DigestAuthenticator extends Authenticator {
 
         // STALE - Verification of username and password succeeded but Nonce now stale.
         Headers responseHeaders = httpExchange.getResponseHeaders();
-        responseHeaders.add(WWW_AUTHENTICATE_HEADER, CHALLENGE + " " + createChallenge(true));
+        responseHeaders.add(WWW_AUTHENTICATE_HEADER, CHALLENGE + " " + createChallenge(context, true));
         return new Authenticator.Retry(UNAUTHORIZED);
     }
 
@@ -229,11 +233,10 @@ public class DigestAuthenticator extends Authenticator {
         return null;
     }
 
-
-    private String createChallenge(boolean stale) {
+    private String createChallenge(DigestContext context, boolean stale) {
         StringBuilder challenge = new StringBuilder();
         challenge.append("realm=\"").append(realm).append("\",");
-        challenge.append("nonce=\"").append(nonceFactory.createNonce()).append("\"");
+        challenge.append("nonce=\"").append(context.createNonce()).append("\"");
         if (stale == true) {
             challenge.append(",stale=true");
         }
@@ -377,11 +380,13 @@ public class DigestAuthenticator extends Authenticator {
         boolean proxied = headers.containsKey(VIA);
 
         if (proxied) {
-            return new DigestContext();
+            // If proxied we have to assume connections could be re-used so need a fresh DigestContext
+            // each time and use of the central nonce store.
+            return new DigestContext(false);
         } else {
             DigestContext context = (DigestContext) httpExchange.getAttribute(DigestContext.KEY, HttpExchange.AttributeScope.CONNECTION);
             if (context == null) {
-                context = new DigestContext();
+                context = new DigestContext(USE_CONNECTION_LOCAL_NONCES);
                 httpExchange.setAttribute(DigestContext.KEY, context, HttpExchange.AttributeScope.CONNECTION);
             }
             return context;
@@ -393,7 +398,14 @@ public class DigestAuthenticator extends Authenticator {
 
         private static final String KEY = "DIGEST_CONTEXT";
 
+        private final boolean localStore;
+
+        DigestContext(final boolean localStore) {
+            this.localStore = localStore;
+        }
+
         private HttpPrincipal principal = null;
+        private String nonce = null;
 
         boolean isAuthenticated() {
             return principal != null;
@@ -403,6 +415,25 @@ public class DigestAuthenticator extends Authenticator {
             return principal;
         }
 
+        String createNonce() {
+            String nonce = theNonceFactory.createNonce(localStore == false);
+            if (localStore) {
+                this.nonce = nonce;
+            }
+            return nonce;
+        }
+
+        public boolean useNonce(String nonceToUse) {
+            if (localStore) {
+                if (nonceToUse.equals(nonce)) {
+                    nonce = null;
+                    return true;
+                }
+                return false;
+            } else {
+                return theNonceFactory.useNonce(nonceToUse);
+            }
+        }
     }
 
     // TODO - Will do something cleaner with collections.
