@@ -99,7 +99,7 @@ public class SlaveRegistrationException extends Exception {
             this.code = code;
         }
 
-        int getCode() {
+        public int getCode() {
             return code;
         }
 

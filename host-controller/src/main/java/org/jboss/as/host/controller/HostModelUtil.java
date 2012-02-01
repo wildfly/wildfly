@@ -85,7 +85,6 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.domain.controller.DomainController;
-import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
 import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
 import org.jboss.as.domain.controller.operations.deployment.HostProcessReloadHandler;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
@@ -144,7 +143,6 @@ public class HostModelUtil {
                                           final HostFileRepository remoteFileRepository,
                                           final ContentRepository contentRepository,
                                           final DomainController domainController,
-                                          final UnregisteredHostChannelRegistry channelRegistry,
                                           final ExtensionRegistry extensionRegistry,
                                           final AbstractVaultReader vaultReader,
                                           final IgnoredDomainResourceRegistry ignoredRegistry,
@@ -238,7 +236,7 @@ public class HostModelUtil {
         PlatformMBeanResourceRegistrar.registerPlatformMBeanResources(hostRegistration);
 
         LocalDomainControllerAddHandler localDcAddHandler = LocalDomainControllerAddHandler.getInstance(root, hostControllerInfo,
-                configurationPersister, localFileRepository, contentRepository, domainController, channelRegistry, extensionRegistry);
+                configurationPersister, localFileRepository, contentRepository, domainController, extensionRegistry);
         hostRegistration.registerOperationHandler(LocalDomainControllerAddHandler.OPERATION_NAME, localDcAddHandler, localDcAddHandler, false);
         hostRegistration.registerOperationHandler(LocalDomainControllerRemoveHandler.OPERATION_NAME, LocalDomainControllerRemoveHandler.INSTANCE, LocalDomainControllerRemoveHandler.INSTANCE, false);
         RemoteDomainControllerAddHandler remoteDcAddHandler = new RemoteDomainControllerAddHandler(root, hostControllerInfo,

@@ -18,10 +18,6 @@
  */
 package org.jboss.as.host.controller.mgmt;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 import static org.jboss.as.process.protocol.ProtocolUtils.expectHeader;
 
@@ -30,18 +26,10 @@ import java.io.File;
 import java.io.IOException;
 
 import org.jboss.as.controller.HashUtil;
-import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.ModelController.OperationTransactionControl;
-import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.domain.controller.DomainController;
-import org.jboss.as.domain.controller.SlaveRegistrationException;
-import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
-import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry.ProxyCreatedCallback;
-import org.jboss.as.domain.controller.operations.ReadMasterDomainModelHandler;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
-import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
@@ -57,34 +45,20 @@ import org.jboss.dmr.ModelNode;
  * Handles for requests from slave DC to master DC on the 'domain' channel.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
 class MasterDomainControllerOperationHandlerImpl implements ManagementRequestHandlerFactory {
 
-    private final ManagementChannelHandler handler;
-    private final ModelController controller;
     private final DomainController domainController;
-    private final UnregisteredHostChannelRegistry registry;
 
-    // TODO
-    private volatile ManagementRequestHandlerFactory proxyHandler;
-
-    public MasterDomainControllerOperationHandlerImpl(final ManagementChannelHandler handler, final ModelController controller,
-                                                      final UnregisteredHostChannelRegistry registry, final DomainController domainController) {
+    public MasterDomainControllerOperationHandlerImpl(final DomainController domainController) {
         this.domainController = domainController;
-        this.controller = controller;
-        this.registry = registry;
-        this.handler = handler;
     }
 
     @Override
     public ManagementRequestHandler<?, ?> resolveHandler(RequestHandlerChain handlers, ManagementRequestHeader header) {
         final byte operationId = header.getOperationId();
         switch (operationId) {
-            case DomainControllerProtocol.REGISTER_HOST_CONTROLLER_REQUEST: {
-                handlers.registerActiveOperation(header.getBatchId(), null);
-                return new RegisterOperation();
-            } case DomainControllerProtocol.UNREGISTER_HOST_CONTROLLER_REQUEST: {
+            case DomainControllerProtocol.UNREGISTER_HOST_CONTROLLER_REQUEST: {
                 handlers.registerActiveOperation(header.getBatchId(), null);
                 return new UnregisterOperation();
             } case DomainControllerProtocol.GET_FILE_REQUEST: {
@@ -95,61 +69,11 @@ class MasterDomainControllerOperationHandlerImpl implements ManagementRequestHan
         return handlers.resolveNext();
     }
 
-    private class RegisterOperation extends AbstractHostRequestHandler {
-        String error;
-
-        @Override
-        void handleRequest(final String hostId, final DataInput input, final ManagementRequestContext<Void> context) throws IOException {
-            context.executeAsync(new ManagementRequestContext.AsyncTask<Void>() {
-                @Override
-                public void execute(final ManagementRequestContext<Void> context) throws Exception {
-                    try {
-
-                        registry.registerChannel(hostId, handler, new ProxyCreatedCallback() {
-                            @Override
-                            public void proxyCreated(final ManagementRequestHandlerFactory handlerFactory) {
-                                proxyHandler = handlerFactory;
-                                handler.addHandlerFactory(handlerFactory);
-                            }
-                        });
-
-                        final ModelNode op = new ModelNode();
-                        op.get(OP).set(ReadMasterDomainModelHandler.OPERATION_NAME);
-                        op.get(OP_ADDR).setEmptyList();
-                        op.get(HOST).set(hostId);
-                        final ModelNode result = MasterDomainControllerOperationHandlerImpl.this.controller.execute(op, OperationMessageHandler.logging, OperationTransactionControl.COMMIT, null);
-                        if (result.hasDefined(FAILURE_DESCRIPTION)) {
-                            error = SlaveRegistrationException.forUnknownError(result.get(FAILURE_DESCRIPTION).asString()).marshal();
-                        }
-                    } catch (SlaveRegistrationException e) {
-                        error = e.marshal();
-                    } catch (Exception e) {
-                        error = SlaveRegistrationException.forUnknownError(e.getMessage()).marshal();
-                    }
-                    final FlushableDataOutput output = writeGenericResponseHeader(context);
-                    try {
-                        if (error != null) {
-                            output.write(DomainControllerProtocol.PARAM_ERROR);
-                            output.writeUTF(error);
-                        } else {
-                            output.write(DomainControllerProtocol.PARAM_OK);
-                        }
-                        output.close();
-                    } finally {
-                        StreamUtils.safeClose(output);
-                    }
-                }
-            });
-        }
-    }
-
     private class UnregisterOperation extends AbstractHostRequestHandler {
 
         @Override
         void handleRequest(String hostId, DataInput input, ManagementRequestContext<Void> context) throws IOException {
             domainController.unregisterRemoteHost(hostId);
-            handler.removeHandlerFactory(proxyHandler);
-            proxyHandler = null;
             final FlushableDataOutput os = writeGenericResponseHeader(context);
             try {
                 os.write(ManagementProtocol.RESPONSE_END);

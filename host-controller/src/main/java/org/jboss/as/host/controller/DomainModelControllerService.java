@@ -38,7 +38,6 @@ import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import java.io.IOException;
 import java.security.AccessController;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -59,26 +58,22 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ProxyController;
-import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainModelUtil;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.SlaveRegistrationException;
-import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
 import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
-import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.domain.controller.operations.coordination.PrepareStepHandler;
 import org.jboss.as.host.controller.RemoteDomainConnectionService.RemoteFileRepository;
+import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.host.controller.mgmt.MasterDomainControllerOperationHandlerService;
 import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandlerFactoryService;
 import org.jboss.as.host.controller.operations.HttpManagementAddHandler;
@@ -108,8 +103,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.remoting3.Channel;
-import org.jboss.remoting3.CloseHandler;
 import org.jboss.threads.JBossThreadFactory;
 
 /**
@@ -117,7 +110,7 @@ import org.jboss.threads.JBossThreadFactory;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DomainModelControllerService extends AbstractControllerService implements DomainController, UnregisteredHostChannelRegistry {
+public class DomainModelControllerService extends AbstractControllerService implements DomainController {
 
     public static final ServiceName SERVICE_NAME = HostControllerService.HC_SERVICE_NAME.append("model", "controller");
 
@@ -134,8 +127,6 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private final BootstrapListener bootstrapListener;
     private ManagementResourceRegistration modelNodeRegistration;
 
-    private final Map<String, ManagementChannelHandler> unregisteredHostChannels = new HashMap<String, ManagementChannelHandler>();
-    private final Map<String, ProxyCreatedCallback> proxyCreatedCallbacks = new HashMap<String, ProxyCreatedCallback>();
     // TODO look into using the controller executor
     final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("proxy-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
     private final ExecutorService proxyExecutor = Executors.newCachedThreadPool(threadFactory);
@@ -231,7 +222,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
     @Override
     public void unregisterRemoteHost(String id) {
-        unregisteredHostChannels.remove(id);
+        // unregisteredHostChannels.remove(id);
         if (hostProxies.remove(id) != null) {
             DOMAIN_LOGGER.unregisteredRemoteSlaveHost(id);
         }
@@ -304,7 +295,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         DomainModelUtil.updateCoreModel(rootResource, environment);
         HostModelUtil.createHostRegistry(rootRegistration, hostControllerConfigurationPersister, environment, runningModeControl,
                 localFileRepository, hostControllerInfo, new DelegatingServerInventory(), remoteFileRepository, contentRepository,
-                this, this, extensionRegistry,vaultReader, ignoredRegistry, processState);
+                this, extensionRegistry,vaultReader, ignoredRegistry, processState);
         this.modelNodeRegistration = rootRegistration;
     }
 
@@ -363,7 +354,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
                 super.boot(domainPersister.load());
 
                 ManagementRemotingServices.installManagementChannelServices(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
-                        new MasterDomainControllerOperationHandlerService(this, this),
+                        new MasterDomainControllerOperationHandlerService(this),
                         DomainModelControllerService.SERVICE_NAME, ManagementRemotingServices.DOMAIN_CHANNEL, null, null);
                 serverInventory = getFuture(inventoryFuture);
             }
@@ -436,57 +427,57 @@ public class DomainModelControllerService extends AbstractControllerService impl
         }
     }
 
-    @Override
-    public synchronized void registerChannel(final String hostName, final ManagementChannelHandler channelHandler, final ProxyCreatedCallback callback) {
+//    @Override
+//    public synchronized void registerChannel(final String hostName, final ManagementChannelHandler channelHandler, final ProxyCreatedCallback callback) {
+//
+//        /* Disable this as part of the REM3-121 workarounds
+//        PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(HOST, hostName));
+//        if (modelNodeRegistration.getProxyController(addr) != null) {
+//            throw new IllegalArgumentException("There is already a registered slave named '" + hostName + "'");
+//        }
+//        */
+//        if (unregisteredHostChannels.containsKey(hostName)) {
+//            throw MESSAGES.hostNameAlreadyConnected(hostName);
+//        }
+//        unregisteredHostChannels.put(hostName, channelHandler);
+//        proxyCreatedCallbacks.put(hostName, callback);
+//        try {
+//            channelHandler.getChannel().addCloseHandler(new CloseHandler<Channel>() {
+//                public void handleClose(final Channel closed, final IOException exception) {
+//                    unregisteredHostChannels.remove(hostName);
+//                    proxyCreatedCallbacks.remove(hostName);
+//                }
+//            });
+//        } catch(IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//
+//    }
 
-        /* Disable this as part of the REM3-121 workarounds
-        PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(HOST, hostName));
-        if (modelNodeRegistration.getProxyController(addr) != null) {
-            throw new IllegalArgumentException("There is already a registered slave named '" + hostName + "'");
-        }
-        */
-        if (unregisteredHostChannels.containsKey(hostName)) {
-            throw MESSAGES.hostNameAlreadyConnected(hostName);
-        }
-        unregisteredHostChannels.put(hostName, channelHandler);
-        proxyCreatedCallbacks.put(hostName, callback);
-        try {
-            channelHandler.getChannel().addCloseHandler(new CloseHandler<Channel>() {
-                public void handleClose(final Channel closed, final IOException exception) {
-                    unregisteredHostChannels.remove(hostName);
-                    proxyCreatedCallbacks.remove(hostName);
-                }
-            });
-        } catch(IOException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-
-    @Override
-    public synchronized ProxyController popChannelAndCreateProxy(final String hostName) {
-        final ManagementChannelHandler channelHandler = unregisteredHostChannels.remove(hostName);
-        if (channelHandler == null) {
-            throw MESSAGES.noChannelForHost(hostName);
-        }
-        try {
-            channelHandler.getChannel().addCloseHandler(new CloseHandler<Channel>() {
-                public void handleClose(final Channel closed, final IOException exception) {
-                    unregisterRemoteHost(hostName);
-                }
-            });
-        } catch ( IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        final PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.HOST, hostName));
-        RemoteProxyController proxy = RemoteProxyController.create(channelHandler, addr, ProxyOperationAddressTranslator.HOST);
-        ProxyCreatedCallback callback = proxyCreatedCallbacks.remove(hostName);
-        if (callback != null) {
-            callback.proxyCreated(proxy);
-        }
-        return proxy;
-    }
+//    @Override
+//    public synchronized ProxyController popChannelAndCreateProxy(final String hostName) {
+//        final ManagementChannelHandler channelHandler = unregisteredHostChannels.remove(hostName);
+//        if (channelHandler == null) {
+//            throw MESSAGES.noChannelForHost(hostName);
+//        }
+//        try {
+//            channelHandler.getChannel().addCloseHandler(new CloseHandler<Channel>() {
+//                public void handleClose(final Channel closed, final IOException exception) {
+//                    unregisterRemoteHost(hostName);
+//                }
+//            });
+//        } catch ( IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//
+//        final PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.HOST, hostName));
+//        RemoteProxyController proxy = RemoteProxyController.create(channelHandler, addr, ProxyOperationAddressTranslator.HOST);
+//        ProxyCreatedCallback callback = proxyCreatedCallbacks.remove(hostName);
+//        if (callback != null) {
+//            callback.proxyCreated(proxy);
+//        }
+//        return proxy;
+//    }
 
     private class DelegatingServerInventory implements ServerInventory {
         public void serverCommunicationRegistered(String serverProcessName, ManagementChannelHandler channelHandler, ProxyCreatedCallback callback) {
