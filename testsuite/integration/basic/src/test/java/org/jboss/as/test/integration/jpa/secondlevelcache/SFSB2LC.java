@@ -78,6 +78,9 @@ public class SFSB2LC {
 			assertNotNull("Employee returned", emp);
 			assertEquals("There aren't any query puts in the 2LC.", 0,stats.getQueryCachePutCount());
 			
+			// cleanup
+			em.remove(emp);
+			
 		}catch (AssertionError e) {
 			return e.getMessage();
 		}	finally{
@@ -103,10 +106,10 @@ public class SFSB2LC {
 			createEmployee(em, "Tom", "Brno", 3);
 			assertEquals("There are 2 puts in the 2LC"+generateEntityCacheStats(emp2LCStats), 2, emp2LCStats.getPutCount());
 			
-			// loading all Employee entities should put in 2LC one Employee entity from previous test method
+			// loading all Employee entities should put in 2LC all Employee 
 			List<?> empList = getAllEmployeesQuery(em);
-			assertEquals("There are 3 entities.", empList.size(), 3);
-			assertEquals("There are 3 entities in the 2LC"+generateEntityCacheStats(emp2LCStats), 3, emp2LCStats.getElementCountInMemory());
+			assertEquals("There are 2 entities.", empList.size(), 2);
+			assertEquals("There are 2 entities in the 2LC"+generateEntityCacheStats(emp2LCStats), 2, emp2LCStats.getElementCountInMemory());
 			
 			// clear session
 			em.clear();
@@ -115,6 +118,30 @@ public class SFSB2LC {
 			Employee emp = getEmployee(em, 2);
 			assertNotNull("Employee returned", emp);
 			assertEquals("Expected 1 hit in cache"+generateEntityCacheStats(emp2LCStats), 1,  emp2LCStats.getHitCount());
+			
+		}catch (AssertionError e) {
+			return e.getMessage();
+		}	finally{
+			em.close();
+		}
+		return "OK";
+	}
+	
+	
+	/**
+	 * Adds an entity in one session -> entity should be in the cache 
+	 */
+	public String firstSessionInit(String CACHE_REGION_NAME) {
+		
+		EntityManager em = emf.createEntityManager();
+		Statistics stats = em.unwrap(Session.class).getSessionFactory().getStatistics();
+		stats.clear();
+		SecondLevelCacheStatistics emp2LCStats = stats.getSecondLevelCacheStatistics(CACHE_REGION_NAME+"Employee");
+			
+		try{
+			// add new entity
+			createEmployee(em, "David", "Praha", 10);
+			assertEquals("There is 1 put in the 2LC"+generateEntityCacheStats(emp2LCStats), 1, emp2LCStats.getPutCount());
 			
 		}catch (AssertionError e) {
 			return e.getMessage();
@@ -137,7 +164,7 @@ public class SFSB2LC {
 		
 		try{	
 			// loading entity stored in previous session, we'are expecting hit in cache
-			Employee emp = getEmployee(em, 2);
+			Employee emp = getEmployee(em, 10);
 			assertNotNull("Employee returned", emp);
 			assertEquals("Expected 1 hit in cache"+generateEntityCacheStats(emp2LCStats), 1,  emp2LCStats.getHitCount());
 			
@@ -160,7 +187,11 @@ public class SFSB2LC {
 		stats.clear();
 		SecondLevelCacheStatistics emp2LCStats = stats.getSecondLevelCacheStatistics(CACHE_REGION_NAME+"Employee");
 		
-		try{	
+		try{
+			createEmployee(em, "Jan", "Ostrava", 20);
+			createEmployee(em, "Martin", "Brno", 30);
+			assertEquals("There are 2 puts in the 2LC"+generateEntityCacheStats(emp2LCStats), 2, emp2LCStats.getPutCount());
+			
 			assertTrue("Expected entities stored in the cache"+generateEntityCacheStats(emp2LCStats), emp2LCStats.getElementCountInMemory() > 0);
 			
 			// evict cache and check if is empty
@@ -176,32 +207,34 @@ public class SFSB2LC {
 		return "OK";
 		
 	}
-	
+
 	
 	/**
-	 *  Check if query cache works as expected, running same query twice - second should hit the cache 
+	 * Performs 2 query calls, first call put query in the cache and second should hit the case
+	 * @param id Employee's id in the query
 	 */
-	public String sameQueryTwice(){
+	public String queryCacheCheck(String id){
 		
 		EntityManager em = emf.createEntityManager();
 		Statistics stats = em.unwrap(Session.class).getSessionFactory().getStatistics();
 		stats.clear();
-		
+
 		try{
-			int id = 2;
-			String queryString = "from Employee e where e.id="+id;
-			
+			String queryString = "from Employee e where e.id > "+id;
+			QueryStatistics queryStats = stats.getQueryStatistics(queryString);
 			Query query = em.createQuery(queryString);
 			query.setHint("org.hibernate.cacheable", true);
-			QueryStatistics queryStats = stats.getQueryStatistics(queryString);
-						
-			// first query call
-			query.getSingleResult();
+
+			// query - this call should fill the cache
+			query.getResultList();
+            assertEquals("Expected 1 miss in cache"+generateQueryCacheStats(queryStats), 1,  queryStats.getCacheMissCount());
 			assertEquals("Expected 1 put in cache"+generateQueryCacheStats(queryStats), 1,  queryStats.getCachePutCount());
+			assertEquals("Expected no hits in cache"+generateQueryCacheStats(queryStats), 0,  queryStats.getCacheHitCount());
 			
-			// second query call
-			query.getSingleResult();
+			// query - second call should hit cache
+			query.getResultList();
 			assertEquals("Expected 1 hit in cache"+generateQueryCacheStats(queryStats), 1,  queryStats.getCacheHitCount());
+			
 
 		}catch (AssertionError e) {
 			return e.getMessage();
@@ -213,83 +246,23 @@ public class SFSB2LC {
 	
 	
 	/**
-	 *  Query cache is invalidated and restored then
+	 * Evicts all query cache regions
 	 */
-	public String invalidateQuery(){
+	public void evictQueryCache(){
 		
 		EntityManager em = emf.createEntityManager();
-		Statistics stats = em.unwrap(Session.class).getSessionFactory().getStatistics();
-		stats.clear();
-
-		try{
-			String queryString = "from Employee e where e.id > 1";
-			QueryStatistics queryStats = stats.getQueryStatistics(queryString);
-			Query query = em.createQuery(queryString);
-			query.setHint("org.hibernate.cacheable", true);
-
-			// query - this call should fill the cache
-			query.getResultList();
-			assertEquals("Expected 1 put in cache"+generateQueryCacheStats(queryStats), 1,  queryStats.getCachePutCount());
-			assertEquals("Expected no hits in cache"+generateQueryCacheStats(queryStats), 0,  queryStats.getCacheHitCount());
-			
-			// query - should hit cache
-			query.getResultList();
-			assertEquals("Expected 1 hit in cache"+generateQueryCacheStats(queryStats), 1,  queryStats.getCacheHitCount());
-			
-			// invalidate cache
-			createEmployee(em, "Newman", "Paul", 4);
-			
-			// first call should miss and the second should hit the cache
-			query.getResultList();
-			assertEquals("Expected 2x miss in cache"+generateQueryCacheStats(queryStats), 2,  queryStats.getCacheMissCount());
-
-			query.getResultList();
-			assertEquals("Expected 2 hits in cache"+generateQueryCacheStats(queryStats), 2,  queryStats.getCacheHitCount());
-
-		}catch (AssertionError e) {
-			return e.getMessage();
-		}	finally{
-			em.close();
-		}
-		return "OK";
-	}
-
-	
-	/**
-	 * Check if eviction of query cache is working
-	 */
-	public String evictQueryCacheCheck(){
 		
-		EntityManager em = emf.createEntityManager();
-		Statistics stats = em.unwrap(Session.class).getSessionFactory().getStatistics();
-		stats.clear();
-
 		try{
-			String queryString = "from Employee e where e.id > 2";
-			QueryStatistics queryStats = stats.getQueryStatistics(queryString);
-			Query query = em.createQuery(queryString);
-			query.setHint("org.hibernate.cacheable", true);
-
-			// query - this call should fill the cache
-			query.getResultList();
-			assertEquals("Expected 1 put in cache"+generateQueryCacheStats(queryStats), 1,  queryStats.getCachePutCount());
-			assertEquals("Expected no hits in cache"+generateQueryCacheStats(queryStats), 0,  queryStats.getCacheHitCount());
-			
-			// query - should hit cache
-			query.getResultList();
-			assertEquals("Expected 1 hit in cache"+generateQueryCacheStats(queryStats), 1,  queryStats.getCacheHitCount());
-			
-			// this should evict query cache -> expected second put in the cache
+			// this should evict query cache 
 			em.unwrap(Session.class).getSessionFactory().getCache().evictQueryRegions();
-			query.getResultList();
-			assertEquals("Expected 2 puts in cache"+generateQueryCacheStats(queryStats), 2,  queryStats.getCachePutCount());
+			//em.unwrap(Session.class).getSessionFactory().evictQueries();
 
-		}catch (AssertionError e) {
-			return e.getMessage();
+		}catch (Exception e) {
+			e.printStackTrace();
 		}	finally{
 			em.close();
 		}
-		return "OK";
+
 	}
 	
 	
@@ -333,6 +306,25 @@ public class SFSB2LC {
 			throw new RuntimeException(	"transactional failure while persisting employee entity", e);
 		}
 	}
+
+    /**
+     * Create employee in provided EntityManager
+     */
+    public void createEmployee(String name, String address,
+                               int id) {
+        EntityManager em = emf.createEntityManager();
+        Employee emp = new Employee();
+        emp.setId(id);
+        emp.setAddress(address);
+        emp.setName(name);
+        try {
+            em.persist(emp);
+        } catch (Exception e) {
+            throw new RuntimeException(	"transactional failure while persisting employee entity", e);
+        } finally {
+            em.close();
+        }
+    }
 
 	
 	/**

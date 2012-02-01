@@ -140,22 +140,22 @@ public class JPA2LCTestCase {
 
         assertTrue("was able to read deleted database row from second level cache", emp != null);
     }
-    
+
     // When caching is disabled, no extra action is done or exception happens
  	// even if the code marks an entity and/or a query as cacheable
  	@Test
  	public void testDisabledCache() throws Exception {
- 	
+
  		SFSB2LC sfsb = lookup("SFSB2LC", SFSB2LC.class);
  		String message = sfsb.disabled2LCCheck();
- 		
+
  		if (!message.equals("OK")){
  			fail(message);
  		}
  	}
 
  	// When entity caching is enabled, loading all entities at once
- 	// will put all entities in the cache. During the SAME session, 
+ 	// will put all entities in the cache. During the SAME session,
  	// when looking up for the ID of an entity which was returned by
  	// the original query, no SQL queries should be executed.
  	@Test
@@ -163,74 +163,112 @@ public class JPA2LCTestCase {
 
  		SFSB2LC sfsb = lookup("SFSB2LC", SFSB2LC.class);
  		String message = sfsb.sameSessionCheck(CACHE_REGION_NAME);
- 		
+
  		if (!message.equals("OK")){
  			fail(message);
  		}
  	}
 
  	// When entity caching is enabled, loading all entities at once
- 	// will put all entities in the cache. During the SECOND session, 
+ 	// will put all entities in the cache. During the SECOND session,
  	// when looking up for the ID of an entity which was returned by
  	// the original query, no SQL queries should be executed.
  	@Test
  	public void testEntityCacheSecondSession() throws Exception {
- 		
+
  		SFSB2LC sfsb = lookup("SFSB2LC", SFSB2LC.class);
- 		String message = sfsb.secondSessionCheck(CACHE_REGION_NAME);
+ 		String message = sfsb.firstSessionInit(CACHE_REGION_NAME);
+
+ 		if (!message.equals("OK")){
+ 			fail(message);
+ 		}
  		
+ 		message = sfsb.secondSessionCheck(CACHE_REGION_NAME);
+
  		if (!message.equals("OK")){
  			fail(message);
  		}
 
  	}
- 	
+
  	// Check if evicting entity second level cache is working as expected
 	@Test
  	public void testEvictEntityCache() throws Exception {
-		
+
  		SFSB2LC sfsb = lookup("SFSB2LC", SFSB2LC.class);
  		String message = sfsb.evict2LCCheck(CACHE_REGION_NAME);
- 		
+
  		if (!message.equals("OK")){
  			fail(message);
  		}
 
  	}
- 	
+
  	// When query caching is enabled, running the same query twice 
  	// without any operations between them will perform SQL queries only once.
  	@Test
  	public void testSameQueryTwice() throws Exception {
 
  		SFSB2LC sfsb = lookup("SFSB2LC", SFSB2LC.class);
- 		String message = sfsb.sameQueryTwice();
- 		
+ 	    String id = "1";
+
+ 	    String message = sfsb.queryCacheCheck(id);
+
  		if (!message.equals("OK")){
  			fail(message);
  		}
  	}
  	
- 	//When query caching is enabled, running a query to return all entities of a class 
- 	// and then adding one entity of such class would invalidate the cache
- 	@Test
- 	public void testInvalidateQuery() throws Exception {
 
- 		SFSB2LC sfsb = lookup("SFSB2LC", SFSB2LC.class);
- 		String message = sfsb.invalidateQuery();
- 		
- 		if (!message.equals("OK")){
- 			fail(message);
- 		}
- 	}
+    //When query caching is enabled, running a query to return all entities of a class
+    // and then adding one entity of such class would invalidate the cache
+    @Test
+    public void testInvalidateQuery() throws Exception {
+
+        SFSB2LC sfsb = lookup("SFSB2LC", SFSB2LC.class);
+        String id = "2";
+
+        String message = sfsb.queryCacheCheck(id);
+        
+        if (!message.equals("OK")){
+            fail(message);
+        }
+    
+        // invalidate the cache
+        sfsb.createEmployee("Newman", "Paul", 400);
+        
+        // the nextTimestamp from infinispan is "return System.currentTimeMillis() / 100;"
+        Thread.sleep(1000);
+        
+        message = sfsb.queryCacheCheck(id);
+
+        if (!message.equals("OK")){
+            fail(message);
+        }
+
+    }
  	
  	// Check if evicting query cache is working as expected
  	@Test
  	public void testEvictQueryCache() throws Exception {
- 		
+
  		SFSB2LC sfsb = lookup("SFSB2LC", SFSB2LC.class);
- 		String message = sfsb.evictQueryCacheCheck();
+ 		String id = "3";
  		
+ 		String message = sfsb.queryCacheCheck(id);
+
+ 		if (!message.equals("OK")){
+ 			fail(message);
+ 		}
+ 		
+ 		// evict query cache
+ 		sfsb.evictQueryCache();
+ 		
+ 		// the nextTimestamp from infinispan is "return System.currentTimeMillis() / 100;"
+ 		Thread.sleep(1000);
+ 		
+ 		message = sfsb.queryCacheCheck(id);
+
  		if (!message.equals("OK")){
  			fail(message);
  		}
