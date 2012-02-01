@@ -786,7 +786,7 @@ public class GlobalOperationHandlers {
             if (address.isMultiTarget()) {
                 // Format wildcard queries as list
                 final ModelNode result = context.getResult().setEmptyList();
-                context.addStep(new ModelNode(), AbstractMultiTargetHandler.FAKE_OPERATION, new RegistrationAddressResolver(operation, result,
+                context.addStep(new ModelNode(), AbstractMultiTargetHandler.FAKE_OPERATION.clone(), new RegistrationAddressResolver(operation, result,
                         new OperationStepHandler() {
                             @Override
                             public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
@@ -983,7 +983,7 @@ public class GlobalOperationHandlers {
                 // The final result should be a list of executed operations
                 final ModelNode result = context.getResult().setEmptyList();
                 // Trick the context to give us the model-root
-                context.addStep(new ModelNode(), FAKE_OPERATION, new ModelAddressResolver(operation, result, new OperationStepHandler() {
+                context.addStep(new ModelNode(), FAKE_OPERATION.clone(), new ModelAddressResolver(operation, result, new OperationStepHandler() {
                     @Override
                     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                         doExecute(context, operation);
