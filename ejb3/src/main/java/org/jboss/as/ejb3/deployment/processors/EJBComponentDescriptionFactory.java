@@ -21,7 +21,10 @@
  */
 package org.jboss.as.ejb3.deployment.processors;
 
+import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
+import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
@@ -29,6 +32,8 @@ import org.jboss.logging.Logger;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.metadata.ejb.spec.EnterpriseBeansMetaData;
+
+import static org.jboss.as.ejb3.deployment.processors.AbstractDeploymentUnitProcessor.getEjbJarDescription;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -44,6 +49,16 @@ public abstract class EJBComponentDescriptionFactory {
 
     protected EJBComponentDescriptionFactory(final boolean appclient) {
         this.appclient = appclient;
+    }
+
+    protected void addComponent(final DeploymentUnit deploymentUnit, final EJBComponentDescription beanDescription) {
+        final EjbJarDescription ejbJarDescription = getEjbJarDescription(deploymentUnit);
+        if (appclient) {
+            deploymentUnit.addToAttachmentList(Attachments.ADDITIONAL_RESOLVABLE_COMPONENTS, beanDescription);
+        } else {
+            // Add this component description to module description
+            ejbJarDescription.getEEModuleDescription().addComponent(beanDescription);
+        }
     }
 
     static EnterpriseBeansMetaData getEnterpriseBeansMetaData(final DeploymentUnit deploymentUnit) {

@@ -31,7 +31,6 @@ import java.util.Set;
 import javax.ejb.MessageDriven;
 import javax.jms.MessageListener;
 
-import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.ejb3.component.messagedriven.DefaultResourceAdapterService;
@@ -155,13 +154,7 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
             final MessageDrivenComponentDescription beanDescription = new MessageDrivenComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnitServiceName, messageListenerInterfaceName, activationConfigProperties, defaultResourceAdapterName, beanMetaData);
             beanDescription.setDeploymentDescriptorEnvironment(deploymentDescriptorEnvironment);
 
-            if (appclient) {
-                deploymentUnit.addToAttachmentList(Attachments.ADDITIONAL_RESOLVABLE_COMPONENTS, beanDescription);
-
-            } else {
-                // Add this component description to module description
-                ejbJarDescription.getEEModuleDescription().addComponent(beanDescription);
-            }
+            addComponent(deploymentUnit, beanDescription);
         }
 
         EjbDeploymentMarker.mark(deploymentUnit);
@@ -250,9 +243,8 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
         final Properties activationConfigProps = getActivationConfigProperties(mdb.getActivationConfig());
         final String defaultResourceAdapterName = this.getDefaultResourceAdapterName(deploymentUnit.getServiceRegistry());
         final MessageDrivenComponentDescription mdbComponentDescription = new MessageDrivenComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName(), messageListenerInterface, activationConfigProps, defaultResourceAdapterName, mdb);
-        // add it to the ejb jar description
-        ejbJarDescription.getEEModuleDescription().addComponent(mdbComponentDescription);
         mdbComponentDescription.setDeploymentDescriptorEnvironment(new DeploymentDescriptorEnvironment("java:comp/env/", mdb));
+        addComponent(deploymentUnit, mdbComponentDescription);
     }
 
     private Properties getActivationConfigProperties(final AnnotationInstance messageBeanAnnotation) {

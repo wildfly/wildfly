@@ -29,7 +29,6 @@ import javax.ejb.Singleton;
 import javax.ejb.Stateful;
 import javax.ejb.Stateless;
 
-import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
@@ -155,12 +154,7 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
                     throw new IllegalArgumentException("Unknown session bean type: " + sessionBeanType);
             }
 
-            if (appclient) {
-                deploymentUnit.addToAttachmentList(Attachments.ADDITIONAL_RESOLVABLE_COMPONENTS, sessionBeanDescription);
-            } else {
-                // Add this component description to module description
-                ejbJarDescription.getEEModuleDescription().addComponent(sessionBeanDescription);
-            }
+            addComponent(deploymentUnit, sessionBeanDescription);
         }
 
         EjbDeploymentMarker.mark(deploymentUnit);
@@ -248,13 +242,7 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
             default:
                 throw new IllegalArgumentException("Unknown session bean type: " + sessionType);
         }
-        if (appclient) {
-            deploymentUnit.addToAttachmentList(Attachments.ADDITIONAL_RESOLVABLE_COMPONENTS, sessionBeanDescription);
-
-        } else {
-            // Add this component description to module description
-            ejbJarDescription.getEEModuleDescription().addComponent(sessionBeanDescription);
-        }
+        addComponent(deploymentUnit, sessionBeanDescription);
     }
 
     private SessionType determineSessionType(final String ejbClass, final CompositeIndex compositeIndex) {
