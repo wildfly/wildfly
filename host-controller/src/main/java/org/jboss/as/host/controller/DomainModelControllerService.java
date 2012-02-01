@@ -216,13 +216,18 @@ public class DomainModelControllerService extends AbstractControllerService impl
         }
         modelNodeRegistration.registerProxyController(pe, hostControllerClient);
         hostProxies.put(pe.getValue(), hostControllerClient);
+    }
 
-        DOMAIN_LOGGER.registeredRemoteSlaveHost(pe.getValue());
+    @Override
+    public boolean isHostRegistered(String id) {
+        if(hostControllerInfo.getLocalHostName().equals(id)) {
+            return true;
+        }
+        return hostProxies.containsKey(id);
     }
 
     @Override
     public void unregisterRemoteHost(String id) {
-        // unregisteredHostChannels.remove(id);
         if (hostProxies.remove(id) != null) {
             DOMAIN_LOGGER.unregisteredRemoteSlaveHost(id);
         }
@@ -325,9 +330,8 @@ public class DomainModelControllerService extends AbstractControllerService impl
                 if (hostControllerInfo.getRemoteDomainControllerHost() != null) {
                     Future<MasterDomainControllerClient> clientFuture = RemoteDomainConnectionService.install(serviceTarget,
                             getValue(),
-                            hostControllerInfo.getLocalHostName(),
-                            hostControllerInfo.getRemoteDomainControllerHost(),
-                            hostControllerInfo.getRemoteDomainControllertPort(),
+                            hostControllerInfo,
+                            environment.getProductConfig(),
                             hostControllerInfo.getRemoteDomainControllerSecurityRealm(),
                             remoteFileRepository);
                     MasterDomainControllerClient masterDomainControllerClient = getFuture(clientFuture);
@@ -426,58 +430,6 @@ public class DomainModelControllerService extends AbstractControllerService impl
             throw MESSAGES.errorClosingDownHost(e);
         }
     }
-
-//    @Override
-//    public synchronized void registerChannel(final String hostName, final ManagementChannelHandler channelHandler, final ProxyCreatedCallback callback) {
-//
-//        /* Disable this as part of the REM3-121 workarounds
-//        PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(HOST, hostName));
-//        if (modelNodeRegistration.getProxyController(addr) != null) {
-//            throw new IllegalArgumentException("There is already a registered slave named '" + hostName + "'");
-//        }
-//        */
-//        if (unregisteredHostChannels.containsKey(hostName)) {
-//            throw MESSAGES.hostNameAlreadyConnected(hostName);
-//        }
-//        unregisteredHostChannels.put(hostName, channelHandler);
-//        proxyCreatedCallbacks.put(hostName, callback);
-//        try {
-//            channelHandler.getChannel().addCloseHandler(new CloseHandler<Channel>() {
-//                public void handleClose(final Channel closed, final IOException exception) {
-//                    unregisteredHostChannels.remove(hostName);
-//                    proxyCreatedCallbacks.remove(hostName);
-//                }
-//            });
-//        } catch(IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//
-//    }
-
-//    @Override
-//    public synchronized ProxyController popChannelAndCreateProxy(final String hostName) {
-//        final ManagementChannelHandler channelHandler = unregisteredHostChannels.remove(hostName);
-//        if (channelHandler == null) {
-//            throw MESSAGES.noChannelForHost(hostName);
-//        }
-//        try {
-//            channelHandler.getChannel().addCloseHandler(new CloseHandler<Channel>() {
-//                public void handleClose(final Channel closed, final IOException exception) {
-//                    unregisterRemoteHost(hostName);
-//                }
-//            });
-//        } catch ( IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//
-//        final PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.HOST, hostName));
-//        RemoteProxyController proxy = RemoteProxyController.create(channelHandler, addr, ProxyOperationAddressTranslator.HOST);
-//        ProxyCreatedCallback callback = proxyCreatedCallbacks.remove(hostName);
-//        if (callback != null) {
-//            callback.proxyCreated(proxy);
-//        }
-//        return proxy;
-//    }
 
     private class DelegatingServerInventory implements ServerInventory {
         public void serverCommunicationRegistered(String serverProcessName, ManagementChannelHandler channelHandler, ProxyCreatedCallback callback) {

@@ -91,12 +91,15 @@ public class HostControllerServerClient implements Service<HostControllerServerC
         // Notify MSC asynchronously when the server gets registered
         context.asynchronous();
         try {
-            this.handler.executeRequest(new ServerRegisterRequest(), null, new ActiveOperation.CompletedCallback<Void>() {
+            // Send the registration request
+            handler.executeRequest(new ServerRegisterRequest(), null, new ActiveOperation.CompletedCallback<Void>() {
                 @Override
                 public void completed(Void result) {
+                    // Set the remote repository once registered
                     remoteFileRepositoryValue.getValue().setRemoteFileRepositoryExecutor(new RemoteFileRepositoryExecutorImpl());
+                    // Tell MSC that it can proceed
                     context.complete();
-                    // TODO proper notification
+                    // TODO base this message on a proper started notification
                     started();
                 }
 
@@ -113,7 +116,6 @@ public class HostControllerServerClient implements Service<HostControllerServerC
         } catch (Exception e) {
             throw ServerMessages.MESSAGES.failedToConnectToHC(e);
         }
-        // this.registerHandler = handler;
         channel.receiveMessage(handler.getReceiver());
     }
 
@@ -142,6 +144,9 @@ public class HostControllerServerClient implements Service<HostControllerServerC
         return serverProcessName;
     }
 
+    /**
+     * Signal that the server is started.
+     */
     public synchronized void started() {
         final ManagementChannelHandler handler = this.handler;
         if(handler == null) {
@@ -150,7 +155,7 @@ public class HostControllerServerClient implements Service<HostControllerServerC
         try {
             handler.executeRequest(new ServerStartedRequest(), null);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
