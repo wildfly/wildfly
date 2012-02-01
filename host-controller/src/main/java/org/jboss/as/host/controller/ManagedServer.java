@@ -24,6 +24,7 @@ package org.jboss.as.host.controller;
 
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.security.SecureRandom;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -123,8 +124,7 @@ class ManagedServer {
         this.bootConfiguration = bootConfiguration;
 
         final byte[] authKey = new byte[16];
-        // TODO: use a RNG with a secure seed
-        new Random().nextBytes(authKey);
+        new Random(new SecureRandom().nextLong()).nextBytes(authKey);
         this.authKey = authKey;
     }
 
