@@ -23,49 +23,58 @@
 package org.jboss.as.domain.http.server.security;
 
 import java.security.SecureRandom;
-import java.util.HashSet;
-import java.util.Set;
-
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Random;
 import org.jboss.sasl.util.HexConverter;
 
 /**
  * A simple NonceFactory for single use nonces.
  * <p/>
- * At a later point a pluggable mechansims may be added to control the nonce requirements
- * and add additional generation strategies.  Issues such as expiration will also be handled.
+ * At a later point a pluggable mechansims may be added to control the nonce requirements and add additional generation
+ * strategies. Issues such as expiration will also be handled.
  * <p/>
- * This implementation uses a SecureRandom to generate 16 random bytes which will then be
- * converted to hex as 32 characters.
+ * This implementation uses a SecureRandom to generate 16 random bytes which will then be converted to hex as 32 characters.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class NonceFactory {
 
+    private static final String MAX_CACHED_NONCES_PROPERTY = "org.jboss.domain.http.MAX_CACHED_NONCES";
+    private static final int DEFAULT_MAX_CACHED_NONCES = 50;
+
+    private static final int MAX_CACHED_NONCES = SecurityActions.getInt(MAX_CACHED_NONCES_PROPERTY, DEFAULT_MAX_CACHED_NONCES);
+
+    private static final SecureRandom srand = new SecureRandom();
+
     private static final int NONCE_BYTES = 16;
 
-    private final Set<String> issuedNonces = new HashSet<String>();
-
-    private final SecureRandom srand = new SecureRandom();
+    private final List<String> issuedNonces = new LinkedList<String>();
 
     /**
      * Generates a nonce and caches it with the issued nonces for later verification.
      *
      * @return a newly generated nonce.
      */
-    public String createNonce() {
+    public String createNonce(boolean store) {
         byte[] newNonce = new byte[NONCE_BYTES];
-        srand.nextBytes(newNonce);
+        Random random = new Random(srand.nextLong());
+        random.nextBytes(newNonce);
         String nonceString = HexConverter.convertToHexString(newNonce);
-        synchronized (issuedNonces) {
-            issuedNonces.add(nonceString);
+        if (store) {
+            synchronized (issuedNonces) {
+                issuedNonces.add(nonceString);
+                while (issuedNonces.size() > MAX_CACHED_NONCES) {
+                    issuedNonces.remove(0);
+                }
+            }
         }
 
         return nonceString;
     }
 
     /**
-     * Validates the nonce is in the list of issued nonces and removes it from the list to ensure it can not be
-     * used again.
+     * Validates the nonce is in the list of issued nonces and removes it from the list to ensure it can not be used again.
      *
      * @param nonceToUse - The nonce to validate.
      * @return true if this nonce was found in the issues nonces cache, false if this nonce is not valid.
