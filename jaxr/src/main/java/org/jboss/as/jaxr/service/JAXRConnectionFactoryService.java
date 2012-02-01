@@ -30,6 +30,8 @@ import javax.xml.registry.JAXRException;
 
 import org.jboss.as.jaxr.JAXRConfiguration;
 import org.jboss.as.jaxr.JAXRConstants;
+import static org.jboss.as.jaxr.JAXRLogger.JAXR_LOGGER;
+import static org.jboss.as.jaxr.JAXRMessages.MESSAGES;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
@@ -60,7 +62,6 @@ public final class JAXRConnectionFactoryService extends AbstractService<Void> {
 
     static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("jaxr", "connectionfactory");
 
-    // [TODO] AS7-2277 JAXR subsystem i18n
     private final Logger log = Logger.getLogger("org.jboss.as.jaxr");
 
     private final InjectedValue<NamingStore> injectedJavaContext = new InjectedValue<NamingStore>();
@@ -83,7 +84,6 @@ public final class JAXRConnectionFactoryService extends AbstractService<Void> {
     public void start(final StartContext context) throws StartException {
         JAXRConfiguration config = injectedConfig.getValue();
         if (config.getConnectionFactoryBinding() != null) {
-            log.infof("Binding JAXR ConnectionFactory: %s", config.getConnectionFactoryBinding());
             try {
                 String jndiName = config.getConnectionFactoryBinding();
                 ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
@@ -95,9 +95,10 @@ public final class JAXRConnectionFactoryService extends AbstractService<Void> {
                 binderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(value));
                 binderService.getNamingStoreInjector().inject((ServiceBasedNamingStore) injectedJavaContext.getValue());
                 ServiceBuilder<?> builder = context.getChildTarget().addService(bindInfo.getBinderServiceName(), binderService);
+                JAXR_LOGGER.bindingJAXRConnectionFactory(config.getConnectionFactoryBinding());
                 builder.install();
             } catch (Exception ex) {
-                log.errorf(ex, "Cannot bind JAXR ConnectionFactory");
+                JAXR_LOGGER.bindingJAXRConnectionFactoryFailed();
             }
         }
     }
@@ -106,17 +107,17 @@ public final class JAXRConnectionFactoryService extends AbstractService<Void> {
     public void stop(final StopContext context) {
         JAXRConfiguration config = injectedConfig.getValue();
         if (config.getConnectionFactoryBinding() != null) {
-            log.debugf("Unbind JAXR ConnectionFactory");
             try {
                 String jndiName = config.getConnectionFactoryBinding();
                 ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
                 ServiceContainer serviceContainer = context.getController().getServiceContainer();
                 ServiceController<?> service = serviceContainer.getService(bindInfo.getBinderServiceName());
+                JAXR_LOGGER.unBindingJAXRConnectionFactory(config.getConnectionFactoryBinding());
                 if (service != null) {
                     service.setMode(ServiceController.Mode.REMOVE);
                 }
             } catch (Exception ex) {
-                log.errorf(ex, "Cannot unbind JAXR ConnectionFactory");
+                JAXR_LOGGER.unBindingJAXRConnectionFactoryFailed();
             }
         }
     }
@@ -137,33 +138,26 @@ public final class JAXRConnectionFactoryService extends AbstractService<Void> {
     protected ConnectionFactory loadConnectionFactoryImplementation(final JAXRConfiguration config) throws JAXRException {
 
         ConnectionFactory jaxrFactory = null;
-            //1. try to read from a system property
+        //1. try to read from a system property
         String factoryName = SecurityActions.getSystemProperty(JAXRConstants.JAXR_FACTORY_IMPLEMENTATION, null);
-        if (factoryName!=null) { if (log.isDebugEnabled()) log.debug("Obtained the JAXR factory name from System Property "
-                + JAXRConstants.JAXR_FACTORY_IMPLEMENTATION + " factory implementation class is "
-                + factoryName);
-        } else {
-            //2. try to obtain from jboss config
-          factoryName = config.getConnectionFactoryImplementation();
-        }
-        if (factoryName!=null ) { if (log.isDebugEnabled()) log.debug("Obtained the JAXR factory name from JBoss configuration: "
-                + " factory implementation class is " + factoryName);
-        } else {
-            //3. try to obtain from the ServiceAPI
-            //looking for file META-INF/services/javax.xml.registry.ConnectionFactory
+        if (factoryName!=null) JAXR_LOGGER.factoryNameFromSystemProperty(JAXRConstants.JAXR_FACTORY_IMPLEMENTATION, factoryName);
+        //2. try to obtain from jboss config
+        else factoryName = config.getConnectionFactoryImplementation();
+        if (factoryName!=null ) JAXR_LOGGER.factoryNameFromJBossConfig(JAXRConstants.JAXR_FACTORY_IMPLEMENTATION, factoryName);
+        else {
+        //3. try to obtain from the ServiceAPI
+        //looking for file META-INF/services/javax.xml.registry.ConnectionFactory
             ServiceLoader<ConnectionFactory> factoryLoader = ServiceLoader.load(ConnectionFactory.class);
             if (factoryLoader!=null) {
                 for (ConnectionFactory factory : factoryLoader) {
-                    if (log.isDebugEnabled()) log.debug("Obtained the JAXR factory name from the Service API: "
-                            + " using file META-INF/services/javax.xml.registry.ConnectionFactory="
-                            + factory.getClass().getName());
+                    JAXR_LOGGER.factoryNameFromServiceLoader(factory.getClass().getName());
                     return factory;
                 }
             }
         }
-            //4. default to scout
+        //4. default to scout
         if (factoryName==null) factoryName = JAXRConstants.DEFAULT_JAXR_FACTORY_IMPL;
-        if (log.isDebugEnabled()) log.debug("Using default JAXR factory name " + JAXRConstants.DEFAULT_JAXR_FACTORY_IMPL);
+        JAXR_LOGGER.factoryNameFromDefault(JAXRConstants.DEFAULT_JAXR_FACTORY_IMPL);
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         Class<?> factoryClass;
         try {
@@ -175,7 +169,7 @@ public final class JAXRConnectionFactoryService extends AbstractService<Void> {
             }
             jaxrFactory = (ConnectionFactory) factoryClass.newInstance();
         } catch(Throwable e) {
-            throw new JAXRException("Failed to create instance of: "+factoryName, e);
+            throw MESSAGES.couldNotInstantiateJAXRFactory(factoryName);
         }
         return jaxrFactory;
     }
@@ -203,6 +197,9 @@ public final class JAXRConnectionFactoryService extends AbstractService<Void> {
                 }
                 if (! properties.containsKey(JAXRConstants.SCOUT_TRANSPORT)) {
                     properties.setProperty(JAXRConstants.SCOUT_TRANSPORT, JAXRConstants.SCOUT_LOCAL_TRANSPORT);
+                }
+                if (! properties.containsKey(JAXRConstants.SCOUT_JUDDI_CLIENT_CONFIG)) {
+                    properties.setProperty(JAXRConstants.SCOUT_JUDDI_CLIENT_CONFIG, JAXRConstants.DEFAULT_JUDDI_CLIENT_CONFIG);
                 }
             }
         }
