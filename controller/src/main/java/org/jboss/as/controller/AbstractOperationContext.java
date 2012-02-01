@@ -24,10 +24,12 @@ package org.jboss.as.controller;
 
 import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CALLER_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_REQUIRES_RELOAD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_REQUIRES_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -167,6 +169,12 @@ abstract class AbstractOperationContext implements OperationContext {
         }
         if (stage == Stage.DONE) {
             throw MESSAGES.invalidStepStage();
+        }
+        if (!booting && activeStep != null) {
+            // Added steps inherit the caller type of their parent
+            if (activeStep.operation.hasDefined(OPERATION_HEADERS) && activeStep.operation.get(OPERATION_HEADERS).hasDefined(CALLER_TYPE)) {
+                operation.get(OPERATION_HEADERS, CALLER_TYPE).set(activeStep.operation.get(OPERATION_HEADERS, CALLER_TYPE));
+            }
         }
         if (stage == Stage.IMMEDIATE) {
             steps.get(currentStage).addFirst(new Step(step, response, operation, address));

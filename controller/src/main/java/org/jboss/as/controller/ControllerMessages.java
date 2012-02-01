@@ -2389,4 +2389,17 @@ public interface ControllerMessages {
      */
     @Message(id = 14839, value="Invalid value %s for %s; legal values are %s")
     OperationFailedException invalidEnumValue(String value, String parameterName, Set<?> allowedValues);
+
+    /*
+     * Creates an exception indicating a user tried to directly update the configuration model of a managed domain
+     * server rather, bypassing the Host Controller.
+     *
+     * @param operation the name of the operation
+     * @param address the address of the operation
+     *
+     * @return a {@link OperationFailedRuntimeException} for the error.
+     */
+    @Message(id = 14840, value = "Operation '%s' targetted at resource '%s' was directly invoked by a user. " +
+            "User operations are not permitted to directly update the persistent configuration of a server in a managed domain.")
+    OperationFailedRuntimeException modelUpdateNotAuthorized(String operation, PathAddress address);
 }
