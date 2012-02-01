@@ -126,13 +126,15 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
             injectedSubsystemState.getValue().addObserver(this);
 
             List<OSGiCapability> configcaps = new ArrayList<OSGiCapability>();
-            configcaps.add(new OSGiCapability(ModuleIdentifier.create("javax.api"), null));
-            configcaps.add(new OSGiCapability(ModuleIdentifier.create("org.osgi.enterprise"), null));
-            configcaps.add(new OSGiCapability(ModuleIdentifier.create("org.jboss.osgi.repository.api"), null));
+            configcaps.add(new OSGiCapability("javax.api", null));
+            configcaps.add(new OSGiCapability("org.osgi.enterprise", null));
+            configcaps.add(new OSGiCapability("org.jboss.osgi.repository.api", null));
             configcaps.addAll(injectedSubsystemState.getValue().getCapabilities());
             for (OSGiCapability moduleMetaData : configcaps) {
                 ServiceName serviceName = installModule(bundleManager, moduleMetaData);
-                pendingServices.put(serviceName, moduleMetaData);
+                if (serviceName != null) {
+                    pendingServices.put(serviceName, moduleMetaData);
+                }
             }
 
             // Install a service that has a dependency on all pending bundle INSTALLED services
@@ -164,21 +166,38 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
     }
 
     ServiceName installModule(BundleManagerService bundleManager, OSGiCapability moduleMetaData) throws Exception {
-        ModuleIdentifier identifier = moduleMetaData.getIdentifier();
+        String identifier = moduleMetaData.getIdentifier();
         Integer startLevel = moduleMetaData.getStartLevel();
 
-        // Attempt to install bundle from the bundles hirarchy
-        File modulesFile = ModuleIdentityArtifactProvider.getRepositoryEntry(bundlesDir, identifier);
-        if (modulesFile != null) {
-            URL url = modulesFile.toURI().toURL();
-            return installBundleFromURL(bundleManager, url, startLevel);
+        // Try the identifier as ModuleIdentifier
+        if (isValidModuleIdentifier(identifier)) {
+            ModuleIdentifier moduleId = ModuleIdentifier.fromString(identifier);
+
+            // Attempt to install bundle from the bundles hirarchy
+            File modulesFile = ModuleIdentityArtifactProvider.getRepositoryEntry(bundlesDir, moduleId);
+            if (modulesFile != null) {
+                URL url = modulesFile.toURI().toURL();
+                return installBundleFromURL(bundleManager, url, startLevel);
+            }
+
+            // Register module with the OSGi layer
+            ModuleLoader moduleLoader = Module.getBootModuleLoader();
+            Module module = moduleLoader.loadModule(moduleId);
+            OSGiMetaData metadata = getModuleMetadata(module);
+            return bundleManager.registerModule(serviceTarget, module, metadata);
         }
 
-        // Register module with the OSGi layer
-        ModuleLoader moduleLoader = Module.getBootModuleLoader();
-        Module module = moduleLoader.loadModule(identifier);
-        OSGiMetaData metadata = getModuleMetadata(module);
-        return bundleManager.registerModule(serviceTarget, module, metadata);
+        ROOT_LOGGER.cannotResolveCapability(identifier);
+        return null;
+    }
+
+    private boolean isValidModuleIdentifier(String identifier) {
+        try {
+            ModuleIdentifier.fromString(identifier);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     private ServiceName installBundleFromURL(BundleManagerService bundleManager, URL moduleURL, Integer startLevel) throws Exception {
@@ -252,27 +271,28 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
         if (event.getType() != ChangeType.CAPABILITY)
             return;
 
-        if (!event.isRemoved()) {
+        if (event.isRemoved() == false) {
             try {
                 for (final OSGiCapability module : injectedSubsystemState.getValue().getCapabilities()) {
                     if (module.getIdentifier().toString().equals(event.getId())) {
                         final ServiceName serviceName = installModule(injectedBundleManager.getValue(), module);
-
-                        ServiceBuilder<Void> builder = serviceController.getServiceContainer().addService(
-                                ServiceName.of(Services.AUTOINSTALL_PROVIDER, "ModuleUpdater", "" + updateServiceIdCounter.incrementAndGet()),
-                                new AbstractService<Void>() {
-                                    @Override
-                                    public void start(StartContext context) throws StartException {
-                                        try {
-                                            startBundle(serviceController.getServiceContainer(), serviceName, module);
-                                        } finally {
-                                            // Remove this temporary service
-                                            context.getController().setMode(Mode.REMOVE);
+                        if (serviceName != null) {
+                            ServiceBuilder<Void> builder = serviceController.getServiceContainer().addService(
+                                    ServiceName.of(Services.AUTOINSTALL_PROVIDER, "ModuleUpdater", "" + updateServiceIdCounter.incrementAndGet()),
+                                    new AbstractService<Void>() {
+                                        @Override
+                                        public void start(StartContext context) throws StartException {
+                                            try {
+                                                startBundle(serviceController.getServiceContainer(), serviceName, module);
+                                            } finally {
+                                                // Remove this temporary service
+                                                context.getController().setMode(Mode.REMOVE);
+                                            }
                                         }
-                                    }
-                                });
-                        builder.addDependency(serviceName);
-                        builder.install();
+                                    });
+                            builder.addDependency(serviceName);
+                            builder.install();
+                        }
                         return;
                     }
                 }

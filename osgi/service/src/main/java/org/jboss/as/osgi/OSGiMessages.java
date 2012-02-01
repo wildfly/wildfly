@@ -33,126 +33,51 @@ import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.vfs.VirtualFile;
 
 /**
- * Date: 27.06.2011
+ * Logging Id ranges: 11960-11999
+ *
+ * https://community.jboss.org/wiki/LoggingIds
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @author Thomas.Diesler@jboss.com
  */
 @MessageBundle(projectCode = "JBAS")
 public interface OSGiMessages {
-    /**
-     * The messages.
-     */
+
     OSGiMessages MESSAGES = Messages.getBundle(OSGiMessages.class);
 
-    /**
-     * A message indicating the deployment bundle could not be created from the deployment unit.
-     *
-     * @param deploymentUnit the deployment unit.
-     *
-     * @return the message.
-     */
-    @Message(id = 11940, value = "Cannot create bundle deployment from: %s")
+    @Message(id = 11960, value = "Cannot create bundle deployment from: %s")
     String cannotCreateBundleDeployment(DeploymentUnit deploymentUnit);
 
-    /**
-     * A message indicating the bundle cannot be deployed.
-     *
-     * @param deployment the deployment.
-     *
-     * @return the message.
-     */
-    @Message(id = 11941, value = "Cannot deploy bundle: %s")
+    @Message(id = 11961, value = "Cannot deploy bundle: %s")
     String cannotDeployBundle(Deployment deployment);
 
-    /**
-     * Creates an exception indicating the bundle directory could not be found.
-     *
-     * @param dir the bundle directory.
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 11942, value = "Cannot find bundles directory: %s")
+    @Message(id = 11962, value = "Cannot find bundles directory: %s")
     IllegalArgumentException cannotFindBundleDir(File dir);
 
-    /**
-     * A message indicating the file could not be parsed.
-     *
-     * @param file the file that could not be parsed.
-     *
-     * @return the message.
-     */
-    @Message(id = 11943, value = "Cannot parse: %s")
+    @Message(id = 11963, value = "Cannot parse: %s")
     String cannotParse(VirtualFile file);
 
-    /**
-     * A message indicating a failure to create the auto install list.
-     *
-     * @return the message.
-     */
-    @Message(id = 11944, value = "Failed to create auto install list")
+    @Message(id = 11964, value = "Failed to create auto install list")
     String failedToCreateAutoInstallList();
 
-    /**
-     * A message indicating a failure to create the framework services.
-     *
-     * @return the message.
-     */
-    @Message(id = 11945, value = "Failed to create Framework services")
+    @Message(id = 11965, value = "Failed to create Framework services")
     String failedToCreateFrameworkServices();
 
-    /**
-     * A message indicating the deployment failed to install.
-     *
-     * @param deployment the deployment that failed.
-     *
-     * @return the message.
-     */
-    @Message(id = 11946, value = "Failed to install deployment: %s")
+    @Message(id = 11966, value = "Failed to install deployment: %s")
     String failedToInstallDeployment(Deployment deployment);
 
-    /**
-     * A message indicating the module failed to register.
-     *
-     * @param module the module that failed to register.
-     *
-     * @return the message.
-     */
-    @Message(id = 11947, value = "Failed to register module: %s")
+    @Message(id = 11967, value = "Failed to register module: %s")
     String failedToRegisterModule(Module module);
 
-    /**
-     * Creates an exception indicating the variable is {@code null}.
-     *
-     * @param varName the variable name.
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 11948, value = "%s is null")
+    @Message(id = 11968, value = "%s is null")
     IllegalArgumentException nullVar(String varName);
 
-    /**
-     * A message indicating that the OSGi subsysem is not active
-     *
-     * @return the message.
-     */
-    @Message(id = 11949, value = "OSGi subsystem not active")
+    @Message(id = 11969, value = "OSGi subsystem not active")
     String osgiSubsystemNotActive();
 
-    /**
-     * A message indicating the property already exists.
-     *
-     * @param name the property name.
-     *
-     * @return the message.
-     */
-    @Message(id = 11950, value = "Property %s already exists")
+    @Message(id = 11970, value = "Property %s already exists")
     String propertyAlreadyExists(String name);
 
-    /**
-     * A message indicating that a service is not available.
-     *
-     * @return the message.
-     */
-    @Message(id = 11951, value = "Service not available")
+    @Message(id = 11971, value = "Service not available")
     String serviceNotAvailable();
 }

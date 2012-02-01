@@ -35,6 +35,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.osgi.framework.Services;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.osgi.framework.Bundle;
@@ -47,6 +48,7 @@ import org.osgi.service.startlevel.StartLevel;
 /**
  * @author David Bosschaert
  */
+//@Ignore("[AS7-3556] Replace mocked subsystem model tests with functional tests")
 public class BundleRuntimeHandlerTestCase {
     private BundleContext bundleContext;
     private ModelNode contextResult;

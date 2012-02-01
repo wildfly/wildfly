@@ -28,13 +28,16 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.osgi.framework.Services;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 /**
  * @author David Bosschaert
  */
+//@Ignore("[AS7-3556] Replace mocked subsystem model tests with functional tests")
 public class ActivateOperationTestCase {
+
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Test
     public void testActivateOperation() throws Exception {

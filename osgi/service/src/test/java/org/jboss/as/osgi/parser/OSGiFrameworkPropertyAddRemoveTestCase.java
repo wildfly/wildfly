@@ -31,12 +31,14 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
  * @author David Bosschaert
  * @author Thomas.Diesler@jboss.com
  */
+//@Ignore("[AS7-3556] Replace mocked subsystem model tests with functional tests")
 public class OSGiFrameworkPropertyAddRemoveTestCase extends ResourceAddRemoveTestBase {
 
     @Test

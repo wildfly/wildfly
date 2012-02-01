@@ -79,8 +79,7 @@ public class AutoInstallIntegrationTestCase {
 
         // Now we set up the SubsystemState object.
         List<OSGiCapability> modules = new ArrayList<SubsystemState.OSGiCapability>();
-        ModuleIdentifier id = ModuleIdentifier.fromString("abc");
-        OSGiCapability module = new OSGiCapability(id, null);
+        OSGiCapability module = new OSGiCapability("abc", null);
         modules.add(module);
         SubsystemState state = Mockito.mock(SubsystemState.class);
         Mockito.when(state.getCapabilities()).thenReturn(modules);
@@ -107,7 +106,7 @@ public class AutoInstallIntegrationTestCase {
         aii.serviceController = controller;
 
         // Do the actual Observer invocation on the AutoInstallIntegration object.
-        SubsystemState.ChangeEvent event = new SubsystemState.ChangeEvent(SubsystemState.ChangeType.CAPABILITY, false, id.toString());
+        SubsystemState.ChangeEvent event = new SubsystemState.ChangeEvent(SubsystemState.ChangeType.CAPABILITY, false, "abc");
         aii.update(null, event);
 
         Assert.assertEquals("The new module should have been installed in the system",
