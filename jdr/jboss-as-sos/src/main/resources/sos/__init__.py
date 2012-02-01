@@ -53,6 +53,11 @@ def set_i18n(path=None, basename="sos.po.sos"):
     ResourceBundle.getString. This is really only useful when using jython.
     Path is expected to be the path to a jarfile that contains the translation
     files (.properties)"""
+
+    # Since we are trying to modify the module-level _sos variable
+    # we have to declare it global
+    global _sos
+
     try:
         from java.util import ResourceBundle, Locale
 
