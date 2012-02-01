@@ -150,7 +150,7 @@ public class MessageEndpointInvocationHandler extends AbstractInvocationHandler 
     }
 
     protected final ClassLoader getApplicationClassLoader() {
-        return service.getMessageListenerInterface().getClassLoader();
+        return this.service.getClassLoader();
     }
 
     protected final TransactionManager getTransactionManager() {

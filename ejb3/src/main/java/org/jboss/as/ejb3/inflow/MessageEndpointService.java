@@ -38,4 +38,13 @@ public interface MessageEndpointService<T> {
     T obtain(long timeout, TimeUnit milliseconds);
 
     void release(T obj);
+
+    /**
+     * Returns the classloader that's applicable for the endpoint application.
+     * This classloader will be used to set the thread context classloader during the beforeDelivery()/afterDelivery()
+     * callbacks as mandated by the JCA 1.6 spec
+     *
+     * @return
+     */
+    ClassLoader getClassLoader();
 }
