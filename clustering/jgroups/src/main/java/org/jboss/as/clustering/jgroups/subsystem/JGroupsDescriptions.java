@@ -22,6 +22,8 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.clustering.jgroups.subsystem.CommonAttributes.DEFAULT_STACK;
+import static org.jboss.as.clustering.jgroups.subsystem.CommonAttributes.VALUE;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
@@ -86,10 +88,6 @@ public class JGroupsDescriptions {
     static ModelNode getProtocolStackDescription(Locale locale) {
         ResourceBundle resources = getResources(locale);
         final ModelNode stack = createDescription(resources, "jgroups.stack");
-        // attributes
-        for (AttributeDefinition attr : CommonAttributes.STACK_ATTRIBUTES) {
-            attr.addResourceAttributeDescription(resources, "jgroups.stack", stack);
-        }
 
         // information about its child "transport=TRANSPORT"
         stack.get(CHILDREN, ModelKeys.TRANSPORT, DESCRIPTION).set(resources.getString("jgroups.stack.transport"));
@@ -111,10 +109,6 @@ public class JGroupsDescriptions {
         ResourceBundle resources = getResources(locale);
 
         final ModelNode op = createOperationDescription(ADD, resources, "jgroups.stack.add");
-        // request parameters
-        for (AttributeDefinition attr : CommonAttributes.STACK_ATTRIBUTES) {
-            attr.addOperationParameterDescription(resources, "jgroups.stack", op);
-        }
         return op;
     }
 
@@ -124,6 +118,82 @@ public class JGroupsDescriptions {
         op.get(REQUEST_PROPERTIES).setEmptyObject();
         return op;
     }
+
+    // stack transport element
+    static ModelNode getTransportDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        final ModelNode transport = createDescription(resources, "jgroups.stack.transport");
+        for (AttributeDefinition attr : CommonAttributes.TRANSPORT_ATTRIBUTES) {
+            attr.addResourceAttributeDescription(resources, "jgroups.stack.transport", transport);
+        }
+        return transport ;
+    }
+
+    static ModelNode getTransportAddDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        final ModelNode op = createOperationDescription(ADD, resources, "jgroups.stack.transport.add");
+        for (AttributeDefinition attr : CommonAttributes.TRANSPORT_ATTRIBUTES) {
+            attr.addOperationParameterDescription(resources, "jgroups.stack.transport", op);
+        }
+        return op;
+    }
+
+    static ModelNode getTransportRemoveDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        final ModelNode op = createOperationDescription(REMOVE, resources, "jgroups.stack.transport.remove");
+        op.get(REQUEST_PROPERTIES).setEmptyObject();
+        return op;
+    }
+
+
+    // stack protocol element
+    static ModelNode getProtocolDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        final ModelNode protocol = createDescription(resources, "jgroups.stack.protocol");
+        for (AttributeDefinition attr : CommonAttributes.PROTOCOL_ATTRIBUTES) {
+            attr.addResourceAttributeDescription(resources, "jgroups.stack.protocol", protocol);
+        }
+        return protocol ;
+    }
+
+    static ModelNode getProtocolAddDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        final ModelNode op = createOperationDescription(ModelKeys.ADD_PROTOCOL, resources, "jgroups.stack.protocol.add");
+        for (AttributeDefinition attr : CommonAttributes.PROTOCOL_ATTRIBUTES) {
+            attr.addOperationParameterDescription(resources, "jgroups.stack.protocol", op);
+        }
+        return op;
+    }
+
+    static ModelNode getProtocolRemoveDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        final ModelNode op = createOperationDescription(ModelKeys.REMOVE_PROTOCOL, resources, "jgroups.stack.protocol.remove");
+        CommonAttributes.TYPE.addOperationParameterDescription(resources, "jgroups.stack.protocol", op);
+        return op;
+    }
+
+    // protocol property element
+    static ModelNode getProtocolPropertyDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        final ModelNode protocolProperty = createDescription(resources, "jgroups.stack.protocol.property");
+        VALUE.addResourceAttributeDescription(resources, "jgroups.stack.protocol.property", protocolProperty);
+        return protocolProperty ;
+    }
+
+    static ModelNode getProtocolPropertyAddDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        final ModelNode op = createOperationDescription(ADD, resources, "jgroups.stack.protocol.property.add");
+        VALUE.addOperationParameterDescription(resources, "jgroups.stack.protocol.property", op);
+        return op;
+    }
+
+    static ModelNode getProtocolPropertyRemoveDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        final ModelNode op = createOperationDescription(REMOVE, resources, "jgroups.stack.protocol.property.remove");
+        op.get(REQUEST_PROPERTIES).setEmptyObject();
+        return op;
+    }
+
 
     private static ResourceBundle getResources(Locale locale) {
         return ResourceBundle.getBundle(RESOURCE_NAME, (locale == null) ? Locale.getDefault() : locale);

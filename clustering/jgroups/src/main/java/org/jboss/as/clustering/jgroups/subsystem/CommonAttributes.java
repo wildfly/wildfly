@@ -31,6 +31,7 @@ public interface CommonAttributes {
                     .setXmlName(Attribute.TYPE.getLocalName())
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+//                    .setValidator(new ProtocolTypeValidator(false))
                     .build();
 
     SimpleAttributeDefinition SHARED =
@@ -110,8 +111,17 @@ public interface CommonAttributes {
             setAllowNull(true).
             build();
 
-    AttributeDefinition[] PROTOCOL_ATTRIBUTES = {TYPE, SHARED, SOCKET_BINDING, DIAGNOSTICS_SOCKET_BINDING, DEFAULT_EXECUTOR,
+    SimpleAttributeDefinition VALUE =
+            new SimpleAttributeDefinitionBuilder("value", ModelType.STRING, false)
+                    .setXmlName("value")
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .build();
+
+    AttributeDefinition[] TRANSPORT_ATTRIBUTES = {TYPE, SHARED, SOCKET_BINDING, DIAGNOSTICS_SOCKET_BINDING, DEFAULT_EXECUTOR,
             OOB_EXECUTOR, TIMER_EXECUTOR, THREAD_FACTORY, SITE, RACK, MACHINE, PROPERTIES};
+
+    AttributeDefinition[] PROTOCOL_ATTRIBUTES = {TYPE, SOCKET_BINDING, PROPERTIES};
 
     ObjectTypeAttributeDefinition PROTOCOL = ObjectTypeAttributeDefinition.
             Builder.of(ModelKeys.PROTOCOL, PROTOCOL_ATTRIBUTES).
@@ -120,9 +130,9 @@ public interface CommonAttributes {
             build();
 
     ObjectTypeAttributeDefinition TRANSPORT = ObjectTypeAttributeDefinition.
-            Builder.of(ModelKeys.TRANSPORT, PROTOCOL_ATTRIBUTES).
+            Builder.of(ModelKeys.TRANSPORT, TRANSPORT_ATTRIBUTES).
             setAllowNull(true).
-            setSuffix("protocol").
+            setSuffix("transport").
             build();
 
     ObjectListAttributeDefinition PROTOCOLS = ObjectListAttributeDefinition.
