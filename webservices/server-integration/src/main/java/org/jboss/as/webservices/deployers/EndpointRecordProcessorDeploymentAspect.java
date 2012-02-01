@@ -21,49 +21,60 @@
  */
 package org.jboss.as.webservices.deployers;
 
-import java.lang.management.ManagementFactory;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ServiceLoader;
 
-import javax.management.MBeanServer;
-
-import org.jboss.as.webservices.util.WSServices;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.ws.api.monitoring.RecordProcessor;
 import org.jboss.ws.api.monitoring.RecordProcessorFactory;
+import org.jboss.ws.common.integration.AbstractDeploymentAspect;
 import org.jboss.wsf.spi.deployment.Deployment;
+import org.jboss.wsf.spi.deployment.Endpoint;
 
 /**
- * A deployer that sets the record processors for each endpoint
+ * An aspect that sets the record processors for each endpoint.
  *
  * @author alessio.soldano@jboss.com
- * @since 18-Jul-2011
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class EndpointRecordProcessorDeploymentAspect extends org.jboss.ws.common.deployment.EndpointRecordProcessorDeploymentAspect {
+public final class EndpointRecordProcessorDeploymentAspect extends AbstractDeploymentAspect {
+
+    private List<RecordProcessor> processors = new LinkedList<RecordProcessor>();
 
     public EndpointRecordProcessorDeploymentAspect() {
-        super();
         ServiceLoader<RecordProcessorFactory> loader = ServiceLoader.load(RecordProcessorFactory.class);
         Iterator<RecordProcessorFactory> iterator = loader.iterator();
-        List<RecordProcessor> list = new LinkedList<RecordProcessor>();
         while (iterator.hasNext()) {
             RecordProcessorFactory factory = iterator.next();
-            list.addAll(factory.newRecordProcessors());
+            processors.addAll(factory.newRecordProcessors());
         }
-        setProcessors(list);
     }
 
     @Override
-    public void start(Deployment dep) {
-        final ServiceController<?> controller = WSServices.getContainerRegistry().getService(ServiceName.JBOSS.append("mbean", "server"));
-        if (controller != null) {
-            setMbeanServer((MBeanServer) controller.getService().getValue());
-        } else {
-            setMbeanServer(ManagementFactory.getPlatformMBeanServer());
-        }
-        super.start(dep);
+    public void start(final Deployment dep) {
+       for (final Endpoint ep : dep.getService().getEndpoints()) {
+          List<RecordProcessor> processorList = new LinkedList<RecordProcessor>();
+          if (processors != null) {
+             for (RecordProcessor pr : processors) {
+                try {
+                   RecordProcessor clone = (RecordProcessor)pr.clone();
+                   processorList.add(clone);
+                }
+                catch (final CloneNotSupportedException ex) {
+                   throw new RuntimeException(ex);
+                }
+             }
+          }
+          ep.setRecordProcessors(processorList);
+       }
     }
+
+    public void stop(final Deployment dep) {
+        for (final Endpoint ep : dep.getService().getEndpoints()) {
+            ep.setRecordProcessors(Collections.<RecordProcessor>emptyList());
+        }
+    }
+
 }

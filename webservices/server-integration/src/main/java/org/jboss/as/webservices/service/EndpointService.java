@@ -23,6 +23,11 @@ package org.jboss.as.webservices.service;
 
 import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 
+import java.util.List;
+
+import javax.management.JMException;
+import javax.management.MBeanServer;
+
 import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.SecurityDomainService;
@@ -44,6 +49,9 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityUtil;
+import org.jboss.ws.api.monitoring.RecordProcessor;
+import org.jboss.ws.common.ObjectNameFactory;
+import org.jboss.ws.common.monitoring.ManagedRecordProcessor;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.management.EndpointRegistry;
@@ -54,15 +62,17 @@ import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
  * dependencies upon other AS services that are started during the deployment)
  *
  * @author alessio.soldano@jboss.com
- * @since 13-May-2011
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public final class EndpointService implements Service<Endpoint> {
 
+    private static final ServiceName MBEAN_SERVER_NAME = ServiceName.JBOSS.append("mbean", "server");
     private final Endpoint endpoint;
     private final ServiceName name;
     private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<SecurityDomainContext>();
     private final InjectedValue<WebAppController> pclWebAppControllerValue = new InjectedValue<WebAppController>();
     private final InjectedValue<EndpointRegistry> endpointRegistryValue = new InjectedValue<EndpointRegistry>();
+    private final InjectedValue<MBeanServer> mBeanServerValue = new InjectedValue<MBeanServer>();
 
     private EndpointService(final Endpoint endpoint, final ServiceName name) {
         this.endpoint = endpoint;
@@ -89,6 +99,10 @@ public final class EndpointService implements Service<Endpoint> {
         if (hasWebservicesMD(endpoint)) { //basically JAX-RPC deployments require the PortComponentLinkServlet to be available
             pclWebAppControllerValue.getValue().incrementUsers();
         }
+        final List<RecordProcessor> processors = endpoint.getRecordProcessors();
+        for (final RecordProcessor processor : processors) {
+           registerRecordProcessor(processor, endpoint);
+        }
         endpointRegistryValue.getValue().register(endpoint);
     }
 
@@ -100,6 +114,34 @@ public final class EndpointService implements Service<Endpoint> {
             pclWebAppControllerValue.getValue().decrementUsers();
         }
         endpointRegistryValue.getValue().unregister(endpoint);
+        final List<RecordProcessor> processors = endpoint.getRecordProcessors();
+        for (final RecordProcessor processor : processors) {
+           unregisterRecordProcessor(processor, endpoint);
+        }
+    }
+
+    private void registerRecordProcessor(final RecordProcessor processor, final Endpoint ep) {
+        try {
+            mBeanServerValue.getValue().registerMBean(processor, ObjectNameFactory.create(ep.getName() + ",recordProcessor=" + processor.getName()));
+        }
+        catch (final JMException ex) {
+            ROOT_LOGGER.trace("Cannot register endpoint with JMX server, trying with the default ManagedRecordProcessor: " + ex.getMessage());
+            try {
+                mBeanServerValue.getValue().registerMBean(new ManagedRecordProcessor(processor), ObjectNameFactory.create(ep.getName() + ",recordProcessor=" + processor.getName()));
+            }
+            catch (final JMException e) {
+                ROOT_LOGGER.cannotRegisterRecordProcessor();
+            }
+        }
+    }
+
+    private void unregisterRecordProcessor(final RecordProcessor processor, final Endpoint ep) {
+       try {
+           mBeanServerValue.getValue().unregisterMBean(ObjectNameFactory.create(ep.getName() + ",recordProcessor=" + processor.getName()));
+       }
+       catch (final JMException e) {
+           ROOT_LOGGER.cannotUnregisterRecordProcessor();
+       }
     }
 
     private boolean hasWebservicesMD(final Endpoint endpoint) {
@@ -119,6 +161,10 @@ public final class EndpointService implements Service<Endpoint> {
         return endpointRegistryValue;
     }
 
+    public Injector<MBeanServer> getMBeanServerInjector() {
+        return mBeanServerValue;
+    }
+
     public static void install(final ServiceTarget serviceTarget, final Endpoint endpoint, final DeploymentUnit unit) {
         final ServiceName serviceName = getServiceName(unit, endpoint.getShortName());
         final EndpointService service = new EndpointService(endpoint, serviceName);
@@ -134,15 +180,18 @@ public final class EndpointService implements Service<Endpoint> {
         builder.addDependency(DependencyType.REQUIRED,
                 WSServices.PORT_COMPONENT_LINK_SERVICE,
                 WebAppController.class, service.getPclWebAppControllerInjector());
+        builder.addDependency(DependencyType.REQUIRED, MBEAN_SERVER_NAME,
+                MBeanServer.class,
+                service.getMBeanServerInjector());
         builder.setInitialMode(Mode.ACTIVE);
         builder.install();
     }
 
-    private static String getDeploymentSecurityDomainName(Endpoint ep) {
+    private static String getDeploymentSecurityDomainName(final Endpoint ep) {
         JBossWebMetaData metadata = ep.getService().getDeployment().getAttachment(JBossWebMetaData.class);
         String metaDataSecurityDomain = metadata != null ? metadata.getSecurityDomain() : null;
-        return metaDataSecurityDomain == null ? SecurityConstants.DEFAULT_APPLICATION_POLICY : SecurityUtil
-                .unprefixSecurityDomain(metaDataSecurityDomain.trim());
+        return metaDataSecurityDomain == null ? SecurityConstants.DEFAULT_APPLICATION_POLICY
+            : SecurityUtil.unprefixSecurityDomain(metaDataSecurityDomain.trim());
     }
 
 }
