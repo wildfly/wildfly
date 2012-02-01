@@ -21,7 +21,6 @@ import org.infinispan.client.hotrod.impl.ConfigurationProperties;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.configuration.cache.InvocationBatchingConfigurationBuilder;
 import org.infinispan.configuration.cache.LoaderConfigurationBuilder;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.configuration.parsing.Parser;
@@ -371,11 +370,10 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
             builder.transaction().syncCommitPhase(true).syncRollbackPhase(true);
         }
         if (cache.hasDefined(ModelKeys.BATCHING)) {
-            InvocationBatchingConfigurationBuilder batchingBuilder = builder.transaction().transactionMode(org.infinispan.transaction.TransactionMode.TRANSACTIONAL).invocationBatching();
             if (cache.get(ModelKeys.BATCHING).asBoolean()) {
-                batchingBuilder.enable();
+                builder.transaction().transactionMode(org.infinispan.transaction.TransactionMode.TRANSACTIONAL).invocationBatching().enable();
             } else {
-                batchingBuilder.disable();
+                builder.transaction().invocationBatching().disable();
             }
         }
         // eviction is a child resource
