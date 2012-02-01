@@ -28,7 +28,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import java.util.Locale;
 import java.util.NoSuchElementException;
 
-import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -44,7 +43,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class ValidateAddressOperationHandler implements OperationStepHandler, DescriptionProvider {
 
-    public static final String OPERATION_NAME = "check-address";
+    public static final String OPERATION_NAME = "validate-address";
     public static final ValidateAddressOperationHandler INSTANCE = new ValidateAddressOperationHandler();
 
     @Override
@@ -64,6 +63,6 @@ public class ValidateAddressOperationHandler implements OperationStepHandler, De
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return CommonDescriptions.getCheckAddressOperation(locale);
+        return CommonDescriptions.getValidateAddressOperation(locale);
     }
 }
