@@ -61,6 +61,14 @@ public class ParserUtil {
         StateParser.parse(commandLine, callbackHandler, OperationRequestState.INSTANCE);
     }
 
+    public static void parseHeaders(String commandLine, final CommandLineParser.CallbackHandler handler) throws CommandFormatException {
+        if(commandLine == null) {
+            return;
+        }
+        final ParsingStateCallbackHandler callbackHandler = getCallbackHandler(handler);
+        StateParser.parse(commandLine, callbackHandler, HeaderListState.INSTANCE);
+    }
+
     public static void parseCommandArgs(String commandLine, final CommandLineParser.CallbackHandler handler) throws CommandFormatException {
         if(commandLine == null) {
             return;
@@ -242,16 +250,21 @@ public class ParserUtil {
                     }
                     buffer.setLength(0);
                 } else if (HeaderValueState.ID.equals(id)) {
-                    handler.header(name, buffer.toString().trim(), bufferStartIndex);
+                    handler.header(name, buffer.toString(), bufferStartIndex);
                     buffer.setLength(0);
-//                    if(!ctx.isEndOfContent()) {
-//                        handler.propertySeparator(ctx.getLocation());
-//                    }
                     inValue = false;
+                    nameValueSeparator = -1;
                 } else if (HeaderState.ID.equals(id)) {
+                    if(nameValueSeparator > 0) {
+                        handler.headerNameValueSeparator(nameValueSeparator);
+                        nameValueSeparator = -1;
+                    }
                     this.name = null;
                     delegate = null;
                     delegateStateId = null;
+                    if(!ctx.isEndOfContent() && ctx.getCharacter() == ';') {
+                        handler.headerSeparator(ctx.getLocation());
+                    }
                 } else if (OutputTargetState.ID.equals(id)) {
                     handler.outputTarget(bufferStartIndex, buffer.toString().trim());
                     buffer.setLength(0);

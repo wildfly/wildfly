@@ -55,5 +55,6 @@ public class HeaderValueState extends DefaultParsingState {
             }});
         setDefaultHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
         setReturnHandler(GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        setIgnoreWhitespaces(true);
     }
 }
