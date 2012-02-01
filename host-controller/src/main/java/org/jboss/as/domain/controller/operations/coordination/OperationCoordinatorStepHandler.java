@@ -214,8 +214,7 @@ public class OperationCoordinatorStepHandler {
                     }
                 }
 
-                context.addStep(slaveOp, new DomainSlaveHandler(remoteProxies, overallContext, executorService), OperationContext.Stage.DOMAIN);
-
+                context.addStep(slaveOp.clone(), new DomainSlaveHandler(remoteProxies, overallContext, executorService), OperationContext.Stage.DOMAIN);
             }
         }
 
