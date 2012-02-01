@@ -24,6 +24,7 @@ package org.jboss.as.controller;
 
 import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 import java.io.InputStream;
 import java.util.Collection;
@@ -102,6 +103,7 @@ final class OperationContextImpl extends AbstractOperationContext {
     private Step lockStep;
     /** The step that acquired the container monitor  */
     private Step containerMonitorStep;
+    private volatile Boolean requiresModelUpdateAuthorization;
 
     OperationContextImpl(final ModelControllerImpl modelController, final ProcessType processType,
                          final RunningMode runningMode, final EnumSet<ContextFlag> contextFlags,
@@ -393,6 +395,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (currentStage != Stage.MODEL) {
             throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
         }
+        authorizeModelUpdate();
         if (!isModelAffected()) {
             takeWriteLock();
             model = model.clone();
@@ -453,6 +456,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (currentStage != Stage.MODEL) {
             throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
         }
+        authorizeModelUpdate();
         if (!isModelAffected()) {
             takeWriteLock();
             model = model.clone();
@@ -492,6 +496,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (absoluteAddress.size() == 0) {
             throw MESSAGES.duplicateResourceAddress(absoluteAddress);
         }
+        authorizeModelUpdate();
         if (!isModelAffected()) {
             takeWriteLock();
             model = model.clone();
@@ -543,6 +548,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (currentStage != Stage.MODEL) {
             throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
         }
+        authorizeModelUpdate();
         if (!isModelAffected()) {
             takeWriteLock();
             model = model.clone();
@@ -680,6 +686,22 @@ final class OperationContextImpl extends AbstractOperationContext {
             throw MESSAGES.nullVar("key");
         }
         return key.cast(valueAttachments.remove(key));
+    }
+
+    private void authorizeModelUpdate() {
+        if (isModelUpdateAuthorizationRequired()) {
+            ModelNode op = activeStep.operation;
+            if (op.hasDefined(OPERATION_HEADERS) && op.get(OPERATION_HEADERS).hasDefined(CALLER_TYPE) && USER.equals(op.get(OPERATION_HEADERS, CALLER_TYPE).asString())) {
+                throw ControllerMessages.MESSAGES.modelUpdateNotAuthorized(op.require(OP).asString(), PathAddress.pathAddress(op.get(OP_ADDR)));
+            }
+        }
+    }
+
+    private boolean isModelUpdateAuthorizationRequired() {
+        if (requiresModelUpdateAuthorization == null) {
+            requiresModelUpdateAuthorization = !isBooting() && getProcessType() == ProcessType.DOMAIN_SERVER;
+        }
+        return requiresModelUpdateAuthorization.booleanValue();
     }
 
     class ContextServiceTarget implements ServiceTarget {
@@ -973,11 +995,13 @@ final class OperationContextImpl extends AbstractOperationContext {
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public ServiceController<?> getRequiredService(ServiceName serviceName) throws ServiceNotFoundException {
             return new OperationContextServiceController(registry.getRequiredService(serviceName));
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public ServiceController<?> getService(ServiceName serviceName) {
             ServiceController<?> controller = registry.getService(serviceName);
             if (controller == null) {
