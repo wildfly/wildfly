@@ -7,13 +7,12 @@
 
   <servlet>
     <servlet-name>SampleServlet</servlet-name>
-    <servlet-class>org.jboss.as.test.smoke.embedded.deployment.SampleServlet</servlet-class>
+    <servlet-class>org.jboss.as.test.smoke.jsr88.SampleServlet</servlet-class>
   </servlet>
 
   <servlet-mapping>
     <servlet-name>SampleServlet</servlet-name>
-    <url-pattern>/myapp
-/*</url-pattern>
+    <url-pattern>/*</url-pattern>
   </servlet-mapping>
 
 </web-app>

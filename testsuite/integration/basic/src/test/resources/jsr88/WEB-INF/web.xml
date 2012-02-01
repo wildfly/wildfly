@@ -7,7 +7,7 @@
 
   <servlet>
     <servlet-name>SampleServlet</servlet-name>
-    <servlet-class>org.jboss.as.test.smoke.embedded.deployment.SampleServlet</servlet-class>
+    <servlet-class>org.jboss.as.test.integration.jsr88.SampleServlet</servlet-class>
   </servlet>
 
   <servlet-mapping>

@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE jboss PUBLIC
+   "-//JBoss//DTD JBOSS 4.0//EN"
+   "http://www.jboss.org/j2ee/dtd/jboss_4_0.dtd">
+
+<jboss>
+   <enterprise-beans>
+      <session>
+         <ejb-name>EchoBean</ejb-name>
+         <jndi-name>jsr88/test/Echo</jndi-name>
+      </session>
+   </enterprise-beans>
+</jboss>
