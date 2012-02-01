@@ -22,6 +22,17 @@
 
 package org.jboss.as.host.controller;
 
+import org.jboss.as.controller.client.OperationAttachments;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_MODEL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import org.jboss.as.domain.controller.operations.ApplyRemoteMasterDomainModelHandler;
 import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
@@ -33,6 +44,7 @@ import java.net.URI;
 import java.net.UnknownHostException;
 import java.security.AccessController;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -59,6 +71,7 @@ import org.jboss.as.host.controller.mgmt.DomainControllerProtocol;
 import org.jboss.as.host.controller.mgmt.DomainRemoteFileRequestAndHandler;
 import org.jboss.as.process.protocol.Connection.ClosedCallback;
 import org.jboss.as.protocol.ProtocolChannelClient;
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
 import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
@@ -229,7 +242,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
                     connectionClosed();
                 }
             });
-            handler.addHandlerFactory(new TransactionalModelControllerOperationHandler(controller, handler));
+
             channel.receiveMessage(handler.getReceiver());
             this.handler = handler;
 
@@ -242,8 +255,9 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
 
         SlaveRegistrationException error = null;
         try {
-            error = handler.executeRequest(new RegisterModelControllerRequest(), null).getResult().get();
+            handler.executeRequest(new RegisterModelControllerRequest(), null).getResult().get();
         } catch (Exception e) {
+            e.printStackTrace();
             ROOT_LOGGER.errorRetrievingDomainModel(host.getHostAddress(), port, e.getLocalizedMessage());
             throw new IllegalStateException(e);
         }
@@ -381,11 +395,10 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         return this;
     }
 
-    private abstract class RegistryRequest<T> extends AbstractManagementRequest<T, Void> {
+    private class RegisterModelControllerRequest extends AbstractManagementRequest<Void, Void> {
 
-    }
-
-    private class RegisterModelControllerRequest extends RegistryRequest<SlaveRegistrationException> {
+        //
+        private final ModelNode params = new ModelNode();
 
         @Override
         public byte getOperationType() {
@@ -393,23 +406,87 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         }
 
         @Override
-        protected void sendRequest(ActiveOperation.ResultHandler<SlaveRegistrationException> resultHandler, ManagementRequestContext<Void> voidManagementRequestContext, FlushableDataOutput output) throws IOException {
+        protected void sendRequest(final ActiveOperation.ResultHandler<Void> resultHandler, final ManagementRequestContext<Void> context, final FlushableDataOutput output) throws IOException {
             output.write(DomainControllerProtocol.PARAM_HOST_ID);
             output.writeUTF(name);
+            params.writeExternal(output);
         }
 
         @Override
-        public void handleRequest(DataInput input, ActiveOperation.ResultHandler<SlaveRegistrationException> resultHandler, ManagementRequestContext<Void> voidManagementRequestContext) throws IOException {
+        public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<Void> resultHandler, final ManagementRequestContext<Void> context) throws IOException {
             byte status = input.readByte();
+            final ModelNode domainModel = new ModelNode();
+            domainModel.readExternal(input);
             if (status == DomainControllerProtocol.PARAM_OK) {
-                resultHandler.done(null);
+                context.executeAsync(new ManagementRequestContext.AsyncTask<Void>() {
+                    @Override
+                    public void execute(ManagementRequestContext<Void> voidManagementRequestContext) throws Exception {
+                        final List<ModelNode> bootOperations = domainModel.get(ModelDescriptionConstants.RESULT).asList();
+                        final ModelNode operation = new ModelNode();
+                        operation.get(OP).set(ApplyRemoteMasterDomainModelHandler.OPERATION_NAME);
+                        //FIXME this makes the op work after boot (i.e. slave connects to restarted master), but does not make the slave resync the servers
+                        operation.get(OPERATION_HEADERS, "execute-for-coordinator").set(true);
+                        operation.get(OP_ADDR).setEmptyList();
+                        operation.get(DOMAIN_MODEL).set(bootOperations);
+
+                        final ModelNode result;
+                        try {
+                            result = controller.execute(operation, OperationMessageHandler.logging, ModelController.OperationTransactionControl.COMMIT, OperationAttachments.EMPTY);
+                        } catch (Exception e) {
+                            handler.executeRequest(context.getOperationId(), new CompleteRegistrationRequest(DomainControllerProtocol.PARAM_ERROR));
+                            return;
+                        }
+                        final byte param;
+                        if(result.get(OUTCOME).asString().equals(SUCCESS)) {
+                            param = DomainControllerProtocol.PARAM_OK;
+                        } else {
+                            param = DomainControllerProtocol.PARAM_ERROR;
+                        }
+                        handler.executeRequest(context.getOperationId(), new CompleteRegistrationRequest(param));
+                    }
+                });
+
             } else {
-                resultHandler.done(SlaveRegistrationException.parse(input.readUTF()));
+                resultHandler.failed(new IOException("failed " + domainModel));
             }
         }
     }
 
-    private class UnregisterModelControllerRequest extends RegistryRequest<Void> {
+    private class CompleteRegistrationRequest extends AbstractManagementRequest<Void, Void> {
+
+        private final byte outcome;
+        private final String message = "yay!";
+
+        private CompleteRegistrationRequest(final byte outcome) {
+            this.outcome = outcome;
+        }
+
+        @Override
+        public byte getOperationType() {
+            return DomainControllerProtocol.COMPLETE_HOST_CONTROLLER_REGISTRATION;
+        }
+
+        @Override
+        protected void sendRequest(final ActiveOperation.ResultHandler<Void> resultHandler, final ManagementRequestContext<Void> context, final FlushableDataOutput output) throws IOException {
+            output.writeByte(outcome);
+            output.writeUTF(message);
+        }
+
+        @Override
+        public void handleRequest(DataInput input, ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<Void> voidManagementRequestContext) throws IOException {
+            final byte param = input.readByte();
+            final ModelNode result = new ModelNode();
+            result.readExternal(input);
+            if(param != DomainControllerProtocol.PARAM_OK) {
+                resultHandler.failed(new IOException("failed to register..." + result));
+            }
+            // Once completely registered accept proxy-controller operations
+            handler.addHandlerFactory(new TransactionalModelControllerOperationHandler(controller, handler));
+            resultHandler.done(null);
+        }
+    }
+
+    private class UnregisterModelControllerRequest extends AbstractManagementRequest<Void, Void> {
 
         @Override
         public byte getOperationType() {
@@ -429,7 +506,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
 
     }
 
-    private class GetFileRequest extends RegistryRequest<File> {
+    private class GetFileRequest extends AbstractManagementRequest<File, Void> {
         private final byte rootId;
         private final String filePath;
         private final HostFileRepository localFileRepository;

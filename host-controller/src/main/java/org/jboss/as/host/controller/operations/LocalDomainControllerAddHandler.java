@@ -35,7 +35,6 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainModelUtil;
-import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
 import org.jboss.as.host.controller.HostControllerConfigurationPersister;
 import org.jboss.as.host.controller.descriptions.HostRootDescription;
 import org.jboss.as.repository.ContentRepository;
@@ -57,7 +56,6 @@ public class LocalDomainControllerAddHandler implements OperationStepHandler, De
     private final LocalHostControllerInfoImpl hostControllerInfo;
     private final ContentRepository contentRepository;
     private final DomainController domainController;
-    private final UnregisteredHostChannelRegistry channelRegistry;
     private final ExtensionRegistry extensionRegistry;
 
     public static LocalDomainControllerAddHandler getInstance(final ManagementResourceRegistration rootRegistration,
@@ -66,10 +64,9 @@ public class LocalDomainControllerAddHandler implements OperationStepHandler, De
                                                                  final HostFileRepository fileRepository,
                                                                  final ContentRepository contentRepository,
                                                                  final DomainController domainController,
-                                                                 final UnregisteredHostChannelRegistry channelRegistry,
                                                                  final ExtensionRegistry extensionRegistry) {
         return new LocalDomainControllerAddHandler(rootRegistration, hostControllerInfo, overallConfigPersister,
-                fileRepository, contentRepository, domainController, channelRegistry, extensionRegistry);
+                fileRepository, contentRepository, domainController, extensionRegistry);
     }
 
     protected LocalDomainControllerAddHandler(final ManagementResourceRegistration rootRegistration,
@@ -78,7 +75,6 @@ public class LocalDomainControllerAddHandler implements OperationStepHandler, De
                                     final HostFileRepository fileRepository,
                                     final ContentRepository contentRepository,
                                     final DomainController domainController,
-                                    final UnregisteredHostChannelRegistry channelRegistry,
                                     final ExtensionRegistry extensionRegistry) {
         this.rootRegistration = rootRegistration;
         this.overallConfigPersister = overallConfigPersister;
@@ -86,7 +82,6 @@ public class LocalDomainControllerAddHandler implements OperationStepHandler, De
         this.hostControllerInfo = hostControllerInfo;
         this.contentRepository = contentRepository;
         this.domainController = domainController;
-        this.channelRegistry = channelRegistry;
         this.extensionRegistry = extensionRegistry;
     }
 
@@ -112,7 +107,7 @@ public class LocalDomainControllerAddHandler implements OperationStepHandler, De
         overallConfigPersister.initializeDomainConfigurationPersister(false);
 
         DomainModelUtil.initializeMasterDomainRegistry(rootRegistration, overallConfigPersister.getDomainPersister(),
-                contentRepository, fileRepository, domainController, channelRegistry, extensionRegistry);
+                contentRepository, fileRepository, domainController, extensionRegistry);
     }
 
 

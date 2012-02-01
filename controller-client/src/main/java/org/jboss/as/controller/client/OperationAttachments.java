@@ -22,7 +22,9 @@
 package org.jboss.as.controller.client;
 
 import java.io.Closeable;
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -48,4 +50,22 @@ public interface OperationAttachments extends Closeable {
      * @return the streams. If there are none an empty list is returned
      */
     List<InputStream> getInputStreams();
+
+    OperationAttachments EMPTY = new OperationAttachments() {
+        @Override
+        public boolean isAutoCloseStreams() {
+            return false;
+        }
+
+        @Override
+        public List<InputStream> getInputStreams() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public void close() {
+            //
+        }
+    };
+
 }
