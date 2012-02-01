@@ -475,6 +475,7 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase{
     }
 
     @Test
+    @Ignore("AS7-3534")
     public void testReadInstalledDrivers() throws Exception {
 
         final ModelNode address = new ModelNode();
