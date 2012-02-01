@@ -51,6 +51,9 @@ import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.Endpoint;
 import org.xnio.OptionMap;
+import org.xnio.Options;
+import org.xnio.Sequence;
+import org.xnio.OptionMap.Builder;
 
 /**
  * Service used to connect to the host controller.  Will maintain the connection for the length of the service life.
@@ -59,6 +62,7 @@ import org.xnio.OptionMap;
  */
 public class HostControllerConnectionService implements Service<Channel> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "channel");
+    private static final String JBOSS_LOCAL_USER = "JBOSS-LOCAL-USER";
     private final InjectedValue<InetSocketAddress> hcAddressInjector = new InjectedValue<InetSocketAddress>();
     private final InjectedValue<Endpoint> endpointInjector = new InjectedValue<Endpoint>();
 
@@ -91,6 +95,13 @@ public class HostControllerConnectionService implements Service<Channel> {
             configuration.setEndpoint(endpointInjector.getValue());
             configuration.setConnectionTimeout(15000);
             configuration.setUri(new URI("remote://" + hcAddressInjector.getValue().getHostName() + ":" + hcAddressInjector.getValue().getPort()));
+
+            OptionMap original = configuration.getOptionMap();
+            Builder builder = OptionMap.builder();
+            builder.addAll(original);
+            builder.set(Options.SASL_DISALLOWED_MECHANISMS, Sequence.of(JBOSS_LOCAL_USER));
+            configuration.setOptionMap(builder.getMap());
+
             client = ProtocolChannelClient.create(configuration);
         } catch (Exception e) {
             throw new StartException(e);
