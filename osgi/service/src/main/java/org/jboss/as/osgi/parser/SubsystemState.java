@@ -162,15 +162,15 @@ public class SubsystemState  extends Observable implements Serializable, Service
     public static class OSGiCapability implements Serializable {
         private static final long serialVersionUID = -2280880859263752474L;
 
-        private final ModuleIdentifier identifier;
+        private final String identifier;
         private final Integer startlevel;
 
-        public OSGiCapability(ModuleIdentifier identifier, Integer startlevel) {
+        public OSGiCapability(String identifier, Integer startlevel) {
             this.identifier = identifier;
             this.startlevel = startlevel;
         }
 
-        public ModuleIdentifier getIdentifier() {
+        public String getIdentifier() {
             return identifier;
         }
 
