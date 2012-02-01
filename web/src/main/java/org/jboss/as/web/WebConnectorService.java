@@ -180,7 +180,7 @@ class WebConnectorService implements Service<Connector> {
                         }
                         if (ssl.hasDefined(Constants.CERTIFICATE_FILE)) {
                             Method m = connector.getProtocolHandler().getClass().getMethod("setSSLCertificateFile", String.class);
-                            m.invoke(connector.getProtocolHandler(), ssl.get(Constants.CERTIFICATE_FILE));
+                            m.invoke(connector.getProtocolHandler(), ssl.get(Constants.CERTIFICATE_FILE).asString());
                         }
                         if (ssl.hasDefined(Constants.CA_CERTIFICATE_FILE)) {
                             Method m = connector.getProtocolHandler().getClass().getMethod("setSSLCACertificateFile", String.class);
