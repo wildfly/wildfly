@@ -240,7 +240,7 @@
         <version.org.w3c.css.sac>1.3</version.org.w3c.css.sac>
         <version.org.yaml.snakeyaml>1.8</version.org.yaml.snakeyaml>
         <version.osgi>4.2.0</version.osgi>
-        <version.sun.jaxb>2.2</version.sun.jaxb>
+        <version.sun.jaxb>2.2.4</version.sun.jaxb>
         <version.sun.saaj-impl>1.3.16-jbossorg-1</version.sun.saaj-impl>
         <version.rhino.js>1.7R2</version.rhino.js>
         <version.wsdl4j>1.6.2</version.wsdl4j>
