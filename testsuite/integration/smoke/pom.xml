@@ -73,9 +73,7 @@
                             <execution>
                                 <id>build-smoke.server</id>
                                 <phase>process-test-resources</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
+                                <goals><goal>run</goal></goals>
                                 <configuration>
                                     <target>
                                         <ant antfile="${basedir}/../src/test/scripts/smoke-build.xml">
