@@ -285,9 +285,6 @@ public interface ServerMessages {
     @Message(id = 15824, value = "Error obtaining input stream from URL '%s'")
     OperationFailedException problemOpeningStreamFromDeploymentURL(String urlSpec, @Cause IOException e);
 
-    @Message(id = 15825, value = "Could not load module '%s' as corresponding module spec service '%s' was not found")
-    ModuleLoadException moduleSpecServiceNotFound(ModuleIdentifier identifier, ModuleIdentifier again);
-
     @Message(id = 15826, value = "ServiceModuleLoader already started")
     IllegalStateException serviceModuleLoaderAlreadyStarted();
 

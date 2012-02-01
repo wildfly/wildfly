@@ -165,15 +165,15 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
             addResourceRoot(specBuilder, resourceRoot);
         }
 
-        createDependencies(phaseContext, specBuilder, dependencies, moduleSpecification.isRequiresTransitiveDependencies());
-        createDependencies(phaseContext, specBuilder, userDependencies, moduleSpecification.isRequiresTransitiveDependencies());
+        createDependencies(specBuilder, dependencies, moduleSpecification.isRequiresTransitiveDependencies());
+        createDependencies(specBuilder, userDependencies, moduleSpecification.isRequiresTransitiveDependencies());
 
         if (moduleSpecification.isLocalLast()) {
-            createDependencies(phaseContext, specBuilder, localDependencies, moduleSpecification.isRequiresTransitiveDependencies());
+            createDependencies(specBuilder, localDependencies, moduleSpecification.isRequiresTransitiveDependencies());
             specBuilder.addDependency(DependencySpec.createLocalDependencySpec());
         } else {
             specBuilder.addDependency(DependencySpec.createLocalDependencySpec());
-            createDependencies(phaseContext, specBuilder, localDependencies, moduleSpecification.isRequiresTransitiveDependencies());
+            createDependencies(specBuilder, localDependencies, moduleSpecification.isRequiresTransitiveDependencies());
         }
 
         final DelegatingClassFileTransformer delegatingClassFileTransformer = new DelegatingClassFileTransformer();
@@ -206,7 +206,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    private void createDependencies(final DeploymentPhaseContext phaseContext, final ModuleSpec.Builder specBuilder, final List<ModuleDependency> apiDependencies, final boolean requireTransitive) {
+    private void createDependencies(final ModuleSpec.Builder specBuilder, final List<ModuleDependency> apiDependencies, final boolean requireTransitive) {
         if (apiDependencies != null) {
             for (final ModuleDependency dependency : apiDependencies) {
                 final boolean export = requireTransitive ? true : dependency.isExport();
@@ -242,12 +242,6 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
                         .getModuleLoader(), dependency.getIdentifier(), dependency.isOptional());
                 specBuilder.addDependency(depSpec);
                 logger.debug("Adding dependency " + dependency + " to module " + specBuilder.getIdentifier());
-
-                final String depName = dependency.getIdentifier().getName();
-                if (depName.startsWith(ServiceModuleLoader.MODULE_PREFIX)) {
-                    phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, ServiceModuleLoader
-                            .moduleSpecServiceName(dependency.getIdentifier()));
-                }
             }
         }
     }

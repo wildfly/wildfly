@@ -166,7 +166,8 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
     public ModuleSpec findModule(ModuleIdentifier identifier) throws ModuleLoadException {
         ServiceController<ModuleSpec> controller = (ServiceController<ModuleSpec>) serviceContainer.getService(moduleSpecServiceName(identifier));
         if (controller == null) {
-            throw ServerMessages.MESSAGES.moduleSpecServiceNotFound(identifier, identifier);
+            ServerLogger.MODULE_SERVICE_LOGGER.debugf("Could not load module '%s' as corresponding module spec service '%s' was not found", identifier, identifier);
+            return null;
         }
         ModuleSpecLoadListener listener = new ModuleSpecLoadListener(identifier);
         controller.addListener(listener);

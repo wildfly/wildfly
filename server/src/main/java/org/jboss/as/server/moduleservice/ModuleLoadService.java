@@ -22,13 +22,16 @@
 package org.jboss.as.server.moduleservice;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
+import org.jboss.modules.ModuleNotFoundException;
 import org.jboss.modules.ModuleSpec;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -67,13 +70,17 @@ public class ModuleLoadService implements Service<Module> {
             final Module module = moduleLoader.loadModule(moduleSpec.getValue().getModuleIdentifier());
             moduleLoader.relinkModule(module);
             for (ModuleIdentifier id : dependencies) {
-                String val = moduleLoader.loadModule(id).getProperty("jboss.api");
-                if (val != null) {
-                    if (val.equals("private")) {
-                        PRIVATE_DEP_LOGGER.privateApiUsed(moduleSpec.getValue().getModuleIdentifier().getName(), id);
-                    } else if (val.equals("unsupported")) {
-                        UNSUPPORTED_DEP_LOGGER.unsupportedApiUsed(moduleSpec.getValue().getModuleIdentifier().getName(), id);
+                try {
+                    String val = moduleLoader.loadModule(id).getProperty("jboss.api");
+                    if (val != null) {
+                        if (val.equals("private")) {
+                            PRIVATE_DEP_LOGGER.privateApiUsed(moduleSpec.getValue().getModuleIdentifier().getName(), id);
+                        } else if (val.equals("unsupported")) {
+                            UNSUPPORTED_DEP_LOGGER.unsupportedApiUsed(moduleSpec.getValue().getModuleIdentifier().getName(), id);
+                        }
                     }
+                } catch (ModuleNotFoundException ignore) {
+                    //can happen with optional dependencies
                 }
             }
             this.module = module;
@@ -94,22 +101,30 @@ public class ModuleLoadService implements Service<Module> {
     }
 
     public static ServiceName install(final ServiceTarget target, final ModuleIdentifier identifier, final List<ModuleDependency> dependencies) {
-        final List<ModuleIdentifier> deps = new ArrayList<ModuleIdentifier>();
+        final Map<ModuleIdentifier, ServiceBuilder.DependencyType> deps = new HashMap<ModuleIdentifier, ServiceBuilder.DependencyType>();
         for (final ModuleDependency i : dependencies) {
-            deps.add(i.getIdentifier());
+            deps.put(i.getIdentifier(), i.isOptional() ? ServiceBuilder.DependencyType.OPTIONAL : ServiceBuilder.DependencyType.REQUIRED);
         }
         return installService(target, identifier, deps);
     }
 
     public static ServiceName installService(final ServiceTarget target, final ModuleIdentifier identifier, final List<ModuleIdentifier> dependencies) {
-        final ModuleLoadService service = new ModuleLoadService(dependencies);
+        final Map<ModuleIdentifier, ServiceBuilder.DependencyType> deps = new HashMap<ModuleIdentifier, ServiceBuilder.DependencyType>();
+        for (final ModuleIdentifier i : dependencies) {
+            deps.put(i, ServiceBuilder.DependencyType.REQUIRED);
+        }
+        return installService(target, identifier, deps);
+    }
+
+    private static ServiceName installService(final ServiceTarget target, final ModuleIdentifier identifier, final Map<ModuleIdentifier, ServiceBuilder.DependencyType> dependencies) {
+        final ModuleLoadService service = new ModuleLoadService(new ArrayList<ModuleIdentifier>(dependencies.keySet()));
         final ServiceName serviceName = ServiceModuleLoader.moduleServiceName(identifier);
         final ServiceBuilder<Module> builder = target.addService(serviceName, service);
         builder.addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, service.getServiceModuleLoader());
         builder.addDependency(ServiceModuleLoader.moduleSpecServiceName(identifier), ModuleSpec.class, service.getModuleSpec());
-        for (final ModuleIdentifier dep : dependencies) {
-            if (dep.getName().startsWith(ServiceModuleLoader.MODULE_PREFIX)) {
-                builder.addDependencies(ServiceModuleLoader.moduleSpecServiceName(dep));
+        for (final Map.Entry<ModuleIdentifier, ServiceBuilder.DependencyType> entry : dependencies.entrySet()) {
+            if (entry.getKey().getName().startsWith(ServiceModuleLoader.MODULE_PREFIX)) {
+                builder.addDependency(entry.getValue(), ServiceModuleLoader.moduleSpecServiceName(entry.getKey()));
             }
         }
         builder.setInitialMode(Mode.ON_DEMAND);
