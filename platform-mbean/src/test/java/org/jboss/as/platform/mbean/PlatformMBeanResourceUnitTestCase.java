@@ -43,6 +43,7 @@ import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.common.ValidateAddressOperationHandler;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -151,10 +152,6 @@ public class PlatformMBeanResourceUnitTestCase {
 
         result = executeOp(op, false);
         Assert.assertTrue(result.isDefined());
-
-        op = getOperation(GlobalOperationHandlers.VALIDATE_ADDRESS_OPERATION_NAME, null, null);
-
-        result = executeOp(op, false);
     }
 
     @Test
@@ -164,9 +161,6 @@ public class PlatformMBeanResourceUnitTestCase {
             executeOp(op, true);
             op = getOperation(READ_RESOURCE_OPERATION, "buffer-pool", null);
             executeOp(op, true);
-            op = getOperation(GlobalOperationHandlers.VALIDATE_ADDRESS_OPERATION_NAME, "buffer-pool", null);
-            executeOp(op, true);
-
             return;
         }
 
@@ -202,8 +196,6 @@ public class PlatformMBeanResourceUnitTestCase {
             ModelNode op = getOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "compilation", null);
             executeOp(op, true);
             op = getOperation(READ_RESOURCE_OPERATION, "compilation", null);
-            executeOp(op, true);
-            op = getOperation(GlobalOperationHandlers.VALIDATE_ADDRESS_OPERATION_NAME, "compilation", null);
             executeOp(op, true);
 
             return;
@@ -308,8 +300,6 @@ public class PlatformMBeanResourceUnitTestCase {
             ModelNode op = getOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "logging", null);
             executeOp(op, true);
             op = getOperation(READ_RESOURCE_OPERATION, "logging", null);
-            executeOp(op, true);
-            op = getOperation(GlobalOperationHandlers.VALIDATE_ADDRESS_OPERATION_NAME, "logging", null);
             executeOp(op, true);
 
             return;
@@ -551,10 +541,6 @@ public class PlatformMBeanResourceUnitTestCase {
         result = executeOp(op, false);
         Assert.assertTrue(result.isDefined());
 
-        op = getOperation(GlobalOperationHandlers.VALIDATE_ADDRESS_OPERATION_NAME, childType, null);
-
-        result = executeOp(op, false);
-
         return children;
     }
 
@@ -567,9 +553,6 @@ public class PlatformMBeanResourceUnitTestCase {
         ModelNode result = executeOp(op, false);
         Assert.assertTrue(result.isDefined());
         final ModelNode description = result;
-
-        op = getOperation(GlobalOperationHandlers.VALIDATE_ADDRESS_OPERATION_NAME, type, name);
-        result = executeOp(op, false);
 
         op = getOperation(READ_RESOURCE_OPERATION, type, name);
         op.get(INCLUDE_RUNTIME).set(true);

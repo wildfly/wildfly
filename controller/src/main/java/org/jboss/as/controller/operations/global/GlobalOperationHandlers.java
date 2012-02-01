@@ -92,21 +92,6 @@ public class GlobalOperationHandlers {
     public static final OperationStepHandler READ_CHILDREN_RESOURCES = new ReadChildrenResourcesOperationHandler();
     public static final OperationStepHandler UNDEFINE_ATTRIBUTE = new UndefineAttributeHandler();
     public static final OperationStepHandler WRITE_ATTRIBUTE = new WriteAttributeHandler();
-    public static final OperationStepHandler VALIDATE_ADDRESS = new OperationStepHandler() {
-
-        @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            try {
-                context.readResource(PathAddress.EMPTY_ADDRESS);
-            } catch (Exception e) {
-                context.getFailureDescription().set(new ModelNode().set(MESSAGES.resourceNotFound(operation.get(OP_ADDR))));
-            }
-            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
-        }
-    };
-
-
-    public static final String VALIDATE_ADDRESS_OPERATION_NAME = "validate-address";
 
     private GlobalOperationHandlers() {
         //
@@ -1082,7 +1067,7 @@ public class GlobalOperationHandlers {
                     }
                 }
             } else {
-                final String operationName = operation.require(OP).asString();
+                //final String operationName = operation.require(OP).asString();
                 final ModelNode newOp = operation.clone();
                 newOp.get(OP_ADDR).set(base.toModelNode());
 
@@ -1134,7 +1119,7 @@ public class GlobalOperationHandlers {
                     execute(address, base.append(element), context);
                 }
             } else {
-                final String operationName = operation.require(OP).asString();
+                //final String operationName = operation.require(OP).asString();
                 final ModelNode newOp = operation.clone();
                 newOp.get(OP_ADDR).set(base.toModelNode());
 
