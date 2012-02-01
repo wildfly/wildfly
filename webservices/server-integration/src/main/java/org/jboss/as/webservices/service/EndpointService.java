@@ -46,6 +46,7 @@ import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityUtil;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
+import org.jboss.wsf.spi.management.EndpointRegistry;
 import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
 
 /**
@@ -61,6 +62,7 @@ public final class EndpointService implements Service<Endpoint> {
     private final ServiceName name;
     private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<SecurityDomainContext>();
     private final InjectedValue<WebAppController> pclWebAppControllerValue = new InjectedValue<WebAppController>();
+    private final InjectedValue<EndpointRegistry> endpointRegistryValue = new InjectedValue<EndpointRegistry>();
 
     private EndpointService(final Endpoint endpoint, final ServiceName name) {
         this.endpoint = endpoint;
@@ -87,6 +89,7 @@ public final class EndpointService implements Service<Endpoint> {
         if (hasWebservicesMD(endpoint)) { //basically JAX-RPC deployments require the PortComponentLinkServlet to be available
             pclWebAppControllerValue.getValue().incrementUsers();
         }
+        endpointRegistryValue.getValue().register(endpoint);
     }
 
     @Override
@@ -96,6 +99,7 @@ public final class EndpointService implements Service<Endpoint> {
         if (hasWebservicesMD(endpoint)) {
             pclWebAppControllerValue.getValue().decrementUsers();
         }
+        endpointRegistryValue.getValue().unregister(endpoint);
     }
 
     private boolean hasWebservicesMD(final Endpoint endpoint) {
@@ -111,6 +115,10 @@ public final class EndpointService implements Service<Endpoint> {
         return pclWebAppControllerValue;
     }
 
+    public Injector<EndpointRegistry> getEndpointRegistryInjector() {
+        return endpointRegistryValue;
+    }
+
     public static void install(final ServiceTarget serviceTarget, final Endpoint endpoint, final DeploymentUnit unit) {
         final ServiceName serviceName = getServiceName(unit, endpoint.getShortName());
         final EndpointService service = new EndpointService(endpoint, serviceName);
@@ -120,6 +128,9 @@ public final class EndpointService implements Service<Endpoint> {
         builder.addDependency(DependencyType.REQUIRED,
                 SecurityDomainService.SERVICE_NAME.append(getDeploymentSecurityDomainName(endpoint)),
                 SecurityDomainContext.class, service.getSecurityDomainContextInjector());
+        builder.addDependency(DependencyType.REQUIRED, WSServices.REGISTRY_SERVICE,
+                EndpointRegistry.class,
+                service.getEndpointRegistryInjector());
         builder.addDependency(DependencyType.REQUIRED,
                 WSServices.PORT_COMPONENT_LINK_SERVICE,
                 WebAppController.class, service.getPclWebAppControllerInjector());
