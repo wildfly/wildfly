@@ -20,10 +20,7 @@
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
 
-package org.jboss.as.clustering.infinispan.subsystem;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
+package org.jboss.as.clustering.subsystem;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -33,7 +30,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import org.jboss.as.clustering.infinispan.subsystem.validators.ObjectTypeValidator;
+import org.jboss.as.clustering.subsystem.validators.ObjectTypeValidator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ParameterCorrector;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -93,9 +90,9 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
             final ModelNode valueTypeDesc = getValueTypeDescription(valueType, false);
             final String p = (prefix == null || prefix.isEmpty()) ? suffix : String.format("%s.%s", prefix, suffix);
             // get the text description of the attribute
-            valueTypeDesc.get(DESCRIPTION).set(valueType.getAttributeTextDescription(bundle, p));
+            valueTypeDesc.get(ModelDescriptionConstants.DESCRIPTION).set(valueType.getAttributeTextDescription(bundle, p));
             // set it as one of our value types, and return the value
-            final ModelNode childType = node.get(VALUE_TYPE, valueType.getName()).set(valueTypeDesc);
+            final ModelNode childType = node.get(ModelDescriptionConstants.VALUE_TYPE, valueType.getName()).set(valueTypeDesc);
             // if it is of type OBJECT itself (add its nested descriptions)
             if (valueType instanceof ObjectTypeAttributeDefinition) {
                 ObjectTypeAttributeDefinition.class.cast(valueType).addValueTypeDescription(childType, prefix, bundle);

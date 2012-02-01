@@ -1,6 +1,9 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.clustering.infinispan.subsystem.validators.CacheModeValidator;
+import org.jboss.as.clustering.subsystem.ObjectListAttributeDefinition;
+import org.jboss.as.clustering.subsystem.ObjectTypeAttributeDefinition;
+import org.jboss.as.clustering.subsystem.SimpleListAttributeDefinition;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
