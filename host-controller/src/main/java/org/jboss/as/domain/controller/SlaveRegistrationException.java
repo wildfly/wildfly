@@ -47,16 +47,16 @@ public class SlaveRegistrationException extends Exception {
     public static SlaveRegistrationException parse(String raw) {
         int index = raw.indexOf("-$-");
         if (index == -1) {
-            return new SlaveRegistrationException(ErrorCode.NONE, raw);
+            return new SlaveRegistrationException(ErrorCode.UNKNOWN, raw);
         }
 
-        ErrorCode code = ErrorCode.parseCode(Integer.valueOf(raw.substring(0, index)));
+        ErrorCode code = ErrorCode.parseCode(Byte.valueOf(raw.substring(0, index)));
         String msg = raw.substring(index + SEPARATOR.length());
         return new SlaveRegistrationException(code, msg);
     }
 
     public static SlaveRegistrationException forUnknownError(String msg) {
-        return new SlaveRegistrationException(ErrorCode.NONE, msg);
+        return new SlaveRegistrationException(ErrorCode.UNKNOWN, msg);
     }
 
     public static SlaveRegistrationException forHostAlreadyExists(String slaveName) {
@@ -88,24 +88,24 @@ public class SlaveRegistrationException extends Exception {
     }
 
     public enum ErrorCode {
-        NONE(0),
-        HOST_ALREADY_EXISTS(1),
-        MASTER_IS_ADMIN_ONLY(2),
-        HOST_IS_NOT_MASTER(3);
+        UNKNOWN(0x01),
+        HOST_ALREADY_EXISTS(0x02),
+        MASTER_IS_ADMIN_ONLY(0x03),
+        HOST_IS_NOT_MASTER(0x04);
 
-        private final int code;
+        private final byte code;
 
-        ErrorCode(int code){
-            this.code = code;
+        ErrorCode(int code) {
+            this.code = (byte) code;
         }
 
-        public int getCode() {
+        public byte getCode() {
             return code;
         }
 
-        static ErrorCode parseCode(int code) {
-            if (code == NONE.getCode()) {
-                return NONE;
+        public static ErrorCode parseCode(byte code) {
+            if (code == UNKNOWN.getCode()) {
+                return UNKNOWN;
             } else if (code == HOST_ALREADY_EXISTS.getCode()) {
                 return HOST_ALREADY_EXISTS;
             } else if (code == MASTER_IS_ADMIN_ONLY.getCode()) {
@@ -113,7 +113,7 @@ public class SlaveRegistrationException extends Exception {
             } else if (code == HOST_IS_NOT_MASTER.getCode()) {
                 return HOST_IS_NOT_MASTER;
             }
-            throw MESSAGES.invalidCode(code);
+            return UNKNOWN;
         }
     }
 }

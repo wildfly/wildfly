@@ -60,6 +60,14 @@ public interface DomainController {
     void registerRemoteHost(final ProxyController hostControllerClient) throws SlaveRegistrationException;
 
     /**
+     * Check if a Host Controller is already registered with this domain controller.
+     *
+     * @param id the name of the host controller
+     * @return <code>true</code> if there is such a host controller registered, <code>false</code> otherwise
+     */
+    boolean isHostRegistered(String id);
+
+    /**
      * Unregisters a previously registered Host Controller.
      *
      * @param id the name of the previously
