@@ -173,7 +173,9 @@
         <version.org.jboss.osgi.framework>1.1.1</version.org.jboss.osgi.framework>
         <version.org.jboss.osgi.http>1.0.5</version.org.jboss.osgi.http>
         <version.org.jboss.osgi.logging>1.0.0</version.org.jboss.osgi.logging>
+        <version.org.jboss.osgi.metadata>2.0.0.CR1</version.org.jboss.osgi.metadata>
         <version.org.jboss.osgi.repository>1.0.3</version.org.jboss.osgi.repository>
+        <version.org.jboss.osgi.resolver>1.0.10</version.org.jboss.osgi.resolver>
         <version.org.jboss.osgi.spi>2.0.3</version.org.jboss.osgi.spi>
         <version.org.jboss.remote-naming>1.0.0.Beta4</version.org.jboss.remote-naming>
         <version.org.jboss.remoting3>3.2.0.CR9</version.org.jboss.remoting3>
@@ -396,6 +398,7 @@
                                             <exclude>commons-httpclient:commons-httpclient</exclude>
                                             <exclude>commons-logging:commons-logging</exclude>
                                             <exclude>concurrent:concurrent</exclude>
+                                            <exclude>jacorb:jacorb</exclude>
                                             <exclude>javassist:javassist</exclude>
                                             <exclude>javax.persistence:persistence-api</exclude>
                                             <exclude>javax.servlet:servlet-api</exclude>
@@ -447,6 +450,7 @@
                                             <exclude>org.slf4j:slf4j-log4j12</exclude>
                                             <exclude>org.slf4j:slf4j-log4j13</exclude>
                                             <exclude>oro:oro</exclude>
+                                            <exclude>stax:stax-api</exclude>
                                             <exclude>sun-jaxb:jaxb-api</exclude>
                                             <exclude>trove:trove</exclude>
                                             <exclude>woodstox:wstx-lgpl</exclude>
@@ -2901,6 +2905,12 @@
                 <groupId>org.codehaus.jettison</groupId>
                 <artifactId>jettison</artifactId>
                 <version>${version.org.codehaus.jettison}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>stax</groupId>
+                        <artifactId>stax-api</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -3964,6 +3974,10 @@
                         <artifactId>idl</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.jboss.integration</groupId>
                         <artifactId>jboss-corba-ots-spi</artifactId>
                     </exclusion>
@@ -4270,6 +4284,12 @@
             </dependency>
 
             <dependency>
+                <groupId>org.jboss.osgi.metadata</groupId>
+                <artifactId>jbosgi-metadata</artifactId>
+                <version>${version.org.jboss.osgi.metadata}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss.osgi.repository</groupId>
                 <artifactId>jbosgi-repository</artifactId>
                 <version>${version.org.jboss.osgi.repository}</version>
@@ -4279,6 +4299,30 @@
                 <groupId>org.jboss.osgi.repository</groupId>
                 <artifactId>jbosgi-repository-api</artifactId>
                 <version>${version.org.jboss.osgi.repository}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.osgi.resolver</groupId>
+                <artifactId>jbosgi-resolver-api</artifactId>
+                <version>${version.org.jboss.osgi.resolver}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.osgi.resolver</groupId>
+                <artifactId>jbosgi-resolver-felix</artifactId>
+                <version>${version.org.jboss.osgi.resolver}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.osgi.resolver</groupId>
+                <artifactId>jbosgi-resolver-metadata</artifactId>
+                <version>${version.org.jboss.osgi.resolver}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.osgi.resolver</groupId>
+                <artifactId>jbosgi-resolver-spi</artifactId>
+                <version>${version.org.jboss.osgi.resolver}</version>
             </dependency>
 
             <dependency>
@@ -4512,10 +4556,6 @@
                     <exclusion>
                         <groupId>org.jboss.seam</groupId>
                         <artifactId>jboss-seam</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss</groupId>
-                        <artifactId>jboss-vfs</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
