@@ -648,10 +648,11 @@
                 Profile used to perform database related changes.
             -->
             <id>ds.profile</id>
-            <activation><activeByDefault>true</activeByDefault></activation>
             <!--
+            <activation><activeByDefault>true</activeByDefault></activation>
             <activation><property><name>ds</name></property></activation>
             -->
+            <activation><property><name>!dummyPropertyKJDWQ</name></property></activation>
             <dependencies>
                 <dependency>
                     <groupId>jdbcdrivers</groupId>
