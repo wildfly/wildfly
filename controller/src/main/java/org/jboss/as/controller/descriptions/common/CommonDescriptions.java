@@ -54,7 +54,6 @@ import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyRemoveHandler;
 import org.jboss.as.controller.operations.common.ValidateAddressOperationHandler;
 import org.jboss.as.controller.operations.common.ValidateOperationHandler;
-import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -217,17 +216,6 @@ public class CommonDescriptions {
     }
 
     public static ModelNode getValidateAddressOperation(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(GlobalOperationHandlers.VALIDATE_ADDRESS_OPERATION_NAME);
-        root.get(DESCRIPTION).set(bundle.getString("validate-address"));
-        root.get(REQUEST_PROPERTIES).setEmptyObject();
-        root.get(REPLY_PROPERTIES).setEmptyObject();
-        return root;
-    }
-
-    // TODO correct the description
-    public static ModelNode getCheckAddressOperation(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode descr = getSingleParamSimpleReplyOperation(bundle, ValidateAddressOperationHandler.OPERATION_NAME, "global", VALUE, ModelType.OBJECT, false, ModelType.OBJECT, true);
         final ModelNode valueType = descr.get(REPLY_PROPERTIES, VALUE_TYPE);
