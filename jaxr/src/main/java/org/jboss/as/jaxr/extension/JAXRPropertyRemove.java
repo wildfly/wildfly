@@ -27,7 +27,6 @@ import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.jaxr.JAXRConfiguration;
-import org.jboss.as.jaxr.ModelConstants;
 import org.jboss.dmr.ModelNode;
 
 /**
