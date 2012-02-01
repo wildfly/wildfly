@@ -245,8 +245,7 @@ class DomainApiHandler implements ManagementHttpHandler {
         } catch (Throwable t) {
             // TODO Consider draining input stream
             ROOT_LOGGER.uploadError(t);
-            http.sendResponseHeaders(INTERNAL_SERVER_ERROR, -1);
-
+            sendError(http,false,t);
             return;
         }
 
@@ -283,8 +282,7 @@ class DomainApiHandler implements ManagementHttpHandler {
             dmr = isGet ? convertGetRequest(request) : convertPostRequest(http.getRequestBody(), encode);
         } catch (IllegalArgumentException iae) {
             ROOT_LOGGER.debugf("Unable to construct ModelNode '%s'", iae.getMessage());
-            http.sendResponseHeaders(INTERNAL_SERVER_ERROR, -1);
-
+            sendError(http,isGet,iae);
             return;
         }
 
@@ -292,8 +290,7 @@ class DomainApiHandler implements ManagementHttpHandler {
             response = modelController.execute(new OperationBuilder(dmr).build());
         } catch (Throwable t) {
             ROOT_LOGGER.modelRequestError(t);
-            http.sendResponseHeaders(INTERNAL_SERVER_ERROR, -1);
-
+            sendError(http,isGet,t);
             return;
         }
 
@@ -303,6 +300,12 @@ class DomainApiHandler implements ManagementHttpHandler {
 
         boolean pretty = dmr.hasDefined("json.pretty") && dmr.get("json.pretty").asBoolean();
         writeResponse(http, isGet, pretty, response, status, encode);
+    }
+
+    private void sendError(final HttpExchange http, boolean isGet, Throwable t) throws IOException {
+        ModelNode response = new ModelNode();
+        response.set(t.getMessage());
+        writeResponse(http, isGet, true, response, INTERNAL_SERVER_ERROR, false);
     }
 
     private void sendResponse(final HttpExchange exchange, final int responseCode, final String body) throws IOException {
