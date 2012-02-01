@@ -181,6 +181,11 @@ public class EntityBeanComponentDescription extends EJBComponentDescription {
 
     }
 
+    @Override
+    public boolean isEntity() {
+        return true;
+    }
+
     protected EntityBeanObjectViewConfigurator getObjectViewConfigurator() {
         return new EntityBeanObjectViewConfigurator();
     }

@@ -444,7 +444,15 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         });
     }
 
+    public boolean isEntity() {
+        return false;
+    }
+
     public boolean isMessageDriven() {
+        return false;
+    }
+
+    public boolean isSession() {
         return false;
     }
 

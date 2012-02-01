@@ -61,7 +61,7 @@ public class TransactionManagementMergingProcessor extends AbstractMergingProces
     @Override
     protected void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final EJBComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
         final EnterpriseBeanMetaData beanMetaData = componentConfiguration.getDescriptorData();
-        if(beanMetaData == null || beanMetaData.isEntity()) {
+        if(componentConfiguration.isEntity() || beanMetaData == null) {
             return;
         }
         final TransactionManagementType type = componentConfiguration.getDescriptorData().getTransactionType();

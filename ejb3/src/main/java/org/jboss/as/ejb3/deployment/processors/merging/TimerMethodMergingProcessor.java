@@ -89,7 +89,8 @@ public class TimerMethodMergingProcessor extends AbstractMergingProcessor<EJBCom
     protected void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final EJBComponentDescription description) throws DeploymentUnitProcessingException {
         final EnterpriseBeanMetaData descriptorData = description.getDescriptorData();
         if (descriptorData != null) {
-            if (descriptorData.isSession() || descriptorData.isMessageDriven()) {
+            if (description.isSession() || description.isMessageDriven()) {
+                assert descriptorData instanceof ITimeoutTarget : descriptorData + " is not an ITimeoutTarget";
                 ITimeoutTarget target = (ITimeoutTarget) descriptorData;
                 if (target.getTimeoutMethod() != null) {
                     parseTimeoutMethod(target, description, componentClass, deploymentReflectionIndex);

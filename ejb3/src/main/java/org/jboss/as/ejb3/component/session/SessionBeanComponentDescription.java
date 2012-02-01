@@ -408,6 +408,11 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     }
 
     @Override
+    public boolean isSession() {
+        return true;
+    }
+
+    @Override
     public boolean isSingleton() {
         return getSessionBeanType() == SessionBeanType.SINGLETON;
     }
