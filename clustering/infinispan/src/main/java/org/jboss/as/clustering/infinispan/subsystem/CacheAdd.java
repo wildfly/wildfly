@@ -523,30 +523,30 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         boolean useEntryTable = store.hasDefined(ModelKeys.ENTRY_TABLE);
         boolean useBucketTable = store.hasDefined(ModelKeys.BUCKET_TABLE);
         if (useEntryTable && !useBucketTable) {
-            this.setEntryTableProperties(properties, store.get(ModelKeys.ENTRY_TABLE), "");
+            this.setEntryTableProperties(properties, store.get(ModelKeys.ENTRY_TABLE), "", "stringsTableNamePrefix");
             return new JdbcStringBasedCacheStore();
         } else if (useBucketTable && !useEntryTable) {
-            this.setBucketTableProperties(properties, store.get(ModelKeys.BUCKET_TABLE), "");
+            this.setBucketTableProperties(properties, store.get(ModelKeys.BUCKET_TABLE), "", "bucketTableNamePrefix");
             return new JdbcBinaryCacheStore();
         }
         // Else, use mixed mode
-        this.setEntryTableProperties(properties, store.get(ModelKeys.ENTRY_TABLE), "ForStrings");
-        this.setBucketTableProperties(properties, store.get(ModelKeys.BUCKET_TABLE), "ForBinary");
+        this.setEntryTableProperties(properties, store.get(ModelKeys.ENTRY_TABLE), "ForStrings", "tableNamePrefixForStrings");
+        this.setBucketTableProperties(properties, store.get(ModelKeys.BUCKET_TABLE), "ForBinary", "tableNamePrefixForBinary");
         return new JdbcMixedCacheStore();
     }
 
-    private void setBucketTableProperties(Properties properties, ModelNode table, String propertySuffix) {
-        this.setTableProperties(properties, table, propertySuffix, "ispn_bucket");
+    private void setBucketTableProperties(Properties properties, ModelNode table, String propertySuffix, String tableNamePrefixProperty) {
+        this.setTableProperties(properties, table, propertySuffix, tableNamePrefixProperty, "ispn_bucket");
     }
 
-    private void setEntryTableProperties(Properties properties, ModelNode table, String propertySuffix) {
-        this.setTableProperties(properties, table, propertySuffix, "ispn_entry");
+    private void setEntryTableProperties(Properties properties, ModelNode table, String propertySuffix, String tableNamePrefixProperty) {
+        this.setTableProperties(properties, table, propertySuffix, tableNamePrefixProperty, "ispn_entry");
     }
 
-    private void setTableProperties(Properties properties, ModelNode table, String propertySuffix, String defaultTableNamePrefix) {
+    private void setTableProperties(Properties properties, ModelNode table, String propertySuffix, String tableNamePrefixProperty, String defaultTableNamePrefix) {
         properties.setProperty("batchSize", Integer.toString(table.isDefined() && table.hasDefined(ModelKeys.BATCH_SIZE) ? table.get(ModelKeys.BATCH_SIZE).asInt() : TableManipulation.DEFAULT_BATCH_SIZE));
         properties.setProperty("fetchSize", Integer.toString(table.isDefined() && table.hasDefined(ModelKeys.FETCH_SIZE) ? table.get(ModelKeys.FETCH_SIZE).asInt() : TableManipulation.DEFAULT_FETCH_SIZE));
-        properties.setProperty("tableNamePrefix" + propertySuffix, table.isDefined() && table.hasDefined(ModelKeys.PREFIX) ? table.get(ModelKeys.PREFIX).asString() : defaultTableNamePrefix);
+        properties.setProperty(tableNamePrefixProperty, table.isDefined() && table.hasDefined(ModelKeys.PREFIX) ? table.get(ModelKeys.PREFIX).asString() : defaultTableNamePrefix);
         properties.setProperty("idColumnName" + propertySuffix, this.getColumnProperty(table,  ModelKeys.ID_COLUMN, ModelKeys.NAME, "id"));
         properties.setProperty("idColumnType" + propertySuffix, this.getColumnProperty(table,  ModelKeys.ID_COLUMN, ModelKeys.TYPE, "VARCHAR"));
         properties.setProperty("dataColumnName" + propertySuffix, this.getColumnProperty(table,  ModelKeys.DATA_COLUMN, ModelKeys.NAME, "datum"));
