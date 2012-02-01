@@ -27,14 +27,14 @@ import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 import java.util.ArrayList;
 import java.util.List;
 
+
+
 /**
  * An element representing a list of jvm options.
  *
  * @author <a href="mailto:kkhan@redhat.com">Kabir Khan</a>
  */
 public final class JvmOptionsElement {
-
-    private static final long serialVersionUID = 1614693052895734582L;
 
     private final List<String> options = new ArrayList<String>();
 
@@ -43,25 +43,6 @@ public final class JvmOptionsElement {
      *
      */
     public JvmOptionsElement() {
-    }
-
-    public JvmOptionsElement(final Element propertyType, boolean allowNullValue, JvmOptionsElement ... toCombine) {
-        if (toCombine != null) {
-            for (JvmOptionsElement pe : toCombine) {
-                if (pe == null)
-                    continue;
-                for (String value : pe.getOptions()) {
-                    addOption(value);
-                }
-            }
-        }
-    }
-
-    /** {@inheritDoc} */
-    public long elementHash() {
-        synchronized (options) {
-            return options.hashCode();
-        }
     }
 
     /**

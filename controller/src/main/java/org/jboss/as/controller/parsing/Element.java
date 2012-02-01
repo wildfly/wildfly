@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * An enumeration of all the recognized XML element local names, by name.
+ * An enumeration of all the recognized core configuration XML element local names, by name.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
@@ -51,7 +51,6 @@ public enum Element {
     DOMAIN_CONTROLLER("domain-controller"),
     DEPLOYMENT("deployment"),
     DEPLOYMENTS("deployments"),
-    DEPLOYMENT_REPOSITORY("deployment-repository"),
 
     ENVIRONMENT_VARIABLES("environment-variables"),
     EXTENSION("extension"),
@@ -103,13 +102,11 @@ public enum Element {
     OUTBOUND_CONNECTIONS("outbound-connections"),
     OUTBOUND_SOCKET_BINDING("outbound-socket-binding"),
 
-
     PASSWORD("password"),
     PATH("path"),
     PATHS("paths"),
-
-    POINT_TO_POINT("point-to-point"),
     PERMGEN("permgen"),
+    POINT_TO_POINT("point-to-point"),
     PROFILE("profile"),
     PROFILES("profiles"),
     PROPERTY("property"),
@@ -136,7 +133,6 @@ public enum Element {
     SOCKET_BINDING_GROUPS("socket-binding-groups"),
     SSL("ssl"),
     STACK("stack"),
-    STANDALONE("standalone"),
     SUBNET_MATCH("subnet-match"),
     SUBSYSTEM("subsystem"),
     SYSTEM_PROPERTIES("system-properties"),

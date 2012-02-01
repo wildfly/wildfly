@@ -551,7 +551,7 @@ public class DomainXml extends CommonXml {
                 final Element element = Element.forName(reader.getLocalName());
                 switch (element) {
                     case JVM: {
-                        parseJvm(reader, groupAddress, expectedNs, list, new HashSet<String>());
+                        JvmXml.parseJvm(reader, groupAddress, expectedNs, list, new HashSet<String>());
                         break;
                     }
                     case SOCKET_BINDING_GROUP: {
@@ -809,7 +809,7 @@ public class DomainXml extends CommonXml {
         // JVM
         if(group.hasDefined(JVM)) {
             for(final Property jvm : group.get(JVM).asPropertyList()) {
-                writeJVMElement(writer, jvm.getName(), jvm.getValue());
+                JvmXml.writeJVMElement(writer, jvm.getName(), jvm.getValue());
                 break; // TODO just write the first !?
             }
         }

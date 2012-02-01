@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.controller.operations.common.JVMHandlers;
-import org.jboss.as.controller.parsing.JvmType;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;

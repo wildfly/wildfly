@@ -29,7 +29,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.as.controller.parsing.JvmType;
+import org.jboss.as.controller.parsing.Attribute;
+import org.jboss.as.controller.parsing.Element;
 
 /**
  *
@@ -150,7 +151,9 @@ class JvmOptionsBuilderFactory {
                     if (!checkOption(jvmElement.getJavaagent() != null && option.startsWith("-XX:MaxPermSize"), jvmName, option, Element.PERMGEN.toString())) {
                         continue;
                     }
-                    if (!checkOption(jvmElement.isDebugEnabled() != null && jvmElement.isDebugEnabled() && jvmElement.getDebugOptions() != null && option.startsWith("-Xrunjdwp"), jvmName, option, Attribute.DEBUG_OPTIONS.toString())) {
+                    if (!checkOption(jvmElement.isDebugEnabled() != null && jvmElement.isDebugEnabled()
+                            && jvmElement.getDebugOptions() != null && option.startsWith("-Xrunjdwp"), jvmName, option,
+                            Attribute.DEBUG_OPTIONS.toString())) {
                         continue;
                     }
                     command.add(option);
