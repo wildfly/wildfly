@@ -41,9 +41,10 @@ public class JaxrsAnnotationProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-
+        if(deploymentUnit.hasAttachment(Attachments.OSGI_MANIFEST)) {
+            return;
+        }
         final CompositeIndex index = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
-
         for (final JaxrsAnnotations annotation : JaxrsAnnotations.values()) {
             if (!index.getAnnotations(annotation.getDotName()).isEmpty()) {
                 JaxrsDeploymentMarker.mark(deploymentUnit);
