@@ -22,16 +22,9 @@
 
 package org.jboss.as.test.integration.ejb.client.descriptor;
 
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
-
-import javax.ejb.EJBException;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -44,9 +37,15 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import javax.ejb.EJBException;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
 
 /**
  * Tests that deployments containing a jboss-ejb-client.xml are processed correctly for EJB client context
