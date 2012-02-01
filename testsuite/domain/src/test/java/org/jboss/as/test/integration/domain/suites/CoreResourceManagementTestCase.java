@@ -469,14 +469,14 @@ public class CoreResourceManagementTestCase {
         ModelNode snapshotOperation = new ModelNode();
         snapshotOperation.get(OP).set(SnapshotTakeHandler.OPERATION_NAME);
         snapshotOperation.get(OP_ADDR).set(addr);
-        final String snapshot = validateResponse(masterClient.execute(snapshotOperation)).get(DOMAIN_RESULTS).get("step-1").asString();
+        final String snapshot = validateResponse(masterClient.execute(snapshotOperation)).get(DOMAIN_RESULTS).asString();
         Assert.assertNotNull(snapshot);
         Assert.assertFalse(snapshot.isEmpty());
 
         ModelNode listSnapshotOperation = new ModelNode();
         listSnapshotOperation.get(OP).set(SnapshotListHandler.OPERATION_NAME);
         listSnapshotOperation.get(OP_ADDR).set(addr);
-        ModelNode listResult = validateResponse(masterClient.execute(listSnapshotOperation)).get(DOMAIN_RESULTS).get("step-1");
+        ModelNode listResult = validateResponse(masterClient.execute(listSnapshotOperation)).get(DOMAIN_RESULTS);
         Set<String> snapshots = new HashSet<String>();
         for (ModelNode curr : listResult.get(NAMES).asList()) {
             snapshots.add(listResult.get(DIRECTORY).asString() + "/" + curr.asString());
@@ -490,7 +490,7 @@ public class CoreResourceManagementTestCase {
         deleteSnapshotOperation.get(NAME).set(snapshot.substring(snapshot.lastIndexOf("/")  + 1));
         validateResponse(masterClient.execute(deleteSnapshotOperation));
 
-        listResult = validateResponse(masterClient.execute(listSnapshotOperation)).get(DOMAIN_RESULTS).get("step-1");
+        listResult = validateResponse(masterClient.execute(listSnapshotOperation)).get(DOMAIN_RESULTS);
         snapshots = new HashSet<String>();
         for (ModelNode curr : listResult.get(NAMES).asList()) {
             snapshots.add(listResult.get(DIRECTORY).asString() + "/" + curr.asString());
