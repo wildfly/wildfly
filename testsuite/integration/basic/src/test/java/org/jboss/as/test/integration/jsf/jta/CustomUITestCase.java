@@ -16,29 +16,18 @@
  */
 package org.jboss.as.test.integration.jsf.jta;
 
-import java.io.InputStream;
-import java.net.URL;
 import java.util.logging.Logger;
-
-import javax.naming.InitialContext;
-import javax.transaction.UserTransaction;
 
 import junit.framework.Assert;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.integration.jsf.jta.customui.HelloUIComponent;
 import org.jboss.as.test.integration.jsf.jta.login.SimpleLogin;
-import org.jboss.as.test.integration.jsf.jta.phase.JTAPhaseListener;
 import org.jboss.jsfunit.api.InitialPage;
 import org.jboss.jsfunit.jsfsession.JSFClientSession;
 import org.jboss.jsfunit.jsfsession.JSFServerSession;
-import org.jboss.jsfunit.jsfsession.JSFSession;
-import org.jboss.osgi.testing.ManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,13 +40,13 @@ import org.junit.runner.RunWith;
  * 
  */
 @RunWith(Arquillian.class)
-public class PhaseListenerTestCase extends JTATestsBase {
+public class CustomUITestCase extends JTATestsBase {
 
 
-    private static final Logger log = Logger.getLogger(PhaseListenerTestCase.class.getName());
-    private static final String DEPLOYMENT_PHASE_CONTEXT = "jsf-jta-phase-listener";
+    private static final Logger log = Logger.getLogger(CustomUITestCase.class.getName());
+    private static final String DEPLOYMENT_PHASE_CONTEXT = "jsf-jta-customui";
     private static final String DEPLOYMENT_NAME = DEPLOYMENT_PHASE_CONTEXT+".war";
-    private static final String RESOURCES_LOCATION = "org/jboss/as/test/integration/jsf/jta/phase";
+    private static final String RESOURCES_LOCATION = "org/jboss/as/test/integration/jsf/jta/customui";
     // ----------------- DEPLOYMENTS ------------
 
     //@ArquillianResource
@@ -68,11 +57,12 @@ public class PhaseListenerTestCase extends JTATestsBase {
     public static Archive<WebArchive> createDeployment() {
 
         // add test classes
-        Class[] classes = new Class[]{SimpleLogin.class,ManagedBeanTestCase.class};
+        Class[] classes = new Class[]{SimpleLogin.class,CustomUITestCase.class};
+        Package[] packages = new Package[]{HelloUIComponent.class.getPackage()};
         String[] resources = new String[]{"index.xhtml"};
-        String[] webInfResources = new String[]{"web.xml","faces-config.xml","jboss-deployment-structure.xml"};
+        String[] webInfResources = new String[]{"web.xml","faces-config.xml","custom.taglib.xml","jboss-deployment-structure.xml"};
         
-        final WebArchive archive = createArchive(DEPLOYMENT_NAME, classes, null, RESOURCES_LOCATION, resources, webInfResources);
+        final WebArchive archive = createArchive(DEPLOYMENT_NAME, classes, packages, RESOURCES_LOCATION, resources, webInfResources);
         log.info(archive.toString(true));
         
         return archive;

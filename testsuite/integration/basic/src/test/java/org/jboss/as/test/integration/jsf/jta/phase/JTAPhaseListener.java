@@ -35,8 +35,12 @@ import org.jboss.as.test.integration.jsf.jta.PhaseListenerTestCase;
  * @author baranowb
  *
  */
+
 public class JTAPhaseListener implements PhaseListener {
 
+    //NOTE: this class comes into action even before JSFUnit hands over control
+    //      to testXXX. If it uses junit asserts, it will cause test to fail
+    //      however visible reason will be
     public static Logger log = Logger.getLogger(JTAPhaseListener.class.getName());
     /* (non-Javadoc)
      * @see javax.faces.event.PhaseListener#afterPhase(javax.faces.event.PhaseEvent)
@@ -53,7 +57,7 @@ public class JTAPhaseListener implements PhaseListener {
     @Override
     public void beforePhase(PhaseEvent arg0) {
         log.info("---> beforePhase("+arg0+")");
-        //JTALookupClass.doTest("---> beforePhase");
+        PhaseListenerTestCase.doLookupTest();
     }
 
     /* (non-Javadoc)
@@ -62,6 +66,8 @@ public class JTAPhaseListener implements PhaseListener {
     @Override
     public PhaseId getPhaseId() {
         //be universal.
+        log.info("---> getPhaseId()");
+        PhaseListenerTestCase.doLookupTest();
         return PhaseId.ANY_PHASE;
     }
 

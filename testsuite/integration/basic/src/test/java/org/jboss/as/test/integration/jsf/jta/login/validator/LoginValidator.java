@@ -20,49 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.jsf.jta.login;
+package org.jboss.as.test.integration.jsf.jta.login.validator;
 
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
+import javax.faces.component.UIComponent;
+import javax.faces.context.FacesContext;
+import javax.faces.validator.FacesValidator;
+import javax.faces.validator.Validator;
+import javax.faces.validator.ValidatorException;
 
-
-
+import org.jboss.as.test.integration.jsf.jta.ValidatorTestCase;
 
 /**
  * @author baranowb
  * 
  */
-@ManagedBean
-@SessionScoped
-public class SimpleLogin {
+@FacesValidator("CustomValidator")
+public class LoginValidator implements Validator{
 
-    String loginname;
-    String password;
-
-    public SimpleLogin() {
-    }
-
-    public String getLoginname() {
-        return loginname;
-    }
-
-    public void setLoginname(String loginname) {
-        this.loginname = loginname;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String checkValidUser() {
-        if (loginname.equals("root") && password.equals("root")) {
-            return "success";
-        } else {
-            return "fail";
-        }
+    public void validate(FacesContext context, UIComponent componentToValidate, Object value) throws ValidatorException {
+        ValidatorTestCase.doLookupTest();
+        
     }
 }

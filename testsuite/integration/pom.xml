@@ -52,20 +52,21 @@
             <activation><property><name>allTests</name></property></activation>
             <modules>
                 <module>smoke</module>
-                <module>basic</module>
+                <module>basic</module> 
                 <module>clust</module>
                 <module>iiop</module>
-            </modules>
+             </modules>
         </profile>
         <!-- Define ts.integration uber-group. -->
         <profile>
             <id>ts.integ.allGroups2</id>
             <activation><property><name>ts.integration</name></property></activation>
             <modules>
-                <module>smoke</module>
-                <module>basic</module>
+                <!-- 
+                <module>smoke</module> -->
+                <module>basic</module><!-- 
                 <module>clust</module>
-                <module>iiop</module>
+                <module>iiop</module> -->
             </modules>
         </profile>
 

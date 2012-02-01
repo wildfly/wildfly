@@ -20,49 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.jsf.jta.login;
+package org.jboss.as.test.integration.jsf.jta.customui;
 
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
-
-
-
+import javax.faces.webapp.UIComponentTag;
 
 /**
  * @author baranowb
- * 
+ *
  */
-@ManagedBean
-@SessionScoped
-public class SimpleLogin {
+@SuppressWarnings("deprecation")
+public class HelloUIComponentTag extends UIComponentTag {
 
-    String loginname;
-    String password;
-
-    public SimpleLogin() {
+    /**
+     * 
+     */
+    public HelloUIComponentTag() {
+        // TODO Auto-generated constructor stub
     }
 
-    public String getLoginname() {
-        return loginname;
-    }
+    public String getComponentType() { return "jsf.jta.customui.HelloUIComponent"; }
+    public String getRendererType() { return null; }
 
-    public void setLoginname(String loginname) {
-        this.loginname = loginname;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String checkValidUser() {
-        if (loginname.equals("root") && password.equals("root")) {
-            return "success";
-        } else {
-            return "fail";
-        }
-    }
 }

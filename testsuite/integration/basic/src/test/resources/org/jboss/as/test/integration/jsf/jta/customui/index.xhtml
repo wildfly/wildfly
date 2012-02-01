@@ -3,7 +3,8 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"    
       xmlns:h="http://java.sun.com/jsf/html" 
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:cu="http://redhat.com/demo/custom-taglib">
  
     <h:head>
         <title>JSF Simple Login Example</title>
@@ -30,7 +31,10 @@
                 <td><h:commandButton value="Login"
                         action="#{SimpleLogin.checkValidUser}" id="login_button"/></td>
             </tr>
-             
+             <tr>
+                <td><cu:custom id="customInput" value="hahaah"/></td>
+                <td></td>
+            </tr>
         </table>
     </h:form>
      

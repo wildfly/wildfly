@@ -129,11 +129,10 @@
         <surefire.test.failure.ignore>false</surefire.test.failure.ignore>
 
         <!-- Arquillian dependency versions -->
-        <version.arquillian_core>${version.org.jboss.arquillian.core}</version.arquillian_core>
+        <version.arquillian_core>${version.org.jboss.arquillian.core}</version.arquillian_core> 
         <version.arquillian_as7>${project.parent.version}</version.arquillian_as7>
         <version.xml.maven.plugin>1.0</version.xml.maven.plugin>
         <version.saxon>8.7</version.saxon>
-        <version.jsfunit>2.0.0.Beta2</version.jsfunit>
     </properties>
 
     <dependencyManagement>
@@ -178,11 +177,13 @@
             <artifactId>arquillian-junit-container</artifactId>
             <scope>test</scope>
         </dependency>
+         
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-arquillian-container-managed</artifactId>
             <version>${version.arquillian_as7}</version>
         </dependency>
+         
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -193,17 +194,62 @@
         <dependency>
              <groupId>org.jboss.jsfunit</groupId>
              <artifactId>jsfunit-arquillian</artifactId>
-             <version>${version.jsfunit}</version>
              <scope>test</scope>
          </dependency>
          
          <dependency>
              <groupId>org.jboss.jsfunit</groupId>
              <artifactId>jboss-jsfunit-core</artifactId>
-             <version>${version.jsfunit}</version>
              <scope>test</scope>
          </dependency>
-        
+         
+         <dependency>
+             <groupId>org.jboss.arquillian.protocol</groupId>
+             <artifactId>arquillian-protocol-servlet</artifactId>
+             <scope>test</scope>
+         </dependency>
+        <!-- 
+        <dependency>
+             <groupId>org.jboss.as</groupId>
+             <artifactId>jboss-as-arquillian-container-remote</artifactId>
+        </dependency>
+		-->
+         <dependency>
+             <groupId>org.jboss.arquillian.container</groupId>
+             <artifactId>arquillian-container-spi</artifactId>
+             <scope>test</scope>
+         </dependency>
+ 
+         <dependency>
+             <groupId>org.jboss.spec.javax.faces</groupId>
+             <artifactId>jboss-jsf-api_2.1_spec</artifactId>
+             <scope>provided</scope>
+         </dependency>
+ 
+         <dependency>
+             <groupId>org.jboss.spec.javax.servlet</groupId>
+             <artifactId>jboss-servlet-api_3.0_spec</artifactId>
+             <scope>provided</scope>
+         </dependency>
+
+         <dependency>
+             <groupId>org.jboss.shrinkwrap.descriptors</groupId>
+             <artifactId>shrinkwrap-descriptors-impl</artifactId>
+             <scope>test</scope>
+         </dependency>
+     
+         <dependency>
+             <groupId>org.jboss.shrinkwrap.resolver</groupId>
+             <artifactId>shrinkwrap-resolver-api-maven</artifactId>
+             <scope>test</scope>
+         </dependency>
+     
+         <dependency>
+             <groupId>org.jboss.shrinkwrap.resolver</groupId>
+             <artifactId>shrinkwrap-resolver-impl-maven</artifactId>
+             <scope>test</scope>
+         </dependency>
+ 
     </dependencies>
 
     <build>
