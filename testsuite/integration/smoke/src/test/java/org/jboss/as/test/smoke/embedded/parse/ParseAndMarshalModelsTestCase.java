@@ -774,6 +774,10 @@ public class ParseAndMarshalModelsTestCase {
         public void registerRemoteHost(ProxyController hostControllerClient) {
         }
 
+        public boolean isHostRegistered(String id) {
+            return false;
+        }
+
         public void unregisterRemoteHost(String id) {
         }
 

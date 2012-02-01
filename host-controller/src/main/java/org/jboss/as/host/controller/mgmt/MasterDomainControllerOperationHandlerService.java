@@ -55,7 +55,7 @@ public class MasterDomainControllerOperationHandlerService extends AbstractModel
     public Channel.Key startReceiving(final Channel channel) {
         final ManagementChannelHandler handler = new ManagementChannelHandler(ManagementClientChannelStrategy.create(channel), getExecutor());
         // Assemble the request handlers for the domain channel
-        handler.addHandlerFactory(new HostRegistrationHandler(handler, getController(), domainController));
+        handler.addHandlerFactory(new HostControllerRegistrationHandler(handler, getController(), domainController));
         handler.addHandlerFactory(new ModelControllerClientOperationHandler(getController(), handler));
         handler.addHandlerFactory(new MasterDomainControllerOperationHandlerImpl(domainController));
         final Channel.Key key = channel.addCloseHandler(new CloseHandler<Channel>() {
@@ -74,4 +74,5 @@ public class MasterDomainControllerOperationHandlerService extends AbstractModel
         channel.receiveMessage(handler.getReceiver());
         return key;
     }
+
 }

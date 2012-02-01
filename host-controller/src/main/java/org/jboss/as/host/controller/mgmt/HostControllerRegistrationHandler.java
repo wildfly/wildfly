@@ -25,18 +25,20 @@ package org.jboss.as.host.controller.mgmt;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_CODENAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_VERSION;
 import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.SlaveRegistrationException;
 import org.jboss.as.domain.controller.operations.ReadMasterDomainModelHandler;
+import static org.jboss.as.host.controller.HostControllerLogger.DOMAIN_LOGGER;
 import static org.jboss.as.process.protocol.ProtocolUtils.expectHeader;
 import org.jboss.as.protocol.ProtocolLogger;
 import org.jboss.as.protocol.StreamUtils;
@@ -49,8 +51,10 @@ import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandlerFactory;
 import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
+import org.jboss.as.version.ProductConfig;
 import org.jboss.dmr.ModelNode;
 
+import javax.management.StringValueExp;
 import java.io.DataInput;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
@@ -61,7 +65,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * @author Emanuel Muckenhuber
  */
-public class HostRegistrationHandler implements ManagementRequestHandlerFactory {
+public class HostControllerRegistrationHandler implements ManagementRequestHandlerFactory {
 
     private static final ModelNode READ_DOMAIN_MODEL = new ModelNode();
     static {
@@ -74,7 +78,7 @@ public class HostRegistrationHandler implements ManagementRequestHandlerFactory 
     private final ModelController controller;
     private final DomainController domainController;
 
-    public HostRegistrationHandler(ManagementChannelHandler handler, ModelController controller, DomainController domainController) {
+    public HostControllerRegistrationHandler(ManagementChannelHandler handler, ModelController controller, DomainController domainController) {
         this.handler = handler;
         this.controller = controller;
         this.domainController = domainController;
@@ -85,11 +89,12 @@ public class HostRegistrationHandler implements ManagementRequestHandlerFactory 
         final byte operationId = header.getOperationId();
         switch (operationId) {
             case DomainControllerProtocol.REGISTER_HOST_CONTROLLER_REQUEST:
+                // Start the registration process
                 final RegistrationContext context = new RegistrationContext();
                 context.activeOperation = handlers.registerActiveOperation(header.getBatchId(), context);
                 return new RegistrationRequestHandler();
             case DomainControllerProtocol.COMPLETE_HOST_CONTROLLER_REGISTRATION:
-
+                // Complete the registration process
                 return new CompleteRegistrationHandler();
         }
         return handlers.resolveNext();
@@ -104,16 +109,15 @@ public class HostRegistrationHandler implements ManagementRequestHandlerFactory 
         public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<Void> resultHandler, final ManagementRequestContext<RegistrationContext> context) throws IOException {
             expectHeader(input, DomainControllerProtocol.PARAM_HOST_ID);
             final String hostName = input.readUTF();
-            final ModelNode registrationParams = new ModelNode();
-            registrationParams.readExternal(input);
+            final ModelNode hostInfo = new ModelNode();
+            hostInfo.readExternal(input);
 
             final RegistrationContext registration = context.getAttachment();
-            registration.initialize(hostName, context);
-            final ProxyController exiting = null; // domainController.getHostControllerProxy(hostName);
-            if(exiting != null) {
-                registration.failed(createError(SlaveRegistrationException.ErrorCode.HOST_ALREADY_EXISTS, hostName));
+            registration.initialize(hostName, hostInfo, context);
+            if(domainController.isHostRegistered(hostName)) {
+                registration.failed(SlaveRegistrationException.ErrorCode.HOST_ALREADY_EXISTS, hostName);
             }
-            // Read the domain model async, since this will block until the registration process is complete
+            // Read the domain model async, this will block until the registration process is complete
             context.executeAsync(new ManagementRequestContext.AsyncTask<RegistrationContext>() {
                 @Override
                 public void execute(ManagementRequestContext<RegistrationContext> context) throws Exception {
@@ -122,10 +126,7 @@ public class HostRegistrationHandler implements ManagementRequestHandlerFactory 
                         // The domain model is going to be sent as part of the prepared notification
                         result = controller.execute(READ_DOMAIN_MODEL, OperationMessageHandler.logging, registration, OperationAttachments.EMPTY);
                     } catch (Exception e) {
-                        final ModelNode failure = new ModelNode();
-                        failure.get(OUTCOME).set(FAILED);
-                        failure.get(FAILURE_DESCRIPTION).set(e.getClass().getName() + ":" + e.getMessage());
-                        registration.failed(failure);
+                        registration.failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getClass().getName() + ":" + e.getMessage());
                         return;
                     }
                     // Send a registered notification back
@@ -143,7 +144,7 @@ public class HostRegistrationHandler implements ManagementRequestHandlerFactory 
         @Override
         public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<Void> resultHandler, final ManagementRequestContext<RegistrationContext> context) throws IOException {
             final byte status = input.readByte();
-            final String message = input.readUTF();
+            final String message = input.readUTF(); // Perhaps use message when the host failed
             final RegistrationContext registration = context.getAttachment();
             // Complete the registration
             registration.completeRegistration(context, status == DomainControllerProtocol.PARAM_OK);
@@ -154,6 +155,7 @@ public class HostRegistrationHandler implements ManagementRequestHandlerFactory 
     class RegistrationContext implements ModelController.OperationTransactionControl {
 
         private ManagementRequestContext<RegistrationContext> responseChannel;
+        private ModelNode hostInfo;
         private String hostName;
 
         private volatile boolean failed;
@@ -161,8 +163,9 @@ public class HostRegistrationHandler implements ManagementRequestHandlerFactory 
         private final AtomicBoolean completed = new AtomicBoolean();
         private final CountDownLatch completedLatch = new CountDownLatch(1);
 
-        protected synchronized void initialize(final String hostName, final ManagementRequestContext<RegistrationContext> responseChannel) {
+        protected synchronized void initialize(final String hostName, final ModelNode hostInfo, final ManagementRequestContext<RegistrationContext> responseChannel) {
             this.hostName = hostName;
+            this.hostInfo = hostInfo;
             this.responseChannel = responseChannel;
         }
 
@@ -179,12 +182,19 @@ public class HostRegistrationHandler implements ManagementRequestHandlerFactory 
             }
         }
 
+        /**
+         * Once the "read-domain-mode" operation is in operationPrepared, send the model back to registering HC.
+         * When the model was applied successfully on the client, we process registering the proxy in the domain,
+         * otherwise we rollback.
+         *
+         * @param transaction the model controller tx
+         * @param result the prepared result (domain model)
+         */
         void registerHost(final ModelController.OperationTransaction transaction, final ModelNode result) {
             synchronized (this) {
                 // Check again with the controller lock held
-                final ProxyController exiting = null; // domainController.getHostControllerProxy(hostName);
-                if(exiting != null) {
-                    failed(createError(SlaveRegistrationException.ErrorCode.HOST_ALREADY_EXISTS, hostName));
+                if(domainController.isHostRegistered(hostName)) {
+                    failed(SlaveRegistrationException.ErrorCode.HOST_ALREADY_EXISTS, hostName);
                     return;
                 }
                 // Send model back to HC
@@ -192,7 +202,7 @@ public class HostRegistrationHandler implements ManagementRequestHandlerFactory 
                     sendResponse(responseChannel, DomainControllerProtocol.PARAM_OK, result);
                 } catch (IOException e) {
                     ProtocolLogger.ROOT_LOGGER.debugf(e, "failed to process message");
-                    failed(null);
+                    failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getClass().getName() + ":" + e.getMessage());
                     return;
                 }
             }
@@ -200,7 +210,7 @@ public class HostRegistrationHandler implements ManagementRequestHandlerFactory 
             try {
                 completedLatch.await();
             } catch (InterruptedException e) {
-                failed(null);
+                failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getClass().getName() + ":" + e.getMessage());
                 return;
             }
             synchronized (this) {
@@ -215,10 +225,10 @@ public class HostRegistrationHandler implements ManagementRequestHandlerFactory 
                 try {
                     domainController.registerRemoteHost(proxy);
                 } catch (SlaveRegistrationException e) {
-                    failed(createError(e.getErrorCode(), hostName));
+                    failed(e.getErrorCode(), e.getErrorMessage());
                     return;
                 } catch (Exception e) {
-                    failed(createError(SlaveRegistrationException.ErrorCode.NONE, e.getClass().getName() + ":" + e.getMessage()));
+                    failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getClass().getName() + ":" + e.getMessage());
                     return;
                 }
                 // Complete registration
@@ -227,8 +237,20 @@ public class HostRegistrationHandler implements ManagementRequestHandlerFactory 
                 } else {
                     transaction.rollback();
                 }
-            }
 
+                final String productName;
+                if(hostInfo.hasDefined(PRODUCT_NAME)) {
+                    final String name = hostInfo.get(PRODUCT_NAME).asString();
+                    final String version1 = hostInfo.get(PRODUCT_VERSION).asString();
+                    final String version2 = hostInfo.get(RELEASE_VERSION).asString();
+                    productName = ProductConfig.getPrettyVersionString(name, version1, version2);
+                } else {
+                    String version1 = hostInfo.get(RELEASE_VERSION).asString();
+                    String version2 = hostInfo.get(RELEASE_CODENAME).asString();
+                    productName = ProductConfig.getPrettyVersionString(null, version1, version2);
+                }
+                DOMAIN_LOGGER.registeredRemoteSlaveHost(hostName, productName);
+            }
         }
 
         void completeRegistration(final ManagementRequestContext<RegistrationContext> responseChannel, boolean commit) {
@@ -239,11 +261,15 @@ public class HostRegistrationHandler implements ManagementRequestHandlerFactory 
             }
         }
 
-        void failed(final ModelNode error) {
+        void failed(SlaveRegistrationException.ErrorCode errorCode, String message) {
+            failed(errorCode.getCode(), message);
+        }
+
+        void failed(byte errorCode, String message) {
             if(completed.compareAndSet(false, true)) {
                 failed = true;
                 try {
-                    sendResponse(responseChannel, DomainControllerProtocol.PARAM_ERROR, error);
+                    sendFailedResponse(responseChannel, errorCode, message);
                 } catch (IOException e) {
                     ProtocolLogger.ROOT_LOGGER.debugf(e, "failed to process message");
                 } finally {
@@ -268,7 +294,7 @@ public class HostRegistrationHandler implements ManagementRequestHandlerFactory 
      * @param context the request context
      * @param responseType the response type
      * @param response the operation response
-     * @throws java.io.IOException for any error
+     * @throws IOException for any error
      */
     static void sendResponse(final ManagementRequestContext<RegistrationContext> context, final byte responseType, final ModelNode response) throws IOException {
         final ManagementResponseHeader header = ManagementResponseHeader.create(context.getRequestHeader());
@@ -286,11 +312,30 @@ public class HostRegistrationHandler implements ManagementRequestHandlerFactory 
         }
     }
 
-    static ModelNode createError(final SlaveRegistrationException.ErrorCode code, final String message) {
-        final ModelNode failure = new ModelNode();
-        failure.get(FAILURE_DESCRIPTION).set(message);
-        failure.get("error-code").set(code.getCode());
-        return failure;
+    /**
+     * Send a failed operation response.
+     *
+     * @param context the request context
+     * @param errorCode the error code
+     * @param message the operation message
+     * @throws IOException for any error
+     */
+    static void sendFailedResponse(final ManagementRequestContext<RegistrationContext> context, final byte errorCode, final String message) throws IOException {
+        final ManagementResponseHeader header = ManagementResponseHeader.create(context.getRequestHeader());
+        final FlushableDataOutput output = context.writeMessage(header);
+        try {
+            // This is an error
+            output.writeByte(DomainControllerProtocol.PARAM_ERROR);
+            // send error code
+            output.writeByte(errorCode);
+            // error message
+            output.writeUTF(message);
+            // response end
+            output.writeByte(ManagementProtocol.RESPONSE_END);
+            output.close();
+        } finally {
+            StreamUtils.safeClose(output);
+        }
     }
 
 }

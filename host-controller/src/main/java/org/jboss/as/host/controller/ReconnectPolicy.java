@@ -12,10 +12,9 @@ interface ReconnectPolicy {
     /**
      * Respawn a process.
      *
-     * @param process
+     * @param count
      */
     void wait(int count) throws InterruptedException;
-
 
     ReconnectPolicy CONNECT = new ReconnectPolicy() {
 
@@ -23,15 +22,15 @@ interface ReconnectPolicy {
         public void wait(int count) throws InterruptedException {
             final int waitPeriod;
             if (count < 5) {
-                waitPeriod = 100;
+                waitPeriod = 1;
             } else if (count >= 5 && count < 10) {
-                waitPeriod = 300;
+                waitPeriod = 3;
             } else if (count >= 10 && count < 15) {
-                waitPeriod = 1000;
+                waitPeriod = 10;
             } else {
-                waitPeriod = 5000;
+                waitPeriod = 20;
             }
-            TimeUnit.MILLISECONDS.sleep(waitPeriod);
+            TimeUnit.SECONDS.sleep(waitPeriod);
         }
     };
 
@@ -45,8 +44,5 @@ interface ReconnectPolicy {
             TimeUnit.SECONDS.sleep(waitPeriod);
         }
     };
-
-
-
 
 }

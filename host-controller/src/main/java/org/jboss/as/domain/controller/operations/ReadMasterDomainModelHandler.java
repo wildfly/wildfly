@@ -36,7 +36,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Step handler response for generating a complete resource list of the domain model,
+ * Step handler responsible for collecting a complete description of the domain model,
  * which is going to be sent back to a remote host-controller.
  *
  * @author John Bailey

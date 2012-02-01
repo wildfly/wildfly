@@ -207,11 +207,11 @@ public interface HostControllerLogger extends BasicLogger {
     void noServerAvailable(String serverName);
 
     /**
-     * Logs an error message indicating the reconnect info is {@code null} and cannot try to reconnect.
+     * Logs an error message indicating the connection to the remote host controller closed.
      */
-    @LogMessage(level = Level.ERROR)
-    @Message(id = 10914, value = "Null reconnect info, cannot try to reconnect")
-    void nullReconnectInfo();
+    @LogMessage(level = Level.WARN)
+    @Message(id = 10914, value = "Connection to remote host-controller closed. Trying to reconnect.")
+    void lostRemoteDomainConnection();
 
     /**
      * Logs a warning message indicating the option for the jvm was already set and is being ignored.
@@ -243,11 +243,12 @@ public interface HostControllerLogger extends BasicLogger {
     /**
      * Logs an informational message indicating the host has been registered as a remote slave.
      *
-     * @param host the host.
+     * @param hostName the host name
+     * @param productName the product name
      */
     @LogMessage(level = Level.INFO)
-    @Message(id = 10918, value = "Registered remote slave host %s")
-    void registeredRemoteSlaveHost(String host);
+    @Message(id = 10918, value = "Registered remote slave host \"%s\", %s")
+    void registeredRemoteSlaveHost(String hostName, String productName);
 
     /**
      * Logs an informational message indicating the server, represented by the {@code name} parameter, is being
