@@ -158,19 +158,24 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
             writeNewLine(writer);
         }
 
-        if (modelNode.hasDefined(CORE_SERVICE) && modelNode.get(CORE_SERVICE).hasDefined(VAULT)) {
+        boolean hasCoreServices = modelNode.hasDefined(CORE_SERVICE);
+        if (hasCoreServices && modelNode.get(CORE_SERVICE).hasDefined(VAULT)) {
             writeVault(writer, modelNode.get(CORE_SERVICE, VAULT));
             writeNewLine(writer);
         }
 
-        if (modelNode.hasDefined(CORE_SERVICE) && modelNode.get(CORE_SERVICE).hasDefined(MANAGEMENT)) {
+        if (hasCoreServices && modelNode.get(CORE_SERVICE).hasDefined(MANAGEMENT)) {
             ManagementXml managementXml = new ManagementXml(this);
             managementXml.writeManagement(writer, modelNode.get(CORE_SERVICE, MANAGEMENT), true);
             writeNewLine(writer);
         }
 
         if (modelNode.hasDefined(DOMAIN_CONTROLLER)) {
-            writeDomainController(writer, modelNode.get(DOMAIN_CONTROLLER));
+            ModelNode ignoredResources = null;
+            if (hasCoreServices && modelNode.get(CORE_SERVICE).hasDefined(IGNORED_RESOURCES)) {
+                ignoredResources = modelNode.get(CORE_SERVICE, IGNORED_RESOURCES);
+            }
+            writeDomainController(writer, modelNode.get(DOMAIN_CONTROLLER), ignoredResources);
             writeNewLine(writer);
         }
 
@@ -1184,7 +1189,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
         writer.writeEndElement();
     }
 
-    private void writeDomainController(final XMLExtendedStreamWriter writer, final ModelNode modelNode)
+    private void writeDomainController(final XMLExtendedStreamWriter writer, final ModelNode modelNode, ModelNode ignoredResources)
             throws XMLStreamException {
         writer.writeStartElement(Element.DOMAIN_CONTROLLER.getLocalName());
         if (modelNode.hasDefined(LOCAL)) {
@@ -1201,8 +1206,8 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
             if (remote.hasDefined(SECURITY_REALM)) {
                 writeAttribute(writer, Attribute.SECURITY_REALM, remote.require(SECURITY_REALM).asString());
             }
-            if (modelNode.hasDefined(CORE_SERVICE) && modelNode.get(CORE_SERVICE).hasDefined(IGNORED_RESOURCES)) {
-                writeIgnoredResources(writer, modelNode.get(CORE_SERVICE, IGNORED_RESOURCES));
+            if (ignoredResources != null) {
+                writeIgnoredResources(writer, ignoredResources);
             }
             writer.writeEndElement();
         }
