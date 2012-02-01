@@ -21,6 +21,7 @@
  */
 package org.jboss.as.cli.operation;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -87,9 +88,13 @@ public interface ParsedCommandLine {
 
     boolean hasHeaders();
 
-    List<ParsedOperationRequestHeader> getHeaders();
+    boolean hasHeader(String header);
+
+    Collection<ParsedOperationRequestHeader> getHeaders();
 
     String getLastHeaderName();
+
+    ParsedOperationRequestHeader getLastHeader();
 
     CommandLineFormat getFormat();
 }

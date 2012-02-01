@@ -70,8 +70,7 @@ public class RolloutPlanCompleter implements CommandLineCompleter {
             candidates.add("rollout");
             return parsedOp.getLastSeparatorIndex() + 1;
         }
-        final List<ParsedOperationRequestHeader> headers = parsedOp.getHeaders();
-        if(headers.isEmpty()) {
+        if(parsedOp.getLastHeader() == null) {
             if(ctx.getParsedCommandLine().getOriginalLine().endsWith(" ") /* '{rollout ' */) {
                 final String originalLine = ctx.getParsedCommandLine().getOriginalLine();
                 int bufferIndex = originalLine.lastIndexOf(buffer);
@@ -84,9 +83,9 @@ public class RolloutPlanCompleter implements CommandLineCompleter {
             }
             return buffer.length();
         }
-        final ParsedOperationRequestHeader lastHeader = headers.get(headers.size() - 1);
+        final ParsedOperationRequestHeader lastHeader = parsedOp.getLastHeader();
         if(!(lastHeader instanceof ParsedRolloutPlanHeader)) {
-            throw new IllegalStateException("Expected " + ParsedRolloutPlanHeader.class + " but got " + lastHeader);
+            throw new IllegalStateException("Expected " + ParsedRolloutPlanHeader.class + " but got " + lastHeader.getName() + " of " + lastHeader);
         }
         final ParsedRolloutPlanHeader rollout = (ParsedRolloutPlanHeader) lastHeader;
 
@@ -109,7 +108,7 @@ public class RolloutPlanCompleter implements CommandLineCompleter {
         if(rollout.hasProperties()) {
             final String lastName = rollout.getLastPropertyName();
             if(Util.ROLLBACK_ACROSS_GROUPS.startsWith(lastName)) {
-                candidates.add(Util.ROLLBACK_ACROSS_GROUPS + '}');
+                candidates.add(Util.ROLLBACK_ACROSS_GROUPS);
             }
             return rollout.getLastChunkIndex();
         }
@@ -136,6 +135,7 @@ public class RolloutPlanCompleter implements CommandLineCompleter {
                 // header properties
                 candidates.add(Util.ROLLBACK_ACROSS_GROUPS);
             }
+            candidates.add(";");
             candidates.add("}");
             return buffer.length();
         }
@@ -194,6 +194,7 @@ public class RolloutPlanCompleter implements CommandLineCompleter {
             candidates.add(",");
             // header propersties
             candidates.add(Util.ROLLBACK_ACROSS_GROUPS);
+            candidates.add(";");
             candidates.add("}");
             return buffer.length();
         }
@@ -215,6 +216,7 @@ public class RolloutPlanCompleter implements CommandLineCompleter {
                 candidates.set(0, group + '(');
                 candidates.add(group + ',');
                 candidates.add(group + '^');
+                candidates.add(group + ';');
                 candidates.add(group + '}');
             }
         }

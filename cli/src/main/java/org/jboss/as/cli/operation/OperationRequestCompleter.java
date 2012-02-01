@@ -83,13 +83,12 @@ public class OperationRequestCompleter implements CommandLineCompleter {
             if(headers.isEmpty()) {
                 return -1;
             }
-
             int result = buffer.length();
             if(parsedCmd.getLastHeaderName() != null) {
                 if(buffer.endsWith(parsedCmd.getLastHeaderName())) {
                     result = parsedCmd.getLastChunkIndex();
                     for(String name : headers.keySet()) {
-                        if(name.startsWith(parsedCmd.getLastHeaderName())) {
+                        if(!parsedCmd.hasHeader(name) && name.startsWith(parsedCmd.getLastHeaderName())) {
                             candidates.add(name);
                         }
                     }
@@ -102,19 +101,23 @@ public class OperationRequestCompleter implements CommandLineCompleter {
                     if(headerCompleter == null) {
                         return -1;
                     }
-                    result = headerCompleter.complete(ctx, buffer, cursor, candidates);
+
+                    int valueResult = headerCompleter.complete(ctx, buffer.substring(parsedCmd.getLastChunkIndex()), cursor, candidates);
+                    if(valueResult < 0) {
+                        return -1;
+                    }
+                    result = parsedCmd.getLastChunkIndex() + valueResult;
                 }
             } else {
-                final List<ParsedOperationRequestHeader> parsedHeaders = parsedCmd.getHeaders();
-                if(parsedHeaders.isEmpty()) {
+                if(!parsedCmd.hasHeaders()) {
                     candidates.addAll(headers.keySet());
                 } else if(parsedCmd.endsOnHeaderSeparator()) {
                     candidates.addAll(headers.keySet());
-                    for(ParsedOperationRequestHeader parsed : parsedHeaders) {
+                    for(ParsedOperationRequestHeader parsed : parsedCmd.getHeaders()) {
                         candidates.remove(parsed.getName());
                     }
                 } else {
-                    final ParsedOperationRequestHeader lastParsedHeader = parsedHeaders.get(parsedHeaders.size() - 1);
+                    final ParsedOperationRequestHeader lastParsedHeader = parsedCmd.getLastHeader();
                     final OperationRequestHeader lastHeader = headers.get(lastParsedHeader.getName());
                     if(lastHeader == null) {
                         return -1;

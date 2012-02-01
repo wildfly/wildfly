@@ -23,6 +23,7 @@ package org.jboss.as.cli.operation.impl;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,11 +32,13 @@ import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.Util;
+import org.jboss.as.cli.handlers.SimpleTabCompleter;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.OperationRequestHeader;
 import org.jboss.as.cli.operation.ParsedCommandLine;
+import org.jboss.as.cli.parsing.ParserUtil;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 
@@ -45,7 +48,56 @@ import org.jboss.dmr.ModelNode;
  */
 public class DefaultOperationCandidatesProvider implements OperationCandidatesProvider {
 
-    private static final Map<String, OperationRequestHeader> HEADERS = Collections.<String, OperationRequestHeader>singletonMap(RolloutPlanRequestHeader.INSTANCE.getName(), RolloutPlanRequestHeader.INSTANCE);
+    private static final CommandLineCompleter BOOLEAN_HEADER_COMPLETER = new CommandLineCompleter(){
+
+        private final DefaultCallbackHandler parsedOp = new DefaultCallbackHandler();
+
+        @Override
+        public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
+            try {
+                ParserUtil.parseHeaders(buffer, parsedOp);
+            } catch (CommandFormatException e) {
+                e.printStackTrace();
+                return -1;
+            }
+            if(parsedOp.endsOnSeparator()) {
+                candidates.add(Util.FALSE);
+                candidates.add(Util.TRUE);
+                return buffer.length();
+            }
+            if(parsedOp.getLastHeader() == null) {
+                candidates.add("=");
+                return buffer.length();
+            }
+            int result = SimpleTabCompleter.BOOLEAN.complete(ctx, buffer.substring(parsedOp.getLastChunkIndex()), cursor, candidates);
+            if(result < 0) {
+                return result;
+            }
+            return parsedOp.getLastChunkIndex() + result;
+        }};
+
+    private static final Map<String, OperationRequestHeader> HEADERS;
+    static {
+        HEADERS = new HashMap<String, OperationRequestHeader>();
+        HEADERS.put(RolloutPlanRequestHeader.INSTANCE.getName(), RolloutPlanRequestHeader.INSTANCE);
+
+        addBooleanHeader(Util.ALLOW_RESOURCE_SERVICE_RESTART);
+        addBooleanHeader(Util.ROLLBACK_ON_RUNTIME_FAILURE);
+    }
+
+    private static void addBooleanHeader(final String name) {
+        OperationRequestHeader header = new OperationRequestHeader(){
+            @Override
+            public String getName() {
+                return name;
+            }
+
+            @Override
+            public CommandLineCompleter getCompleter() {
+                return BOOLEAN_HEADER_COMPLETER;
+            }};
+        HEADERS.put(header.getName(), header);
+    }
 
     /* (non-Javadoc)
      * @see org.jboss.as.cli.CandidatesProvider#getNodeNames(org.jboss.as.cli.Prefix)
@@ -150,8 +202,8 @@ public class DefaultOperationCandidatesProvider implements OperationCandidatesPr
         ModelNode request;
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder(address);
         try {
-            builder.setOperationName("read-operation-description");
-            builder.addProperty("name", operationName);
+            builder.setOperationName(Util.READ_OPERATION_DESCRIPTION);
+            builder.addProperty(Util.NAME, operationName);
             request = builder.buildRequest();
         } catch (OperationFormatException e1) {
             throw new IllegalStateException("Failed to build operation", e1);
@@ -163,7 +215,7 @@ public class DefaultOperationCandidatesProvider implements OperationCandidatesPr
             if (!Util.isSuccess(outcome)) {
                 result = Collections.emptyList();
             } else {
-                outcome.get("request-properties");
+                outcome.get(Util.REQUEST_PROPERTIES);
                 final List<String> names = Util.getRequestPropertyNames(outcome);
                 result = new ArrayList<CommandArgument>(names.size());
                 for(final String name : names) {

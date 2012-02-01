@@ -310,7 +310,7 @@ class CommandContextImpl implements CommandContext {
 
         // rollout plan
         final GenericTypeOperationHandler rolloutPlan = new GenericTypeOperationHandler(this, "/management-client-content=rollout-plans/rollout-plan", null);
-        rolloutPlan.addValueConverter("content", ArgumentValueConverter.ROLLOUT_PLAN);
+        rolloutPlan.addValueConverter("content", ArgumentValueConverter.HEADERS);
         rolloutPlan.addValueCompleter("content", RolloutPlanCompleter.INSTANCE);
         cmdRegistry.registerHandler(rolloutPlan, "rollout-plan");
 

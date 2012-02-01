@@ -42,7 +42,7 @@ import org.jboss.as.cli.operation.CommandLineParser;
 import org.jboss.as.cli.operation.OperationRequestAddress.Node;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
-import org.jboss.as.cli.operation.impl.RolloutPlanCompleter;
+import org.jboss.as.cli.operation.impl.HeadersCompleter;
 import org.jboss.as.cli.parsing.ParserUtil;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
@@ -60,7 +60,7 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
     private Boolean addressAvailable;
     private String requiredType;
 
-    protected ArgumentWithValue headers = new ArgumentWithValue(this, RolloutPlanCompleter.INSTANCE, ArgumentValueConverter.ROLLOUT_PLAN, "--headers") {
+    protected ArgumentWithValue headers = new ArgumentWithValue(this, HeadersCompleter.INSTANCE, ArgumentValueConverter.HEADERS, "--headers") {
         @Override
         public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
             if(!ctx.isDomainMode()) {
