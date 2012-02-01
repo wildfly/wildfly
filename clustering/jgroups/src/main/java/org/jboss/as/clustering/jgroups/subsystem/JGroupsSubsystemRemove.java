@@ -22,12 +22,10 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.List;
-import java.util.Locale;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
@@ -36,17 +34,9 @@ import org.jboss.msc.service.ServiceController;
  *
  * @author Kabir Khan
  */
-public class JGroupsSubsystemRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
+public class JGroupsSubsystemRemove extends AbstractRemoveStepHandler {
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.jboss.as.controller.descriptions.DescriptionProvider#getModelDescription(java.util.Locale)
-     */
-    @Override
-    public ModelNode getModelDescription(final Locale locale) {
-        return JGroupsDescriptions.getSubsystemRemoveDescription(locale);
-    }
+    public static final JGroupsSubsystemRemove INSTANCE = new JGroupsSubsystemRemove();
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
         context.removeService(ProtocolDefaultsService.SERVICE_NAME);

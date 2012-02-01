@@ -23,12 +23,14 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.Locale;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -36,16 +38,9 @@ import org.jboss.dmr.Property;
 /**
  * @author Paul Ferraro
  */
-public class JGroupsSubsystemDescribe implements OperationStepHandler, DescriptionProvider {
+public class JGroupsSubsystemDescribe implements OperationStepHandler {
 
-    /**
-     * {@inheritDoc}
-     * @see org.jboss.as.controller.descriptions.DescriptionProvider#getModelDescription(java.util.Locale)
-     */
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return JGroupsDescriptions.getSubsystemDescribeDescription(locale);
-    }
+    public static final JGroupsSubsystemDescribe INSTANCE = new JGroupsSubsystemDescribe();
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -56,15 +51,46 @@ public class JGroupsSubsystemDescribe implements OperationStepHandler, Descripti
         result.add(JGroupsSubsystemAdd.createOperation(rootAddress.toModelNode(), subModel));
 
         if (subModel.hasDefined(ModelKeys.STACK)) {
-            for(final Property stack : subModel.get(ModelKeys.STACK).asPropertyList()) {
-                final ModelNode address = rootAddress.toModelNode();
-                address.add(ModelKeys.STACK, stack.getName());
-                result.add(ProtocolStackAdd.createOperation(address, stack.getValue()));
+            for (final Property stack : subModel.get(ModelKeys.STACK).asPropertyList()) {
+                // process one stack
+                final ModelNode stackAddress = rootAddress.toModelNode();
+                stackAddress.add(ModelKeys.STACK, stack.getName());
+                result.add(ProtocolStackAdd.createOperation(stackAddress, stack.getValue()));
+
+                // process the child resources
+
+                // transport=TRANSPORT
+                if (stack.getValue().get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME).isDefined()) {
+                    ModelNode transport = stack.getValue().get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
+                    ModelNode transportAddress = stackAddress.clone();
+                    transportAddress.add(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
+                    result.add(StackConfigOperationHandlers.createOperation(CommonAttributes.TRANSPORT_ATTRIBUTES, transportAddress, transport));
+                    addProtocolPropertyCommands(transport, transportAddress, result);
+                }
+                // protocol=*
+                if (stack.getValue().get(ModelKeys.PROTOCOL).isDefined()) {
+                    for (Property protocol : ProtocolStackAdd.getOrderedProtocolPropertyList(stack.getValue())) {
+                        result.add(StackConfigOperationHandlers.createProtocolOperation(CommonAttributes.PROTOCOL_ATTRIBUTES, stackAddress, protocol.getValue()));
+                        ModelNode protocolAddress = stackAddress.clone();
+                        protocolAddress.add(ModelKeys.PROTOCOL, protocol.getName()) ;
+                        addProtocolPropertyCommands(protocol.getValue(), protocolAddress, result);
+                    }
+                }
             }
         }
-
         context.getResult().set(result);
-
         context.completeStep();
     }
+
+    private void addProtocolPropertyCommands(ModelNode protocol, ModelNode address, ModelNode result) throws OperationFailedException {
+
+        if (protocol.hasDefined(ModelKeys.PROPERTY)) {
+             for (Property property : protocol.get(ModelKeys.PROPERTY).asPropertyList()) {
+                 ModelNode propertyAddress = address.clone().add(ModelKeys.PROPERTY, property.getName());
+                 AttributeDefinition[] ATTRIBUTE = {CommonAttributes.VALUE} ;
+                 result.add(StackConfigOperationHandlers.createOperation(ATTRIBUTE, propertyAddress, property.getValue()));
+             }
+        }
+    }
+
 }
