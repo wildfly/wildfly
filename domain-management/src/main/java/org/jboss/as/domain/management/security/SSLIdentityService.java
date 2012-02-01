@@ -68,7 +68,7 @@ public class SSLIdentityService implements Service<SSLIdentityService> {
     public void start(StartContext context) throws StartException {
         try {
             String protocol = "TLS";
-            if (ssl.has(PROTOCOL)) {
+            if (ssl.hasDefined(PROTOCOL)) {
                 protocol = ssl.get(PROTOCOL).asString();
             }
 
