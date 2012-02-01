@@ -53,6 +53,7 @@ public class ModelDescriptionConstants {
     public static final String BASE_DN = "base-dn";
     public static final String BOOT_TIME = "boot-time";
     public static final String BYTES = "bytes";
+    public static final String CALLER_TYPE = "caller-type";
     public static final String CANCELLED = "cancelled";
     public static final String CHILD_TYPE = "child-type";
     public static final String CHILDREN = "children";
@@ -97,6 +98,7 @@ public class ModelDescriptionConstants {
     public static final String HASH = "hash";
     public static final String HEAD_COMMENT_ALLOWED = "head-comment-allowed";
     public static final String HOST = "host";
+    public static final String HOST_CONTROLLER = "host-controller";
     public static final String HOST_FAILURE_DESCRIPTION = "host-failure-description";
     public static final String HOST_FAILURE_DESCRIPTIONS = "host-failure-descriptions";
     public static final String HOST_STATE = "host-state";
