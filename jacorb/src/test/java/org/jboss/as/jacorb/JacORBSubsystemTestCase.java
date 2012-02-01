@@ -74,8 +74,8 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
         "    <naming root-context=\"JBoss/Naming/root\" export-corbaloc=\"on\"/>" +
         "    <interop sun=\"on\" comet=\"off\" iona=\"off\" chunk-custom-rmi-valuetypes=\"on\" " +
         "        lax-boolean-encoding=\"off\" indirection-encoding-disable=\"off\" strict-check-on-tc-creation=\"off\"/>" +
-        "    <security support-ssl=\"off\" add-component-via-interceptor=\"on\" client-supports=\"mutualAuth\"" +
-        "        client-requires=\"none\" server-supports=\"mutualAuth\" server-requires=\"none\"/>" +
+        "    <security support-ssl=\"off\" add-component-via-interceptor=\"on\" client-supports=\"MutualAuth\"" +
+        "        client-requires=\"None\" server-supports=\"MutualAuth\" server-requires=\"None\"/>" +
         "    <properties>" +
         "        <property name=\"some_property\" value=\"some_value\"/>" +
         "    </properties>" +
