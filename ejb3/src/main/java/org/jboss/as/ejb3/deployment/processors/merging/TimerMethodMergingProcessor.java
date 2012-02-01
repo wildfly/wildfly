@@ -21,6 +21,16 @@
  */
 package org.jboss.as.ejb3.deployment.processors.merging;
 
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.ejb.Schedule;
+import javax.ejb.ScheduleExpression;
+import javax.ejb.TimedObject;
+import javax.ejb.Timeout;
+
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.metadata.MethodAnnotationAggregator;
 import org.jboss.as.ee.metadata.RuntimeAnnotationInformation;
@@ -38,14 +48,6 @@ import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 import org.jboss.metadata.ejb.spec.ScheduleMetaData;
 import org.jboss.metadata.ejb.spec.TimerMetaData;
 
-import javax.ejb.Schedule;
-import javax.ejb.ScheduleExpression;
-import javax.ejb.TimedObject;
-import javax.ejb.Timeout;
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Deployment unit processor that merges the annotation information with the information in the deployment descriptor
@@ -87,13 +89,13 @@ public class TimerMethodMergingProcessor extends AbstractMergingProcessor<EJBCom
     protected void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final EJBComponentDescription description) throws DeploymentUnitProcessingException {
         final EnterpriseBeanMetaData descriptorData = description.getDescriptorData();
         if (descriptorData != null) {
-            if (descriptorData instanceof ITimeoutTarget) {
+            if (descriptorData.isSession() || descriptorData.isMessageDriven()) {
                 ITimeoutTarget target = (ITimeoutTarget) descriptorData;
                 if (target.getTimeoutMethod() != null) {
                     parseTimeoutMethod(target, description, componentClass, deploymentReflectionIndex);
                 }
+                parseScheduleMethods(descriptorData, description, componentClass, deploymentReflectionIndex);
             }
-            parseScheduleMethods(descriptorData, description, componentClass, deploymentReflectionIndex);
         }
 
         //now check to see if the class implemented TimedObject
