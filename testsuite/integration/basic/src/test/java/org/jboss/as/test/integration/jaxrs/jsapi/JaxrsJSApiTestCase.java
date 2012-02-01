@@ -21,10 +21,14 @@
  */
 package org.jboss.as.test.integration.jaxrs.jsapi;
 
+import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.jaxrs.packaging.war.WebXml;
 import org.jboss.shrinkwrap.api.Archive;
@@ -40,9 +44,11 @@ import org.junit.runner.RunWith;
  * @author Pavel Janousek
  */
 @RunWith(Arquillian.class)
+@RunAsClient
 public class JaxrsJSApiTestCase {
 
-      @Deployment
+	private static final String depName = "jsapi";
+    @Deployment(name=depName)
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "jaxrsnoap.war");
         war.addPackage(HttpRequest.class.getPackage());
@@ -66,9 +72,12 @@ public class JaxrsJSApiTestCase {
         return war;
     }
 
-
+    @ArquillianResource
+    @OperateOnDeployment(depName)
+    static URL url;
+    
     private static String performCall(String urlPattern) throws Exception {
-        return HttpRequest.get("http://localhost:8080/jaxrsnoap/" + urlPattern, 5, TimeUnit.SECONDS);
+        return HttpRequest.get(url.toString() + urlPattern, 5, TimeUnit.SECONDS);
     }
 
     @Test
@@ -82,4 +91,5 @@ public class JaxrsJSApiTestCase {
         String result = performCall("/rest-JS");
         Assert.assertTrue(result.contains("var CustomerResource"));
     }
+    
 }
