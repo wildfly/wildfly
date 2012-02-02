@@ -91,11 +91,25 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
     public static final String HOME_DIR = "jboss.home.dir";
 
     /**
-     * Constant that holds the name of the environment property for specifying the directory from which JBoss will read modules.
+     * Constant that holds the name of the system property for specifying the directory returned from
+     * {@link #getModulesDir()}.
      *
      * <p>
      * Defaults to <tt><em>HOME_DIR</em>/modules</tt>/
+     * </p>
+     *
+     * <strong>This system property has no real meaning and should not be regarded as providing any sort of useful
+     * information.</strong> The "modules" directory is the default location from which JBoss Modules looks to find
+     * modules. However, this behavior is in no way controlled by this system property, nor is it guaranteed that
+     * modules will be loaded from only one directory, nor is it guaranteed that the "modules" directory will be one
+     * of the directories used. Finally, the structure and contents of any directories from which JBoss Modules loads
+     * resources is not something available from this class. Users wishing to interact with the modular classloading
+     * system should use the APIs provided by JBoss Modules
+     *
+     *
+     * @deprecated  has no useful meaning
      */
+    @Deprecated
     public static final String MODULES_DIR = "jboss.modules.dir";
 
     /**
@@ -287,6 +301,7 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         if (homeDir == null)
             throw ServerMessages.MESSAGES.missingHomeDirConfiguration(HOME_DIR);
 
+        @SuppressWarnings("deprecation")
         File tmp = getFileFromProperty(MODULES_DIR, props);
         if (tmp == null) {
             tmp = new File(homeDir, "modules");
@@ -386,6 +401,7 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         }
     }
 
+    @SuppressWarnings("deprecation")
     void install() {
         SecurityActions.setSystemProperty(QUALIFIED_HOST_NAME, qualifiedHostName);
         SecurityActions.setSystemProperty(HOST_NAME, hostName);
@@ -553,6 +569,20 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         return homeDir;
     }
 
+    /**
+     * <strong>A filesystem location that has no real meaning and should not be regarded as providing any sort of useful
+     * information.</strong> The "modules" directory is the default location from which JBoss Modules looks to find
+     * modules. However, this behavior is in no way controlled by the value returned by this method, nor is it guaranteed that
+     * modules will be loaded from only one directory, nor is it guaranteed that the "modules" directory will be one
+     * of the directories used. Finally, the structure and contents of any directories from which JBoss Modules loads
+     * resources is not something available from this class. Users wishing to interact with the modular classloading
+     * system should use the APIs provided by JBoss Modules.
+     *
+     * @return a file
+     *
+     * @deprecated has no reliable meaning
+     */
+    @Deprecated
     public File getModulesDir() {
         return modulesDir;
     }
