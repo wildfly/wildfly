@@ -25,6 +25,7 @@ package org.jboss.as.server.mgmt.domain;
 import static org.jboss.as.protocol.StreamUtils.safeClose;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
 
@@ -91,10 +92,12 @@ public class HostControllerConnectionService implements Service<Channel> {
     public synchronized void start(StartContext context) throws StartException {
         ProtocolChannelClient client;
         try {
-            ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
+            final InetSocketAddress socketAddress = hcAddressInjector.getValue();
+            final String hostName = InetAddress.getByName(socketAddress.getHostName()).getHostName();
+            final ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
             configuration.setEndpoint(endpointInjector.getValue());
             configuration.setConnectionTimeout(15000);
-            configuration.setUri(new URI("remote://" + hcAddressInjector.getValue().getHostName() + ":" + hcAddressInjector.getValue().getPort()));
+            configuration.setUri(new URI("remote://" + hostName + ":" + socketAddress.getPort()));
 
             OptionMap original = configuration.getOptionMap();
             Builder builder = OptionMap.builder();
