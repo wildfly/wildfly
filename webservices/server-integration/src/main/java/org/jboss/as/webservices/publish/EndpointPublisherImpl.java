@@ -50,12 +50,16 @@ import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.ServletMappingMetaData;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.ws.common.deployment.DeploymentAspectManagerImpl;
+import org.jboss.wsf.spi.SPIProvider;
+import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
 import org.jboss.wsf.spi.deployment.DeploymentAspectManager;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.deployment.WSFServlet;
+import org.jboss.wsf.spi.management.EndpointRegistry;
+import org.jboss.wsf.spi.management.EndpointRegistryFactory;
 import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
 import org.jboss.wsf.spi.publish.Context;
 import org.jboss.wsf.spi.publish.EndpointPublisher;
@@ -103,6 +107,16 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
             DeploymentAspectManager dam = new DeploymentAspectManagerImpl();
             dam.setDeploymentAspects(aspects);
             dam.deploy(dep);
+            // TODO: [JBWS-3426] fix this. START workaround
+            if (target == null) {
+                SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
+                EndpointRegistryFactory factory = spiProvider.getSPI(EndpointRegistryFactory.class);
+                EndpointRegistry registry = factory.getEndpointRegistry();
+                for (final Endpoint endpoint : dep.getService().getEndpoints()) {
+                    registry.register(endpoint);
+                }
+            }
+            // END workaround
         } finally {
             if (dep != null) {
                 dep.removeAttachment(ServiceTarget.class);
@@ -191,6 +205,17 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
             ClassLoader origClassLoader = SecurityActions.getContextClassLoader();
             try {
                 SecurityActions.setContextClassLoader(ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader());
+                final ServiceTarget target = deployment.getAttachment(ServiceTarget.class);
+                // TODO: [JBWS-3426] fix this. START workaround
+                if (target == null) {
+                    SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
+                    EndpointRegistryFactory factory = spiProvider.getSPI(EndpointRegistryFactory.class);
+                    EndpointRegistry registry = factory.getEndpointRegistry();
+                    for (final Endpoint endpoint : deployment.getService().getEndpoints()) {
+                        registry.unregister(endpoint);
+                    }
+                }
+                // END workaround
                 DeploymentAspectManager dam = new DeploymentAspectManagerImpl();
                 dam.setDeploymentAspects(aspects);
                 dam.undeploy(deployment);
