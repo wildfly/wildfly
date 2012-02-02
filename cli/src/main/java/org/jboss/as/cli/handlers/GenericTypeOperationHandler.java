@@ -687,6 +687,14 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         }
         buf.append("<command> ").append(name.getFullName()).append("=<value> (--<parameter>=<value>)*");
 
+        if(ctx.isDomainMode()) {
+            buf.append('\n');
+            for(int i = 0; i <= commandName.length(); ++i) {
+                buf.append(' ');
+            }
+            buf.append("[--headers={operation_header (;operation_header)*}]");
+        }
+
         buf.append("\n\nDESCRIPTION\n\n");
         buf.append("The command is used to manage resources of type " + this.nodeType + ".");
 
@@ -753,6 +761,12 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         buf.append("\n\n<parameter>  - parameter name of the <command> provided by the resourse.");
         buf.append("\n               For a complete list of available parameter names of a specific <command>,");
         buf.append("\n               their types and descriptions, execute ").append(commandName).append(" <command> --help.");
+
+        if(ctx.isDomainMode()) {
+            buf.append("\n\n--headers    - accepted only in the domain mode. The value is a list of operation headers");
+            buf.append("\n               separated by a semicolon. For the list of supported headers, please,");
+            buf.append("\n               refer to the domain management documentation or use tab-completion.");
+        }
 
         ctx.printLine(buf.toString());
     }
