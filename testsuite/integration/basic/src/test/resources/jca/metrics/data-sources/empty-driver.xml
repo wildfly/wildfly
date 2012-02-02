@@ -1,0 +1,10 @@
+<subsystem xmlns="urn:jboss:domain:datasources:1.0">
+	<datasources>
+            <drivers>
+                <driver name="name">
+                <driver-class>org.h2.Driver</driver-class>
+                 </driver>
+            </drivers>
+   </datasources>
+</subsystem>
+                
