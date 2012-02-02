@@ -103,7 +103,7 @@ public final class ConnectorServices {
 
     public static final ServiceName CONNECTION_VALIDATOR_SERVICE = ServiceName.JBOSS.append("ironjacamar", "connection-validator");
 
-    public static final String RA_SERVICE_NAME_SEPARATOR = "#";
+    public static final String RA_SERVICE_NAME_SEPARATOR = "->";
 
     private ConnectorServices() {
     }
