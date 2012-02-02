@@ -155,7 +155,6 @@ public class HttpPostMgmtOpsTestCase {
         assertTrue(strNames.contains("read-operation-names"));
         assertTrue(strNames.contains("read-resource"));
         assertTrue(strNames.contains("read-resource-description"));
-        assertTrue(strNames.contains("validate-address"));
         assertTrue(strNames.contains("write-attribute"));
 
     }

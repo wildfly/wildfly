@@ -50,9 +50,9 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class GlobalOpsTestCase extends AbstractCliTestBase {
-    
+
     @ArquillianResource URL url;
-    
+
     @BeforeClass
     public static void before() throws Exception {
         AbstractCliTestBase.initCLI();
@@ -61,15 +61,15 @@ public class GlobalOpsTestCase extends AbstractCliTestBase {
     @AfterClass
     public static void after() throws Exception {
         AbstractCliTestBase.closeCLI();
-    }   
-    
+    }
+
     @Deployment
     public static Archive<?> getDeployment() {
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
         ja.addClass(GlobalOpsTestCase.class);
         return ja;
     }
-    
+
     @Test
     public void testReadResource() throws Exception {
         testReadResource(false);
@@ -79,20 +79,20 @@ public class GlobalOpsTestCase extends AbstractCliTestBase {
     public void testReadResourceRecursive() throws Exception {
         testReadResource(true);
     }
-    
+
     private void testReadResource(boolean recursive) throws Exception {
         cli.sendLine("/subsystem=web:read-resource(recursive="+ String.valueOf(recursive) +")");
         CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
-        
+
         assertTrue(result.isIsOutcomeSuccess());
         assertTrue(result.getResult() instanceof Map);
         Map map = (Map) result.getResult();
-        
+
         assertTrue(map.get("virtual-server") instanceof Map);
-        
+
         Map vServer = (Map) map.get("virtual-server");
-        assertTrue(vServer.containsKey("default-host"));        
-        
+        assertTrue(vServer.containsKey("default-host"));
+
         if (recursive) {
             assertTrue(vServer.get("default-host") instanceof Map);
             Map host = (Map) vServer.get("default-host");
@@ -106,38 +106,38 @@ public class GlobalOpsTestCase extends AbstractCliTestBase {
     public void testReadAttribute() throws Exception {
         cli.sendLine("/subsystem=web:read-attribute(name=native)");
         CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
-        
-        assertTrue(result.isIsOutcomeSuccess());        
+
+        assertTrue(result.isIsOutcomeSuccess());
         assertTrue(result.getResult().equals("true") || result.getResult().equals("false"));
-        
+
     }
 
     @Test
     public void testWriteAttribute() {
     }
-    
+
     @Test
     public void testReadResourceDescription() throws Exception {
         cli.sendLine("/subsystem=web:read-resource-description");
         CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
-        
-        assertTrue(result.isIsOutcomeSuccess());        
+
+        assertTrue(result.isIsOutcomeSuccess());
         assertTrue(result.getResult() instanceof Map);
         Map map = (Map) result.getResult();
-        
-        assertTrue(map.containsKey("description"));        
-        assertTrue(map.containsKey("attributes"));        
+
+        assertTrue(map.containsKey("description"));
+        assertTrue(map.containsKey("attributes"));
     }
-    
+
     @Test
     public void testReadOperationNames() throws Exception {
         cli.sendLine("/subsystem=web:read-operation-names");
         CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
-        
-        assertTrue(result.isIsOutcomeSuccess());        
+
+        assertTrue(result.isIsOutcomeSuccess());
         assertTrue(result.getResult() instanceof List);
         List names = (List) result.getResult();
-        
+
         assertTrue(names.contains("read-attribute"));
         assertTrue(names.contains("read-children-names"));
         assertTrue(names.contains("read-children-resources"));
@@ -146,7 +146,6 @@ public class GlobalOpsTestCase extends AbstractCliTestBase {
         assertTrue(names.contains("read-operation-names"));
         assertTrue(names.contains("read-resource"));
         assertTrue(names.contains("read-resource-description"));
-        assertTrue(names.contains("validate-address"));
         assertTrue(names.contains("write-attribute"));
 
     }
@@ -155,83 +154,83 @@ public class GlobalOpsTestCase extends AbstractCliTestBase {
     public void testReadOperationDescription() throws Exception {
         cli.sendLine("/subsystem=web:read-operation-description(name=add)");
         CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
-        
-        assertTrue(result.isIsOutcomeSuccess());        
+
+        assertTrue(result.isIsOutcomeSuccess());
         assertTrue(result.getResult() instanceof Map);
         Map map = (Map) result.getResult();
-        
-        assertTrue(map.containsKey("operation-name"));        
-        assertTrue(map.containsKey("description"));        
-        assertTrue(map.containsKey("request-properties"));        
+
+        assertTrue(map.containsKey("operation-name"));
+        assertTrue(map.containsKey("description"));
+        assertTrue(map.containsKey("request-properties"));
     }
 
     @Test
     public void testReadChildrenTypes() throws Exception {
         cli.sendLine("/subsystem=web:read-children-types");
         CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
-        
-        assertTrue(result.isIsOutcomeSuccess());        
+
+        assertTrue(result.isIsOutcomeSuccess());
         assertTrue(result.getResult() instanceof List);
         List types = (List) result.getResult();
-        
-        assertTrue(types.contains("virtual-server"));        
-        assertTrue(types.contains("connector"));        
+
+        assertTrue(types.contains("virtual-server"));
+        assertTrue(types.contains("connector"));
     }
-    
+
     @Test
     public void testReadChildrenNames() throws Exception {
         cli.sendLine("/subsystem=web:read-children-names(child-type=connector)");
         CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
-        
-        assertTrue(result.isIsOutcomeSuccess());        
+
+        assertTrue(result.isIsOutcomeSuccess());
         assertTrue(result.getResult() instanceof List);
         List names = (List) result.getResult();
-        
-        assertTrue(names.contains("http"));        
+
+        assertTrue(names.contains("http"));
     }
 
     @Test
     public void testReadChildrenResources() throws Exception {
         cli.sendLine("/subsystem=web:read-children-resources(child-type=connector)");
         CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
-        
-        assertTrue(result.isIsOutcomeSuccess());        
+
+        assertTrue(result.isIsOutcomeSuccess());
         assertTrue(result.getResult() instanceof Map);
         Map res = (Map) result.getResult();
-        assertTrue(res.get("http") instanceof Map);        
+        assertTrue(res.get("http") instanceof Map);
         Map http = (Map) res.get("http");
         assertTrue(http.containsKey("enabled"));
-        
+
     }
-    
+
     @Test
     public void testAddRemoveOperation() throws Exception {
-        
-        // add new connector        
-        cli.sendLine("/socket-binding-group=standard-sockets/socket-binding=test:add(port=8181)");                
+
+        // add new connector
+        cli.sendLine("/socket-binding-group=standard-sockets/socket-binding=test:add(port=8181)");
         CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         assertTrue(result.isIsOutcomeSuccess());
-        
+
         cli.sendLine("/subsystem=web/connector=test-connector:add(socket-binding=test, scheme=http, protocol=\"HTTP/1.1\", enabled=true)");
         result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         assertTrue(result.isIsOutcomeSuccess());
-        
+
         // check that the connector is live
         String cURL = "http://" + url.getHost() + ":8181";
-        
-        String response = HttpRequest.get(cURL, 10, TimeUnit.SECONDS);        
+
+        String response = HttpRequest.get(cURL, 10, TimeUnit.SECONDS);
         assertTrue("Invalid response: " + response, response.indexOf("JBoss") >=0);
 
-        
+
         // remove connector
-        cli.sendLine("/subsystem=web/connector=test-connector:remove");        
+        cli.sendLine("/subsystem=web/connector=test-connector:remove");
         result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         assertTrue(result.isIsOutcomeSuccess());
-        
+
         cli.sendLine("/socket-binding-group=standard-sockets/socket-binding=test:remove");
         result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         assertTrue(result.isIsOutcomeSuccess());
-        
+
         // check that the connector is no longer live
         Thread.sleep(5000);
         boolean failed = false;
