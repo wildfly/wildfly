@@ -50,4 +50,15 @@ public class EmployeeBean {
     public EntityManagerFactory getDefaultEntityManagerFactory() {
         return defaultEntityManagerFactory;
     }
+
+    // AS7-2829 bean in ejbjar should be able to access class in persistence provider
+    public Class getPersistenceProviderClass(String classname) {
+        Class result = null;
+        try {
+            result = EmployeeBean.class.getClassLoader().loadClass(classname);
+        } catch (ClassNotFoundException e) {
+            return null;
+        }
+        return result;
+    }
 }
