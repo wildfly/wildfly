@@ -39,6 +39,9 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class OverlapTimerTestCase {
 
+    private static int TIMER_CALL_WAITING1_S = 3;
+    private static int TIMER_CALL_WAITING2_S = 5;
+    
     @Deployment
     public static Archive<?> createDeployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "overlap-timer-test.jar");
@@ -48,7 +51,7 @@ public class OverlapTimerTestCase {
 
     @Test
     public void testContinuedAfterOverlap() throws Exception {
-        Assert.assertTrue("Schedule timeout method was not invoked within 3 seconds!", ScheduleRetryFailSingletonBean.startLatch().await(3, TimeUnit.SECONDS));
-        Assert.assertTrue("Schedule timer is not alive after overlapped invocation!",ScheduleRetryFailSingletonBean.aliveLatch().await(5, TimeUnit.SECONDS));
+        Assert.assertTrue("Schedule timeout method was not invoked within 3 seconds!", ScheduleRetryFailSingletonBean.startLatch().await(TIMER_CALL_WAITING1_S, TimeUnit.SECONDS));
+        Assert.assertTrue("Schedule timer is not alive after overlapped invocation!",ScheduleRetryFailSingletonBean.aliveLatch().await(TIMER_CALL_WAITING2_S, TimeUnit.SECONDS));
     }
 }

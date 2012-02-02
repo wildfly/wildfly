@@ -37,13 +37,16 @@ import java.util.concurrent.TimeUnit;
 public class BeanParent {
     private static final CountDownLatch latch = new CountDownLatch(1);
 
+    private static int TIMER_TIMEOUT_TIME_MS = 100;
+    // has to be greater than timeout time
+    private static int TIMER_CALL_WAITING_MS = 2000;
     private static boolean timerServiceCalled = false;
 
     @Resource
     private TimerService timerService;
 
     public void createTimer() {
-        timerService.createTimer(100, null);
+        timerService.createTimer(TIMER_TIMEOUT_TIME_MS, null);
     }
 
     @AroundTimeout
@@ -61,7 +64,7 @@ public class BeanParent {
 
     public static boolean awaitTimerCall() {
         try {
-            latch.await(2, TimeUnit.SECONDS);
+            latch.await(TIMER_CALL_WAITING_MS, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

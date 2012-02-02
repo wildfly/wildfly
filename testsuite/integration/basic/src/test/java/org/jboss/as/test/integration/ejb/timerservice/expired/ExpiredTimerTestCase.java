@@ -45,6 +45,9 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class ExpiredTimerTestCase {
 
+    private static int TIMER_CALL_WAITING_S = 5;
+    private static int TIMER_TIMEOUT_TIME_MS = 300;
+    
     private static final Logger log = Logger.getLogger(ExpiredTimerTestCase.class);
    
     @EJB(mappedName = "java:module/SingletonBean")
@@ -63,11 +66,11 @@ public class ExpiredTimerTestCase {
         
         final CountDownLatch timeoutNotifier = new CountDownLatch(1);
         final CountDownLatch timeoutWaiter = new CountDownLatch(1);
-        this.bean.createSingleActionTimer(300, new TimerConfig(null, false), timeoutNotifier, timeoutWaiter);
+        this.bean.createSingleActionTimer(TIMER_TIMEOUT_TIME_MS, new TimerConfig(null, false), timeoutNotifier, timeoutWaiter);
         
         // wait for the timeout to be invoked
-        final boolean timeoutInvoked = timeoutNotifier.await(5, TimeUnit.SECONDS);
-        Assert.assertTrue("timeout method was not invoked (within 5 seconds)", timeoutInvoked);
+        final boolean timeoutInvoked = timeoutNotifier.await(TIMER_CALL_WAITING_S, TimeUnit.SECONDS);
+        Assert.assertTrue("timeout method was not invoked (within " + TIMER_CALL_WAITING_S + " seconds)", timeoutInvoked);
                     
         // the timer stays in timeout method - checking how the invoke of method getNext and getTimeRemaining behave
         try {

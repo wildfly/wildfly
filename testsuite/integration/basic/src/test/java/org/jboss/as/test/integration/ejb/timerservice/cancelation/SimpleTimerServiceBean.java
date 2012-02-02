@@ -41,6 +41,10 @@ public class SimpleTimerServiceBean {
 
     private static final CountDownLatch latch = new CountDownLatch(1);
 
+    private static int TIMER_INIT_TIME_MS = 100;
+    private static int TIMER_TIMEOUT_TIME_MS = 100;
+    // should to be greater then (timer init time + timeout time)
+    private static int TIMER_CALL_QUICK_WAITING_MS = 1000;
     private static boolean timerServiceCalled = false;
     boolean first = true;
 
@@ -52,7 +56,7 @@ public class SimpleTimerServiceBean {
     private TimerService timerService;
 
     public TimerHandle createTimer() {
-        return timerService.createTimer(100, 100, null).getHandle();
+        return timerService.createTimer(TIMER_INIT_TIME_MS, TIMER_TIMEOUT_TIME_MS, null).getHandle();
     }
 
     @Timeout
@@ -77,7 +81,7 @@ public class SimpleTimerServiceBean {
 
     public static boolean quickAwaitTimerCall() {
         try {
-            latch.await(1, TimeUnit.SECONDS);
+            latch.await(TIMER_CALL_QUICK_WAITING_MS, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

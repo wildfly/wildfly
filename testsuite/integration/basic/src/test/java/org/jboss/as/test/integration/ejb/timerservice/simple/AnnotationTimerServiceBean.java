@@ -27,7 +27,8 @@ import javax.ejb.Stateless;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
 import javax.ejb.TimerService;
-import com.kenai.jaffl.annotations.Synchronized;
+
+import org.apache.log4j.Logger;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -37,9 +38,11 @@ import java.util.concurrent.TimeUnit;
  */
 @Stateless
 public class AnnotationTimerServiceBean {
+    private static final Logger log = Logger.getLogger(AnnotationTimerServiceBean.class);
     private static CountDownLatch latch = new CountDownLatch(1);
 
     private static boolean timerServiceCalled = false;
+    private static int TIMER_CALL_WAITING_S = 2;
     
     private String timerInfo;
     private boolean isPersistent;
@@ -74,7 +77,8 @@ public class AnnotationTimerServiceBean {
 
     @Timeout
     public void timeout(Timer timer) {
-        timerInfo = (String) timer.getInfo();
+        log.info("Timer is: " + timer + ", timer info is: " + timer.getInfo());
+        timerInfo = new String((String) timer.getInfo());
         isPersistent = timer.isPersistent();
         isCalendar = timer.isCalendarTimer();
         
@@ -84,7 +88,7 @@ public class AnnotationTimerServiceBean {
 
     public static boolean awaitTimerCall() {
         try {
-            latch.await(2, TimeUnit.SECONDS);
+            latch.await(TIMER_CALL_WAITING_S, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
