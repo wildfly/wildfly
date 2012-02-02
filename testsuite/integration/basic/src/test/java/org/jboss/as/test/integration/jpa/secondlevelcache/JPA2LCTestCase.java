@@ -38,7 +38,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -194,7 +193,6 @@ public class JPA2LCTestCase {
 
  	// Check if evicting entity second level cache is working as expected
 	@Test
-	@Ignore  //FIXME - disabled: AS7-3541
  	public void testEvictEntityCache() throws Exception {
 
  		SFSB2LC sfsb = lookup("SFSB2LC", SFSB2LC.class);
@@ -252,7 +250,6 @@ public class JPA2LCTestCase {
  	
  	// Check if evicting query cache is working as expected
  	@Test
-	@Ignore  //FIXME - disabled: AS7-3541
  	public void testEvictQueryCache() throws Exception {
 
  		SFSB2LC sfsb = lookup("SFSB2LC", SFSB2LC.class);

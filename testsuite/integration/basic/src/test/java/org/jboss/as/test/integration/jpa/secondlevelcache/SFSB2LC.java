@@ -227,7 +227,7 @@ public class SFSB2LC {
 
 			// query - this call should fill the cache
 			query.getResultList();
-			assertEquals("Expected 1 miss in cache"+generateQueryCacheStats(queryStats), 1,  queryStats.getCacheMissCount());
+            assertEquals("Expected 1 miss in cache"+generateQueryCacheStats(queryStats), 1,  queryStats.getCacheMissCount());
 			assertEquals("Expected 1 put in cache"+generateQueryCacheStats(queryStats), 1,  queryStats.getCachePutCount());
 			assertEquals("Expected no hits in cache"+generateQueryCacheStats(queryStats), 0,  queryStats.getCacheHitCount());
 			
@@ -255,6 +255,7 @@ public class SFSB2LC {
 		try{
 			// this should evict query cache 
 			em.unwrap(Session.class).getSessionFactory().getCache().evictQueryRegions();
+			//em.unwrap(Session.class).getSessionFactory().evictQueries();
 
 		}catch (Exception e) {
 			e.printStackTrace();
