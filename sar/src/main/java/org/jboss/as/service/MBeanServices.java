@@ -60,8 +60,14 @@ final class MBeanServices {
     private boolean installed;
 
     MBeanServices(final String mBeanName, final Object mBeanInstance, final List<ClassReflectionIndex<?>> mBeanClassHierarchy, final ServiceTarget target) {
-        if ((mBeanName == null) || (mBeanInstance == null) || (target == null)) {
-            throw new IllegalArgumentException("Parameters must not be null");
+        if (mBeanClassHierarchy == null) {
+            throw SarMessages.MESSAGES.nullVar("mBeanName");
+        }
+        if (mBeanInstance == null) {
+            throw SarMessages.MESSAGES.nullVar("mBeanInstance");
+        }
+        if (target == null) {
+            throw SarMessages.MESSAGES.nullVar("target");
         }
 
         final Method createMethod = ReflectionUtils.getMethod(mBeanClassHierarchy, CREATE_METHOD_NAME, NO_ARGS, false);

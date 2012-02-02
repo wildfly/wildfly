@@ -25,25 +25,25 @@ final class CreateDestroyService extends AbstractService {
 
     /** {@inheritDoc} */
     public void start(final StartContext context) throws StartException {
-        if (log.isTraceEnabled()) {
-            log.tracef("Creating Service: %s", context.getController().getName());
+        if (SarLogger.ROOT_LOGGER.isTraceEnabled()) {
+            SarLogger.ROOT_LOGGER.tracef("Creating Service: %s", context.getController().getName());
         }
         try {
             invokeLifecycleMethod(createMethod);
         } catch (final Exception e) {
-            throw new StartException("Failed to execute legacy service create() method", e);
+            throw SarMessages.MESSAGES.failedExecutingLegacyMethod(e, "create()");
         }
     }
 
     /** {@inheritDoc} */
     public void stop(final StopContext context) {
-        if (log.isTraceEnabled()) {
-            log.tracef("Destroying Service: %s", context.getController().getName());
+        if (SarLogger.ROOT_LOGGER.isTraceEnabled()) {
+            SarLogger.ROOT_LOGGER.tracef("Destroying Service: %s", context.getController().getName());
         }
         try {
             invokeLifecycleMethod(destroyMethod);
         } catch (final Exception e) {
-            log.error("Failed to execute legacy service destroy() method", e);
+            SarLogger.ROOT_LOGGER.failedExecutingLegacyMethod(e, "create()");
         }
     }
 
