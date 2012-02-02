@@ -28,31 +28,43 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DIRECTORY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_RESULTS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_DEFAULTS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PLATFORM_MBEAN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.test.integration.domain.DomainTestSupport.validateFailedResponse;
 import static org.jboss.as.test.integration.domain.DomainTestSupport.validateResponse;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import org.jboss.as.controller.CompositeOperationHandler;
+import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.operations.common.SnapshotDeleteHandler;
 import org.jboss.as.controller.operations.common.SnapshotListHandler;
@@ -61,6 +73,7 @@ import org.jboss.as.test.integration.domain.DomainTestSupport;
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -461,6 +474,107 @@ public class CoreResourceManagementTestCase {
     @Test
     public void testSlaveSnapshot() throws Exception {
         testSnapshot(new ModelNode().add(HOST, "slave"));
+    }
+
+    @Test
+    public void testCannotInvokeManagedServerOperations() throws Exception {
+        final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
+
+        ModelNode serverAddTf = getAddThreadFactoryOperation(
+                new ModelNode().add("host", "master").add("server", "main-one").add("subsystem", "threads").add("thread-factory", "test-pool-123abc"));
+
+        ModelNode desc = validateFailedResponse(masterClient.execute(serverAddTf));
+        String errorCode = getNotAuthorizedErrorCode();
+        Assert.assertTrue(desc.toString() + " does not contain " + errorCode, desc.toString().contains(errorCode));
+
+        ModelNode slaveThreeAddress = new ModelNode().add("host", "slave").add("server", "main-three").add("subsystem", "threads").add("thread-factory", "test-pool-123abc");
+        serverAddTf = getAddThreadFactoryOperation(slaveThreeAddress);
+
+        desc = validateFailedResponse(masterClient.execute(serverAddTf));
+        Assert.assertTrue(desc.toString() + " does not contain " + errorCode, desc.toString().contains(errorCode));
+    }
+
+    @Test
+    public void testCannotInvokeManagedMasterServerOperationsInDomainComposite() throws Exception {
+        testCannotInvokeManagedServerOperationsComposite(new ModelNode().setEmptyList(), new ModelNode().add("host", "master").add("server", "main-one").add("subsystem", "threads"));
+    }
+
+    @Test
+    public void testCannotInvokeManagedSlaveServerOperationsInDomainComposite() throws Exception {
+        testCannotInvokeManagedServerOperationsComposite(new ModelNode().setEmptyList(), new ModelNode().add("host", "slave").add("server", "main-three").add("subsystem", "threads"));
+    }
+
+    @Test
+    public void testCannotInvokeManagedMasterServerOperationsInServerComposite() throws Exception {
+        testCannotInvokeManagedServerOperationsComposite(new ModelNode().add("host", "master").add("server", "main-one"), new ModelNode().add("subsystem", "threads"));
+    }
+
+    @Test
+    public void testCannotInvokeManagedSlaveServerOperationsInServerComposite() throws Exception {
+        testCannotInvokeManagedServerOperationsComposite(new ModelNode().add("host", "slave").add("server", "main-three"), new ModelNode().add("subsystem", "threads"));
+    }
+
+
+    private void testCannotInvokeManagedServerOperationsComposite(ModelNode compositeAddress, ModelNode stepAddress) throws Exception {
+        final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
+
+        ModelNode composite = new ModelNode();
+        composite.get(OP).set(CompositeOperationHandler.NAME);
+        composite.get(OP_ADDR).set(compositeAddress);
+        composite.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+
+        ModelNode goodServerOp = new ModelNode();
+        goodServerOp.get(OP).set(READ_RESOURCE_OPERATION);
+        goodServerOp.get(OP_ADDR).set(stepAddress);
+        composite.get(STEPS).add(goodServerOp);
+        composite.get(STEPS).add(getAddThreadFactoryOperation(stepAddress.clone().add("thread-factory", "test-pool-123abc")));
+
+        ModelNode result = masterClient.execute(composite);
+
+
+        String errorCode = getNotAuthorizedErrorCode();
+
+        ModelNode desc = validateFailedResponse(result);
+        Assert.assertTrue(desc.toString() + " does not contain " + errorCode, desc.toString().contains(errorCode));
+
+        List<Property> steps = result.get(RESULT).asPropertyList();
+        Assert.assertEquals(2, steps.size());
+        int i = 0;
+        for (Property property : steps) {
+            ModelNode stepResult = property.getValue();
+            Assert.assertEquals(FAILED, stepResult.get(OUTCOME).asString());
+            if (i == 0) {
+                Assert.assertFalse(stepResult.hasDefined(FAILURE_DESCRIPTION));
+            }
+            if (i++ == 1) {
+                desc = validateFailedResponse(stepResult);
+                Assert.assertTrue(desc.toString() + " does not contain " + errorCode, desc.toString().contains(errorCode));
+            }
+            i++;
+        }
+    }
+
+    private ModelNode getAddThreadFactoryOperation(ModelNode address) {
+
+
+        ModelNode serverTf = new ModelNode();
+        serverTf.get(OP).set("add");
+        serverTf.get(OP_ADDR).set(address);
+        serverTf.get("group-name").set("AAA");
+        serverTf.get("name").set("BBB");
+        serverTf.get("priority").set(6);
+        serverTf.get("thread-name-pattern").set("Test-ThreadA");
+
+        return serverTf;
+    }
+
+    private String getNotAuthorizedErrorCode() {
+        try {
+            throw ControllerMessages.MESSAGES.modelUpdateNotAuthorized("", PathAddress.EMPTY_ADDRESS);
+        }catch(Exception e) {
+            String msg = e.getMessage();
+            return msg.substring(0, msg.indexOf(":"));
+        }
     }
 
     private void testSnapshot(ModelNode addr) throws Exception {
