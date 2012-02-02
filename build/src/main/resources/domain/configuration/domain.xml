@@ -79,7 +79,7 @@
             <subsystem xmlns="urn:jboss:domain:configadmin:1.0"/>
             <subsystem xmlns="urn:jboss:domain:datasources:1.0">
                 <datasources>
-                    <datasource jndi-name="java:jboss/datasources/ExampleDS" enabled="true" use-java-context="true" pool-name="ExampleDS">
+                    <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true">
                         <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
                         <driver>h2</driver>
                         <pool></pool>
@@ -307,7 +307,7 @@
                     </security-domain>
                 </security-domains>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:threads:1.0"/>
+            <subsystem xmlns="urn:jboss:domain:threads:1.1"/>
             <subsystem xmlns="urn:jboss:domain:transactions:1.1">
                 <core-environment>
                     <process-id>
@@ -465,7 +465,7 @@
                     <!-- Clustered cache used internally by EJB subsytem for managing the client-mapping(s) of
                     the socketbinding referenced by the EJB remoting connector -->
                     <replicated-cache name="remote-connector-client-mappings" mode="SYNC" batching="true"/>
-                    
+
                 </cache-container>
                 <cache-container name="hibernate" default-cache="local-query">
                     <transport lock-timeout="60000"/>
@@ -677,7 +677,7 @@
                     </security-domain>
                 </security-domains>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:threads:1.0"/>
+            <subsystem xmlns="urn:jboss:domain:threads:1.1"/>
             <subsystem xmlns="urn:jboss:domain:transactions:1.1">
                 <core-environment>
                     <process-id>

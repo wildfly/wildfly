@@ -333,8 +333,11 @@ public interface CommonAttributes {
     SimpleAttributeDefinition PASSWORD = new SimpleAttributeDefinition("password",
             new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD),  ModelType.STRING, true);
 
+    SimpleAttributeDefinition PAGE_MAX_CACHE_SIZE = new SimpleAttributeDefinition("page-max-cache-size",
+            new ModelNode(AddressSettings.DEFAULT_PAGE_MAX_CACHE), ModelType.INT, true);
+
     SimpleAttributeDefinition PAGE_SIZE_BYTES_NODE_NAME = new SimpleAttributeDefinition("page-size-bytes",
-            new ModelNode().set(AddressSettings.DEFAULT_PAGE_SIZE), ModelType.LONG, true);
+            new ModelNode(AddressSettings.DEFAULT_PAGE_SIZE), ModelType.LONG, true);
 
     SimpleAttributeDefinition PATH = new SimpleAttributeDefinition("path", ModelType.STRING, false);
 
@@ -486,7 +489,6 @@ public interface CommonAttributes {
     String CLUSTER_CONNECTION = "cluster-connection";
     String CLUSTER_CONNECTIONS = "cluster-connections";
     String CONNECTION_FACTORY ="connection-factory";
-    String CONNECTION_LOAD_BALANCING_CLASS_NAME = "connection-load-balancing-policy-class-name";
     String CONNECTOR ="connector";
     String CONNECTORS ="connectors";
     String CONNECTOR_NAME ="connector-name";
@@ -543,7 +545,7 @@ public interface CommonAttributes {
     String NO_TX = "NoTransaction";
     String NUMBER_OF_BYTES_PER_PAGE = "number-of-bytes-per-page";
     String NUMBER_OF_PAGES = "number-of-pages";
-    String PAGE_MAX_CACHE_SIZE = "page-max-cache-size";
+
     String PAGING_DIRECTORY ="paging-directory";
     String PARAM ="param";
     String PARAMS ="param";
