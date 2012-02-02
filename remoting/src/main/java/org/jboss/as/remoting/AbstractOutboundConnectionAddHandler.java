@@ -24,13 +24,8 @@ package org.jboss.as.remoting;
 
 
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-import org.xnio.OptionMap;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * @author Jaikiran Pai
@@ -39,11 +34,5 @@ abstract class AbstractOutboundConnectionAddHandler extends AbstractAddStepHandl
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
 
-    }
-
-
-    protected static OptionMap getConnectionCreationOptions(final OperationContext context, final ModelNode operation) {
-        final PathAddress pathAddress = PathAddress.pathAddress(operation.require(OP_ADDR));
-        return ConnectorResource.getOptions(context, pathAddress);
     }
 }

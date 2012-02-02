@@ -50,6 +50,6 @@ class GenericOutboundConnectionRemoveHandler extends AbstractRemoveStepHandler {
 
     @Override
     protected void recoverServices(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        GenericOutboundConnectionAdd.INSTANCE.installRuntimeService(context, operation, null);
+        GenericOutboundConnectionAdd.INSTANCE.installRuntimeService(context, operation, model, null);
     }
 }

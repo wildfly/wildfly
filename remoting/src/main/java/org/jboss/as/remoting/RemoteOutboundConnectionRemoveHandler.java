@@ -50,6 +50,6 @@ class RemoteOutboundConnectionRemoveHandler extends AbstractRemoveStepHandler {
 
     @Override
     protected void recoverServices(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        RemoteOutboundConnectionAdd.INSTANCE.installRuntimeService(context,  model, null);
+        RemoteOutboundConnectionAdd.INSTANCE.installRuntimeService(context,  operation, model, null);
     }
 }
