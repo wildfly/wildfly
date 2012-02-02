@@ -436,6 +436,10 @@
             <maven-resource group="jline" artifact="jline"/>
         </module-def>
 
+        <module-def name="net.jcip">
+            <maven-resource group="net.jcip" artifact="jcip-annotations"/>
+        </module-def>
+
         <module-def name="net.sourceforge.cssparser">
             <maven-resource group="net.sourceforge.cssparser" artifact="cssparser"/>
         </module-def>

@@ -334,6 +334,11 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>net.jcip</groupId>
+                    <artifactId>jcip-annotations</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>net.sourceforge.cssparser</groupId>
                     <artifactId>cssparser</artifactId>
                 </dependency>

@@ -34,6 +34,7 @@
     <dependencies>
         <module name="javax.api"/>
         <module name="javax.transaction.api"/>
+        <module name="net.jcip"/>
         <module name="org.hibernate.infinispan" services="import"/> <!-- AS7-3290 Infinispan needs to see the 'Hibernate Infinispan' services -->
         <module name="org.infinispan"/>
         <module name="org.infinispan.cachestore.jdbc"/>
