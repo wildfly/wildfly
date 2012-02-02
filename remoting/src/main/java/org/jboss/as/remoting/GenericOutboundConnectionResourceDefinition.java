@@ -52,6 +52,11 @@ class GenericOutboundConnectionResourceDefinition extends AbstractOutboundConnec
     }
 
     @Override
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerSubModel(new PropertyResource(CommonAttributes.OUTBOUND_CONNECTION));
+    }
+
+    @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         super.registerAttributes(resourceRegistration);
         resourceRegistration.registerReadWriteAttribute(URI, null, GenericOutboundConnectionWriteHandler.INSTANCE);

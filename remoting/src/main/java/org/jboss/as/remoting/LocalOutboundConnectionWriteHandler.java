@@ -40,7 +40,7 @@ class LocalOutboundConnectionWriteHandler extends AbstractWriteAttributeHandler<
     static final LocalOutboundConnectionWriteHandler INSTANCE = new LocalOutboundConnectionWriteHandler();
 
     private LocalOutboundConnectionWriteHandler() {
-        super(AbstractOutboundConnectionResourceDefinition.CONNECTION_CREATION_OPTIONS, LocalOutboundConnectionResourceDefinition.OUTBOUND_SOCKET_BINDING_REF);
+        super(LocalOutboundConnectionResourceDefinition.OUTBOUND_SOCKET_BINDING_REF);
     }
 
     @Override
@@ -68,18 +68,12 @@ class LocalOutboundConnectionWriteHandler extends AbstractWriteAttributeHandler<
         final ServiceRegistry registry = context.getServiceRegistry(true);
         ServiceController sc = registry.getService(serviceName);
         if (sc != null && sc.getState() == ServiceController.State.UP) {
-            LocalOutboundConnectionService svc = LocalOutboundConnectionService.class.cast(sc.getValue());
-            if (AbstractOutboundConnectionResourceDefinition.CONNECTION_CREATION_OPTIONS.getName().equals(attributeName)) {
-                svc.setConnectionCreationOptions(AbstractOutboundConnectionAddHandler.getConnectionCreationOptions(model));
-            } else {
-                // We can't change the socket binding ref on a running service
                 reloadRequired = true;
-            }
         } else {
             // Service isn't up so we can bounce it
             context.removeService(serviceName); // safe even if the service doesn't exist
             // install the service with new values
-            LocalOutboundConnectionAdd.INSTANCE.installRuntimeService(context, connectionName, model, null);
+            LocalOutboundConnectionAdd.INSTANCE.installRuntimeService(context, operation, null);
         }
         return reloadRequired;
     }
