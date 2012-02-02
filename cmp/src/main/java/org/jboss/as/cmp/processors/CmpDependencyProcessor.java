@@ -47,7 +47,7 @@ public class CmpDependencyProcessor implements DeploymentUnitProcessor {
 
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, CMP, false, false, true));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, CMP, false, false, true, false));
     }
 
     public void undeploy(DeploymentUnit context) {

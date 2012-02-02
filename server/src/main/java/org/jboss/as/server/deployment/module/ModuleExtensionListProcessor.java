@@ -70,7 +70,7 @@ public final class ModuleExtensionListProcessor implements DeploymentUnitProcess
                             entry.getImplementationVersion(), entry.getImplementationVendorId());
 
                     if (extension != null) {
-                        moduleSpecification.addLocalDependency(new ModuleDependency(moduleLoader, extension, false, false, true));
+                        moduleSpecification.addLocalDependency(new ModuleDependency(moduleLoader, extension, false, false, true, false));
                         nextPhaseDeps.add(ServiceModuleLoader.moduleSpecServiceName(extension));
                         nextPhaseDeps.add(ServiceModuleLoader.moduleSpecServiceName(extension));
                     } else {
@@ -94,7 +94,7 @@ public final class ModuleExtensionListProcessor implements DeploymentUnitProcess
                                     .getImplementationVendorId());
                             if (extension != null) {
                                 moduleSpecification.addLocalDependency(new ModuleDependency(moduleLoader, extension, false, false,
-                                        true));
+                                        true, false));
                                 nextPhaseDeps.add(ServiceModuleLoader.moduleSpecServiceName(extension));
                             } else {
                                 ServerLogger.DEPLOYMENT_LOGGER.cannotFindExtensionListEntry(entry, resourceRoot);

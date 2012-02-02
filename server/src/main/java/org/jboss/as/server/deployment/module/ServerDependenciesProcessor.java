@@ -50,13 +50,13 @@ public class ServerDependenciesProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, SUN_JDK, false, false, true));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAVAX_API, false, false, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JBOSS_LOGGING, false, false, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JBOSS_VFS, false, false, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, COMMONS_LOGGING, false, false, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, LOG4J, false, false, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, SLF4J, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, SUN_JDK, false, false, true, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAVAX_API, false, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JBOSS_LOGGING, false, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JBOSS_VFS, false, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, COMMONS_LOGGING, false, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, LOG4J, false, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, SLF4J, false, false, false, false));
     }
 
     @Override

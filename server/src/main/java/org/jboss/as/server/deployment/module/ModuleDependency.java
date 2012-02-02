@@ -58,6 +58,7 @@ public final class ModuleDependency implements Serializable {
     private final List<FilterSpecification> importFilters = new ArrayList<FilterSpecification>();
     private final List<FilterSpecification> exportFilters = new ArrayList<FilterSpecification>();
     private final boolean importServices;
+    private final boolean userSpecified;
 
     /**
      * Construct a new instance.
@@ -67,13 +68,15 @@ public final class ModuleDependency implements Serializable {
      * @param optional {@code true} if this is an optional dependency
      * @param export {@code true} if resources should be exported by default
      * @param importServices
+     * @param userSpecified {@code true} if this dependency was specified by the user, {@code false} if it was automatically added
      */
-    public ModuleDependency(final ModuleLoader moduleLoader, final ModuleIdentifier identifier, final boolean optional, final boolean export, final boolean importServices) {
+    public ModuleDependency(final ModuleLoader moduleLoader, final ModuleIdentifier identifier, final boolean optional, final boolean export, final boolean importServices, final boolean userSpecified) {
         this.identifier = identifier;
         this.optional = optional;
         this.export = export;
         this.moduleLoader = moduleLoader;
         this.importServices = importServices;
+        this.userSpecified = userSpecified;
     }
 
     public ModuleLoader getModuleLoader() {
@@ -90,6 +93,10 @@ public final class ModuleDependency implements Serializable {
 
     public boolean isExport() {
         return export;
+    }
+
+    public boolean isUserSpecified() {
+        return userSpecified;
     }
 
     public void addImportFilter(PathFilter pathFilter, boolean include) {

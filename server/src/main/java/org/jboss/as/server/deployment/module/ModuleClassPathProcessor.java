@@ -50,7 +50,7 @@ public final class ModuleClassPathProcessor implements DeploymentUnitProcessor {
         if (entries != null) {
             for (ModuleIdentifier entry : entries) {
                 //class path items are always exported to make transitive dependencies work
-                moduleSpecification.addLocalDependency(new ModuleDependency(moduleLoader, entry, false, true, true));
+                moduleSpecification.addLocalDependency(new ModuleDependency(moduleLoader, entry, false, true, true, false));
             }
         }
 
@@ -65,10 +65,10 @@ public final class ModuleClassPathProcessor implements DeploymentUnitProcessor {
                 // this means that a module that references the additional module
                 // gets access to the transitive closure of its call-path entries
                 for (ModuleIdentifier entry : dependencies) {
-                    additionalModule.addLocalDependency(new ModuleDependency(moduleLoader, entry, false, true, true));
+                    additionalModule.addLocalDependency(new ModuleDependency(moduleLoader, entry, false, true, true, false));
                 }
                 // add a dependency on the top ear itself for good measure
-                additionalModule.addLocalDependency(new ModuleDependency(moduleLoader, deploymentUnit.getAttachment(Attachments.MODULE_IDENTIFIER), false, false, true));
+                additionalModule.addLocalDependency(new ModuleDependency(moduleLoader, deploymentUnit.getAttachment(Attachments.MODULE_IDENTIFIER), false, false, true, false));
             }
         }
     }

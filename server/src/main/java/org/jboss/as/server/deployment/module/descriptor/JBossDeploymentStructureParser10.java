@@ -384,7 +384,7 @@ public class JBossDeploymentStructureParser10 implements XMLElementReader<ParseR
             throw missingAttributes(reader.getLocation(), required);
         }
         ModuleDependency dependency = new ModuleDependency(moduleLoader, ModuleIdentifier.create(name, slot), optional, export,
-                services == Disposition.IMPORT);
+                services == Disposition.IMPORT, true);
         specBuilder.addModuleDependency(dependency);
         while (reader.hasNext()) {
             switch (reader.nextTag()) {

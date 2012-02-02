@@ -65,7 +65,7 @@ public class KernelDeploymentModuleProcessor implements DeploymentUnitProcessor 
             if (kdxd.getBeanFactoriesCount() > 0) {
                 final ModuleSpecification moduleSpecification = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
                 final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-                ModuleDependency dependency = new ModuleDependency(moduleLoader, POJO_MODULE, false, false, false);
+                ModuleDependency dependency = new ModuleDependency(moduleLoader, POJO_MODULE, false, false, false, false);
                 PathFilter filter = PathFilters.isChildOf(BaseBeanFactory.class.getPackage().getName());
                 dependency.addImportFilter(filter, true);
                 dependency.addImportFilter(PathFilters.rejectAll(), false);
