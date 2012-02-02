@@ -37,7 +37,6 @@ import java.util.Vector;
 import javax.naming.CannotProceedException;
 import javax.naming.CompositeName;
 import javax.naming.ConfigurationException;
-import javax.naming.InvalidNameException;
 import javax.naming.Name;
 import javax.naming.NameNotFoundException;
 import javax.naming.NameParser;
@@ -316,7 +315,7 @@ public class CNCtx implements javax.naming.Context {
             if (savedException != null) {
                 throw savedException;
             } else {
-                throw new ConfigurationException("Problem with URL: " + url);
+                throw JacORBMessages.MESSAGES.invalidURLOrIOR(url);
             }
         } catch (MalformedURLException e) {
             throw new ConfigurationException(e.getMessage());
@@ -584,7 +583,7 @@ public class CNCtx implements javax.naming.Context {
     public void bind(Name name, java.lang.Object obj)
             throws NamingException {
         if (name.size() == 0) {
-            throw new InvalidNameException("Name is empty");
+            throw JacORBMessages.MESSAGES.invalidEmptyName();
         }
 
         NameComponent[] path = org.jboss.as.jacorb.naming.jndi.CNNameParser.nameToCosName(name);

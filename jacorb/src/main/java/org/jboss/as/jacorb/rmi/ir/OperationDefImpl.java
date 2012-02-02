@@ -94,10 +94,10 @@ class OperationDefImpl
         for (int i = 0; i < params.length; ++i) {
             LocalIDLType lit = IDLTypeImpl.getIDLType(params[i].type, repository);
             if (lit == null)
-                throw new RuntimeException("???????????1?");
+                throw new RuntimeException();
             params[i].type_def = IDLTypeHelper.narrow(lit.getReference());
             if (params[i].type_def == null)
-                throw new RuntimeException("???????????2?");
+                throw new RuntimeException();
         }
 
         getReference();
