@@ -1,0 +1,11 @@
+<subsystem xmlns="urn:jboss:domain:datasources:1.0">
+            <datasources>
+                <xa-datasource jndi-name="java:jboss/datasources/DS" pool-name="DS">
+                    <xa-datasource-property name="DatabaseName">mydb</xa-datasource-property>
+                    <driver>h2</driver>
+                    <xa-pool></xa-pool>
+                    <recovery/>
+                </xa-datasource>
+            </datasources>
+</subsystem>
+                

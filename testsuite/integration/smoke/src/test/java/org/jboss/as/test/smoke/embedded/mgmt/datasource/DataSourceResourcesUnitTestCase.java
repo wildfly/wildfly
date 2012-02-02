@@ -22,28 +22,17 @@
 
 package org.jboss.as.test.smoke.embedded.mgmt.datasource;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import junit.framework.Assert;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
@@ -59,7 +48,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class DataSourceResourcesUnitTestCase  extends AbstractMgmtTestBase{
+public class DataSourceResourcesUnitTestCase  extends DsMgmtTestBase{
 
     @Deployment
     public static Archive<?> getDeployment() {
@@ -68,12 +57,12 @@ public class DataSourceResourcesUnitTestCase  extends AbstractMgmtTestBase{
     }
 
     @AfterClass
-    public static void tearDown()  throws IOException {
+    public static void tearDown()  throws Exception {
     	closeModelControllerClient();
     }
 
     @Test
-    public void testReadChildrenResources() throws IOException, MgmtOperationException {
+    public void testReadChildrenResources() throws Exception {
 
         final ModelNode address = new ModelNode();
         address.add("subsystem", "datasources");
@@ -96,7 +85,7 @@ public class DataSourceResourcesUnitTestCase  extends AbstractMgmtTestBase{
     }
 
     @Test
-    public void testReadResourceResources() throws IOException, MgmtOperationException {
+    public void testReadResourceResources() throws Exception {
 
         final ModelNode address = new ModelNode();
         address.add("subsystem", "datasources");
