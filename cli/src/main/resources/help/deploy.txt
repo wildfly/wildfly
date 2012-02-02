@@ -1,6 +1,8 @@
 SYNOPSIS
 
-    deploy (file_path [--name=deployment_name] [--runtime_name=deployment_runtime_name] [--force | --disabled] | --name=deployment_name) [--server-groups=group_name (,group_name)* | --all-server-groups]
+    deploy (file_path [--name=deployment_name] [--runtime_name=deployment_runtime_name] [--force | --disabled] | --name=deployment_name)
+           [--server-groups=group_name (,group_name)* | --all-server-groups]
+           [--headers={operation_header (;operation_header)*}]
 
 DESCRIPTION
 
@@ -41,3 +43,7 @@ ARGUMENTS
                        print all of the existing deployments in the repository. The presence of the -l switch
                        will make the existing deployments printed one deployment per line, instead of
                        in columns (the default).
+
+ --headers           - accepted only in the domain mode. The value is a list of operation headers
+                       separated by a semicolon. For the list of supported headers, please,
+                       refer to the domain management documentation or use tab-completion.
