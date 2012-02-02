@@ -52,7 +52,6 @@ public class EjbDeploymentAttachmentKeys {
 
     public static final AttachmentKey<AttachmentList<EjbInjectionSource>> EJB_INJECTIONS = AttachmentKey.createList(EjbInjectionSource.class);
 
-    public static final AttachmentKey<ServiceName> EJB_CLIENT_CONTEXT_SERVICE_NAME = AttachmentKey.create(ServiceName.class);
     public static final AttachmentKey<EJBClientContext> EJB_CLIENT_CONTEXT = AttachmentKey.create(EJBClientContext.class);
 
     /**

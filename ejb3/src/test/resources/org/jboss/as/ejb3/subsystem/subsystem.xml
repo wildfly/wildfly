@@ -7,6 +7,9 @@
         <data-store path="timer-service-data" relative-to="jboss.server.data.dir"/>
     </timer-service>
 
+    <!-- Disable pass-by-value for in-vm remote interface invocations on EJBs -->
+    <in-vm-remote-interface-invocation pass-by-value="false"/>
+
     <!-- EJB3 pools -->
     <pools>
         <bean-instance-pools>

@@ -34,7 +34,7 @@ import java.util.Set;
 public class EJBClientDescriptorMetaData {
 
     private boolean excludeLocalReceiver;
-    private boolean localReceiverPassByValue;
+    private Boolean localReceiverPassByValue;
 
     private Set<String> remotingReceiverConnectionRefs = new HashSet<String>();
 
@@ -67,17 +67,17 @@ public class EJBClientDescriptorMetaData {
      *
      * @param passByValue True if pass-by-value. False otherwise.
      */
-    public void setLocalReceiverPassByValue(final boolean passByValue) {
+    public void setLocalReceiverPassByValue(final Boolean passByValue) {
         this.localReceiverPassByValue = passByValue;
     }
 
     /**
-     * Returns true if the local receiver is configured for pass-by-value semantics. Else
-     * returns false
+     * If pass-by-value semantics for the local EJB receiver has been explicitly set, then returns that value.
+     * Else returns null.
      *
      * @return
      */
-    public boolean isLocalReceiverPassByValue() {
+    public Boolean isLocalReceiverPassByValue() {
         return this.localReceiverPassByValue;
     }
 

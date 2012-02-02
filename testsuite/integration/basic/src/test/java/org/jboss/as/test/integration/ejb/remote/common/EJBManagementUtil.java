@@ -22,28 +22,6 @@
 
 package org.jboss.as.test.integration.ejb.remote.common;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_REF;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-
-import javax.security.auth.callback.CallbackHandler;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
 import org.jboss.as.arquillian.container.Authentication;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -55,6 +33,16 @@ import org.jboss.as.ejb3.subsystem.EJB3SubsystemModel;
 import org.jboss.as.remoting.RemotingExtension;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+
+import javax.security.auth.callback.CallbackHandler;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 /**
  * @author Jaikiran Pai
@@ -353,6 +341,44 @@ public class EJBManagementUtil {
 
             // execute the remove operation
             execute(modelControllerClient, removeStrictMaxPool);
+
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        } finally {
+            // close the controller client connection
+            try {
+                modelControllerClient.close();
+            } catch (IOException e) {
+                logger.warn("Error closing model controller client", e);
+            }
+        }
+    }
+
+    public static void enablePassByValueForRemoteInterfaceInvocations(final String managementHost, final int managementPort) {
+        editPassByValueForRemoteInterfaceInvocations(managementHost, managementPort, true);
+    }
+
+    public static void disablePassByValueForRemoteInterfaceInvocations(final String managementHost, final int managementPort) {
+        editPassByValueForRemoteInterfaceInvocations(managementHost, managementPort, false);
+    }
+
+    private static void editPassByValueForRemoteInterfaceInvocations(final String managementHost, final int managementPort, final boolean passByValue) {
+        final ModelControllerClient modelControllerClient = getModelControllerClient(managementHost, managementPort, Authentication.getCallbackHandler());
+        try {
+            // /subsystem=ejb3:write-attribute(name="in-vm-remote-interface-invocation-pass-by-value", value=<passByValue>)
+            final ModelNode passByValueWriteAttributeOperation = new ModelNode();
+            // set the operation
+            passByValueWriteAttributeOperation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+            // set the address
+            final PathAddress ejb3SubsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME));
+            passByValueWriteAttributeOperation.get(OP_ADDR).set(ejb3SubsystemAddress.toModelNode());
+
+            // setup the parameters for the write attribute operation
+            passByValueWriteAttributeOperation.get(NAME).set(EJB3SubsystemModel.IN_VM_REMOTE_INTERFACE_INVOCATION_PASS_BY_VALUE);
+            passByValueWriteAttributeOperation.get(VALUE).set(passByValue);
+
+            // execute the operations
+            execute(modelControllerClient, passByValueWriteAttributeOperation);
 
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
