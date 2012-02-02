@@ -47,7 +47,7 @@
         <module name="org.jboss.msc"/>
         <module name="org.jboss.vfs"/>
         <module name="org.jboss.osgi.framework"/>
-        <module name="org.jboss.osgi.repository.api"/>
+        <module name="org.jboss.osgi.repository"/>
         <module name="org.jboss.osgi.spi"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.osgi.core"/>

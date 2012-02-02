@@ -216,7 +216,6 @@
                 <capability name="org.jboss.osgi.logging" startlevel="1"/>
                 <capability name="org.apache.felix.configadmin" startlevel="1"/>
                 <capability name="org.jboss.as.osgi.configadmin" startlevel="1"/>
-                <capability name="org.jboss.osgi.repository" startlevel="1"/>
             </capabilities>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
