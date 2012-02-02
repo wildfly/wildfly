@@ -283,7 +283,15 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
     public void marshallAsElement(final ModelNode resourceModel, final boolean marshallDefault, final XMLStreamWriter writer) throws XMLStreamException {
         if (isMarshallable(resourceModel, marshallDefault)) {
             writer.writeStartElement(getXmlName());
-            writer.writeCharacters(resourceModel.get(getName()).asString());
+            String content = resourceModel.get(getName()).asString();
+            if (content.indexOf('\n') > -1) {
+                // Multiline content. Use the overloaded variant that staxmapper will format
+                writer.writeCharacters(content);
+            } else {
+                // Staxmapper will just output the chars without adding newlines if this is used
+                char[] chars = content.toCharArray();
+                writer.writeCharacters(chars, 0, chars.length);
+            }
             writer.writeEndElement();
         }
     }

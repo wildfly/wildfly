@@ -44,14 +44,7 @@
                 content can be stored.
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute default="default" name="name" type="xs:string" use="optional"/>
-        <xs:attribute name="relative-to" type="xs:string" use="optional">
-           <xs:annotation>
-                <xs:documentation>Reference to a filesystem path defined in the "paths" section
-                of the server configuration.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
+        <xs:attribute name="name" type="xs:string" use="optional" default="default" />
         <xs:attribute name="path" use="required">
             <xs:annotation>
                 <xs:documentation>The actual filesystem path. Treated as an absolute path, unless the
@@ -60,15 +53,14 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute default="0" name="scan-interval" type="xs:int" use="optional">
-            <xs:annotation>
-                <xs:documentation>Periodic interval, in milliseconds, at which the repository
-                    should be scanned for changes. A value of less than 1 indicates the
-                    repository should only be scanned at initial startup.
+        <xs:attribute name="relative-to" type="xs:string" use="optional">
+           <xs:annotation>
+                <xs:documentation>Reference to a filesystem path defined in the "paths" section
+                of the server configuration.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute default="true" name="scan-enabled" type="xs:boolean" use="optional">
+        <xs:attribute name="scan-enabled" type="xs:boolean" use="optional" default="true">
             <xs:annotation>
                 <xs:documentation>
                     Flag indicating that all scanning (including initial scanning at startup)
@@ -76,7 +68,15 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute default="true" name="auto-deploy-zipped" type="xs:boolean" use="optional">
+        <xs:attribute name="scan-interval" type="xs:int" use="optional" default="0">
+            <xs:annotation>
+                <xs:documentation>Periodic interval, in milliseconds, at which the repository
+                    should be scanned for changes. A value of less than 1 indicates the
+                    repository should only be scanned at initial startup.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="auto-deploy-zipped" type="xs:boolean" use="optional" default="true">
             <xs:annotation>
                 <xs:documentation>
                     Controls whether zipped deployment content should be automatically deployed by
@@ -84,7 +84,7 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute default="false" name="auto-deploy-exploded" type="xs:boolean" use="optional">
+        <xs:attribute name="auto-deploy-exploded" type="xs:boolean" use="optional" default="false">
             <xs:annotation>
                 <xs:documentation>
                     Controls whether zipped deployment content should be automatically deployed by
@@ -95,7 +95,7 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute default="true" name="auto-deploy-xml" type="xs:boolean" use="optional">
+        <xs:attribute name="auto-deploy-xml" type="xs:boolean" use="optional" default="true">
             <xs:annotation>
                 <xs:documentation>
                     Controls whether xml deployment content should be automatically deployed by
@@ -103,10 +103,10 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute default="600" name="deployment-timeout" type="xs:int" use="optional">
+        <xs:attribute name="deployment-timeout" type="xs:int" use="optional" default="600">
             <xs:annotation>
                 <xs:documentation>
-                   Timout used. in seconds, for deployment operations.  If an individual deployment operation
+                   Timout used, in seconds, for deployment operations.  If an individual deployment operation
                    takes longer than this timeout it will be canceled and marked as failed.
                 </xs:documentation>
             </xs:annotation>

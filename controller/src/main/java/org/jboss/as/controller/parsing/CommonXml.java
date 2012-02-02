@@ -212,7 +212,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     protected void writeNamespaces(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
-        final boolean needXsd = modelNode.hasDefined(SCHEMA_LOCATIONS);
+        final boolean needXsd = modelNode.hasDefined(SCHEMA_LOCATIONS) && modelNode.get(SCHEMA_LOCATIONS).asInt() > 0;
         final boolean hasNamepaces = modelNode.hasDefined(NAMESPACES);
         if (!needXsd && !hasNamepaces) {
             return;

@@ -88,8 +88,7 @@
         <subsystem xmlns="urn:jboss:domain:configadmin:1.0"/>
         <subsystem xmlns="urn:jboss:domain:datasources:1.0">
             <datasources>
-                <datasource jndi-name="java:jboss/datasources/ExampleDS" enabled="true" use-java-context="true"
-                            pool-name="java:jboss/datasources/ExampleDS">
+                <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true">
                     <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
                     <driver>h2</driver>
                     <pool></pool>
@@ -106,7 +105,7 @@
             </datasources>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:deployment-scanner:1.0">
-            <deployment-scanner scan-interval="5000" relative-to="jboss.server.base.dir" path="deployments"/>
+            <deployment-scanner path="deployments" relative-to="jboss.server.base.dir" scan-interval="5000"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:ee:1.0"/>
         <subsystem xmlns="urn:jboss:domain:ejb3:1.2">
@@ -315,8 +314,9 @@
                     </jms-topic>
                 </jms-destinations>
             </hornetq-server>
+
             <hornetq-server name="backup-server">
-   		       <clustered>true</clustered>
+                <clustered>true</clustered>
                 <backup>true</backup>
                 <shared-store>true</shared-store>
                 <persistence-enabled>true</persistence-enabled>
@@ -327,41 +327,45 @@
                 <bindings-directory path="messagingbindings2"/>
                 <paging-directory path="messagingpaging2"/>
                 <large-messages-directory path="messaginglargemessages2"/>
+
                 <connectors>
                     <netty-connector name="netty" socket-binding="messaging-backup"/>
                     <in-vm-connector name="in-vm" server-id="0"/>
                 </connectors>
+
                 <acceptors>
                     <netty-acceptor name="netty" socket-binding="messaging-backup"/>
                 </acceptors>
-	        <broadcast-groups>
-		      <broadcast-group name="bg-group1">
-			 <group-address>231.7.7.7</group-address>
-			 <group-port>9876</group-port>
-			 <broadcast-period>5000</broadcast-period>
-			 <connector-ref>netty</connector-ref>
-		      </broadcast-group>
-		   </broadcast-groups>
 
-		   <discovery-groups>
-		      <discovery-group name="dg-group1">
-			 <group-address>231.7.7.7</group-address>
-			 <group-port>9876</group-port>
-			 <refresh-timeout>10000</refresh-timeout>
-		      </discovery-group>
-		   </discovery-groups>
+                <broadcast-groups>
+                    <broadcast-group name="bg-group1">
+                        <group-address>231.7.7.7</group-address>
+                        <group-port>9876</group-port>
+                        <broadcast-period>5000</broadcast-period>
+                        <connector-ref>netty</connector-ref>
+                    </broadcast-group>
+                </broadcast-groups>
 
-		   <cluster-connections>
-		      <cluster-connection name="my-cluster">
-			 <address>jms</address>
-			 <connector-ref>netty</connector-ref>
-			      <discovery-group-ref discovery-group-name="dg-group1"/>
-		      </cluster-connection>
-		   </cluster-connections>
+                <discovery-groups>
+                    <discovery-group name="dg-group1">
+                        <group-address>231.7.7.7</group-address>
+                        <group-port>9876</group-port>
+                        <refresh-timeout>10000</refresh-timeout>
+                    </discovery-group>
+                </discovery-groups>
+
+                <cluster-connections>
+                    <cluster-connection name="my-cluster">
+                        <address>jms</address>
+                        <connector-ref>netty</connector-ref>
+                        <discovery-group-ref discovery-group-name="dg-group1"/>
+                    </cluster-connection>
+                </cluster-connections>
             </hornetq-server>
+
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:naming:1.1"/>
-        <subsystem xmlns="urn:jboss:domain:remoting:1.0">
+        <subsystem xmlns="urn:jboss:domain:remoting:1.1">
             <connector name="remoting-connector" socket-binding="remoting"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:resource-adapters:1.0"/>
@@ -383,7 +387,7 @@
                 </security-domain>
             </security-domains>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:threads:1.0"/>
+        <subsystem xmlns="urn:jboss:domain:threads:1.1"/>
         <subsystem xmlns="urn:jboss:domain:transactions:1.0">
             <core-environment>
                 <process-id>

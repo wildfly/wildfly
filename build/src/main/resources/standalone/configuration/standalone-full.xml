@@ -93,8 +93,7 @@
         <subsystem xmlns="urn:jboss:domain:configadmin:1.0"/>
         <subsystem xmlns="urn:jboss:domain:datasources:1.0">
             <datasources>
-                <datasource jndi-name="java:jboss/datasources/ExampleDS" enabled="true" use-java-context="true"
-                            pool-name="H2DS">
+                <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true">
                     <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
                     <driver>h2</driver>
                     <pool></pool>
@@ -111,7 +110,7 @@
             </datasources>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:deployment-scanner:1.1">
-            <deployment-scanner scan-interval="5000" relative-to="jboss.server.base.dir" path="deployments"/>
+            <deployment-scanner path="deployments" relative-to="jboss.server.base.dir" scan-interval="5000"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:ee:1.0"/>
         <subsystem xmlns="urn:jboss:domain:ejb3:1.2">
@@ -196,7 +195,7 @@
             <show-model value="true"/>
             <remoting-connector/>
         </subsystem>
-         <subsystem xmlns="urn:jboss:domain:jpa:1.0">
+        <subsystem xmlns="urn:jboss:domain:jpa:1.0">
             <jpa default-datasource=""/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jsr77:1.0"/>
@@ -307,7 +306,7 @@
             </capabilities>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
-        <subsystem xmlns="urn:jboss:domain:remoting:1.0">
+        <subsystem xmlns="urn:jboss:domain:remoting:1.1">
             <connector name="remoting-connector" socket-binding="remoting"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:resource-adapters:1.0"/>
@@ -339,7 +338,7 @@
                 </security-domain>
             </security-domains>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:threads:1.0"/>
+        <subsystem xmlns="urn:jboss:domain:threads:1.1"/>
         <subsystem xmlns="urn:jboss:domain:transactions:1.1">
             <core-environment>
                 <process-id>

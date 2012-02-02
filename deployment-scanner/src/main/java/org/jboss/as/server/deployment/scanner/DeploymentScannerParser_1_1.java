@@ -37,47 +37,28 @@ class DeploymentScannerParser_1_1 implements XMLStreamConstants, XMLElementReade
         context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
         ModelNode scanners = context.getModelNode();
         for (final Property list : scanners.asPropertyList()) {
+
             final ModelNode node = list.getValue();
 
             for (final Property scanner : node.asPropertyList()) {
 
+                final String scannerName = scanner.getName();
+                final ModelNode configuration = scanner.getValue();
+
                 writer.writeEmptyElement(Element.DEPLOYMENT_SCANNER.getLocalName());
-                writer.writeAttribute(Attribute.NAME.getLocalName(), scanner.getName());
-                ModelNode configuration = scanner.getValue();
-                if (configuration.hasDefined(CommonAttributes.PATH)) {
-                    writer.writeAttribute(Attribute.PATH.getLocalName(), configuration.get(CommonAttributes.PATH)
-                            .asString());
+
+                if (!DeploymentScannerExtension.DEFAULT_SCANNER_NAME.equals(scannerName)) {
+                    writer.writeAttribute(Attribute.NAME.getLocalName(), scannerName);
                 }
-                if (configuration.hasDefined(CommonAttributes.SCAN_ENABLED)) {
-                    writer.writeAttribute(Attribute.SCAN_ENABLED.getLocalName(),
-                            configuration.get(CommonAttributes.SCAN_ENABLED).asString());
-                }
-                if (configuration.hasDefined(CommonAttributes.SCAN_INTERVAL)) {
-                    writer.writeAttribute(Attribute.SCAN_INTERVAL.getLocalName(),
-                            configuration.get(CommonAttributes.SCAN_INTERVAL).asString());
-                }
-                if (configuration.hasDefined(CommonAttributes.RELATIVE_TO)) {
-                    writer.writeAttribute(Attribute.RELATIVE_TO.getLocalName(),
-                            configuration.get(CommonAttributes.RELATIVE_TO).asString());
-                }
-                if (configuration.hasDefined(CommonAttributes.AUTO_DEPLOY_ZIPPED)) {
-                    if (!configuration.get(CommonAttributes.AUTO_DEPLOY_ZIPPED).asBoolean()) {
-                        writer.writeAttribute(Attribute.AUTO_DEPLOY_ZIPPED.getLocalName(), Boolean.FALSE.toString());
-                    }
-                }
-                if (configuration.hasDefined(CommonAttributes.AUTO_DEPLOY_EXPLODED)) {
-                    if (configuration.get(CommonAttributes.AUTO_DEPLOY_EXPLODED).asBoolean()) {
-                        writer.writeAttribute(Attribute.AUTO_DEPLOY_EXPLODED.getLocalName(), Boolean.TRUE.toString());
-                    }
-                }
-                if (configuration.hasDefined(CommonAttributes.AUTO_DEPLOY_XML)) {
-                    if (configuration.get(CommonAttributes.AUTO_DEPLOY_XML).asBoolean()) {
-                        writer.writeAttribute(Attribute.AUTO_DEPLOY_XML.getLocalName(), Boolean.TRUE.toString());
-                    }
-                }
-                if (configuration.hasDefined(CommonAttributes.DEPLOYMENT_TIMEOUT)) {
-                    writer.writeAttribute(Attribute.DEPLOYMENT_TIMEOUT.getLocalName(), configuration.get(CommonAttributes.DEPLOYMENT_TIMEOUT).asString());
-                }
+
+                DeploymentScannerDefinition.PATH.marshallAsAttribute(configuration, writer);
+                DeploymentScannerDefinition.RELATIVE_TO.marshallAsAttribute(configuration, writer);
+                DeploymentScannerDefinition.SCAN_ENABLED.marshallAsAttribute(configuration, writer);
+                DeploymentScannerDefinition.SCAN_INTERVAL.marshallAsAttribute(configuration, writer);
+                DeploymentScannerDefinition.AUTO_DEPLOY_ZIPPED.marshallAsAttribute(configuration, writer);
+                DeploymentScannerDefinition.AUTO_DEPLOY_EXPLODED.marshallAsAttribute(configuration, writer);
+                DeploymentScannerDefinition.AUTO_DEPLOY_XML.marshallAsAttribute(configuration, writer);
+                DeploymentScannerDefinition.DEPLOYMENT_TIMEOUT.marshallAsAttribute(configuration, writer);
             }
             writer.writeEndElement();
         }

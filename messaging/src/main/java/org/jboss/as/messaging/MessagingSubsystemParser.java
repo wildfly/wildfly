@@ -124,6 +124,8 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         return INSTANCE;
     }
 
+    private static final char[] NEW_LINE = new char[]{'\n'};
+
     private static final EnumSet<Element> SIMPLE_ROOT_RESOURCE_ELEMENTS = EnumSet.noneOf(Element.class);
 
     static {
@@ -1134,10 +1136,9 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
     static ModelNode parseAddressSettings(final XMLExtendedStreamReader reader) throws XMLStreamException {
         final ModelNode addressSettingsSpec = new ModelNode();
 
-        String localName = null;
-        int tag;
+        String localName;
         do {
-            tag = reader.nextTag();
+            reader.nextTag();
             localName = reader.getLocalName();
             final Element element = Element.forName(localName);
 
@@ -1147,6 +1148,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 case EXPIRY_ADDRESS_NODE_NAME:
                 case REDELIVERY_DELAY_NODE_NAME:
                 case MAX_SIZE_BYTES_NODE_NAME:
+                case PAGE_MAX_CACHE_SIZE:
                 case PAGE_SIZE_BYTES_NODE_NAME:
                 case MESSAGE_COUNTER_HISTORY_DAY_LIMIT_NODE_NAME:
                 case ADDRESS_FULL_MESSAGE_POLICY_NODE_NAME:
@@ -1383,10 +1385,15 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         final ModelNode node = context.getModelNode();
 
         final ModelNode servers = node.require(HORNETQ_SERVER);
+        boolean first = true;
         for (Property prop : servers.asPropertyList()) {
             writeHornetQServer(writer, prop.getName(), prop.getValue());
+            if (!first) {
+                writeNewLine(writer);
+            } else {
+                first = false;
+            }
         }
-
 
         writer.writeEndElement();
     }
@@ -1402,6 +1409,22 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         for (AttributeDefinition simpleAttribute : CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES) {
             simpleAttribute.marshallAsElement(node, writer);
         }
+
+        final ModelNode paths = node.get(ModelDescriptionConstants.PATH);
+        if (paths.hasDefined(CommonAttributes.PAGING_DIRECTORY)) {
+            writeDirectory(writer, Element.PAGING_DIRECTORY, node.get(ModelDescriptionConstants.PATH));
+        }
+        if (paths.hasDefined(BINDINGS_DIRECTORY)) {
+            writeDirectory(writer, Element.BINDINGS_DIRECTORY, node.get(ModelDescriptionConstants.PATH));
+        }
+        if (paths.hasDefined(CommonAttributes.JOURNAL_DIRECTORY)) {
+            writeDirectory(writer, Element.JOURNAL_DIRECTORY, node.get(ModelDescriptionConstants.PATH));
+        }
+        if (paths.hasDefined(CommonAttributes.LARGE_MESSAGES_DIRECTORY)) {
+            writeDirectory(writer, Element.LARGE_MESSAGES_DIRECTORY, node.get(ModelDescriptionConstants.PATH));
+        }
+        // New line after the simpler elements
+        writeNewLine(writer);
 
         writeConnectors(writer, node);
 
@@ -1430,20 +1453,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             writeGroupingHandler(writer, node.get(GROUPING_HANDLER));
         }
 
-        final ModelNode paths = node.get(ModelDescriptionConstants.PATH);
-        if (paths.hasDefined(CommonAttributes.PAGING_DIRECTORY)) {
-            writeDirectory(writer, Element.PAGING_DIRECTORY, node.get(ModelDescriptionConstants.PATH));
-        }
-        if (paths.hasDefined(BINDINGS_DIRECTORY)) {
-            writeDirectory(writer, Element.BINDINGS_DIRECTORY, node.get(ModelDescriptionConstants.PATH));
-        }
-        if (paths.hasDefined(CommonAttributes.JOURNAL_DIRECTORY)) {
-            writeDirectory(writer, Element.JOURNAL_DIRECTORY, node.get(ModelDescriptionConstants.PATH));
-        }
-        if (paths.hasDefined(CommonAttributes.LARGE_MESSAGES_DIRECTORY)) {
-            writeDirectory(writer, Element.LARGE_MESSAGES_DIRECTORY, node.get(ModelDescriptionConstants.PATH));
-        }
-
         if (node.hasDefined(CommonAttributes.SECURITY_SETTING)) {
             writeSecuritySettings(writer, node.get(CommonAttributes.SECURITY_SETTING));
         }
@@ -1470,6 +1479,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                    writePooledConnectionFactories(writer, pcf);
                }
                writer.writeEndElement();
+               writeNewLine(writer);
            }
         }
 
@@ -1514,6 +1524,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 writer.writeEndElement();
             }
             writer.writeEndElement();
+            writeNewLine(writer);
         }
     }
 
@@ -1541,6 +1552,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 writer.writeEndElement();
             }
             writer.writeEndElement();
+            writeNewLine(writer);
         }
     }
 
@@ -1581,6 +1593,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 writer.writeEndElement();
             }
             writer.writeEndElement();
+            writeNewLine(writer);
         }
     }
 
@@ -1590,6 +1603,8 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         for (Property handler : node.asPropertyList()) {
             if (wroteHandler) {
                 throw MESSAGES.multipleChildrenFound(GROUPING_HANDLER);
+            } else {
+                wroteHandler = true;
             }
             writer.writeStartElement(Element.GROUPING_HANDLER.getLocalName());
             writer.writeAttribute(Attribute.NAME.getLocalName(), handler.getName());
@@ -1598,6 +1613,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 attr.marshallAsElement(resourceModel, writer);
             }
             writer.writeEndElement();
+            writeNewLine(writer);
         }
     }
 
@@ -1626,6 +1642,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 }
             }
             writer.writeEndElement();
+            writeNewLine(writer);
         }
     }
 
@@ -1654,6 +1671,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 }
             }
             writer.writeEndElement();
+            writeNewLine(writer);
         }
     }
 
@@ -1668,9 +1686,8 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             writeAttribute(writer, Attribute.SERVER_ID, value.get(SERVER_ID.getName()));
         }
 
-        if (value.hasDefined(FACTORY_CLASS.getName())) {
-            writeSimpleElement(writer, Element.FACTORY_CLASS, value);
-        }
+        CommonAttributes.FACTORY_CLASS.marshallAsElement(value, writer);
+
         if (value.hasDefined(PARAM)) {
             for(final Property parameter : value.get(PARAM).asPropertyList()) {
                 writer.writeStartElement(Element.PARAM.getLocalName());
@@ -1739,6 +1756,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             }
 
             writer.writeEndElement();
+            writeNewLine(writer);
         }
     }
 
@@ -1767,20 +1785,22 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 writer.writeStartElement(Element.ADDRESS_SETTING.getLocalName());
                 writer.writeAttribute(Attribute.MATCH.getLocalName(), matchSetting.getName());
                 final ModelNode setting = matchSetting.getValue();
-                writeSimpleElement(writer, Element.DEAD_LETTER_ADDRESS_NODE_NAME, setting);
-                writeSimpleElement(writer, Element.EXPIRY_ADDRESS_NODE_NAME, setting);
-                writeSimpleElement(writer, Element.REDELIVERY_DELAY_NODE_NAME, setting);
-                writeSimpleElement(writer, Element.MAX_SIZE_BYTES_NODE_NAME, setting);
-                writeSimpleElement(writer, Element.PAGE_SIZE_BYTES_NODE_NAME, setting);
-                writeSimpleElement(writer, Element.MESSAGE_COUNTER_HISTORY_DAY_LIMIT_NODE_NAME, setting);
-                writeSimpleElement(writer, Element.ADDRESS_FULL_MESSAGE_POLICY_NODE_NAME, setting);
-                writeSimpleElement(writer, Element.LVQ_NODE_NAME, setting);
-                writeSimpleElement(writer, Element.MAX_DELIVERY_ATTEMPTS, setting);
-                writeSimpleElement(writer, Element.REDISTRIBUTION_DELAY_NODE_NAME, setting);
-                writeSimpleElement(writer, Element.SEND_TO_DLA_ON_NO_ROUTE, setting);
+                CommonAttributes.DEAD_LETTER_ADDRESS.marshallAsElement(setting, writer);
+                CommonAttributes.EXPIRY_ADDRESS.marshallAsElement(setting, writer);
+                CommonAttributes.REDELIVERY_DELAY.marshallAsElement(setting, writer);
+                CommonAttributes.MAX_DELIVERY_ATTEMPTS.marshallAsElement(setting, writer);
+                CommonAttributes.MAX_SIZE_BYTES_NODE_NAME.marshallAsElement(setting, writer);
+                CommonAttributes.PAGE_SIZE_BYTES_NODE_NAME.marshallAsElement(setting, writer);
+                CommonAttributes.PAGE_MAX_CACHE_SIZE.marshallAsElement(setting, writer);
+                CommonAttributes.ADDRESS_FULL_MESSAGE_POLICY.marshallAsElement(setting, writer);
+                CommonAttributes.MESSAGE_COUNTER_HISTORY_DAY_LIMIT.marshallAsElement(setting, writer);
+                CommonAttributes.LVQ.marshallAsElement(setting, writer);
+                CommonAttributes.REDISTRIBUTION_DELAY.marshallAsElement(setting, writer);
+                CommonAttributes.SEND_TO_DLA_ON_NO_ROUTE.marshallAsElement(setting, writer);
                 writer.writeEndElement();
             }
             writer.writeEndElement();
+            writeNewLine(writer);
         }
     }
 
@@ -1799,6 +1819,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 writer.writeEndElement();
             }
             writer.writeEndElement();
+            writeNewLine(writer);
         }
     }
 
@@ -1815,6 +1836,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 writer.writeEndElement();
             }
             writer.writeEndElement();
+            writeNewLine(writer);
         }
     }
 
@@ -1831,6 +1853,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 writer.writeEndElement();
             }
             writer.writeEndElement();
+            writeNewLine(writer);
         }
     }
 
@@ -1851,6 +1874,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 writer.writeEndElement();
             }
             writer.writeEndElement();
+            writeNewLine(writer);
         }
     }
 
@@ -1858,18 +1882,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         if (node.hasDefined(CommonAttributes.FILTER.getName())) {
             writer.writeEmptyElement(CommonAttributes.FILTER.getXmlName());
             writer.writeAttribute(CommonAttributes.STRING, node.get(CommonAttributes.FILTER.getName()).asString());
-        }
-    }
-
-    static void writeSimpleElement(final XMLExtendedStreamWriter writer, final Element element, final ModelNode node) throws XMLStreamException {
-        final String localName = element.getLocalName();
-        if(node.hasDefined(localName)) {
-            final String content = node.get(localName).asString();
-            if(content != null) {
-                writer.writeStartElement(localName);
-                writer.writeCharacters(content);
-                writer.writeEndElement();
-            }
         }
     }
 
@@ -2280,6 +2292,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             }
         }
         return connectionFactory;
+    }
+
+    private static void writeNewLine(XMLExtendedStreamWriter writer) throws XMLStreamException {
+        writer.writeCharacters(NEW_LINE, 0, 1);
     }
 
 }
