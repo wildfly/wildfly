@@ -63,7 +63,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
     protected void performRuntime(final OperationContext context, ModelNode operation, ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> controllers) throws OperationFailedException {
         final ModelNode address = operation.require(OP_ADDR);
         final String dsName = PathAddress.pathAddress(address).getLastElement().getValue();
-        final String jndiName = operation.hasDefined(JNDINAME.getName()) ? operation.get(JNDINAME.getName()).asString() : dsName;
+        final String jndiName = model.get(JNDINAME.getName()).asString();
 
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
