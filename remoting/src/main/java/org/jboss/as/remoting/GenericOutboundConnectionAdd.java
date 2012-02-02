@@ -27,6 +27,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -76,16 +77,20 @@ class GenericOutboundConnectionAdd extends AbstractOutboundConnectionAddHandler 
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        final ServiceController serviceController = installRuntimeService(context, model, verificationHandler);
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
+                                  ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
+            throws OperationFailedException {
+        final ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
+        final ServiceController serviceController = installRuntimeService(context, operation, fullModel, verificationHandler);
         newControllers.add(serviceController);
     }
 
-    ServiceController installRuntimeService(OperationContext context, ModelNode operation,
+    ServiceController installRuntimeService(final OperationContext context, final ModelNode operation, final ModelNode fullModel,
                                             ServiceVerificationHandler verificationHandler) throws OperationFailedException {
+
         final PathAddress pathAddress = PathAddress.pathAddress(operation.require(OP_ADDR));
-        final OptionMap connectionCreationOptions = ConnectorResource.getOptions(context, pathAddress);
         final String connectionName = pathAddress.getLastElement().getValue();
+        final OptionMap connectionCreationOptions = ConnectorResource.getOptions(fullModel.get(CommonAttributes.PROPERTY));
 
 
         //final OptionMap connectionCreationOptions = getConnectionCreationOptions(outboundConnection);

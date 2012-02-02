@@ -48,7 +48,9 @@ public class PropertyResource extends SimpleResourceDefinition {
     static final PropertyResource INSTANCE_CONNECTOR = new PropertyResource(CONNECTOR);
 
     static final SimpleAttributeDefinition VALUE = new NamedValueAttributeDefinition(CommonAttributes.VALUE, Attribute.VALUE, null, ModelType.STRING, true);
+
     private final String parent;
+
     protected PropertyResource(String parent) {
         super(PathElement.pathElement(PROPERTY),
                 RemotingExtension.getResourceDescriptionResolver(PROPERTY),
@@ -63,13 +65,8 @@ public class PropertyResource extends SimpleResourceDefinition {
     }
 
     private static void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel,
-            ServiceVerificationHandler verificationHandler) {
-        try {
-            ConnectorAdd.INSTANCE.launchServices(context, parentAddress, parentAddress.getLastElement().getValue(), parentModel, verificationHandler, null);
-        } catch (OperationFailedException e) {
-            //TODO handle better?
-            throw new RuntimeException(e);
-        }
+            ServiceVerificationHandler verificationHandler) throws OperationFailedException {
+        ConnectorAdd.INSTANCE.launchServices(context, parentAddress.getLastElement().getValue(), parentModel, verificationHandler, null);
     }
 
     private static ServiceName getParentServiceName(PathAddress parentAddress) {
@@ -107,7 +104,7 @@ public class PropertyResource extends SimpleResourceDefinition {
 
         @Override
         protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel,
-                ServiceVerificationHandler verificationHandler) {
+                ServiceVerificationHandler verificationHandler) throws OperationFailedException {
             PropertyResource.recreateParentService(context, parentAddress, parentModel, verificationHandler);
         }
 
@@ -124,7 +121,7 @@ public class PropertyResource extends SimpleResourceDefinition {
 
         @Override
         protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel,
-                ServiceVerificationHandler verificationHandler)  {
+                ServiceVerificationHandler verificationHandler) throws OperationFailedException {
             PropertyResource.recreateParentService(context, parentAddress, parentModel, verificationHandler);
         }
 

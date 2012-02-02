@@ -49,7 +49,7 @@ class LocalOutboundConnectionRemoveHandler extends AbstractRemoveStepHandler {
     }
 
     @Override
-    protected void recoverServices(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        LocalOutboundConnectionAdd.INSTANCE.installRuntimeService(context, operation, null);
+    protected void recoverServices(final OperationContext context, final ModelNode operation, final ModelNode fullModel) throws OperationFailedException {
+        LocalOutboundConnectionAdd.INSTANCE.installRuntimeService(context, operation, fullModel, null);
     }
 }

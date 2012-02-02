@@ -32,6 +32,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
@@ -65,17 +66,20 @@ public class ConnectorAdd extends AbstractAddStepHandler {
         ServiceName tmpDirPath = ServiceName.JBOSS.append("server", "path", "jboss.controller.temp.dir");
         final ServiceName securityRealm = model.hasDefined(SECURITY_REALM) ? SecurityRealmService.BASE_SERVICE_NAME
                 .append(model.require(SECURITY_REALM).asString()) : null;
+        final ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
+
         RemotingServices.installSecurityServices(context.getServiceTarget(), connectorName, securityRealm, null, tmpDirPath, verificationHandler, newControllers);
-        launchServices(context, address, connectorName, model, verificationHandler, newControllers);
+        launchServices(context, connectorName, fullModel, verificationHandler, newControllers);
     }
 
-    void launchServices(OperationContext context, PathAddress pathAddress, String connectorName, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    void launchServices(OperationContext context, String connectorName, ModelNode fullModel, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         //TODO SASL and properties
+
+        OptionMap optionMap = ConnectorResource.getOptions(fullModel.get(CommonAttributes.PROPERTY));
 
         final ServiceTarget target = context.getServiceTarget();
 
-        final ServiceName socketBindingName = SocketBinding.JBOSS_BINDING_NAME.append(ConnectorResource.SOCKET_BINDING.resolveModelAttribute(context, model).asString());
-        final OptionMap optionMap = ConnectorResource.getOptions(context, pathAddress);
+        final ServiceName socketBindingName = SocketBinding.JBOSS_BINDING_NAME.append(ConnectorResource.SOCKET_BINDING.resolveModelAttribute(context, fullModel).asString());
         RemotingServices.installConnectorServicesForSocketBinding(target, RemotingServices.SUBSYSTEM_ENDPOINT, connectorName, socketBindingName, optionMap, verificationHandler, newControllers);
 
         //TODO AuthenticationHandler
