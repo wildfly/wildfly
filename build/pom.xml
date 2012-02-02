@@ -1190,12 +1190,12 @@
 
                 <dependency>
                     <groupId>org.jboss.osgi.repository</groupId>
-                    <artifactId>jbosgi-repository</artifactId>
+                    <artifactId>jbosgi-repository-api</artifactId>
                 </dependency>
 
                 <dependency>
                     <groupId>org.jboss.osgi.repository</groupId>
-                    <artifactId>jbosgi-repository-api</artifactId>
+                    <artifactId>jbosgi-repository-core</artifactId>
                 </dependency>
 
                 <dependency>
