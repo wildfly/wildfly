@@ -117,7 +117,6 @@ public class ModelDescriptionConstants {
     public static final String JAAS = "jaas";
     public static final String JVM = "jvm";
     public static final String JVM_TYPE = "type";
-    public static final String KEYSTORE = "keystore";
     public static final String LDAP = "ldap";
     public static final String LDAP_CONNECTION = "ldap-connection";
     public static final String LOCAL = "local";

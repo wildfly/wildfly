@@ -24,13 +24,9 @@ package org.jboss.as.domain.management.security;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JAAS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.KEYSTORE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PASSWORD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECRET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL;
@@ -38,6 +34,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TRU
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYSTORE_PASSWORD;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYSTORE_PATH;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYSTORE_RELATIVE_TO;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.PASSWORD;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
 
 import java.security.KeyStore;
@@ -196,9 +197,9 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
 
         ServiceName keystoreServiceName = null;
         char[] password = null;
-        if (ssl.hasDefined(KEYSTORE)) {
+        if (ssl.hasDefined(KEYSTORE_PATH)) {
             keystoreServiceName = realmServiceName.append(FileKeystoreService.KEYSTORE_SUFFIX);
-            password = addFileKeystoreService(context, ssl.require(KEYSTORE), keystoreServiceName, serviceTarget,
+            password = addFileKeystoreService(context, ssl, keystoreServiceName, serviceTarget,
                     newControllers);
         }
         ServiceName truststoreServiceName = null;
@@ -223,15 +224,15 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         return sslServiceName;
     }
 
-    private char[] addFileKeystoreService(OperationContext context, ModelNode keystore, ServiceName serviceName,
+    private char[] addFileKeystoreService(OperationContext context, ModelNode ssl, ServiceName serviceName,
             ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        char[] password = unmaskPassword(context, keystore.require(PASSWORD));
+        char[] password = unmaskPassword(context, ssl.require(KEYSTORE_PASSWORD));
 
-        FileKeystoreService fileKeystoreService = new FileKeystoreService(keystore.require(PATH).asString(), password);
+        FileKeystoreService fileKeystoreService = new FileKeystoreService(ssl.require(KEYSTORE_PATH).asString(), password);
 
         ServiceBuilder<?> serviceBuilder = serviceTarget.addService(serviceName, fileKeystoreService);
-        if (keystore.hasDefined(RELATIVE_TO)) {
-            serviceBuilder.addDependency(pathName(keystore.require(RELATIVE_TO).asString()), String.class,
+        if (ssl.hasDefined(KEYSTORE_RELATIVE_TO)) {
+            serviceBuilder.addDependency(pathName(ssl.require(KEYSTORE_RELATIVE_TO).asString()), String.class,
                     fileKeystoreService.getRelativeToInjector());
         }
 
