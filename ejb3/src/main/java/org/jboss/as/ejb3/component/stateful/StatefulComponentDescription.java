@@ -254,7 +254,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
                 final DeploymentReflectionIndex index = context.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
                 ClassReflectionIndex<WriteReplaceInterface> classIndex = index.getClassIndex(WriteReplaceInterface.class);
                 for (Method method : classIndex.getMethods()) {
-                    configuration.addClientInterceptor(method, new WriteReplaceInterceptor.Factory(configuration.getViewServiceName().getCanonicalName()), InterceptorOrder.Client.WRITE_REPLACE);
+                    configuration.addClientInterceptor(method, new StatefulWriteReplaceInterceptor.Factory(configuration.getViewServiceName().getCanonicalName()), InterceptorOrder.Client.WRITE_REPLACE);
                 }
             }
         });
