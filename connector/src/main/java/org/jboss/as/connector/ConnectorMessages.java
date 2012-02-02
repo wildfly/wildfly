@@ -456,4 +456,20 @@ public interface ConnectorMessages {
     @Message(id = 10469, value = "At least one xa-datasource-property is required for an xa-datasource")
     OperationFailedException xaDataSourcePropertiesNotPresent();
 
+    /**
+     * A message indicating that jndi-name is missing and it's a required attribute
+     *
+     * @return the message.
+     */
+    @Message(id = 10470, value = "Jndi name is required")
+    OperationFailedException jndiNameRequired();
+
+
+    /**
+     * A message indicating that jndi-name has an invalid format
+     *
+     * @return the message.
+     */
+    @Message(id = 10471, value = "Jndi name have to start with java:/ or java:jboss/")
+    OperationFailedException jndiNameInvalidFormat();
 }

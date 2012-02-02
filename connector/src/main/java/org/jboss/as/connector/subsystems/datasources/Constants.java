@@ -39,6 +39,8 @@ import org.jboss.jca.common.api.metadata.ds.TimeOut;
 import org.jboss.jca.common.api.metadata.ds.Validation;
 import org.jboss.jca.common.api.metadata.ds.XaDataSource;
 
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
+
 /**
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
  *         Maestri</a>
@@ -193,12 +195,16 @@ class Constants {
     static SimpleAttributeDefinition JNDINAME = new SimpleAttributeDefinition(JNDINAME_NAME, DataSource.Attribute.JNDI_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE, new ParameterValidator() {
         @Override
         public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
-            if (value.isDefined() && value.getType() != ModelType.EXPRESSION) {
-            String str = value.asString();
-            if (! str.startsWith("java:/") && ! str.startsWith("java:jboss/")) {
-                throw new OperationFailedException(new ModelNode().set("Jndi name have to start with java:/ or java:jboss/"));
+            if (value.isDefined()) {
+                if (value.getType() != ModelType.EXPRESSION) {
+                    String str = value.asString();
+                    if (!str.startsWith("java:/") && !str.startsWith("java:jboss/")) {
+                        throw MESSAGES.jndiNameInvalidFormat();
+                    }
+                }
+            } else {
+                throw MESSAGES.jndiNameRequired();
             }
-        }
         }
 
         @Override
