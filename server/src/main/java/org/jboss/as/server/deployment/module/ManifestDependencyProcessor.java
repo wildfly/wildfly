@@ -96,7 +96,7 @@ public final class ManifestDependencyProcessor implements DeploymentUnitProcesso
                     deploymentUnit.addToAttachmentList(Attachments.ADDITIONAL_ANNOTATION_INDEXES, dependencyId);
                 }
 
-                final ModuleDependency dependency = new ModuleDependency(dependencyLoader, dependencyId, optional, export, services);
+                final ModuleDependency dependency = new ModuleDependency(dependencyLoader, dependencyId, optional, export, services, true);
                 if(metaInf) {
                     dependency.addImportFilter(PathFilters.getMetaInfSubdirectoriesFilter(), true);
                 }

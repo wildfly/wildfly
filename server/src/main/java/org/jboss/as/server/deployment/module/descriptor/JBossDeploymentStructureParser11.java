@@ -591,7 +591,7 @@ public class JBossDeploymentStructureParser11 implements XMLElementReader<ParseR
         }
         final ModuleIdentifier identifier = ModuleIdentifier.create(name, slot);
         final ModuleDependency dependency = new ModuleDependency(moduleLoader, identifier, optional, export,
-                services == Disposition.IMPORT);
+                services == Disposition.IMPORT, true);
         if(annotations) {
             specBuilder.addAnnotationModule(identifier);
         }
