@@ -22,7 +22,6 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROTOCOL;
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 import java.security.KeyManagementException;
@@ -37,7 +36,6 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -53,25 +51,20 @@ public class SSLIdentityService implements Service<SSLIdentityService> {
 
     public static final String SERVICE_SUFFIX = "ssl";
 
-    private final ModelNode ssl;
+    private final String protocol;
     private final char[] password;
     private final InjectedValue<KeyStore> keystore = new InjectedValue<KeyStore>();
     private final InjectedValue<KeyStore> truststore = new InjectedValue<KeyStore>();
 
     private volatile SSLContext sslContext;
 
-    public SSLIdentityService(ModelNode ssl, char[] password) {
-        this.ssl = ssl;
+    public SSLIdentityService(String protocol, char[] password) {
+        this.protocol = protocol;
         this.password = password;
     }
 
     public void start(StartContext context) throws StartException {
         try {
-            String protocol = "TLS";
-            if (ssl.hasDefined(PROTOCOL)) {
-                protocol = ssl.get(PROTOCOL).asString();
-            }
-
             KeyManager[] keyManagers = null;
             KeyStore theKeyStore = keystore.getOptionalValue();
             if (theKeyStore != null) {

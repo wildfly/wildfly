@@ -37,8 +37,8 @@ import org.jboss.as.domain.management.DomainManagementMessages;
 import org.jboss.dmr.ModelNode;
 
 /**
- * {@link OperationContext.Stage#MODEL} handler that validates a security realm resource has at least on authentication
- * resource but only has one non-trustore authentication resource. This is meant to run after normal {@code MODEL}
+ * {@link OperationContext.Stage#MODEL} handler that validates a security realm resource has at most one
+ * authentication mechanism and one truststore.  This is meant to run after normal {@code MODEL}
  * stage handlers.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
@@ -79,8 +79,6 @@ class AuthenticationValidatingHandler implements OperationStepHandler {
             Set<String> invalid = new HashSet<String>(children);
             invalid.remove(ModelDescriptionConstants.TRUSTSTORE);
             throw DomainManagementMessages.MESSAGES.multipleAuthenticationMechanismsDefined(realmName, invalid);
-        } else if (children.size() == 0) {
-            throw DomainManagementMessages.MESSAGES.noAuthenticationDefined(realmName);
         }
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }

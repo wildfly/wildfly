@@ -32,12 +32,14 @@ import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.security.AccessController;
+import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.net.ssl.SSLContext;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.sasl.SaslException;
 
@@ -50,8 +52,8 @@ import org.jboss.as.controller.remote.ExistingChannelModelControllerClient;
 import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
 import org.jboss.as.domain.controller.SlaveRegistrationException;
 import org.jboss.as.domain.controller.SlaveRegistrationException.ErrorCode;
+import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.CallbackHandlerFactory;
-import org.jboss.as.domain.management.security.SecretIdentityService;
 import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.host.controller.mgmt.DomainControllerProtocol;
 import org.jboss.as.host.controller.mgmt.DomainRemoteFileRequestAndHandler;
@@ -113,7 +115,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     private final AtomicBoolean registered = new AtomicBoolean(false);
     private final FutureClient futureClient = new FutureClient();
     private final InjectedValue<Endpoint> endpointInjector = new InjectedValue<Endpoint>();
-    private final InjectedValue<CallbackHandlerFactory> callbackFactoryInjector = new InjectedValue<CallbackHandlerFactory>();
+    private final InjectedValue<SecurityRealm> securityRealmInjector = new InjectedValue<SecurityRealm>();
 
     private RemoteDomainConnectionService(final ModelController controller, final String name, final InetAddress host, final int port, final RemoteFileRepository remoteFileRepository){
         this.controller = controller;
@@ -143,8 +145,8 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
                 .setInitialMode(ServiceController.Mode.ACTIVE);
 
         if (securityRealm != null) {
-            ServiceName callbackHandlerService = SecurityRealmService.BASE_SERVICE_NAME.append(securityRealm).append(SecretIdentityService.SERVICE_SUFFIX);
-            builder.addDependency(callbackHandlerService, CallbackHandlerFactory.class, service.callbackFactoryInjector);
+            ServiceName realmName = SecurityRealmService.BASE_SERVICE_NAME.append(securityRealm);
+            builder.addDependency(realmName, SecurityRealm.class, service.securityRealmInjector);
         }
 
         builder.install();
@@ -192,8 +194,6 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     }
 
     private synchronized void connect() {
-
-        // txOperationHandler = new TransactionalModelControllerOperationHandler(executor, controller);
         ProtocolChannelClient client;
         ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
         configuration.setEndpoint(endpointInjector.getValue());
@@ -209,12 +209,18 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         this.handler = new TransactionalModelControllerOperationHandler(controller, executor);
 
         try {
+            SecurityRealm realm = securityRealmInjector.getOptionalValue();
             CallbackHandler handler = null;
-            CallbackHandlerFactory handlerFactory = callbackFactoryInjector.getOptionalValue();
-            if (handlerFactory != null) {
-                handler = handlerFactory.getCallbackHandler(name);
+            SSLContext sslContext = null;
+
+            if (realm != null) {
+                sslContext = realm.getSSLContext();
+                CallbackHandlerFactory handlerFactory = realm.getSecretCallbackHandlerFactory();
+                if (handlerFactory != null) {
+                    handler = handlerFactory.getCallbackHandler(name);
+                }
             }
-            connection = client.connectSync(handler);
+            connection = client.connectSync(handler, Collections.<String, String> emptyMap(), sslContext);
             this.channelClient = client;
 
             channel = connection.openChannel(ManagementRemotingServices.DOMAIN_CHANNEL, OptionMap.EMPTY).get();

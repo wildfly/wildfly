@@ -129,6 +129,6 @@ public class SecurityRealmService implements Service<SecurityRealmService>, Secu
     }
 
     public CallbackHandlerFactory getSecretCallbackHandlerFactory() {
-        return secretCallbackFactory.getValue();
+        return secretCallbackFactory.getOptionalValue();
     }
 }
