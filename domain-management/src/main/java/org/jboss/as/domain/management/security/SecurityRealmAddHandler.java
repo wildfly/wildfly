@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JAA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROTOCOL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECRET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL;
@@ -133,15 +134,20 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
             realmBuilder.addDependency(authenticationName, DomainCallbackHandler.class, securityRealmService.getCallbackHandlerInjector());
         }
 
+        ModelNode ssl = null;
         if (serverIdentities != null) {
             if (serverIdentities.hasDefined(SSL)) {
-                ServiceName sslServiceName = addSSLService(context, serverIdentities.require(SSL), authTruststore, realmServiceName, serviceTarget, newControllers);
-                realmBuilder.addDependency(sslServiceName, SSLIdentityService.class, securityRealmService.getSSLIdentityInjector());
+                ssl = serverIdentities.require(SSL);
             }
             if (serverIdentities.hasDefined(SECRET)) {
                 ServiceName secretServiceName = addSecretService(serverIdentities.require(SECRET),realmServiceName,serviceTarget,newControllers);
                 realmBuilder.addDependency(secretServiceName, CallbackHandlerFactory.class,securityRealmService.getSecretCallbackFactory());
             }
+        }
+
+        if (ssl != null || authTruststore != null) {
+            ServiceName sslServiceName = addSSLService(context, ssl, authTruststore, realmServiceName, serviceTarget, newControllers);
+            realmBuilder.addDependency(sslServiceName, SSLIdentityService.class, securityRealmService.getSSLIdentityInjector());
         }
 
         realmBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND);
@@ -197,7 +203,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
 
         ServiceName keystoreServiceName = null;
         char[] password = null;
-        if (ssl.hasDefined(KEYSTORE_PATH)) {
+        if (ssl != null && ssl.hasDefined(KEYSTORE_PATH)) {
             keystoreServiceName = realmServiceName.append(FileKeystoreService.KEYSTORE_SUFFIX);
             password = addFileKeystoreService(context, ssl, keystoreServiceName, serviceTarget,
                     newControllers);
@@ -208,7 +214,11 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
             addFileKeystoreService(context, trustStore, truststoreServiceName, serviceTarget, newControllers);
         }
 
-        SSLIdentityService sslIdentityService = new SSLIdentityService(ssl, password);
+        String protocol = "TLS";
+        if (ssl != null && ssl.hasDefined(PROTOCOL)) {
+            protocol = ssl.get(PROTOCOL).asString();
+        }
+        SSLIdentityService sslIdentityService = new SSLIdentityService(protocol, password);
 
         ServiceBuilder<?> sslBuilder = serviceTarget.addService(sslServiceName, sslIdentityService);
 
