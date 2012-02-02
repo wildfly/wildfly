@@ -88,6 +88,13 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
 //                    .setAllowNull(true)
                     .build();
 
+    public static final SimpleAttributeDefinition PASS_BY_VALUE =
+            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.IN_VM_REMOTE_INTERFACE_INVOCATION_PASS_BY_VALUE, ModelType.BOOLEAN, true)
+                    .setAllowExpression(true)
+                    .setDefaultValue(new ModelNode().set("true"))
+                    .build();
+
+
     private EJB3SubsystemRootResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME),
                 EJB3Extension.getResourceDescriptionResolver(EJB3Extension.SUBSYSTEM_NAME),
@@ -106,5 +113,6 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         resourceRegistration.registerReadWriteAttribute(DEFAULT_RESOURCE_ADAPTER_NAME, null, DefaultResourceAdapterWriteHandler.INSTANCE);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT, null, DefaultSingletonBeanAccessTimeoutWriteHandler.INSTANCE);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT, null, DefaultStatefulBeanAccessTimeoutWriteHandler.INSTANCE);
+        resourceRegistration.registerReadWriteAttribute(PASS_BY_VALUE, null, EJBRemoteInvocationPassByValueWriteHandler.INSTANCE);
     }
 }

@@ -270,7 +270,6 @@ public enum Phase {
     public static final int PARSE_DISTINCT_NAME                         = 0x3601;
     // should be after all components are known
     public static final int PARSE_EJB_INJECTION_ANNOTATION              = 0x3700;
-    public static final int PARSE_EJB_REMOTE_CLIENT_CONTEXT             = 0x3900;
     public static final int PARSE_JACORB                                = 0x3A00;
     public static final int PARSE_TRANSACTION_ROLLBACK_ACTION           = 0x3B00;
     public static final int PARSE_WEB_INITIALIZE_IN_ORDER               = 0x3C00;

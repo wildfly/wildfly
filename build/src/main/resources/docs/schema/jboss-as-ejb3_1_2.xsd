@@ -51,6 +51,7 @@
             <xs:element name="remote" type="remoteType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="thread-pools" type="threadPoolsType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="iiop" type="iiopType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="in-vm-remote-interface-invocation" type="in-vm-remote-interface-invocationType" minOccurs="0" maxOccurs="1"/>
         </xs:all>
     </xs:complexType>
 
@@ -262,5 +263,21 @@
         <xs:attribute name="enable-by-default" type="xs:boolean" use="required"/>
         <xs:attribute name="use-qualified-name" type="xs:boolean" use="required"/>
     </xs:complexType>
+
+    <xs:complexType name="in-vm-remote-interface-invocationType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                The EJB3 spec mandates that the invocations on remote interfaces of a EJB, use pass-by-value
+                semantics for parameters (i.e. parameter values are serialized/deserialized) during invocation.
+                The pass-by-value attribute of this element can be used to switch that behaviour to pass the parameters
+                by reference (and skip the serialization/deserialization step). Setting the pass-by-value to false will
+                return in pass-by-reference semantics.
+            ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="pass-by-value" type="xs:boolean" use="required"/>
+    </xs:complexType>
+
 
 </xs:schema>

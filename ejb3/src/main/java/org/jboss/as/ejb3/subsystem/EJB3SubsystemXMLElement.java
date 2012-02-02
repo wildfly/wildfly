@@ -44,6 +44,7 @@ public enum EJB3SubsystemXMLElement {
     DATA_STORE("data-store"),
 
     IIOP("iiop"),
+    IN_VM_REMOTE_INTERFACE_INVOCATION("in-vm-remote-interface-invocation"),
 
     MDB("mdb"),
 

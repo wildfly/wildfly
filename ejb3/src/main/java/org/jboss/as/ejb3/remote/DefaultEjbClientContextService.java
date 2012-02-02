@@ -23,10 +23,9 @@ package org.jboss.as.ejb3.remote;
 
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
-import org.jboss.ejb.client.EJBReceiver;
+import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -35,8 +34,6 @@ import org.jboss.msc.value.InjectedValue;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Service that manages an EJBClientContext
@@ -44,6 +41,8 @@ import java.util.List;
  * @author Stuart Douglas
  */
 public class DefaultEjbClientContextService implements Service<EJBClientContext> {
+
+    private static final Logger logger = Logger.getLogger(DefaultEjbClientContextService.class);
 
     /**
      * The base service name for these services
@@ -63,12 +62,9 @@ public class DefaultEjbClientContextService implements Service<EJBClientContext>
         AccessController.doPrivileged(new SetSelectorAction(TCCLEJBClientContextSelector.INSTANCE));
     }
 
-    /**
-     * The recievers to add to the context
-     */
-    private final List<InjectedValue<EJBReceiver>> ejbReceivers = new ArrayList<InjectedValue<EJBReceiver>>();
-
     private final InjectedValue<TCCLEJBClientContextSelectorService> tcclEJBClientContextSelector = new InjectedValue<TCCLEJBClientContextSelectorService>();
+
+    private final InjectedValue<LocalEjbReceiver> defaultLocalEJBReceiver = new InjectedValue<LocalEjbReceiver>();
 
     /**
      * The client context
@@ -89,9 +85,8 @@ public class DefaultEjbClientContextService implements Service<EJBClientContext>
     @Override
     public synchronized void start(final StartContext context) throws StartException {
         final EJBClientContext clientContext = EJBClientContext.create();
-        for (final InjectedValue<EJBReceiver> receiver : ejbReceivers) {
-            clientContext.registerEJBReceiver(receiver.getValue());
-        }
+        // register the default local EJB receiver
+        clientContext.registerEJBReceiver(this.defaultLocalEJBReceiver.getValue());
         this.context = clientContext;
         if (this.lockSelectorOnStart) {
             // lock the EJB client context selector
@@ -118,18 +113,13 @@ public class DefaultEjbClientContextService implements Service<EJBClientContext>
         return context;
     }
 
-    public void addReceiver(final ServiceBuilder<EJBClientContext> serviceBuilder, final ServiceName serviceName) {
-        final InjectedValue<EJBReceiver> value = new InjectedValue<EJBReceiver>();
-        serviceBuilder.addDependency(serviceName, EJBReceiver.class, value);
-        ejbReceivers.add(value);
-    }
-
-    public void addReceiver(final InjectedValue<EJBReceiver> value) {
-        ejbReceivers.add(value);
-    }
 
     public Injector<TCCLEJBClientContextSelectorService> getTCCLBasedEJBClientContextSelectorInjector() {
         return this.tcclEJBClientContextSelector;
+    }
+
+    public Injector<LocalEjbReceiver> getDefaultLocalEJBReceiverInjector() {
+        return this.defaultLocalEJBReceiver;
     }
 
     private static final class SetSelectorAction implements PrivilegedAction<ContextSelector<EJBClientContext>> {
