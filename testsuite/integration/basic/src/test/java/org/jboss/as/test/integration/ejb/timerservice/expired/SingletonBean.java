@@ -48,7 +48,8 @@ import java.util.concurrent.TimeUnit;
 public class SingletonBean {
 
     private static final Logger log = Logger.getLogger(SingletonBean.class);
-
+    private static int TIMER_CALL_WAITING_S = 5;
+    
     @Resource
     private TimerService timerService;
 
@@ -69,7 +70,7 @@ public class SingletonBean {
         log.info("Timeout invoked for " + this + " on timer " + timer);
         this.timeoutNotifyingLatch.countDown();
         log.debug("Waiting for timer will be permitted to continue");
-        this.timeoutWaiter.await(5, TimeUnit.SECONDS);
+        this.timeoutWaiter.await(TIMER_CALL_WAITING_S, TimeUnit.SECONDS);
         log.debug("End of onTimeout on singleton");
     }
     

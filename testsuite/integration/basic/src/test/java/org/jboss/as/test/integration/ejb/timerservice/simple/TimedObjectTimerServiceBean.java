@@ -28,8 +28,6 @@ import javax.ejb.TimedObject;
 import javax.ejb.Timer;
 import javax.ejb.TimerService;
 
-import org.python.modules.synchronize;
-
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -40,7 +38,8 @@ import java.util.concurrent.TimeUnit;
 public class TimedObjectTimerServiceBean implements TimedObject {
 
     private static CountDownLatch latch = new CountDownLatch(1);
-
+    private static int TIMER_CALL_WAITING_S = 2;
+    
     private static boolean timerServiceCalled = false;
 
     @Resource
@@ -61,7 +60,7 @@ public class TimedObjectTimerServiceBean implements TimedObject {
 
     public static boolean awaitTimerCall() {
         try {
-            latch.await(2, TimeUnit.SECONDS);
+            latch.await(TIMER_CALL_WAITING_S, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -85,7 +84,7 @@ public class TimedObjectTimerServiceBean implements TimedObject {
 
     @Override
     public void ejbTimeout(final Timer timer) {
-        timerInfo = (String) timer.getInfo();
+        timerInfo = new String((String) timer.getInfo());
         isPersistent = timer.isPersistent();
         isCalendar = timer.isCalendarTimer();
 

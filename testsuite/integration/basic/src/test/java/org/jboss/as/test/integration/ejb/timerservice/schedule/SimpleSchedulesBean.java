@@ -40,6 +40,7 @@ import java.util.concurrent.TimeUnit;
 public class SimpleSchedulesBean {
 
     private static final CountDownLatch latch = new CountDownLatch(1);
+    private static int TIMER_CALL_WAITING_S = 2;
 
     private static boolean timerServiceCalled = false;
     
@@ -79,7 +80,7 @@ public class SimpleSchedulesBean {
 
     public static boolean awaitTimerCall() {       
         try {
-            latch.await(2, TimeUnit.SECONDS);
+            latch.await(TIMER_CALL_WAITING_S, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

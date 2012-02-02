@@ -40,6 +40,8 @@ import javax.ejb.TimerService;
 @ConcurrencyManagement(ConcurrencyManagementType.BEAN)
 public class CalendarTimerServiceBean {
 
+    // should to be greater then one second (1000ms)
+    private static int TIMER_CALL_QUICK_WAITING_MS = 1200; 
 
     private static final CountDownLatch latch = new CountDownLatch(1);
 
@@ -84,7 +86,7 @@ public class CalendarTimerServiceBean {
 
     public static boolean quickAwaitTimerCall() {
         try {
-            latch.await(1, TimeUnit.SECONDS);
+            latch.await(TIMER_CALL_QUICK_WAITING_MS, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

@@ -38,6 +38,8 @@ import javax.ejb.TimerService;
 public class TimerGetCallerPrincipleBean implements TimedObject {
 
     private static final CountDownLatch latch = new CountDownLatch(1);
+    private static int TIMER_TIMEOUT_TIME_MS = 100;
+    private static int TIMER_CALL_WAITING_S = 2;
 
     private static String principle = null;
 
@@ -48,12 +50,12 @@ public class TimerGetCallerPrincipleBean implements TimedObject {
     private EJBContext ejbContext;
 
     public void createTimer() {
-        timerService.createTimer(100, null);
+        timerService.createTimer(TIMER_TIMEOUT_TIME_MS, null);
     }
 
     public static String awaitTimerCall() {
         try {
-            latch.await(2, TimeUnit.SECONDS);
+            latch.await(TIMER_CALL_WAITING_S, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

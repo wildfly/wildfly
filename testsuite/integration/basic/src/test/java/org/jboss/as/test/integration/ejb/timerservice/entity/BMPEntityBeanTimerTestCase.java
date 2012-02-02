@@ -44,6 +44,10 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class BMPEntityBeanTimerTestCase {
 
+    private static int TIMER_CALL_WAITING_S = 10;
+    private static int TIMER_FOR_REMOVING_TIMEOUT_MS = 800;
+    // has to be greater than timer for removing timeout
+    private static int TIMER_REMOVED_CALL_WAITING_MS = 1600;
     private static final String ARCHIVE_NAME = "SimpleLocalHomeTest.war";
 
     @ArquillianResource
@@ -71,7 +75,7 @@ public class BMPEntityBeanTimerTestCase {
         ejbInstance.setupTimer();
         // getTimers returns only timer connected to particular entity id
         Assert.assertEquals(1, ejbInstance.getTimers().size());
-        SimpleBMPBean.getLatch().await(10, TimeUnit.SECONDS);
+        SimpleBMPBean.getLatch().await(TIMER_CALL_WAITING_S, TimeUnit.SECONDS);
         Map<Integer, String> data = SimpleBMPBean.getTimerData();
 
         Assert.assertTrue(data.containsKey(createdPk));
@@ -86,7 +90,6 @@ public class BMPEntityBeanTimerTestCase {
     @Test
     public void testExistenceAfterDelete() throws Exception {
         DataStore.DATA.clear();
-        SimpleBMPBean.redefineLatch(1);
         
         BMPLocalHome home = getHome();
         BMPLocalInterface ejbInstance = home.createWithValue("Bye");
@@ -94,10 +97,11 @@ public class BMPEntityBeanTimerTestCase {
                
         // this one not should tick - bean will be removed
         SimpleBMPBean.redefineLatch(1);
-        ejbInstance.setupTimerDefined(800);
+        ejbInstance.setupTimerDefined(TIMER_FOR_REMOVING_TIMEOUT_MS);
         // wait of 0.8 sec should be long enough for timer be removed before its tick
         ejbInstance.remove(); 
-        SimpleBMPBean.getLatch().await(1700, TimeUnit.MILLISECONDS); // supposing timeout expriration
+        // supposing this timeout expriration
+        SimpleBMPBean.getLatch().await(TIMER_REMOVED_CALL_WAITING_MS, TimeUnit.MILLISECONDS);
         Assert.assertFalse(SimpleBMPBean.getTimerData().containsKey(createdPk));
     }
 

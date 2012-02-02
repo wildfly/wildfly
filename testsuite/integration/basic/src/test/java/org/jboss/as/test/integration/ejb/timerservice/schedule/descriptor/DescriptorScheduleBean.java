@@ -36,6 +36,7 @@ public class DescriptorScheduleBean {
     private static String timerInfo;
     private static Date start;
 
+    private static int TIMER_CALL_WAITING_S = 30;
     private static CountDownLatch latch = new CountDownLatch(1);
 
     public void descriptorScheduledMethod(final Timer timer) {
@@ -46,7 +47,7 @@ public class DescriptorScheduleBean {
 
     public static boolean awaitTimer(){
         try {
-            final boolean success = latch.await(30, TimeUnit.SECONDS);
+            final boolean success = latch.await(TIMER_CALL_WAITING_S, TimeUnit.SECONDS);
             if (!success)
                 throw new IllegalStateException("Timeout method was not called");
         } catch (InterruptedException e) {
