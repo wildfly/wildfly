@@ -62,7 +62,7 @@ import static org.jboss.as.ee.deployment.spi.DeploymentMessages.MESSAGES;
 
 /**
  * A Target that deploys using the {@link ServerDeploymentManager}.
- *
+ * <p/>
  * This target is selected by including a targetType=as7 param in the DeploymentManager deployURI.
  *
  * @author Thomas.Diesler@jboss.com
@@ -72,7 +72,6 @@ final class DeploymentManagerTarget extends JBossTarget {
 
     static final String DESCRIPTION = "ServerDeploymentManager target";
 
-    private final Map<TargetModuleID, String> runtimeNames = new HashMap<TargetModuleID, String>();
     private final Map<TargetModuleID, Boolean> runtimeState = new HashMap<TargetModuleID, Boolean>();
     private final ModelControllerClient modelControllerClient;
     private final ServerDeploymentManager deploymentManager;
@@ -111,12 +110,12 @@ final class DeploymentManagerTarget extends JBossTarget {
     @Override
     public void deploy(TargetModuleID targetModuleID) throws Exception {
         ROOT_LOGGER.beginDeploy(targetModuleID);
+        String deploymentName = targetModuleID.getModuleID();
         DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
-        builder = builder.add(targetModuleID.getModuleID(), new URL(targetModuleID.getModuleID())).andDeploy();
+        builder = builder.add(deploymentName, new URL(deploymentName)).andDeploy();
         DeploymentPlan plan = builder.build();
         DeploymentAction deployAction = builder.getLastAction();
-        String runtimeName = executeDeploymentPlan(plan, deployAction);
-        runtimeNames.put(targetModuleID, runtimeName);
+        executeDeploymentPlan(plan, deployAction);
         ROOT_LOGGER.endDeploy(targetModuleID);
     }
 
@@ -124,7 +123,7 @@ final class DeploymentManagerTarget extends JBossTarget {
     public void start(TargetModuleID targetModuleID) throws Exception {
         // [TODO] A hack that fakes module start/stop behaviour
         // [AS7-2777] Add notion of start/stop for deployments
-        ((TargetModuleIDImpl)targetModuleID).setRunning(Boolean.TRUE);
+        ((TargetModuleIDImpl) targetModuleID).setRunning(Boolean.TRUE);
         runtimeState.put(targetModuleID, Boolean.TRUE);
     }
 
@@ -132,19 +131,17 @@ final class DeploymentManagerTarget extends JBossTarget {
     public void stop(TargetModuleID targetModuleID) throws Exception {
         // [TODO] A hack that fakes module start/stop behaviour
         // [AS7-2777] Add notion of start/stop for deployments
-        ((TargetModuleIDImpl)targetModuleID).setRunning(Boolean.FALSE);
+        ((TargetModuleIDImpl) targetModuleID).setRunning(Boolean.FALSE);
         runtimeState.put(targetModuleID, Boolean.FALSE);
     }
 
     @Override
     public void undeploy(TargetModuleID targetModuleID) throws Exception {
-        String runtimeName = runtimeNames.remove(targetModuleID);
-        if (runtimeName != null) {
-            DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
-            DeploymentPlan plan = builder.undeploy(runtimeName).remove(runtimeName).build();
-            Future<ServerDeploymentPlanResult> future = deploymentManager.execute(plan);
-            future.get();
-        }
+        String deploymentName = targetModuleID.getModuleID();
+        DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
+        DeploymentPlan plan = builder.undeploy(deploymentName).remove(deploymentName).build();
+        Future<ServerDeploymentPlanResult> future = deploymentManager.execute(plan);
+        future.get();
     }
 
     @Override
@@ -194,7 +191,7 @@ final class DeploymentManagerTarget extends JBossTarget {
         }
     }
 
-    private String executeDeploymentPlan(DeploymentPlan plan, DeploymentAction deployAction) throws Exception {
+    private void executeDeploymentPlan(DeploymentPlan plan, DeploymentAction deployAction) throws Exception {
         Future<ServerDeploymentPlanResult> future = deploymentManager.execute(plan);
         ServerDeploymentPlanResult planResult = future.get();
 
@@ -204,8 +201,6 @@ final class DeploymentManagerTarget extends JBossTarget {
             if (deploymentException != null)
                 throw deploymentException;
         }
-
-        return deployAction.getDeploymentUnitUniqueName();
     }
 
     private CallbackHandler getCallbackHandler(final String username, final String password) {
