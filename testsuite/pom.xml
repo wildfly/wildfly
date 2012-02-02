@@ -208,12 +208,7 @@
              <artifactId>arquillian-protocol-servlet</artifactId>
              <scope>test</scope>
          </dependency>
-        <!-- 
-        <dependency>
-             <groupId>org.jboss.as</groupId>
-             <artifactId>jboss-as-arquillian-container-remote</artifactId>
-        </dependency>
-		-->
+         
          <dependency>
              <groupId>org.jboss.arquillian.container</groupId>
              <artifactId>arquillian-container-spi</artifactId>
