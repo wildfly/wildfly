@@ -328,4 +328,16 @@ public interface JacORBMessages {
     @Message(id = 16489, value = "ValueDef %s unable to resolve reference to abstract base valuetype %s")
     IRConstructionException errorResolvingRefToAbstractValuetype(String id, String valuetype);
 
+    @Message(id = 16490, value = "Failed to resolve initial reference %s")
+    StartException errorResolvingInitRef(String refName, @Param Throwable cause);
+
+    @Message(id = 16491, value = "Failed to create POA from parent")
+    StartException errorCreatingPOAFromParent(@Param Throwable cause);
+
+    @Message(id = 16492, value = "Unable to instantiate POA: either the running ORB or the parent POA must be specified")
+    StartException invalidPOACreationArgs();
+
+    @Message(id = 16493, value = "Failed to activate POA")
+    StartException errorActivatingPOA(@Param Throwable cause);
+
 }
