@@ -36,6 +36,23 @@
                 <message-destination-link>testReplyMapping</message-destination-link>
             </message-destination-ref>
         </session>
+        
+        <!-- This will be overriden in jboss-ejb3.xml -->
+        <message-driven>
+            <ejb-name>ReplyingMDB</ejb-name>
+            <ejb-class>org.jboss.as.test.integration.ejb.mdb.messagedestination.ReplyingMDB</ejb-class>
+            <activation-config>
+                <activation-config-property>
+                    <activation-config-property-name>destination</activation-config-property-name>
+                    <!-- existing queue but no producer will send something into it -->
+                    <activation-config-property-value>java:/queue/test</activation-config-property-value>
+                </activation-config-property>
+                <activation-config-property>
+                    <activation-config-property-name>destinationType</activation-config-property-name>
+                    <activation-config-property-value>javax.jms.Queue</activation-config-property-value>
+                </activation-config-property>
+            </activation-config>
+        </message-driven>
     </enterprise-beans>
 
 

@@ -61,6 +61,7 @@ public class MessageDestinationTestCase {
         ejbJar.addPackage(MessageDestinationTestCase.class.getPackage());
         ejbJar.addClass(JMSAdminOperations.class);
         ejbJar.addAsManifestResource(MessageDestinationTestCase.class.getPackage(),  "ejb-jar.xml", "ejb-jar.xml");
+        ejbJar.addAsManifestResource(MessageDestinationTestCase.class.getPackage(),  "jboss-ejb3.xml", "jboss-ejb3.xml");
         ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF");
         logger.info(ejbJar.toString(true));
         return ejbJar;
