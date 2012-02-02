@@ -44,7 +44,7 @@ public class LoginServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String username = (String) req.getParameter("username");
         String password = (String) req.getParameter("password");
-        req.login(username, password);
+        //req.login(username, password);
         Principal principal = req.getUserPrincipal();
         if (principal == null)
             throw new ServletException("getUserPrincipal returned null");
@@ -57,7 +57,7 @@ public class LoginServlet extends HttpServlet {
         if (!req.isUserInRole("gooduser")) {
             resp.sendError(403);
         }
-        req.logout();
+        //req.logout();
         principal = req.getUserPrincipal();
         if (principal != null)
             throw new ServletException("getUserPrincipal didn't return null after logout");

@@ -68,13 +68,12 @@ public class PhaseListenerTestCase extends JTATestsBase {
     public static Archive<WebArchive> createDeployment() {
 
         // add test classes
-        Class[] classes = new Class[]{SimpleLogin.class,ManagedBeanTestCase.class};
+        Class[] classes = new Class[]{SimpleLogin.class,PhaseListenerTestCase.class,JTAPhaseListener.class};
         String[] resources = new String[]{"index.xhtml"};
         String[] webInfResources = new String[]{"web.xml","faces-config.xml","jboss-deployment-structure.xml"};
         
         final WebArchive archive = createArchive(DEPLOYMENT_NAME, classes, null, RESOURCES_LOCATION, resources, webInfResources);
         log.info(archive.toString(true));
-        
         return archive;
     }
 
