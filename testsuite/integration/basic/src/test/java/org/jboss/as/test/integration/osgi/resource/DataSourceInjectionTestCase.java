@@ -28,28 +28,25 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
 
 import javax.annotation.Resource;
 import javax.inject.Inject;
 import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
 import java.io.InputStream;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * An example of OSGi resource injection.
  *
  * @author thomas.diesler@jboss.com
- * @since 09-Jan-2011
+ * @since 02-Feb-2012
  */
 @RunWith(Arquillian.class)
-public class ResourceInjectionTestCase {
+@Ignore("[AS7-3152] Cannot deploy OSGI bundle with datasource ")
+public class DataSourceInjectionTestCase {
 
     @Inject
     public Bundle bundle;
@@ -65,7 +62,7 @@ public class ResourceInjectionTestCase {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                //builder.addImportPackages(TransactionManager.class);
+                builder.addImportPackages(DataSource.class);
                 return builder.openStream();
             }
         });
@@ -74,11 +71,11 @@ public class ResourceInjectionTestCase {
 
     @Test
     public void testDataSourceInjection() throws Exception {
-        
-        assertEquals(Bundle.RESOLVED, bundle.getState());
-        //assertNotNull("DataSource not null", ds);
-        
+
+        Assert.assertEquals(Bundle.RESOLVED, bundle.getState());
+        Assert.assertNotNull("DataSource not null", ds);
+
         bundle.start();
-        assertEquals(Bundle.ACTIVE, bundle.getState());
+        Assert.assertEquals(Bundle.ACTIVE, bundle.getState());
     }
 }
