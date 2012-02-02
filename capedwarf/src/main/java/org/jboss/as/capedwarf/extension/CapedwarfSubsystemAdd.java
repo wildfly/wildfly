@@ -27,12 +27,12 @@ import org.jboss.as.capedwarf.deployment.CapedwarfDependenciesProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfDeploymentProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfInitializationProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfJPAProcessor;
-import org.jboss.as.capedwarf.deployment.CapedwarfJsfProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfPersistenceModificationProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfWebCleanupProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfWebComponentsDeploymentProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfWeldParseProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfWeldProcessor;
+import org.jboss.as.capedwarf.services.ServletExecutorConsumerService;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -53,6 +53,9 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.vfs.TempDir;
 import org.jboss.vfs.VFSUtils;
 
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.Queue;
 import java.io.IOException;
 import java.util.List;
 
@@ -90,7 +93,15 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         context.addStep(new AbstractDeploymentChainStep() {
             public void execute(DeploymentProcessorTarget processorTarget) {
-                final TempDir tempDir = createTempDir(context.getServiceTarget());
+                final ServiceTarget serviceTarget = context.getServiceTarget();
+
+                final ServletExecutorConsumerService queueService = new ServletExecutorConsumerService();
+                final ServiceBuilder<Connection> builder = serviceTarget.addService(ServletExecutorConsumerService.NAME, queueService);
+                builder.addDependency(null, ConnectionFactory.class, queueService.getFactory()); // TODO
+                builder.addDependency(null, Queue.class, queueService.getQueue()); // TODO
+                builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+
+                final TempDir tempDir = createTempDir(serviceTarget);
 
                 final int initialPhaseOrder = Math.min(Phase.PARSE_WEB_DEPLOYMENT, Phase.PARSE_PERSISTENCE_UNIT);
                 processorTarget.addDeploymentProcessor(Phase.PARSE, initialPhaseOrder - 20, new CapedwarfInitializationProcessor());
@@ -103,7 +114,6 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_WAR_MODULE + 10, new CapedwarfDeploymentProcessor(appengineAPI));
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_APP_NAMING_CONTEXT + 10, new CapedwarfDependenciesProcessor()); // adjust order as needed
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WELD_PORTABLE_EXTENSIONS + 10, new CapedwarfCDIExtensionProcessor()); // after Weld portable extensions lookup
-                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_SERVLET_INIT_DEPLOYMENT + 1, new CapedwarfJsfProcessor()); // after scis
             }
         }, OperationContext.Stage.RUNTIME);
 

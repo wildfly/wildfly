@@ -35,6 +35,7 @@ import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.ResourceLoader;
 import org.jboss.modules.ResourceLoaderSpec;
 import org.jboss.modules.ResourceLoaders;
+import org.jboss.modules.filter.PathFilters;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilter;
 
@@ -52,6 +53,8 @@ import java.util.jar.JarFile;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class CapedwarfDeploymentProcessor extends CapedwarfDeploymentUnitProcessor {
+
+    private static final ModuleIdentifier CAPEDWARF_AS = ModuleIdentifier.create("org.jboss.as.capedwarf");
 
     private static final ModuleIdentifier APPENGINE = ModuleIdentifier.create("com.google.appengine");
     private static final ModuleIdentifier CAPEDWARF = ModuleIdentifier.create("org.jboss.capedwarf");
@@ -98,6 +101,10 @@ public class CapedwarfDeploymentProcessor extends CapedwarfDeploymentUnitProcess
 
         final ModuleLoader loader = Module.getBootModuleLoader();
         final ModuleSpecification moduleSpecification = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
+        // CapeDwarf AS module -- api only
+        final ModuleDependency cdas = createModuleDependency(loader, CAPEDWARF_AS);
+        cdas.addExportFilter(PathFilters.isChildOf("org.jboss.as.capedwarf.api"), true);
+        moduleSpecification.addSystemDependency(cdas);
         // always add Infinispan
         moduleSpecification.addSystemDependency(createModuleDependency(loader, INFINISPAN));
         // check if we bundle gae api jar

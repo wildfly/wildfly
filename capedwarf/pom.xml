@@ -73,16 +73,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.capedwarf.blue</groupId>
-            <artifactId>capedwarf-admin</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.capedwarf.blue</groupId>
-            <artifactId>capedwarf-appidentity</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.capedwarf.blue</groupId>
-            <artifactId>capedwarf-users</artifactId>
+            <groupId>org.jboss.spec.javax.jms</groupId>
+            <artifactId>jboss-jms-api_1.1_spec</artifactId>
         </dependency>
 
         <dependency>
