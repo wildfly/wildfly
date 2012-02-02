@@ -24,19 +24,18 @@ package org.jboss.as.test.smoke.embedded.deployment.rar.examples;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension;
+
+import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
+import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension.ResourceAdapterSubsystemParser;
+
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
-import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.smoke.embedded.deployment.rar.MultipleAdminObject1;
 import org.jboss.as.test.smoke.embedded.deployment.rar.MultipleConnectionFactory1;
 import org.jboss.dmr.ModelNode;
-import org.jboss.shrinkwrap.api.GenericArchive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.jboss.shrinkwrap.impl.base.spec.JavaArchiveImpl;
-import org.jboss.staxmapper.XMLElementReader;
 import org.junit.AfterClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -47,40 +46,39 @@ import java.util.List;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.test.smoke.embedded.deployment.rar.examples.ResourceAdapterTestUtilities.XmlToRAModelOperations;
-import static org.jboss.as.test.smoke.embedded.deployment.rar.examples.ResourceAdapterTestUtilities.operationListToCompositeOperation;
-import static org.jboss.as.test.smoke.embedded.deployment.rar.examples.ResourceAdapterTestUtilities.readResource;
 import static org.junit.Assert.assertNotNull;
 
 
 /**
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
- *         JBQA-5737 basic subsystem deployment
+ *         JBQA-5841 test for RA activation
  */
 @RunWith(Arquillian.class)
-@Ignore
+@RunAsClient
+@Ignore("AS7-3598")
 public class AfterResourceCreationDeploymentTestCase extends AbstractMgmtTestBase {
+
+    static String deploymentName = "basic.rar";
 
 
 	//@BeforeClass - called from @Test to create resources after deploymnet
-    //@Deployment(order=2)
-	public JavaArchive setUpa() throws Exception{
-        Thread.sleep(10000);
-        initModelControllerClient("localhost",9999);
-        String xml=readResource("../test-classes/config/basic.xml");
-        List<ModelNode> operations=XmlToRAModelOperations(xml);
-        executeOperation(operationListToCompositeOperation(operations));
 
+	public void setUp() throws Exception{
+       
+        initModelControllerClient("localhost",9999);
+        String xml=readXmlResource(System.getProperty("jbossas.ts.submodule.dir")+"/src/test/resources/config/basic.xml");
+        List<ModelNode> operations=XmlToModelOperations(xml,Namespace.CURRENT.getUriString(),new ResourceAdapterSubsystemParser());
+        executeOperation(operationListToCompositeOperation(operations));
+ 
         //since it is created after deployment it needs activation
         final ModelNode address = new ModelNode();
         address.add("subsystem", "resource-adapters");
-        address.add("resource-adapter", "archive.rar");
+        address.add("resource-adapter", deploymentName);
         address.protect();
         final ModelNode operation = new ModelNode();
         operation.get(OP).set("activate");
         operation.get(OP_ADDR).set(address);
         executeOperation(operation);
-        return ShrinkWrap.create(JavaArchive.class,  "empty.jar");
 
 	}
 	@AfterClass
@@ -88,7 +86,7 @@ public class AfterResourceCreationDeploymentTestCase extends AbstractMgmtTestBas
 
 		final ModelNode address = new ModelNode();
         address.add("subsystem", "resource-adapters");
-        address.add("resource-adapter","archive.rar");
+        address.add("resource-adapter",deploymentName);
         address.protect();
 
         remove(address);
@@ -105,15 +103,10 @@ public class AfterResourceCreationDeploymentTestCase extends AbstractMgmtTestBas
     public static ResourceAdapterArchive createDeployment()  throws Exception{
 
 
-        String deploymentName = "archive.rar";
-
         ResourceAdapterArchive raa =
                 ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName);
          JavaArchive ja = ShrinkWrap.create(JavaArchive.class,  "multiple.jar");
-        ja.addPackage(MultipleConnectionFactory1.class.getPackage()).
-        addClasses(AfterResourceCreationDeploymentTestCase.class,AbstractMgmtTestBase.class,MgmtOperationException.class,
-                ResourceAdapterTestUtilities.class, XMLElementReader.class, ResourceAdaptersExtension.class,
-                ResourceAdaptersExtension.ResourceAdapterSubsystemParser.class);
+        ja.addPackage(MultipleConnectionFactory1.class.getPackage());
         raa.addAsLibrary(ja);
 
         raa.addAsManifestResource("rar/" + deploymentName + "/META-INF/ra.xml", "ra.xml")
@@ -136,7 +129,8 @@ public class AfterResourceCreationDeploymentTestCase extends AbstractMgmtTestBas
      */
     @Test
     public void testConfiguration() throws Throwable {
-        setUpa()                 ;
+    	
+        setUp();
 
     	assertNotNull("CF1 not found",connectionFactory1);
     	assertNotNull("AO1 not found",adminObject1);

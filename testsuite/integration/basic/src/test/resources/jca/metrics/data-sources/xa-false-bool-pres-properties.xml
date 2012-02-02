@@ -1,0 +1,19 @@
+<subsystem xmlns="urn:jboss:domain:datasources:1.0">
+            <datasources>
+                <xa-datasource jndi-name="java:jboss/datasources/DS" pool-name="DS">
+                    <xa-datasource-property name="DatabaseName">mydb</xa-datasource-property>
+                    <driver>h2</driver>
+                    <xa-pool>
+                    <no-tx-separate-pools>false</no-tx-separate-pools>
+                    <interleaving>false</interleaving>
+                    </xa-pool>
+                    <statement>
+                    <share-prepared-statements>false</share-prepared-statements>
+                    </statement>
+                    <timeout>
+                    <set-tx-query-timeout>false</set-tx-query-timeout>
+                    </timeout>
+                </xa-datasource>
+            </datasources>
+</subsystem>
+                

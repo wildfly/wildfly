@@ -22,10 +22,9 @@
 package org.jboss.as.test.smoke.embedded.deployment.rar.examples;
 
 import static org.junit.Assert.assertNotNull;
-import static org.jboss.as.test.smoke.embedded.deployment.rar.examples.ResourceAdapterTestUtilities.XmlToRAModelOperations;
-import static org.jboss.as.test.smoke.embedded.deployment.rar.examples.ResourceAdapterTestUtilities.operationListToCompositeOperation;
-import static org.jboss.as.test.smoke.embedded.deployment.rar.examples.ResourceAdapterTestUtilities.readResource;
 
+import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
+import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension.ResourceAdapterSubsystemParser;
 import org.jboss.as.test.smoke.embedded.deployment.rar.MultipleAdminObject1;
 import org.jboss.as.test.smoke.embedded.deployment.rar.MultipleConnectionFactory1;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
@@ -41,10 +40,10 @@ import org.junit.*;
 import org.junit.runner.RunWith;
 import org.jboss.dmr.*;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 import java.util.List;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
 
 
 
@@ -58,8 +57,8 @@ public class EarPackagedDeploymentTestCase extends AbstractMgmtTestBase {
 	//@BeforeClass - called from @Deployment
 	public static void setUp() throws Exception{
 		initModelControllerClient("localhost",9999);
-	    String xml=readResource("../test-classes/config/ear_packaged.xml");
-        List<ModelNode> operations=XmlToRAModelOperations(xml);
+	    String xml=readXmlResource(System.getProperty("jbossas.ts.submodule.dir")+"/src/test/resources/config/ear_packaged.xml");
+        List<ModelNode> operations=XmlToModelOperations(xml,Namespace.CURRENT.getUriString(),new ResourceAdapterSubsystemParser());
         executeOperation(operationListToCompositeOperation(operations));
 
 	}
@@ -92,7 +91,7 @@ public class EarPackagedDeploymentTestCase extends AbstractMgmtTestBase {
                 ShrinkWrap.create(ResourceAdapterArchive.class, subDeploymentName);
          JavaArchive ja = ShrinkWrap.create(JavaArchive.class,  "multiple.jar");
         ja.addPackage(MultipleConnectionFactory1.class.getPackage()).
-        addClasses(EarPackagedDeploymentTestCase.class,AbstractMgmtTestBase.class,MgmtOperationException.class);
+        addClasses(EarPackagedDeploymentTestCase.class,AbstractMgmtTestBase.class,MgmtOperationException.class,XMLElementReader.class,XMLElementWriter.class);
         raa.addAsLibrary(ja);
 
         raa.addAsManifestResource("rar/" + subDeploymentName + "/META-INF/ra.xml", "ra.xml")
@@ -101,7 +100,6 @@ public class EarPackagedDeploymentTestCase extends AbstractMgmtTestBase {
 	    final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, deploymentName);
 	    ear.addAsModule(raa);
 	    ear.addAsManifestResource("rar/" + deploymentName + "/META-INF/application.xml", "application.xml");
-	    //ear.as(ZipExporter.class).exportTo(new java.io.File("/Users/rr/Downloads/_tmp/ear_packaged.zip"));
         return ear;
     }
 
