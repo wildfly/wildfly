@@ -37,6 +37,7 @@ import javax.ejb.TimerService;
 public class NonPersistentTimerServiceBean {
 
     private static final CountDownLatch latch = new CountDownLatch(1);
+    private static int TIMER_CALL_QUICK_WAITING_S = 2;
 
     private static boolean timerServiceCalled = false;
 
@@ -57,7 +58,7 @@ public class NonPersistentTimerServiceBean {
 
     public static boolean quickAwaitTimerCall() {
         try {
-            latch.await(2, TimeUnit.SECONDS);
+            latch.await(TIMER_CALL_QUICK_WAITING_S, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

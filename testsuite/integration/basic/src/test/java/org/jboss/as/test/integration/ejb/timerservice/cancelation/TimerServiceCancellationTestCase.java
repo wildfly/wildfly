@@ -24,6 +24,8 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class TimerServiceCancellationTestCase {
+    // countlatchdown waiting time
+    private static int TIMER_CALL_WAITING_S = 30; 
 
     @Deployment
     public static Archive<?> deploy() {
@@ -39,7 +41,7 @@ public class TimerServiceCancellationTestCase {
         InitialContext ctx = new InitialContext();
         SimpleTimerServiceBean bean = (SimpleTimerServiceBean)ctx.lookup("java:module/" + SimpleTimerServiceBean.class.getSimpleName());
         TimerHandle handle = bean.createTimer();
-        Assert.assertTrue(bean.getTimerEntry().await(30, TimeUnit.SECONDS));
+        Assert.assertTrue(bean.getTimerEntry().await(TIMER_CALL_WAITING_S, TimeUnit.SECONDS));
         //now the timeout is in progress cancel the timer
         handle.getTimer().cancel();
         bean.getTimerExit().countDown();
@@ -54,7 +56,7 @@ public class TimerServiceCancellationTestCase {
         InitialContext ctx = new InitialContext();
         CalendarTimerServiceBean bean = (CalendarTimerServiceBean)ctx.lookup("java:module/" + CalendarTimerServiceBean.class.getSimpleName());
         TimerHandle handle = bean.createTimer();
-        Assert.assertTrue(bean.getTimerEntry().await(30, TimeUnit.SECONDS));
+        Assert.assertTrue(bean.getTimerEntry().await(TIMER_CALL_WAITING_S, TimeUnit.SECONDS));
         //now the timeout is in progress cancel the timer
         handle.getTimer().cancel();
         bean.getTimerExit().countDown();

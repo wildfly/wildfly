@@ -47,6 +47,7 @@ public class SimpleBMPBean implements EntityBean, TimedObject {
     private static final long serialVersionUID = 1L;
     private static final AtomicInteger ID = new AtomicInteger();
     public static final int HOME_METHOD_RETURN = 100;
+    private static int TIMER_TIMEOUT_TIME_MS = 100;
 
     private String myField;
     private EntityContext entityContext;
@@ -150,7 +151,7 @@ public class SimpleBMPBean implements EntityBean, TimedObject {
     }
 
     public void setupTimer() {
-        entityContext.getTimerService().createTimer(100, null);
+        entityContext.getTimerService().createTimer(TIMER_TIMEOUT_TIME_MS, null);
     }
 
     public void setupTimerDefined(int time) {

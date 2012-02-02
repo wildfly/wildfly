@@ -40,6 +40,8 @@ public class CancelledTimerServiceBean {
 
     private static final CountDownLatch latch = new CountDownLatch(1);
 
+    private static int TIMER_CALL_WAITING_S = 30;
+    private static int TIMER_CALL_QUICK_WAITING_S = 2;
     private static boolean timerServiceCalled = false;
 
     @Resource
@@ -66,7 +68,7 @@ public class CancelledTimerServiceBean {
     public static boolean awaitTimerCall() {
         try {
             //on a slow machine this may take a while
-            latch.await(30, TimeUnit.SECONDS);
+            latch.await(TIMER_CALL_WAITING_S, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -75,7 +77,7 @@ public class CancelledTimerServiceBean {
 
     public static boolean quickAwaitTimerCall() {
         try {
-            latch.await(2, TimeUnit.SECONDS);
+            latch.await(TIMER_CALL_QUICK_WAITING_S, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
