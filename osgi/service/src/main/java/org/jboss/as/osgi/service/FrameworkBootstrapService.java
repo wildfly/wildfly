@@ -132,6 +132,7 @@ public class FrameworkBootstrapService implements Service<Void> {
             JAXPServiceProvider.addService(target);
             ModuleLoaderIntegration.addService(target);
             ModuleIdentityArtifactProvider.addService(target);
+            RepositoryProvider.addService(target);
             SystemServicesIntegration.addService(target);
 
             // Configure the {@link Framework} builder

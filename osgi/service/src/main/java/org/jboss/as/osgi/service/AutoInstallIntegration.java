@@ -30,6 +30,7 @@ import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
@@ -48,9 +49,16 @@ import org.jboss.osgi.framework.BundleManagerService;
 import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.metadata.OSGiMetaData;
 import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
+import org.jboss.osgi.resolver.v2.MavenCoordinates;
+import org.jboss.osgi.resolver.v2.XIdentityCapability;
+import org.jboss.osgi.resolver.v2.XRequirementBuilder;
+import org.jboss.osgi.resolver.v2.XResourceConstants;
 import org.jboss.osgi.spi.util.BundleInfo;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
+import org.osgi.framework.resource.Capability;
+import org.osgi.framework.resource.Requirement;
+import org.osgi.service.repository.Repository;
 import org.osgi.service.startlevel.StartLevel;
 
 import java.io.File;
@@ -59,6 +67,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -81,6 +90,7 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
 
     final InjectedValue<BundleManagerService> injectedBundleManager = new InjectedValue<BundleManagerService>();
     final InjectedValue<ServerEnvironment> injectedEnvironment = new InjectedValue<ServerEnvironment>();
+    final InjectedValue<Repository> injectedRepository = new InjectedValue<Repository>();
     final InjectedValue<Bundle> injectedSystemBundle = new InjectedValue<Bundle>();
     final InjectedValue<StartLevel> injectedStartLevel = new InjectedValue<StartLevel>();
     final InjectedValue<SubsystemState> injectedSubsystemState = new InjectedValue<SubsystemState>();
@@ -95,6 +105,7 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
         ServiceBuilder<?> builder = target.addService(Services.AUTOINSTALL_PROVIDER, service);
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedEnvironment);
         builder.addDependency(SubsystemState.SERVICE_NAME, SubsystemState.class, service.injectedSubsystemState);
+        builder.addDependency(RepositoryProvider.SERVICE_NAME, Repository.class, service.injectedRepository);
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManagerService.class, service.injectedBundleManager);
         builder.addDependency(Services.SYSTEM_BUNDLE, Bundle.class, service.injectedSystemBundle);
         builder.addDependency(Services.START_LEVEL, StartLevel.class, service.injectedStartLevel);
@@ -128,7 +139,7 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
             List<OSGiCapability> configcaps = new ArrayList<OSGiCapability>();
             configcaps.add(new OSGiCapability("javax.api", null));
             configcaps.add(new OSGiCapability("org.osgi.enterprise", null));
-            configcaps.add(new OSGiCapability("org.jboss.osgi.repository.api", null));
+            configcaps.add(new OSGiCapability("org.jboss.osgi.repository", null));
             configcaps.addAll(injectedSubsystemState.getValue().getCapabilities());
             for (OSGiCapability moduleMetaData : configcaps) {
                 ServiceName serviceName = installModule(bundleManager, moduleMetaData);
@@ -174,17 +185,37 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
             ModuleIdentifier moduleId = ModuleIdentifier.fromString(identifier);
 
             // Attempt to install bundle from the bundles hirarchy
-            File modulesFile = ModuleIdentityArtifactProvider.getRepositoryEntry(bundlesDir, moduleId);
-            if (modulesFile != null) {
-                URL url = modulesFile.toURI().toURL();
-                return installBundleFromURL(bundleManager, url, startLevel);
+            File bundleFile = ModuleIdentityArtifactProvider.getRepositoryEntry(bundlesDir, moduleId);
+            if (bundleFile != null) {
+                URL bundleURL = bundleFile.toURI().toURL();
+                return installBundleFromURL(bundleManager, bundleURL, startLevel);
+            } else {
+                Module module = null;
+                try {
+                    ModuleLoader moduleLoader = Module.getBootModuleLoader();
+                    module = moduleLoader.loadModule(moduleId);
+                } catch (ModuleLoadException e) {
+                    ROOT_LOGGER.debugf("Cannot load module: %s", moduleId);
+                }
+                // Register module with the OSGi layer
+                if (module != null) {
+                    OSGiMetaData metadata = getModuleMetadata(module);
+                    return bundleManager.registerModule(serviceTarget, module, metadata);
+                }
             }
+        }
 
-            // Register module with the OSGi layer
-            ModuleLoader moduleLoader = Module.getBootModuleLoader();
-            Module module = moduleLoader.loadModule(moduleId);
-            OSGiMetaData metadata = getModuleMetadata(module);
-            return bundleManager.registerModule(serviceTarget, module, metadata);
+        // Try the identifier as MavenCoordinates
+        if (isValidMavenIdentifier(identifier)) {
+            Repository repository = injectedRepository.getValue();
+            MavenCoordinates mavenId = MavenCoordinates.parse(identifier);
+            Requirement req = XRequirementBuilder.createArtifactRequirement(mavenId);
+            Collection<Capability> caps = repository.findProviders(req);
+            if (caps.isEmpty() == false) {
+                XIdentityCapability icap = (XIdentityCapability) caps.iterator().next();
+                URL bundleURL = (URL) icap.getAttribute(XResourceConstants.CONTENT_URL);
+                return installBundleFromURL(bundleManager, bundleURL, startLevel);
+            }
         }
 
         ROOT_LOGGER.cannotResolveCapability(identifier);
@@ -200,8 +231,17 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
         }
     }
 
-    private ServiceName installBundleFromURL(BundleManagerService bundleManager, URL moduleURL, Integer startLevel) throws Exception {
-        BundleInfo info = BundleInfo.createBundleInfo(moduleURL);
+    private boolean isValidMavenIdentifier(String identifier) {
+        try {
+            MavenCoordinates.parse(identifier);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    private ServiceName installBundleFromURL(BundleManagerService bundleManager, URL bundleURL, Integer startLevel) throws Exception {
+        BundleInfo info = BundleInfo.createBundleInfo(bundleURL);
         Deployment dep = DeploymentFactory.createDeployment(info);
         if (startLevel != null) {
             dep.setStartLevel(startLevel.intValue());
