@@ -108,18 +108,23 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
         DeploymentUnitProcessingException {
 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final DeploymentUnit topDeploymentUnit = deploymentUnit.getParent() != null?deploymentUnit.getParent():deploymentUnit;
 
         int defaultProviderCount = 0;
         Set<String> moduleDependencies = new HashSet<String>();
-        for (ResourceRoot resourceRoot : DeploymentUtils.allResourceRoots(deploymentUnit)) {
+        // look at all resource roots from the parent deployment to the bottom and pick up the number of persistence units that use the default
+        // persistence provider module.  Dependencies for other persistence provider will be added to the passed
+        // 'moduleDependencies' collection.  Each persistence provider module that is found, will be injected into the
+        // passed moduleSpecification (for the current deployment unit).
+        for (ResourceRoot resourceRoot : DeploymentUtils.allResourceRoots(topDeploymentUnit)) {
             PersistenceUnitMetadataHolder holder = resourceRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
             defaultProviderCount += loadPersistenceUnits(moduleLoader, deploymentUnit, moduleDependencies, holder);
         }
         // add dependencies for the default persistence provider module
         if (defaultProviderCount > 0) {
             moduleDependencies.add(Configuration.PROVIDER_MODULE_DEFAULT);
-            ROOT_LOGGER.debugf("added (default provider) %s dependency to application deployment (since %d PU(s) didn't specify %s",
-                Configuration.PROVIDER_MODULE_DEFAULT, defaultProviderCount, Configuration.PROVIDER_MODULE + ")");
+            ROOT_LOGGER.debugf("added (default provider) %s dependency to %s (since %d PU(s) didn't specify %s",
+                Configuration.PROVIDER_MODULE_DEFAULT, deploymentUnit.getName(),defaultProviderCount, Configuration.PROVIDER_MODULE + ")");
             //only inject envers module as long as org.hibernate is injected.
             addDependency(moduleSpecification, moduleLoader, HIBERNATE_ENVERS_ID);
         }
