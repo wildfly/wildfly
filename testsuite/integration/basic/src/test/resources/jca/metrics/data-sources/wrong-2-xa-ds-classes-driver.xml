@@ -1,0 +1,11 @@
+<subsystem xmlns="urn:jboss:domain:datasources:1.0">
+        <datasources>
+            <drivers>
+                <driver  name="name" module="com.h2database.h2">
+                    <xa-datasource-class>DsClass</xa-datasource-class>
+                    <xa-datasource-class>DsClass1</xa-datasource-class>
+                 </driver>
+            </drivers>
+        </datasources>
+</subsystem>
+                

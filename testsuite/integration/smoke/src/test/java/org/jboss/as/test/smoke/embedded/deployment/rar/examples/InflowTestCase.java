@@ -49,6 +49,8 @@ import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
 
 
 /**
@@ -56,7 +58,7 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
  *        JBQA-5741 -Inflow RA deployment test
  */
 @RunWith(Arquillian.class)
-@Ignore("AS7-3249")
+
 public class InflowTestCase extends AbstractMgmtTestBase {
 
 
@@ -73,7 +75,7 @@ public class InflowTestCase extends AbstractMgmtTestBase {
                 ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName);
          JavaArchive ja = ShrinkWrap.create(JavaArchive.class,  "multiple.jar");
         ja.addPackage(PureInflowResourceAdapter.class.getPackage()).
-        addClasses(InflowTestCase.class,AbstractMgmtTestBase.class,MgmtOperationException.class);
+        addClasses(InflowTestCase.class,AbstractMgmtTestBase.class,MgmtOperationException.class,XMLElementReader.class,XMLElementWriter.class);
         raa.addAsLibrary(ja);
 
         raa.addAsManifestResource("rar/" + deploymentName + "/META-INF/ra.xml", "ra.xml")
@@ -101,7 +103,7 @@ public class InflowTestCase extends AbstractMgmtTestBase {
     	Set<String> ids = repository.getResourceAdapters(javax.jms.MessageListener.class);
 
         assertNotNull(ids);
-        assertEquals(3, ids.size());
+        assertEquals(1, ids.size());
 
         String piId = ids.iterator().next();
         assertNotNull(piId);
@@ -128,7 +130,7 @@ public class InflowTestCase extends AbstractMgmtTestBase {
     	Set<String> ids = repository.getResourceAdapters();
 
         assertNotNull(ids);
-        assertEquals(2, ids.size());
+        assertEquals(1, ids.size());
 
         String piId = ids.iterator().next();
         assertNotNull(piId);
