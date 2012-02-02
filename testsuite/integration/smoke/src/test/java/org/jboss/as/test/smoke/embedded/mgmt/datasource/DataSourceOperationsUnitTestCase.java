@@ -22,20 +22,7 @@
 
 package org.jboss.as.test.smoke.embedded.mgmt.datasource;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.addExtensionProperties;
-import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.checkModelParams;
-import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.nonXaDsProperties;
-import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.setOperationParams;
-import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.xaDsProperties;
-import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperationTestUtil.marshalAndReparseDsResources;
-import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperationTestUtil.testConnection;
-import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperationTestUtil.testConnectionXA;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
@@ -51,7 +38,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.connector.subsystems.datasources.ModifiableXaDataSource;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
 import org.jboss.as.test.smoke.embedded.demos.fakejndi.FakeJndi;
 import org.jboss.as.test.smoke.modular.utils.PollingUtils;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
@@ -61,6 +48,19 @@ import org.junit.AfterClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.addExtensionProperties;
+import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.checkModelParams;
+import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.nonXaDsProperties;
+import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.setOperationParams;
+import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.xaDsProperties;
 
 
 /**
@@ -73,7 +73,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 
-public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
+public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase{
 
     @Deployment
     public static Archive<?> getDeployment() {
@@ -83,7 +83,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
     }
 
     @AfterClass
-    public static void tearDown() throws IOException{
+    public static void tearDown() throws Exception{
     	closeModelControllerClient();
     }
 
@@ -118,9 +118,9 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
         executeOperation(operation2);
 
-        testConnection("MyNewDs", getModelControllerClient());
+        testConnection("MyNewDs");
 
-        List<ModelNode> newList = marshalAndReparseDsResources("data-source",getModelControllerClient());
+        List<ModelNode> newList = marshalAndReparseDsResources("data-source");
 
         remove(address);
 
@@ -164,9 +164,9 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
         executeOperation(operation2);
 
-        testConnection("MyNewDs", getModelControllerClient());
+        testConnection("MyNewDs");
 
-        List<ModelNode> newList = marshalAndReparseDsResources("data-source",getModelControllerClient());
+        List<ModelNode> newList = marshalAndReparseDsResources("data-source");
 
         remove(address);
 
@@ -221,7 +221,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
         executeOperation(operation2);
 
-        List<ModelNode> newList = marshalAndReparseDsResources("data-source",getModelControllerClient());
+        List<ModelNode> newList = marshalAndReparseDsResources("data-source");
 
         remove(address);
 
@@ -342,7 +342,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
         executeOperation(operation2);
 
 
-        testConnectionXA(dsName, getModelControllerClient());
+        testConnectionXA(dsName);
 
         remove(address);
     }
@@ -394,14 +394,14 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
         executeOperation(operation2);
 
-        List<ModelNode> newList = marshalAndReparseDsResources("xa-data-source",getModelControllerClient());
+        List<ModelNode> newList = marshalAndReparseDsResources("xa-data-source");
 
         remove(address);
 
         Assert.assertNotNull("Reparsing failed:",newList);
 
         // remove from xml too
-        marshalAndReparseDsResources("xa-data-source",getModelControllerClient());
+        marshalAndReparseDsResources("xa-data-source");
 
         Assert.assertNotNull(findNodeWithProperty(newList,"jndi-name","java:jboss/datasources/" + jndiDsName));
 
@@ -464,12 +464,12 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
         executeOperation(enableOperation);
 
-        testConnectionXA(dsName, getModelControllerClient());
+        testConnectionXA(dsName);
 
         executeOperation(disableOperation);
         executeOperation(enableOperation);
 
-        testConnectionXA(dsName, getModelControllerClient());
+        testConnectionXA(dsName);
 
         remove(address);
     }
@@ -542,7 +542,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
 
 
-        List<ModelNode> newList = marshalAndReparseDsResources("xa-data-source",getModelControllerClient());
+        List<ModelNode> newList = marshalAndReparseDsResources("xa-data-source");
 
         remove(address);
 
@@ -599,7 +599,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
         executeOperation(datasourcePropertyOperation);
 
-        List<ModelNode> newList = marshalAndReparseDsResources("data-source",getModelControllerClient());
+        List<ModelNode> newList = marshalAndReparseDsResources("data-source");
 
         remove(address);
 
@@ -656,7 +656,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
         executeOperation(xaDatasourcePropertyOperation);
 
-        List<ModelNode> newList = marshalAndReparseDsResources("xa-data-source",getModelControllerClient());
+        List<ModelNode> newList = marshalAndReparseDsResources("xa-data-source");
 
         remove(address);
 
@@ -729,7 +729,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
         executeOperation(operation2);
 
-        testConnectionXA(dsName, getModelControllerClient());
+        testConnectionXA(dsName);
 
         remove(address);
         remove(propAddress);
@@ -741,10 +741,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
      * @throws Exception
      */
     @Test
-    @Ignore("AS7-3316")
     public void testDsWithSystemProperties() throws Exception {
-    	//System.setProperty("sql.parameter", "sa");
-
     	final ModelNode propAddress=new ModelNode();
     	propAddress.add("system-property","sql.parameter");
     	propAddress.protect();
@@ -754,7 +751,6 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
     	propOperation.get(OP_ADDR).set(propAddress);
     	propOperation.get("value").set("sa");
     	executeOperation(propOperation);
-    	//System.out.println("sql.parameter="+System.getProperty("sql.parameter"));
 
     	final ModelNode address = new ModelNode();
         address.add("subsystem", "datasources");
@@ -784,7 +780,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
         executeOperation(operation2);
 
-        testConnection("MyNewDs", getModelControllerClient());
+        testConnection("MyNewDs");
 
         remove(address);
         remove(propAddress);

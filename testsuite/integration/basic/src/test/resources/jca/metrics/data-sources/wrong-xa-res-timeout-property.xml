@@ -1,0 +1,12 @@
+<subsystem xmlns="urn:jboss:domain:datasources:1.0">
+            <datasources>
+                <xa-datasource jndi-name="java:jboss/datasources/DS" pool-name="DS">
+                    <xa-datasource-property name="DatabaseName">mydb</xa-datasource-property>
+                    <driver>h2</driver>
+                    <timeout>
+                    <xa-resource-timeout>-1</xa-resource-timeout>
+                    </timeout>
+                </xa-datasource>
+            </datasources>
+</subsystem>
+                
