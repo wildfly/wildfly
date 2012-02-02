@@ -1,8 +1,11 @@
 import os
+import sys
 import re
 import zipfile
 import urllib2
 import tempfile
+from xml.etree import ElementTree
+from itertools import chain
 
 try:
     import json
@@ -137,7 +140,6 @@ class AS7(Plugin, IndependentPlugin):
                 'jarinfo.txt')
         else:
             self.addAlert("WARN: No jars found in JBoss system path (" + self.__jbossHome + ").")
-
 
     def query(self, request_obj):
         try:
@@ -275,13 +277,63 @@ class AS7(Plugin, IndependentPlugin):
                 self.addForbiddenPath(os.path.join(confDir, 'mgmt-users.properties'))
 
                 self.doCopyFileOrDir(confDir, sub=(self.__jbossHome, 'JBOSSHOME'))
-                ## Log dir next
-                logDir = os.path.join(path, "log")
 
-                for logFile in find("*", logDir):
+                for logFile in find("*.log", path):
                     self.addCopySpecLimit(logFile,
                             self.getOption("logsize"),
                             sub=(self.__jbossHome, 'JBOSSHOME'))
+
+                deployment_info = self.__get_deployment_info(confDir)
+                deployments = self.__get_deployments(path)
+                for deployment in deployments:
+                    self.__get_listing_from_deployment(deployment, deployment_info)
+
+    def __get_deployment_info(self, dir_):
+        """Gets the deployment name to sha1 mapping for all deployments defined
+        in configs under dir_"""
+        deployment_info = {}
+        for config in find("*.xml", dir_):
+            root = ElementTree.parse(config).getroot()
+            # the namespace is harder to fetch than it should be
+            ns = root.tag.rpartition("}")[0]
+            ns += "}"
+            for deployment in root.findall("./%sdeployments/%sdeployment" % (ns, ns)):
+                name = deployment.attrib.get("name")
+                sha1 = deployment.getchildren()[0].attrib.get("sha1")
+                deployment_info[sha1] = name
+        return deployment_info
+
+    def __get_deployments(self, path):
+        return list(chain(
+            find("*", os.path.join(path, "deployments")),
+            find("content", path)))
+
+    def __get_listing_from_deployment(self, path, mapping):
+        try:
+            zf = zipfile.ZipFile(path)
+            contents = []
+            for zipinfo in zf.infolist():
+                if zipinfo.filename.endswith("/"):
+                    continue
+                contents.append((zipinfo.filename, zipinfo.file_size))
+            zf.close()
+            contents.sort()
+            output = "\n".join(["%s:%d" % (fn, fs) for fn, fs in contents])
+
+            path_to = path.replace(self.__jbossHome, '')
+            if 'content' in path:
+                path_to = path_to.strip(os.path.sep).rstrip("content")
+                path_to = os.path.join(*path_to.split(os.path.sep)[:-2])
+                sha1 = "".join(path.split(os.path.sep)[-3:-1])
+                name = mapping.get(sha1, sha1)
+            else:
+                path_to, name = os.path.split(path_to)
+
+            self.addStringAsFile(output, os.path.join(path_to, "%s.txt" % name))
+        except:
+            # this is probably not a zipfile so we don't care
+            pass
+
 
     def setup(self):
 

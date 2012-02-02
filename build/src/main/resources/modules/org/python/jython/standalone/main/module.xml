@@ -32,5 +32,6 @@
     </resources>
 
     <dependencies>
+        <module name="javax.api"/>
     </dependencies>
 </module>
