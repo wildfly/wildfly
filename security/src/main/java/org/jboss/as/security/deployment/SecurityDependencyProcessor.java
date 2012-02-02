@@ -53,10 +53,10 @@ public class SecurityDependencyProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, PICKETBOX_ID, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, PICKETBOX_ID, false, false, false, false));
 
         //add the remoting login module
-        final ModuleDependency remoting = new ModuleDependency(moduleLoader, REMOTING_LOGIN_MODULE, false, false, false);
+        final ModuleDependency remoting = new ModuleDependency(moduleLoader, REMOTING_LOGIN_MODULE, false, false, false, false);
         remoting.addImportFilter(PathFilters.is(RemotingLoginModule.class.getName().replace(".","/")), true);
         moduleSpecification.addSystemDependency(remoting);
     }

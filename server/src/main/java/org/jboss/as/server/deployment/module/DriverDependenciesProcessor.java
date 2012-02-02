@@ -51,7 +51,7 @@ public class DriverDependenciesProcessor implements DeploymentUnitProcessor {
             for (ResourceRoot root : resourceRoots) {
                 VirtualFile child = root.getRoot().getChild(SERVICE_FILE_NAME);
                 if (child.exists()) {
-                    moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JTA, false, false, false));
+                    moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JTA, false, false, false, false));
                     break;
                 }
             }

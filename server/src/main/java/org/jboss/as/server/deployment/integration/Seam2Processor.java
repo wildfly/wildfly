@@ -153,7 +153,7 @@ public class Seam2Processor implements DeploymentUnitProcessor {
                 if (root.getChild(path).exists()) {
                     final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
                     final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-                    moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, VFS_MODULE, false, false, false));
+                    moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, VFS_MODULE, false, false, false, false));
                     moduleSpecification.addResourceLoader(getSeamIntResourceLoader());
                     return;
                 }
