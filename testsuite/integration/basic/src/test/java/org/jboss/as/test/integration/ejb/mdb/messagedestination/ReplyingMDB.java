@@ -40,7 +40,8 @@ import javax.jms.TextMessage;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 @MessageDriven(activationConfig = {
-        @ActivationConfigProperty(propertyName = "destination", propertyValue = "java:jboss/mdbtest/messageDestinationQueue")
+        // queue does not exist but it will be corrected by jboss-ejb3.xml
+        @ActivationConfigProperty(propertyName = "destination", propertyValue = "java:jboss/mdbtest/notExistingQueue")
 })
 public class ReplyingMDB implements MessageListener {
     @Resource(lookup = "java:/JmsXA")
