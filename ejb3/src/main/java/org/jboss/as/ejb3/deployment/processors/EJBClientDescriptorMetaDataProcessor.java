@@ -25,9 +25,9 @@ package org.jboss.as.ejb3.deployment.processors;
 import org.jboss.as.ee.metadata.EJBClientDescriptorMetaData;
 import org.jboss.as.ee.structure.Attachments;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
-import org.jboss.as.ejb3.remote.DefaultEjbClientContextService;
 import org.jboss.as.ejb3.remote.DescriptorBasedEJBClientContextService;
 import org.jboss.as.ejb3.remote.LocalEjbReceiver;
+import org.jboss.as.ejb3.remote.TCCLEJBClientContextSelectorService;
 import org.jboss.as.remoting.AbstractOutboundConnectionService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -44,11 +44,8 @@ import org.jboss.msc.service.ServiceTarget;
  * deployment unit.
  * <p/>
  * If a {@link EJBClientDescriptorMetaData} is available then this deployment unit processor
- * creates and installs a {@link DescriptorBasedEJBClientContextService}. It then attaches the
- * {@link ServiceName name of the installed service} to the deployment unit at {@link EjbDeploymentAttachmentKeys#EJB_CLIENT_CONTEXT_SERVICE_NAME}
- * <p/>
- * If the deployment unit doesn't have a {@link EJBClientDescriptorMetaData} then this processors attaches
- * {@link DefaultEjbClientContextService#DEFAULT_SERVICE_NAME} as the {@link EjbDeploymentAttachmentKeys#EJB_CLIENT_CONTEXT_SERVICE_NAME}
+ * creates and installs a {@link DescriptorBasedEJBClientContextService}. It then attaches the {@link org.jboss.ejb.client.EJBClientContext}
+ * as an attachment to the deployment unit, under the key {@link EjbDeploymentAttachmentKeys#EJB_CLIENT_CONTEXT}
  *
  * @author Jaikiran Pai
  */
@@ -64,11 +61,8 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
             return;
         }
         final EJBClientDescriptorMetaData ejbClientDescriptorMetaData = deploymentUnit.getAttachment(Attachments.EJB_CLIENT_METADATA);
+        // no explicit EJB client configuration in this deployment, so nothing to do
         if (ejbClientDescriptorMetaData == null) {
-            logger.debug("Deployment unit " + deploymentUnit + " doesn't have any EJB client descriptor metadata associated. " +
-                    "Falling back on the default " + DefaultEjbClientContextService.DEFAULT_SERVICE_NAME + " EJB client context service");
-            // no client descriptor, so fallback to default EJB client context service
-            deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT_SERVICE_NAME, DefaultEjbClientContextService.DEFAULT_SERVICE_NAME);
             return;
         }
         // install the descriptor based EJB client context service
@@ -86,19 +80,22 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
         // if the local receiver is enabled for this context, then add a dependency on the appropriate LocalEjbReceiver
         // service
         if (!ejbClientDescriptorMetaData.isLocalReceiverExcluded()) {
-            if (ejbClientDescriptorMetaData.isLocalReceiverPassByValue()) {
-                serviceBuilder.addDependency(LocalEjbReceiver.BY_VALUE_SERVICE_NAME, LocalEjbReceiver.class, service.getLocalEjbReceiverInjector());
+            final Boolean passByValue = ejbClientDescriptorMetaData.isLocalReceiverPassByValue();
+            if (passByValue != null) {
+                final ServiceName localEjbReceiverServiceName = passByValue == true ? LocalEjbReceiver.BY_VALUE_SERVICE_NAME : LocalEjbReceiver.BY_REFERENCE_SERVICE_NAME;
+                serviceBuilder.addDependency(localEjbReceiverServiceName, LocalEjbReceiver.class, service.getLocalEjbReceiverInjector());
             } else {
-                serviceBuilder.addDependency(LocalEjbReceiver.BY_REFERENCE_SERVICE_NAME, LocalEjbReceiver.class, service.getLocalEjbReceiverInjector());
+                // setup a dependency on the default local ejb receiver service configured at the subsytem level
+                serviceBuilder.addDependency(LocalEjbReceiver.DEFAULT_LOCAL_EJB_RECEIVER_SERVICE_NAME, LocalEjbReceiver.class, service.getLocalEjbReceiverInjector());
             }
         }
-
+        serviceBuilder.addDependency(TCCLEJBClientContextSelectorService.TCCL_BASED_EJB_CLIENT_CONTEXT_SELECTOR_SERVICE_NAME);
         // install the service
         serviceBuilder.install();
         logger.debug("Deployment unit " + deploymentUnit + " will use " + ejbClientContextServiceName + " as the EJB client context service");
 
         // attach the service name of this EJB client context to the deployment unit
-        deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT_SERVICE_NAME, ejbClientContextServiceName);
+        phaseContext.addDeploymentDependency(ejbClientContextServiceName, EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT);
     }
 
     @Override
