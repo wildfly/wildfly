@@ -19,44 +19,42 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.component.stateful;
+package org.jboss.as.ejb3.component.session;
 
-import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 
 /**
- * Interceptor that handles the writeReplace method for a SFSB
+ * Interceptor that handles the writeReplace method for a stateless and singleton session beans
  *
  * @author Stuart Douglas
  */
-public class WriteReplaceInterceptor implements Interceptor {
+public class StatelessWriteReplaceInterceptor implements Interceptor {
 
     private final String serviceName;
 
-    public WriteReplaceInterceptor(final String serviceName) {
+    public StatelessWriteReplaceInterceptor(final String serviceName) {
         this.serviceName = serviceName;
     }
 
     @Override
     public Object processInvocation(final InterceptorContext context) throws Exception {
-        SessionID sessionId = (SessionID) context.getPrivateData(SessionID.class);
-        return new StatefulSerializedProxy(serviceName, sessionId);
+        return new StatelessSerializedProxy(serviceName);
     }
 
     public static class Factory implements InterceptorFactory {
 
-        private final String serviceName;
+        private final StatelessWriteReplaceInterceptor interceptor;
 
         public Factory(final String serviceName) {
-            this.serviceName = serviceName;
+            interceptor = new StatelessWriteReplaceInterceptor(serviceName);
         }
 
         @Override
         public Interceptor create(final InterceptorFactoryContext context) {
-            return new WriteReplaceInterceptor(serviceName);
+            return interceptor;
         }
     }
 }
