@@ -81,12 +81,11 @@ public class ExtensionRegistry {
     private volatile ManagementResourceRegistration profileRegistration;
     private volatile ManagementResourceRegistration deploymentsRegistration;
 
-    private final ConcurrentMap<String, Map<String, SubsystemInformation>> extensionInfo =
-            new ConcurrentHashMap<String, Map<String, SubsystemInformation>>();
-    private final ConcurrentMap<String, Set<String>> unnamedParsers = new ConcurrentHashMap<String, Set<String>>();
-    private final ConcurrentMap<String, String> registeredSubystems = new ConcurrentHashMap<String, String>();
+    private final ConcurrentMap<String, ExtensionInfo> extensions = new ConcurrentHashMap<String, ExtensionInfo>();
+    // subsystem -> extension
+    private final ConcurrentMap<String, String> reverseMap = new ConcurrentHashMap<String, String>();
     private final RunningModeControl runningModeControl;
-    // protected by unnamedParsers
+    // protected by extensions
     private boolean unnamedMerged;
 
     public ExtensionRegistry(ProcessType processType, RunningModeControl runningModeControl) {
@@ -144,7 +143,7 @@ public class ExtensionRegistry {
      * @return the names. Will not return {@code null}
      */
     public Set<String> getExtensionModuleNames() {
-        return Collections.unmodifiableSet(extensionInfo.keySet());
+        return Collections.unmodifiableSet(extensions.keySet());
     }
 
     /**
@@ -155,13 +154,14 @@ public class ExtensionRegistry {
      */
     public Map<String, SubsystemInformation> getAvailableSubsystems(String moduleName) {
         mergeUnnamedParsers();
-        final Map<String, SubsystemInformation> base = extensionInfo.get(moduleName);
-        if (base != null) {
-            synchronized (base) {
-                return Collections.unmodifiableMap(new HashMap<String, SubsystemInformation>(base));
+        Map<String, SubsystemInformation> result = null;
+        final ExtensionInfo info = extensions.get(moduleName);
+        if (info != null) {
+            synchronized (info) {
+                return Collections.unmodifiableMap(new HashMap<String, SubsystemInformation>(info.subsystems));
             }
         }
-        return base;
+        return result;
     }
 
     /**
@@ -202,10 +202,11 @@ public class ExtensionRegistry {
      */
     public Set<String> getUnnamedNamespaces(final String moduleName) {
         mergeUnnamedParsers();
-        Set<String> result = unnamedParsers.get(moduleName);
-        if (result != null) {
-            synchronized (result) {
-                result = new HashSet<String>(result);
+        Set<String> result;
+        ExtensionInfo extension = extensions.get(moduleName);
+        if (extension != null) {
+            synchronized (extension) {
+                result = new HashSet<String>(extension.unnamedParsers);
             }
         } else {
             result = Collections.emptySet();
@@ -230,25 +231,36 @@ public class ExtensionRegistry {
         }
 
         final ManagementResourceRegistration deploymentsReg = deploymentsRegistration;
-        Map<String, SubsystemInformation> subsystems = extensionInfo.remove(moduleName);
-        if (subsystems != null) {
-            synchronized (subsystems) {
-                Set<String> subsystemNames = subsystems.keySet();
+        ExtensionInfo extension = extensions.remove(moduleName);
+        if (extension != null) {
+            synchronized (extension) {
+                Set<String> subsystemNames = extension.subsystems.keySet();
                 for (String subsystem : subsystemNames) {
                     if (rootResource.getChild(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, subsystem)) != null) {
                         // Restore the data
-                        extensionInfo.put(moduleName, subsystems);
+                        extensions.put(moduleName, extension);
                         throw MESSAGES.removingExtensionWithRegisteredSubsystem(moduleName, subsystem);
                     }
                 }
-                for (String subsystem : subsystemNames) {
+                for (Map.Entry<String, SubsystemInformation> entry : extension.subsystems.entrySet()) {
+                    String subsystem = entry.getKey();
                     profileReg.unregisterSubModel(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, subsystem));
                     if (deploymentsReg != null) {
                         deploymentsReg.unregisterSubModel(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, subsystem));
                     }
+
+                    if (extension.xmlMapper != null) {
+                        SubsystemInformationImpl subsystemInformation = SubsystemInformationImpl.class.cast(entry.getValue());
+                        for (String namespace : subsystemInformation.getXMLNamespaces()) {
+                            extension.xmlMapper.unregisterRootElement(new QName(namespace, SUBSYSTEM));
+                        }
+                    }
                 }
-                unnamedParsers.remove(moduleName);
-                // TODO when STXM-11 is complete and integrated unregister the XMElementReader from xmlMapper
+                if (extension.xmlMapper != null) {
+                    for (String namespace : extension.unnamedParsers) {
+                        extension.xmlMapper.unregisterRootElement(new QName(namespace, SUBSYSTEM));
+                    }
+                }
             }
         }
     }
@@ -257,42 +269,27 @@ public class ExtensionRegistry {
      * Clears the registry to prepare for re-registration (e.g. as part of a reload).
      */
     public void clear() {
-        synchronized (unnamedParsers) {    // we synchronize just to guard unnamedMerged
+        synchronized (extensions) {    // we synchronize just to guard unnamedMerged
             profileRegistration = null;
             deploymentsRegistration = null;
-            extensionInfo.clear();
-            unnamedParsers.clear();
-            registeredSubystems.clear();
+            extensions.clear();
+            reverseMap.clear();
             unnamedMerged = false;
         }
     }
 
-    private Map<String, SubsystemInformation> getSubsystemMap(final String extensionModuleName) {
-        Map<String, SubsystemInformation> result = extensionInfo.get(extensionModuleName);
+    private ExtensionInfo getExtensionInfo(final String extensionModuleName) {
+        ExtensionInfo result = extensions.get(extensionModuleName);
         if (result == null) {
-            result = new HashMap<String, SubsystemInformation>();
-            Map<String, SubsystemInformation> existing = extensionInfo.putIfAbsent(extensionModuleName, result);
+            result = new ExtensionInfo(extensionModuleName);
+            ExtensionInfo existing = extensions.putIfAbsent(extensionModuleName, result);
             result = existing == null ? result : existing;
         }
         return result;
     }
 
-    private SubsystemInformationImpl getSubsystemInfo(final String extensionModuleName, final String subsystemName) {
-            checkNewSubystem(extensionModuleName, subsystemName);
-            Map<String, SubsystemInformation> map = getSubsystemMap(extensionModuleName);
-            synchronized (map) {
-                SubsystemInformationImpl info = SubsystemInformationImpl.class.cast(map.get(subsystemName));
-                if (info == null) {
-                    info = new SubsystemInformationImpl();
-                    map.put(subsystemName, info);
-                }
-                return info;
-            }
-
-    }
-
     private void checkNewSubystem(final String extensionModuleName, final String subsystemName) {
-        String existingModule = registeredSubystems.putIfAbsent(subsystemName, extensionModuleName);
+        String existingModule = reverseMap.putIfAbsent(subsystemName, extensionModuleName);
         if (existingModule != null && !extensionModuleName.equals(existingModule)) {
             throw ControllerMessages.MESSAGES.duplicateSubsystem(subsystemName, extensionModuleName, existingModule);
         }
@@ -303,28 +300,19 @@ public class ExtensionRegistry {
      * If yes, associate them with that subsystem.
      */
     private void mergeUnnamedParsers() {
-        synchronized (unnamedParsers) {  // we synchronize just to guard unnamedMerged
+        synchronized (extensions) {  // we synchronize just to guard unnamedMerged
             if (!unnamedMerged) {
-                Set<String> toRemove = new HashSet<String>();
-                for (Map.Entry<String, Set<String>> extUnnamed : unnamedParsers.entrySet()) {
-                    String extName = extUnnamed.getKey();
-                    Map<String, SubsystemInformation> named = this.getSubsystemMap(extName);
-                    if (named != null) {
-                        synchronized (named) {
-                            if (named.size() == 1) {
-                                // Only 1 subsystem; we can merge
-                                SubsystemInformationImpl info = SubsystemInformationImpl.class.cast(named.values().iterator().next());
-                                Set<String> namespaces = extUnnamed.getValue();
-                                for (String namespace : namespaces) {
-                                    info.addParsingNamespace(namespace);
-                                }
-                                toRemove.add(extName);
+                for (ExtensionInfo extension : extensions.values()) {
+                    synchronized (extension) {
+                        if (extension.unnamedParsers.size() > 0 && extension.subsystems.size() == 1) {
+                            // Only 1 subsystem; therefore we can merge
+                            SubsystemInformationImpl info = SubsystemInformationImpl.class.cast(extension.subsystems.values().iterator().next());
+                            for (String unnamed : extension.unnamedParsers) {
+                                info.addParsingNamespace(unnamed);
                             }
+                            extension.unnamedParsers.clear();
                         }
                     }
-                }
-                for (String ext : toRemove) {
-                    unnamedParsers.remove(ext);
                 }
                 unnamedMerged = true;
             }
@@ -356,29 +344,29 @@ public class ExtensionRegistry {
 
     private class ExtensionParsingContextImpl implements ExtensionParsingContext {
 
-        private final String extensionName;
-        private final XMLMapper xmlMapper;
+        private final ExtensionInfo extension;
 
         private ExtensionParsingContextImpl(String extensionName, XMLMapper xmlMapper) {
-            this.extensionName = extensionName;
-            this.xmlMapper = xmlMapper;
+            extension = getExtensionInfo(extensionName);
+            if (xmlMapper != null) {
+                synchronized (extension) {
+                    extension.xmlMapper = xmlMapper;
+                }
+            }
         }
 
 
         @Override
         public void setSubsystemXmlMapping(String namespaceUri, XMLElementReader<List<ModelNode>> reader) {
             assert namespaceUri != null : "namespaceUri is null";
-            if (xmlMapper != null) {
-                xmlMapper.registerRootElement(new QName(namespaceUri, SUBSYSTEM), reader);
-            }
-            Set<String> unnamed = new HashSet<String>();
-            synchronized (unnamedParsers) {  // we synchronize just to protect unnamedMerged
-                unnamedMerged = false;
-                Set<String> existing = unnamedParsers.putIfAbsent(extensionName, unnamed);
-                unnamed = existing == null ? unnamed : existing;
-                synchronized (unnamed) {
-                    unnamed.add(namespaceUri);
+            synchronized (extensions) { // we synchronize just to protect unnamedMerged
+                synchronized (extension) {
+                    if (extension.xmlMapper != null) {
+                        extension.xmlMapper.registerRootElement(new QName(namespaceUri, SUBSYSTEM), reader);
+                    }
+                    extension.unnamedParsers.add(namespaceUri);
                 }
+                unnamedMerged = false;
             }
         }
 
@@ -386,9 +374,11 @@ public class ExtensionRegistry {
         public void setSubsystemXmlMapping(String subsystemName, String namespaceUri, XMLElementReader<List<ModelNode>> reader) {
             assert subsystemName != null : "subsystemName is null";
             assert namespaceUri != null : "namespaceUri is null";
-            getSubsystemInfo(extensionName, subsystemName).addParsingNamespace(namespaceUri);
-            if (xmlMapper != null) {
-                xmlMapper.registerRootElement(new QName(namespaceUri, SUBSYSTEM), reader);
+            synchronized (extension) {
+                extension.getSubsystemInfo(subsystemName).addParsingNamespace(namespaceUri);
+                if (extension.xmlMapper != null) {
+                    extension.xmlMapper.registerRootElement(new QName(namespaceUri, SUBSYSTEM), reader);
+                }
             }
         }
 
@@ -405,18 +395,18 @@ public class ExtensionRegistry {
 
     private class ExtensionContextImpl implements ExtensionContext {
 
-        private final String extensionName;
+        private final ExtensionInfo extension;
 
         private ExtensionContextImpl(String extensionName) {
-            this.extensionName = extensionName;
+            this.extension = getExtensionInfo(extensionName);
         }
 
 
         @Override
         public SubsystemRegistration registerSubsystem(String name) throws IllegalArgumentException, IllegalStateException {
             assert name != null : "name is null";
-            checkNewSubystem(extensionName, name);
-            getSubsystemInfo(extensionName, name); // records the subsystem
+            checkNewSubystem(extension.extensionModuleName, name);
+            extension.getSubsystemInfo(name); // establishes the SubsystemInfo
             return new SubsystemRegistrationImpl(name);
         }
 
@@ -424,8 +414,8 @@ public class ExtensionRegistry {
         @Override
         public SubsystemRegistration registerSubsystem(String name, int majorVersion, int minorVersion) throws IllegalArgumentException, IllegalStateException {
             assert name != null : "name is null";
-            checkNewSubystem(extensionName, name);
-            SubsystemInformationImpl info = getSubsystemInfo(extensionName, name);
+            checkNewSubystem(extension.extensionModuleName, name);
+            SubsystemInformationImpl info = extension.getSubsystemInfo(name);
             info.setMajorVersion(majorVersion);
             info.setMinorVersion(minorVersion);
             return new SubsystemRegistrationImpl(name);
@@ -541,6 +531,32 @@ public class ExtensionRegistry {
         }
 
     }
+
+    private class ExtensionInfo {
+        private final Map<String, SubsystemInformation> subsystems = new HashMap<String, SubsystemInformation>();
+        private final Set<String> unnamedParsers = new HashSet<String>();
+        private final String extensionModuleName;
+        private XMLMapper xmlMapper;
+
+        public ExtensionInfo(String extensionModuleName) {
+            this.extensionModuleName = extensionModuleName;
+        }
+
+
+        private SubsystemInformationImpl getSubsystemInfo(final String subsystemName) {
+            checkNewSubystem(extensionModuleName, subsystemName);
+            synchronized (this) {
+                SubsystemInformationImpl subsystem = SubsystemInformationImpl.class.cast(subsystems.get(subsystemName));
+                if (subsystem == null) {
+                    subsystem = new SubsystemInformationImpl();
+                    subsystems.put(subsystemName, subsystem);
+                }
+                return subsystem;
+            }
+
+        }
+    }
+
     private static class DeploymentManagementResourceRegistration implements ManagementResourceRegistration {
 
         private final ManagementResourceRegistration deployments;
