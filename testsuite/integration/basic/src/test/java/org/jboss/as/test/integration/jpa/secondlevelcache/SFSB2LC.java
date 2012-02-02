@@ -210,7 +210,7 @@ public class SFSB2LC {
 
 	
 	/**
-	 * Performs 2 query calls, first call put query in the cache and second should hit the case
+	 * Performs 2 query calls, first call put query in the cache and second should hit the cache
 	 * @param id Employee's id in the query
 	 */
 	public String queryCacheCheck(String id){
@@ -220,6 +220,9 @@ public class SFSB2LC {
 		stats.clear();
 
 		try{
+	        // the nextTimestamp from infinispan is "return System.currentTimeMillis() / 100;"
+	        Thread.sleep(1000);
+	        
 			String queryString = "from Employee e where e.id > "+id;
 			QueryStatistics queryStats = stats.getQueryStatistics(queryString);
 			Query query = em.createQuery(queryString);
@@ -237,6 +240,8 @@ public class SFSB2LC {
 			
 
 		}catch (AssertionError e) {
+			return e.getMessage();
+		} catch (InterruptedException e) {
 			return e.getMessage();
 		}	finally{
 			em.close();
