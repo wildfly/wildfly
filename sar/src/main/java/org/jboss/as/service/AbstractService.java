@@ -25,7 +25,6 @@ package org.jboss.as.service;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 
 /**
@@ -35,7 +34,6 @@ import org.jboss.msc.service.Service;
  */
 abstract class AbstractService implements Service<Object> {
 
-    protected static final Logger log = Logger.getLogger("org.jboss.as.service");
     private final Object mBeanInstance;
 
     protected AbstractService(final Object mBeanInstance) {

@@ -47,25 +47,25 @@ final class StartStopService extends AbstractService {
 
     /** {@inheritDoc} */
     public void start(final StartContext context) throws StartException {
-        if (log.isTraceEnabled()) {
-            log.tracef("Starting Service: %s", context.getController().getName());
+        if (SarLogger.ROOT_LOGGER.isTraceEnabled()) {
+            SarLogger.ROOT_LOGGER.tracef("Starting Service: %s", context.getController().getName());
         }
         try {
             invokeLifecycleMethod(startMethod);
         } catch (final Exception e) {
-            throw new StartException("Failed to execute legacy service start() method", e);
+            throw SarMessages.MESSAGES.failedExecutingLegacyMethod(e, "start()");
         }
     }
 
     /** {@inheritDoc} */
     public void stop(final StopContext context) {
-        if (log.isTraceEnabled()) {
-            log.tracef("Stopping Service: %s", context.getController().getName());
+        if (SarLogger.ROOT_LOGGER.isTraceEnabled()) {
+            SarLogger.ROOT_LOGGER.tracef("Stopping Service: %s", context.getController().getName());
         }
         try {
             invokeLifecycleMethod(stopMethod);
         } catch (final Exception e) {
-            log.error("Failed to execute legacy service stop() method", e);
+            SarLogger.ROOT_LOGGER.failedExecutingLegacyMethod(e, "stop()");
         }
     }
 

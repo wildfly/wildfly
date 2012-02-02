@@ -48,7 +48,6 @@ import org.jboss.as.service.descriptor.JBossServiceConstructorConfig;
 import org.jboss.as.service.descriptor.JBossServiceConstructorConfig.Argument;
 import org.jboss.as.service.descriptor.JBossServiceDependencyConfig;
 import org.jboss.as.service.descriptor.JBossServiceXmlDescriptor;
-import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.inject.MethodInjector;
@@ -68,10 +67,8 @@ import org.jboss.msc.value.Values;
  */
 public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor {
 
-    public static final Logger log = Logger.getLogger("org.jboss.as.deployment.service");
-
     /**
-     * Process a deployment for JbossService configuration.  Will install a {@Code JBossService} for each configured service.
+     * Process a deployment for JbossService configuration.  Will install a {@code JBossService} for each configured service.
      *
      * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
@@ -87,12 +84,12 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
         // assert module
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         if (module == null)
-            throw new DeploymentUnitProcessingException("Failed to get module attachment for " + deploymentUnit);
+            throw SarMessages.MESSAGES.failedToGetAttachment("module", deploymentUnit);
 
         // assert reflection index
         final DeploymentReflectionIndex reflectionIndex = deploymentUnit.getAttachment(Attachments.REFLECTION_INDEX);
         if (reflectionIndex == null)
-            throw new DeploymentUnitProcessingException("Failed to get reflection index attachment for " + deploymentUnit);
+            throw SarMessages.MESSAGES.failedToGetAttachment("reflection index", deploymentUnit);
 
         // install services
         final ClassLoader classLoader = module.getClassLoader();
@@ -217,7 +214,7 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
     private static Object newValue(final Class<?> type, final String value) {
         final PropertyEditor editor = PropertyEditorManager.findEditor(type);
         if (editor == null) {
-            log.warn("Unable to find PropertyEditor for type " + type);
+            SarLogger.DEPLOYMENT_SERVICE_LOGGER.propertyNotFound(type);
             return null;
         }
         editor.setAsText(value);

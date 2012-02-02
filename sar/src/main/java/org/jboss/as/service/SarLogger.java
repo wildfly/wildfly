@@ -22,12 +22,22 @@
 
 package org.jboss.as.service;
 
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.WARN;
+
 import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Cause;
+import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
+import org.jboss.logging.Logger.Level;
+import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
+import org.jboss.msc.service.StartException;
 
 /**
- * Date: 05.11.2011
+ * This module is using message IDs in the range 17200-17299. This file is using the subset 17200-17219 for
+ * logger messages. See http://community.jboss.org/docs/DOC-16810 for the full list of currently reserved
+ * JBAS message id blocks.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
@@ -45,7 +55,22 @@ public interface SarLogger extends BasicLogger {
     SarLogger DEPLOYMENT_SERVICE_LOGGER = Logger.getMessageLogger(SarLogger.class, "org.jboss.as.deployment.service");
 
     /**
-     * A logger with the category {@code org.jboss.as.service}.
+     * Logs an error message indicating a failure to execute a legacy service method, represented by the {@code
+     * methodName} parameter.
+     *
+     * @param cause      the cause of the error.
+     * @param methodName the name of the method that failed to execute.
      */
-    SarLogger SERVICE_LOGGER = Logger.getMessageLogger(SarLogger.class, "org.jboss.as.service");
+    @LogMessage(level = ERROR)
+    @Message(id = 17200, value = "Failed to execute legacy service %s method")
+    void failedExecutingLegacyMethod(@Cause Throwable cause, String methodName);
+
+    /**
+     * Logs a warning message indicating the inability to find a {@link java.beans.PropertyEditor} for the type.
+     *
+     * @param type the type.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 17201, value = "Unable to find PropertyEditor for type %s")
+    void propertyNotFound(Class<?> type);
 }
