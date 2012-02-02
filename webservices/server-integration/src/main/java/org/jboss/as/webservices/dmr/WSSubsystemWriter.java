@@ -164,7 +164,13 @@ final class WSSubsystemWriter implements XMLElementWriter<SubsystemMarshallingCo
 
     private static void writeElement(final XMLExtendedStreamWriter writer, final String elementName, final String elementValue) throws XMLStreamException {
         writer.writeStartElement(elementName);
-        writer.writeCharacters(elementValue);
+        if (elementValue.indexOf('\n') > -1) {
+            writer.writeCharacters(elementValue);
+        } else {
+            // Use the method where staxmapper won't add new lines
+            char[] chars = elementValue.toCharArray();
+            writer.writeCharacters(chars, 0, chars.length);
+        }
         writer.writeEndElement();
     }
 

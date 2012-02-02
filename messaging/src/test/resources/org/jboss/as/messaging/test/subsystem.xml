@@ -12,6 +12,10 @@
             <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
             <journal-file-size>102400</journal-file-size>
             <journal-min-files>2</journal-min-files>
+            <paging-directory path="test" relative-to="test" />
+            <bindings-directory path="test" relative-to="test" />
+            <journal-directory path="test" relative-to="test" />
+            <large-messages-directory path="test" relative-to="test" />
             <connectors>
                <netty-connector name="netty" socket-binding="messaging" />
                <netty-connector name="netty-throughput" socket-binding="messaging-throughput">
@@ -147,10 +151,6 @@
                 <address>handler-address</address>
                 <timeout>5000</timeout>
             </grouping-handler>
-            <paging-directory path="test" relative-to="test" />
-            <bindings-directory path="test" relative-to="test" />
-            <journal-directory path="test" relative-to="test" />
-            <large-messages-directory path="test" relative-to="test" />
             <security-settings>
                <security-setting match="#">
                    <permission roles="guest" type="send"/>
@@ -166,9 +166,15 @@
                   <dead-letter-address>jms.queue.DLQ</dead-letter-address>
                   <expiry-address>jms.queue.ExpiryQueue</expiry-address>
                   <redelivery-delay>0</redelivery-delay>
+                  <max-delivery-attempts>5</max-delivery-attempts>
                   <max-size-bytes>10485760</max-size-bytes>
-                  <message-counter-history-day-limit>10</message-counter-history-day-limit>
+                  <page-size-bytes>10485760</page-size-bytes>
+                  <page-max-cache-size>7</page-max-cache-size>
                   <address-full-policy>BLOCK</address-full-policy>
+                  <message-counter-history-day-limit>10</message-counter-history-day-limit>
+                  <last-value-queue>false</last-value-queue>
+                  <redistribution-delay>0</redistribution-delay>
+                  <send-to-dla-on-no-route>false</send-to-dla-on-no-route>
                </address-setting>
             </address-settings>
 
