@@ -84,5 +84,14 @@ public interface JaxrsMessages {
     @Message(id = 11233, value = "Please use either @ApplicationPath or servlet mapping for url path config.")
     String conflictUrlMapping();
 
+    /**
+     * JAX-RS resource @Path annotation is on a class or interface that is not a view
+     * @param type The class with the annotation
+     * @param ejbName The ejb
+     * @return
+     */
+    @Message(id = 11234, value = "JAX-RS resource %s does not correspond to a view on the EJB %s. @Path annotations can only be placed on classes or interfaces that represent a local, remote or no-interface view of an EJB.")
+    DeploymentUnitProcessingException typeNameNotAnEjbView(String type, String ejbName);
+
 }
 
