@@ -27,8 +27,8 @@ import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
 import java.util.List;
 
-import org.jboss.as.jpa.config.PersistenceUnitCount;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
+import org.jboss.as.jpa.config.PersistenceUnitsInApplication;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -62,14 +62,14 @@ public class PersistenceUnitSearch {
             return pu;
         } else {
             if ( persistenceUnitName == null) {
-                PersistenceUnitCount counter = getTopLevel(deploymentUnit).getAttachment(PersistenceUnitCount.PERSISTENCE_UNIT_COUNT);
+                PersistenceUnitsInApplication persistenceUnitsInApplication = DeploymentUtils.getTopDeploymentUnit(deploymentUnit).getAttachment(PersistenceUnitsInApplication.PERSISTENCE_UNITS_IN_APPLICATION);
 
-                if (counter.get() > 1) {
+                if (persistenceUnitsInApplication.getCount() > 1) {
                     // AS7-2275 no unitName and there is more than one persistence unit;
-                    throw MESSAGES.noPUnitNameSpecifiedAndMultiplePersistenceUnits(counter.get(),getTopLevel(deploymentUnit));
+                    throw MESSAGES.noPUnitNameSpecifiedAndMultiplePersistenceUnits(persistenceUnitsInApplication.getCount(),DeploymentUtils.getTopDeploymentUnit(deploymentUnit));
                 }
                 ROOT_LOGGER.tracef("pu searching with empty unit name, application %s has %d persistence unit definitions",
-                    getTopLevel(deploymentUnit).getName(), counter.get());
+                    DeploymentUtils.getTopDeploymentUnit(deploymentUnit).getName(), persistenceUnitsInApplication.getCount());
             }
             PersistenceUnitMetadata name = findPersistenceUnitSupplier(deploymentUnit, persistenceUnitName);
             if (traceEnabled) {
@@ -84,7 +84,7 @@ public class PersistenceUnitSearch {
     private static PersistenceUnitMetadata findPersistenceUnitSupplier(DeploymentUnit deploymentUnit, String persistenceUnitName) {
         PersistenceUnitMetadata name = findWithinDeployment(deploymentUnit, persistenceUnitName);
         if (name == null) {
-            name = findWithinApplication(getTopLevel(deploymentUnit), persistenceUnitName);
+            name = findWithinApplication(DeploymentUtils.getTopDeploymentUnit(deploymentUnit), persistenceUnitName);
         }
         return name;
     }
@@ -156,10 +156,6 @@ public class PersistenceUnitSearch {
         return null;
     }
 
-    private static DeploymentUnit getTopLevel(DeploymentUnit du) {
-        return du.getParent() == null ? du : du.getParent();
-    }
-
     private static PersistenceUnitMetadata getPersistenceUnit(DeploymentUnit current, final String absolutePath, String puName) {
         final String path;
         if (absolutePath.startsWith("../")) {
@@ -170,7 +166,7 @@ public class PersistenceUnitSearch {
         final VirtualFile parent = current.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot().getParent();
         final VirtualFile resolvedPath = parent.getChild(path);
 
-        List<ResourceRoot> resourceRoots = DeploymentUtils.allResourceRoots(getTopLevel(current));
+        List<ResourceRoot> resourceRoots = DeploymentUtils.allResourceRoots(DeploymentUtils.getTopDeploymentUnit(current));
 
         for (ResourceRoot resourceRoot : resourceRoots) {
             if (resourceRoot.getRoot().equals(resolvedPath)) {
