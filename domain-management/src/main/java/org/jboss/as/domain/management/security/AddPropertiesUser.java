@@ -171,7 +171,7 @@ public class AddPropertiesUser {
                 foundFiles.add(standaloneProps);
             }
             File domainProps = new File(jbossHome + "/domain/configuration/mgmt-users.properties");
-            if (domainProps.exists()) { 
+            if (domainProps.exists()) {
                 foundFiles.add(domainProps);
             }
 
