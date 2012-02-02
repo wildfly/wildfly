@@ -22,8 +22,6 @@
 
 package org.jboss.as.ejb3.remote;
 
-import java.util.WeakHashMap;
-
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.msc.service.Service;
@@ -31,6 +29,8 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+
+import java.util.WeakHashMap;
 
 /**
  * A EJB client context selector which returns a {@link EJBClientContext} based on the thread context classloader

@@ -39,7 +39,6 @@ import org.jboss.as.ejb3.deployment.processors.DeploymentRepositoryProcessor;
 import org.jboss.as.ejb3.deployment.processors.EJBClientDescriptorMetaDataProcessor;
 import org.jboss.as.ejb3.deployment.processors.AnnotatedEJBComponentDescriptionDeploymentUnitProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbCleanUpProcessor;
-import org.jboss.as.ejb3.deployment.processors.EjbClientContextParsingProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbClientContextSetupProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbContextJndiBindingProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbDependencyDeploymentUnitProcessor;
@@ -145,6 +144,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         model.get(DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT).set(operation.get(DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT));
         model.get(DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT).set(operation.get(DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT));
         model.get(DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING).set(operation.get(DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING));
+        model.get(IN_VM_REMOTE_INTERFACE_INVOCATION_PASS_BY_VALUE).set(operation.get(IN_VM_REMOTE_INTERFACE_INVOCATION_PASS_BY_VALUE));
     }
 
     @Override
@@ -204,7 +204,6 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                     processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_APPLICATION_EXCEPTION_ANNOTATION, new ApplicationExceptionAnnotationProcessor());
                     processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_DD_INTERCEPTORS, new InterceptorClassDeploymentDescriptorProcessor());
                     processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_SECURITY_ROLE_REF_DD, new SecurityRoleRefDDProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_REMOTE_CLIENT_CONTEXT, new EjbClientContextParsingProcessor());
                     processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_PASSIVATION_ANNOTATION, new PassivationAnnotationParsingProcessor());
 
                     processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_IMPLICIT_NO_INTERFACE_VIEW, new ImplicitLocalViewProcessor());
@@ -282,7 +281,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         newControllers.add(context.getServiceTarget().addService(DeploymentRepository.SERVICE_NAME, new DeploymentRepository()).install());
 
-        addRemoteInvocationServices(context, newControllers, appclient);
+        addRemoteInvocationServices(context, newControllers, model, appclient);
         // add clustering service
         this.addClusteringServices(context, newControllers, appclient);
 
@@ -309,8 +308,10 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         }
     }
 
-    private void addRemoteInvocationServices(final OperationContext context, final List<ServiceController<?>> newControllers, final boolean appclient) {
+    private void addRemoteInvocationServices(final OperationContext context, final List<ServiceController<?>> newControllers,
+                                             final ModelNode ejbSubsytemModel, final boolean appclient) throws OperationFailedException {
 
+        final ServiceTarget serviceTarget = context.getServiceTarget();
         // Add the tccl based client context selector
         final TCCLEJBClientContextSelectorService tcclBasedClientContextSelector = new TCCLEJBClientContextSelectorService();
         context.getServiceTarget().addService(TCCLEJBClientContextSelectorService.TCCL_BASED_EJB_CLIENT_CONTEXT_SELECTOR_SERVICE_NAME,
@@ -330,21 +331,24 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
             final String nodeName = SecurityActions.getSystemProperty(ServerEnvironment.NODE_NAME);
             //the default spec compliant EJB reciever
             final LocalEjbReceiver byValueLocalEjbReceiver = new LocalEjbReceiver(nodeName, false);
-            newControllers.add(context.getServiceTarget().addService(LocalEjbReceiver.BY_VALUE_SERVICE_NAME, byValueLocalEjbReceiver)
+            newControllers.add(serviceTarget.addService(LocalEjbReceiver.BY_VALUE_SERVICE_NAME, byValueLocalEjbReceiver)
                     .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, byValueLocalEjbReceiver.getDeploymentRepository())
                     .addDependency(ClusteredBackingCacheEntryStoreSourceService.CLIENT_MAPPING_REGISTRY_COLLECTOR_SERVICE_NAME, RegistryCollector.class, byValueLocalEjbReceiver.getClusterRegistryCollectorInjector())
                     .install());
 
             //the receiver for invocations that allow pass by reference
             final LocalEjbReceiver byReferenceLocalEjbReceiver = new LocalEjbReceiver(nodeName, true);
-            newControllers.add(context.getServiceTarget().addService(LocalEjbReceiver.BY_REFERENCE_SERVICE_NAME, byReferenceLocalEjbReceiver)
+            newControllers.add(serviceTarget.addService(LocalEjbReceiver.BY_REFERENCE_SERVICE_NAME, byReferenceLocalEjbReceiver)
                     .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, byReferenceLocalEjbReceiver.getDeploymentRepository())
                     .addDependency(ClusteredBackingCacheEntryStoreSourceService.CLIENT_MAPPING_REGISTRY_COLLECTOR_SERVICE_NAME, RegistryCollector.class, byReferenceLocalEjbReceiver.getClusterRegistryCollectorInjector())
                     .install());
 
-            clientContextService.addReceiver(clientContextServiceBuilder, LocalEjbReceiver.BY_VALUE_SERVICE_NAME);
+            // setup the default local ejb receiver service
+            EJBRemoteInvocationPassByValueWriteHandler.INSTANCE.updateDefaultLocalEJBReceiverService(context, ejbSubsytemModel, newControllers);
+            // add the default local ejb receiver to the client context
+            clientContextServiceBuilder.addDependency(LocalEjbReceiver.DEFAULT_LOCAL_EJB_RECEIVER_SERVICE_NAME, LocalEjbReceiver.class, clientContextService.getDefaultLocalEJBReceiverInjector());
         }
-
+        // install the default EJB client context service
         newControllers.add(clientContextServiceBuilder.install());
     }
 
