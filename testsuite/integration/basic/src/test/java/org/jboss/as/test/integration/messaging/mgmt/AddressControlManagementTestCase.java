@@ -65,7 +65,7 @@ public class AddressControlManagementTestCase {
                      new TransportConfiguration(NettyConnectorFactory.class.getName());
         ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(transportConfiguration);
         ClientSessionFactory factory =  locator.createSessionFactory();
-        session = factory.createSession();
+        session = factory.createSession("guest", "guest", false, true, true, false, 1);
         session.createQueue(getAddress(), getQueueName(), false);
         session.createQueue(getAddress(), getOtherQueueName(), false);
     }

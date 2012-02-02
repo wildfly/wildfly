@@ -320,7 +320,7 @@ public class GetCallerPrincipalTestCase extends SecurityTest {
             QueueConnectionFactory qcf = (QueueConnectionFactory) new InitialContext().lookup("java:/RemoteConnectionFactory");
             Queue queue = (Queue) new InitialContext().lookup("java:jboss/" + QUEUE_NAME);
 
-            conn = qcf.createQueueConnection();
+            conn = qcf.createQueueConnection("guest", "guest");
             conn.start();
             session = conn.createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE);
 

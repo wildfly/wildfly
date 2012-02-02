@@ -94,7 +94,7 @@ public class JMSQueueManagementTestCase {
                      new TransportConfiguration(NettyConnectorFactory.class.getName());
         HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, transportConfiguration);
         cf.setClientID("sender");
-        conn = cf.createQueueConnection();
+        conn = cf.createQueueConnection("guest", "guest");
         conn.start();
         queue = HornetQJMSClient.createQueue(getQueueName());
         otherQueue = HornetQJMSClient.createQueue(getOtherQueueName());
@@ -330,7 +330,7 @@ public class JMSQueueManagementTestCase {
                      new TransportConfiguration(NettyConnectorFactory.class.getName());
         HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, transportConfiguration);
         cf.setClientID("consumer");
-        consumerConn = cf.createQueueConnection();
+        consumerConn = cf.createQueueConnection("guest", "guest");
         consumerConn.start();
         consumerSession = consumerConn.createQueueSession(false, TopicSession.AUTO_ACKNOWLEDGE);
 

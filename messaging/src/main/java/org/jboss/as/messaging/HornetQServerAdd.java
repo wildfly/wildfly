@@ -124,6 +124,9 @@ import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_TIMEOUT_SCAN_PERIOD;
 import static org.jboss.as.messaging.CommonAttributes.WILD_CARD_ROUTING_ENABLED;
 
+import org.jboss.as.security.plugins.SecurityDomainContext;
+import org.jboss.as.security.service.SecurityDomainService;
+
 /**
  * Add handler for a HornetQ server instance.
  *
@@ -221,6 +224,12 @@ class HornetQServerAdd implements OperationStepHandler {
                 serviceBuilder.addDependency(journalPath, String.class, hqService.getPathInjector(DEFAULT_JOURNAL_DIR));
                 serviceBuilder.addDependency(largeMessagePath, String.class, hqService.getPathInjector(DEFAULT_LARGE_MESSSAGE_DIR));
                 serviceBuilder.addDependency(pagingPath, String.class, hqService.getPathInjector(DEFAULT_PAGING_DIR));
+
+                // Add security
+                serviceBuilder.addDependency(DependencyType.REQUIRED,
+                        SecurityDomainService.SERVICE_NAME.append("messaging"),
+                        SecurityDomainContext.class,
+                        hqService.getSecurityDomainContextInjector());
 
                 // Process acceptors and connectors
                 final Set<String> socketBindings = new HashSet<String>();

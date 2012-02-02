@@ -97,7 +97,7 @@ public class MessagingClientTestCase {
 
             ClientSession session = null;
             try {
-               session = sf.createSession();
+               session = sf.createSession("guest", "guest", false, false, false, false, 1);
                ClientProducer producer = session.createProducer(queueName);
                ClientMessage message = session.createMessage(false);
 
@@ -149,7 +149,7 @@ public class MessagingClientTestCase {
     }
 
     static boolean queueExists(final String queueName, final ClientSessionFactory sf) throws HornetQException {
-        final ClientSession session = sf.createSession(false, false, false);
+        final ClientSession session = sf.createSession("guest", "guest", false, false, false, false, 1);
         try {
             final QueueQuery query = session.queueQuery(new SimpleString(queueName));
             return query.isExists();

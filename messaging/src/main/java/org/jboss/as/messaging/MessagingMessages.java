@@ -457,4 +457,7 @@ public interface MessagingMessages {
 
     @Message(id = 11668, value = "No message destination registered at address %s")
     String noDestinationRegisteredForAddress(final PathAddress address);
+
+    @Message(id = 11669, value = "SecurityDomainContext has not been set")
+    IllegalStateException securityDomainContextNotSet();
 }
