@@ -479,10 +479,10 @@ class ModClusterSubsystemDescriptions {
         node.get(type, CommonAttributes.BALANCER, DEFAULT).set("mycluster");
 
         // That is the loadBalancingGroup :-(
-        node.get(type, CommonAttributes.DOMAIN, TYPE).set(ModelType.STRING);
-        node.get(type, CommonAttributes.DOMAIN, DESCRIPTION).set(bundle.getString("modcluster.configuration.domain"));
-        node.get(type, CommonAttributes.DOMAIN, REQUIRED).set(false);
-        node.get(type, CommonAttributes.DOMAIN, EXPRESSIONS_ALLOWED).set(true);
+        node.get(type, CommonAttributes.LBGROUP, TYPE).set(ModelType.STRING);
+        node.get(type, CommonAttributes.LBGROUP, DESCRIPTION).set(bundle.getString("modcluster.configuration.lbgroup"));
+        node.get(type, CommonAttributes.LBGROUP, REQUIRED).set(false);
+        node.get(type, CommonAttributes.LBGROUP, EXPRESSIONS_ALLOWED).set(true);
 
         if (ATTRIBUTES.equals(type)) {
             node.get(CHILDREN, CommonAttributes.SSL, DESCRIPTION).set(bundle.getString("modcluster.configuration.ssl"));
