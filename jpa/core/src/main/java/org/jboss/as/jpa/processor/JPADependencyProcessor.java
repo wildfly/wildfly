@@ -30,6 +30,7 @@ import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.jar.JarFile;
@@ -108,15 +109,27 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
         DeploymentUnitProcessingException {
 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final DeploymentUnit topDeploymentUnit = deploymentUnit.getParent() != null?deploymentUnit.getParent():deploymentUnit;
 
         int defaultProviderCount = 0;
         Set<String> moduleDependencies = new HashSet<String>();
+
+        // DeploymentUtils.allResourceRoots(topDeploymentUnit) will not necessarily contain all the resource roots that
+        // DeploymentUtils.allResourceRoots(deploymentUnit) does.
+
+        // The top level ear deployment will only have the base resource root of the sub deployments
+        // (e.g. the root dir of a war), while DeploymentUtils.allResourceRoots(deploymentUnit) will also contain
+        // WEB-INF/classes and WEB-INF/lib resource roots.
+
+        // get the parent level resource roots first
+        ArrayList<ResourceRoot> allResourceRoots = new ArrayList<ResourceRoot>(DeploymentUtils.allResourceRoots(DeploymentUtils.getTopDeploymentUnit(deploymentUnit)));
+        if (deploymentUnit.getParent() != null) // get the current level resource roots also
+            allResourceRoots.addAll(DeploymentUtils.allResourceRoots(deploymentUnit));
+
         // look at all resource roots from the parent deployment to the bottom and pick up the number of persistence units that use the default
         // persistence provider module.  Dependencies for other persistence provider will be added to the passed
         // 'moduleDependencies' collection.  Each persistence provider module that is found, will be injected into the
         // passed moduleSpecification (for the current deployment unit).
-        for (ResourceRoot resourceRoot : DeploymentUtils.allResourceRoots(topDeploymentUnit)) {
+        for (ResourceRoot resourceRoot : allResourceRoots) {
             PersistenceUnitMetadataHolder holder = resourceRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
             defaultProviderCount += loadPersistenceUnits(moduleLoader, deploymentUnit, moduleDependencies, holder);
         }
