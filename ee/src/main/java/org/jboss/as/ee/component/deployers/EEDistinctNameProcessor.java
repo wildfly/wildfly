@@ -23,54 +23,46 @@
 package org.jboss.as.ee.component.deployers;
 
 import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.module.ResourceRoot;
-
-import java.util.jar.Manifest;
 
 /**
- * Examines a top level manifest to see if a deployment has been given a distinct name
+ * Examines a deployment unit and its top level parent to check for any distinct-name that's configured in the
+ * deployment descriptor(s) of the deployment units. If a top level deployment unit has a distinct-name configured
+ * then it will be applied to all sub-deployments in that unit (unless the sub-deployment has overridden the distinct-name)
  *
  * @author Stuart Douglas
+ * @author Jaikiran Pai
  */
 public final class EEDistinctNameProcessor implements DeploymentUnitProcessor {
 
-    public static final String DISTINCT_NAME = "Distinct-Name";
-
+    @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription module = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-        final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-
         if (module == null) {
             return;
         }
-        //if this is a sub deployment we share the DN with the parent
+        // see if the deployment unit has an explicit distinct-name
+        final String distinctName = deploymentUnit.getAttachment(org.jboss.as.ee.structure.Attachments.DISTINCT_NAME);
+        if (distinctName != null) {
+            module.setDistinctName(distinctName);
+            return;
+        }
+        // check the parent DU for any explicit distinct-name
         if (deploymentUnit.getParent() != null) {
-            final EEModuleDescription parentDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-            module.setDistinctName(parentDescription.getDistinctName());
+            final DeploymentUnit parentDU = deploymentUnit.getParent();
+            final String distinctNameInParentDeployment = parentDU.getAttachment(org.jboss.as.ee.structure.Attachments.DISTINCT_NAME);
+            if (distinctNameInParentDeployment != null) {
+                module.setDistinctName(distinctNameInParentDeployment);
+            }
             return;
         }
-
-        final Manifest manifest = deploymentRoot.getAttachment(Attachments.MANIFEST);
-        if (manifest == null) {
-            return;
-        }
-
-        final String name = manifest.getMainAttributes().getValue(DISTINCT_NAME);
-        if (name == null) {
-            return;
-        }
-        if (!name.trim().isEmpty()) {
-            module.setDistinctName(name.trim());
-        }
-
     }
 
+    @Override
     public void undeploy(final DeploymentUnit context) {
     }
 }

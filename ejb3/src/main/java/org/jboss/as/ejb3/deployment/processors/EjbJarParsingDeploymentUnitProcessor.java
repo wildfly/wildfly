@@ -138,6 +138,11 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
         // attach the EjbJarMetaData to the deployment unit
         deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA, ejbJarMetaData);
 
+        // if the jboss-ejb3.xml has a distinct-name configured then attach it to the deployment unit
+        if (jbossMetaData != null && jbossMetaData.getDistinctName() != null) {
+            deploymentUnit.putAttachment(org.jboss.as.ee.structure.Attachments.DISTINCT_NAME, jbossMetaData.getDistinctName());
+        }
+
         if (ejbJarMetaData.getModuleName() != null) {
             eeModuleDescription.setModuleName(ejbJarMetaData.getModuleName());
         }
