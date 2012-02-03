@@ -43,22 +43,13 @@ import org.jboss.msc.service.ServiceName;
  */
 public class StackConfigOperationHandlers {
 
-    /** The stack transport config add operation handler. */
-    static final OperationStepHandler TRANSPORT_ADD = new TransportConfigAdd(TRANSPORT_ATTRIBUTES) {
-        public void process(ModelNode submodel , ModelNode operation){
-          // override transport stuff here
-        }
-    };
+    static final OperationStepHandler TRANSPORT_ADD = new TransportConfigAdd(TRANSPORT_ATTRIBUTES);
     static final SelfRegisteringAttributeHandler TRANSPORT_ATTR = new AttributeWriteHandler(TRANSPORT_ATTRIBUTES);
 
-    /** The stack protocol config add operation handler. */
     static final OperationStepHandler PROTOCOL_ADD = new ProtocolConfigAdd(PROTOCOL_ATTRIBUTES);
     static final SelfRegisteringAttributeHandler PROTOCOL_ATTR = new AttributeWriteHandler(PROTOCOL_ATTRIBUTES);
-
-    /** The protocol remove operation handler. */
     static final OperationStepHandler PROTOCOL_REMOVE = new ProtocolConfigRemove();
 
-    /** The transport remove operation handler. */
     static final OperationStepHandler REMOVE = new OperationStepHandler() {
         @Override
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
@@ -68,7 +59,6 @@ public class StackConfigOperationHandlers {
         }
     };
 
-    /** The cache config property add operation handler. */
     static final OperationStepHandler PROTOCOL_PROPERTY_ADD = new OperationStepHandler() {
         @Override
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
@@ -314,7 +304,7 @@ public class StackConfigOperationHandlers {
      * @param context the operation context
      */
     static void reloadRequiredStep(final OperationContext context) {
-        if (context.getProcessType().isServer()) {
+        if (context.getProcessType().isServer() &&  !context.isBooting()) {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
@@ -322,6 +312,10 @@ public class StackConfigOperationHandlers {
                     // e.g. if a service is not installed, don't do a reload
                     context.reloadRequired();
                     context.completeStep();
+
+                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
+                        context.revertReloadRequired();
+                    }
                 }
             }, OperationContext.Stage.RUNTIME);
         }

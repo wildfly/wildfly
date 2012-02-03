@@ -66,7 +66,7 @@ public class JGroupsSubsystemXMLReader_1_1 implements XMLElementReader<List<Mode
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case DEFAULT_STACK: {
-                    subsystem.get(ModelKeys.DEFAULT_STACK).set(value);
+                    CommonAttributes.DEFAULT_STACK.parseAndSetParameter(value, subsystem, reader);
                     break;
                 }
                 default: {
@@ -174,50 +174,50 @@ public class JGroupsSubsystemXMLReader_1_1 implements XMLElementReader<List<Mode
                 case TYPE: {
                     try {
                         TP.class.getClassLoader().loadClass(org.jgroups.conf.ProtocolConfiguration.protocol_prefix + '.' + value).asSubclass(TP.class).newInstance();
-                        transport.get(ModelKeys.TYPE).set(value);
+                        CommonAttributes.TYPE.parseAndSetParameter(value, transport, reader);
                     } catch (Exception e) {
                         throw ParseUtils.invalidAttributeValue(reader, i);
                     }
                     break;
                 }
                 case SHARED: {
-                    transport.get(ModelKeys.SHARED).set(Boolean.parseBoolean(value));
+                    CommonAttributes.SHARED.parseAndSetParameter(value, transport, reader);
                     break;
                 }
                 case SOCKET_BINDING: {
-                    transport.get(ModelKeys.SOCKET_BINDING).set(value);
+                    CommonAttributes.SOCKET_BINDING.parseAndSetParameter(value, transport, reader);
                     break;
                 }
                 case DIAGNOSTICS_SOCKET_BINDING: {
-                    transport.get(ModelKeys.DIAGNOSTICS_SOCKET_BINDING).set(value);
+                    CommonAttributes.DIAGNOSTICS_SOCKET_BINDING.parseAndSetParameter(value, transport, reader);
                     break;
                 }
                 case DEFAULT_EXECUTOR: {
-                    transport.get(ModelKeys.DEFAULT_EXECUTOR).set(value);
+                    CommonAttributes.DEFAULT_EXECUTOR.parseAndSetParameter(value, transport, reader);
                     break;
                 }
                 case OOB_EXECUTOR: {
-                    transport.get(ModelKeys.OOB_EXECUTOR).set(value);
+                    CommonAttributes.OOB_EXECUTOR.parseAndSetParameter(value, transport, reader);
                     break;
                 }
                 case TIMER_EXECUTOR: {
-                    transport.get(ModelKeys.TIMER_EXECUTOR).set(value);
+                    CommonAttributes.TIMER_EXECUTOR.parseAndSetParameter(value, transport, reader);
                     break;
                 }
                 case THREAD_FACTORY: {
-                    transport.get(ModelKeys.THREAD_FACTORY).set(value);
+                    CommonAttributes.THREAD_FACTORY.parseAndSetParameter(value, transport, reader);
                     break;
                 }
                 case SITE: {
-                    transport.get(ModelKeys.SITE).setExpression(value);
+                    CommonAttributes.SITE.parseAndSetParameter(value, transport, reader);
                     break;
                 }
                 case RACK: {
-                    transport.get(ModelKeys.RACK).setExpression(value);
+                    CommonAttributes.RACK.parseAndSetParameter(value, transport, reader);
                     break;
                 }
                 case MACHINE: {
-                    transport.get(ModelKeys.MACHINE).setExpression(value);
+                    CommonAttributes.MACHINE.parseAndSetParameter(value, transport, reader);
                     break;
                 }
                 default: {
@@ -269,14 +269,14 @@ public class JGroupsSubsystemXMLReader_1_1 implements XMLElementReader<List<Mode
                 case TYPE: {
                     try {
                         Protocol.class.getClassLoader().loadClass(org.jgroups.conf.ProtocolConfiguration.protocol_prefix + '.' + value).asSubclass(Protocol.class).newInstance();
-                        protocol.get(ModelKeys.TYPE).set(value);
+                        CommonAttributes.TYPE.parseAndSetParameter(value, protocol, reader);
                     } catch (Exception e) {
                         throw ParseUtils.invalidAttributeValue(reader, i);
                     }
                     break;
                 }
                 case SOCKET_BINDING: {
-                    protocol.get(ModelKeys.SOCKET_BINDING).set(value);
+                    CommonAttributes.SOCKET_BINDING.parseAndSetParameter(value, protocol, reader);
                     break;
                 }
                 default: {
