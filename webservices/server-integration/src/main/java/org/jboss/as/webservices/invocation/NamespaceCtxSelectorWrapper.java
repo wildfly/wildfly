@@ -39,21 +39,18 @@ public class NamespaceCtxSelectorWrapper implements org.jboss.wsf.spi.invocation
     @Override
     public void storeCurrentThreadSelector(Map<String, Object> map) {
         map.put(KEY, NamespaceContextSelector.getCurrentSelector());
-        System.out.println("************************ STORE " + map.get(KEY));
     }
 
     @Override
     public void setCurrentThreadSelector(Map<String, Object> map) {
         NamespaceContextSelector.pushCurrentSelector((NamespaceContextSelector)map.get(KEY));
-        System.out.println("************************ SET " + map.get(KEY));
     }
 
     @Override
     public void clearCurrentThreadSelector(Map<String, Object> map) {
         if (map.containsKey(KEY)) {
             map.remove(KEY);
-            Object o = NamespaceContextSelector.popCurrentSelector();
-            System.out.println("************************ CLEAR " + o);
+            NamespaceContextSelector.popCurrentSelector();
         }
     }
 
