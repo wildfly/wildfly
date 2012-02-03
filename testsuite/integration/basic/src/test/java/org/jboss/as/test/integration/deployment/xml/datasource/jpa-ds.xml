@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<datasources xmlns="http://www.jboss.org/ironjacamar/schema">
+    <xa-datasource jndi-name="java:/JPADS" pool-name="JPADS">
+        <xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>
+        <xa-datasource-property name="URL">jdbc:h2:mem:test</xa-datasource-property>
+        <driver>h2</driver>
+        <security>
+            <user-name>sa</user-name>
+            <password>sa</password>
+        </security>
+    </xa-datasource>
+</datasources>

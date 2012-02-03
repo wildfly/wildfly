@@ -59,7 +59,7 @@ public class DeployedXmlJpaDataSourceTestCase {
                 .addAsManifestResource(DeployedXmlJpaDataSourceTestCase.class.getPackage(),
                         "persistence.xml", "persistence.xml")
                 .addAsManifestResource(DeployedXmlJpaDataSourceTestCase.class.getPackage(),
-                        "test-ds.xml", "test-ds.xml");
+                        "jpa-ds.xml", "jpa-ds.xml");
     }
 
     @ArquillianResource
