@@ -834,7 +834,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         if(isDependsOnProfile() && ctx.isDomainMode()) {
             final String profileName = profile.getValue(ctx.getParsedCommandLine());
             if(profileName == null) {
-                ctx.error("--profile argument is required to get the node description.");
+                ctx.error("WARNING: --profile argument is required for the complete description.");
                 return null;
             }
             address.add(Util.PROFILE, profileName);
