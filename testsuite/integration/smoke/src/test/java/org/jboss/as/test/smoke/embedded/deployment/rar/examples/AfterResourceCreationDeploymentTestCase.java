@@ -28,10 +28,15 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension.ResourceAdapterSubsystemParser;
 
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.smoke.embedded.demos.fakejndi.FakeJndi;
 import org.jboss.as.test.smoke.embedded.deployment.rar.MultipleAdminObject1;
 import org.jboss.as.test.smoke.embedded.deployment.rar.MultipleConnectionFactory1;
+import org.jboss.as.test.smoke.modular.utils.PollingUtils;
+import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
+import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -42,7 +47,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.annotation.Resource;
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
+import javax.naming.InitialContext;
 import java.util.List;
+import java.util.Properties;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -55,21 +66,20 @@ import static org.junit.Assert.assertNotNull;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("AS7-3598")
 public class AfterResourceCreationDeploymentTestCase extends AbstractMgmtTestBase {
 
-    static String deploymentName = "basic.rar";
+    static String deploymentName = "basic-after.rar";
 
 
 	//@BeforeClass - called from @Test to create resources after deploymnet
 
 	public void setUp() throws Exception{
-       
+
         initModelControllerClient("localhost",9999);
-        String xml=readXmlResource(System.getProperty("jbossas.ts.submodule.dir")+"/src/test/resources/config/basic.xml");
+        String xml=readXmlResource(System.getProperty("jbossas.ts.submodule.dir")+"/src/test/resources/config/basic-after.xml");
         List<ModelNode> operations=XmlToModelOperations(xml,Namespace.CURRENT.getUriString(),new ResourceAdapterSubsystemParser());
         executeOperation(operationListToCompositeOperation(operations));
- 
+
         //since it is created after deployment it needs activation
         final ModelNode address = new ModelNode();
         address.add("subsystem", "resource-adapters");
@@ -99,7 +109,7 @@ public class AfterResourceCreationDeploymentTestCase extends AbstractMgmtTestBas
      *
      * @return The deployment archive
      */
-   @Deployment()
+   @Deployment(name = "basic-after.rar", order = 2)
     public static ResourceAdapterArchive createDeployment()  throws Exception{
 
 
@@ -114,8 +124,12 @@ public class AfterResourceCreationDeploymentTestCase extends AbstractMgmtTestBas
         return raa;
     }
 
-   @Resource(mappedName = "java:jboss/name1")
-   private MultipleConnectionFactory1 connectionFactory1;
+    @Deployment(name = "fakejndi.sar", order = 1)
+    public static Archive<?> getDeployment() {
+        initModelControllerClient("localhost", 9999);
+        //TODO Don't do this FakeJndi stuff once we have remote JNDI working
+        return ShrinkWrapUtils.createJavaArchive("demos/fakejndi.sar", FakeJndi.class.getPackage());
+    }
 
 
    @Resource(mappedName="java:jboss/Name3")
@@ -129,10 +143,22 @@ public class AfterResourceCreationDeploymentTestCase extends AbstractMgmtTestBas
      */
     @Test
     public void testConfiguration() throws Throwable {
-    	
+
         setUp();
 
-    	assertNotNull("CF1 not found",connectionFactory1);
-    	assertNotNull("AO1 not found",adminObject1);
+        adminObject1 =lookup("java:jboss/after/Name3", MultipleAdminObject1.class);
+
+        assertNotNull("AO1 not found",adminObject1);
     }
+
+
+    private static <T> T lookup(String name, Class<T> expected) throws Exception {
+            //TODO Don't do this FakeJndi stuff once we have remote JNDI working
+
+            MBeanServerConnection mbeanServer = JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:remoting-jmx://127.0.0.1:9999")).getMBeanServerConnection();
+            ObjectName objectName = new ObjectName("jboss:name=test,type=fakejndi");
+            PollingUtils.retryWithTimeout(10000, new PollingUtils.WaitForMBeanTask(mbeanServer, objectName));
+            Object o = mbeanServer.invoke(objectName, "lookup", new Object[] {name}, new String[] {"java.lang.String"});
+            return expected.cast(o);
+        }
 }

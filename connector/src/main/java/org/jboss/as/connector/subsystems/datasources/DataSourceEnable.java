@@ -22,17 +22,6 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import static org.jboss.as.connector.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
-import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
-import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
-import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeUtil.from;
-import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeUtil.xaFrom;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
-
-import java.util.List;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.Stage;
 import org.jboss.as.controller.OperationFailedException;
@@ -51,6 +40,18 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
+
+import java.util.List;
+import java.util.Map;
+
+import static org.jboss.as.connector.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
+import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeUtil.from;
+import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeUtil.xaFrom;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
 
 /**
  * Operation handler responsible for enabling an existing data-source.
@@ -119,14 +120,16 @@ public class DataSourceEnable implements OperationStepHandler {
             if (verificationHandler != null) {
                 builder.addListener(verificationHandler);
             }
-
+            int propertiesCount = 0;
             for (ServiceName name : serviceNames) {
                 if (xaDataSourceConfigServiceName.append("xa-datasource-properties").isParentOf(name)) {
                     final ServiceController<?> xaConfigProperyController = registry.getService(name);
                     XaDataSourcePropertiesService xaPropService = (XaDataSourcePropertiesService) xaConfigProperyController.getService();
 
                     if (xaConfigProperyController != null) {
-                        if (! ServiceController.State.UP.equals(xaConfigProperyController.getState())) {
+
+                        if (!ServiceController.State.UP.equals(xaConfigProperyController.getState())) {
+                            propertiesCount++;
                             xaConfigProperyController.setMode(ServiceController.Mode.ACTIVE);
                             builder.addDependency(name, String.class, xaDataSourceConfigService.getXaDataSourcePropertyInjector(xaPropService.getName()));
 
@@ -137,6 +140,9 @@ public class DataSourceEnable implements OperationStepHandler {
                         throw new OperationFailedException(new ModelNode().set(MESSAGES.serviceNotAvailable("Data-source.xa-config-property", name)));
                     }
                 }
+            }
+            if (propertiesCount == 0) {
+                throw MESSAGES.xaDataSourcePropertiesNotPresent();
             }
             builder.install();
 

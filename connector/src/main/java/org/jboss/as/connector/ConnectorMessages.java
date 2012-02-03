@@ -449,4 +449,11 @@ public interface ConnectorMessages {
     @Message(id = 10468, value = "Driver named \"%s\" is not installed.")
     String driverNotPresent(String driverName);
 
+    /**
+     * A message indicating that at least on xa-datasource-property is required
+     * @return the message.
+     */
+    @Message(id = 10469, value = "At least one xa-datasource-property is required for an xa-datasource")
+    OperationFailedException xaDataSourcePropertiesNotPresent();
+
 }
