@@ -147,7 +147,7 @@ public class LoginModulesAttributeDefinition extends ListAttributeDefinition {
         flag.get(NILLABLE).set(false);
 
         for (ModuleFlag value : ModuleFlag.values())
-            flag.get(ALLOWED).add(value.name());
+            flag.get(ALLOWED).add(value.toString());
 
         final ModelNode moduleOptions = valueType.get(Constants.MODULE_OPTIONS);
         moduleOptions.get(DESCRIPTION);  // placeholder
