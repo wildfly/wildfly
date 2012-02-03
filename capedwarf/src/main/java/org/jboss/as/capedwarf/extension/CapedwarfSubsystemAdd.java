@@ -23,6 +23,7 @@
 package org.jboss.as.capedwarf.extension;
 
 import org.jboss.as.capedwarf.deployment.CapedwarfCDIExtensionProcessor;
+import org.jboss.as.capedwarf.deployment.CapedwarfCleanupProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfDependenciesProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfDeploymentProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfInitializationProcessor;
@@ -37,11 +38,15 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
+import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.module.TempFileProviderService;
 import org.jboss.dmr.ModelNode;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -54,8 +59,6 @@ import org.jboss.vfs.TempDir;
 import org.jboss.vfs.VFSUtils;
 
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.Queue;
 import java.io.IOException;
 import java.util.List;
 
@@ -95,11 +98,7 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
             public void execute(DeploymentProcessorTarget processorTarget) {
                 final ServiceTarget serviceTarget = context.getServiceTarget();
 
-                final ServletExecutorConsumerService queueService = new ServletExecutorConsumerService();
-                final ServiceBuilder<Connection> builder = serviceTarget.addService(ServletExecutorConsumerService.NAME, queueService);
-                builder.addDependency(null, ConnectionFactory.class, queueService.getFactory()); // TODO
-                builder.addDependency(null, Queue.class, queueService.getQueue()); // TODO
-                builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+                final ServletExecutorConsumerService consumerService = addQueueConsumer(serviceTarget);
 
                 final TempDir tempDir = createTempDir(serviceTarget);
 
@@ -114,9 +113,20 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_WAR_MODULE + 10, new CapedwarfDeploymentProcessor(appengineAPI));
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_APP_NAMING_CONTEXT + 10, new CapedwarfDependenciesProcessor()); // adjust order as needed
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WELD_PORTABLE_EXTENSIONS + 10, new CapedwarfCDIExtensionProcessor()); // after Weld portable extensions lookup
+                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MODULE_JNDI_BINDINGS + 1, new CapedwarfCleanupProcessor(consumerService)); // adjust order as needed
             }
         }, OperationContext.Stage.RUNTIME);
 
+    }
+
+    protected static ServletExecutorConsumerService addQueueConsumer(ServiceTarget serviceTarget) {
+        final ServletExecutorConsumerService consumerService = new ServletExecutorConsumerService();
+        final ServiceBuilder<Connection> builder = serviceTarget.addService(ServletExecutorConsumerService.NAME, consumerService);
+        builder.addDependency(ContextNames.bindInfoFor("java:/ConnectionFactory").getBinderServiceName(), ManagedReferenceFactory.class, consumerService.getFactory());
+        builder.addDependency(ContextNames.bindInfoFor("java:/queue/" + CAPEDWARF).getBinderServiceName(), ManagedReferenceFactory.class, consumerService.getQueue());
+        builder.addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, consumerService.getLoader());
+        builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        return consumerService;
     }
 
     protected static TempDir createTempDir(final ServiceTarget serviceTarget) {

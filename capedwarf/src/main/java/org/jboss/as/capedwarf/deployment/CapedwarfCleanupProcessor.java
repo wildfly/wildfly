@@ -22,42 +22,37 @@
 
 package org.jboss.as.capedwarf.deployment;
 
+import org.jboss.as.capedwarf.services.ServletExecutorConsumerService;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.logging.Logger;
+import org.jboss.modules.Module;
 
 /**
- * Capedwarf deployment unit processor.
+ * Cleanup.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class CapedwarfDeploymentUnitProcessor implements DeploymentUnitProcessor {
+public class CapedwarfCleanupProcessor extends CapedwarfDeploymentUnitProcessor {
+    private ServletExecutorConsumerService secs;
 
-    protected static final String CAPEDWARF = "capedwarf";
-    protected Logger log = Logger.getLogger(getClass());
+    public CapedwarfCleanupProcessor(ServletExecutorConsumerService secs) {
+        this.secs = secs;
+    }
 
+    @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        if (CapedwarfDeploymentMarker.isCapedwarfDeployment(phaseContext.getDeploymentUnit())) {
-            doDeploy(phaseContext); // only handle CapeDwarf deployments
-        }
     }
 
-    /**
-     * Do deploy a Capedwarf deployment.
-     *
-     * @param phaseContext the phase context
-     * @throws DeploymentUnitProcessingException for any deployment error
-     */
-    protected abstract void doDeploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException;
-
-    public void undeploy(DeploymentUnit context) {
-        if (CapedwarfDeploymentMarker.isCapedwarfDeployment(context)) {
-            doUndeploy(context);
-        }
+    protected void doDeploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
     }
 
+    @Override
     protected void doUndeploy(DeploymentUnit unit) {
+        final Module module = unit.getAttachment(Attachments.MODULE);
+        if (module != null) {
+            secs.removeModule(module);
+        }
     }
 }

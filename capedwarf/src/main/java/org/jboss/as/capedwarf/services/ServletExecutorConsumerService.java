@@ -1,6 +1,9 @@
 package org.jboss.as.capedwarf.services;
 
+import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.logging.Logger;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -26,17 +29,24 @@ public class ServletExecutorConsumerService implements Service<Connection> {
 
     private Logger log = Logger.getLogger(ServletExecutorConsumerService.class);
 
-    private InjectedValue<ConnectionFactory> factory = new InjectedValue<ConnectionFactory>();
-    private InjectedValue<Queue> queue = new InjectedValue<Queue>();
+    private InjectedValue<ManagedReferenceFactory> factory = new InjectedValue<ManagedReferenceFactory>();
+    private InjectedValue<ManagedReferenceFactory> queue = new InjectedValue<ManagedReferenceFactory>();
+    private InjectedValue<ModuleLoader> loader = new InjectedValue<ModuleLoader>();
 
+    private ServletExecutorConsumer sec;
     private Connection connection;
+
+    private static <T> T cast(Class<T> clazz, ManagedReferenceFactory mrf) {
+        return clazz.cast(mrf.getReference().getInstance());
+    }
 
     public void start(StartContext context) throws StartException {
         try {
-            final Connection qc = factory.getValue().createConnection();
+            final Connection qc = cast(ConnectionFactory.class, factory.getValue()).createConnection();
             final Session session = qc.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            final MessageConsumer consumer = session.createConsumer(queue.getValue());
-            consumer.setMessageListener(new ServletExecutorConsumer());
+            final MessageConsumer consumer = session.createConsumer(cast(Queue.class, queue.getValue()));
+            sec = new ServletExecutorConsumer(loader.getValue());
+            consumer.setMessageListener(sec);
             qc.start();
             connection = qc;
         } catch (Exception e) {
@@ -58,15 +68,25 @@ public class ServletExecutorConsumerService implements Service<Connection> {
         }
     }
 
+    public void removeModule(Module module) {
+        if (sec != null) {
+            sec.removeClassLoader(module.getClassLoader());
+        }
+    }
+
     public Connection getValue() throws IllegalStateException, IllegalArgumentException {
         return connection;
     }
 
-    public InjectedValue<ConnectionFactory> getFactory() {
+    public InjectedValue<ManagedReferenceFactory> getFactory() {
         return factory;
     }
 
-    public InjectedValue<Queue> getQueue() {
+    public InjectedValue<ManagedReferenceFactory> getQueue() {
         return queue;
+    }
+
+    public InjectedValue<ModuleLoader> getLoader() {
+        return loader;
     }
 }

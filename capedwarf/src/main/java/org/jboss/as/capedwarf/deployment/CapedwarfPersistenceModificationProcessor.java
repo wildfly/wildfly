@@ -117,9 +117,9 @@ public class CapedwarfPersistenceModificationProcessor extends CapedwarfPersiste
     }
 
     @Override
-    public void undeploy(DeploymentUnit context) {
-        final AttachmentList<Closeable> closeables = context.getAttachment(ASSEMBLY_HANDLE);
+    protected void doUndeploy(DeploymentUnit unit) {
+        final AttachmentList<Closeable> closeables = unit.getAttachment(ASSEMBLY_HANDLE);
         VFSUtils.safeClose(closeables);
-        ModifiedFileSystem.remove(context);
+        ModifiedFileSystem.remove(unit);
     }
 }
