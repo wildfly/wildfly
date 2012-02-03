@@ -49,6 +49,8 @@ import static org.jboss.as.messaging.CommonAttributes.JNDI_PARAMS;
 import static org.jboss.as.messaging.CommonAttributes.LOAD_BALANCING_CLASS_NAME;
 import static org.jboss.as.messaging.CommonAttributes.MAX_RETRY_INTERVAL;
 import static org.jboss.as.messaging.CommonAttributes.MIN_LARGE_MESSAGE_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.PCF_PASSWORD;
+import static org.jboss.as.messaging.CommonAttributes.PCF_USER;
 import static org.jboss.as.messaging.CommonAttributes.PRE_ACK;
 import static org.jboss.as.messaging.CommonAttributes.PRODUCER_MAX_RATE;
 import static org.jboss.as.messaging.CommonAttributes.PRODUCER_WINDOW_SIZE;
@@ -126,6 +128,7 @@ public class JMSServices {
     static String LOAD_BALANCING_POLICY_CLASS_NAME_METHOD = "loadBalancingPolicyClassName";
     static String MAX_RETRY_INTERVAL_METHOD = "maxRetryInterval";    // TODO HornetQResourceAdapter does not have this method
     static String MIN_LARGE_MESSAGE_SIZE_METHOD = "minLargeMessageSize";
+    static String PASSWORD_METHOD = "password";
     static String PRE_ACK_METHOD = "preAcknowledge";
     static String PRODUCER_MAX_RATE_METHOD = "producerMaxRate";
     static String PRODUCER_WINDOW_SIZE_METHOD = "producerWindowSize"; // TODO HornetQResourceAdapter does not have this method
@@ -137,6 +140,7 @@ public class JMSServices {
     static String TRANSACTION_BATCH_SIZE_METHOD = "transactionBatchSize";
     static String USE_GLOBAL_POOLS_METHOD = "useGlobalPools";
     static String USE_JNDI_METHOD = "useJNDI";
+    static String USERNAME_METHOD= "userName";
     static String JNDI_PARAMS_METHOD = "jndiParams";
     static String USE_LOCAL_TX_METHOD = "useLocalTx";
     static String SETUP_ATTEMPTS_METHOD = "setupAttempts";
@@ -242,6 +246,7 @@ public class JMSServices {
         LOAD_BALANCING_CLASS_NAME,
         MAX_RETRY_INTERVAL,          // TODO HornetQResourceAdapter does not have this method
         MIN_LARGE_MESSAGE_SIZE,
+        PCF_PASSWORD,
         PRE_ACK,
         PRODUCER_MAX_RATE,
         PRODUCER_WINDOW_SIZE,     // TODO HornetQResourceAdapter does not have this method
@@ -253,6 +258,7 @@ public class JMSServices {
         TRANSACTION_BATCH_SIZE,
         USE_GLOBAL_POOLS,
         USE_JNDI,
+        PCF_USER,
         JNDI_PARAMS,
         USE_LOCAL_TX,
         SETUP_ATTEMPTS,
@@ -288,6 +294,7 @@ public class JMSServices {
         // TODO HornetQResourceAdapter does not have this method
         //new PooledCFAttribute(MAX_RETRY_INTERVAL, MAX_RETRY_INTERVAL_METHOD),
         new PooledCFAttribute(MIN_LARGE_MESSAGE_SIZE, MIN_LARGE_MESSAGE_SIZE_METHOD),
+        new PooledCFAttribute(PCF_PASSWORD, PASSWORD_METHOD),
         new PooledCFAttribute(PRE_ACK, PRE_ACK_METHOD),
         new PooledCFAttribute(PRODUCER_MAX_RATE, PRODUCER_MAX_RATE_METHOD),
         // TODO HornetQResourceAdapter does not have this method
@@ -300,6 +307,7 @@ public class JMSServices {
         new PooledCFAttribute(TRANSACTION_BATCH_SIZE, TRANSACTION_BATCH_SIZE_METHOD),
         new PooledCFAttribute(USE_GLOBAL_POOLS, USE_GLOBAL_POOLS_METHOD),
         new PooledCFAttribute(USE_JNDI, USE_JNDI_METHOD),
+        new PooledCFAttribute(PCF_USER, USERNAME_METHOD),
         new PooledCFAttribute(JNDI_PARAMS, JNDI_PARAMS_METHOD),
         new PooledCFAttribute(USE_LOCAL_TX, USE_LOCAL_TX_METHOD),
         new PooledCFAttribute(SETUP_ATTEMPTS, SETUP_ATTEMPTS_METHOD),
@@ -339,6 +347,10 @@ public class JMSServices {
 
         public String getMethodName() {
             return methodName;
+        }
+
+        public AttributeDefinition getDefinition() {
+            return def;
         }
     }
 }

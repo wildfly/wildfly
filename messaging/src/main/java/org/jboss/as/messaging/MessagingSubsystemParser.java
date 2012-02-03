@@ -2266,6 +2266,14 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     // Use the "connection" variant
                     handleElementText(reader, element, "connection", connectionFactory);
                     break;
+                case USER:
+                    // Element name is overloaded, handleElementText can not be used, we must use the correct attribute
+                    CommonAttributes.PCF_USER.parseAndSetParameter(reader.getElementText(), connectionFactory, reader);
+                    break;
+                case PASSWORD:
+                    // Element name is overloaded, handleElementText can not be used, we must use the correct attribute
+                    CommonAttributes.PCF_PASSWORD.parseAndSetParameter(reader.getElementText(), connectionFactory, reader);
+                    break;
                 default: {
                     throw ParseUtils.unexpectedElement(reader);
                 }
