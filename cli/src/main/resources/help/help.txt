@@ -65,7 +65,7 @@ Tab-completion is supported for the commands, just press the tab key to start.
 
 Operation requests start with './' or '/' and follow the format:
 
-[node-type=node-name (, node-type=node-name)*] : operation-name ['('[name=value [, name=value]*]')']
+[node-type=node-name (, node-type=node-name)*] : operation-name ['('[name=value [, name=value]*]')'] [{header (;header)*}]
 
 e.g. /subsystem=web/connector=http:read-attribute(name=protocol)
 

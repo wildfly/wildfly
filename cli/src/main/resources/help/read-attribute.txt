@@ -2,6 +2,7 @@ SYNOPSIS
 
     read-attribute --help |
                    [--node=node_path] <attribute_name> [--include-defaults=true|false] [--verbose]
+                   [--headers={operation_header (;operation_header)*}]
 
 DESCRIPTION
 
@@ -25,3 +26,6 @@ ARGUMENTS
  
  --verbose (-v)      - will print all the available meta information about the attribute
                        in addition to the attribute value.
+
+ --headers           - a list of operation headers separated by a semicolon. For the list of supported
+                       headers, please, refer to the domain management documentation or use tab-completion.
