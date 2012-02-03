@@ -32,7 +32,6 @@ import javax.servlet.ServletRequest;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * JMS consumer for servlet executor.
@@ -43,7 +42,7 @@ class ServletExecutorConsumer implements MessageListener {
 
     private static final String PREFIX = "org.jboss.capedwarf.jms.";
 
-    private final Map<ClassLoader, Map<String, Object>> cache = new ConcurrentHashMap<ClassLoader, Map<String, Object>>();
+    private final Map<ClassLoader, Map<String, Object>> cache = new HashMap<ClassLoader, Map<String, Object>>();
     private final ModuleLoader loader;
 
     public ServletExecutorConsumer(ModuleLoader loader) {
@@ -102,6 +101,8 @@ class ServletExecutorConsumer implements MessageListener {
     }
 
     void removeClassLoader(ClassLoader classLoader) {
-        cache.remove(classLoader);
+        synchronized (cache) {
+            cache.remove(classLoader);
+        }
     }
 }
