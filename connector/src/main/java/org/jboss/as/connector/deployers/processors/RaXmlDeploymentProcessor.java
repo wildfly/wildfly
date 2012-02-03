@@ -85,8 +85,7 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
                 ConnectorServices.RESOURCEADAPTERS_SERVICE);
         if (raService != null)
             raxmls = ((ResourceAdaptersService.ModifiableResourceAdaptors) raService.getValue());
-        if (raxmls == null)
-            return;
+
 
         ROOT_LOGGER.tracef("processing Raxml");
         Module module = deploymentUnit.getAttachment(Attachments.MODULE);
@@ -110,17 +109,19 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
             } else {
                 deployment = deploymentUnitName.substring(0, deploymentUnitName.lastIndexOf('.'));
             }
-            for (ResourceAdapter raxml : raxmls.getResourceAdapters()) {
+            if (raxmls != null) {
+                for (ResourceAdapter raxml : raxmls.getResourceAdapters()) {
 
-                String rarName = raxml.getArchive();
-                Integer identifier = null;
-                if (rarName.contains(ConnectorServices.RA_SERVICE_NAME_SEPARATOR)) {
-                    rarName = rarName.substring(0, rarName.indexOf(ConnectorServices.RA_SERVICE_NAME_SEPARATOR));
-                }
-                if (deploymentUnitName.equals(rarName)) {
-                    RaServicesFactory.createDeploymentService(registration, connectorXmlDescriptor, module, serviceTarget, deploymentUnitName, deployment, raxml);
+                    String rarName = raxml.getArchive();
+                    Integer identifier = null;
+                    if (rarName.contains(ConnectorServices.RA_SERVICE_NAME_SEPARATOR)) {
+                        rarName = rarName.substring(0, rarName.indexOf(ConnectorServices.RA_SERVICE_NAME_SEPARATOR));
+                    }
+                    if (deploymentUnitName.equals(rarName)) {
+                        RaServicesFactory.createDeploymentService(registration, connectorXmlDescriptor, module, serviceTarget, deploymentUnitName, deployment, raxml);
 
 
+                    }
                 }
             }
 

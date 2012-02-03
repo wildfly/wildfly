@@ -23,23 +23,22 @@
 package org.jboss.as.test.integration.jca.metrics;
 
 
-import static junit.framework.Assert.*;
-import org.junit.AfterClass;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-
 import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.shrinkwrap.api.Archive;
-import org.junit.Ignore;
+import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
+
 /**
  * XA datasource configuration and metrics unit test.
- * 
+ *
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
 @RunWith(Arquillian.class)
@@ -57,7 +56,7 @@ public class XaDataSourceCfgMetricUnitTestCase  extends DsMgmtTestBase{
     public static void tearDown()  throws Exception {
     	closeModelControllerClient();
     }
-    
+
 
     @Test
     public void testDefaultXaDsAttributes()throws Exception {
@@ -67,20 +66,19 @@ public class XaDataSourceCfgMetricUnitTestCase  extends DsMgmtTestBase{
         assertFalse(readAttribute(baseAddress,"spy").asBoolean());
         removeDs();
     }
-    
+
     @Test(expected=Exception.class)
-    @Ignore("AS7-3578")
     public void testNoXaDsProperties()throws Exception {
     	setBadModel("wrong-no-xa-ds-properties.xml");
     }
-    
+
     @Test
      public void testDefaultXaDsProperties()throws Exception {
     	setModel("xa-default-properties.xml");
         assertTrue(readAttribute(baseAddress,"wrap-xa-resource").asBoolean());
         removeDs();
     }
-    
+
     @Test
     public void testBooleanPresenceProperties()throws Exception {
     	setModel("xa-bool-pres-properties.xml");
@@ -90,7 +88,7 @@ public class XaDataSourceCfgMetricUnitTestCase  extends DsMgmtTestBase{
         assertTrue(readAttribute(baseAddress,"share-prepared-statements").asBoolean());
         removeDs();
     }
-    
+
     @Test
     public void testFalseBooleanPresenceProperties()throws Exception {
     	setModel("xa-false-bool-pres-properties.xml");
@@ -100,7 +98,7 @@ public class XaDataSourceCfgMetricUnitTestCase  extends DsMgmtTestBase{
         assertFalse(readAttribute(baseAddress,"share-prepared-statements").asBoolean());
         removeDs();
     }
-    
+
     @Test
     public void testTrueBooleanPresenceProperties()throws Exception {
     	setModel("xa-true-bool-pres-properties.xml");
@@ -110,16 +108,15 @@ public class XaDataSourceCfgMetricUnitTestCase  extends DsMgmtTestBase{
         assertTrue(readAttribute(baseAddress,"share-prepared-statements").asBoolean());
         removeDs();
     }
-    
+
     @Test(expected=Exception.class)
-    @Ignore("AS7-3578")
     public void testWrongXa2SecurityDomainsProperty()throws Exception {
     	setBadModel("wrong-xa-2-security-domains.xml");
     }
-    
+
     @Test(expected=Exception.class)
     public void testWrongXaResTimeoutProperty()throws Exception {
     	setBadModel("wrong-xa-res-timeout-property.xml");
     }
-    
+
 }
