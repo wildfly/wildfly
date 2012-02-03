@@ -1879,7 +1879,17 @@
 
                 <dependency>
                     <groupId>org.jboss.capedwarf.blue</groupId>
+                    <artifactId>capedwarf-oauth</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.capedwarf.blue</groupId>
                     <artifactId>capedwarf-urlfetch</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.capedwarf.blue</groupId>
+                    <artifactId>capedwarf-tasks</artifactId>
                 </dependency>
 
                 <dependency>

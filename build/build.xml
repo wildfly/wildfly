@@ -969,6 +969,8 @@
             <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-images"/>
             <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-mail"/>
             <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-memcache"/>
+            <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-oauth"/>
+            <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-tasks"/>
             <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-urlfetch"/>
             <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-users"/>
         </module-def>

@@ -6132,7 +6132,19 @@
 
             <dependency>
                 <groupId>org.jboss.capedwarf.blue</groupId>
+                <artifactId>capedwarf-oauth</artifactId>
+                <version>${version.org.jboss.capedwarf}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.capedwarf.blue</groupId>
                 <artifactId>capedwarf-urlfetch</artifactId>
+                <version>${version.org.jboss.capedwarf}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.capedwarf.blue</groupId>
+                <artifactId>capedwarf-tasks</artifactId>
                 <version>${version.org.jboss.capedwarf}</version>
             </dependency>
 

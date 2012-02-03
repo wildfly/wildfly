@@ -32,6 +32,7 @@
         <module name="javax.enterprise.api"/>
         <module name="javax.faces.api"/>
         <module name="javax.inject.api"/>
+        <module name="javax.jms.api" />
         <module name="javax.transaction.api"/>
         <module name="javax.activation.api"/>
         <module name="javax.mail.api"/>

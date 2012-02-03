@@ -34,7 +34,8 @@ public class ServletExecutorListener implements ServletContextListener {
     // Using reflection -- as we don't know how we're adding CD module; bundled or ref-ed as module
     private void checkProducer(final String state) {
         try {
-            final Class<?> clazz = getClass().getClassLoader().loadClass(PRODUCER_CLASS);
+            final ClassLoader cl = Thread.currentThread().getContextClassLoader(); // app CL?
+            final Class<?> clazz = cl.loadClass(PRODUCER_CLASS);
             final Method instance = clazz.getDeclaredMethod("getInstance");
             final Method method = clazz.getDeclaredMethod(state);
             final Object target = instance.invoke(null);
