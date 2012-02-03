@@ -87,6 +87,19 @@ public class ServerInModuleStartupTestCase  {
             request.get("address").setEmptyList();
             request.get("recursive").set(true);
             request.get("operations").set(true);
+            request.get("inherited").set(false);
+            r = client.execute(request);
+
+            Assert.assertEquals("response with failure details:"+r.toString(), SUCCESS, r.require(OUTCOME).asString());
+
+            // Make sure the inherited op descriptions work as well
+
+            request = new ModelNode();
+            request.get("operation").set("read-resource-description");
+            request.get("address").setEmptyList();
+            request.get("recursive").set(false); // NOT recursive; we just need them once
+            request.get("operations").set(true);
+            request.get("inherited").set(true);
             r = client.execute(request);
 
             Assert.assertEquals("response with failure details:"+r.toString(), SUCCESS, r.require(OUTCOME).asString());
