@@ -61,7 +61,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Handler responsible for the host-controller registration process.
+ * Handler responsible for the host-controller registration process. This may involve assembling the correct
+ * {@code ManagementRequestHandlerFactory} based on the version of the host-controller registering.
  *
  * @author Emanuel Muckenhuber
  */
