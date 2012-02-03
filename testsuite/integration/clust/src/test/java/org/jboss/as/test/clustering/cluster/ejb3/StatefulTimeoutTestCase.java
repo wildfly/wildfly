@@ -74,8 +74,6 @@ public class StatefulTimeoutTestCase {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addPackage(StatefulTimeoutTestCase.class.getPackage());
         jar.add(EmptyAsset.INSTANCE, "META-INF/beans.xml");
-        // TODO: Remove AS7-2779 workaround.
-        jar.addAsManifestResource(EmptyAsset.INSTANCE, "../web/force-hashcode-change.txt");
         return jar;
     }
 

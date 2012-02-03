@@ -28,7 +28,6 @@ public class ReplicationWebFailoverTestCase extends ClusteredWebFailoverTestCase
         WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
         war.addClass(SimpleServlet.class);
         war.setWebXML(ClusteredWebTestCase.class.getPackage(), "web.xml");
-        war.addAsWebInfResource(EmptyAsset.INSTANCE, "force-hashcode-change.txt");
         System.out.println(war.toString(true));
         return war;
     }

@@ -105,7 +105,6 @@ public class StatefulWithXPCFailoverTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "stateful.war");
         war.addPackage(StatefulBean.class.getPackage());
         war.setWebXML(StatefulBean.class.getPackage(), "web.xml");
-        war.addAsWebInfResource(EmptyAsset.INSTANCE, "force-hashcode-change.txt");
         war.addAsResource(new StringAsset(persistence_xml), "META-INF/persistence.xml");
         System.out.println(war.toString(true));
         return war;
