@@ -59,4 +59,7 @@ public interface JGroupsMessages {
      */
     @Message(id = 10271, value = "Failed to locate %s")
     String notFound(String resource);
+
+    @Message(id = 10272, value = "A node named %s already exists in this cluster.  Perhaps there is already a server running on this host?  If so, restart this server with a unique node name, via -Djboss.node.name=<node-name>")
+    IllegalStateException duplicateNodeName(String name);
 }
