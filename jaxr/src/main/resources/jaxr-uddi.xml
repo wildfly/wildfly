@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<uddi>
+  <reloadDelay>5000</reloadDelay>
+  <manager name="jaxr">
+    <nodes>
+      <node isHomeJUDDI="false">
+      <name>jaxr-client</name>
+      <description>JUDDI Client configuration using by JAXR for UDDI v3 UDDI-Servers</description>
+      <proxyTransport>org.apache.juddi.v3.client.transport.JAXWSTransport</proxyTransport>
+      <inquiryUrl>${javax.xml.registry.queryManagerURL}</inquiryUrl>
+      <publishUrl>${javax.xml.registry.lifeCycleManagerURL}</publishUrl>
+      <securityUrl>${javax.xml.registry.securityManagerURL}</securityUrl>
+    </node>
+    </nodes>
+  </manager>
+</uddi>

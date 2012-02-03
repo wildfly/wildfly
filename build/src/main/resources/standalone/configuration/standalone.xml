@@ -167,7 +167,7 @@
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jaxr:1.0">
             <connection-factory jndi-name="java:jboss/jaxr/ConnectionFactory"/>
-            <juddi-server publish-url="http://localhost:8080/juddi/publish" query-url="http://localhost:8080/juddi/query"/>
+            <properties/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
         <subsystem xmlns="urn:jboss:domain:jca:1.1">

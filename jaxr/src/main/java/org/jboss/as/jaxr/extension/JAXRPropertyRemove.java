@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,21 +19,34 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.jaxr.extension;
 
+import java.util.Locale;
+
 import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.jaxr.JAXRConfiguration;
+import org.jboss.dmr.ModelNode;
 
 /**
- * Handler responsible for removing the subsystem resource to the model
- *
- * @author Thomas.Diesler@jboss.com
- * @since 26-Oct-2011
+ * @author Kurt Stam
  */
-class JAXRSubsystemRemove extends AbstractRemoveStepHandler {
+public class JAXRPropertyRemove extends AbstractRemoveStepHandler {
+    static final JAXRPropertyRemove INSTANCE = new JAXRPropertyRemove();
 
-    static final JAXRSubsystemRemove INSTANCE = new JAXRSubsystemRemove();
-
-    private JAXRSubsystemRemove() {
+    private JAXRPropertyRemove() {
     }
+
+    static DescriptionProvider DESCRIPTION = new DescriptionProvider() {
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            ModelNode node = new ModelNode();
+            node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.REMOVE);
+            node.get(ModelDescriptionConstants.DESCRIPTION).set(JAXRConfiguration.getResourceBundle(locale).getString("jaxr.property.remove"));
+            //node.get(ModelConstants.PROPERTY).setEmptyObject();
+            return node;
+        }
+    };
 }

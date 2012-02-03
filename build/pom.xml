@@ -554,7 +554,7 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.apache.ws.scout</groupId>
+                    <groupId>org.apache.juddi.scout</groupId>
                     <artifactId>scout</artifactId>
                 </dependency>
 

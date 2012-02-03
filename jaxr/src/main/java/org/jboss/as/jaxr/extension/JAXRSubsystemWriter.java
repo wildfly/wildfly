@@ -21,6 +21,8 @@
  */
 package org.jboss.as.jaxr.extension;
 
+import java.util.TreeSet;
+
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.jaxr.ModelConstants;
 import org.jboss.dmr.ModelNode;
@@ -36,6 +38,10 @@ import static org.jboss.as.jaxr.JAXRConstants.Namespace;
 
 /**
  * The subsystem writer
+ *
+ * @author Thomas.Diesler@jboss.com
+ * @author Kurt Stam
+ * @since 26-Oct-2011
  */
 public class JAXRSubsystemWriter implements XMLStreamConstants, XMLElementWriter<SubsystemMarshallingContext> {
 
@@ -53,12 +59,23 @@ public class JAXRSubsystemWriter implements XMLStreamConstants, XMLElementWriter
         // write connection-factory
         writer.writeStartElement(Element.CONNECTION_FACTORY.getLocalName());
         writeAttribute(writer, Attribute.JNDI_NAME, node.get(ModelConstants.CONNECTION_FACTORY));
+        ModelNode clazz = node.get(ModelConstants.CONNECTION_FACTORY_IMPL);
+        if (clazz.isDefined()) {
+            writeAttribute(writer, Attribute.CLASS, clazz);
+        }
         writer.writeEndElement();
 
-        // write juddi-server
-        writer.writeStartElement(Element.JUDDI_SERVER.getLocalName());
-        writeAttribute(writer, Attribute.PUBLISH_URL, node.get(ModelConstants.PUBLISH_URL));
-        writeAttribute(writer, Attribute.QUERY_URL, node.get(ModelConstants.QUERY_URL));
+        writer.writeStartElement(Element.PROPERTIES.getLocalName());
+        ModelNode properties = node.get(ModelConstants.PROPERTY);
+        if (properties.isDefined()) {
+            for (String key : new TreeSet<String>(properties.keys())) {
+                String val = properties.get(key).get(ModelConstants.VALUE).asString();
+                writer.writeStartElement(Element.PROPERTY.getLocalName());
+                writer.writeAttribute(Attribute.NAME.getLocalName(), key);
+                writer.writeAttribute(Attribute.VALUE.getLocalName(), val);
+                writer.writeEndElement();
+            }
+        }
         writer.writeEndElement();
 
         writer.writeEndElement();

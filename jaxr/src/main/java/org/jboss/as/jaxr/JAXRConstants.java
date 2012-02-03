@@ -22,9 +22,6 @@
 
 package org.jboss.as.jaxr;
 
-import org.apache.ws.scout.registry.ConnectionFactoryImpl;
-import org.jboss.as.jaxr.scout.SaajTransport;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,20 +30,41 @@ import java.util.Map;
  * Constants used by the JAXR subsystem.
  *
  * @author Thomas.Diesler@jboss.com
+ * @author Kurt Stam
  * @since 07-Nov-2011
  */
 public interface JAXRConstants {
 
-    String SUBSYSTEM_NAME = "jaxr";
-    String RESOURCE_NAME = "org.jboss.as.jaxr.LocalDescriptions";
+    //JAXR Property Names
+    String JAXR_FACTORY_IMPLEMENTATION  = "javax.xml.registry.ConnectionFactory";
+    String QUERYMANAGER                 = "javax.xml.registry.queryManagerURL";
+    String LIFECYCLEMANAGER             = "javax.xml.registry.lifeCycleManagerURL";
+    String SECURITYMANAGER              = "javax.xml.registry.securityManagerURL";
 
-    String SYSPROP_SCOUT_CONNECTION_FACTORY_CLASS = "javax.xml.registry.ConnectionFactoryClass";
-    String SYSPROP_SCOUT_TRANSPORT_CLASS = "scout.proxy.transportClass";
-    String SYSPROP_PUBLISH_URL = "jaxr.publish.url";
-    String SYSPROP_QUERY_URL = "jaxr.query.url";
+    // DEFAULT VALUES
+    String DEFAULT_JAXR_FACTORY_IMPL    = "org.apache.ws.scout.registry.ConnectionFactoryImpl";
+    String DEFAULT_QUERYMANAGER         = "http://localhost:8080/juddi/inquiry";
+    String DEFAULT_LIFECYCLEMANAGER     = "http://localhost:8080/juddi/publish";
+    String DEFAULT_V3_QUERYMANAGER      = "http://localhost:8080/juddiv3/inquiry";
+    String DEFAULT_V3_LIFECYCLEMANAGER  = "http://localhost:8080/juddiv3/publish";
+    String DEFAULT_V3_SECURITYMANAGER   = "http://localhost:8080/juddiv3/security";
 
-    String DEFAULT_SCOUT_CONNECTION_FACTORY_CLASS = ConnectionFactoryImpl.class.getName();
-    String DEFAULT_SCOUT_TRANSPORT_CLASS = SaajTransport.class.getName();
+    //Scout Property Names
+    String UDDI_VERSION_PROPERTY_NAME   = "scout.proxy.uddiVersion";
+    String UDDI_NAMESPACE_PROPERTY_NAME = "scout.proxy.uddiNamespace";
+    String SCOUT_TRANSPORT              = "scout.proxy.transportClass";
+    String UDDI_V2_VERSION              = "2.0";
+    String UDDI_V3_VERSION              = "3.0";
+    String UDDI_V2_NAMESPACE            = "urn:uddi-org:api_v2";
+    String UDDI_V3_NAMESPACE            = "urn:uddi-org:api_v3";
+    String SCOUT_SAAJ_TRANSPORT         = "org.jboss.as.jaxr.scout.SaajTransport";
+    String SCOUT_LOCAL_TRANSPORT        = "org.apache.ws.scout.transport.LocalTransport";
+    String SCOUT_JUDDI_CLIENT_CONFIG    = "scout.juddi.client.config.file";
+    String DEFAULT_JUDDI_CLIENT_CONFIG  = "jaxr-uddi.xml";
+
+    //Module properties
+    String SUBSYSTEM_NAME               = "jaxr";
+    String RESOURCE_NAME                = "org.jboss.as.jaxr.LocalDescriptions";
 
     enum Namespace {
 
@@ -85,8 +103,9 @@ public interface JAXRConstants {
     enum Attribute {
         UNKNOWN(null),
         JNDI_NAME("jndi-name"),
-        QUERY_URL("query-url"),
-        PUBLISH_URL("publish-url");
+        CLASS("class"),
+        NAME("name"),
+        VALUE("value");
 
         private final String name;
         private static final Map<String, Attribute> MAP;
@@ -122,7 +141,8 @@ public interface JAXRConstants {
         // must be first
         UNKNOWN(null),
         CONNECTION_FACTORY("connection-factory"),
-        JUDDI_SERVER("juddi-server");
+        PROPERTIES("properties"),
+        PROPERTY("property");
 
         private final String name;
         private static final Map<String, Element> MAP;
