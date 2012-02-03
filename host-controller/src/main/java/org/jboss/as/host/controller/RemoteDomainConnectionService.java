@@ -156,7 +156,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     }
 
     /** {@inheritDoc} */
-    public synchronized void register() {
+    public synchronized void register() throws IOException {
         boolean connected = false;
         //This takes about 30 seconds should be enough to start up master if booted at the same time
         final long timeout = 30000;
@@ -191,7 +191,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
                     case HOST_ALREADY_EXISTS:
                         throw new HostAlreadyExistsException(result.getMessage());
                     default:
-                        throw new RuntimeException(new SlaveRegistrationException(result.getCode(), result.getMessage()).marshal());
+                        throw new IOException(new SlaveRegistrationException(result.getCode(), result.getMessage()).marshal());
                 }
             }
         }
@@ -445,7 +445,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         }
     }
 
-    private static class HostAlreadyExistsException extends RuntimeException {
+    private static class HostAlreadyExistsException extends IOException {
 
         private static final long serialVersionUID = 1L;
 

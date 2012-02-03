@@ -339,7 +339,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
                     //TODO make sure that the RDCS checks env.isUseCachedDC, and if true falls through to that
                     try {
                         masterDomainControllerClient.register();
-                    } catch (IllegalStateException e) {
+                    } catch (IOException e) {
                         //We could not connect to the host
                         ROOT_LOGGER.cannotConnectToMaster(e);
                         System.exit(ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE);
