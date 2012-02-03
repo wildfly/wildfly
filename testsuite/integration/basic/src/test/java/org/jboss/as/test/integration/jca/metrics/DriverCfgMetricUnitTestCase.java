@@ -39,7 +39,7 @@ import org.junit.runner.RunWith;
 
 /**
  * XA datasource configuration and metrics unit test.
- * 
+ *
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
 @RunWith(Arquillian.class)
@@ -57,10 +57,9 @@ public class DriverCfgMetricUnitTestCase  extends DsMgmtTestBase{
     public static void tearDown()  throws Exception {
     	closeModelControllerClient();
     }
-    
+
 
     @Test
-    @Ignore("AS7-3578")
     public void testDriverAttributes()throws Exception {
     	setModel("complex-driver.xml");
     	assertEquals("name",readAttribute(baseAddress,"driver-name").asString());
@@ -70,36 +69,33 @@ public class DriverCfgMetricUnitTestCase  extends DsMgmtTestBase{
     }
 
     @Test
-    @Ignore("AS7-3578")
     public void testEmptyDriver()throws Exception {
     	setModel("empty-driver.xml");
     	assertEquals("name",readAttribute(baseAddress,"driver-name").asString());
         removeDs();
-    }   
-    
+    }
+
     @Test(expected=Exception.class)
     public void testDriverWoName()throws Exception {
     	setBadModel("wrong-wo-name-driver.xml");
     }
-    
+
     @Test(expected=Exception.class)
     public void testDriverWithNoName()throws Exception {
     	setBadModel("wrong-empty-name-driver.xml");
     }
-    
+
     @Test(expected=Exception.class)
-    @Ignore("AS7-3578")
     public void test2DriverClasses()throws Exception {
     	setBadModel("wrong-2-driver-classes.xml");
     }
-    
+
     @Test(expected=Exception.class)
     public void test2DSClasses()throws Exception {
     	setBadModel("wrong-2-ds-classes-driver.xml");
     }
-    
+
     @Test(expected=Exception.class)
-    @Ignore("AS7-3578")
     public void test2XADSClasses()throws Exception {
     	setBadModel("wrong-2-xa-ds-classes-driver.xml");
     }
