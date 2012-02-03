@@ -30,6 +30,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROBLEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
@@ -221,6 +222,8 @@ public class CommonDescriptions {
         final ModelNode valueType = descr.get(REPLY_PROPERTIES, VALUE_TYPE);
         valueType.get(VALID, DESCRIPTION).set(bundle.getString("global." + ValidateAddressOperationHandler.OPERATION_NAME + ".reply." + VALID));
         valueType.get(VALID, TYPE).set(ModelType.BOOLEAN);
+        valueType.get(PROBLEM, DESCRIPTION).set(bundle.getString("global." + ValidateAddressOperationHandler.OPERATION_NAME + ".reply." + PROBLEM));
+        valueType.get(PROBLEM, TYPE).set(ModelType.STRING);
         return descr;
     }
 
