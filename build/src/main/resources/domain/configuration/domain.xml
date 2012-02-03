@@ -155,7 +155,7 @@
             <subsystem xmlns="urn:jboss:domain:jacorb:1.1"/>
             <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
             <subsystem xmlns="urn:jboss:domain:jca:1.1">
-                <archive-validation enabled="true"/>
+                <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
                 <bean-validation enabled="true"/>
                 <default-workmanager>
                     <short-running-threads>
