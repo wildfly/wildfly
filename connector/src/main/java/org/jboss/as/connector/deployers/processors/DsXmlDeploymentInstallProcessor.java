@@ -100,9 +100,10 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
-        final DataSources dataSources = deploymentUnit.getAttachment(DsXmlDeploymentParsingProcessor.DATA_SOURCES_ATTACHMENT_KEY);
+        final List<DataSources> dataSourcesList = deploymentUnit.getAttachmentList(DsXmlDeploymentParsingProcessor.DATA_SOURCES_ATTACHMENT_KEY);
 
-        if (dataSources != null) {
+
+        for(DataSources dataSources : dataSourcesList) {
             if (dataSources.getDrivers() != null && dataSources.getDrivers().size() > 0) {
                 ConnectorLogger.DS_DEPLOYER_LOGGER.driversElementNotSupported(deploymentUnit.getName());
             }
@@ -186,9 +187,9 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
     }
 
     public void undeploy(final DeploymentUnit context) {
-        final DataSources dataSources = context.getAttachment(DsXmlDeploymentParsingProcessor.DATA_SOURCES_ATTACHMENT_KEY);
+        final List<DataSources> dataSourcesList = context.getAttachmentList(DsXmlDeploymentParsingProcessor.DATA_SOURCES_ATTACHMENT_KEY);
 
-        if (dataSources != null) {
+        for (final DataSources dataSources : dataSourcesList) {
             if (dataSources.getDataSource() != null) {
                 for (final DataSource ds : dataSources.getDataSource()) {
                     undeployDataSource(ds, context);
