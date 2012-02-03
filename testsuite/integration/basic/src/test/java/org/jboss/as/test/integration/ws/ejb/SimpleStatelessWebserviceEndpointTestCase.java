@@ -58,7 +58,7 @@ public class SimpleStatelessWebserviceEndpointTestCase {
     @Deployment (testable=false)
     public static JavaArchive createDeployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "stateless-ws-endpoint-example.jar");
-        jar.addPackage(SimpleStatelessWebserviceEndpointImpl.class.getPackage());
+        jar.addClasses(SimpleStatelessWebserviceEndpointIface.class, SimpleStatelessWebserviceEndpointImpl.class);
         log.info(jar.toString(true));
         return jar;
     }
