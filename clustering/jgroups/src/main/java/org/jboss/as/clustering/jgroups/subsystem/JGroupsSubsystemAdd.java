@@ -28,6 +28,7 @@ import java.util.List;
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
@@ -46,36 +47,38 @@ public class JGroupsSubsystemAdd extends AbstractAddStepHandler {
 
     public static final JGroupsSubsystemAdd INSTANCE = new JGroupsSubsystemAdd();
 
-    static ModelNode createOperation(ModelNode address, ModelNode existing) {
+    static ModelNode createOperation(ModelNode address, ModelNode existing) throws OperationFailedException {
         ModelNode operation = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
         populate(existing, operation);
         return operation;
     }
 
-    private static void populate(ModelNode source, ModelNode target) {
-        target.get(ModelKeys.DEFAULT_STACK).set(source.require(ModelKeys.DEFAULT_STACK));
+    private static void populate(ModelNode source, ModelNode target) throws OperationFailedException {
+        CommonAttributes.DEFAULT_STACK.validateAndSet(source, target);
         target.get(ModelKeys.STACK).setEmptyObject();
     }
 
-    protected void populateModel(ModelNode operation, ModelNode model) {
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         populate(operation, model);
     }
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
+            throws OperationFailedException {
         ROOT_LOGGER.activatingSubsystem();
 
         ServiceTarget target = context.getServiceTarget();
         newControllers.add(target.addService(ProtocolDefaultsService.SERVICE_NAME, new ProtocolDefaultsService())
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install());
-        String stack = operation.require(ModelKeys.DEFAULT_STACK).asString();
+
+        String stack = CommonAttributes.DEFAULT_STACK.resolveModelAttribute(context, model).asString();
+
         InjectedValue<ChannelFactory> factory = new InjectedValue<ChannelFactory>();
         ValueService<ChannelFactory> service = new ValueService<ChannelFactory>(factory);
         newControllers.add(target.addService(ChannelFactoryService.getServiceName(null), service)
                 .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, factory)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install());
-
     }
 
     protected boolean requiresRuntimeVerification() {
