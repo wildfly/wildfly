@@ -21,6 +21,7 @@
  */
 package org.jboss.as.clustering.jgroups;
 
+import org.jboss.as.server.ServerEnvironment;
 import org.jgroups.Channel;
 
 /**
@@ -34,4 +35,6 @@ public interface ChannelFactory {
      * @throws Exception if there was a failure setting up the protocol stack
      */
     Channel createChannel(String id) throws Exception;
+
+    ServerEnvironment getServerEnvironment();
 }
