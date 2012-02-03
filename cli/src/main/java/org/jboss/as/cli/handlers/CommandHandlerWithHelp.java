@@ -108,7 +108,7 @@ public abstract class CommandHandlerWithHelp extends CommandHandlerWithArguments
     protected abstract void doHandle(CommandContext ctx) throws CommandFormatException;
 
     @Override
-    public boolean isBatchMode() {
+    public boolean isBatchMode(CommandContext ctx) {
         return false;
     }
 
