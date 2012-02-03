@@ -126,7 +126,7 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
 
         String discoveryGroupName = getDiscoveryGroup(operation);
 
-        List<PooledConnectionFactoryConfigProperties> adapterParams = getAdapterParams(operation);
+        List<PooledConnectionFactoryConfigProperties> adapterParams = getAdapterParams(operation, context);
 
         final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
         ServiceName hornetQResourceAdapterService = JMSServices.getPooledConnectionFactoryBaseServiceName(hqServiceName).append(name);
@@ -157,12 +157,15 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
         }
         return null;
     }
-    static List<PooledConnectionFactoryConfigProperties> getAdapterParams(ModelNode operation) {
+    static List<PooledConnectionFactoryConfigProperties> getAdapterParams(ModelNode operation, OperationContext context) throws OperationFailedException {
         List<PooledConnectionFactoryConfigProperties> configs = new ArrayList<PooledConnectionFactoryConfigProperties>();
         for (JMSServices.PooledCFAttribute nodeAttribute : JMSServices.POOLED_CONNECTION_FACTORY_METHOD_ATTRS)
         {
-            if(operation.hasDefined(nodeAttribute.getName()) && !ADAPTER_PARAMS_IGNORE.contains(nodeAttribute.getName())) {
-                String value = operation.get(nodeAttribute.getName()).asString();
+            if (operation.hasDefined(nodeAttribute.getName()) && !ADAPTER_PARAMS_IGNORE.contains(nodeAttribute.getName())) {
+                AttributeDefinition definition = nodeAttribute.getDefinition();
+                ModelNode node = definition.isAllowExpression() ? definition.resolveModelAttribute(context, operation) : operation.get(nodeAttribute.getName());
+                String value = node.asString();
+
                 configs.add(new PooledConnectionFactoryConfigProperties(nodeAttribute.getMethodName(), value, nodeAttribute.getClassType()));
             }
         }
