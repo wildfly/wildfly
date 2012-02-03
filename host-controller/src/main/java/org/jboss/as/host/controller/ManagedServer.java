@@ -40,6 +40,8 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
 import org.jboss.as.controller.remote.RemoteProxyController;
 import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
 import org.jboss.as.process.ProcessControllerClient;
@@ -160,17 +162,18 @@ class ManagedServer {
      * @return the server status
      */
     public ServerStatus getState() {
-        final boolean start = this.requiredState == InternalState.SERVER_STARTED;
+        final InternalState requiredState = this.requiredState;
         final InternalState state = internalState;
+        if(requiredState == InternalState.FAILED) {
+            return ServerStatus.FAILED;
+        }
         switch (state) {
             case STOPPED:
                 return ServerStatus.STOPPED;
             case SERVER_STARTED:
                 return  ServerStatus.STARTED;
-            case FAILED:
-                return ServerStatus.FAILED;
             default: {
-                if(start) {
+                if(requiredState == InternalState.SERVER_STARTED) {
                     return ServerStatus.STARTING;
                 } else {
                     return ServerStatus.STOPPING;
@@ -282,8 +285,8 @@ class ManagedServer {
             @Override
             public void execute(final ManagedServer server) throws Exception {
                 server.proxyController = RemoteProxyController.create(channelAssociation,
-                    PathAddress.pathAddress(PathElement.pathElement(HOST, hostControllerName), serverPath),
-                    ProxyOperationAddressTranslator.SERVER);
+                        PathAddress.pathAddress(PathElement.pathElement(HOST, hostControllerName), serverPath),
+                        ProxyOperationAddressTranslator.SERVER);
             }
         // TODO we just check that we are in the correct state, perhaps introuce a new state
         }, InternalState.SERVER_STARTING, InternalState.SERVER_STARTING);
@@ -365,6 +368,9 @@ class ManagedServer {
                 case PROCESS_ADDING:
                     this.internalState = InternalState.PROCESS_STOPPED;
                     break;
+                case PROCESS_STARTED:
+                    internalSetState(getTransitionTask(InternalState.PROCESS_STOPPING), InternalState.PROCESS_STARTED, InternalState.PROCESS_ADDED);
+                    break;
                 case PROCESS_STARTING:
                     this.internalState = InternalState.PROCESS_ADDED;
                     break;
@@ -398,6 +404,7 @@ class ManagedServer {
                 }
                 this.internalState = next;
             } catch (final Exception e) {
+                ROOT_LOGGER.debugf(e, "transition (%s > %s) failed for server \"%s\"", current, next, serverName);
                 transitionFailed(current);
             } finally {
                 notifyAll();
@@ -523,9 +530,8 @@ class ManagedServer {
          * Get server launch command.
          *
          * @return the launch command
-         * @param processName
          */
-        List<String> getServerLaunchCommand(String processName);
+        List<String> getServerLaunchCommand();
 
         /**
          * Get the host controller environment.
@@ -584,7 +590,7 @@ class ManagedServer {
         @Override
         public void execute(ManagedServer server) throws Exception {
             assert Thread.holdsLock(ManagedServer.this); // Call under lock
-            final List<String> command = bootConfiguration.getServerLaunchCommand(serverProcessName);
+            final List<String> command = bootConfiguration.getServerLaunchCommand();
             final Map<String, String> env = bootConfiguration.getServerLaunchEnvironment();
             final HostControllerEnvironment environment = bootConfiguration.getHostControllerEnvironment();
             // Add the process to the process controller
