@@ -78,10 +78,10 @@ public class DataSourceResourcesUnitTestCase  extends DsMgmtTestBase{
         final Map<String, ModelNode> children = getChildren(result);
         Assert.assertFalse(children.isEmpty());
         for (final Entry<String, ModelNode> child : children.entrySet()) {
-            Assert.assertTrue(child.getKey() != null);
-            Assert.assertTrue(child.getValue().hasDefined("connection-url"));
-            Assert.assertTrue(child.getValue().hasDefined("jndi-name"));
-            Assert.assertTrue(child.getValue().hasDefined("driver-name"));
+            Assert.assertNotNull("Default datasource not found",child.getKey());
+            Assert.assertTrue("Default datasource have no connection URL",child.getValue().hasDefined("connection-url"));
+            Assert.assertTrue("Default datasource have no JNDI name",child.getValue().hasDefined("jndi-name"));
+            Assert.assertTrue("Default datasource have no driver",child.getValue().hasDefined("driver-name"));
         }
     }
 
@@ -104,11 +104,11 @@ public class DataSourceResourcesUnitTestCase  extends DsMgmtTestBase{
 
         HashSet<String> keys = new HashSet<String>();
         for (final Entry<String, ModelNode> child : children.entrySet()) {
-            Assert.assertTrue(child.getKey() != null);
+            Assert.assertNotNull("Default driver description have no attributes",child.getKey());
             keys.add(child.getKey());
         }
-        Assert.assertTrue(keys.contains("driver-xa-datasource-class-name"));
-        Assert.assertTrue(keys.contains("module-slot"));
-        Assert.assertTrue(keys.contains("driver-name"));
+        Assert.assertTrue("Default driver description have no xa-datasource-class attribute",keys.contains("driver-xa-datasource-class-name"));
+        Assert.assertTrue("Default driver description have no module-slot attribute",keys.contains("module-slot"));
+        Assert.assertTrue("Default driver description have no driver-name attribute",keys.contains("driver-name"));
     }
 }
