@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,23 +19,36 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.test.integration.ws.ejb;
 
-import javax.ejb.Remote;
+import javax.annotation.Resource;
+import javax.ejb.Stateless;
+import javax.jws.HandlerChain;
 import javax.jws.WebService;
-import javax.jws.soap.SOAPBinding;
+import javax.xml.ws.WebServiceContext;
 
 /**
- * Webservice endpoint interface.
  *
- * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @author <a href="mailto:rsvoboda@redhat.com">Rostislav Svoboda</a>
  */
-@Remote
-@WebService
-@SOAPBinding
-public interface SimpleStatelessWebserviceEndpointIface {
+@Stateless
+@WebService(
+        endpointInterface = "org.jboss.as.test.integration.ws.ejb.ContextHandlerEndpointIface",
+        targetNamespace = "org.jboss.as.test.integration.ws.ejb",
+        serviceName = "ContextHandlerService"
+)
 
-    String echo(String s);
+@HandlerChain(file = "handler.xml")
+public class ContextHandlerEndpointImpl implements ContextHandlerEndpointIface {
 
+    @Resource
+    WebServiceContext wsCtx;
+
+    public String doSomething(String msg) {
+        if (!"ContextHandler:handleInbound()".equals(wsCtx.getMessageContext().get("invoked"))) {
+            throw new IllegalArgumentException("Wrong webservice context instance or handler not invoked");
+        }
+
+        return msg;
+    }
 }
