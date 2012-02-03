@@ -5,9 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.as.quickstarts</groupId>
+        <groupId>org.jboss.bom</groupId>
         <version>7.0.2-SNAPSHOT</version>
-        <artifactId>jboss-as-quickstarts-bom-parent</artifactId>
+        <artifactId>jboss-bom-parent</artifactId>
     </parent>
 
     <artifactId>jboss-javaee-6.0-with-tools</artifactId>
@@ -23,17 +23,6 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
-
-    <scm>
-        <connection>scm:git://github.com/kpiwko/jboss-javaee-6.0-with-tools.git</connection>
-        <developerConnection>scm:git@github.com:kpiwko/jboss-javaee-6.0-with-tools.git</developerConnection>
-        <url>https://github.com/kpiwko/jboss-javaee-6.0-with-tools</url>
-    </scm>
-
-    <issueManagement>
-        <system>jira</system>
-        <url>http://jira.jboss.com/jira/browse/JBEE</url>
-    </issueManagement>
 
     <properties>
         <!-- Version properties are inherited from parent -->

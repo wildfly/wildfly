@@ -3,18 +3,22 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-
+   
     <parent>
-        <groupId>org.jboss.as.quickstarts</groupId>
-        <artifactId>jboss-as-quickstarts-parent</artifactId>
-        <version>7.0.2-SNAPSHOT</version>
+        <groupId>org.jboss</groupId>
+        <artifactId>jboss-parent</artifactId>
+        <version>8</version>
+        <relativePath />
     </parent>
 
-    <artifactId>jboss-as-quickstarts-bom-parent</artifactId>
+    <groupId>org.jboss.bom</groupId>
+    <artifactId>jboss-bom-parent</artifactId>
+    <version>7.0.2-SNAPSHOT</version>
+
     <packaging>pom</packaging>
 
-    <name>JBoss Java EE 6 Specification APIs (with Extras) BOM Parent</name>
-    <description>Dependency Management BOM for Java EE 6 Specification APIs (with extras) Parent</description>
+    <name>JBoss BOM Parent</name>
+    <description>Dependency Management BOM Parent</description>
 
     <licenses>
         <license>
@@ -23,17 +27,6 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
-
-    <scm>
-        <connection>scm:git://github.com/kpiwko/jboss-javaee-6.0-with-tools.git</connection>
-        <developerConnection>scm:git@github.com:kpiwko/jboss-javaee-6.0-with-tools.git</developerConnection>
-        <url>https://github.com/kpiwko/jboss-javaee-6.0-with-tools</url>
-    </scm>
-
-    <issueManagement>
-        <system>jira</system>
-        <url>http://jira.jboss.com/jira/browse/JBEE</url>
-    </issueManagement>
 
     <properties>
         <!-- Versions of JBoss projects -->
