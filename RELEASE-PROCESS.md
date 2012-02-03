@@ -8,15 +8,12 @@ Release process for BOMs
 2. Commit the version update
 3. Tag
     
-        git tag -a <release version> -m "Release <release version"
-4. Tag
-    
-        git tag -a <release version> -m "Release <release version"
-5. Stage the release
+        git tag -a <release version> -m "Release <release version>"
+4. Stage the release
         
         ./release-utils.sh -r
-6. Reset version numbers to snapshots
+5. Reset version numbers to snapshots
         
         ./release-utils.sh -u -o <release version> -n <new snapshot version>
-7. Commit this
-8. Promote the staged repo
+6. Commit this
+7. Promote the staged repo
