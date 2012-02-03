@@ -157,14 +157,15 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
          // create a list for dependencies which may need to be added during processing
         List<Dependency<?>> dependencies = new LinkedList<Dependency<?>>();
 
-        // process cache configuration ModelNode describing overrides to defaults
-        processModelNode(model, builder, dependencies);
-
         // get all required addresses, names and service names
         PathAddress cacheAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
-        PathAddress containerAddress = cacheAddress.subAddress(0, cacheAddress.size()-1);
+        PathAddress containerAddress = cacheAddress.subAddress(0, cacheAddress.size() - 1);
         String cacheName = cacheAddress.getLastElement().getValue();
         String containerName = containerAddress.getLastElement().getValue();
+
+        // process cache configuration ModelNode describing overrides to defaults
+        processModelNode(containerName, model, builder, dependencies);
+
         ServiceName containerServiceName = EmbeddedCacheManagerService.getServiceName(containerName);
         ServiceName cacheServiceName = containerServiceName.append(cacheName);
         ServiceName cacheConfigurationServiceName = CacheConfigurationService.getServiceName(containerName, cacheName);
@@ -286,15 +287,12 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
 
     /**
      * Create a Configuration object initialized from the operation ModelNode
-     *
+     * @param containerName the name of the cache container
      * @param cache ModelNode representing cache configuration
      * @param builder ConfigurationBuilder object to add data to
      * @return initialised Configuration object
      */
-    void processModelNode(ModelNode cache, ConfigurationBuilder builder, List<Dependency<?>> dependencies) {
-
-        String cacheName = cache.require(ModelKeys.NAME).asString();
-
+    void processModelNode(String containerName, ModelNode cache, ConfigurationBuilder builder, List<Dependency<?>> dependencies) {
         builder.classLoader(this.getClass().getClassLoader());
         builder.clustering().cacheMode(CacheMode.valueOf(cache.require(ModelKeys.CACHE_MODE).asString()));
 
@@ -414,7 +412,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
                     .purgeSynchronously(true)
             ;
             storeBuilder.singletonStore().enabled(store.hasDefined(ModelKeys.SINGLETON) ? store.get(ModelKeys.SINGLETON).asBoolean() : false);
-            this.buildCacheStore(storeBuilder, cacheName, store, storeKey, dependencies);
+            this.buildCacheStore(storeBuilder, containerName, store, storeKey, dependencies);
         }
     }
 
@@ -445,7 +443,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
     }
 
 
-    private void buildCacheStore(LoaderConfigurationBuilder builder, String name, ModelNode store, String storeKey, List<Dependency<?>> dependencies) {
+    private void buildCacheStore(LoaderConfigurationBuilder builder, String containerName, ModelNode store, String storeKey, List<Dependency<?>> dependencies) {
         final Properties properties = new TypedProperties();
         if (store.hasDefined(ModelKeys.PROPERTY)) {
             for (Property property : store.get(ModelKeys.PROPERTY).asPropertyList()) {
@@ -464,7 +462,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
 
         if (storeKey.equals(ModelKeys.FILE_STORE)) {
             builder.cacheLoader(new FileCacheStore());
-            final String path = store.hasDefined(ModelKeys.PATH) ? store.get(ModelKeys.PATH).asString() : name;
+            final String path = store.hasDefined(ModelKeys.PATH) ? store.get(ModelKeys.PATH).asString() : containerName;
             Injector<String> injector = new SimpleInjector<String>() {
                 @Override
                 public void inject(String value) {

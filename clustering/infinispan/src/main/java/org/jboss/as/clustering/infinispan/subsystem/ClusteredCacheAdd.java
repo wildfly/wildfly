@@ -50,10 +50,10 @@ public abstract class ClusteredCacheAdd extends CacheAdd {
      * @return initialised Configuration object
      */
     @Override
-    void processModelNode(ModelNode cache, ConfigurationBuilder builder, List<Dependency<?>> dependencies) {
+    void processModelNode(String containerName, ModelNode cache, ConfigurationBuilder builder, List<Dependency<?>> dependencies) {
 
         // process cache attributes and elements
-        super.processModelNode(cache, builder, dependencies);
+        super.processModelNode(containerName, cache, builder, dependencies);
 
         // process clustered cache attributes and elements
         if (CacheMode.valueOf(cache.get(ModelKeys.CACHE_MODE).asString()).isSynchronous()) {
