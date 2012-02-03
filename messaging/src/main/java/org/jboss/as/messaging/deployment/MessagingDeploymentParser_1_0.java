@@ -102,7 +102,7 @@ public class MessagingDeploymentParser_1_0 implements XMLStreamConstants, XMLEle
         final int count = reader.getAttributeCount();
         if (count > 0) {
             requireSingleAttribute(reader, Attribute.NAME.getLocalName());
-            hqServerName = reader.getAttributeValue(0).trim();
+            hqServerName = PropertiesValueResolver.replaceProperties(reader.getAttributeValue(0).trim());
         }
 
         if (hqServerName == null || hqServerName.length() == 0) {
@@ -140,7 +140,7 @@ public class MessagingDeploymentParser_1_0 implements XMLStreamConstants, XMLEle
 
     static void processJMSTopic(final XMLExtendedStreamReader reader, String hqServer, ParseResult result) throws XMLStreamException {
 
-        final String name = reader.getAttributeValue(0);
+        final String name = PropertiesValueResolver.replaceProperties(reader.getAttributeValue(0));
         if (name == null) {
             ParseUtils.missingRequired(reader, Collections.singleton("name"));
         }
@@ -151,7 +151,7 @@ public class MessagingDeploymentParser_1_0 implements XMLStreamConstants, XMLEle
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case ENTRY: {
-                    final String entry = readStringAttributeElement(reader, CommonAttributes.NAME);
+                    final String entry = PropertiesValueResolver.replaceProperties(readStringAttributeElement(reader, CommonAttributes.NAME));
                     ENTRIES.parseAndAddParameterElement(entry, topic, reader);
                     break;
                 }
@@ -166,7 +166,7 @@ public class MessagingDeploymentParser_1_0 implements XMLStreamConstants, XMLEle
     static void processJMSQueue(final XMLExtendedStreamReader reader, String hqServer, ParseResult result) throws XMLStreamException {
 
         requireSingleAttribute(reader, CommonAttributes.NAME);
-        final String name = reader.getAttributeValue(0);
+        final String name = PropertiesValueResolver.replaceProperties(reader.getAttributeValue(0));
 
         if (name == null) {
             ParseUtils.missingRequired(reader, Collections.singleton("name"));
@@ -178,7 +178,7 @@ public class MessagingDeploymentParser_1_0 implements XMLStreamConstants, XMLEle
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case ENTRY: {
-                    final String entry = readStringAttributeElement(reader, CommonAttributes.NAME);
+                    final String entry = PropertiesValueResolver.replaceProperties(readStringAttributeElement(reader, CommonAttributes.NAME));
                     ENTRIES.parseAndAddParameterElement(entry, queue, reader);
                     break;
                 }
@@ -186,14 +186,14 @@ public class MessagingDeploymentParser_1_0 implements XMLStreamConstants, XMLEle
                     if (queue.has(SELECTOR.getName())) {
                         throw ParseUtils.duplicateNamedElement(reader, Element.SELECTOR.getLocalName());
                     }
-                    SELECTOR.parseAndSetParameter(reader.getElementText(), queue, reader);
+                    SELECTOR.parseAndSetParameter(PropertiesValueResolver.replaceProperties(reader.getElementText()), queue, reader);
                     break;
                 }
                 case DURABLE: {
                     if (queue.has(DURABLE.getName())) {
                         throw ParseUtils.duplicateNamedElement(reader, Element.DURABLE.getLocalName());
                     }
-                    DURABLE.parseAndSetParameter(reader.getElementText(), queue, reader);
+                    DURABLE.parseAndSetParameter(PropertiesValueResolver.replaceProperties(reader.getElementText()), queue, reader);
                     break;
                 }
                 default: {
