@@ -49,6 +49,10 @@ public class ServletExecutor {
         return contexts.remove(appId);
     }
 
+    static ServletContext getContext(final String appId) {
+        return contexts.get(appId);
+    }
+
     /**
      * Dispatch custom request.
      *
@@ -59,14 +63,26 @@ public class ServletExecutor {
      * @throws ServletException for any servlet exception
      */
     static void dispatch(final String appId, final String path, final ServletRequest request) throws IOException, ServletException {
+        dispatch(appId, path, getContext(appId), request);
+    }
+
+    /**
+     * Dispatch custom request.
+     *
+     * @param appId the appId
+     * @param path the dispatcher path
+     * @param context the servlet context
+     * @param request the custom request
+     * @throws IOException for any I/O exception
+     * @throws ServletException for any servlet exception
+     */
+    static void dispatch(final String appId, final String path, final ServletContext context, final ServletRequest request) throws IOException, ServletException {
         if (appId == null)
             throw new IllegalArgumentException("Null appId");
         if (path == null)
             throw new IllegalArgumentException("Null path");
         if (request == null)
             throw new IllegalArgumentException("Null request");
-
-        final ServletContext context = contexts.get(appId);
         if (context == null)
             throw new IllegalArgumentException("No context registered for appId: " + appId);
 

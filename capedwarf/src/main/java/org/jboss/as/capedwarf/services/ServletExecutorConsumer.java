@@ -28,6 +28,7 @@ import org.jboss.modules.ModuleLoader;
 
 import javax.jms.Message;
 import javax.jms.MessageListener;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -61,7 +62,7 @@ class ServletExecutorConsumer implements MessageListener {
         return ModuleIdentifier.create(mi);
     }
 
-    private ServletRequest createServletRequest(Message message, ClassLoader cl) throws Exception {
+    private ServletRequest createServletRequest(ClassLoader cl, Message message, ServletContext context) throws Exception {
         final String factoryClass = getValue(message, "factory");
         Object factory;
         synchronized (cache) {
@@ -77,8 +78,8 @@ class ServletExecutorConsumer implements MessageListener {
                 factories.put(factoryClass, factory);
             }
         }
-        Method m = factory.getClass().getMethod("createServletRequest", Message.class);
-        return (ServletRequest) m.invoke(factory, message);
+        Method m = factory.getClass().getMethod("createServletRequest", ServletContext.class, Message.class);
+        return (ServletRequest) m.invoke(factory, context, message);
     }
 
     public void onMessage(Message message) {
@@ -90,11 +91,14 @@ class ServletExecutorConsumer implements MessageListener {
             try {
                 final String appId = getValue(message, "appId");
                 final String path = getValue(message, "path");
-                final ServletRequest request = createServletRequest(message, cl);
-                ServletExecutor.dispatch(appId, path, request);
+                final ServletContext context = ServletExecutor.getContext(appId);
+                final ServletRequest request = createServletRequest(cl, message, context);
+                ServletExecutor.dispatch(appId, path, context, request);
             } finally {
                 Thread.currentThread().setContextClassLoader(previous);
             }
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
