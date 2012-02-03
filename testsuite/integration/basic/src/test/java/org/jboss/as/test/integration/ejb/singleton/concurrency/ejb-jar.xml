@@ -1,0 +1,32 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<ejb-jar xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd"
+         version="3.1">
+    <enterprise-beans>
+        <session>
+            <ejb-name>ReadOnlySingletonBeanDescriptor</ejb-name>
+            <local-bean></local-bean>
+            <ejb-class>org.jboss.as.test.integration.ejb.singleton.concurrency.ReadOnlySingletonBeanDescriptor</ejb-class>
+            <session-type>Singleton</session-type>
+            <transaction-type>Container</transaction-type>
+            <init-on-startup>true</init-on-startup>
+            <concurrency-management-type>Container</concurrency-management-type>
+	        <concurrent-method>
+	        	<lock>Read</lock> 
+            	<method>
+            		<method-name>twoSecondEcho</method-name>
+            		<method-params>
+            			<method-param>String</method-param>
+            		</method-params>
+            	</method>
+	            <access-timeout>
+	            	<timeout>1</timeout>
+	            	<unit>Seconds</unit>
+	            </access-timeout>
+	        </concurrent-method>
+        </session>
+    </enterprise-beans>
+</ejb-jar>
+
+
