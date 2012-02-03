@@ -40,7 +40,6 @@ import org.jboss.osgi.repository.ArtifactProviderPlugin;
 import org.jboss.osgi.repository.RepositoryResolutionException;
 import org.jboss.osgi.resolver.v2.XResource;
 import org.jboss.osgi.resolver.v2.XResourceBuilder;
-import org.jboss.osgi.resolver.v2.XResourceConstants;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.resource.Capability;
@@ -120,16 +119,16 @@ final class ModuleIdentityArtifactProvider extends AbstractService<Void> impleme
                 File contentFile = getRepositoryEntry(bundlesDir, moduleIdentifier);
                 if (contentFile != null) {
                     URL baseURL = bundlesDir.toURI().toURL();
-                    String contentPath = contentFile.getAbsolutePath();
-                    contentPath = contentPath.substring(baseURL.getPath().length());
+                    String contentPath = contentFile.toURI().toURL().toExternalForm();
+                    contentPath = contentPath.substring(baseURL.toExternalForm().length());
                     XResource resource = XResourceBuilder.create(baseURL, contentPath).getResource();
                     result.add(resource.getIdentityCapability());
                 } else {
                     contentFile = getRepositoryEntry(modulesDir, moduleIdentifier);
                     if (contentFile != null) {
                         URL baseURL = modulesDir.toURI().toURL();
-                        String contentPath = contentFile.getAbsolutePath();
-                        contentPath = contentPath.substring(baseURL.getPath().length());
+                        String contentPath = contentFile.toURI().toURL().toExternalForm();
+                        contentPath = contentPath.substring(baseURL.toExternalForm().length());
                         XResource resource = XResourceBuilder.create(baseURL, contentPath).getResource();
                         result.add(resource.getIdentityCapability());
                     }
