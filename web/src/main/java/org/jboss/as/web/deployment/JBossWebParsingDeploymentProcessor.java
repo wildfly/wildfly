@@ -39,6 +39,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.metadata.parser.jbossweb.JBossWebMetaDataParser;
 import org.jboss.metadata.parser.util.NoopXMLResolver;
+import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -65,7 +66,13 @@ public class JBossWebParsingDeploymentProcessor implements DeploymentUnitProcess
                 final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
                 inputFactory.setXMLResolver(NoopXMLResolver.create());
                 XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
-                warMetaData.setJbossWebMetaData(JBossWebMetaDataParser.parse(xmlReader));
+                final JBossWebMetaData jBossWebMetaData = JBossWebMetaDataParser.parse(xmlReader);
+                warMetaData.setJbossWebMetaData(jBossWebMetaData);
+                // if the jboss-web.xml has a distinct-name configured, then attach the value to this
+                // deployment unit
+                if (jBossWebMetaData.getDistinctName() != null) {
+                    deploymentUnit.putAttachment(org.jboss.as.ee.structure.Attachments.DISTINCT_NAME, jBossWebMetaData.getDistinctName());
+                }
             } catch (XMLStreamException e) {
                 throw new DeploymentUnitProcessingException(MESSAGES.failToParseXMLDescriptor(jbossWebXml, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber()), e);
             } catch (IOException e) {
