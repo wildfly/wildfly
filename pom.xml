@@ -146,7 +146,7 @@
         <version.org.jboss.common-core>2.2.17.GA</version.org.jboss.common-core>
         <version.org.jboss.com.sun.httpserver>1.0.0.Final</version.org.jboss.com.sun.httpserver>
         <version.org.jboss.ejb-client>1.0.0.Final</version.org.jboss.ejb-client>
-        <version.org.jboss.ejb3.ext-api>2.0.0-beta-3</version.org.jboss.ejb3.ext-api>
+        <version.org.jboss.ejb3.ext-api>2.0.0</version.org.jboss.ejb3.ext-api>
         <version.org.jboss.iiop-client>1.0.0.Final</version.org.jboss.iiop-client>
         <version.org.jboss.interceptor>2.0.0.Final</version.org.jboss.interceptor>
         <version.org.jboss.invocation>1.1.1.Final</version.org.jboss.invocation>
