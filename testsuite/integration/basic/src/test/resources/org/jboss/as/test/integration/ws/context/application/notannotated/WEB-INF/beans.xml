@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This file can be an empty text file (0 bytes) -->
+<!-- We're declaring the schema to save you time if you do have to configure 
+   this in the future -->
+<beans xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="
+        http://java.sun.com/xml/ns/javaee 
+        http://java.sun.com/xml/ns/javaee/beans_1_0.xsd">
+</beans>
