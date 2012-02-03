@@ -1,5 +1,7 @@
 package org.jboss.as.messaging.deployment;
 
+import java.util.List;
+
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -38,71 +40,67 @@ public class MessagingXmlInstallDeploymentUnitProcessor implements DeploymentUni
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final ParseResult parseResult = deploymentUnit.getAttachment(MessagingAttachments.PARSE_RESULT);
-        if (parseResult == null) {
-            return;
-        }
+        final List<ParseResult> parseResults = deploymentUnit.getAttachmentList(MessagingAttachments.PARSE_RESULT);
+        for (final ParseResult parseResult : parseResults) {
 
-        for (final JmsDestination topic : parseResult.getTopics()) {
-            final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(topic.getServer());
-            String[] jndiBindings = null;
-            if (topic.getDestination().hasDefined(ENTRIES.getName())) {
-                final ModelNode entries = topic.getDestination().resolve().get(ENTRIES.getName());
-                jndiBindings = JndiEntriesAttribute.getJndiBindings(entries);
+            for (final JmsDestination topic : parseResult.getTopics()) {
+                final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(topic.getServer());
+                String[] jndiBindings = null;
+                if (topic.getDestination().hasDefined(ENTRIES.getName())) {
+                    final ModelNode entries = topic.getDestination().resolve().get(ENTRIES.getName());
+                    jndiBindings = JndiEntriesAttribute.getJndiBindings(entries);
+                }
+                JMSTopicAdd.INSTANCE.installServices(null, null, topic.getName(), hqServiceName, phaseContext.getServiceTarget(), jndiBindings);
+
+                //create the management registration
+                final PathElement serverElement = PathElement.pathElement(HORNETQ_SERVER, topic.getServer());
+                final PathElement destination = PathElement.pathElement(JMS_TOPIC, topic.getName());
+                deploymentUnit.createDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, serverElement);
+                PathAddress registration = PathAddress.pathAddress(serverElement, destination);
+                createDeploymentSubModel(registration, deploymentUnit);
+
+                JMSTopicConfigurationRuntimeHandler.INSTANCE.registerDestination(topic.getServer(), topic.getName(), topic.getDestination());
             }
-            JMSTopicAdd.INSTANCE.installServices(null, null, topic.getName(), hqServiceName, phaseContext.getServiceTarget(), jndiBindings);
 
-            //create the management registration
-            final PathElement serverElement = PathElement.pathElement(HORNETQ_SERVER, topic.getServer());
-            final PathElement destination = PathElement.pathElement(JMS_TOPIC, topic.getName());
-            deploymentUnit.createDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, serverElement);
-            PathAddress registration = PathAddress.pathAddress(serverElement, destination);
-            createDeploymentSubModel(registration, deploymentUnit);
+            for (final JmsDestination queue : parseResult.getQueues()) {
 
-            JMSTopicConfigurationRuntimeHandler.INSTANCE.registerDestination(topic.getServer(), topic.getName(), topic.getDestination());
-        }
+                final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(queue.getServer());
+                String[] jndiBindings = null;
+                final ModelNode destination = queue.getDestination();
+                if (destination.hasDefined(ENTRIES.getName())) {
+                    final ModelNode entries = destination.resolve().get(ENTRIES.getName());
+                    jndiBindings = JndiEntriesAttribute.getJndiBindings(entries);
+                }
+                final String selector = destination.hasDefined(SELECTOR.getName()) ? destination.get(SELECTOR.getName()).resolve().asString() : null;
+                final boolean durable = destination.hasDefined(DURABLE.getName()) ? destination.get(DURABLE.getName()).resolve().asBoolean() : false;
 
-        for (final JmsDestination queue : parseResult.getQueues()) {
+                JMSQueueAdd.INSTANCE.installServices(null, null, queue.getName(), phaseContext.getServiceTarget(), hqServiceName, selector, durable, jndiBindings);
 
-            final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(queue.getServer());
-            String[] jndiBindings = null;
-            final ModelNode destination = queue.getDestination();
-            if (destination.hasDefined(ENTRIES.getName())) {
-                final ModelNode entries = destination.resolve().get(ENTRIES.getName());
-                jndiBindings = JndiEntriesAttribute.getJndiBindings(entries);
+                //create the management registration
+                final PathElement serverElement = PathElement.pathElement(HORNETQ_SERVER, queue.getServer());
+                final PathElement dest = PathElement.pathElement(JMS_QUEUE, queue.getName());
+                deploymentUnit.createDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, serverElement);
+                PathAddress registration = PathAddress.pathAddress(serverElement, dest);
+                createDeploymentSubModel(registration, deploymentUnit);
+                JMSQueueConfigurationRuntimeHandler.INSTANCE.registerDestination(queue.getServer(), queue.getName(), destination);
             }
-            final String selector = destination.hasDefined(SELECTOR.getName()) ? destination.get(SELECTOR.getName()).resolve().asString() : null;
-            final boolean durable = destination.hasDefined(DURABLE.getName()) ? destination.get(DURABLE.getName()).resolve().asBoolean() : false;
-
-            JMSQueueAdd.INSTANCE.installServices(null, null, queue.getName(), phaseContext.getServiceTarget(), hqServiceName,selector, durable, jndiBindings);
-
-            //create the management registration
-            final PathElement serverElement = PathElement.pathElement(HORNETQ_SERVER, queue.getServer());
-            final PathElement dest = PathElement.pathElement(JMS_QUEUE, queue.getName());
-            deploymentUnit.createDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, serverElement);
-            PathAddress registration = PathAddress.pathAddress(serverElement, dest);
-            createDeploymentSubModel(registration, deploymentUnit);
-            JMSQueueConfigurationRuntimeHandler.INSTANCE.registerDestination(queue.getServer(), queue.getName(), destination);
         }
     }
 
 
     @Override
     public void undeploy(final DeploymentUnit context) {
-        final ParseResult parseResult = context.getAttachment(MessagingAttachments.PARSE_RESULT);
-        if (parseResult == null) {
-            return;
-        }
+        final List<ParseResult> parseResults = context.getAttachmentList(MessagingAttachments.PARSE_RESULT);
+        for (ParseResult parseResult : parseResults) {
+            for (final JmsDestination topic : parseResult.getTopics()) {
+                JMSTopicConfigurationRuntimeHandler.INSTANCE.unregisterDestination(topic.getServer(), topic.getName());
+            }
 
-        for (final JmsDestination topic : parseResult.getTopics()) {
-            JMSTopicConfigurationRuntimeHandler.INSTANCE.unregisterDestination(topic.getServer(), topic.getName());
-        }
-
-        for (final JmsDestination queue : parseResult.getQueues()) {
-            JMSQueueConfigurationRuntimeHandler.INSTANCE.unregisterDestination(queue.getServer(), queue.getName());
+            for (final JmsDestination queue : parseResult.getQueues()) {
+                JMSQueueConfigurationRuntimeHandler.INSTANCE.unregisterDestination(queue.getServer(), queue.getName());
+            }
         }
     }
-
 
 
     static ManagementResourceRegistration createDeploymentSubModel(final PathAddress address, final DeploymentUnit unit) {

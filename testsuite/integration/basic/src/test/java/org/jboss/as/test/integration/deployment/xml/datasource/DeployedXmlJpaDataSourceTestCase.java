@@ -22,33 +22,19 @@
 
 package org.jboss.as.test.integration.deployment.xml.datasource;
 
-import java.io.IOException;
-import java.net.InetAddress;
 import java.util.Set;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import javax.naming.InitialContext;
 
-import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentActionResult;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 
 /**
  * Test deployment of -ds.xml files as JPA data sources
@@ -59,83 +45,35 @@ import static org.jboss.as.arquillian.container.Authentication.getCallbackHandle
 public class DeployedXmlJpaDataSourceTestCase {
 
 
-    private static ModelControllerClient client;
-    private static ServerDeploymentManager manager;
     public static final String TEST_DS_XML = "test-ds.xml";
     public static final String JPA_DEPLOYMENT_NAME = "jpaDeployment";
 
-    @Deployment(name = "runner")
-    public static Archive<?> deploy() {
-        return ShrinkWrap.create(JavaArchive.class, "testDsXmlJpaDeployment.jar")
-                .addClasses(DeployedXmlJpaDataSourceTestCase.class, JpaRemote.class)
-                .addAsManifestResource(DeployedXmlJpaDataSourceTestCase.class.getPackage(),
-                        "MANIFEST.MF", "MANIFEST.MF");
-    }
 
-    @Deployment(name = JPA_DEPLOYMENT_NAME, testable = false, managed = false)
+    @Deployment(name = JPA_DEPLOYMENT_NAME)
     public static Archive<?> deployJpa() {
         return ShrinkWrap.create(JavaArchive.class, JPA_DEPLOYMENT_NAME + ".jar")
                 .addClasses(Employee.class, JpaRemoteBean.class,
-                        JpaRemote.class)
+                        JpaRemote.class, DeployedXmlJpaDataSourceTestCase.class)
                 .addAsManifestResource(DeployedXmlJpaDataSourceTestCase.class.getPackage(),
                         "MANIFEST.MF", "MANIFEST.MF")
                 .addAsManifestResource(DeployedXmlJpaDataSourceTestCase.class.getPackage(),
-                        "persistence.xml", "persistence.xml");
+                        "persistence.xml", "persistence.xml")
+                .addAsManifestResource(DeployedXmlJpaDataSourceTestCase.class.getPackage(),
+                        "test-ds.xml", "test-ds.xml");
     }
 
     @ArquillianResource
     private InitialContext initialContext;
 
-    @ArquillianResource
-    private Deployer deployer;
-
-    @BeforeClass
-    public static void deployDatasource() throws Throwable {
-        try {
-            client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
-            manager = ServerDeploymentManager.Factory.create(client);
-            final String packageName = DeployedXmlJpaDataSourceTestCase.class.getPackage().getName().replace(".", "/");
-            final DeploymentPlan plan = manager.newDeploymentPlan().add(DeployedXmlJpaDataSourceTestCase.class.getResource("/" + packageName + "/" + TEST_DS_XML)).andDeploy().build();
-            final Future<ServerDeploymentPlanResult> future = manager.execute(plan);
-            final ServerDeploymentPlanResult result = future.get(20, TimeUnit.SECONDS);
-            final ServerDeploymentActionResult actionResult = result.getDeploymentActionResult(plan.getId());
-            if (actionResult != null) {
-                if (actionResult.getDeploymentException() != null) {
-                    throw actionResult.getDeploymentException();
-                }
-            }
-        } catch (Throwable e) {
-            if (client != null) {
-                client.close();
-            }
-        }
-    }
-
-    @AfterClass
-    public static void undeployDatasource() throws IOException {
-        if (client != null) {
-            final DeploymentPlan undeployPlan = manager.newDeploymentPlan().undeploy(TEST_DS_XML).andRemoveUndeployed().build();
-            manager.execute(undeployPlan);
-            client.close();
-            client = null;
-            manager = null;
-        }
-    }
-
     @Test
     public void testJpaUsedWithXMLXaDataSource() throws Throwable {
-        deployer.deploy(JPA_DEPLOYMENT_NAME);
-        try {
-            final JpaRemote remote = (JpaRemote) initialContext.lookup("java:global/" + JPA_DEPLOYMENT_NAME + "/" + "JpaRemoteBean");
-            remote.addEmployee("Bob");
-            remote.addEmployee("Sue");
-            final Set<String> emps = remote.getEmployees();
-            Assert.assertEquals(2, emps.size());
-            Assert.assertTrue(emps.contains("Bob"));
-            Assert.assertTrue(emps.contains("Sue"));
-        } finally {
-            deployer.undeploy(JPA_DEPLOYMENT_NAME);
-        }
+        final JpaRemote remote = (JpaRemote) initialContext.lookup("java:module/JpaRemoteBean");
+        remote.addEmployee("Bob");
+        remote.addEmployee("Sue");
+        final Set<String> emps = remote.getEmployees();
+        Assert.assertEquals(2, emps.size());
+        Assert.assertTrue(emps.contains("Bob"));
+        Assert.assertTrue(emps.contains("Sue"));
     }
 
 

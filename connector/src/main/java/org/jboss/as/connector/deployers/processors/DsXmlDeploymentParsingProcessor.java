@@ -22,11 +22,14 @@
 
 package org.jboss.as.connector.deployers.processors;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -45,7 +48,9 @@ import org.jboss.vfs.VirtualFile;
 public class DsXmlDeploymentParsingProcessor implements DeploymentUnitProcessor {
 
 
-    static final AttachmentKey<DataSources> DATA_SOURCES_ATTACHMENT_KEY = AttachmentKey.create(DataSources.class);
+    static final AttachmentKey<AttachmentList<DataSources>> DATA_SOURCES_ATTACHMENT_KEY = AttachmentKey.createList(DataSources.class);
+
+    private static final String[] LOCATIONS = {"WEB-INF", "META-INF"};
 
     /**
      * Construct a new instance.
@@ -64,33 +69,49 @@ public class DsXmlDeploymentParsingProcessor implements DeploymentUnitProcessor 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final VirtualFile deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
 
-        if (deploymentRoot == null || !deploymentRoot.exists())
-            return;
+        final Set<VirtualFile> files = dataSources(deploymentUnit);
+
+        for (VirtualFile f : files) {
+            InputStream xmlStream = null;
+            try {
+                xmlStream = new FileInputStream(f.getPhysicalFile());
+                DsParser parser = new DsParser();
+                DataSources dataSources = parser.parse(xmlStream);
+                if (dataSources != null) {
+                    deploymentUnit.addToAttachmentList(DATA_SOURCES_ATTACHMENT_KEY, dataSources);
+                }
+            } catch (Exception e) {
+                throw new DeploymentUnitProcessingException(e.getMessage(), e);
+            } finally {
+                VFSUtils.safeClose(xmlStream);
+            }
+        }
+    }
+
+    private Set<VirtualFile> dataSources(final DeploymentUnit deploymentUnit) {
+        final VirtualFile deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
+        if (deploymentRoot == null || !deploymentRoot.exists()) {
+            return Collections.emptySet();
+        }
 
         final String deploymentRootName = deploymentRoot.getLowerCaseName();
 
-        if (!deploymentRootName.endsWith("-ds.xml")) {
-            return;
+        if (deploymentRootName.endsWith("-ds.xml")) {
+            return Collections.singleton(deploymentRoot);
         }
-
-        InputStream xmlStream = null;
-        try {
-            File f = deploymentRoot.getPhysicalFile();
-
-            xmlStream = new FileInputStream(f);
-
-            DsParser parser = new DsParser();
-            DataSources dataSources = parser.parse(xmlStream);
-            if(dataSources != null) {
-                deploymentUnit.putAttachment(DATA_SOURCES_ATTACHMENT_KEY, dataSources);
+        final Set<VirtualFile> ret = new HashSet<VirtualFile>();
+        for (String location : LOCATIONS) {
+            final VirtualFile loc = deploymentRoot.getChild(location);
+            if (loc.exists()) {
+                for (final VirtualFile file : loc.getChildren()) {
+                    if (file.getName().endsWith("-ds.xml")) {
+                        ret.add(file);
+                    }
+                }
             }
-        } catch (Exception e) {
-            throw new DeploymentUnitProcessingException(e.getMessage(), e);
-        } finally {
-            VFSUtils.safeClose(xmlStream);
         }
+        return ret;
     }
 
     public void undeploy(final DeploymentUnit context) {

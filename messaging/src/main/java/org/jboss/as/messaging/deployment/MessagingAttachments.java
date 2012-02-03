@@ -1,6 +1,7 @@
 package org.jboss.as.messaging.deployment;
 
 import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.AttachmentList;
 
 /**
  *
@@ -9,7 +10,7 @@ import org.jboss.as.server.deployment.AttachmentKey;
  */
 public class MessagingAttachments {
 
-    static final AttachmentKey<ParseResult> PARSE_RESULT = AttachmentKey.create(ParseResult.class);
+    static final AttachmentKey<AttachmentList<ParseResult>> PARSE_RESULT = AttachmentKey.createList(ParseResult.class);
 
 
 }
