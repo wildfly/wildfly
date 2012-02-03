@@ -445,7 +445,8 @@ public class ServerInventoryImpl implements ServerInventory {
         final String hostControllerName = domainController.getLocalHostInfo().getLocalHostName();
         final ModelNode hostModel = domainModel.require(HOST).require(hostControllerName);
         final ModelCombiner combiner = new ModelCombiner(serverName, domainModel, hostModel, domainController, environment);
-        return new ManagedServer(hostControllerName, serverName, processControllerClient, managementAddress, combiner);
+        final ManagedServer.ManagedServerBootConfiguration configuration = combiner.createConfiguration();
+        return new ManagedServer(hostControllerName, serverName, processControllerClient, managementAddress, configuration);
     }
 
     @Override

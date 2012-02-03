@@ -161,6 +161,16 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         this.jvmElement = new JvmElement(jvmName, hostVM, groupVM, serverVM);
     }
 
+    /**
+     * Create and verify the configuration before trying to start the process.
+     *
+     * @return the process boot configuration
+     */
+    public ManagedServerBootConfiguration createConfiguration() {
+        return new ProcessedBootConfiguration(getServerLaunchCommand(), getBootUpdates(),
+                 getServerLaunchEnvironment(), isManagementSubsystemEndpoint(), environment);
+    }
+
     @Override
     public List<ModelNode> getBootUpdates() {
 
@@ -206,15 +216,14 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         return environment;
     }
 
-    /** {@inheritDoc}
-     * @param processName*/
+    /** {@inheritDoc} */
     @Override
-    public List<String> getServerLaunchCommand(String processName) {
+    public List<String> getServerLaunchCommand() {
         final List<String> command = new ArrayList<String>();
 
         command.add(getJavaCommand());
 
-        command.add("-D[" + processName + "]");
+        command.add("-D[" + ManagedServer.getServerProcessName(serverName) + "]");
 
         JvmOptionsBuilderFactory.getInstance().addOptions(jvmElement, command);
 
@@ -568,6 +577,49 @@ class ModelCombiner implements ManagedServerBootConfiguration {
             path = new File(path, segment);
         }
         return path.getAbsolutePath();
+    }
+
+    static class ProcessedBootConfiguration implements ManagedServerBootConfiguration {
+
+        List<String> command;
+        List<ModelNode> bootUpdates;
+        Map<String, String> environment;
+        boolean managementSubsystemEndpoint;
+        HostControllerEnvironment hostControllerEnvironment;
+
+        ProcessedBootConfiguration(List<String> command, List<ModelNode> bootUpdates, Map<String, String> environment,
+                                   boolean managementSubsystemEndpoint, HostControllerEnvironment hostControllerEnvironment) {
+            this.command = command;
+            this.bootUpdates = bootUpdates;
+            this.environment = environment;
+            this.managementSubsystemEndpoint = managementSubsystemEndpoint;
+            this.hostControllerEnvironment = hostControllerEnvironment;
+        }
+
+        @Override
+        public List<ModelNode> getBootUpdates() {
+            return bootUpdates;
+        }
+
+        @Override
+        public Map<String, String> getServerLaunchEnvironment() {
+            return environment;
+        }
+
+        @Override
+        public List<String> getServerLaunchCommand() {
+            return command;
+        }
+
+        @Override
+        public HostControllerEnvironment getHostControllerEnvironment() {
+            return hostControllerEnvironment;
+        }
+
+        @Override
+        public boolean isManagementSubsystemEndpoint() {
+            return managementSubsystemEndpoint;
+        }
     }
 
 }
