@@ -44,6 +44,5 @@ ARGUMENTS
                        will make the existing deployments printed one deployment per line, instead of
                        in columns (the default).
 
- --headers           - accepted only in the domain mode. The value is a list of operation headers
-                       separated by a semicolon. For the list of supported headers, please,
-                       refer to the domain management documentation or use tab-completion.
+ --headers           - a list of operation headers separated by a semicolon. For the list of supported
+                       headers, please, refer to the domain management documentation or use tab-completion.
