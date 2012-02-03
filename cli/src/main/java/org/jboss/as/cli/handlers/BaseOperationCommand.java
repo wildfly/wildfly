@@ -60,15 +60,7 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
     private Boolean addressAvailable;
     private String requiredType;
 
-    protected ArgumentWithValue headers = new ArgumentWithValue(this, HeadersCompleter.INSTANCE, ArgumentValueConverter.HEADERS, "--headers") {
-        @Override
-        public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
-            if(!ctx.isDomainMode()) {
-                return false;
-            }
-            return super.canAppearNext(ctx);
-        }
-    };
+    protected ArgumentWithValue headers = new ArgumentWithValue(this, HeadersCompleter.INSTANCE, ArgumentValueConverter.HEADERS, "--headers");
 
     public BaseOperationCommand(CommandContext ctx, String command, boolean connectionRequired) {
         super(command, connectionRequired);
@@ -218,10 +210,6 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
 
     protected void addHeaders(CommandContext ctx, ModelNode request) throws CommandFormatException {
         if(!headers.isPresent(ctx.getParsedCommandLine())) {
-            return;
-        }
-        if(!ctx.isDomainMode()) {
-            ctx.error(headers.getFullName() + " is allowed only in the domain mode.");
             return;
         }
         final String headersValue = headers.getValue(ctx.getParsedCommandLine());

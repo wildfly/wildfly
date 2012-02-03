@@ -1,6 +1,6 @@
 SYNOPSIS
 
-    deployment-info --name=deployment_name
+    deployment-info --name=deployment_name [--headers={operation_header (;operation_header)*}]
 
 DESCRIPTION
 
@@ -33,3 +33,6 @@ DESCRIPTION
 ARGUMENTS
 
  --name              - the name of the deployment.
+
+ --headers           - a list of operation headers separated by a semicolon. For the list of supported
+                       headers, please, refer to the domain management documentation or use tab-completion.

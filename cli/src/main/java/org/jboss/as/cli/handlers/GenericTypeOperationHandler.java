@@ -763,9 +763,8 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         buf.append("\n               their types and descriptions, execute ").append(commandName).append(" <command> --help.");
 
         if(ctx.isDomainMode()) {
-            buf.append("\n\n--headers    - accepted only in the domain mode. The value is a list of operation headers");
-            buf.append("\n               separated by a semicolon. For the list of supported headers, please,");
-            buf.append("\n               refer to the domain management documentation or use tab-completion.");
+            buf.append("\n\n--headers    - a list of operation headers separated by a semicolon. For the list of supported");
+            buf.append("\n               headers, please, refer to the domain management documentation or use tab-completion.");
         }
 
         ctx.printLine(buf.toString());
