@@ -18,21 +18,21 @@ public interface CommonAttributes {
     SimpleAttributeDefinition DEFAULT_STACK =
             new SimpleAttributeDefinitionBuilder(ModelKeys.DEFAULT_STACK, ModelType.STRING, false)
                     .setXmlName(Attribute.DEFAULT_STACK.getLocalName())
-                    .setAllowExpression(true)
+                    .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
     SimpleAttributeDefinition NAME =
             new SimpleAttributeDefinitionBuilder(ModelKeys.NAME, ModelType.STRING, false)
                     .setXmlName(Attribute.NAME.getLocalName())
-                    .setAllowExpression(true)
+                    .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
     SimpleAttributeDefinition TYPE =
             new SimpleAttributeDefinitionBuilder(ModelKeys.TYPE, ModelType.STRING, false)
                     .setXmlName(Attribute.TYPE.getLocalName())
-                    .setAllowExpression(true)
+                    .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
 //                    .setValidator(new ProtocolTypeValidator(false))
                     .build();
@@ -40,7 +40,7 @@ public interface CommonAttributes {
     SimpleAttributeDefinition SHARED =
             new SimpleAttributeDefinitionBuilder(ModelKeys.SHARED, ModelType.BOOLEAN, true)
                     .setXmlName(Attribute.SHARED.getLocalName())
-                    .setAllowExpression(true)
+                    .setAllowExpression(false)
                     .setDefaultValue(new ModelNode().set(true))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
@@ -48,42 +48,42 @@ public interface CommonAttributes {
     SimpleAttributeDefinition SOCKET_BINDING =
             new SimpleAttributeDefinitionBuilder(ModelKeys.SOCKET_BINDING, ModelType.STRING, true)
                     .setXmlName(Attribute.SOCKET_BINDING.getLocalName())
-                    .setAllowExpression(true)
+                    .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
     SimpleAttributeDefinition DIAGNOSTICS_SOCKET_BINDING =
             new SimpleAttributeDefinitionBuilder(ModelKeys.DIAGNOSTICS_SOCKET_BINDING, ModelType.STRING, true)
                     .setXmlName(Attribute.DIAGNOSTICS_SOCKET_BINDING.getLocalName())
-                    .setAllowExpression(true)
+                    .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
     SimpleAttributeDefinition DEFAULT_EXECUTOR =
             new SimpleAttributeDefinitionBuilder(ModelKeys.DEFAULT_EXECUTOR, ModelType.STRING, true)
                     .setXmlName(Attribute.DEFAULT_EXECUTOR.getLocalName())
-                    .setAllowExpression(true)
+                    .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
     SimpleAttributeDefinition OOB_EXECUTOR =
             new SimpleAttributeDefinitionBuilder(ModelKeys.OOB_EXECUTOR, ModelType.STRING, true)
                     .setXmlName(Attribute.OOB_EXECUTOR.getLocalName())
-                    .setAllowExpression(true)
+                    .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
     SimpleAttributeDefinition TIMER_EXECUTOR =
             new SimpleAttributeDefinitionBuilder(ModelKeys.TIMER_EXECUTOR, ModelType.STRING, true)
                     .setXmlName(Attribute.TIMER_EXECUTOR.getLocalName())
-                    .setAllowExpression(true)
+                    .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
     SimpleAttributeDefinition THREAD_FACTORY =
             new SimpleAttributeDefinitionBuilder(ModelKeys.THREAD_FACTORY, ModelType.STRING, true)
                     .setXmlName(Attribute.THREAD_FACTORY.getLocalName())
-                    .setAllowExpression(true)
+                    .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
@@ -117,7 +117,7 @@ public interface CommonAttributes {
     SimpleAttributeDefinition VALUE =
             new SimpleAttributeDefinitionBuilder("value", ModelType.STRING, false)
                     .setXmlName("value")
-                    .setAllowExpression(true)
+                    .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
