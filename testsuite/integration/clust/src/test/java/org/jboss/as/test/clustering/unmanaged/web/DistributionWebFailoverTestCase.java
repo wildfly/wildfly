@@ -30,7 +30,6 @@ public class DistributionWebFailoverTestCase extends ClusteredWebFailoverTestCas
         war.addClass(SimpleServlet.class);
         war.setWebXML(ClusteredWebTestCase.class.getPackage(), "web.xml");
         war.addAsWebInfResource(ClusteredWebTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
-        war.addAsWebInfResource(EmptyAsset.INSTANCE, "force-hashcode-change.txt");
         System.out.println(war.toString(true));
         return war;
     }

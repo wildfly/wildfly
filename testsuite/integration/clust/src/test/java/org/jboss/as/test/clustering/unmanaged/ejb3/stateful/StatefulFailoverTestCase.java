@@ -95,7 +95,6 @@ public class StatefulFailoverTestCase {
         war.addPackage(StatefulBean.class.getPackage());
         war.setWebXML(StatefulBean.class.getPackage(), "web.xml");
         war.addAsWebInfResource(new StringAsset("<beans><interceptors><class>" + StatefulCDIInterceptor.class.getName() + "</class></interceptors></beans>"), "beans.xml");
-        war.addAsWebInfResource(EmptyAsset.INSTANCE, "force-hashcode-change.txt");
         System.out.println(war.toString(true));
         return war;
     }
