@@ -486,12 +486,12 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase{
         operation.get(OP_ADDR).set(address);
 
         final ModelNode result = executeOperation(operation);
-
+        
         final ModelNode result2 = result.get(0);
-        Assert.assertTrue(result2 != null);
-        Assert.assertTrue(result2.hasDefined("driver-module-name"));
-        Assert.assertTrue(result2.hasDefined("module-slot"));
-        Assert.assertTrue(result2.hasDefined("driver-name"));
+        Assert.assertNotNull("There are no installed JDBC drivers",result2);
+        Assert.assertTrue("Module name of JDBC driver is udefined",result2.hasDefined("driver-module-name"));
+        Assert.assertTrue("Module slot of JDBC driver is udefined",result2.hasDefined("module-slot"));
+        Assert.assertTrue("Name of JDBC driver is udefined",result2.hasDefined("driver-name"));
     }
 
     /**
@@ -548,10 +548,10 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase{
 
         Assert.assertNotNull("Reparsing failed:",newList);
 
-        ModifiableXaDataSource jxaDS = null;
+        
 
         try{
-            jxaDS = lookup(getModelControllerClient(), xaDsJndi ,ModifiableXaDataSource .class);
+        	ModifiableXaDataSource jxaDS = lookup(getModelControllerClient(), xaDsJndi ,ModifiableXaDataSource .class);
 
             Assert.fail("found datasource after it was unbounded");
         }
