@@ -52,9 +52,9 @@ public class DistributedCacheAdd extends SharedStateCacheAdd {
      * @return
      */
     @Override
-    void processModelNode(ModelNode cache, ConfigurationBuilder builder, List<Dependency<?>> dependencies) {
+    void processModelNode(String containerName, ModelNode cache, ConfigurationBuilder builder, List<Dependency<?>> dependencies) {
         // process the basic clustered configuration
-        super.processModelNode(cache, builder, dependencies);
+        super.processModelNode(containerName, cache, builder, dependencies);
 
         // process the additional distributed attributes and elements
         if (cache.hasDefined(ModelKeys.OWNERS)) {

@@ -38,9 +38,9 @@ public abstract class SharedStateCacheAdd extends ClusteredCacheAdd {
     }
 
     @Override
-    void processModelNode(ModelNode cache, ConfigurationBuilder builder, List<Dependency<?>> dependencies) {
+    void processModelNode(String containerName, ModelNode cache, ConfigurationBuilder builder, List<Dependency<?>> dependencies) {
         // process the basic clustered configuration
-        super.processModelNode(cache, builder, dependencies);
+        super.processModelNode(containerName, cache, builder, dependencies);
 
         // state transfer is a child resource
         if (cache.hasDefined(ModelKeys.STATE_TRANSFER) && cache.get(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME).isDefined()) {
