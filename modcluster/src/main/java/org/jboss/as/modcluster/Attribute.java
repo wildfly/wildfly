@@ -61,7 +61,7 @@ enum Attribute {
     TTL(CommonAttributes.TTL),
     NODE_TIMEOUT(CommonAttributes.NODE_TIMEOUT),
     BALANCER(CommonAttributes.BALANCER),
-    DOMAIN(CommonAttributes.DOMAIN),
+    LBGROUP(CommonAttributes.LBGROUP),
 
     FACTOR(CommonAttributes.FACTOR),
     HISTORY(CommonAttributes.HISTORY),

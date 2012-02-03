@@ -54,7 +54,8 @@ interface CommonAttributes {
     String TTL = "ttl";
     String NODE_TIMEOUT = "node-timeout";
     String BALANCER = "balancer";
-    String DOMAIN = "domain";
+    // Used to be called "domain", see MODCLUSTER-177.
+    String LBGROUP = "lbgroup";
 
     String LOAD_METRIC = "load-metric";
     String FACTOR = "factor";

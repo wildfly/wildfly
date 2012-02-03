@@ -42,7 +42,7 @@ import static org.jboss.as.modcluster.CommonAttributes.CIPHER_SUITE;
 import static org.jboss.as.modcluster.CommonAttributes.CLASS;
 import static org.jboss.as.modcluster.CommonAttributes.CUSTOM_LOAD_METRIC;
 import static org.jboss.as.modcluster.CommonAttributes.DECAY;
-import static org.jboss.as.modcluster.CommonAttributes.DOMAIN;
+import static org.jboss.as.modcluster.CommonAttributes.LBGROUP;
 import static org.jboss.as.modcluster.CommonAttributes.DYNAMIC_LOAD_PROVIDER;
 import static org.jboss.as.modcluster.CommonAttributes.EXCLUDED_CONTEXTS;
 import static org.jboss.as.modcluster.CommonAttributes.FACTOR;
@@ -212,8 +212,8 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
                 case BALANCER:
                     conf.get(BALANCER).set(value);
                     break;
-                case DOMAIN:
-                    conf.get(DOMAIN).set(ParseUtils.parsePossibleExpression(value));
+                case LBGROUP:
+                    conf.get(LBGROUP).set(ParseUtils.parsePossibleExpression(value));
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);

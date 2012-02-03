@@ -190,8 +190,8 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
             config.setNodeTimeout(modelconf.get(CommonAttributes.NODE_TIMEOUT).asInt());
         if (modelconf.hasDefined(CommonAttributes.BALANCER))
             config.setBalancer(modelconf.get(CommonAttributes.BALANCER).asString());
-        if (modelconf.hasDefined(CommonAttributes.DOMAIN))
-            config.setLoadBalancingGroup(modelconf.get(CommonAttributes.DOMAIN).asString());
+        if (modelconf.hasDefined(CommonAttributes.LBGROUP))
+            config.setLoadBalancingGroup(modelconf.get(CommonAttributes.LBGROUP).asString());
 
         if (modelconf.hasDefined(CommonAttributes.SIMPLE_LOAD_PROVIDER)) {
             // TODO it seems we don't support that stuff.

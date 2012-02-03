@@ -31,7 +31,7 @@ import static org.jboss.as.modcluster.CommonAttributes.CLASS;
 import static org.jboss.as.modcluster.CommonAttributes.CONFIGURATION;
 import static org.jboss.as.modcluster.CommonAttributes.CUSTOM_LOAD_METRIC;
 import static org.jboss.as.modcluster.CommonAttributes.DECAY;
-import static org.jboss.as.modcluster.CommonAttributes.DOMAIN;
+import static org.jboss.as.modcluster.CommonAttributes.LBGROUP;
 import static org.jboss.as.modcluster.CommonAttributes.DYNAMIC_LOAD_PROVIDER;
 import static org.jboss.as.modcluster.CommonAttributes.EXCLUDED_CONTEXTS;
 import static org.jboss.as.modcluster.CommonAttributes.FACTOR;
@@ -128,7 +128,7 @@ public class ModClusterSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         writeAttribute(writer, TTL, config);
         writeAttribute(writer, NODE_TIMEOUT, config);
         writeAttribute(writer, BALANCER, config);
-        writeAttribute(writer, DOMAIN, config);
+        writeAttribute(writer, LBGROUP, config);
     }
 
     static void writeSSL(XMLExtendedStreamWriter writer, ModelNode sslConfig) throws XMLStreamException {
