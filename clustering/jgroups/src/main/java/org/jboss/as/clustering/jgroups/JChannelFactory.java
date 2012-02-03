@@ -37,6 +37,7 @@ import javax.management.MBeanServer;
 import org.jboss.as.clustering.concurrent.ManagedExecutorService;
 import org.jboss.as.clustering.concurrent.ManagedScheduledExecutorService;
 import org.jboss.as.network.SocketBinding;
+import org.jboss.as.server.ServerEnvironment;
 import org.jgroups.Channel;
 import org.jgroups.ChannelListener;
 import org.jgroups.Global;
@@ -63,6 +64,11 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
     }
 
     @Override
+    public ServerEnvironment getServerEnvironment() {
+        return this.configuration.getEnvironment();
+    }
+
+    @Override
     public Channel createChannel(String id) throws Exception {
         JChannel channel = new MuxChannel(this);
 
@@ -77,7 +83,7 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
             this.init(transport);
         }
 
-        channel.setName(configuration.getEnvironment().getNodeName() + "/" + id);
+        channel.setName(this.configuration.getEnvironment().getNodeName() + "/" + id);
 
         TransportConfiguration transportConfiguration = this.configuration.getTransport();
         if(transportConfiguration.hasTopology()) {
