@@ -223,7 +223,7 @@
         <version.org.jboss.ws.common.tools>1.0.0.GA</version.org.jboss.ws.common.tools>
         <version.org.jboss.ws.jbossws-cxf>4.0.0.GA</version.org.jboss.ws.jbossws-cxf>
         <version.org.jboss.ws.jbossws-native>4.0.0.GA</version.org.jboss.ws.jbossws-native>
-        <version.org.jboss.ws.spi>2.0.1.GA</version.org.jboss.ws.spi>
+        <version.org.jboss.ws.spi>2.0.2-SNAPSHOT</version.org.jboss.ws.spi>
         <version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>1.0.0.GA</version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>
         <version.org.jboss.xb>2.0.3.GA</version.org.jboss.xb>
         <version.org.jboss.xnio>3.0.0.GA</version.org.jboss.xnio>
