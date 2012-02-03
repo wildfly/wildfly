@@ -41,7 +41,7 @@ import java.util.Map;
  */
 class ServletExecutorConsumer implements MessageListener {
 
-    private static final String PREFIX = "org.jboss.capedwarf.jms.";
+    private static final String PREFIX = "org_jboss_capedwarf_jms_";
 
     private final Map<ClassLoader, Map<String, Object>> cache = new HashMap<ClassLoader, Map<String, Object>>();
     private final ModuleLoader loader;
@@ -59,7 +59,7 @@ class ServletExecutorConsumer implements MessageListener {
 
     protected ModuleIdentifier parseModuleIdentifier(Message msg) throws Exception {
         String mi = getValue(msg, "module");
-        return ModuleIdentifier.create(mi);
+        return ModuleIdentifier.fromString(mi);
     }
 
     private ServletRequest createServletRequest(ClassLoader cl, Message message, ServletContext context) throws Exception {
