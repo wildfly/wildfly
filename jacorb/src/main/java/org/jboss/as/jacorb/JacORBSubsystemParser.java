@@ -396,7 +396,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
                     // parse the poa request-processors config attributes.
                     EnumSet<Attribute> attributes =
                             EnumSet.of(Attribute.POA_REQUEST_PROC_POOL_SIZE, Attribute.POA_REQUEST_PROC_MAX_THREADS);
-                    this.parseAttributes(reader, node, attributes, EnumSet.copyOf(attributes));
+                    this.parseAttributes(reader, node, attributes, null);
                     // the request-processors element doesn't have child elements.
                     requireNoContent(reader);
                     break;
