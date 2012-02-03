@@ -109,7 +109,7 @@
         <version.net.sourceforge.htmlunit>2.8</version.net.sourceforge.htmlunit>
         <version.net.sourceforge.nekohtml>1.9.14</version.net.sourceforge.nekohtml>
         <version.org.apache.ant>1.8.2</version.org.apache.ant>
-        <version.org.apache.cxf>2.4.4</version.org.apache.cxf>
+        <version.org.apache.cxf>2.4.6</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>2.4.0</version.org.apache.cxf.xjcplugins>
         <version.org.apache.felix.configadmin>1.2.8</version.org.apache.felix.configadmin>
         <version.org.apache.felix.log>1.0.0</version.org.apache.felix.log>
@@ -121,7 +121,7 @@
         <version.org.apache.santuario>1.4.5</version.org.apache.santuario>
         <version.org.apache.velocity>1.6.3</version.org.apache.velocity>
         <version.org.apache.ws.scout>1.1.1</version.org.apache.ws.scout>
-        <version.org.apache.ws.security>1.6.3</version.org.apache.ws.security>
+        <version.org.apache.ws.security>1.6.4</version.org.apache.ws.security>
         <version.org.apache.ws.xmlschema>2.0</version.org.apache.ws.xmlschema>
         <version.org.apache.xalan>2.7.1.jbossorg-1</version.org.apache.xalan>
         <version.org.apache.xerces>2.9.1-jbossas-1</version.org.apache.xerces>
@@ -219,11 +219,11 @@
         <version.org.jboss.weld.weld>1.1.5.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>1.1.Final</version.org.jboss.weld.weld-api>
         <version.org.jboss.ws.api>1.0.0.GA</version.org.jboss.ws.api>
-        <version.org.jboss.ws.common>2.0.0.GA</version.org.jboss.ws.common>
+        <version.org.jboss.ws.common>2.0.1.GA</version.org.jboss.ws.common>
         <version.org.jboss.ws.common.tools>1.0.0.GA</version.org.jboss.ws.common.tools>
-        <version.org.jboss.ws.jbossws-cxf>4.0.0.GA</version.org.jboss.ws.jbossws-cxf>
-        <version.org.jboss.ws.jbossws-native>4.0.0.GA</version.org.jboss.ws.jbossws-native>
-        <version.org.jboss.ws.spi>2.0.2-SNAPSHOT</version.org.jboss.ws.spi>
+        <version.org.jboss.ws.jbossws-cxf>4.0.1.GA</version.org.jboss.ws.jbossws-cxf>
+        <version.org.jboss.ws.jbossws-native>4.0.1.GA</version.org.jboss.ws.jbossws-native>
+        <version.org.jboss.ws.spi>2.0.2.GA</version.org.jboss.ws.spi>
         <version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>1.0.0.GA</version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>
         <version.org.jboss.xb>2.0.3.GA</version.org.jboss.xb>
         <version.org.jboss.xnio>3.0.0.GA</version.org.jboss.xnio>
