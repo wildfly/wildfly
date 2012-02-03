@@ -41,8 +41,13 @@ public interface CommandHandler {
 
     /**
      * Whether the command supports batch mode or not.
+     * The result could depend on the context, e.g. it won't make sense
+     * to add 'some_command --help' to a batch.
+     *
+     * @param ctx  the current context
+     * @return  true if the command can be added to the batch, otherwise - false.
      */
-    boolean isBatchMode();
+    boolean isBatchMode(CommandContext ctx);
 
     /**
      * Handles the execution of the command.

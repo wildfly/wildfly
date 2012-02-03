@@ -430,7 +430,7 @@ class CommandContextImpl implements CommandContext {
             final String cmdName = parsedCmd.getOperationName();
             CommandHandler handler = cmdRegistry.getCommandHandler(cmdName.toLowerCase());
             if (handler != null) {
-                if (isBatchMode() && handler.isBatchMode()) {
+                if (isBatchMode() && handler.isBatchMode(this)) {
                     if (!(handler instanceof OperationCommand)) {
                         throw new CommandLineException("The command is not allowed in a batch.");
                     } else {
@@ -921,7 +921,7 @@ class CommandContextImpl implements CommandContext {
         if (handler == null) {
             throw new OperationFormatException("No command handler for '" + parsedCmd.getOperationName() + "'.");
         }
-        if (!handler.isBatchMode()) {
+        if (!handler.isBatchMode(this)) {
             throw new OperationFormatException("The command is not allowed in a batch.");
         }
 

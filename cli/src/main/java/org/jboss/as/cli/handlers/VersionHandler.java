@@ -54,7 +54,7 @@ public class VersionHandler implements CommandHandler {
      * @see org.jboss.as.cli.CommandHandler#isBatchMode()
      */
     @Override
-    public boolean isBatchMode() {
+    public boolean isBatchMode(CommandContext ctx) {
         return false;
     }
 
