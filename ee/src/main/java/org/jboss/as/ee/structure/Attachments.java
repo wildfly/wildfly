@@ -41,6 +41,11 @@ public final class Attachments {
 
     public static final AttachmentKey<EarMetaData> EAR_METADATA = AttachmentKey.create(EarMetaData.class);
 
+    /**
+     * The distinct-name that is configured for the EE deployment, in the deployment descriptor
+     */
+    public static final AttachmentKey<String> DISTINCT_NAME = AttachmentKey.create(String.class);
+
     public static final AttachmentKey<ModuleMetaData> MODULE_META_DATA = AttachmentKey.create(ModuleMetaData.class);
 
     public static final AttachmentKey<EJBClientDescriptorMetaData> EJB_CLIENT_METADATA = AttachmentKey.create(EJBClientDescriptorMetaData.class);
