@@ -59,4 +59,11 @@ public class HelloWorldResourceAdapter implements ResourceAdapter {
         return new XAResource[0];
     }
 
+    public boolean equals(Object o) {
+        return super.equals(o);
+    }
+
+    public int hashCode() {
+        return super.hashCode();
+    }
 }
