@@ -195,8 +195,9 @@ public final class JAXRConnectionFactoryService extends AbstractService<Void> {
                 if (! properties.containsKey(JAXRConstants.SECURITYMANAGER)) {
                     properties.setProperty(JAXRConstants.SECURITYMANAGER, JAXRConstants.DEFAULT_V3_SECURITYMANAGER);
                 }
+                //Transport will be used by the juddi-client
                 if (! properties.containsKey(JAXRConstants.SCOUT_TRANSPORT)) {
-                    properties.setProperty(JAXRConstants.SCOUT_TRANSPORT, JAXRConstants.SCOUT_LOCAL_TRANSPORT);
+                    properties.setProperty(JAXRConstants.SCOUT_TRANSPORT, JAXRConstants.SCOUT_JAXWS_TRANSPORT);
                 }
                 if (! properties.containsKey(JAXRConstants.SCOUT_JUDDI_CLIENT_CONFIG)) {
                     properties.setProperty(JAXRConstants.SCOUT_JUDDI_CLIENT_CONFIG, JAXRConstants.DEFAULT_JUDDI_CLIENT_CONFIG);
