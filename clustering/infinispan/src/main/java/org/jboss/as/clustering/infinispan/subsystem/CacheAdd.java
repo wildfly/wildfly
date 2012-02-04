@@ -459,7 +459,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
                 properties.setProperty(propertyName, propertyValue);
             }
         }
-        log.debugf("Initializing cache store for cache %s with properties: %s", name, properties.toString());
+        log.debugf("Initializing cache store for cache %s with properties: %s", name, properties);
         builder.withProperties(properties);
 
         if (storeKey.equals(ModelKeys.FILE_STORE)) {
