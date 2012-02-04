@@ -41,7 +41,7 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
     public ManagementModelNode() {
         this.executor = GuiMain.getExecutor();
         this.isLeaf = false;
-        setUserObject("/");
+        setUserObject(new UserObject());
     }
 
     private ManagementModelNode(UserObject userObject) {
@@ -71,16 +71,16 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
                 Property prop = node.asProperty();
                 if (childrenTypes.contains(prop.getName())) { // resource node
                     if (hasGenericOperations(addressPath, prop.getName())) {
-                        add(new ManagementModelNode(new UserObject(prop.getName())));
+                        add(new ManagementModelNode(new UserObject(node, prop.getName())));
                     }
                     if (prop.getValue().isDefined()) {
                         for (ModelNode innerNode : prop.getValue().asList()) {
-                            UserObject usrObj = new UserObject(prop.getName(), innerNode.asProperty().getName(), false);
+                            UserObject usrObj = new UserObject(innerNode, prop.getName(), innerNode.asProperty().getName(), false);
                             add(new ManagementModelNode(usrObj));
                         }
                     }
                 } else { // attribute node
-                    UserObject usrObj = new UserObject(prop.getName(), prop.getValue().asString(), true);
+                    UserObject usrObj = new UserObject(node, prop.getName(), prop.getValue().asString(), true);
                     add(new ManagementModelNode(usrObj));
                 }
             }
@@ -154,6 +154,7 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
      * Encapsulates name/value pair.  Also encapsulates escaping of the value.
      */
     class UserObject {
+        private ModelNode backingNode;
         private String name;
         private String value;
         private boolean isLeaf;
@@ -161,11 +162,22 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
         private String separator;
 
         /**
+         * Constructor for the root node.
+         */
+        public UserObject() {
+            this.backingNode = new ModelNode();
+            this.name = "/";
+            this.value = "";
+            this.isLeaf = false;
+            this.seperator = "";
+        }
+        /**
          * Constructor for generic folder where resource=*.
          *
          * @param name The name of the resource.
          */
-        public UserObject(String name) {
+        public UserObject(ModelNode backingNode, String name) {
+            this.backingNode = backingNode;
             this.name = name;
             this.value = "*";
             this.isLeaf = false;
@@ -173,7 +185,8 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
             this.separator = "=";
         }
 
-        public UserObject(String name, String value, boolean isLeaf) {
+        public UserObject(ModelNode backingNode, String name, String value, boolean isLeaf) {
+            this.backingNode = backingNode;
             this.name = name;
             this.value = value;
             this.isLeaf = isLeaf;
@@ -182,6 +195,10 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
             } else {
                 this.separator = "=";
             }
+        }
+
+        public ModelNode getBackingNode() {
+            return this.backingNode;
         }
 
         public String getName() {

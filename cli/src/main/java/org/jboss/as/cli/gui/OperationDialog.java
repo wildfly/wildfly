@@ -62,7 +62,13 @@ public class OperationDialog extends JDialog {
         super(GuiMain.getFrame(), opName, true);
         this.node = node;
         this.opName = opName;
-        setProps(requestProperties);
+
+        try {
+            setProps(requestProperties);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
 
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
@@ -95,15 +101,31 @@ public class OperationDialog extends JDialog {
         super.setVisible(isVisible);
     }
 
-    private void setProps(ModelNode requestProperties) {
+    private void setProps(ModelNode requestProperties) throws Exception {
         props = new TreeSet<RequestProp>();
         if (opName.equals("add")) {
             UserObject usrObj = (UserObject)node.getUserObject();
-            props.add(new RequestProp("/" + usrObj.getName() + "=<name>/", "Resource name for the new " + usrObj.getName(), true));
+            props.add(new RequestProp("/" + usrObj.getName() + "=<name>/", "Resource name for the new " + usrObj.getName(), true, ModelType.STRING));
+        }
+
+        if (opName.equals("write-attribute")) {
+            ModelNode nameNode = requestProperties.get("name");
+            nameNode.get("type").set(ModelType.UNDEFINED); // undefined type will display as uneditable String
+            UserObject usrObj = (UserObject)OperationDialog.this.node.getUserObject();
+            ModelNode nameNodeValue = new ModelNode();
+            nameNodeValue.set(usrObj.getName());
+            props.add(new RequestProp("name", requestProperties.get("name"), nameNodeValue));
+
+            ModelNode rscDesc = GuiMain.getExecutor().doCommand(node.addressPath() + ":read-resource-description");
+            ModelNode valueNode = rscDesc.get("result", "attributes", usrObj.getName());
+            valueNode.get("required").set(false); // value is never required for write-attribute
+            ModelNode valueNodeValue = usrObj.getBackingNode().get(usrObj.getName());
+            props.add(new RequestProp("value", valueNode, valueNodeValue));
+            return;
         }
 
         for (Property prop : requestProperties.asPropertyList()) {
-            props.add(new RequestProp(prop.getName(), prop.getValue()));
+            props.add(new RequestProp(prop.getName(), prop.getValue(), null));
         }
     }
 
@@ -222,6 +244,7 @@ public class OperationDialog extends JDialog {
         private boolean isRequired = false;
         private boolean nillable = false;
         private ModelNode defaultValue = null;
+        private ModelNode value = null;
 
         private JLabel label;
         private JComponent valueComponent;
@@ -234,19 +257,21 @@ public class OperationDialog extends JDialog {
          * @param description Description for tool tip text.
          * @param required Is this a isRequired property?
          */
-        public RequestProp(String name, String description, boolean required) {
+        public RequestProp(String name, String description, boolean required, ModelType type) {
             this.name = name;
             this.props = new ModelNode();
             this.description = description;
-            this.type = ModelType.STRING;
+            this.type = type;
             this.isRequired = required;
             this.isResourceName = true;
             setInputComponent();
+            setInputComponentValue();
         }
 
-        public RequestProp(String name, ModelNode props) {
+        public RequestProp(String name, ModelNode props, ModelNode value) {
             this.name = name;
             this.props = props;
+            this.value = value;
             this.type = props.get("type").asType();
 
             if (props.get("description").isDefined()) {
@@ -266,7 +291,7 @@ public class OperationDialog extends JDialog {
             }
 
             setInputComponent();
-            setWriteAttributeValues();
+            setInputComponentValue();
         }
 
         public String getName() {
@@ -282,6 +307,10 @@ public class OperationDialog extends JDialog {
         }
 
         public String getValueAsString() {
+            if (valueComponent instanceof JLabel) {
+                return ((JLabel)valueComponent).getText();
+            }
+
             if (valueComponent instanceof JTextComponent) {
                 return ((JTextComponent)valueComponent).getText();
             }
@@ -300,33 +329,64 @@ public class OperationDialog extends JDialog {
                 return "";
             }
 
+            if (valueComponent instanceof JLabel) {
+                return ((JLabel)valueComponent).getText();
+            }
+
             return null;
         }
 
         private void setInputComponent() {
             this.label = makeLabel();
             if (type == ModelType.BOOLEAN) {
-                if (defaultValue == null) {
-                    this.valueComponent = new JCheckBox(makeLabelString(false));
-                } else {
-                    this.valueComponent = new JCheckBox(makeLabelString(false), defaultValue.asBoolean());
-                }
+                this.valueComponent = new JCheckBox(makeLabelString(false));
                 this.valueComponent.setToolTipText(description);
                 this.label = new JLabel(); // checkbox doesn't need a label
+            } else if (type == ModelType.UNDEFINED) {
+                JLabel jLabel = new JLabel();
+                this.valueComponent = jLabel;
             } else if (props.get("allowed").isDefined()) {
                 JComboBox comboBox = makeJComboBox(props.get("allowed").asList());
-                if (defaultValue != null) comboBox.setSelectedItem(defaultValue.asString());
                 this.valueComponent = comboBox;
             } else if (type == ModelType.LIST) {
                 ListEditor listEditor = new ListEditor(OperationDialog.this);
-                if (defaultValue != null) listEditor.setValue(defaultValue);
                 this.valueComponent = listEditor;
             } else {
                 JTextField textField = new JTextField(30);
-                if (defaultValue != null) textField.setText(defaultValue.asString());
                 this.valueComponent = textField;
             }
+        }
 
+        private void setInputComponentValue() {
+            ModelNode valueToSet = defaultValue;
+            if (value != null) valueToSet = value;
+            if (valueToSet == null) return;
+
+            if (valueComponent instanceof JLabel) {
+                ((JLabel)valueComponent).setText(valueToSet.asString());
+            }
+
+            if (valueComponent instanceof ListEditor) {
+                ((ListEditor)valueComponent).setValue(valueToSet);
+            }
+
+            if (!valueToSet.isDefined()) return;
+
+            if (valueComponent instanceof JCheckBox) {
+                ((JCheckBox)this.valueComponent).setSelected(valueToSet.asBoolean());
+            }
+
+            if (valueComponent instanceof JTextComponent) {
+                ((JTextComponent)valueComponent).setText(valueToSet.asString());
+            }
+
+            if (valueComponent instanceof JCheckBox) {
+                ((JCheckBox)valueComponent).setSelected(valueToSet.asBoolean());
+            }
+
+            if (valueComponent instanceof JComboBox) {
+                ((JComboBox)valueComponent).setSelectedItem(valueToSet.asString());
+            }
         }
 
         private String makeLabelString(boolean addColon) {
