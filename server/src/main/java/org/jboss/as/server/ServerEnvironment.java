@@ -227,9 +227,9 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
     protected static final String DOMAIN_BASE_DIR = "jboss.domain.base.dir";
     protected static final String DOMAIN_CONFIG_DIR = "jboss.domain.config.dir";
 
-    private static final Set<String> ILLEGAL_PROPERTIES = new HashSet<String>(Arrays.asList(JAVA_EXT_DIRS, HOME_DIR,
-            "modules.path", SERVER_BASE_DIR, SERVER_CONFIG_DIR, SERVER_DATA_DIR, SERVER_DEPLOY_DIR, SERVER_LOG_DIR,
-            BOOTSTRAP_MAX_THREADS, CONTROLLER_TEMP_DIR));
+    private static final Set<String> ILLEGAL_PROPERTIES = new HashSet<String>(Arrays.asList(DOMAIN_BASE_DIR,
+            DOMAIN_CONFIG_DIR, JAVA_EXT_DIRS, HOME_DIR, "modules.path", SERVER_BASE_DIR, SERVER_CONFIG_DIR,
+            SERVER_DATA_DIR, SERVER_DEPLOY_DIR, SERVER_LOG_DIR, BOOTSTRAP_MAX_THREADS, CONTROLLER_TEMP_DIR));
     private static final Set<String> BOOT_PROPERTIES = new HashSet<String>(Arrays.asList(BUNDLES_DIR, SERVER_TEMP_DIR,
             NODE_NAME, SERVER_NAME, HOST_NAME, QUALIFIED_HOST_NAME));
 
@@ -354,14 +354,12 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         tmp = getFileFromProperty(DOMAIN_BASE_DIR, props);
         if (tmp != null) {
             this.domainBaseDir = tmp;
-            SecurityActions.setSystemProperty(DOMAIN_BASE_DIR, this.domainBaseDir.getAbsolutePath());
         } else {
             this.domainBaseDir = null;
         }
         tmp = getFileFromProperty(DOMAIN_CONFIG_DIR, props);
         if (tmp != null) {
             this.domainConfigurationDir = tmp;
-            SecurityActions.setSystemProperty(DOMAIN_CONFIG_DIR, this.domainConfigurationDir.getAbsolutePath());
         } else {
             this.domainConfigurationDir = null;
         }
@@ -415,6 +413,15 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         SecurityActions.setSystemProperty(SERVER_DEPLOY_DIR, serverDeployDir.getAbsolutePath());
         SecurityActions.setSystemProperty(SERVER_LOG_DIR, serverLogDir.getAbsolutePath());
         SecurityActions.setSystemProperty(SERVER_TEMP_DIR, serverTempDir.getAbsolutePath());
+
+        if(launchType.getProcessType() == ProcessType.DOMAIN_SERVER) {
+            if(domainBaseDir != null) {
+                SecurityActions.setSystemProperty(DOMAIN_BASE_DIR, domainBaseDir.getAbsolutePath());
+            }
+            if(domainConfigurationDir != null) {
+                SecurityActions.setSystemProperty(DOMAIN_CONFIG_DIR, domainConfigurationDir.getAbsolutePath());
+            }
+        }
 
         // Register the vfs module as URLStreamHandlerFactory
         try {
