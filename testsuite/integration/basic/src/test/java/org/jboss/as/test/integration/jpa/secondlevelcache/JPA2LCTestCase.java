@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.jpa.secondlevelcache;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assert.assertNotNull;
 
 import java.sql.Connection;
 
@@ -52,7 +53,8 @@ public class JPA2LCTestCase {
 
     private static final String ARCHIVE_NAME = "jpa_SecondLevelCacheTestCase";
     
-    private static final String CACHE_REGION_NAME = ARCHIVE_NAME+".jar#mypc."+JPA2LCTestCase.class.getPackage().getName()+'.';
+    // cache region name prefix, use getCacheRegionName() method to get the value!
+    private static String CACHE_REGION_NAME = null;
 
     private static final String persistence_xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> "
 			+ "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">"
@@ -116,7 +118,25 @@ public class JPA2LCTestCase {
     protected <T> T rawLookup(String name, Class<T> interfaceType) throws NamingException {
         return interfaceType.cast(iniCtx.lookup(name));
     }
+    
+    // Cache region name depends on the internal entity cache naming convention:
+    // "fully application scoped persistence unit name" + "the entity class full name"
+    // first part could be rewritten by property "hibernate.cache.region_prefix"
+    // This method returns prefix + package name, the entity name needs to be appended
+    public String getCacheRegionName() throws Exception{
+    	
+    	if (CACHE_REGION_NAME == null){
+    		SFSB2LC sfsb = lookup("SFSB2LC", SFSB2LC.class);
+    		String prefix = sfsb.getCacheRegionName();
+    		
+    		assertNotNull("'hibernate.cache.region_prefix' is null.", prefix);
+    		CACHE_REGION_NAME = prefix + '.' + this.getClass().getPackage().getName() + '.';
+    	}
 
+    	return CACHE_REGION_NAME; 	
+    }
+
+    
     @Test
     public void testMultipleNonTXTransactionalEntityManagerInvocations() throws Exception {
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
@@ -163,7 +183,7 @@ public class JPA2LCTestCase {
  	public void testEntityCacheSameSession() throws Exception {
 
  		SFSB2LC sfsb = lookup("SFSB2LC", SFSB2LC.class);
- 		String message = sfsb.sameSessionCheck(CACHE_REGION_NAME);
+ 		String message = sfsb.sameSessionCheck(getCacheRegionName());
 
  		if (!message.equals("OK")){
  			fail(message);
@@ -178,13 +198,7 @@ public class JPA2LCTestCase {
  	public void testEntityCacheSecondSession() throws Exception {
 
  		SFSB2LC sfsb = lookup("SFSB2LC", SFSB2LC.class);
- 		String message = sfsb.firstSessionInit(CACHE_REGION_NAME);
-
- 		if (!message.equals("OK")){
- 			fail(message);
- 		}
- 		
- 		message = sfsb.secondSessionCheck(CACHE_REGION_NAME);
+ 		String message = sfsb.secondSessionCheck(getCacheRegionName());
 
  		if (!message.equals("OK")){
  			fail(message);
@@ -198,7 +212,7 @@ public class JPA2LCTestCase {
  	public void testEvictEntityCache() throws Exception {
 
  		SFSB2LC sfsb = lookup("SFSB2LC", SFSB2LC.class);
- 		String message = sfsb.evict2LCCheck(CACHE_REGION_NAME);
+ 		String message = sfsb.evict2LCCheck(getCacheRegionName());
 
  		if (!message.equals("OK")){
  			fail(message);
