@@ -174,6 +174,8 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
 
     @Override
     public synchronized void start() throws LifecycleException {
+        if (this.started) return;
+
         // Identify ourself more clearly
         this.log = Logger.getLogger(getClass().getName() + "." + getContainer().getName().replaceAll("/", ""));
 
