@@ -124,8 +124,8 @@ public class JMSServices {
     static String FAILOVER_ON_INITIAL_CONNECTION_METHOD = "failoverOnInitialConnection";  // TODO HornetQResourceAdapter does not have this method
     static String FAILOVER_ON_SERVER_SHUTDOWN_METHOD = "failoverOnServerShutdown";  // TODO HornetQResourceAdapter does not have this method
     static String GROUP_ID_METHOD = "groupId";
-    static String HA_METHOD = "hA";
-    static String LOAD_BALANCING_POLICY_CLASS_NAME_METHOD = "loadBalancingPolicyClassName";
+    static String HA_METHOD = "hA"; // TODO HornetQResourceAdapter does not have this method
+    static String LOAD_BALANCING_POLICY_CLASS_NAME_METHOD = "loadBalancingPolicyClassName";  // TODO HornetQResourceAdapter does not have this method
     static String MAX_RETRY_INTERVAL_METHOD = "maxRetryInterval";    // TODO HornetQResourceAdapter does not have this method
     static String MIN_LARGE_MESSAGE_SIZE_METHOD = "minLargeMessageSize";
     static String PASSWORD_METHOD = "password";
@@ -242,8 +242,8 @@ public class JMSServices {
         FAILOVER_ON_INITIAL_CONNECTION,  // TODO HornetQResourceAdapter does not have this method
         FAILOVER_ON_SERVER_SHUTDOWN,   // TODO HornetQResourceAdapter does not have this method
         GROUP_ID,
-        HA,
-        LOAD_BALANCING_CLASS_NAME,
+        HA,  // TODO HornetQResourceAdapter does not have this method
+        LOAD_BALANCING_CLASS_NAME,  // TODO HornetQResourceAdapter does not have this method
         MAX_RETRY_INTERVAL,          // TODO HornetQResourceAdapter does not have this method
         MIN_LARGE_MESSAGE_SIZE,
         PCF_PASSWORD,
@@ -289,9 +289,9 @@ public class JMSServices {
         // TODO HornetQResourceAdapter does not have this method
         // new PooledCFAttribute(FAILOVER_ON_SERVER_SHUTDOWN, FAILOVER_ON_SERVER_SHUTDOWN_METHOD),
         new PooledCFAttribute(GROUP_ID, GROUP_ID_METHOD),
-        new PooledCFAttribute(HA, HA_METHOD),
-        new PooledCFAttribute(LOAD_BALANCING_CLASS_NAME, LOAD_BALANCING_POLICY_CLASS_NAME_METHOD),
-        // TODO HornetQResourceAdapter does not have this method
+        // TODO HornetQResourceAdapter does not have these three methods
+        // new PooledCFAttribute(HA, HA_METHOD),
+        // new PooledCFAttribute(LOAD_BALANCING_CLASS_NAME, LOAD_BALANCING_POLICY_CLASS_NAME_METHOD),
         //new PooledCFAttribute(MAX_RETRY_INTERVAL, MAX_RETRY_INTERVAL_METHOD),
         new PooledCFAttribute(MIN_LARGE_MESSAGE_SIZE, MIN_LARGE_MESSAGE_SIZE_METHOD),
         new PooledCFAttribute(PCF_PASSWORD, PASSWORD_METHOD),
