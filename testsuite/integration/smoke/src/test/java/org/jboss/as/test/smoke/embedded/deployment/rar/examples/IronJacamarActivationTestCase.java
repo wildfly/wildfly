@@ -25,7 +25,6 @@ import static org.junit.Assert.assertNotNull;
 import org.jboss.as.test.smoke.embedded.deployment.rar.MultipleAdminObject1;
 import org.jboss.as.test.smoke.embedded.deployment.rar.MultipleConnectionFactory1;
 import org.jboss.as.test.smoke.embedded.deployment.rar.MultipleAdminObject2;
-import org.jboss.as.test.smoke.embedded.deployment.rar.MultipleConnectionFactory2;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import javax.annotation.Resource;
@@ -38,6 +37,8 @@ import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
 
 
 /**
@@ -61,7 +62,7 @@ public class IronJacamarActivationTestCase extends AbstractMgmtTestBase {
                 ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName);
          JavaArchive ja = ShrinkWrap.create(JavaArchive.class,  "multiple.jar");
         ja.addPackage(MultipleConnectionFactory1.class.getPackage()).
-        addClasses(IronJacamarActivationTestCase.class,AbstractMgmtTestBase.class,MgmtOperationException.class);
+        addClasses(IronJacamarActivationTestCase.class,AbstractMgmtTestBase.class,MgmtOperationException.class,XMLElementReader.class,XMLElementWriter.class);
         raa.addAsLibrary(ja);
 
         raa.addAsManifestResource("rar/" + deploymentName + "/META-INF/ra.xml", "ra.xml")
