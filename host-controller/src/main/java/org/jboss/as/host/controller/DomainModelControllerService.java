@@ -478,10 +478,6 @@ public class DomainModelControllerService extends AbstractControllerService impl
             return serverInventory.determineServerStatus(serverName);
         }
 
-        public int hashCode() {
-            return serverInventory.hashCode();
-        }
-
         public ServerStatus startServer(String serverName, ModelNode domainModel) {
             return serverInventory.startServer(serverName, domainModel);
         }
@@ -500,14 +496,6 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
         public CallbackHandler getServerCallbackHandler() {
             return serverInventory.getServerCallbackHandler();
-        }
-
-        public boolean equals(Object obj) {
-            return serverInventory.equals(obj);
-        }
-
-        public String toString() {
-            return serverInventory.toString();
         }
 
         @Override
