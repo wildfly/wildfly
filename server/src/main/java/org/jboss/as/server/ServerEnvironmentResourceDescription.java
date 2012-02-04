@@ -57,13 +57,14 @@ public class ServerEnvironmentResourceDescription extends SimpleResourceDefiniti
     public static final AttributeDefinition BASE_DIR = SimpleAttributeDefinitionBuilder.create("base-dir", ModelType.STRING).setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
     public static final AttributeDefinition CONFIG_DIR = SimpleAttributeDefinitionBuilder.create("config-dir", ModelType.STRING).setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
     public static final AttributeDefinition CONFIG_FILE = SimpleAttributeDefinitionBuilder.create("config-file", ModelType.STRING).setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
+    public static final AttributeDefinition CONTENT_DIR = SimpleAttributeDefinitionBuilder.create("content-dir", ModelType.STRING).setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
     public static final AttributeDefinition DATA_DIR = SimpleAttributeDefinitionBuilder.create("data-dir", ModelType.STRING).setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
     public static final AttributeDefinition DEPLOY_DIR = SimpleAttributeDefinitionBuilder.create("deploy-dir", ModelType.STRING).setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
     public static final AttributeDefinition EXT_DIRS = SimpleAttributeDefinitionBuilder.create("ext-dirs", ModelType.STRING).setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
     public static final AttributeDefinition HOME_DIR = SimpleAttributeDefinitionBuilder.create("home-dir", ModelType.STRING).setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
     public static final AttributeDefinition HOST_NAME = SimpleAttributeDefinitionBuilder.create("host-name", ModelType.STRING).setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
     public static final AttributeDefinition INITIAL_RUNNING_MODE = SimpleAttributeDefinitionBuilder.create("initial-running-mode", ModelType.STRING)
-            .setValidator(new EnumValidator(RunningMode.class, false, false)).setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
+            .setValidator(new EnumValidator<RunningMode>(RunningMode.class, false, false)).setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
     public static final AttributeDefinition LAUNCH_TYPE = SimpleAttributeDefinitionBuilder.create("launch-type", ModelType.STRING).setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
     public static final AttributeDefinition LOG_DIR = SimpleAttributeDefinitionBuilder.create("log-dir", ModelType.STRING).setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
     public static final AttributeDefinition MODULES_DIR = SimpleAttributeDefinitionBuilder.create("modules-dir", ModelType.STRING).setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
@@ -72,7 +73,7 @@ public class ServerEnvironmentResourceDescription extends SimpleResourceDefiniti
     public static final AttributeDefinition SERVER_NAME = SimpleAttributeDefinitionBuilder.create("server-name", ModelType.STRING).setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
     public static final AttributeDefinition TEMP_DIR = SimpleAttributeDefinitionBuilder.create("temp-dir", ModelType.STRING).setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
 
-    public static final AttributeDefinition[] SERVER_ENV_ATTRIBUTES = {BASE_DIR, CONFIG_DIR, CONFIG_FILE, DATA_DIR,
+    public static final AttributeDefinition[] SERVER_ENV_ATTRIBUTES = {BASE_DIR, CONFIG_DIR, CONFIG_FILE, CONTENT_DIR, DATA_DIR,
             DEPLOY_DIR, EXT_DIRS, HOME_DIR, HOST_NAME, INITIAL_RUNNING_MODE, LAUNCH_TYPE, LOG_DIR, MODULES_DIR, NODE_NAME,
             QUALIFIED_HOST_NAME, SERVER_NAME, TEMP_DIR};
 
@@ -135,8 +136,11 @@ public class ServerEnvironmentResourceDescription extends SimpleResourceDefiniti
             if (equals(name, DATA_DIR)) {
                 set(result, environment.getServerDataDir());
             }
+            if (equals(name, CONTENT_DIR)) {
+                set(result, environment.getServerContentDir());
+            }
             if (equals(name, DEPLOY_DIR)) {
-                set(result, environment.getServerDeployDir());
+                set(result, environment.getServerContentDir());
             }
             if (equals(name, EXT_DIRS)) {
                 set(result, environment.getJavaExtDirs());
@@ -157,7 +161,9 @@ public class ServerEnvironmentResourceDescription extends SimpleResourceDefiniti
                 set(result, environment.getServerLogDir());
             }
             if (equals(name, MODULES_DIR)) {
-                set(result, environment.getModulesDir());
+                @SuppressWarnings("deprecation")
+                File modules = environment.getModulesDir();
+                set(result, modules);
             }
             if (equals(name, NODE_NAME)) {
                 set(result, environment.getNodeName());
