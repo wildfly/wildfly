@@ -31,6 +31,7 @@
     <dependencies>
         <module name="javax.api"/>
         <module name="javax.xml.ws.api"/>
+        <module name="javaee.api"/>
         <module name="org.apache.commons.logging"/>
     </dependencies>
 
