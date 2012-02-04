@@ -21,23 +21,18 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.util.Locale;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author Paul Ferraro
  */
-public class ProtocolStackRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
+public class ProtocolStackRemove extends AbstractRemoveStepHandler {
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return JGroupsDescriptions.getProtocolStackRemoveDescription(locale);
-    }
+    public static final ProtocolStackRemove INSTANCE = new ProtocolStackRemove();
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
         final PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));

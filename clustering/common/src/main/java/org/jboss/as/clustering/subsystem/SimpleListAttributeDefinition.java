@@ -1,77 +1,57 @@
 /*
-* JBoss, Home of Professional Open Source.
-* Copyright 2011, Red Hat, Inc., and individual contributors
-* as indicated by the @author tags. See the copyright.txt file in the
-* distribution for a full listing of individual contributors.
-*
-* This is free software; you can redistribute it and/or modify it
-* under the terms of the GNU Lesser General Public License as
-* published by the Free Software Foundation; either version 2.1 of
-* the License, or (at your option) any later version.
-*
-* This software is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-* Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public
-* License along with this software; if not, write to the Free
-* Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-* 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-*/
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2011, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 
-package org.jboss.as.clustering.infinispan.subsystem;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
+package org.jboss.as.clustering.subsystem;
 
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.ResourceBundle;
 
-import org.jboss.as.clustering.infinispan.subsystem.validators.ObjectTypeValidator;
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ParameterCorrector;
+import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.AllowedValuesValidator;
 import org.jboss.as.controller.operations.validation.MinMaxValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
-* Date: 15.11.2011
-*
-* @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
-* @author Richard Achmatowicz (c) 2012 RedHat Inc.
-*/
-public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
-    private final AttributeDefinition[] valueTypes;
-    private final String suffix;
+ * Date: 13.10.2011
+ *
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @author Richard Achmatowicz (c) 2012 RedHat Inc.
+ */
+public class SimpleListAttributeDefinition extends ListAttributeDefinition {
+    private final SimpleAttributeDefinition valueType;
 
-    private ObjectTypeAttributeDefinition(final String name, final String xmlName, final String suffix, final AttributeDefinition[] valueTypes, final boolean allowNull, final ParameterCorrector corrector, final String[] alternatives, final String[] requires, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, null, ModelType.OBJECT, allowNull, false, null, corrector, new ObjectTypeValidator(allowNull, valueTypes), alternatives, requires, flags);
-        this.valueTypes = valueTypes;
-        if (suffix == null) {
-            this.suffix = "";
-        } else {
-            this.suffix = suffix;
-        }
+    private SimpleListAttributeDefinition(final String name, final String xmlName, final SimpleAttributeDefinition valueType, final boolean allowNull, final int minSize, final int maxSize, final String[] alternatives, final String[] requires, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, allowNull, minSize, maxSize, valueType.getValidator(), alternatives, requires, flags);
+        this.valueType = valueType;
     }
-
-
-    @Override
-    public ModelNode parse(final String value, final XMLStreamReader reader) throws XMLStreamException {
-        throw new UnsupportedOperationException();
-    }
-
 
     @Override
     public ModelNode addResourceAttributeDescription(ResourceBundle bundle, String prefix, ModelNode resourceDescription) {
@@ -87,36 +67,45 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
         return result;
     }
 
+
+    @Override
+    protected void addValueTypeDescription(final ModelNode node, final ResourceBundle bundle) {
+        node.get(ModelDescriptionConstants.VALUE_TYPE, valueType.getName()).set(getValueTypeDescription(false));
+    }
+
+
     protected void addValueTypeDescription(final ModelNode node, final String prefix, final ResourceBundle bundle) {
-        for (AttributeDefinition valueType : valueTypes) {
-            // get the value type description of the attribute
-            final ModelNode valueTypeDesc = getValueTypeDescription(valueType, false);
-            final String p = (prefix == null || prefix.isEmpty()) ? suffix : String.format("%s.%s", prefix, suffix);
-            // get the text description of the attribute
-            valueTypeDesc.get(DESCRIPTION).set(valueType.getAttributeTextDescription(bundle, p));
-            // set it as one of our value types, and return the value
-            final ModelNode childType = node.get(VALUE_TYPE, valueType.getName()).set(valueTypeDesc);
-            // if it is of type OBJECT itself (add its nested descriptions)
-            if (valueType instanceof ObjectTypeAttributeDefinition) {
-                ObjectTypeAttributeDefinition.class.cast(valueType).addValueTypeDescription(childType, prefix, bundle);
-            }
-        }
+        final ModelNode valueTypeDesc = getValueTypeDescription(false);
+        valueTypeDesc.get(ModelDescriptionConstants.DESCRIPTION).set(valueType.getAttributeTextDescription(bundle, prefix));
+        node.get(ModelDescriptionConstants.VALUE_TYPE, valueType.getName()).set(valueTypeDesc);
+    }
+
+    @Override
+    protected void addAttributeValueTypeDescription(final ModelNode node, final ResourceDescriptionResolver resolver, final Locale locale, final ResourceBundle bundle) {
+        final ModelNode valueTypeDesc = getValueTypeDescription(false);
+        valueTypeDesc.get(ModelDescriptionConstants.DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, valueType.getName()));
+        node.get(ModelDescriptionConstants.VALUE_TYPE, valueType.getName()).set(valueTypeDesc);
+    }
+
+    @Override
+    protected void addOperationParameterValueTypeDescription(final ModelNode node, final String operationName, final ResourceDescriptionResolver resolver, final Locale locale, final ResourceBundle bundle) {
+        final ModelNode valueTypeDesc = getValueTypeDescription(true);
+        valueTypeDesc.get(ModelDescriptionConstants.DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, valueType.getName()));
+        node.get(ModelDescriptionConstants.VALUE_TYPE, valueType.getName()).set(valueTypeDesc);
     }
 
     @Override
     public void marshallAsElement(final ModelNode resourceModel, final XMLStreamWriter writer) throws XMLStreamException {
         if (resourceModel.hasDefined(getName())) {
             writer.writeStartElement(getXmlName());
-            for (AttributeDefinition valueType : valueTypes) {
-                for (ModelNode handler : resourceModel.get(getName()).asList()) {
-                    valueType.marshallAsElement(handler, writer);
-                }
+            for (ModelNode handler : resourceModel.get(getName()).asList()) {
+                valueType.marshallAsElement(handler, writer);
             }
             writer.writeEndElement();
         }
     }
 
-    private ModelNode getValueTypeDescription(final AttributeDefinition valueType, final boolean forOperation) {
+    private ModelNode getValueTypeDescription(boolean forOperation) {
         final ModelNode result = new ModelNode();
         result.get(ModelDescriptionConstants.TYPE).set(valueType.getType());
         result.get(ModelDescriptionConstants.DESCRIPTION); // placeholder
@@ -182,44 +171,33 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
                 }
             }
         }
-
         return result;
     }
 
     public static class Builder {
         private final String name;
-        private String suffix;
-        private final AttributeDefinition[] valueTypes;
-        private ParameterCorrector corrector;
+        private final SimpleAttributeDefinition valueType;
         private String xmlName;
         private boolean allowNull;
+        private int minSize;
+        private int maxSize;
         private String[] alternatives;
         private String[] requires;
         private AttributeAccess.Flag[] flags;
 
-        public Builder(final String name, final AttributeDefinition... valueTypes) {
+        public Builder(final String name, final SimpleAttributeDefinition valueType) {
             this.name = name;
-            this.valueTypes = valueTypes;
-            this.allowNull = true;
+            this.valueType = valueType;
         }
 
-        public static Builder of(final String name, final AttributeDefinition... valueTypes) {
-            return new Builder(name, valueTypes);
+        public static Builder of(final String name, final SimpleAttributeDefinition valueType) {
+            return new Builder(name, valueType);
         }
 
-        public static Builder of(final String name, final AttributeDefinition[] valueTypes, final AttributeDefinition[] moreValueTypes) {
-
-            ArrayList<AttributeDefinition> list = new ArrayList<AttributeDefinition>(Arrays.asList(valueTypes)) ;
-            list.addAll(Arrays.asList(moreValueTypes));
-            AttributeDefinition[] allValueTypes = new AttributeDefinition[list.size()];
-            list.toArray(allValueTypes);
-
-            return new Builder(name, allValueTypes);
-        }
-
-        public ObjectTypeAttributeDefinition build() {
+        public SimpleListAttributeDefinition build() {
             if (xmlName == null) xmlName = name;
-            return new ObjectTypeAttributeDefinition(name, xmlName, suffix, valueTypes, allowNull, corrector, alternatives, requires, flags);
+            if (maxSize < 1) maxSize = Integer.MAX_VALUE;
+            return new SimpleListAttributeDefinition(name, xmlName, valueType, allowNull, minSize, maxSize, alternatives, requires, flags);
         }
 
         public Builder setAllowNull(final boolean allowNull) {
@@ -232,23 +210,23 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
             return this;
         }
 
-        public Builder setCorrector(final ParameterCorrector corrector) {
-            this.corrector = corrector;
-            return this;
-        }
-
         public Builder setFlags(final AttributeAccess.Flag... flags) {
             this.flags = flags;
             return this;
         }
 
-        public Builder setRequires(final String... requires) {
-            this.requires = requires;
+        public Builder setMaxSize(final int maxSize) {
+            this.maxSize = maxSize;
             return this;
         }
 
-        public Builder setSuffix(final String suffix) {
-            this.suffix = suffix;
+        public Builder setMinSize(final int minSize) {
+            this.minSize = minSize;
+            return this;
+        }
+
+        public Builder setRequires(final String... requires) {
+            this.requires = requires;
             return this;
         }
 

@@ -288,6 +288,23 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
     }
 
     private void writeStoreProperties(XMLExtendedStreamWriter writer, ModelNode store) throws XMLStreamException {
+        if (store.hasDefined(ModelKeys.PROPERTY)) {
+            // the format of the property elements
+            //  "property" => {
+            //       "relative-to" => {"value" => "fred"},
+            //   }
+            for (Property property: store.get(ModelKeys.PROPERTY).asPropertyList()) {
+                writer.writeStartElement(Element.PROPERTY.getLocalName());
+                writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
+                Property complexValue = property.getValue().asProperty();
+                writer.writeCharacters(complexValue.getValue().asString());
+                writer.writeEndElement();
+            }
+        }
+    }
+
+    /*
+    private void writeStoreProperties(XMLExtendedStreamWriter writer, ModelNode store) throws XMLStreamException {
         if (store.hasDefined(ModelKeys.PROPERTIES)) {
             for (Property property: store.get(ModelKeys.PROPERTIES).asPropertyList()) {
                 writer.writeStartElement(Element.PROPERTY.getLocalName());
@@ -297,6 +314,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             }
         }
     }
+    */
 
     private void writeOptional(XMLExtendedStreamWriter writer, Attribute attribute, ModelNode model, String key) throws XMLStreamException {
         if (model.hasDefined(key)) {

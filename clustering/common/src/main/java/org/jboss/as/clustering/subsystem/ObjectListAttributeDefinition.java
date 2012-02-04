@@ -20,10 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-  package org.jboss.as.clustering.infinispan.subsystem;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
+  package org.jboss.as.clustering.subsystem;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -75,15 +72,15 @@ import org.jboss.dmr.ModelNode;
 
       @Override
       protected void addValueTypeDescription(final ModelNode node, final ResourceBundle bundle) {
-          node.get(VALUE_TYPE, valueType.getName()).set(getValueTypeDescription(false));
+          node.get(ModelDescriptionConstants.VALUE_TYPE, valueType.getName()).set(getValueTypeDescription(false));
       }
 
 
       protected void addValueTypeDescription(final ModelNode node, final String prefix, final ResourceBundle bundle) {
           final ModelNode valueTypeDesc = getValueTypeDescription(false);
-          valueTypeDesc.get(DESCRIPTION).set(valueType.getAttributeTextDescription(bundle, prefix));
+          valueTypeDesc.get(ModelDescriptionConstants.DESCRIPTION).set(valueType.getAttributeTextDescription(bundle, prefix));
           // node.get(VALUE_TYPE, valueType.getName()).set(valueTypeDesc);
-          ModelNode childType = node.get(VALUE_TYPE, valueType.getName()).set(valueTypeDesc);
+          ModelNode childType = node.get(ModelDescriptionConstants.VALUE_TYPE, valueType.getName()).set(valueTypeDesc);
           // recursively process any child OBJECT attributes
           if (valueType instanceof ObjectTypeAttributeDefinition) {
               ObjectTypeAttributeDefinition.class.cast(valueType).addValueTypeDescription(childType, prefix, bundle);
@@ -93,15 +90,15 @@ import org.jboss.dmr.ModelNode;
       @Override
       protected void addAttributeValueTypeDescription(final ModelNode node, final ResourceDescriptionResolver resolver, final Locale locale, final ResourceBundle bundle) {
           final ModelNode valueTypeDesc = getValueTypeDescription(false);
-          valueTypeDesc.get(DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, valueType.getName()));
-          node.get(VALUE_TYPE, valueType.getName()).set(valueTypeDesc);
+          valueTypeDesc.get(ModelDescriptionConstants.DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, valueType.getName()));
+          node.get(ModelDescriptionConstants.VALUE_TYPE, valueType.getName()).set(valueTypeDesc);
       }
 
       @Override
       protected void addOperationParameterValueTypeDescription(final ModelNode node, final String operationName, final ResourceDescriptionResolver resolver, final Locale locale, final ResourceBundle bundle) {
           final ModelNode valueTypeDesc = getValueTypeDescription(true);
-          valueTypeDesc.get(DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, valueType.getName()));
-          node.get(VALUE_TYPE, valueType.getName()).set(valueTypeDesc);
+          valueTypeDesc.get(ModelDescriptionConstants.DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, valueType.getName()));
+          node.get(ModelDescriptionConstants.VALUE_TYPE, valueType.getName()).set(valueTypeDesc);
       }
 
       @Override

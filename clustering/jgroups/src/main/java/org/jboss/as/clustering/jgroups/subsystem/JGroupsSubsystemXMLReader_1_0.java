@@ -21,12 +21,18 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
@@ -50,11 +56,10 @@ public class JGroupsSubsystemXMLReader_1_0 implements XMLElementReader<List<Mode
     @Override
     public void readElement(XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
 
-        ModelNode address = new ModelNode();
-        address.add(ModelDescriptionConstants.SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME);
-        address.protect();
-
-        ModelNode subsystem = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
+        ModelNode subsystemAddress = new ModelNode();
+        subsystemAddress.add(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME);
+        subsystemAddress.protect();
+        ModelNode subsystem = Util.getEmptyOperation(ADD, subsystemAddress);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             ParseUtils.requireNoNamespaceAttribute(reader, i);
@@ -62,7 +67,7 @@ public class JGroupsSubsystemXMLReader_1_0 implements XMLElementReader<List<Mode
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case DEFAULT_STACK: {
-                    subsystem.get(ModelKeys.DEFAULT_STACK).set(value);
+                    CommonAttributes.DEFAULT_STACK.parseAndSetParameter(value, subsystem, reader);
                     break;
                 }
                 default: {
@@ -83,7 +88,7 @@ public class JGroupsSubsystemXMLReader_1_0 implements XMLElementReader<List<Mode
                     Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case STACK: {
-                            operations.add(this.parseStack(reader, address));
+                            this.parseStack(reader, subsystemAddress, operations);
                             break;
                         }
                         default: {
@@ -99,7 +104,10 @@ public class JGroupsSubsystemXMLReader_1_0 implements XMLElementReader<List<Mode
         }
     }
 
-    private ModelNode parseStack(XMLExtendedStreamReader reader, ModelNode address) throws XMLStreamException {
+    private void parseStack(XMLExtendedStreamReader reader, ModelNode subsystemAddress, List<ModelNode> operations) throws XMLStreamException {
+
+        final ModelNode stack = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
 
         String name = null;
         for (int i = 0; i < reader.getAttributeCount(); i++) {
@@ -121,21 +129,23 @@ public class JGroupsSubsystemXMLReader_1_0 implements XMLElementReader<List<Mode
             throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.NAME));
         }
 
-        final ModelNode stack = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
-        stack.get(ModelDescriptionConstants.OP_ADDR).set(address).add(ModelKeys.STACK, name);
+        ModelNode stackAddress = subsystemAddress.clone();
+        stackAddress.add(ModelKeys.STACK, name);
+        stackAddress.protect();
+        stack.get(OP_ADDR).set(stackAddress);
 
         if (!reader.hasNext() || (reader.nextTag() == XMLStreamConstants.END_ELEMENT) || Element.forName(reader.getLocalName()) != Element.TRANSPORT) {
             throw ParseUtils.missingRequiredElement(reader, Collections.singleton(Element.TRANSPORT));
         }
 
-        this.parseProtocol(reader, stack.get(ModelKeys.TRANSPORT), TP.class);
+        this.parseTransport(reader, stackAddress, additionalConfigurationOperations);
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case PROTOCOL: {
-                    this.parseProtocol(reader, stack.get(ModelKeys.PROTOCOLS).add(), Protocol.class);
-                    break;
+                    this.parseProtocol(reader, stackAddress, additionalConfigurationOperations);
+                     break;
                 }
                 default: {
                     throw ParseUtils.unexpectedElement(reader);
@@ -143,49 +153,72 @@ public class JGroupsSubsystemXMLReader_1_0 implements XMLElementReader<List<Mode
             }
         }
 
-        return stack;
+        operations.add(stack);
+        // add operations to create configuration resources
+        for (ModelNode additionalOperation : additionalConfigurationOperations) {
+            operations.add(additionalOperation);
+        }
     }
 
-    private void parseProtocol(XMLExtendedStreamReader reader, ModelNode protocol, Class<? extends Protocol> targetClass) throws XMLStreamException {
+    private void parseTransport(XMLExtendedStreamReader reader, ModelNode stackAddress, List<ModelNode> operations) throws XMLStreamException {
+
+        // ModelNode for the cache add operation
+        ModelNode transportAddress = stackAddress.clone();
+        transportAddress.add(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
+        transportAddress.protect();
+        ModelNode transport = Util.getEmptyOperation(ModelDescriptionConstants.ADD, transportAddress);
+
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case TYPE: {
                     try {
-                        targetClass.getClassLoader().loadClass(org.jgroups.conf.ProtocolConfiguration.protocol_prefix + '.' + value).asSubclass(targetClass).newInstance();
-                        protocol.get(ModelKeys.TYPE).set(value);
+                        TP.class.getClassLoader().loadClass(org.jgroups.conf.ProtocolConfiguration.protocol_prefix + '.' + value).asSubclass(TP.class).newInstance();
+                        CommonAttributes.TYPE.parseAndSetParameter(value, transport, reader);
                     } catch (Exception e) {
                         throw ParseUtils.invalidAttributeValue(reader, i);
                     }
                     break;
                 }
                 case SHARED: {
-                    protocol.get(ModelKeys.SHARED).set(Boolean.parseBoolean(value));
+                    CommonAttributes.SHARED.parseAndSetParameter(value, transport, reader);
                     break;
                 }
                 case SOCKET_BINDING: {
-                    protocol.get(ModelKeys.SOCKET_BINDING).set(value);
+                    CommonAttributes.SOCKET_BINDING.parseAndSetParameter(value, transport, reader);
                     break;
                 }
                 case DIAGNOSTICS_SOCKET_BINDING: {
-                    protocol.get(ModelKeys.DIAGNOSTICS_SOCKET_BINDING).set(value);
+                    CommonAttributes.DIAGNOSTICS_SOCKET_BINDING.parseAndSetParameter(value, transport, reader);
                     break;
                 }
                 case DEFAULT_EXECUTOR: {
-                    protocol.get(ModelKeys.DEFAULT_EXECUTOR).set(value);
+                    CommonAttributes.DEFAULT_EXECUTOR.parseAndSetParameter(value, transport, reader);
                     break;
                 }
                 case OOB_EXECUTOR: {
-                    protocol.get(ModelKeys.OOB_EXECUTOR).set(value);
+                    CommonAttributes.OOB_EXECUTOR.parseAndSetParameter(value, transport, reader);
                     break;
                 }
                 case TIMER_EXECUTOR: {
-                    protocol.get(ModelKeys.TIMER_EXECUTOR).set(value);
+                    CommonAttributes.TIMER_EXECUTOR.parseAndSetParameter(value, transport, reader);
                     break;
                 }
                 case THREAD_FACTORY: {
-                    protocol.get(ModelKeys.THREAD_FACTORY).set(value);
+                    CommonAttributes.THREAD_FACTORY.parseAndSetParameter(value, transport, reader);
+                    break;
+                }
+                case SITE: {
+                    CommonAttributes.SITE.parseAndSetParameter(value, transport, reader);
+                    break;
+                }
+                case RACK: {
+                    CommonAttributes.RACK.parseAndSetParameter(value, transport, reader);
+                    break;
+                }
+                case MACHINE: {
+                    CommonAttributes.MACHINE.parseAndSetParameter(value, transport, reader);
                     break;
                 }
                 default: {
@@ -194,7 +227,7 @@ public class JGroupsSubsystemXMLReader_1_0 implements XMLElementReader<List<Mode
             }
         }
 
-        if (!protocol.hasDefined(ModelKeys.TYPE)) {
+        if (!transport.hasDefined(ModelKeys.TYPE)) {
             throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.TYPE));
         }
 
@@ -221,7 +254,70 @@ public class JGroupsSubsystemXMLReader_1_0 implements XMLElementReader<List<Mode
                 throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
             }
             String value = reader.getElementText();
+            transport.get(ModelKeys.PROPERTIES).add(property, value);
+        }
+        operations.add(transport);
+    }
+
+
+    private void parseProtocol(XMLExtendedStreamReader reader, ModelNode stackAddress, List<ModelNode> operations) throws XMLStreamException {
+
+        ModelNode protocol = Util.getEmptyOperation(ModelKeys.ADD_PROTOCOL, null);
+
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            String value = reader.getAttributeValue(i);
+            Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case TYPE: {
+                    try {
+                        Protocol.class.getClassLoader().loadClass(org.jgroups.conf.ProtocolConfiguration.protocol_prefix + '.' + value).asSubclass(Protocol.class).newInstance();
+                        CommonAttributes.TYPE.parseAndSetParameter(value, protocol, reader);
+                    } catch (Exception e) {
+                        throw ParseUtils.invalidAttributeValue(reader, i);
+                    }
+                    break;
+                }
+                case SOCKET_BINDING: {
+                    CommonAttributes.SOCKET_BINDING.parseAndSetParameter(value, protocol, reader);
+                    break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+
+        if (!protocol.hasDefined(ModelKeys.TYPE)) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.TYPE));
+        }
+
+        protocol.get(OP_ADDR).set(stackAddress);
+
+        while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
+            if (Element.forName(reader.getLocalName()) != Element.PROPERTY) {
+                throw ParseUtils.unexpectedElement(reader);
+            }
+            int attributes = reader.getAttributeCount();
+            String property = null;
+            for (int i = 0; i < attributes; i++) {
+                String value = reader.getAttributeValue(i);
+                Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME: {
+                        property = value;
+                        break;
+                    }
+                    default: {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+            if (property == null) {
+                throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+            }
+            String value = reader.getElementText();
             protocol.get(ModelKeys.PROPERTIES).add(property, value);
         }
+        operations.add(protocol);
     }
 }
