@@ -245,13 +245,14 @@ public class SimpleSecurityManager {
                     PasswordCredential pc = pcSet.iterator().next();
                     p = new SimplePrincipal(pc.getUserName());
                     credential = new String(pc.getCredential());
+                    RemotingContext.clear(); // Now that it has been used clear it.
                 }
                 if (p == null || credential == null) {
                     p = new SimplePrincipal(UUID.randomUUID().toString());
                     credential = UUID.randomUUID().toString();
                 }
 
-                util.createSubjectInfo(p, credential, null);
+                util.createSubjectInfo(p, credential, subject);
             }
 
             // If we have a trusted identity no need for a re-auth.
