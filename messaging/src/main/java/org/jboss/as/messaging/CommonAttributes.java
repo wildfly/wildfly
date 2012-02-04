@@ -352,6 +352,10 @@ public interface CommonAttributes {
     SimpleAttributeDefinition PERSIST_ID_CACHE = new SimpleAttributeDefinition("persist-id-cache",
             new ModelNode().set(ConfigurationImpl.DEFAULT_PERSIST_ID_CACHE), ModelType.BOOLEAN,  true, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
+    SimpleAttributeDefinition PCF_USER = new SimpleAttributeDefinition("user", "user", null, ModelType.STRING, true, true, null);
+
+    SimpleAttributeDefinition PCF_PASSWORD = new SimpleAttributeDefinition("password", "password", null, ModelType.STRING, true, true, null);
+
     SimpleAttributeDefinition PRE_ACK = new SimpleAttributeDefinition("pre-acknowledge",
             new ModelNode().set(HornetQClient.DEFAULT_PRE_ACKNOWLEDGE), ModelType.BOOLEAN,  true);
 

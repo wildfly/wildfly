@@ -728,6 +728,8 @@
          <xs:element name="scheduled-thread-pool-max-size" type="xs:int" maxOccurs="1" minOccurs="0" />
          <xs:element name="thread-pool-max-size" type="xs:int" maxOccurs="1" minOccurs="0" />
          <xs:element name="group-id" type="xs:string" maxOccurs="1" minOccurs="0" />
+         <xs:element name="user" type="xs:string" maxOccurs="1" minOccurs="0" />
+         <xs:element name="password" type="xs:string" maxOccurs="1" minOccurs="0" />
       </xs:all>
       <xs:attribute name="name" type="xs:string" />
    </xs:complexType>
