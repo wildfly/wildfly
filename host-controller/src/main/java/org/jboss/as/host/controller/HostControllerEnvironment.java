@@ -6,8 +6,6 @@ package org.jboss.as.host.controller;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import java.io.File;
-import java.io.InputStream;
-import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collections;
@@ -32,8 +30,8 @@ public class HostControllerEnvironment extends ProcessEnvironment {
     /////////////////////////////////////////////////////////////////////////
 
     /**
-     * Constant that holds the name of the environment property
-     * for specifying the home directory for JBoss.
+     * Constant that holds the name of the system property
+     * for specifying the {@link #getHomeDir() home directory}.
      */
     public static final String HOME_DIR = "jboss.home.dir";
 
@@ -60,58 +58,64 @@ public class HostControllerEnvironment extends ProcessEnvironment {
     public static final String MODULES_DIR = "jboss.modules.dir";
 
     /**
-     * Constant that holds the name of the environment property
-     * for specifying the base directory for domain content.
+     * Constant that holds the name of the system property
+     * for specifying {@link #getDomainBaseDir()} the domain base directory}.
      *
      * <p>Defaults to <tt><em>HOME_DIR</em>/domain</tt>.
      */
     public static final String DOMAIN_BASE_DIR = "jboss.domain.base.dir";
 
     /**
-     * Constant that holds the name of the environment property
-     * for specifying the server configuration URL.
+     * Constant that holds the name of the system property
+     * for specifying {@link #getDomainConfigurationDir()} the domain configuration directory}.
      *
      * <p>Defaults to <tt><em>DOMAIN_BASE_DIR</em>/configuration</tt> .
      */
     public static final String DOMAIN_CONFIG_DIR = "jboss.domain.config.dir";
 
     /**
-     * Constant that holds the name of the environment property
-     * for specifying the directory which JBoss will use for
-     * persistent data file storage.
+     * Constant that holds the name of the system property
+     * for specifying {@link #getDomainDataDir()} the domain data directory}.
      *
      * <p>Defaults to <tt><em>DOMAIN_BASE_DIR</em>/data</tt>.
      */
     public static final String DOMAIN_DATA_DIR = "jboss.domain.data.dir";
 
     /**
-     * Constant that holds the name of the environment property
-     * for specifying the domain deployment URL.
+     * Constant that holds the name of the system property
+     * for specifying {@link #getDomainContentDir()} the domain content repository directory}.
      *
-     * <p>Defaults to <tt><em>DOMAIN_BASE_DIR</em>/content</tt> .
+     * <p>Defaults to <tt><em>DOMAIN_DATA_DIR</em>/content</tt>.
      */
+    public static final String DOMAIN_CONTENT_DIR = "jboss.domain.content.dir";
+
+    /**
+     * Deprecated variant of {@link #DOMAIN_CONTENT_DIR}.
+     *
+     * @deprecated use {@link #DOMAIN_CONTENT_DIR}
+     */
+    @Deprecated
     public static final String DOMAIN_DEPLOYMENT_DIR = "jboss.domain.deployment.dir";
 
     /**
-     * Constant that holds the name of the environment property
-     * for specifying the domain log directory for JBoss.
+     * Constant that holds the name of the system property
+     * for specifying {@link #getDomainLogDir()} the domain log directory}.
      *
      * <p>Defaults to <tt><em>DOMAIN_BASE_DIR</em>/<em>log</em></tt>.
      */
     public static final String DOMAIN_LOG_DIR = "jboss.domain.log.dir";
 
     /**
-     * Constant that holds the name of the environment property
-     * for specifying the server home directory for JBoss.
+     * Constant that holds the name of the system property
+     * for specifying {@link #getDomainServersDir()} the managed domain server parent directory}.
      *
      * <p>Defaults to <tt><em>DOMAIN_BASE_DIR</em>/<em>servers</em></tt>.
      */
     public static final String DOMAIN_SERVERS_DIR = "jboss.domain.servers.dir";
 
     /**
-     * Constant that holds the name of the environment property
-     * for specifying the directory which JBoss will use for
-     * temporary file storage.
+     * Constant that holds the name of the system property
+     * for specifying {@link #getDomainTempDir()} the domain temporary file storage directory}.
      *
      * <p>Defaults to <tt><em>DOMAIN_BASE_DIR</em>/tmp</tt> .
      */
@@ -172,7 +176,7 @@ public class HostControllerEnvironment extends ProcessEnvironment {
     private final File domainConfigurationDir;
     private final ConfigurationFile hostConfigurationFile;
     private final ConfigurationFile domainConfigurationFile;
-    private final File domainDeploymentDir;
+    private final File domainContentDir;
     private final File domainDataDir;
     private final File domainLogDir;
     private final File domainServersDir;
@@ -182,10 +186,6 @@ public class HostControllerEnvironment extends ProcessEnvironment {
     private final boolean backupDomainFiles;
     private final boolean useCachedDc;
 
-    private final InputStream stdin;
-    private final PrintStream stdout;
-    private final PrintStream stderr;
-
     private final RunningMode initialRunningMode;
     private final ProductConfig productConfig;
     private final String qualifiedHostName;
@@ -193,29 +193,15 @@ public class HostControllerEnvironment extends ProcessEnvironment {
 
     private String hostControllerName;
 
-    public HostControllerEnvironment(Map<String, String> hostSystemProperties, boolean isRestart, InputStream stdin, PrintStream stdout, PrintStream stderr,
+    public HostControllerEnvironment(Map<String, String> hostSystemProperties, boolean isRestart,
                                      InetAddress processControllerAddress, Integer processControllerPort, InetAddress hostControllerAddress,
                                      Integer hostControllerPort, String defaultJVM, String domainConfig, String hostConfig,
                                      RunningMode initialRunningMode, boolean backupDomainFiles, boolean useCachedDc, ProductConfig productConfig) {
+
         if (hostSystemProperties == null) {
             throw MESSAGES.nullVar("hostSystemProperties");
         }
         this.hostSystemProperties = Collections.unmodifiableMap(hostSystemProperties);
-
-        if (stdin == null) {
-             throw MESSAGES.nullVar("stdin");
-        }
-        this.stdin = stdin;
-
-        if (stdout == null) {
-             throw MESSAGES.nullVar("stdout");
-        }
-        this.stdout = stdout;
-
-        if (stderr == null) {
-             throw MESSAGES.nullVar("stderr");
-        }
-        this.stderr = stderr;
 
         if (processControllerAddress == null) {
             throw MESSAGES.nullVar("processControllerAddress");
@@ -286,12 +272,15 @@ public class HostControllerEnvironment extends ProcessEnvironment {
         this.homeDir = home;
         SecurityActions.setSystemProperty(HOME_DIR, homeDir.getAbsolutePath());
 
+        @SuppressWarnings("deprecation")
         File tmp = getFileFromProperty(MODULES_DIR);
         if (tmp == null) {
             tmp = new File(this.homeDir, "modules");
         }
         this.modulesDir = tmp;
-        SecurityActions.setSystemProperty(MODULES_DIR, this.modulesDir.getAbsolutePath());
+        @SuppressWarnings("deprecation")
+        String deprecatedModDir = MODULES_DIR;
+        SecurityActions.setSystemProperty(deprecatedModDir, this.modulesDir.getAbsolutePath());
 
         tmp = getFileFromProperty(DOMAIN_BASE_DIR);
         if (tmp == null) {
@@ -310,19 +299,25 @@ public class HostControllerEnvironment extends ProcessEnvironment {
         hostConfigurationFile = new ConfigurationFile(domainConfigurationDir, "host.xml", hostConfig);
         domainConfigurationFile = new ConfigurationFile(domainConfigurationDir, "domain.xml", domainConfig);
 
-        tmp = getFileFromProperty(DOMAIN_DEPLOYMENT_DIR);
-        if (tmp == null) {
-            tmp = new File(this.domainBaseDir, "content");
-        }
-        this.domainDeploymentDir = tmp;
-        SecurityActions.setSystemProperty(DOMAIN_DEPLOYMENT_DIR, this.domainDeploymentDir.getAbsolutePath());
-
         tmp = getFileFromProperty(DOMAIN_DATA_DIR);
         if (tmp == null) {
             tmp = new File(this.domainBaseDir, "data");
         }
         this.domainDataDir = tmp;
         SecurityActions.setSystemProperty(DOMAIN_DATA_DIR, this.domainDataDir.getAbsolutePath());
+
+        @SuppressWarnings("deprecation")
+        String deprecatedDepDir = DOMAIN_DEPLOYMENT_DIR;
+        tmp = getFileFromProperty(DOMAIN_CONTENT_DIR);
+        if (tmp == null) {
+            tmp = getFileFromProperty(deprecatedDepDir);
+        }
+        if (tmp == null) {
+            tmp = new File(this.domainDataDir, "content");
+        }
+        this.domainContentDir = tmp;
+        SecurityActions.setSystemProperty(DOMAIN_CONTENT_DIR, this.domainContentDir.getAbsolutePath());
+        SecurityActions.setSystemProperty(deprecatedDepDir, this.domainContentDir.getAbsolutePath());
 
         tmp = getFileFromProperty(DOMAIN_LOG_DIR);
         if (tmp == null) {
@@ -361,36 +356,6 @@ public class HostControllerEnvironment extends ProcessEnvironment {
     }
 
     /**
-     * Gets the original System.in for this process. This should only
-     * be used for communication with the process controller that spawned this process.
-     *
-     * @return stdin
-     */
-    public InputStream getStdin() {
-        return stdin;
-    }
-
-    /**
-     * Gets the original System.out for this process. This should only
-     * be used for communication with the process controller that spawned this process.
-     *
-     * @return stdout
-     */
-    public PrintStream getStdout() {
-        return stdout;
-    }
-
-    /**
-     * Gets the original System.err for this process. This should only
-     * be used for communication with the process controller that spawned this process.
-     *
-     * @return stderr
-     */
-    public PrintStream getStderr() {
-        return stderr;
-    }
-
-    /**
      * Gets the address the process controller passed to this process
      * to use in communicating with it.
      *
@@ -411,7 +376,7 @@ public class HostControllerEnvironment extends ProcessEnvironment {
     }
 
     /**
-     * Gets the address the process controller told us to listen for communication from the servers.
+     * Gets the address the process controller told this Host Controller to listen on for communication from the servers.
      *
      * @return the host controller's address
      */
@@ -420,7 +385,7 @@ public class HostControllerEnvironment extends ProcessEnvironment {
     }
 
     /**
-     * Gets the port the process controller told us to listen for communication from the servers.
+     * Gets the port the process controller told this Host Controller to listen on for communication from the servers.
      *
      * @return the host controller's port
      */
@@ -438,8 +403,8 @@ public class HostControllerEnvironment extends ProcessEnvironment {
     }
 
     /**
-     * Whether we should grab a copy of the master Domain Controller's files on startup.
-     * This only has an effect if we are in slave mode
+     * Whether we should maintain a copy of the domain configuration file even though we are not the
+     * master host controller for the domain. This is only relevant if we are not the master host controller.
      *
      * @return <code>true</code> if we should grab the files
      */
@@ -448,23 +413,39 @@ public class HostControllerEnvironment extends ProcessEnvironment {
     }
 
     /**
-     * Whether we should try to start up with our copy of the domain controller.
-     * This only has an effect if we are in slave mode
+     * Whether we should try to start up with a locally cached copy of the domain configuration file rather than
+     * trying to connect to a master host controller. This only has an effect if we are not configured to
+     * act as the master host controller for the domain.
      *
-     * @return <code>true</code> if we should grab the files
+     * @return <code>true</code> if we start with a locally cached copy of the domain configuration file
      */
     public boolean isUseCachedDc() {
         return useCachedDc;
     }
 
+    /**
+     * Gets the {@link RunningMode} that was in effect when this Host Controller was launched.
+     *
+     * @return  the initial running mode
+     */
     public RunningMode getInitialRunningMode() {
         return initialRunningMode;
     }
 
+    /**
+     * Gets the {@link ProductConfig} detected at startup.
+     *
+     * @return the product config. Will not be {@code null}
+     */
     public ProductConfig getProductConfig() {
         return productConfig;
     }
 
+    /**
+     * Gets the root directory for this JBoss installation.
+     *
+     * @return the root directory
+     */
     public File getHomeDir() {
         return homeDir;
     }
@@ -487,46 +468,105 @@ public class HostControllerEnvironment extends ProcessEnvironment {
         return modulesDir;
     }
 
+    /**
+     * Gets the base directory in which managed domain files are stored.
+     * <p>Defaults to {@link #getHomeDir() JBOSS_HOME}/domain</p>
+     *
+     * @return the domain base directory.
+     */
     public File getDomainBaseDir() {
         return domainBaseDir;
     }
 
+    /**
+     * Gets the directory in which managed domain configuration files are stored.
+     * <p>Defaults to {@link #getDomainBaseDir()}  domainBaseDir}/configuration</p>
+     *
+     * @return the domain configuration directory.
+     */
     public File getDomainConfigurationDir() {
         return domainConfigurationDir;
     }
 
-    public File getDomainDeploymentDir() {
-        return domainDeploymentDir;
-    }
-
+    /**
+     * Gets the directory in which a Host Controller or Process Controller can store private internal state that
+     * should survive a process restart.
+     * <p>Defaults to {@link #getDomainBaseDir()}  domainBaseDir}/data</p>
+     *
+     * @return the internal state persistent storage directory for the Host Controller and Process Controller.
+     */
     public File getDomainDataDir() {
         return domainDataDir;
     }
 
+    /**
+     * Gets the directory in which a Host Controller will store domain-managed user content (e.g. deployments or
+     * rollout plans.)
+     *
+     * <p>Defaults to {@link #getDomainDataDir()}  domainDataDir}/content</p>
+     *
+     * @return the domain managed content storage directory
+     */
+    public File getDomainContentDir() {
+        return domainContentDir;
+    }
+
+    /**
+     * Deprecated previous name for {@link #getDomainContentDir()}.
+     * @return the domain managed content storage directory.
+     *
+     * @deprecated use {@link #getDomainContentDir()}
+     */
+    @Deprecated
+    public File getDomainDeploymentDir() {
+        return domainContentDir;
+    }
+
+    /**
+     * Gets the directory in which a Host Controller or Process Controller can write log files.
+     * <p>Defaults to {@link #getDomainBaseDir()}  domainBaseDir}/log</p>
+     *
+     * @return the log file directory for the Host Controller and Process Controller.
+     */
     public File getDomainLogDir() {
         return domainLogDir;
     }
 
+    /**
+     * Gets the directory under domain managed servers will write any persistent data. Each server will
+     * have its own subdirectory.
+     * <p>Defaults to {@link #getDomainBaseDir()}  domainBaseDir}/servers</p>
+     *
+     * @return the root directory for domain managed servers
+     */
     public File getDomainServersDir() {
         return domainServersDir;
     }
 
+    /**
+     * Gets the directory in which a Host Controller or Process Controller can store private internal state that
+     * does not need to survive a process restart.
+     * <p>Defaults to {@link #getDomainBaseDir()}  domainBaseDir}/tmp</p>
+     *
+     * @return the internal state temporary storage directory for the Host Controller and Process Controller.
+     */
     public File getDomainTempDir() {
         return domainTempDir;
     }
 
+    /**
+     * Gets the location of the default java executable to use when launch managed domain servers.
+     *
+     * @return the location of the default java executable
+     */
     public File getDefaultJVM() {
         return defaultJVM;
     }
 
-    public ConfigurationFile getHostConfigurationFile() {
-        return hostConfigurationFile;
-    }
-
-    public ConfigurationFile getDomainConfigurationFile() {
-        return domainConfigurationFile;
-    }
-
+    /**
+     * Initial set of system properties provided to this Host Controller at boot via the command line.
+     * @return the properties
+     */
     public Map<String, String> getHostSystemProperties() {
         return hostSystemProperties;
     }
@@ -542,7 +582,8 @@ public class HostControllerEnvironment extends ProcessEnvironment {
 
     /**
      * Get the local host name detected at server startup. Note that this is not the same
-     * as the {@link #getHostControllerName() host controller name}
+     * as the {@link #getHostControllerName() host controller name}. Defaults to the portion of
+     * {@link #getQualifiedHostName() the qualified host name} following the first '.'.
      *
      * @return the local host name
      */
@@ -551,7 +592,9 @@ public class HostControllerEnvironment extends ProcessEnvironment {
     }
 
     /**
-     * Gets the name by which this host controller is known in the domain.
+     * Gets the name by which this host controller is known in the domain. Default to the
+     * {@link #getQualifiedHostName() qualified host name} if the {@code name} attribute is not
+     * specified on the root element of the host configuration file (e.g. host.xml).
      *
      * @return the name of the host controller
      */
@@ -559,6 +602,7 @@ public class HostControllerEnvironment extends ProcessEnvironment {
         return hostControllerName;
     }
 
+    @Override
     protected String getProcessName() {
         return hostControllerName;
     }
@@ -583,6 +627,13 @@ public class HostControllerEnvironment extends ProcessEnvironment {
         // no-op
     }
 
+    ConfigurationFile getHostConfigurationFile() {
+        return hostConfigurationFile;
+    }
+
+    ConfigurationFile getDomainConfigurationFile() {
+        return domainConfigurationFile;
+    }
 
     /**
      * Get a File from configuration.
