@@ -52,6 +52,7 @@ public class InterceptorOrder {
         // JSR 109 - Version 1.3 - 6.2.2.5 Transaction
         // Handlers run under the transaction context of the component they are associated with.
         public static final int WS_HANDLERS_INTERCEPTOR = 0x900;
+        public static final int XTS_INTERCEPTOR = 0x901;
 
         /**
          * All user level interceptors are added with the same priority, so they execute
@@ -151,6 +152,7 @@ public class InterceptorOrder {
         public static final int CMT_TRANSACTION_INTERCEPTOR = 0x500;
         public static final int HOME_METHOD_INTERCEPTOR = 0x600;
         public static final int ASSOCIATING_INTERCEPTOR = 0x700;
+        public static final int XTS_INTERCEPTOR = 0x701;
         public static final int SESSION_REMOVE_INTERCEPTOR = 0x900;
         public static final int COMPONENT_DISPATCHER = 0xA00;
 
