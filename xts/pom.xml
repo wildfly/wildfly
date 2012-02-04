@@ -107,6 +107,10 @@
             <artifactId>jboss-logging</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jboss.narayana.txframework</groupId>
+            <artifactId>txframework</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging-processor</artifactId>
             <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
@@ -114,5 +118,10 @@
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-weld</artifactId>
+        </dependency>
+
     </dependencies>
 </project>

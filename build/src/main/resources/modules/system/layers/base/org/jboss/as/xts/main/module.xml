@@ -52,5 +52,17 @@
         <module name="org.jboss.ws.spi"/>
         <!-- need this to get the actual SPIProvider  -->
         <module name="org.jboss.ws.common"/>
+        <module name="org.jboss.jandex"/>
+        <module name="org.jboss.weld.spi" />
+        <module name="org.jboss.weld.api" />
+        <module name="org.jboss.weld.core" />
+        <module name="org.jboss.as.weld"/>
+        <module name="org.jboss.modules"/>
+        <module name="javax.enterprise.api"/>
+        <module name="org.jboss.as.ejb3"/>
+        <module name="org.jboss.invocation"/>
+        <module name="org.jboss.as.naming"/>
+        <module name="org.jboss.as.web-common"/>
+        <module name="org.jboss.narayana.txframework" />
     </dependencies>
 </module>
