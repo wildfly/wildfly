@@ -19,17 +19,25 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.staxmapper;
+package org.jboss.as.test.shared.staxmapper;
 
+import java.lang.reflect.Constructor;
 import javax.xml.stream.XMLStreamWriter;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * Expose the package protected {@link org.jboss.staxmapper.FormattingXMLStreamWriter} to tests.
- * TODO This class is duplicated in the smoke and basic modules
  * @author Paul Ferraro
  */
 public class XMLExtendedStreamWriterFactory {
-    public static XMLExtendedStreamWriter create(XMLStreamWriter writer) {
-        return new FormattingXMLStreamWriter(writer);
+    public static XMLExtendedStreamWriter create(XMLStreamWriter writer) throws Exception {
+        // Use reflection to access package protected class FormattingXMLStreamWriter
+        // TODO: at some point the staxmapper API could be enhanced to make this unnecessary
+        Class clazz = Class.forName("org.jboss.staxmapper.FormattingXMLStreamWriter");
+        Object [] args = new Object [1];
+        args[0] = writer;
+        Constructor ctr = clazz.getConstructor( XMLStreamWriter.class );
+        ctr.setAccessible(true);
+        return (XMLExtendedStreamWriter)ctr.newInstance(args);
     }
 }
