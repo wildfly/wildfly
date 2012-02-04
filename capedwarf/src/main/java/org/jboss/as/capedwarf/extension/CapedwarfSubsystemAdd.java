@@ -122,7 +122,7 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
     protected static ServletExecutorConsumerService addQueueConsumer(ServiceTarget serviceTarget) {
         final ServletExecutorConsumerService consumerService = new ServletExecutorConsumerService();
         final ServiceBuilder<Connection> builder = serviceTarget.addService(ServletExecutorConsumerService.NAME, consumerService);
-        builder.addDependency(ContextNames.bindInfoFor("java:/ConnectionFactory").getBinderServiceName(), ManagedReferenceFactory.class, consumerService.getFactory());
+        builder.addDependency(ContextNames.bindInfoFor("java:/JmsXA").getBinderServiceName(), ManagedReferenceFactory.class, consumerService.getFactory());
         builder.addDependency(ContextNames.bindInfoFor("java:/queue/" + CAPEDWARF).getBinderServiceName(), ManagedReferenceFactory.class, consumerService.getQueue());
         builder.addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, consumerService.getLoader());
         builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
