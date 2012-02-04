@@ -21,15 +21,15 @@
  */
 package org.jboss.as.test.integration.ejb.timerservice.simple;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import javax.annotation.Resource;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TimedObject;
 import javax.ejb.Timer;
 import javax.ejb.TimerService;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author Stuart Douglas
@@ -39,17 +39,17 @@ public class TimedObjectTimerServiceBean implements TimedObject {
 
     private static CountDownLatch latch = new CountDownLatch(1);
     private static int TIMER_CALL_WAITING_S = 2;
-    
+
     private static boolean timerServiceCalled = false;
 
     @Resource
     private SessionContext sessionContext;
 
     private TimerService timerService;
-    
-    private String timerInfo;
-    private boolean isPersistent;
-    private boolean isCalendar;
+
+    private static String timerInfo;
+    private static boolean isPersistent;
+    private static boolean isCalendar;
 
     public synchronized TimerService getTimerService() {
         if (timerService == null) {
@@ -71,7 +71,7 @@ public class TimedObjectTimerServiceBean implements TimedObject {
         timerServiceCalled = false;
         latch = new CountDownLatch(1);
     }
-    
+
     public String getTimerInfo() {
         return timerInfo;
     }

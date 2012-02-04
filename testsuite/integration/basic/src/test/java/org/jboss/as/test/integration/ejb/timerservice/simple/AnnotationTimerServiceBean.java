@@ -21,6 +21,9 @@
  */
 package org.jboss.as.test.integration.ejb.timerservice.simple;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import javax.annotation.Resource;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
@@ -29,9 +32,6 @@ import javax.ejb.Timer;
 import javax.ejb.TimerService;
 
 import org.apache.log4j.Logger;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author Stuart Douglas
@@ -43,28 +43,28 @@ public class AnnotationTimerServiceBean {
 
     private static boolean timerServiceCalled = false;
     private static int TIMER_CALL_WAITING_S = 2;
-    
-    private String timerInfo;
-    private boolean isPersistent;
-    private boolean isCalendar;
+
+    private static String timerInfo;
+    private static boolean isPersistent;
+    private static boolean isCalendar;
 
     @Resource
     private SessionContext sessionContext;
-    
+
     private TimerService timerService;
 
     public synchronized TimerService getTimerService() {
         if(timerService == null) {
-            timerService = (TimerService) sessionContext.lookup("java:comp/TimerService"); 
+            timerService = (TimerService) sessionContext.lookup("java:comp/TimerService");
         }
         return timerService;
     }
-    
+
     public void resetTimerServiceCalled() {
         timerServiceCalled = false;
         latch = new CountDownLatch(1);
     }
-    
+
     public String getTimerInfo() {
         return timerInfo;
     }
@@ -81,7 +81,7 @@ public class AnnotationTimerServiceBean {
         timerInfo = new String((String) timer.getInfo());
         isPersistent = timer.isPersistent();
         isCalendar = timer.isCalendarTimer();
-        
+
         timerServiceCalled = true;
         latch.countDown();
     }
