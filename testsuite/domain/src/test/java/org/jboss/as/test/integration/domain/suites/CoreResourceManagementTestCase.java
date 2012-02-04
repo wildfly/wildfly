@@ -514,6 +514,27 @@ public class CoreResourceManagementTestCase {
         testCannotInvokeManagedServerOperationsComposite(new ModelNode().add("host", "slave").add("server", "main-three"), new ModelNode().add("subsystem", "threads"));
     }
 
+    @Test
+    public void testReadSystemPropertyResourceOnServerFromComposite() throws Exception {
+        final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
+
+        ModelNode composite = new ModelNode();
+        composite.get(OP).set(CompositeOperationHandler.NAME);
+        composite.get(OP_ADDR).setEmptyList();
+        composite.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+
+        ModelNode server1 = new ModelNode();
+        server1.get(OP).set(READ_RESOURCE_OPERATION);
+        server1.get(OP_ADDR).add("host", "master").add("server", "main-one");
+        ModelNode server3 = new ModelNode();
+        server3.get(OP).set(READ_RESOURCE_OPERATION);
+        server3.get(OP_ADDR).add("host", "slave").add("server", "main-three");
+        composite.get(STEPS).add(server1);
+        composite.get(STEPS).add(server3);
+
+        ModelNode result = masterClient.execute(composite);
+        validateResponse(result);
+    }
 
     private void testCannotInvokeManagedServerOperationsComposite(ModelNode compositeAddress, ModelNode stepAddress) throws Exception {
         final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
