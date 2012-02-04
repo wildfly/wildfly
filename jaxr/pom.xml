@@ -51,6 +51,7 @@
         <dependency>
             <groupId>org.apache.juddi.scout</groupId>
             <artifactId>scout</artifactId>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>
