@@ -156,6 +156,7 @@ interface HostControllerExecutionSupport {
 
             HostControllerExecutionSupport result;
 
+
             if (targetHost != null && !hostName.equals(targetHost)) {
                 // ParsedOp representing another host
                 result = new IgnoredOpExecutionSupport(index);
@@ -372,6 +373,10 @@ interface HostControllerExecutionSupport {
                     if (stepNode != null) {
                         domainSteps.add(stepNode);
                     }
+                }
+                if (domainSteps.size() == 0) {
+                    //Nothing to do, return null
+                    return null;
                 }
                 //
                 ModelNode stepsParam = new ModelNode();
