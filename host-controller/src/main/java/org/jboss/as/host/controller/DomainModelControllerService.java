@@ -433,8 +433,8 @@ public class DomainModelControllerService extends AbstractControllerService impl
     }
 
     private class DelegatingServerInventory implements ServerInventory {
-        public void serverCommunicationRegistered(String serverProcessName, ManagementChannelHandler channelHandler, ProxyCreatedCallback callback) {
-            serverInventory.serverCommunicationRegistered(serverProcessName, channelHandler, callback);
+        public void serverCommunicationRegistered(String serverProcessName, ManagementChannelHandler channelHandler) {
+            serverInventory.serverCommunicationRegistered(serverProcessName, channelHandler);
         }
 
         public void serverProcessAdded(String serverProcessName) {

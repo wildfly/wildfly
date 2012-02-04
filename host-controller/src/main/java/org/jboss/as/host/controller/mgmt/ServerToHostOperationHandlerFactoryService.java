@@ -35,7 +35,6 @@ import java.util.concurrent.ExecutorService;
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.ActiveOperation.ResultHandler;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
@@ -64,7 +63,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.Channel;
-import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.HandleableCloseable;
 import org.jboss.remoting3.MessageOutputStream;
 
@@ -81,7 +79,7 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("management", "server", "to", "host", "controller");
 
     private final ExecutorService executorService;
-    private final InjectedValue<ServerInventory> callback = new InjectedValue<ServerInventory>();
+    private final InjectedValue<ServerInventory> serverInventory = new InjectedValue<ServerInventory>();
     private final DeploymentFileRepository deploymentFileRepository;
 
     private ServerToHostOperationHandlerFactoryService(final ExecutorService executorService, final DeploymentFileRepository deploymentFileRepository) {
@@ -92,7 +90,7 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
     public static void install(final ServiceTarget serviceTarget, final ServiceName serverInventoryName, final ExecutorService executorService, final DeploymentFileRepository deploymentFileRepository) {
         final ServerToHostOperationHandlerFactoryService serverToHost = new ServerToHostOperationHandlerFactoryService(executorService, deploymentFileRepository);
         serviceTarget.addService(ServerToHostOperationHandlerFactoryService.SERVICE_NAME, serverToHost)
-            .addDependency(serverInventoryName, ServerInventory.class, serverToHost.callback)
+            .addDependency(serverInventoryName, ServerInventory.class, serverToHost.serverInventory)
             .install();
     }
 
@@ -139,7 +137,7 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
                     handlers.registerActiveOperation(header.getBatchId(), null);
                     return new GetFileOperation();
                 case DomainServerProtocol.SERVER_STARTED_REQUEST:
-                    handlers.registerActiveOperation(header.getBatchId(), callback.getValue());
+                    handlers.registerActiveOperation(header.getBatchId(), serverInventory.getValue());
                     return new ServerStartedHandler(serverProcessName);
             }
             return handlers.resolveNext();
@@ -170,7 +168,8 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
 
         public void handleMessage(final Channel channel, final DataInput input, final ManagementRequestHeader header) throws IOException {
             final byte type = header.getOperationId();
-            if (type == DomainServerProtocol.REGISTER_REQUEST) {
+            if (type == DomainServerProtocol.REGISTER_REQUEST ||
+                    type == DomainServerProtocol.SERVER_RECONNECT_REQUEST) {
                 expectHeader(input, DomainServerProtocol.PARAM_SERVER_NAME);
                 final String serverName = input.readUTF();
 
@@ -180,22 +179,16 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
                     public void run() {
                         // Create the server mgmt handler
                         final ManagementChannelHandler handler = new ManagementChannelHandler(channel, executorService, new ServerHandlerFactory(serverName));
-                        ServerToHostOperationHandlerFactoryService.this.callback.getValue().serverCommunicationRegistered(serverName, handler, new ServerInventory.ProxyCreatedCallback() {
-                            @Override
-                            public void proxyOperationHandlerCreated(final ManagementRequestHandlerFactory handlerFactory) {
-                                channel.addCloseHandler(new CloseHandler<Channel>() {
-                                    @Override
-                                    public void handleClose(Channel closed, IOException exception) {
-                                        handler.shutdownNow();
-                                    }
-                                });
-                                // Send the response once the server is fully registered
-                                safeWriteResponse(channel, header, null);
-                                // Once the server and handlers are registered, receive the next message
-                                handler.addHandlerFactory(handlerFactory);
-                                channel.receiveMessage(handler.getReceiver());
-                            }
-                        });
+                        // Register the communication channel
+                        serverInventory.getValue().serverCommunicationRegistered(serverName, handler);
+                        // Send the response once the server is fully registered
+                        safeWriteResponse(channel, header, null);
+                        // In case the server reconnects, mark it as started
+                        if(type == DomainServerProtocol.SERVER_RECONNECT_REQUEST) {
+                            serverInventory.getValue().serverStarted(serverName);
+                        }
+                        // Onto the next message
+                        channel.receiveMessage(handler.getReceiver());
                     }
                 });
             } else {

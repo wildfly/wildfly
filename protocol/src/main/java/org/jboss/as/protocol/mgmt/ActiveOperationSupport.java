@@ -90,6 +90,13 @@ class ActiveOperationSupport {
         return (ActiveOperation.CompletedCallback<T>) NO_OP_CALLBACK;
     }
 
+    static <T> ActiveOperation.CompletedCallback<T> getCheckedCallback(final ActiveOperation.CompletedCallback<T> callback) {
+        if(callback == null) {
+            return getDefaultCallback();
+        }
+        return callback;
+    }
+
     /**
      * Register an active operation. The operation-id will be generated.
      *
@@ -147,7 +154,7 @@ class ActiveOperationSupport {
                 }
                 operationId = id;
             }
-            final ActiveOperationImpl<T, A> request = new ActiveOperationImpl<T, A>(operationId, attachment, callback);
+            final ActiveOperationImpl<T, A> request = new ActiveOperationImpl<T, A>(operationId, attachment, getCheckedCallback(callback));
             final ActiveOperation<?, ?> existing =  activeRequests.putIfAbsent(operationId, request);
             if(existing != null) {
                 throw ProtocolMessages.MESSAGES.operationIdAlreadyExists(operationId);

@@ -145,10 +145,8 @@ public interface ServerInventory {
      *
      * @param serverProcessName the name of the server process
      * @param channelHandler remoting channel to use for communicating with the server
-     * @param callback callback the listener is to invoke when an operation handler is available for handling
-     *                 management operations from the server. The callback will be invoked before this method returns
      */
-    void serverCommunicationRegistered(String serverProcessName, ManagementChannelHandler channelHandler, ProxyCreatedCallback callback);
+    void serverCommunicationRegistered(String serverProcessName, ManagementChannelHandler channelHandler);
 
     /**
      * Notification that the server is started.
@@ -211,17 +209,5 @@ public interface ServerInventory {
      * @param processInfos map of process name to information about the process
      */
     void processInventory(Map<String, ProcessInfo> processInfos);
-
-    /**
-     * Callback to invoke when an operation handler is available for handling management operations from a server
-     */
-    interface ProxyCreatedCallback {
-        /**
-         * Provides the operation handler.
-         *
-         * @param handler the handler
-         */
-        void proxyOperationHandlerCreated(ManagementRequestHandlerFactory handler);
-    }
 
 }
