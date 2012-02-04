@@ -278,7 +278,7 @@ public class ServerInventoryImpl implements ServerInventory {
     }
 
     @Override
-    public void serverCommunicationRegistered(final String serverProcessName, final ManagementChannelHandler channelAssociation, final ProxyCreatedCallback callback) {
+    public void serverCommunicationRegistered(final String serverProcessName, final ManagementChannelHandler channelAssociation) {
         if(stopped || connectionFinished) {
             throw HostControllerMessages.MESSAGES.hostAlreadyShutdown();
         }
@@ -300,8 +300,7 @@ public class ServerInventoryImpl implements ServerInventory {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        final RemoteProxyController serverController = server.channelRegistered(channelAssociation);
-        callback.proxyOperationHandlerCreated(serverController);
+        server.channelRegistered(channelAssociation);
     }
 
     @Override

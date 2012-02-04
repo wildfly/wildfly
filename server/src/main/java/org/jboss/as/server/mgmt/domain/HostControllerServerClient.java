@@ -25,18 +25,20 @@ package org.jboss.as.server.mgmt.domain;
 import java.io.DataInput;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.security.AccessController;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
+import org.jboss.as.protocol.ProtocolChannelClient;
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
+import org.jboss.as.protocol.mgmt.ManagementChannelAssociation;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.server.ServerLogger;
@@ -51,8 +53,19 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.Endpoint;
 import org.jboss.threads.JBossThreadFactory;
+import org.xnio.OptionMap;
+import org.xnio.Options;
+import org.xnio.Sequence;
+
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.sasl.RealmCallback;
+import javax.security.sasl.RealmChoiceCallback;
 
 /**
  * Client used to interact with the local HostController.
@@ -65,39 +78,64 @@ import org.jboss.threads.JBossThreadFactory;
 public class HostControllerServerClient implements Service<HostControllerServerClient> {
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "client");
+    private static final String JBOSS_LOCAL_USER = "JBOSS-LOCAL-USER";
 
-    private final InjectedValue<Channel> hcChannel = new InjectedValue<Channel>();
     private final InjectedValue<ModelController> controller = new InjectedValue<ModelController>();
     private final InjectedValue<RemoteFileRepository> remoteFileRepositoryValue = new InjectedValue<RemoteFileRepository>();
+    private final InjectedValue<Endpoint> endpointInjector = new InjectedValue<Endpoint>();
 
+    private final int port;
+    private final String hostName;
     private final String serverName;
+    private final String userName;
     private final String serverProcessName;
+    private final byte[] authKey;
     private final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("host-controller-connection-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
     private final ExecutorService executor = Executors.newCachedThreadPool(threadFactory);
 
-    private ManagementChannelHandler handler;
+    private ManagementChannelAssociation handler;
+    private HostControllerServerConnection connection;
 
-    public HostControllerServerClient(final String serverName, final String serverProcessName) {
+    public HostControllerServerClient(final String serverName, final String serverProcessName, final String host,
+                                      final int port, final byte[] authKey) {
         this.serverName = serverName;
+        this.userName = "=" + serverName;
+        this.hostName = host;
+        this.port = port;
         this.serverProcessName = serverProcessName;
+        this.authKey = authKey;
     }
 
     /** {@inheritDoc} */
+    @Override
     public synchronized void start(final StartContext context) throws StartException {
         final ModelController controller = this.controller.getValue();
-        final Channel channel = hcChannel.getValue();
-        handler = new ManagementChannelHandler(channel, executor);
-        handler.addHandlerFactory(new TransactionalModelControllerOperationHandler(controller, handler));
         // Notify MSC asynchronously when the server gets registered
         context.asynchronous();
         try {
-            // Send the registration request
-            handler.executeRequest(new ServerRegisterRequest(), null, new ActiveOperation.CompletedCallback<Void>() {
+            final ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
+            configuration.setEndpoint(endpointInjector.getValue());
+            configuration.setConnectionTimeout(15000);
+            configuration.setUri(new URI("remote://" + hostName + ":" + port));
+
+            final OptionMap original = configuration.getOptionMap();
+            OptionMap.Builder builder = OptionMap.builder();
+            builder.addAll(original);
+            builder.set(Options.SASL_DISALLOWED_MECHANISMS, Sequence.of(JBOSS_LOCAL_USER));
+            configuration.setOptionMap(builder.getMap());
+
+            final CallbackHandler callbackHandler = new ClientCallbackHandler(userName, authKey);
+
+            connection = new HostControllerServerConnection(serverProcessName, configuration, executor);
+            connection.connect(callbackHandler, new ActiveOperation.CompletedCallback<Void>() {
                 @Override
                 public void completed(Void result) {
+                    // Once registered setup all the required channel handlers
+                    final ManagementChannelHandler handler = connection.getChannelHandler();
+                    handler.addHandlerFactory(new TransactionalModelControllerOperationHandler(controller, handler));
                     // Set the remote repository once registered
                     remoteFileRepositoryValue.getValue().setRemoteFileRepositoryExecutor(new RemoteFileRepositoryExecutorImpl());
-                    // Tell MSC that it can proceed
+                    // We finished the registration process
                     context.complete();
                     // TODO base this message on a proper started notification
                     started();
@@ -113,42 +151,53 @@ public class HostControllerServerClient implements Service<HostControllerServerC
                     context.failed(ServerMessages.MESSAGES.cancelledHCConnect());
                 }
             });
+            handler = connection.getChannelHandler();
         } catch (Exception e) {
             throw ServerMessages.MESSAGES.failedToConnectToHC(e);
         }
-        channel.receiveMessage(handler.getReceiver());
     }
 
     /** {@inheritDoc} */
+    @Override
     public synchronized void stop(StopContext context) {
-        final ManagementChannelHandler handler = this.handler;
-        if(handler != null) {
-            handler.shutdown();
-            try {
-                if(! handler.awaitCompletion(100, TimeUnit.MILLISECONDS)) {
-                    ControllerLogger.ROOT_LOGGER.debugf("HostController server client did not complete shutdown within timeout");
-                }
-            } catch (Exception e) {
-                ControllerLogger.ROOT_LOGGER.warnf(e , "service shutdown did not complete");
-            } finally {
-                handler.shutdownNow();
+        StreamUtils.safeClose(connection);
+    }
+
+    /**
+     * Reconnect to the HC.
+     *
+     * @param host the remote hostName
+     * @param port the remote port
+     * @param authKey the authKey
+     */
+    public synchronized void reconnect(final String host, final int port, final byte[] authKey) {
+        try {
+            final HostControllerServerConnection connection = this.connection;
+            if(connection == null) {
+                throw new IllegalStateException();
             }
+            final URI uri = new URI("remote://" + host + ":" + port);
+            final CallbackHandler callbackHandler = new ClientCallbackHandler(userName, authKey);
+            connection.reconnect(uri, callbackHandler, null);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
+    /**
+     * Get the server name.
+     *
+     * @return the server name
+     */
     public String getServerName(){
         return serverName;
-    }
-
-    public String getServerProcessName() {
-        return serverProcessName;
     }
 
     /**
      * Signal that the server is started.
      */
     public synchronized void started() {
-        final ManagementChannelHandler handler = this.handler;
+        final ManagementChannelAssociation handler = this.handler;
         if(handler == null) {
             throw new IllegalStateException();
         }
@@ -164,10 +213,6 @@ public class HostControllerServerClient implements Service<HostControllerServerC
         return this;
     }
 
-    public Injector<Channel> getHcChannelInjector() {
-        return hcChannel;
-    }
-
     public Injector<ModelController> getServerControllerInjector() {
         return controller;
     }
@@ -176,25 +221,8 @@ public class HostControllerServerClient implements Service<HostControllerServerC
         return remoteFileRepositoryValue;
     }
 
-    private class ServerRegisterRequest extends AbstractManagementRequest<Void, Void> {
-
-        @Override
-        public byte getOperationType() {
-            return DomainServerProtocol.REGISTER_REQUEST;
-        }
-
-        @Override
-        protected void sendRequest(ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<Void> voidManagementRequestContext, FlushableDataOutput output) throws IOException {
-            output.write(DomainServerProtocol.PARAM_SERVER_NAME);
-            output.writeUTF(serverProcessName);
-        }
-
-        @Override
-        public void handleRequest(DataInput input, ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<Void> voidManagementRequestContext) throws IOException {
-            // TODO don't require response ?
-            resultHandler.done(null);
-        }
-
+    public InjectedValue<Endpoint> getEndpointInjector() {
+        return endpointInjector;
     }
 
     public class ServerStartedRequest extends AbstractManagementRequest<Void, Void> {
@@ -261,6 +289,37 @@ public class HostControllerServerClient implements Service<HostControllerServerC
                 return handler.executeRequest(new GetFileRequest(relativePath, localDeploymentFolder), null).getResult().get();
             } catch (Exception e) {
                 throw ServerMessages.MESSAGES.failedToGetFileFromRemoteRepository(e);
+            }
+        }
+    }
+
+    private static class ClientCallbackHandler implements CallbackHandler {
+
+        private final String userName;
+        private final byte[] authKey;
+
+        private ClientCallbackHandler(String userName, byte[] authKey) {
+            this.userName = userName;
+            this.authKey = authKey;
+        }
+
+        public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+            for (Callback current : callbacks) {
+                if (current instanceof RealmCallback) {
+                    RealmCallback rcb = (RealmCallback) current;
+                    String defaultText = rcb.getDefaultText();
+                    rcb.setText(defaultText); // For now just use the realm suggested.
+                } else if (current instanceof RealmChoiceCallback) {
+                    throw new UnsupportedCallbackException(current, "Realm choice not currently supported.");
+                } else if (current instanceof NameCallback) {
+                    NameCallback ncb = (NameCallback) current;
+                    ncb.setName(userName);
+                } else if (current instanceof PasswordCallback) {
+                    PasswordCallback pcb = (PasswordCallback) current;
+                    pcb.setPassword(new String(authKey).toCharArray());
+                } else {
+                    throw new UnsupportedCallbackException(current);
+                }
             }
         }
     }
