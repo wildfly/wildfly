@@ -32,6 +32,7 @@
         <module name="javax.api"/>
         <module name="javax.xml.bind.api"/>
         <module name="javax.xml.registry.api"/>
+        <module name="javax.xml.soap.api"/>
         <module name="org.apache.commons.logging"/>
         <module name="org.apache.juddi.juddi-client"/>
         <module name="org.apache.juddi.uddi-ws" export="true"/>

@@ -45,9 +45,10 @@ public interface JAXRConstants {
     String DEFAULT_JAXR_FACTORY_IMPL    = "org.apache.ws.scout.registry.ConnectionFactoryImpl";
     String DEFAULT_QUERYMANAGER         = "http://localhost:8080/juddi/inquiry";
     String DEFAULT_LIFECYCLEMANAGER     = "http://localhost:8080/juddi/publish";
-    String DEFAULT_V3_QUERYMANAGER      = "http://localhost:8080/juddiv3/inquiry";
-    String DEFAULT_V3_LIFECYCLEMANAGER  = "http://localhost:8080/juddiv3/publish";
-    String DEFAULT_V3_SECURITYMANAGER   = "http://localhost:8080/juddiv3/security";
+
+    String DEFAULT_V3_QUERYMANAGER      = "http://localhost:8880/juddiv3/inquiry";
+    String DEFAULT_V3_LIFECYCLEMANAGER  = "http://localhost:8880/juddiv3/publish";
+    String DEFAULT_V3_SECURITYMANAGER   = "http://localhost:8880/juddiv3/security";
 
     //Scout Property Names
     String UDDI_VERSION_PROPERTY_NAME   = "scout.proxy.uddiVersion";
@@ -57,8 +58,8 @@ public interface JAXRConstants {
     String UDDI_V3_VERSION              = "3.0";
     String UDDI_V2_NAMESPACE            = "urn:uddi-org:api_v2";
     String UDDI_V3_NAMESPACE            = "urn:uddi-org:api_v3";
-    String SCOUT_SAAJ_TRANSPORT         = "org.jboss.as.jaxr.scout.SaajTransport";
-    String SCOUT_LOCAL_TRANSPORT        = "org.apache.ws.scout.transport.LocalTransport";
+    String SCOUT_SAAJ_TRANSPORT         = "org.apache.ws.scout.transport.SaajTransport"; //default for uddiv2
+    String SCOUT_JAXWS_TRANSPORT        = "org.apache.juddi.v3.client.transport.JAXWSTransport"; //default for uddiv3
     String SCOUT_JUDDI_CLIENT_CONFIG    = "scout.juddi.client.config.file";
     String DEFAULT_JUDDI_CLIENT_CONFIG  = "jaxr-uddi.xml";
 
