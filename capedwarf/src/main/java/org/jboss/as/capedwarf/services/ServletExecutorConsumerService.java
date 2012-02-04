@@ -63,7 +63,7 @@ public class ServletExecutorConsumerService implements Service<Connection> {
             try {
                 connection.close();
             } catch (JMSException e) {
-                log.warn("");
+                log.warn("Error closing JMS connection.", e);
             }
         }
     }
