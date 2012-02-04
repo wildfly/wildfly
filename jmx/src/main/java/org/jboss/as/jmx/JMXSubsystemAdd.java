@@ -46,7 +46,6 @@ class JMXSubsystemAdd extends AbstractAddStepHandler {
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         JMXSubsystemRootResource.SHOW_MODEL.validateAndSet(operation, model);
-        model.get(CommonAttributes.CONNECTOR).setEmptyObject();
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
