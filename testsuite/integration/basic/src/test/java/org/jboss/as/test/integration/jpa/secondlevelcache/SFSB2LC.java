@@ -129,9 +129,9 @@ public class SFSB2LC {
 	
 	
 	/**
-	 * Adds an entity in one session -> entity should be in the cache 
+	 *  Checking entity 2LC in a different EntityManager session
 	 */
-	public String firstSessionInit(String CACHE_REGION_NAME) {
+	public String secondSessionCheck(String CACHE_REGION_NAME) {
 		
 		EntityManager em = emf.createEntityManager();
 		Statistics stats = em.unwrap(Session.class).getSessionFactory().getStatistics();
@@ -148,31 +148,21 @@ public class SFSB2LC {
 		}	finally{
 			em.close();
 		}
-		return "OK";
-	}
-	
-	
-	/**
-	 *  Checking entity stored in a cache in a different EntityManager session
-	 */
-	public String secondSessionCheck(String CACHE_REGION_NAME) {
 		
-		EntityManager em = emf.createEntityManager();
-		Statistics stats = em.unwrap(Session.class).getSessionFactory().getStatistics();
-		stats.clear();
-		SecondLevelCacheStatistics emp2LCStats = stats.getSecondLevelCacheStatistics(CACHE_REGION_NAME+"Employee");
 		
+		EntityManager em2 = emf.createEntityManager();
 		try{	
 			// loading entity stored in previous session, we'are expecting hit in cache
-			Employee emp = getEmployee(em, 10);
+			Employee emp = getEmployee(em2, 10);
 			assertNotNull("Employee returned", emp);
-			assertEquals("Expected 1 hit in cache"+generateEntityCacheStats(emp2LCStats), 1,  emp2LCStats.getHitCount());
+			assertEquals("Expected 1 hit in 2LC"+generateEntityCacheStats(emp2LCStats), 1,  emp2LCStats.getHitCount());
 			
 		}catch (AssertionError e) {
 			return e.getMessage();
 		}	finally{
-			em.close();
+			em2.close();
 		}
+		
 		return "OK";
 	}
 	
@@ -293,6 +283,11 @@ public class SFSB2LC {
 		return result;
 	}
 	
+	
+	public String getCacheRegionName(){
+
+		return (String) emf.getProperties().get("hibernate.cache.region_prefix");
+	}
 	
 	/**
 	 * Create employee in provided EntityManager
