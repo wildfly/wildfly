@@ -104,11 +104,11 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
 
         // We validated that jndiName part of the model in populateModel
         // TODO we only use a single jndi name here but the xsd indicates support for many
-        final String jndiName = operation.get(CommonAttributes.ENTRIES.getName()).asList().get(0).asString();
+        final String jndiName = model.get(CommonAttributes.ENTRIES.getName()).asList().get(0).asString();
 
         final String txSupport;
-        if(operation.hasDefined(TRANSACTION)) {
-            String txType = operation.get(TRANSACTION).asString();
+        if(model.hasDefined(TRANSACTION)) {
+            String txType = model.get(TRANSACTION).asString();
             if(LOCAL.equals(txType)) {
                 txSupport = LOCAL_TX;
             } else if (NONE.equals(txType)) {
@@ -122,13 +122,13 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
 
         ServiceTarget serviceTarget = context.getServiceTarget();
 
-        List<String> connectors = getConnectors(operation);
+        List<String> connectors = getConnectors(model);
 
-        String discoveryGroupName = getDiscoveryGroup(operation);
+        String discoveryGroupName = getDiscoveryGroup(model);
 
-        List<PooledConnectionFactoryConfigProperties> adapterParams = getAdapterParams(operation, context);
+        List<PooledConnectionFactoryConfigProperties> adapterParams = getAdapterParams(model, context);
 
-        final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+        final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(opAddr));
         ServiceName hornetQResourceAdapterService = JMSServices.getPooledConnectionFactoryBaseServiceName(hqServiceName).append(name);
         PooledConnectionFactoryService resourceAdapterService = new PooledConnectionFactoryService(name, connectors, discoveryGroupName, adapterParams, jndiName, txSupport);
         ServiceBuilder serviceBuilder = serviceTarget
@@ -141,31 +141,33 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
         newControllers.add(serviceBuilder.setInitialMode(Mode.ACTIVE).install());
     }
 
-    static List<String> getConnectors(final ModelNode operation) {
+    static List<String> getConnectors(final ModelNode model) {
         List<String> connectorNames = new ArrayList<String>();
-        if (operation.hasDefined(CONNECTOR)) {
-            for (String connectorName : operation.get(CONNECTOR).keys()) {
+        if (model.hasDefined(CONNECTOR)) {
+            for (String connectorName : model.get(CONNECTOR).keys()) {
                 connectorNames.add(connectorName);
             }
         }
         return connectorNames;
     }
 
-    static String getDiscoveryGroup(final ModelNode operation) {
-        if(operation.hasDefined(DISCOVERY_GROUP_NAME.getName())) {
-            return operation.get(DISCOVERY_GROUP_NAME.getName()).asString();
+    static String getDiscoveryGroup(final ModelNode model) {
+        if(model.hasDefined(DISCOVERY_GROUP_NAME.getName())) {
+            return model.get(DISCOVERY_GROUP_NAME.getName()).asString();
         }
         return null;
     }
-    static List<PooledConnectionFactoryConfigProperties> getAdapterParams(ModelNode operation, OperationContext context) throws OperationFailedException {
+    static List<PooledConnectionFactoryConfigProperties> getAdapterParams(ModelNode model, OperationContext context) throws OperationFailedException {
         List<PooledConnectionFactoryConfigProperties> configs = new ArrayList<PooledConnectionFactoryConfigProperties>();
         for (JMSServices.PooledCFAttribute nodeAttribute : JMSServices.POOLED_CONNECTION_FACTORY_METHOD_ATTRS)
         {
-            if (operation.hasDefined(nodeAttribute.getName()) && !ADAPTER_PARAMS_IGNORE.contains(nodeAttribute.getName())) {
-                AttributeDefinition definition = nodeAttribute.getDefinition();
-                ModelNode node = definition.isAllowExpression() ? definition.resolveModelAttribute(context, operation) : operation.get(nodeAttribute.getName());
-                String value = node.asString();
+            if (ADAPTER_PARAMS_IGNORE.contains(nodeAttribute.getName()))
+                continue;
 
+            AttributeDefinition definition = nodeAttribute.getDefinition();
+            ModelNode node = definition.resolveModelAttribute(context, model);
+            if (node.isDefined()) {
+                String value = node.asString();
                 configs.add(new PooledConnectionFactoryConfigProperties(nodeAttribute.getMethodName(), value, nodeAttribute.getClassType()));
             }
         }
