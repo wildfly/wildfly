@@ -21,7 +21,16 @@
 */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.jboss.as.clustering.subsystem.ClusteringSubsystemTest;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
 
 /**
@@ -36,7 +45,26 @@ public class JGroupsSubsystemTest extends ClusteringSubsystemTest {
 
     @Override
     protected ValidationConfiguration getModelValidationConfiguration() {
-        //TODO fix validation https://issues.jboss.org/browse/AS7-1787
-        return null;
+        // use this configuration to report any exceptional cases for DescriptionProviders
+        return new ValidationConfiguration();
+    }
+
+    @Override
+    protected Set<PathAddress> getIgnoredChildResourcesForRemovalTest() {
+        // create a collection of resources in the test which are not removed by a "remove" command
+        // i.e. all resources of form /subsystem=jgroups/stack=maximal/protocol=*
+
+        String[] protocolList = {"MPING", "MERGE2", "FD_SOCK", "FD", "VERIFY_SUSPECT", "BARRIER",
+                "pbcast.NAKACK", "UNICAST2", "pbcast.STABLE", "pbcast.GMS", "UFC", "MFC", "FRAG2",
+                "pbcast.STATE_TRANSFER", "pbcast.FLUSH"};
+        PathAddress subsystem = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME));
+        PathAddress stack = subsystem.append(PathElement.pathElement(ModelKeys.STACK, "maximal"));
+        List<PathAddress> addresses = new ArrayList<PathAddress>();
+        for (String protocol : protocolList) {
+            PathAddress ignoredChild = stack.append(PathElement.pathElement(ModelKeys.PROTOCOL, protocol));
+            ;
+            addresses.add(ignoredChild);
+        }
+        return new HashSet<PathAddress>(addresses);
     }
 }

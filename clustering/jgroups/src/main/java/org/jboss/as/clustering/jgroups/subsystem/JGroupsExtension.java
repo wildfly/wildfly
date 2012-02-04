@@ -66,7 +66,7 @@ public class JGroupsExtension implements Extension {
         SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, Namespace.CURRENT.getMajorVersion(), Namespace.CURRENT.getMinorVersion());
         subsystem.registerXMLElementWriter(new JGroupsSubsystemXMLWriter());
 
-        ManagementResourceRegistration registration = subsystem.registerSubsystemModel(JGroupsSubsystemProviders.SUBSYSTEM_DESCRIBE);
+        ManagementResourceRegistration registration = subsystem.registerSubsystemModel(JGroupsSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ModelDescriptionConstants.ADD, JGroupsSubsystemAdd.INSTANCE, JGroupsSubsystemProviders.SUBSYSTEM_ADD, false);
         registration.registerOperationHandler(ModelDescriptionConstants.REMOVE, JGroupsSubsystemRemove.INSTANCE, JGroupsSubsystemProviders.SUBSYSTEM_REMOVE, false);
         registration.registerOperationHandler(ModelDescriptionConstants.DESCRIBE, JGroupsSubsystemDescribe.INSTANCE, JGroupsSubsystemProviders.SUBSYSTEM_DESCRIBE, false, EntryType.PRIVATE);
@@ -87,8 +87,6 @@ public class JGroupsExtension implements Extension {
 
         // register the protocol=* handlers
         final ManagementResourceRegistration protocol = stacks.registerSubModel(protocolPath, JGroupsSubsystemProviders.PROTOCOL);
-        protocol.registerOperationHandler(ADD, StackConfigOperationHandlers.PROTOCOL_ADD, JGroupsSubsystemProviders.PROTOCOL_ADD);
-        protocol.registerOperationHandler(ModelDescriptionConstants.REMOVE, StackConfigOperationHandlers.REMOVE, JGroupsSubsystemProviders.PROTOCOL_REMOVE);
         StackConfigOperationHandlers.PROTOCOL_ATTR.registerAttributes(protocol);
         JGroupsExtension.createPropertyRegistration(protocol);
     }

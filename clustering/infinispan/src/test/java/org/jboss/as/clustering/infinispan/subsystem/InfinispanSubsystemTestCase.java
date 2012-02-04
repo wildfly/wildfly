@@ -68,8 +68,8 @@ public class InfinispanSubsystemTestCase extends ClusteringSubsystemTest {
 
     @Override
     protected ValidationConfiguration getModelValidationConfiguration() {
-        //TODO fix validation https://issues.jboss.org/browse/AS7-1788
-        return null;
+        // use this configuration to report any exceptional cases for DescriptionProviders
+        return new ValidationConfiguration();
     }
 
     /**
