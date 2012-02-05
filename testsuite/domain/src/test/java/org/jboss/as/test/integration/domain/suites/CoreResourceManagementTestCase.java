@@ -48,6 +48,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
@@ -534,6 +535,42 @@ public class CoreResourceManagementTestCase {
 
         ModelNode result = masterClient.execute(composite);
         validateResponse(result);
+    }
+
+    @Test
+    public void testSetSystemPropertyOnServerFromComposite() throws Exception {
+        final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
+
+        ModelNode composite = new ModelNode();
+        composite.get(OP).set(CompositeOperationHandler.NAME);
+        composite.get(OP_ADDR).setEmptyList();
+        composite.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+
+        ModelNode server1 = new ModelNode();
+        server1.get(OP).set(ADD);
+        server1.get(OP_ADDR).add("host", "master").add("server", "main-one").add("system-property", "domain-test-property");
+        ModelNode server3 = new ModelNode();
+        server3.get(OP).set(ADD);
+        server3.get(OP_ADDR).add("host", "slave").add("server", "main-three").add("system-property", "domain-test-property");
+        composite.get(STEPS).add(server1);
+        composite.get(STEPS).add(server3);
+
+        ModelNode result = masterClient.execute(composite);
+
+        String errorCode = getNotAuthorizedErrorCode();
+
+        validateFailedResponse(result);
+
+        List<Property> steps = result.get(RESULT, SERVER_GROUPS, "main-server-group").asPropertyList();
+        Assert.assertEquals(2, steps.size());
+        int i = 0;
+        for (Property property : steps) {
+            ModelNode stepResult = property.getValue().get("response");
+            ModelNode desc = validateFailedResponse(stepResult);
+            Assert.assertTrue(desc.toString() + " does not contain " + errorCode, desc.toString().contains(errorCode));
+            i++;
+        }
+
     }
 
     private void testCannotInvokeManagedServerOperationsComposite(ModelNode compositeAddress, ModelNode stepAddress) throws Exception {

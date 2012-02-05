@@ -109,7 +109,7 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
 
         protected ModelNode doExecute(final ModelNode operation, final int attachmentsLength, final ManagementRequestContext<Void> context) {
             //Add a header to show that this operation comes from a user. If this is a host controller and the operation needs propagating to the
-            //servers it will be removed by DomainRolloutStepHandler
+            //servers it will be removed by the domain ops responsible for propagation to the servers.
             operation.get(OPERATION_HEADERS, CALLER_TYPE).set(USER);
 
             final ManagementRequestHeader header = ManagementRequestHeader.class.cast(context.getRequestHeader());

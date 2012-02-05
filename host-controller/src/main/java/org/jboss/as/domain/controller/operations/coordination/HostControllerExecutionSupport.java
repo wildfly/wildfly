@@ -22,16 +22,19 @@
 
 package org.jboss.as.domain.controller.operations.coordination;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CALLER_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -174,6 +177,11 @@ interface HostControllerExecutionSupport {
                     int stepNum = 0;
                     List<HostControllerExecutionSupport> parsedSteps = new ArrayList<HostControllerExecutionSupport>();
                     for (ModelNode step : operation.get(STEPS).asList()) {
+                        //Remove the caller-type=user header
+                        if (operation.hasDefined(OPERATION_HEADERS) && operation.get(OPERATION_HEADERS).hasDefined(CALLER_TYPE) && operation.get(OPERATION_HEADERS, CALLER_TYPE).asString().equals(USER)) {
+                            step = step.clone();
+                            step.get(OPERATION_HEADERS, CALLER_TYPE).set(USER);
+                        }
                         parsedSteps.add(create(step, hostName, domainModelProvider, ignoredDomainResourceRegistry, stepNum++));
                     }
                     result = new MultiStepOpExecutionSupport(index, parsedSteps);
@@ -187,7 +195,6 @@ interface HostControllerExecutionSupport {
                 result = new IgnoredOpExecutionSupport(index);
             }
             else {
-                // ParsedOp for this host
                 result = new DomainOpExecutionSupport(index, operation, address);
             }
 

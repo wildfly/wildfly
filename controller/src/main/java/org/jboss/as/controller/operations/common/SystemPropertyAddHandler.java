@@ -89,7 +89,6 @@ public class SystemPropertyAddHandler implements OperationStepHandler, Descripti
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-
         validator.validate(operation);
 
         final String name = PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement().getValue();

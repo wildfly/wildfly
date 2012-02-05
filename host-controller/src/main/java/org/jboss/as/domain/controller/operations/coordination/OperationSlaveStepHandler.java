@@ -79,7 +79,6 @@ public class OperationSlaveStepHandler {
                 HostControllerExecutionSupport.Factory.create(operation, localHostControllerInfo.getLocalHostName(),
                         new LazyDomainModelProvider(context), ignoredDomainResourceRegistry);
         ModelNode domainOp = hostControllerExecutionSupport.getDomainOperation();
-
         if (domainOp != null) {
             addBasicStep(context, domainOp);
         }
