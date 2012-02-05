@@ -41,10 +41,10 @@ public class SimpleScheduleBean {
 
     private static boolean timerServiceCalled = false;
     
-    private String timerInfo;
-    private boolean isPersistent;
-    private boolean isCalendar;
-    private String timezone;
+    private static String timerInfo;
+    private static boolean isPersistent;
+    private static boolean isCalendar;
+    private static String timezone;
     
     public String getTimerInfo() {
         return timerInfo;
