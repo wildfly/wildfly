@@ -90,6 +90,11 @@
                 <xs:documentation>outbound-socket-binding groups for proxies</xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="load-balancing-group" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>If specified, load will be balanced among jvmRoutes withing the same load balancing group. A loadBalancingGroup is conceptually equivalent to a mod_jk domain directive.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <!-- Example:
