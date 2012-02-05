@@ -44,9 +44,9 @@ public class SimpleSchedulesBean {
 
     private static boolean timerServiceCalled = false;
     
-    private String timerInfo;
-    private boolean isPersistent;
-    private boolean isCalendar;
+    private static String timerInfo;
+    private static boolean isPersistent;
+    private static boolean isCalendar;
     
     @Resource
     private TimerService timerService;
