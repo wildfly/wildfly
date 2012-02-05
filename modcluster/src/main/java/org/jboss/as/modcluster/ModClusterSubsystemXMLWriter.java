@@ -127,7 +127,7 @@ public class ModClusterSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         // Contexts
         if (config.hasDefined(AUTO_ENABLE_CONTEXTS) || config.hasDefined(STOP_CONTEXT_TIMEOUT)
                 || config.hasDefined(EXCLUDED_CONTEXTS)) {
-            writeAdvertise(writer, config);
+            writeContexts(writer, config);
         }
 
         // Load providers
@@ -159,7 +159,7 @@ public class ModClusterSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         writer.writeStartElement(Element.ADVERTISE.getLocalName());
 
         writeAttributeAs(writer, ENABLE, ADVERTISE, config);
-        writeAttributeAs(writer, SOCKET_BINDING, STICKY_SESSION_FORCE, config);
+        writeAttributeAs(writer, SOCKET_BINDING, ADVERTISE_SOCKET, config);
         writeAttributeAs(writer, SECURITY_KEY, ADVERTISE_SECURITY_KEY, config);
 
         writer.writeEndElement();

@@ -41,8 +41,10 @@ public class ParseAndMarshalModelsTestCase {
         ModelNode originalModel = loadServerModel(file);
         ModelNode reparsedModel = loadServerModel(file);
 
-        if (!compare(originalModel, reparsedModel))
+        if (!compare(originalModel, reparsedModel)) {
+            System.out.println("Expected: " + originalModel.toJSONString(false) + " but was: " + reparsedModel.toJSONString(false));
             fail("The node changed...");
+        }
     }
 
     @Test
@@ -56,8 +58,9 @@ public class ParseAndMarshalModelsTestCase {
         ModelNode originalModel = loadServerModel(file);
         ModelNode reparsedModel = loadServerModel(file);
 
-        if (!compare(originalModel, reparsedModel))
+        if (!compare(originalModel, reparsedModel)) {
             fail("The node changed...");
+        }
     }
 
     private File getOriginalFile(String name) {
@@ -71,7 +74,7 @@ public class ParseAndMarshalModelsTestCase {
         f = new File(f, name);
         assertTrue(f.exists());
         return f;
-}
+    }
 
     private void copyFile(final File src, final File dest) throws Exception {
         final InputStream in = new BufferedInputStream(new FileInputStream(src));
@@ -91,12 +94,12 @@ public class ParseAndMarshalModelsTestCase {
         }
     }
 
-        private void close(Closeable closeable) {
-            try {
-                closeable.close();
-            } catch (IOException ignore) {
-            }
+    private void close(Closeable closeable) {
+        try {
+            closeable.close();
+        } catch (IOException ignore) {
         }
+    }
 
     private boolean compare(ModelNode originalModel, ModelNode reparsedModel) {
         // TODO Auto-generated method stub
@@ -113,14 +116,12 @@ public class ParseAndMarshalModelsTestCase {
         mapper.parseDocument(operations, reader);
 
         final ModelNode ret = operations.get(0);
-        /* To Debug...
-        PrintWriter writer = new PrintWriter("/tmp/jfclere.txt");
-        ret.writeString(writer, false);
-        writer.close();
+        /*
+         * To Debug... PrintWriter writer = new PrintWriter("/tmp/jfclere.txt"); ret.writeString(writer, false); writer.close();
          */
 
         final ModelNode config = ret.get("mod-cluster-config");
-        XMLExtendedStreamWriter streamWriter = new FormattingXMLStreamWriter( XMLOutputFactory.newInstance().createXMLStreamWriter((new FileOutputStream(file))));
+        XMLExtendedStreamWriter streamWriter = new FormattingXMLStreamWriter(XMLOutputFactory.newInstance().createXMLStreamWriter((new FileOutputStream(file))));
         SubsystemMarshallingContext context = new SubsystemMarshallingContext(config, streamWriter);
 
         mapper.deparseDocument(new ModClusterSubsystemXMLWriter(), context, streamWriter);

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<subsystem xmlns="urn:jboss:domain:modcluster:1.0">
+    <mod-cluster-config advertise-socket="mod_cluster" />
+</subsystem>
