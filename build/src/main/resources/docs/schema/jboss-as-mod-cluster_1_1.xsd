@@ -95,6 +95,38 @@
                 <xs:documentation>If specified, load will be balanced among jvmRoutes withing the same load balancing group. A loadBalancingGroup is conceptually equivalent to a mod_jk domain directive.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
+
+        <!-- Proxy configuration options that we NOT defined by 1.0 schema but parsed for. -->
+        <xs:attribute name="worker-timeout" type="xs:int" use="optional" default="1">
+            <xs:annotation>
+                <xs:documentation>Max time to wait for a free worker.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="max-attemps" type="xs:int" use="optional" default="1">
+            <xs:annotation>
+                <xs:documentation>Max retries before returning an error.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="flush-packets" type="xs:boolean" use="optional" default="false">
+            <xs:annotation>
+                <xs:documentation>Controls packet flushing.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="flush-wait" type="xs:int" use="optional" default="-1">
+            <xs:annotation>
+                <xs:documentation>Time to wait before flushing packets. A value of -1 means wait forever.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="smax" type="xs:int" use="optional">
+            <xs:annotation>
+                <xs:documentation>Soft maximum idle connection count (that is the smax in worker mod_proxy documentation). The maximum value depends on the httpd thread configuration (ThreadsPerChild or 1).</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="ttl" type="xs:int" use="optional" default="60">
+            <xs:annotation>
+                <xs:documentation>Time to live (in seconds) for idle connections above smax.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <!-- Example:
