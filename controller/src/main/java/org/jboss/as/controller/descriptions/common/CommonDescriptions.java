@@ -23,6 +23,7 @@
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
@@ -35,6 +36,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URI;
@@ -224,6 +226,16 @@ public class CommonDescriptions {
         valueType.get(VALID, TYPE).set(ModelType.BOOLEAN);
         valueType.get(PROBLEM, DESCRIPTION).set(bundle.getString("global." + ValidateAddressOperationHandler.OPERATION_NAME + ".reply." + PROBLEM));
         valueType.get(PROBLEM, TYPE).set(ModelType.STRING);
+        return descr;
+    }
+
+    public static ModelNode getCompositeOperation(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode descr = getSingleParamSimpleReplyOperation(bundle, COMPOSITE, "root", STEPS, ModelType.LIST, false, ModelType.OBJECT, true);
+        final ModelNode steps = descr.get(REQUEST_PROPERTIES, STEPS);
+        steps.get(VALUE_TYPE).set(ModelType.OBJECT);
+        // TODO could probably describe better the response structure
+        // and make it different for domain and standalone mode
         return descr;
     }
 
