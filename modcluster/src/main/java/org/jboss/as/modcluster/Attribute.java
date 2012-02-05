@@ -81,7 +81,7 @@ enum Attribute {
     PROTOCOL(CommonAttributes.PROTOCOL),
     CA_CERTIFICATE_FILE(CommonAttributes.CA_CERTIFICATE_FILE),
     CA_REVOCATION_URL(CommonAttributes.CA_REVOCATION_URL),
-    
+
     /**
      * @since v1.1
      */
@@ -90,12 +90,13 @@ enum Attribute {
     REMOVE(CommonAttributes.REMOVE),
     SOCKET_BINDING(CommonAttributes.SOCKET_BINDING),
     SECURITY_KEY(CommonAttributes.SECURITY_KEY),
+    URL(CommonAttributes.URL),
     OUTBOUT_SOCKET_BINDINGS(CommonAttributes.OUTBOUT_SOCKET_BINDINGS),
     LOAD_BALANCING_GROUP(CommonAttributes.LOAD_BALANCING_GROUP),
     AUTO_ENABLE(CommonAttributes.AUTO_ENABLE),
     STOP_TIMEOUT(CommonAttributes.STOP_TIMEOUT),
     ;
-    
+
     private final String name;
 
     Attribute(final String name) {

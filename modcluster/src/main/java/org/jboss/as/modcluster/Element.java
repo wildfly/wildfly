@@ -48,6 +48,7 @@ enum Element {
      * @since v1.1
      */
     STICKY_SESSION(CommonAttributes.STICKY_SESSION),
+    ADVERTISE(CommonAttributes.ADVERTISE),
     PROXIES(CommonAttributes.PROXIES),
     CONTEXTS(CommonAttributes.CONTEXTS),
     ;

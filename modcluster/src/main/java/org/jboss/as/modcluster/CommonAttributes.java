@@ -88,6 +88,7 @@ interface CommonAttributes {
     String FORCE = "force";
     String REMOVE = "remove";
     String PROXIES = "proxies";
+    String URL = "url";
     String CONTEXTS = "contexts";
     String SOCKET_BINDING = "socket-binding";
     String SECURITY_KEY = "security-key";

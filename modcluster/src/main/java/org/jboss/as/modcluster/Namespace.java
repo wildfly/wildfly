@@ -29,17 +29,19 @@ import org.jboss.staxmapper.XMLElementReader;
 /**
  * @author Jean-Frederic Clere
  * @author Paul Ferraro
+ * @author Radoslav Husar
  */
 public enum Namespace {
     // must be first
     UNKNOWN(0, 0, null),
 
     MODCLUSTER_1_0(1, 0, new ModClusterSubsystemXMLReader_1_0()),
+    MODCLUSTER_1_1(1, 1, new ModClusterSubsystemXMLReader_1_1()),
     ;
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = MODCLUSTER_1_0;
+    public static final Namespace CURRENT = MODCLUSTER_1_1;
 
     private final int major;
     private final int minor;
