@@ -187,6 +187,9 @@ public class InfinispanDescriptions {
         for (AttributeDefinition attr : CommonAttributes.CACHE_ATTRIBUTES) {
             attr.addResourceAttributeDescription(resources, "infinispan.cache", cache);
         }
+        for (AttributeDefinition attr : CommonAttributes.CLUSTERED_CACHE_ATTRIBUTES) {
+            attr.addResourceAttributeDescription(resources, "infinispan.clustered-cache", cache);
+        }
         // children
         addCommonCacheChildren("infinispan.cache", cache, resources);
         return cache ;
@@ -208,6 +211,9 @@ public class InfinispanDescriptions {
         // attributes
         for (AttributeDefinition attr : CommonAttributes.CACHE_ATTRIBUTES) {
             attr.addResourceAttributeDescription(resources, "infinispan.cache", cache);
+        }
+        for (AttributeDefinition attr : CommonAttributes.CLUSTERED_CACHE_ATTRIBUTES) {
+            attr.addResourceAttributeDescription(resources, "infinispan.clustered-cache", cache);
         }
         // children
         addCommonCacheChildren("infinispan.cache", cache, resources);
@@ -233,6 +239,9 @@ public class InfinispanDescriptions {
         // attributes
         for (AttributeDefinition attr : CommonAttributes.CACHE_ATTRIBUTES) {
             attr.addResourceAttributeDescription(resources, "infinispan.cache", cache);
+        }
+        for (AttributeDefinition attr : CommonAttributes.CLUSTERED_CACHE_ATTRIBUTES) {
+            attr.addResourceAttributeDescription(resources, "infinispan.clustered-cache", cache);
         }
         // children
         addCommonCacheChildren("infinispan.cache", cache, resources);
