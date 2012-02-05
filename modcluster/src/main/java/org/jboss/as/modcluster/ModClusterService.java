@@ -26,7 +26,8 @@ import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.util.Enumeration;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -85,22 +86,13 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         config = new ModClusterConfig();
         // Set the configuration.
 
-        // Check that Advertise could work.
-        boolean defaultavert = false;
-        try {
-            for (Enumeration<NetworkInterface> ni = NetworkInterface.getNetworkInterfaces(); ni.hasMoreElements();) {
-                NetworkInterface intf = ni.nextElement();
-                if (intf.isUp() && intf.supportsMulticast())
-                    defaultavert = true;
-             }
-        } catch (SocketException e) {
-            // Ignore it.
-        }
-
-
         // Set some defaults...
         if (!modelconf.hasDefined(CommonAttributes.PROXY_LIST)) {
-            config.setAdvertise(defaultavert);
+            try {
+                config.setAdvertise(this.isMulticastEnabled(Collections.list(NetworkInterface.getNetworkInterfaces())));
+            } catch (SocketException e) {
+                // Ignore
+            }
         }
         config.setAdvertisePort(23364);
         config.setAdvertiseGroupAddress("224.0.1.105");
@@ -108,6 +100,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         config.setAutoEnableContexts(true);
         config.setStopContextTimeout(10);
         config.setSocketTimeout(20000);
+        config.setExcludedContexts("ROOT,invoker,jbossws,juddi,console");
 
         // Read node to set configuration.
         if (modelconf.hasDefined(CommonAttributes.ADVERTISE_SOCKET)) {
@@ -117,8 +110,9 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
                 config.setAdvertisePort(binding.getMulticastPort());
                 config.setAdvertiseGroupAddress(binding.getMulticastSocketAddress().getHostName());
                 config.setAdvertiseInterface(binding.getSocketAddress().getAddress().getHostAddress());
-                if (!defaultavert)
+                if (!this.isMulticastEnabled(binding.getNetworkInterfaceBinding().getNetworkInterfaces())) {
                     ROOT_LOGGER.multicastInterfaceNotAvailable();
+                }
                 config.setAdvertise(true);
             }
         }
@@ -163,7 +157,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         }
         if (modelconf.hasDefined(CommonAttributes.SOCKET_TIMEOUT)) {
             // the default value is 20000 = 20 seconds.
-            config.setSocketTimeout(modelconf.get(CommonAttributes.SOCKET_TIMEOUT).asInt()*1000);
+            config.setSocketTimeout(modelconf.get(CommonAttributes.SOCKET_TIMEOUT).asInt() * 1000);
         }
 
         if (modelconf.hasDefined(CommonAttributes.STICKY_SESSION))
@@ -233,6 +227,19 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         service = new org.jboss.modcluster.ModClusterService(config, load);
         adapter = new CatalinaEventHandlerAdapter(service, webServer.getValue().getServer());
         adapter.start();
+    }
+
+    private boolean isMulticastEnabled(Collection<NetworkInterface> ifaces) {
+        for (NetworkInterface iface: ifaces) {
+            try {
+                if (iface.isUp() && iface.supportsMulticast()) {
+                    return true;
+                }
+            } catch (SocketException e) {
+                // Ignore
+            }
+        }
+        return false;
     }
 
     /** {@inheritDoc} */
