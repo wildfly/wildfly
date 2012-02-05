@@ -165,6 +165,22 @@ public class HostControllerEnvironment extends ProcessEnvironment {
      */
     public static final String JBOSS_DOMAIN_MASTER_PORT = "jboss.domain.master.port";
 
+    /**
+     * The system property used to store the name of the default domain configuration file. If not set,
+     * the default domain configuration file is "domain.xml". The default domain configuration file is only
+     * relevant if the user does not use the {@code -c} or {@code --domain-config} command line switches
+     * to explicitly set the domain configuration file.
+     */
+    public static final String JBOSS_DOMAIN_DEFAULT_CONFIG = "jboss.domain.default.config";
+
+    /**
+     * The system property used to store the name of the default host configuration file. If not set,
+     * the default domain configuration file is "host.xml". The default domain configuration file is only
+     * relevant if the user does not use the {@code --host-config} command line switch
+     * to explicitly set the host configuration file.
+     */
+    public static final String JBOSS_HOST_DEFAULT_CONFIG = "jboss.host.default.config";
+
     private final Map<String, String> hostSystemProperties;
     private final InetAddress processControllerAddress;
     private final Integer processControllerPort;
@@ -296,8 +312,10 @@ public class HostControllerEnvironment extends ProcessEnvironment {
         this.domainConfigurationDir = tmp;
         SecurityActions.setSystemProperty(DOMAIN_CONFIG_DIR, this.domainConfigurationDir.getAbsolutePath());
 
-        hostConfigurationFile = new ConfigurationFile(domainConfigurationDir, "host.xml", hostConfig);
-        domainConfigurationFile = new ConfigurationFile(domainConfigurationDir, "domain.xml", domainConfig);
+        String defaultHostConfig = SecurityActions.getSystemProperty(JBOSS_HOST_DEFAULT_CONFIG, "host.xml");
+        hostConfigurationFile = new ConfigurationFile(domainConfigurationDir, defaultHostConfig, hostConfig);
+        String defaultDomainConfig = SecurityActions.getSystemProperty(JBOSS_DOMAIN_DEFAULT_CONFIG, "domain.xml");
+        domainConfigurationFile = new ConfigurationFile(domainConfigurationDir, defaultDomainConfig, domainConfig);
 
         tmp = getFileFromProperty(DOMAIN_DATA_DIR);
         if (tmp == null) {

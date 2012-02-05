@@ -7,9 +7,9 @@ rem ############################################################################
 rem # $Id: run.conf.bat 88820 2009-05-13 15:25:44Z dimitris@jboss.org $
 
 rem #
-rem # This batch file is executed by run.bat to initialize the environment 
+rem # This batch file is executed by run.bat to initialize the environment
 rem # variables that run.bat uses. It is recommended to use this file to
-rem # configure these variables, rather than modifying run.bat itself. 
+rem # configure these variables, rather than modifying run.bat itself.
 rem #
 
 rem Uncomment the following line to disable manipulation of JAVA_OPTS (JVM parameters)
@@ -58,10 +58,13 @@ rem # Make Byteman classes visible in all module loaders
 rem # This is necessary to inject Byteman rules into AS7 deployments
 set "JAVA_OPTS=%JAVA_OPTS% -Djboss.modules.system.pkgs=org.jboss.byteman"
 
+rem # Set the default configuration file to use if -c or --server-config are not used
+set "JAVA_OPTS=%JAVA_OPTS% -Djboss.server.default.config=standalone.xml"
+
 rem # Sample JPDA settings for remote socket debugging
 rem set "JAVA_OPTS=%JAVA_OPTS% -Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=n"
 
-rem # Sample JPDA settings for shared memory debugging 
+rem # Sample JPDA settings for shared memory debugging
 rem set "JAVA_OPTS=%JAVA_OPTS% -Xrunjdwp:transport=dt_shmem,address=jboss,server=y,suspend=n"
 
 rem # Use JBoss Modules lockless mode
