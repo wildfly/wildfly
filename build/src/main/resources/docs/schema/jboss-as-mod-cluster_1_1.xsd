@@ -30,11 +30,12 @@
     <xs:element name="subsystem" type="subsystemType"/>
 
     <xs:complexType name="subsystemType">
+        <!-- TODO: workaround XSD to not force XSD but use choice inside -->
         <xs:sequence>
             <!-- General config -->
             <xs:element name="sticky-session" type="sticky-sessionType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="advertise" type="advertiseType" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="proxy-list" type="proxy-listType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="proxies" type="proxiesType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="contexts" type="contextsType" minOccurs="0" maxOccurs="1"/>
             
             <!-- Simple load-provider or a dynamic one -->
@@ -55,22 +56,19 @@
     </xs:complexType>
     
     <!-- Example:
-        <advertise enable="true" socket="modcluster" security-key="secureKey"/>
+        <advertise enable="true" socket-binding"modcluster" security-key="secureKey"/>
     -->    
     <xs:complexType name="advertiseType" abstract="true">
         <xs:attribute name="enable" type="xs:boolean" use="optional" default="true"/>
         <!-- Get the actual advertiseGroupAddress / advertisePort from advertiseSocket -->
-        <xs:attribute name="socket" type="xs:string" use="optional"/>
+        <xs:attribute name="socket-binding" type="xs:string" use="optional"/>
         <xs:attribute name="security-key" type="xs:string" use="optional"/>
     </xs:complexType>
 
     <!-- Example:
-        <proxy-list url="prefix">
-            <proxy>lb01.example.com</proxy>
-            <proxy>lb02.example.com</proxy>
-        </proxy-list>
+        <proxies url="prefix" node-timeout="-1" ping="10" socket-timeout="20" outbound-socket-bindings="modcluster-proxies"/>
     -->
-    <xs:complexType name="proxy-listType" abstract="true">
+    <xs:complexType name="proxiesType" abstract="true">
         <xs:attribute name="url" type="xs:string" use="optional"/>
         <xs:attribute name="node-timeout" type="xs:int" use="optional" default="-1">
             <xs:annotation>
@@ -87,25 +85,37 @@
                 <xs:documentation>Number of seconds to wait for a response from an httpd proxy to MCMP commands before timing out, and flagging the proxy as in error.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:all>
-            <xs:element name="proxy"  type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
-        </xs:all>
+        <xs:attribute name="outbound-socket-bindings" type="xs:list" use="optional">
+            <xs:annotation>
+                <xs:documentation>outbound-socket-binding groups for proxies</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
+    <!-- Example:
+        <contexts auto-enable="true" stop-timeout="20" excluded-contexts="ROOT"/>
+    -->
     <xs:complexType name="contextsType" abstract="true">
-        <xs:attribute name="auto-enable" type="xs:boolean" use="optional" default="true" />
-        <xs:annotation>
-            <xs:documentation>If false the contexts are registered as disabled in httpd, they need to be enabled via manually.</xs:documentation>
-        </xs:annotation>
+        <xs:attribute name="auto-enable" type="xs:boolean" use="optional" default="true">
+            <xs:annotation>
+                <xs:documentation>If false the contexts are registered as disabled in httpd, they need to be enabled via manually.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
         <xs:attribute name="stop-timeout" type="xs:int" use="optional" default="10">
             <xs:annotation>
                 <xs:documentation>The amount of time in seconds for which to wait for clean shutdown of a context.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:all>
-            <xs:element name="excluded-context"  type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
-        </xs:all>
+        <xs:attribute name="excluded-contexts" type="excluded-contextsType" default="ROOT invoker jbossws juddi console">
+            <xs:annotation>
+                <xs:documentation>Contexts not to be registered with httpd.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
+
+    <xs:simpleType name='excluded-contextsType'>
+        <xs:list itemType='xs:string'/>
+    </xs:simpleType>
 
     <!-- General SSL definitions -->
     <xs:complexType name="sslType">
@@ -236,7 +246,6 @@
             <xs:enumeration value="send-traffic"/>
             <xs:enumeration value="receive-traffic"/>
             <xs:enumeration value="busyness"/>
-            <xs:enumeration value="connection-pool"/>
         </xs:restriction>
     </xs:simpleType>
 
