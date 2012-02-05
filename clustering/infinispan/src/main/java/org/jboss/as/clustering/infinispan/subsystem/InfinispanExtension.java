@@ -106,12 +106,14 @@ public class InfinispanExtension implements Extension {
         invalidation.registerOperationHandler(ADD, InvalidationCacheAdd.INSTANCE, InfinispanSubsystemProviders.INVALIDATION_CACHE_ADD, false);
         invalidation.registerOperationHandler(REMOVE, CacheRemove.INSTANCE, InfinispanSubsystemProviders.CACHE_REMOVE, false);
         registerCommonCacheAttributeHandlers(invalidation);
+        registerClusteredCacheAttributeHandlers(invalidation);
 
         // add /subsystem=infinispan/cache-container=*/replicated-cache=*
         ManagementResourceRegistration replicated = container.registerSubModel(replicatedCachePath, InfinispanSubsystemProviders.REPLICATED_CACHE);
         replicated.registerOperationHandler(ADD, ReplicatedCacheAdd.INSTANCE, InfinispanSubsystemProviders.REPLICATED_CACHE_ADD, false);
         replicated.registerOperationHandler(REMOVE, CacheRemove.INSTANCE, InfinispanSubsystemProviders.CACHE_REMOVE, false);
         registerCommonCacheAttributeHandlers(replicated);
+        registerClusteredCacheAttributeHandlers(replicated);
         registerSharedStateCacheAttributeHandlers(replicated);
 
         // add /subsystem=infinispan/cache-container=*/distributed-cache=*
@@ -119,7 +121,9 @@ public class InfinispanExtension implements Extension {
         distributed.registerOperationHandler(ADD, DistributedCacheAdd.INSTANCE, InfinispanSubsystemProviders.DISTRIBUTED_CACHE_ADD, false);
         distributed.registerOperationHandler(REMOVE, CacheRemove.INSTANCE, InfinispanSubsystemProviders.CACHE_REMOVE, false);
         registerCommonCacheAttributeHandlers(distributed);
+        registerClusteredCacheAttributeHandlers(distributed);
         registerSharedStateCacheAttributeHandlers(distributed);
+        CacheWriteAttributeHandler.DISTRIBUTED_CACHE_ATTR.registerAttributes(distributed);
     }
 
     /**
@@ -137,6 +141,10 @@ public class InfinispanExtension implements Extension {
     }
 
     private void registerCommonCacheAttributeHandlers(ManagementResourceRegistration resource) {
+
+        // register the basic cache attribute handler
+        CacheWriteAttributeHandler.CACHE_ATTR.registerAttributes(resource);
+
         // register the locking=LOCKING handlers
         final ManagementResourceRegistration locking = resource.registerSubModel(lockingPath, InfinispanSubsystemProviders.LOCKING);
         locking.registerOperationHandler(ADD, CacheConfigOperationHandlers.LOCKING_ADD, InfinispanSubsystemProviders.LOCKING_ADD);
@@ -159,7 +167,7 @@ public class InfinispanExtension implements Extension {
         final ManagementResourceRegistration expiration = resource.registerSubModel(expirationPath, InfinispanSubsystemProviders.EXPIRATION);
         expiration.registerOperationHandler(ADD, CacheConfigOperationHandlers.EXPIRATION_ADD, InfinispanSubsystemProviders.EXPIRATION_ADD);
         expiration.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.EXPIRATION_REMOVE);
-        CacheConfigOperationHandlers.LOCKING_ATTR.registerAttributes(expiration);
+        CacheConfigOperationHandlers.EXPIRATION_ATTR.registerAttributes(expiration);
 
         // register the store=STORE handlers
         final ManagementResourceRegistration store = resource.registerSubModel(storePath, InfinispanSubsystemProviders.STORE);
@@ -188,6 +196,11 @@ public class InfinispanExtension implements Extension {
         remoteStore.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.STORE_REMOVE);
         CacheConfigOperationHandlers.REMOTE_STORE_ATTR.registerAttributes(remoteStore);
         createPropertyRegistration(remoteStore);
+    }
+
+    private void registerClusteredCacheAttributeHandlers(ManagementResourceRegistration resource) {
+        // register the clustered attributes handler
+        CacheWriteAttributeHandler.CLUSTERED_CACHE_ATTR.registerAttributes(resource);
     }
 
     private void registerSharedStateCacheAttributeHandlers(ManagementResourceRegistration resource) {

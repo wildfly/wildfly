@@ -22,6 +22,8 @@
 
 package org.jboss.as.clustering.infinispan.subsystem.validators;
 
+import static org.jboss.as.clustering.infinispan.InfinispanMessages.MESSAGES;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.AllowedValuesValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
@@ -57,10 +59,17 @@ public class CacheModeValidator extends ModelTypeValidator implements AllowedVal
     public void validateParameter(final String parameterName, final ModelNode value) throws OperationFailedException {
         super.validateParameter(parameterName, value);
         if (value.isDefined()) {
-            final Mode cacheMode = Mode.valueOf(value.asString());
+
+            Mode cacheMode = null ;
+            try {
+               cacheMode = Mode.valueOf(value.asString());
+            }
+            catch(IllegalArgumentException e) {
+                // catch the exception and allow indexing = null
+            }
+
             if (cacheMode == null || !allowedValues.contains(cacheMode)) {
-               // throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidTargetName(allowedValues)));
-               throw new OperationFailedException(new ModelNode().set("invalid value for " + cacheMode));
+                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidParameterValue("mode", allowedValues.toString())));
             }
         }
     }

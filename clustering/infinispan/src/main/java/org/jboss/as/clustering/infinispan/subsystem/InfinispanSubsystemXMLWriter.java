@@ -22,10 +22,9 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import javax.xml.stream.XMLStreamException;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.xml.stream.XMLStreamException;
 
 import org.infinispan.configuration.cache.CacheMode;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -99,7 +98,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
 
                 // for (ModelNode cache: container.get(ModelKeys.CACHE).asList()) {
                 for (ModelNode cache: caches) {
-                    CacheMode mode = CacheMode.valueOf(cache.get(ModelKeys.CACHE_MODE).asString());
+                    CacheMode mode = CacheMode.valueOf(cache.get(ModelKeys.MODE).asString());
                     if (mode.isClustered()) {
                         if (mode.isDistributed()) {
                             writer.writeStartElement(Element.DISTRIBUTED_CACHE.getLocalName());

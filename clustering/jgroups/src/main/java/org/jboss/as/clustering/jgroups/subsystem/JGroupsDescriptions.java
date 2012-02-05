@@ -125,6 +125,9 @@ public class JGroupsDescriptions {
         final ModelNode transport = createDescription(resources, "jgroups.stack.transport");
         // attributes for adding a transport
         for (AttributeDefinition attr : CommonAttributes.TRANSPORT_ATTRIBUTES) {
+            // don't add PROPERTIES to the resource - just its add operation
+            if (attr.getName().equals(CommonAttributes.PROPERTIES.getName()))
+                continue ;
             attr.addResourceAttributeDescription(resources, "jgroups.stack.transport", transport);
         }
         // information about its child "property=*"
@@ -158,6 +161,9 @@ public class JGroupsDescriptions {
         final ModelNode protocol = createDescription(resources, "jgroups.stack.protocol");
         // attributes for adding a protocol
         for (AttributeDefinition attr : CommonAttributes.PROTOCOL_ATTRIBUTES) {
+            // don't add PROPERTIES to the resource - just its add operation
+            if (attr.getName().equals(CommonAttributes.PROPERTIES.getName()))
+                continue ;
             attr.addResourceAttributeDescription(resources, "jgroups.stack.protocol", protocol);
         }
         // information about its child "property=*"

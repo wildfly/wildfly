@@ -3,11 +3,14 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.*;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Locale;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -20,6 +23,7 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -36,13 +40,8 @@ import org.jboss.msc.service.ServiceName;
  */
 public class CacheConfigOperationHandlers {
 
-
     /** The cache locking config add operation handler. */
-    static final OperationStepHandler LOCKING_ADD = new BasicCacheConfigAdd(LOCKING_ATTRIBUTES) {
-        public void process(ModelNode submodel , ModelNode operation){
-          // override locking stuff here
-        }
-    };
+    static final OperationStepHandler LOCKING_ADD = new BasicCacheConfigAdd(LOCKING_ATTRIBUTES);
     static final SelfRegisteringAttributeHandler LOCKING_ATTR = new AttributeWriteHandler(LOCKING_ATTRIBUTES);
 
     /** The cache transaction config add operation handler. */
@@ -212,11 +211,6 @@ public class CacheConfigOperationHandlers {
 
     }
 
-
-    interface SelfRegisteringAttributeHandler extends OperationStepHandler {
-        void registerAttributes(final ManagementResourceRegistration registry);
-    }
-
     /**
      * Helper class to handle write access as well as register attributes.
      */
@@ -263,7 +257,7 @@ public class CacheConfigOperationHandlers {
      * @param context the operation context
      */
     static void reloadRequiredStep(final OperationContext context) {
-        if (context.getProcessType().isServer()) {
+        if (context.getProcessType().isServer() || !context.isBooting()) {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
@@ -280,7 +274,10 @@ public class CacheConfigOperationHandlers {
                     if(controller != null) {
                         context.reloadRequired();
                     }
-                     context.completeStep();
+                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
+                        context.revertReloadRequired();
+                    }
+                    // context.completeStep();
                 }
             }, OperationContext.Stage.RUNTIME);
         }

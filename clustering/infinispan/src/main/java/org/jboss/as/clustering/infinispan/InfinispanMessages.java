@@ -117,4 +117,16 @@ public interface InfinispanMessages {
      */
     @Message(id = 10296, value = "Aborting cache operation after %d retries.")
     RuntimeException abortingCacheOperation(@Cause Throwable cause, int numberOfRetries);
+
+    /**
+     * Creates an exception indicating the an operation parameter is invalid.
+     *
+     * @param id         the id of the parameter.
+     * @param allowableValues the allowable values for the parameter
+     *
+     * @return the String.
+     */
+    @Message(id = 10297, value = "Invalid value for parameter %s. Allowable values: %s")
+    String invalidParameterValue(String id, String allowableValues);
+
 }

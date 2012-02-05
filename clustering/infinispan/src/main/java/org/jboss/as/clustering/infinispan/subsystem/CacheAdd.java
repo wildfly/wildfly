@@ -294,7 +294,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
      */
     void processModelNode(String containerName, ModelNode cache, ConfigurationBuilder builder, List<Dependency<?>> dependencies) {
         builder.classLoader(this.getClass().getClassLoader());
-        builder.clustering().cacheMode(CacheMode.valueOf(cache.require(ModelKeys.CACHE_MODE).asString()));
+        builder.clustering().cacheMode(CacheMode.valueOf(cache.require(ModelKeys.MODE).asString()));
 
         if (cache.hasDefined(ModelKeys.INDEXING)) {
             Indexing indexing = Indexing.valueOf(cache.get(ModelKeys.INDEXING).asString());
