@@ -23,12 +23,15 @@
 package org.jboss.as.domain.controller.operations.coordination;
 
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CALLER_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_RESULTS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_OPERATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
 import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
 
 import java.util.Collections;
@@ -100,7 +103,15 @@ public class ServerOperationsResolverHandler implements OperationStepHandler {
                     @Override
                     public Map<Set<ServerIdentity>, ModelNode> getServerOperations(ModelNode domainOp, PathAddress address) {
 
-                        return ServerOperationsResolverHandler.this.getServerOperations(context, domainOp, address);
+                        Map<Set<ServerIdentity>, ModelNode> ops = ServerOperationsResolverHandler.this.getServerOperations(context, domainOp, address);
+                        for (Map.Entry<Set<ServerIdentity>, ModelNode> entry : ops.entrySet()) {
+                            ModelNode op = entry.getValue();
+                            //Remove the caller-type=user header
+                            if (op.hasDefined(OPERATION_HEADERS) && op.get(OPERATION_HEADERS).hasDefined(CALLER_TYPE) && op.get(OPERATION_HEADERS, CALLER_TYPE).asString().equals(USER)) {
+                                op.get(OPERATION_HEADERS).remove(CALLER_TYPE);
+                            }
+                        }
+                        return ops;
                     }
                 };
             Map<Set<ServerIdentity>, ModelNode> serverOps = hostControllerExecutionSupport.getServerOps(provider);
