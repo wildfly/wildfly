@@ -35,6 +35,7 @@ public enum Protocol {
     TCP("TCP"),
     TCP_GOSSIP("TCP_GOSSIP"),
     AUTH("AUTH"),
+    PING("PING"),
     MPING("MPING"),
     MERGE2("MERGE2"),
     FD_SOCK("FD_SOCK"),

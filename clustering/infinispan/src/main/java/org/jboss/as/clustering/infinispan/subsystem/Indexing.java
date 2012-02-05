@@ -23,6 +23,8 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 /**
+ * Used to configure indexing of entries in the cache for searching.
+ *
  * @author Paul Ferraro
  */
 public enum Indexing {
