@@ -130,8 +130,8 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         final BootstrapListener bootstrapListener = new BootstrapListener(container, startTime, serviceTarget, futureContainer, prettyVersion);
         serviceTarget.addListener(ServiceListener.Inheritance.ALL, bootstrapListener);
         myController.addListener(bootstrapListener);
-        RemoteFileRepository remoteFileRepository = standalone ? null : RemoteFileRepository.addService(serviceTarget, serverEnvironment.getServerDeployDir());
-        ContentRepository.Factory.addService(serviceTarget, serverEnvironment.getServerDeployDir());
+        RemoteFileRepository remoteFileRepository = standalone ? null : RemoteFileRepository.addService(serviceTarget, serverEnvironment.getServerContentDir());
+        ContentRepository.Factory.addService(serviceTarget, serverEnvironment.getServerContentDir());
         DeploymentMountProvider.Factory.addService(serviceTarget);
         ServiceModuleLoader.addService(serviceTarget, configuration);
         ExternalModuleService.addService(serviceTarget);

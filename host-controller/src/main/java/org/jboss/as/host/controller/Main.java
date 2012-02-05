@@ -385,7 +385,7 @@ public final class Main {
         }
 
         productConfig = new ProductConfig(Module.getBootModuleLoader(), SecurityActions.getSystemProperty(HostControllerEnvironment.HOME_DIR));
-        return new HostControllerEnvironment(hostSystemProperties, isRestart,  stdin, stdout, stderr, pmAddress, pmPort,
+        return new HostControllerEnvironment(hostSystemProperties, isRestart, pmAddress, pmPort,
                 pcSocketConfig.getBindAddress(), pcSocketConfig.getBindPort(), defaultJVM,
                 domainConfig, hostConfig, initialRunningMode, backupDomainFiles, cachedDc, productConfig);
     }

@@ -149,7 +149,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         final LocalHostControllerInfoImpl hostControllerInfo = new LocalHostControllerInfoImpl(processState, environment);
         final AbstractVaultReader vaultReader = service(AbstractVaultReader.class);
         ROOT_LOGGER.debugf("Using VaultReader %s", vaultReader);
-        final ContentRepository contentRepository = ContentRepository.Factory.create(environment.getDomainDeploymentDir());
+        final ContentRepository contentRepository = ContentRepository.Factory.create(environment.getDomainContentDir());
         IgnoredDomainResourceRegistry ignoredRegistry = new IgnoredDomainResourceRegistry(hostControllerInfo);
         final PrepareStepHandler prepareStepHandler = new PrepareStepHandler(hostControllerInfo, contentRepository,
                 hostProxies, serverProxies, ignoredRegistry);
@@ -180,7 +180,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         this.runningModeControl = runningModeControl;
         this.processState = processState;
         this.hostControllerInfo = hostControllerInfo;
-        this.localFileRepository = new LocalFileRepository(environment.getDomainBaseDir(), environment.getDomainDeploymentDir(), environment.getDomainConfigurationDir());
+        this.localFileRepository = new LocalFileRepository(environment.getDomainBaseDir(), environment.getDomainContentDir(), environment.getDomainConfigurationDir());
 
         this.remoteFileRepository = new RemoteFileRepository(localFileRepository);
         this.contentRepository = contentRepository;
@@ -220,10 +220,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
     @Override
     public boolean isHostRegistered(String id) {
-        if(hostControllerInfo.getLocalHostName().equals(id)) {
-            return true;
-        }
-        return hostProxies.containsKey(id);
+        return hostControllerInfo.getLocalHostName().equals(id) || hostProxies.containsKey(id);
     }
 
     @Override
@@ -337,6 +334,10 @@ public class DomainModelControllerService extends AbstractControllerService impl
                     MasterDomainControllerClient masterDomainControllerClient = getFuture(clientFuture);
                     //Registers us with the master and gets down the master copy of the domain model to our DC
                     //TODO make sure that the RDCS checks env.isUseCachedDC, and if true falls through to that
+                    // BES 2012/02/04 Comment ^^^ implies the semantic is to use isUseCachedDC as a fallback to
+                    // a failure to connect as opposed to being an instruction to not connect at all. I believe
+                    // the current impl is the latter. Don't change this without a discussion first, as the
+                    // current semantic is a reasonable one.
                     try {
                         masterDomainControllerClient.register();
                     } catch (IOException e) {

@@ -53,10 +53,15 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
 
     private static final long serialVersionUID = 1725061010357265545L;
 
+    /** The manner in which a server can be launched */
     public static enum LaunchType {
+        /** Launched by a Host Controller in a managed domain */
         DOMAIN,
+        /** Launched from the command line */
         STANDALONE,
+        /** Launched by another process in which the server is embedded */
         EMBEDDED,
+        /** Launched by a Java EE appclient */
         APPCLIENT;
 
         public ProcessType getProcessType() {
@@ -86,7 +91,7 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
     public static final String JAVA_EXT_DIRS = "java.ext.dirs";
 
     /**
-     * Constant that holds the name of the environment property for specifying the home directory for JBoss.
+     * Constant that holds the name of the system property for specifying {@link #getHomeDir() the JBoss home directory}.
      */
     public static final String HOME_DIR = "jboss.home.dir";
 
@@ -113,7 +118,7 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
     public static final String MODULES_DIR = "jboss.modules.dir";
 
     /**
-     * Constant that holds the name of the environment property for specifying the directory from which JBoss will read OSGi bundles.
+     * Constant that holds the name of the system property for specifying {@link #getBundlesDir() the bundles directory}.
      *
      * <p>
      * Defaults to <tt><em>HOME_DIR</em>/bundles</tt>/
@@ -121,12 +126,13 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
     public static final String BUNDLES_DIR = "jboss.bundles.dir";
 
     /**
-     * VFS module identifier
+     * VFS module identifier.
      */
     public static final String VFS_MODULE_IDENTIFIER = "org.jboss.vfs";
 
     /**
-     * Constant that holds the name of the environment property for specifying the base directory for server content.
+     * Constant that holds the name of the system property for specifying
+     * {@link #getServerBaseDir() the server base directory}.
      *
      * <p>
      * Defaults to <tt><em>HOME_DIR</em>/standalone</tt>.
@@ -134,7 +140,8 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
     public static final String SERVER_BASE_DIR = "jboss.server.base.dir";
 
     /**
-     * Constant that holds the name of the environment property for specifying the server configuration URL.
+     * Constant that holds the name of the system property for specifying
+     * {@link #getServerConfigurationDir()} () the server configuration directory}.
      *
      * <p>
      * Defaults to <tt><em>SERVER_BASE_DIR</em>/configuration</tt> .
@@ -142,8 +149,8 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
     public static final String SERVER_CONFIG_DIR = "jboss.server.config.dir";
 
     /**
-     * Constant that holds the name of the environment property for specifying the directory which JBoss will use for persistent
-     * data file storage.
+     * Constant that holds the name of the system property for specifying
+     * {@link #getServerDataDir()} () the server data directory}.
      *
      * <p>
      * Defaults to <tt><em>SERVER_BASE_DIR</em>/data</tt>.
@@ -151,16 +158,25 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
     public static final String SERVER_DATA_DIR = "jboss.server.data.dir";
 
     /**
-     * Constant that holds the name of the environment property for specifying the directory which JBoss will use for
-     * deployments.
+     * Constant that holds the name of the system property for specifying
+     * {@link #getServerContentDir() the server managed content repository directory}.
      *
      * <p>
      * Defaults to <tt><em>SERVER_DATA_DIR</em>/content</tt>.
      */
+    public static final String SERVER_CONTENT_DIR = "jboss.server.content.dir";
+
+    /**
+     * Deprecated variant of {@link #SERVER_CONTENT_DIR}.
+     *
+     * @deprecated use {@link #SERVER_CONTENT_DIR}
+     */
+    @Deprecated
     public static final String SERVER_DEPLOY_DIR = "jboss.server.deploy.dir";
 
     /**
-     * Constant that holds the name of the environment property for specifying the server log directory for JBoss.
+     * Constant that holds the name of the system property for specifying
+     * {@link #getServerLogDir() the server log directory}.
      *
      * <p>
      * Defaults to <tt><em>SERVER_BASE_DIR</em>/<em>log</em></tt>.
@@ -168,8 +184,8 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
     public static final String SERVER_LOG_DIR = "jboss.server.log.dir";
 
     /**
-     * Constant that holds the name of the environment property for specifying the directory which JBoss will use for temporary
-     * file storage.
+     * Constant that holds the name of the system property for specifying t
+     * {@link #getServerTempDir() the server temp directory}.
      *
      * <p>
      * Defaults to <tt><em>SERVER_BASE_DIR</em>/tmp</tt> .
@@ -177,8 +193,8 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
     public static final String SERVER_TEMP_DIR = "jboss.server.temp.dir";
 
     /**
-     * Common alias between domain and standalone mode. Uses jboss.domain.temp.dir on domain mode,
-     * and jboss.server.temp.dir on standalone server mode.
+     * Common alias between domain and standalone mode. Equivalent to jboss.domain.temp.dir in a managed domain,
+     * and jboss.server.temp.dir on a standalone server.
      */
     public static final String CONTROLLER_TEMP_DIR = "jboss.controller.temp.dir";
 
@@ -193,14 +209,14 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
     public static final String SERVER_NAME = "jboss.server.name";
 
     /**
-     * Constant that holds the name of the system property for specifying the local part of the name of the host that this
-     * server is running on.
+     * Constant that holds the name of the system property for specifying the local part of the name
+     * of the host machine that this server is running on.
      */
     public static final String HOST_NAME = "jboss.host.name";
 
     /**
-     * Constant that holds the name of the system property for specifying the fully-qualified name of the host that this server
-     * is running on.
+     * Constant that holds the name of the system property for specifying the fully-qualified name of the host
+     * machine that this server is running on.
      */
     public static final String QUALIFIED_HOST_NAME = "jboss.qualified.host.name";
 
@@ -260,7 +276,7 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
     private final File serverLogDir;
     private final File controllerTempDir;
     private volatile File serverDataDir;
-    private volatile File serverDeployDir;
+    private volatile File serverContentDir;
     private volatile File serverTempDir;
     private volatile File bundlesDir;
     private final File domainBaseDir;
@@ -330,11 +346,16 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         }
         serverDataDir = tmp;
 
-        tmp = getFileFromProperty(SERVER_DEPLOY_DIR, props);
+        tmp = getFileFromProperty(SERVER_CONTENT_DIR, props);
+        if (tmp == null) {
+            @SuppressWarnings("deprecation")
+            String deprecatedProp = SERVER_DEPLOY_DIR;
+            tmp = getFileFromProperty(deprecatedProp, props);
+        }
         if (tmp == null) {
             tmp = new File(serverDataDir, "content");
         }
-        serverDeployDir = tmp;
+        serverContentDir = tmp;
 
         tmp = getFileFromProperty(SERVER_LOG_DIR, props);
         if (tmp == null) {
@@ -399,6 +420,7 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         }
     }
 
+    // TODO why is this not done in the constructor?
     @SuppressWarnings("deprecation")
     void install() {
         SecurityActions.setSystemProperty(QUALIFIED_HOST_NAME, qualifiedHostName);
@@ -410,7 +432,7 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         SecurityActions.setSystemProperty(SERVER_BASE_DIR, serverBaseDir.getAbsolutePath());
         SecurityActions.setSystemProperty(SERVER_CONFIG_DIR, serverConfigurationDir.getAbsolutePath());
         SecurityActions.setSystemProperty(SERVER_DATA_DIR, serverDataDir.getAbsolutePath());
-        SecurityActions.setSystemProperty(SERVER_DEPLOY_DIR, serverDeployDir.getAbsolutePath());
+        SecurityActions.setSystemProperty(SERVER_DEPLOY_DIR, serverContentDir.getAbsolutePath());
         SecurityActions.setSystemProperty(SERVER_LOG_DIR, serverLogDir.getAbsolutePath());
         SecurityActions.setSystemProperty(SERVER_TEMP_DIR, serverTempDir.getAbsolutePath());
 
@@ -454,7 +476,7 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
     /**
      * Get the name of this server instance. For domain-mode servers, this is the name given in the domain configuration. For
      * standalone servers, this is the name either provided in the server configuration, or, if not given, the name specified
-     * via system property, or auto-detected based on host name.
+     * via {@link #SERVER_NAME system property}, or auto-detected based on {@link #getHostName()} host name}.
      *
      * @return the server name
      */
@@ -568,10 +590,20 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         this.nodeName = nodeName;
     }
 
+    /**
+     * Gets any Java extension directories.
+     *
+     * @return the java extension directories. Will not return {@code null}, but may be an empty array
+     */
     public File[] getJavaExtDirs() {
         return javaExtDirs.clone();
     }
 
+    /**
+     * Gets the root directory for this JBoss installation.
+     *
+     * @return the root directory
+     */
     public File getHomeDir() {
         return homeDir;
     }
@@ -594,6 +626,13 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         return modulesDir;
     }
 
+    /**
+     * Gets the directory under which OSGi bundles should be located.
+     *
+     * <p>Defaults to {@link #getHomeDir() homeDir}/bundles</p>
+     *
+     * @return the bundles directory
+     */
     public File getBundlesDir() {
         return bundlesDir;
     }
@@ -609,30 +648,87 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         bundlesDir = tmp;
     }
 
+    /**
+     * Gets the based directory for this server.
+     *
+     * <p>Defaults to <tt>{@link #getHomeDir() homeDir}/standalone</tt> for a standalone server or
+     * <tt>domain/servers/<server-name></tt> for a managed domain server.</p>
+     *
+     * @return the base directory for the server
+     */
     public File getServerBaseDir() {
         return serverBaseDir;
     }
 
+    /**
+     * Gets the directory in which server configuration files are stored.
+     * <p>Defaults to {@link #getServerBaseDir()}  serverBaseDir}/configuration</p>
+     *
+     * @return the server configuration directory.
+     */
     public File getServerConfigurationDir() {
         return serverConfigurationDir;
     }
 
+    /**
+     * Gets the {@link ConfigurationFile} that manages the server's configuration file.
+     *
+     * @return the configuration file
+     */
     public ConfigurationFile getServerConfigurationFile() {
         return serverConfigurationFile;
     }
 
+    /**
+     * Gets the directory in which the server can store private internal state that
+     * should survive a process restart.
+     * <p>Defaults to {@link #getServerBaseDir()}  serverBaseDir}/data</p>
+     *
+     * @return the internal state persistent storage directory
+     */
     public File getServerDataDir() {
         return serverDataDir;
     }
 
-    public File getServerDeployDir() {
-        return serverDeployDir;
+    /**
+     * Gets the directory in which the server will store server-managed user content (e.g. deployments.)
+     *
+     * <p>Defaults to {@link #getServerDataDir()}  serverDataDir}/content</p>
+     *
+     * @return the domain managed content storage directory
+     */
+    public File getServerContentDir() {
+        return serverContentDir;
     }
 
+    /**
+     * Deprecated previous name for {@link #getServerContentDir()}.
+     * @return the server managed content storage directory.
+     *
+     * @deprecated use {@link #getServerContentDir()}
+     */
+    @Deprecated
+    public File getServerDeployDir() {
+        return serverContentDir;
+    }
+
+    /**
+     * Gets the directory in which the server can write log files.
+     * <p>Defaults to {@link #getServerBaseDir()}  serverBaseDir}/log</p>
+     *
+     * @return the log file directory for the server.
+     */
     public File getServerLogDir() {
         return serverLogDir;
     }
 
+    /**
+     * Gets the directory in which athe server can store private internal state that
+     * does not need to survive a process restart.
+     * <p>Defaults to {@link #getServerBaseDir()}  serverBaseDir}/tmp</p>
+     *
+     * @return the internal state temporary storage directory for the server.
+     */
     public File getServerTempDir() {
         return serverTempDir;
     }
@@ -648,26 +744,54 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         serverTempDir = tmp;
     }
 
-    public File getControllerTempDir() {
+    // BES 2012/02/04 made package protected as I cannot find use for it other than to create a PathService
+    // So, the integration hook is the name of the path service, not this method.
+    File getControllerTempDir() {
         return controllerTempDir;
     }
 
+    /**
+     * Gets the base directory in which managed domain files are stored.
+     * <p>Defaults to {@link #getHomeDir() JBOSS_HOME}/domain</p>
+     *
+     * @return the domain base directory, or {@code null} if this server is not running in a managed domain.
+     */
     public File getDomainBaseDir() {
         return domainBaseDir;
     }
 
+    /**
+     * Gets the directory in which managed domain configuration files are stored.
+     * <p>Defaults to {@link #getDomainBaseDir()}  domainBaseDir}/configuration</p>
+     *
+     * @return the domain configuration directory, or {@code null} if this server is not running in a managed domain.
+     */
     public File getDomainConfigurationDir() {
         return domainConfigurationDir;
     }
 
+    /**
+     * Gets the manner in which this server was launched
+     *
+     * @return the launch type
+     */
     public LaunchType getLaunchType() {
         return launchType;
     }
 
+    /**
+     * Gets whether this server is an independently managed server, not managed as part of a managed domain.
+     * @return {@code true} if this server is an independently managed server
+     */
     public boolean isStandalone() {
         return standalone;
     }
 
+    /**
+     * Gets the {@link RunningMode} that was in effect when this server was launched.
+     *
+     * @return  the initial running mode
+     */
     public RunningMode getInitialRunningMode() {
         return initialRunningMode;
     }
@@ -677,6 +801,11 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         return allowModelControllerExecutor;
     }
 
+    /**
+     * Gets the {@link ProductConfig} detected at startup.
+     *
+     * @return the product config. Will not be {@code null}
+     */
     public ProductConfig getProductConfig() {
         return productConfig;
     }
