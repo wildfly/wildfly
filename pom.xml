@@ -183,7 +183,7 @@
         <version.org.jboss.resteasy>2.3.1.GA</version.org.jboss.resteasy>
         <version.org.jboss.sasl>1.0.0.Final</version.org.jboss.sasl>
         <version.org.jboss.seam.int>6.0.0.GA</version.org.jboss.seam.int>
-        <version.org.jboss.security.jboss-negotiation>2.2.0.Beta3</version.org.jboss.security.jboss-negotiation>
+        <version.org.jboss.security.jboss-negotiation>2.2.0.SP1</version.org.jboss.security.jboss-negotiation>
         <version.org.jboss.security.jbossxacml>2.0.6.Final</version.org.jboss.security.jbossxacml>
         <version.org.jboss.shrinkwrap.shrinkwrap>1.0.0-cr-1</version.org.jboss.shrinkwrap.shrinkwrap>
         <version.org.jboss.shrinkwrap.resolver>1.0.0-beta-5</version.org.jboss.shrinkwrap.resolver>
@@ -4559,7 +4559,31 @@
 
             <dependency>
                 <groupId>org.jboss.security</groupId>
-                <artifactId>jboss-negotiation</artifactId>
+                <artifactId>jboss-negotiation-common</artifactId>
+                <version>${version.org.jboss.security.jboss-negotiation}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.jboss.security</groupId>
+                <artifactId>jboss-negotiation-extras</artifactId>
+                <version>${version.org.jboss.security.jboss-negotiation}</version>
+            </dependency>            
+
+            <dependency>
+                <groupId>org.jboss.security</groupId>
+                <artifactId>jboss-negotiation-net</artifactId>
+                <version>${version.org.jboss.security.jboss-negotiation}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.security</groupId>
+                <artifactId>jboss-negotiation-ntlm</artifactId>
+                <version>${version.org.jboss.security.jboss-negotiation}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.security</groupId>
+                <artifactId>jboss-negotiation-spnego</artifactId>
                 <version>${version.org.jboss.security.jboss-negotiation}</version>
             </dependency>
 

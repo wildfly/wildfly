@@ -1025,7 +1025,11 @@
         </module-def>
 
         <module-def name="org.jboss.security.negotiation">
-            <maven-resource group="org.jboss.security" artifact="jboss-negotiation"/>
+            <maven-resource group="org.jboss.security" artifact="jboss-negotiation-common"/>
+        	<maven-resource group="org.jboss.security" artifact="jboss-negotiation-extras"/>
+            <maven-resource group="org.jboss.security" artifact="jboss-negotiation-net"/>
+        	<maven-resource group="org.jboss.security" artifact="jboss-negotiation-ntlm"/>
+        	<maven-resource group="org.jboss.security" artifact="jboss-negotiation-spnego"/>
         </module-def>
 
         <module-def name="org.jboss.security.xacml">

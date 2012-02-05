@@ -1305,7 +1305,27 @@
 
                 <dependency>
                     <groupId>org.jboss.security</groupId>
-                    <artifactId>jboss-negotiation</artifactId>
+                    <artifactId>jboss-negotiation-common</artifactId>
+                </dependency>
+            
+                <dependency>
+                    <groupId>org.jboss.security</groupId>
+                    <artifactId>jboss-negotiation-extras</artifactId>
+                </dependency>            
+
+                <dependency>
+                    <groupId>org.jboss.security</groupId>
+                    <artifactId>jboss-negotiation-net</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.security</groupId>
+                    <artifactId>jboss-negotiation-ntlm</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.security</groupId>
+                    <artifactId>jboss-negotiation-spnego</artifactId>
                 </dependency>
 
                 <dependency>
