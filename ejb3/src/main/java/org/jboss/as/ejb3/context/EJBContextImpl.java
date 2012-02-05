@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.context;
 
+import java.io.Serializable;
 import java.security.Identity;
 import java.security.Principal;
 import java.util.Map;
@@ -40,7 +41,7 @@ import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public abstract class EJBContextImpl implements javax.ejb.EJBContext {
+public abstract class EJBContextImpl implements javax.ejb.EJBContext, Serializable {
     private final EjbComponentInstance instance;
 
     public EJBContextImpl(final EjbComponentInstance instance) {
