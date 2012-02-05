@@ -377,10 +377,10 @@ public class DataSourcesExtension implements Extension {
 
                 writer.writeStartElement(isXADataSource ? DataSources.Tag.XA_DATASOURCE.getLocalName()
                         : DataSources.Tag.DATASOURCE.getLocalName());
+                JTA.marshallAsAttribute(dataSourceNode, writer);
                 JNDINAME.marshallAsAttribute(dataSourceNode, writer);
                 writer.writeAttribute("pool-name", property.getName());
                 ENABLED.marshallAsAttribute(dataSourceNode, writer);
-                JTA.marshallAsAttribute(dataSourceNode, writer);
                 USE_JAVA_CONTEXT.marshallAsAttribute(dataSourceNode, writer);
                 SPY.marshallAsAttribute(dataSourceNode, writer);
                 USE_CCM.marshallAsAttribute(dataSourceNode, writer);
@@ -656,7 +656,14 @@ public class DataSourcesExtension implements Extension {
                 throws XMLStreamException {
             if (has(node, identifier)) {
                 writer.writeStartElement(localName);
-                writer.writeCharacters(node.get(identifier).asString());
+                String content = node.get(identifier).asString();
+                if (content.indexOf('\n') > -1) {
+                    writer.writeCharacters(content);
+                } else {
+                    // Use the method where staxmapper won't add new lines
+                    char[] chars = content.toCharArray();
+                    writer.writeCharacters(chars, 0, chars.length);
+                }
                 writer.writeEndElement();
             }
         }

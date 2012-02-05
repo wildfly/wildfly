@@ -13,12 +13,12 @@ import java.io.IOException;
 public class DeploymentScannerParsingTestCase extends AbstractSubsystemBaseTest {
     private static final String SUBSYSTEM_XML =
             "<subsystem xmlns=\"urn:jboss:domain:deployment-scanner:1.1\">\n" +
-            "    <deployment-scanner auto-deploy-xml=\"true\" deployment-timeout=\"60\"\n" +
-            "        name=\"myScanner\" path=\"deployments_${custom.system.property:test}\"\n" +
-            "        relative-to=\"jboss.server.base.dir\" scan-enabled=\"true\" scan-interval=\"5000\"/>\n" +
-            "   <deployment-scanner auto-deploy-xml=\"true\" deployment-timeout=\"30\"\n" +
-            "        name=\"default\" path=\"deployments\"\n" +
-            "        relative-to=\"jboss.server.base.dir\" scan-enabled=\"true\" scan-interval=\"5000\"/>\n" +
+            "    <deployment-scanner name=\"myScanner\" path=\"deployments_${custom.system.property:test}\" " +
+                   "relative-to=\"jboss.server.base.dir\" scan-enabled=\"true\" scan-interval=\"5000\" " +
+                   "auto-deploy-xml=\"true\" deployment-timeout=\"60\"/>\n" +
+            "    <deployment-scanner path=\"deployments\" relative-to=\"jboss.server.base.dir\" " +
+                   "scan-enabled=\"true\" scan-interval=\"5000\" " +
+                   "auto-deploy-xml=\"true\" deployment-timeout=\"30\"/>\n" +
             "</subsystem>";
 
 
