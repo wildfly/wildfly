@@ -22,7 +22,6 @@
 
 package org.jboss.as.domain.controller.operations.coordination;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CALLER_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONCURRENT_GROUPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_FAILURE_DESCRIPTION;
@@ -34,7 +33,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IN_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILED_SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILURE_PERCENTAGE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
@@ -43,7 +41,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_OPERATIONS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
 import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
 import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
@@ -186,6 +183,7 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
     private void pushToServers(final OperationContext context, final Map<ServerIdentity, ProxyTask> tasks,
                                final Map<ServerIdentity, Future<ModelNode>> futures) throws OperationFailedException {
 
+
         final String localHostName = domainOperationContext.getLocalHostInfo().getLocalHostName();
         Map<String, ModelNode> hostResults = new HashMap<String, ModelNode>(domainOperationContext.getHostControllerResults());
         if (domainOperationContext.getCoordinatorResult().isDefined()) {
@@ -214,12 +212,6 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
                                 return null;
                             }
                         }
-                    }
-
-                    //Remove the operation header set by ModelControllerClientOperationHandler which shows the operation comes from a user.
-                    //In this case the 'user' header should not be there since we are propagating from the domain to the servers.
-                    if (operation.hasDefined(OPERATION_HEADERS) && operation.get(OPERATION_HEADERS).hasDefined(CALLER_TYPE) && USER.equals(operation.get(OPERATION_HEADERS, CALLER_TYPE).asString())) {
-                        operation.get(OPERATION_HEADERS).remove(CALLER_TYPE);
                     }
 
                     // TODO this seems a bit convoluted. It's already an executor service thread calling this method
