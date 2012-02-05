@@ -55,6 +55,9 @@ rem # Make Byteman classes visible in all module loaders
 rem # This is necessary to inject Byteman rules into AS7 deployments
 set "JAVA_OPTS=%JAVA_OPTS% -Djboss.modules.system.pkgs=org.jboss.byteman"
 
+rem # Set the default configuration files to use if -c, --domain-config or --host-config are not used
+set "JAVA_OPTS=%JAVA_OPTS% -Djboss.domain.default.config=domain.xml -Djboss.host.default.config=host.xml"
+
 rem # Use JBoss Modules lockless mode
 rem set "JAVA_OPTS=%JAVA_OPTS% -Djboss.modules.lockless=true"
 

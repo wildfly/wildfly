@@ -240,12 +240,23 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
      */
     public static final String JBOSS_DEFAULT_MULTICAST_ADDRESS = "jboss.default.multicast.address";
 
+    /**
+     * The system property used to store the name of the default server configuration file. If not set,
+     * the default domain configuration file is "standalone.xml". The default domain configuration file is only
+     * relevant if the user does not use the {@code -c} or {@code --server-config} command line switches
+     * to explicitly set the server configuration file.
+     */
+    public static final String JBOSS_SERVER_DEFAULT_CONFIG = "jboss.server.default.config";
+
     protected static final String DOMAIN_BASE_DIR = "jboss.domain.base.dir";
     protected static final String DOMAIN_CONFIG_DIR = "jboss.domain.config.dir";
 
+    /** Properties that cannot be set via {@link #systemPropertyUpdated(String, String)} */
     private static final Set<String> ILLEGAL_PROPERTIES = new HashSet<String>(Arrays.asList(DOMAIN_BASE_DIR,
             DOMAIN_CONFIG_DIR, JAVA_EXT_DIRS, HOME_DIR, "modules.path", SERVER_BASE_DIR, SERVER_CONFIG_DIR,
-            SERVER_DATA_DIR, SERVER_DEPLOY_DIR, SERVER_LOG_DIR, BOOTSTRAP_MAX_THREADS, CONTROLLER_TEMP_DIR));
+            SERVER_DATA_DIR, SERVER_DEPLOY_DIR, SERVER_LOG_DIR, BOOTSTRAP_MAX_THREADS, CONTROLLER_TEMP_DIR,
+            JBOSS_SERVER_DEFAULT_CONFIG));
+    /** Properties that can only be set via {@link #systemPropertyUpdated(String, String)} during server boot. */
     private static final Set<String> BOOT_PROPERTIES = new HashSet<String>(Arrays.asList(BUNDLES_DIR, SERVER_TEMP_DIR,
             NODE_NAME, SERVER_NAME, HOST_NAME, QUALIFIED_HOST_NAME));
 
@@ -338,7 +349,8 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         }
         serverConfigurationDir = tmp;
 
-        serverConfigurationFile = standalone ? new ConfigurationFile(serverConfigurationDir, "standalone.xml", serverConfig) : null;
+        String defaultServerConfig = SecurityActions.getSystemProperty(JBOSS_SERVER_DEFAULT_CONFIG, "standalone.xml");
+        serverConfigurationFile = standalone ? new ConfigurationFile(serverConfigurationDir, defaultServerConfig, serverConfig) : null;
 
         tmp = getFileFromProperty(SERVER_DATA_DIR, props);
         if (tmp == null) {
