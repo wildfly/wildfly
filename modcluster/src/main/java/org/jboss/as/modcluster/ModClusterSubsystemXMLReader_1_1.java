@@ -34,29 +34,15 @@ import static org.jboss.as.modcluster.CommonAttributes.ADVERTISE_SECURITY_KEY;
 import static org.jboss.as.modcluster.CommonAttributes.ADVERTISE_SOCKET;
 import static org.jboss.as.modcluster.CommonAttributes.AUTO_ENABLE_CONTEXTS;
 import static org.jboss.as.modcluster.CommonAttributes.BALANCER;
-import static org.jboss.as.modcluster.CommonAttributes.CAPACITY;
-import static org.jboss.as.modcluster.CommonAttributes.CA_CERTIFICATE_FILE;
-import static org.jboss.as.modcluster.CommonAttributes.CA_REVOCATION_URL;
-import static org.jboss.as.modcluster.CommonAttributes.CERTIFICATE_KEY_FILE;
-import static org.jboss.as.modcluster.CommonAttributes.CIPHER_SUITE;
-import static org.jboss.as.modcluster.CommonAttributes.CLASS;
-import static org.jboss.as.modcluster.CommonAttributes.CUSTOM_LOAD_METRIC;
-import static org.jboss.as.modcluster.CommonAttributes.DECAY;
 import static org.jboss.as.modcluster.CommonAttributes.DOMAIN;
 import static org.jboss.as.modcluster.CommonAttributes.DYNAMIC_LOAD_PROVIDER;
 import static org.jboss.as.modcluster.CommonAttributes.EXCLUDED_CONTEXTS;
-import static org.jboss.as.modcluster.CommonAttributes.FACTOR;
 import static org.jboss.as.modcluster.CommonAttributes.FLUSH_PACKETS;
 import static org.jboss.as.modcluster.CommonAttributes.FLUSH_WAIT;
-import static org.jboss.as.modcluster.CommonAttributes.HISTORY;
-import static org.jboss.as.modcluster.CommonAttributes.KEY_ALIAS;
-import static org.jboss.as.modcluster.CommonAttributes.LOAD_METRIC;
 import static org.jboss.as.modcluster.CommonAttributes.MAX_ATTEMPTS;
 import static org.jboss.as.modcluster.CommonAttributes.MOD_CLUSTER_CONFIG;
 import static org.jboss.as.modcluster.CommonAttributes.NODE_TIMEOUT;
-import static org.jboss.as.modcluster.CommonAttributes.PASSWORD;
 import static org.jboss.as.modcluster.CommonAttributes.PING;
-import static org.jboss.as.modcluster.CommonAttributes.PROTOCOL;
 import static org.jboss.as.modcluster.CommonAttributes.PROXY_LIST;
 import static org.jboss.as.modcluster.CommonAttributes.PROXY_URL;
 import static org.jboss.as.modcluster.CommonAttributes.SIMPLE_LOAD_PROVIDER;
@@ -68,28 +54,23 @@ import static org.jboss.as.modcluster.CommonAttributes.STICKY_SESSION_FORCE;
 import static org.jboss.as.modcluster.CommonAttributes.STICKY_SESSION_REMOVE;
 import static org.jboss.as.modcluster.CommonAttributes.STOP_CONTEXT_TIMEOUT;
 import static org.jboss.as.modcluster.CommonAttributes.TTL;
-import static org.jboss.as.modcluster.CommonAttributes.TYPE;
-import static org.jboss.as.modcluster.CommonAttributes.URL;
-import static org.jboss.as.modcluster.CommonAttributes.WEIGHT;
 import static org.jboss.as.modcluster.CommonAttributes.WORKER_TIMEOUT;
 
-import java.util.Collections;
 import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
- *
  * @author Radoslav Husar
  * @since AS 7.1.0.Final
  */
-public class ModClusterSubsystemXMLReader_1_1 extends ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<ModelNode>> {
+public class ModClusterSubsystemXMLReader_1_1 extends ModClusterSubsystemXMLReader_1_0
+        implements XMLElementReader<List<ModelNode>> {
 
     /**
      * {@inheritDoc}
@@ -146,7 +127,7 @@ public class ModClusterSubsystemXMLReader_1_1 extends ModClusterSubsystemXMLRead
             }
 
             // TODO Remove only for debug
-            System.out.println(config.toJSONString(false));
+            // System.out.println(config.toJSONString(false));
         }
     }
 
@@ -273,33 +254,5 @@ public class ModClusterSubsystemXMLReader_1_1 extends ModClusterSubsystemXMLRead
             }
         }
         ParseUtils.requireNoContent(reader);
-    }
-
-    //// TODO >>>>
-    static ModelNode parseModClusterConfig(XMLExtendedStreamReader reader) throws XMLStreamException {
-        final ModelNode config = new ModelNode();
-        // Parse the attributes.
-        parsePropConf(reader, config);
-        // Parse the elements
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            final Element element = Element.forName(reader.getLocalName());
-            switch (element) {
-                case SIMPLE_LOAD_PROVIDER:
-                    final ModelNode load = parseSimpleLoadProvider(reader);
-                    config.get(SIMPLE_LOAD_PROVIDER).set(load);
-                    break;
-                case DYNAMIC_LOAD_PROVIDER:
-                    final ModelNode dynload = parseDynamicLoadProvider(reader);
-                    config.get(DYNAMIC_LOAD_PROVIDER).set(dynload);
-                    break;
-                case SSL:
-                    final ModelNode ssl = parseSSL(reader);
-                    config.get(SSL).set(ssl);
-                    break;
-                default:
-                    throw unexpectedElement(reader);
-            }
-        }
-        return config;
     }
 }

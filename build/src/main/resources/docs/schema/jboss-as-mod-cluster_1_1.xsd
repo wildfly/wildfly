@@ -37,27 +37,27 @@
             <xs:element name="advertise" type="advertiseType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="proxies" type="proxiesType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="contexts" type="contextsType" minOccurs="0" maxOccurs="1"/>
-            
+
             <!-- Simple load-provider or a dynamic one -->
             <xs:choice minOccurs="0" maxOccurs="1">
                 <xs:element name="simple-load-provider" type="simple-load-providerType"/>
                 <xs:element name="dynamic-load-provider" type="dynamic-load-providerType"/>
             </xs:choice>
-            
+
             <!-- SSL configuration -->
             <xs:element name="ssl" type="sslType" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
     </xs:complexType>
-    
+
     <xs:complexType name="sticky-sessionType" abstract="true">
         <xs:attribute name="enable" type="xs:boolean" use="optional" default="true"/>
         <xs:attribute name="force" type="xs:boolean" use="optional" default="false"/>
         <xs:attribute name="remove" type="xs:boolean" use="optional" default="false"/>
     </xs:complexType>
-    
+
     <!-- Example:
         <advertise enable="true" socket-binding"modcluster" security-key="secureKey"/>
-    -->    
+    -->
     <xs:complexType name="advertiseType" abstract="true">
         <xs:attribute name="enable" type="xs:boolean" use="optional" default="true"/>
         <!-- Get the actual advertiseGroupAddress / advertisePort from advertiseSocket -->
@@ -70,9 +70,14 @@
     -->
     <xs:complexType name="proxiesType" abstract="true">
         <xs:attribute name="url" type="xs:string" use="optional"/>
-        <xs:attribute name="node-timeout" type="xs:int" use="optional" default="-1">
+        <xs:attribute name="outbound-socket-bindings" type="xs:list" use="optional">
             <xs:annotation>
-                <xs:documentation>Timeout (in seconds) for proxy connections to a node. That is the time mod_cluster will wait for the back-end response before returning error.</xs:documentation>
+                <xs:documentation>outbound-socket-binding groups for proxies.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="load-balancing-group" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>If specified, load will be balanced among jvmRoutes withing the same load balancing group. A loadBalancingGroup is conceptually equivalent to a mod_jk domain directive.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="ping" type="xs:int" use="optional" default="10">
@@ -80,19 +85,14 @@
                 <xs:documentation>Time (in seconds) in which to wait for a pong answer to a ping.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="node-timeout" type="xs:int" use="optional" default="-1">
+            <xs:annotation>
+                <xs:documentation>Timeout (in seconds) for proxy connections to a node. That is the time mod_cluster will wait for the back-end response before returning error.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
         <xs:attribute name="socket-timeout" type="xs:int" use="optional" default="20">
             <xs:annotation>
                 <xs:documentation>Number of seconds to wait for a response from an httpd proxy to MCMP commands before timing out, and flagging the proxy as in error.</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="outbound-socket-bindings" type="xs:list" use="optional">
-            <xs:annotation>
-                <xs:documentation>outbound-socket-binding groups for proxies</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="load-balancing-group" type="xs:string" use="optional">
-            <xs:annotation>
-                <xs:documentation>If specified, load will be balanced among jvmRoutes withing the same load balancing group. A loadBalancingGroup is conceptually equivalent to a mod_jk domain directive.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
 
@@ -127,6 +127,7 @@
                 <xs:documentation>Time to live (in seconds) for idle connections above smax.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="balancer" type="xs:string" use="optional"/>
     </xs:complexType>
 
     <!-- Example:
@@ -229,8 +230,8 @@
         </xs:restriction>
     </xs:simpleType>
 
-    <!-- Example: 
-        <simple-load-provider load="1"/> 
+    <!-- Example:
+        <simple-load-provider load="1"/>
     -->
     <xs:complexType name="simple-load-providerType">
         <xs:attribute name="factor" type="xs:int" use="optional" default="1" />
