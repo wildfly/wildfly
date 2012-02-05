@@ -72,15 +72,15 @@ public class DeploymentInfoHandler extends BaseOperationCommand {
             request.get(Util.ADDRESS).setEmptyList();
             final ModelNode steps = request.get(Util.STEPS);
 
-            ModelNode readResource = new ModelNode();
-            ModelNode address = readResource.get(Util.ADDRESS);
+            ModelNode step = new ModelNode();
+            ModelNode address = step.get(Util.ADDRESS);
             address.add(Util.DEPLOYMENT, deploymentName);
-            readResource.get(Util.OPERATION).set(Util.READ_RESOURCE);
-            steps.add(readResource);
+            step.get(Util.OPERATION).set(Util.READ_RESOURCE);
+            steps.add(step);
 
             serverGroups = Util.getServerGroups(ctx.getModelControllerClient());
             for(String serverGroup : serverGroups) {
-                // this was supposed to be a read-resource on deployment
+/*                // this was supposed to be a read-resource on deployment
                 // but if the deployment isn't added to a server-group
                 // it will fail the whole composite op and will not return the desired info in the response
                 readResource = new ModelNode();
@@ -89,9 +89,17 @@ public class DeploymentInfoHandler extends BaseOperationCommand {
                 readResource.get(Util.OPERATION).set(Util.READ_CHILDREN_NAMES);
                 readResource.get(Util.CHILD_TYPE).set(Util.DEPLOYMENT);
                 steps.add(readResource);
+*/
+                step = new ModelNode();
+                step.get(Util.ADDRESS).setEmptyList();
+                step.get(Util.OPERATION).set(Util.VALIDATE_ADDRESS);
+                final ModelNode value = step.get(Util.VALUE);
+                value.add(Util.SERVER_GROUP, serverGroup);
+                value.add(Util.DEPLOYMENT, deploymentName);
+                steps.add(step);
             }
 
-            request.get(Util.OPERATION_HEADERS, Util.ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+//            request.get(Util.OPERATION_HEADERS, Util.ROLLBACK_ON_RUNTIME_FAILURE).set(false);
         } else {
             final ModelNode address = request.get(Util.ADDRESS);
             address.add(Util.DEPLOYMENT, deploymentName);
@@ -120,7 +128,7 @@ public class DeploymentInfoHandler extends BaseOperationCommand {
                 // /deployment=<name>
                 ModelNode step = steps.get(0).getValue();
                 if(!step.has(Util.RESULT)) {
-                    ctx.error("Failed to read the main resource info of the deployment.");
+                    ctx.error("Failed to read the main resource info of the deployment: " + Util.getFailureDescription(step));
                     return;
                 }
                 ModelNode stepResponse = step.get(Util.RESULT);
@@ -138,7 +146,7 @@ public class DeploymentInfoHandler extends BaseOperationCommand {
                     return;
                 }
 
-                final String deploymentName = name.getValue(ctx.getParsedCommandLine());
+                //final String deploymentName = name.getValue(ctx.getParsedCommandLine());
                 final SimpleTable groups = new SimpleTable(new String[]{"SERVER GROUP", "ENABLED"});
                 for(int i = 1; i < steps.size(); ++i) {
                     stepResponse = steps.get(i).getValue();
@@ -154,6 +162,7 @@ public class DeploymentInfoHandler extends BaseOperationCommand {
                     }
                     groups.addLine(new String[]{serverGroups.get(i - 1), enabled});
 */
+                    /*
                     // not nice
                     // this is just a check whether the deployment is present
                     // but it's not checking whether the deployment is enabled
@@ -163,6 +172,18 @@ public class DeploymentInfoHandler extends BaseOperationCommand {
                         groups.addLine(new String[]{serverGroups.get(i - 1), "yes"});
                     } else {
                         groups.addLine(new String[]{serverGroups.get(i - 1), "no"});
+                    }
+                    */
+
+                    if(stepResponse.hasDefined(Util.RESULT)) {
+                        final ModelNode stepResult = stepResponse.get(Util.RESULT);
+                        if(stepResult.hasDefined(Util.VALID)) {
+                            groups.addLine(new String[]{serverGroups.get(i - 1), stepResult.get(Util.VALID).asString()});
+                        } else {
+                            groups.addLine(new String[]{serverGroups.get(i - 1), "n/a"});
+                        }
+                    } else {
+                        groups.addLine(new String[]{serverGroups.get(i - 1), "no response"});
                     }
                 }
                 ctx.printLine(groups.toString(true));
