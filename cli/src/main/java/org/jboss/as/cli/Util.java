@@ -106,6 +106,7 @@ public class Util {
     public static final String TAIL_COMMENT_ALLOWED = "tail-comment-allowed";
     public static final String TRUE = "true";
     public static final String TYPE = "type";
+    public static final String VALID = "valid";
     public static final String VALIDATE_ADDRESS = "validate-address";
     public static final String VALUE = "value";
     public static final String VALUE_TYPE = "value-type";
