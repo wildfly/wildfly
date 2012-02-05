@@ -5873,7 +5873,6 @@
                 <property><name>!minimalistic</name></property>
             </activation>
             <modules>
-                <module>api</module>
                 <module>appclient</module>
                 <module>build</module>
                 <module>build-config</module>
