@@ -145,7 +145,7 @@ public class CapedwarfDeploymentProcessor extends CapedwarfDeploymentUnitProcess
     }
 
     protected ModuleDependency createModuleDependency(ModuleLoader loader, ModuleIdentifier moduleIdentifier) {
-        return new ModuleDependency(loader, moduleIdentifier, false, false, true);
+        return new ModuleDependency(loader, moduleIdentifier, false, false, true, false);
     }
 
     protected synchronized List<ResourceLoaderSpec> getCapedwarfResources() throws DeploymentUnitProcessingException {

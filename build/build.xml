@@ -501,10 +501,6 @@
             <maven-resource group="org.apache.avro" artifact="avro"/>
         </module-def>
 
-        <module-def name="org.apache.ant">
-            <maven-resource group="org.apache.ant" artifact="ant"/>
-        </module-def>
-
         <module-def name="org.apache.commons.beanutils">
             <maven-resource group="commons-beanutils" artifact="commons-beanutils"/>
         </module-def>
