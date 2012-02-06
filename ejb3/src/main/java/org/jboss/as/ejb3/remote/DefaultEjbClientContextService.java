@@ -85,8 +85,11 @@ public class DefaultEjbClientContextService implements Service<EJBClientContext>
     @Override
     public synchronized void start(final StartContext context) throws StartException {
         final EJBClientContext clientContext = EJBClientContext.create();
-        // register the default local EJB receiver
-        clientContext.registerEJBReceiver(this.defaultLocalEJBReceiver.getValue());
+        // register the default local EJB receiver (if present - app clients don't have local EJB receivers)
+        final LocalEjbReceiver localEjbReceiver = this.defaultLocalEJBReceiver.getOptionalValue();
+        if (localEjbReceiver != null) {
+            clientContext.registerEJBReceiver(localEjbReceiver);
+        }
         this.context = clientContext;
         if (this.lockSelectorOnStart) {
             // lock the EJB client context selector
