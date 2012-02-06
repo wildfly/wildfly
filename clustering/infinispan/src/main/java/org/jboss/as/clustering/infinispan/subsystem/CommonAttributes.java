@@ -199,6 +199,7 @@ public interface CommonAttributes {
                     .setAllowExpression(false)
                     .setValidator(new EnumValidator<LockingMode>(LockingMode.class, true, false))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode().set("OPTIMISTIC"))
                     .build();
     SimpleAttributeDefinition LOCK_TIMEOUT =
             new SimpleAttributeDefinitionBuilder(ModelKeys.LOCK_TIMEOUT, ModelType.LONG, true)

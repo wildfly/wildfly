@@ -6,14 +6,14 @@
         <transport executor="transport-executor" lock-timeout="120000" stack="tcp"/>
         <local-cache name="local" batching="true" indexing="LOCAL" start="EAGER">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="NONE" striping="true"/>
-            <transaction mode="FULL_XA" stop-timeout="60000"/>
+            <transaction mode="FULL_XA" stop-timeout="60000"  locking="OPTIMISTIC"/>
             <eviction max-entries="20000" strategy="LIRS"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
             <file-store fetch-state="false" passivation="false" path="path" preload="true" purge="false" relative-to="jboss.server.temp.dir" shared="true" singleton="true"/>
         </local-cache>
         <invalidation-cache name="invalid" mode="ASYNC" batching="true" indexing="NONE" queue-flush-interval="10" queue-size="1000" start="LAZY">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_UNCOMMITTED" striping="true"/>
-            <transaction mode="NON_XA" stop-timeout="60000"/>
+            <transaction mode="NON_XA" stop-timeout="60000"  locking="OPTIMISTIC"/>
             <eviction max-entries="20000" strategy="LRU"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
             <remote-store cache="default" socket-timeout="60000" tcp-no-delay="true" fetch-state="false" passivation="false" preload="true" purge="false" shared="true" singleton="true">
@@ -24,7 +24,7 @@
         </invalidation-cache>
         <replicated-cache name="repl" mode="ASYNC" batching="true" indexing="NONE" queue-flush-interval="10" queue-size="1000" start="EAGER">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="SERIALIZABLE" striping="true"/>
-            <transaction mode="NON_DURABLE_XA" stop-timeout="60000"/>
+            <transaction mode="NON_DURABLE_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
             <eviction max-entries="20000" strategy="FIFO"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
             <state-transfer enabled="true" timeout="60000" chunk-size="10000" /> 
@@ -34,7 +34,7 @@
         </replicated-cache>
         <distributed-cache name="dist" mode="SYNC" batching="true" indexing="ALL" l1-lifespan="1200000" owners="4" remote-timeout="35000" start="EAGER" virtual-nodes="2">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_COMMITTED" striping="true"/>
-            <transaction mode="FULL_XA" stop-timeout="60000"/>
+            <transaction mode="FULL_XA" stop-timeout="60000"  locking="OPTIMISTIC"/>
             <eviction max-entries="20000" strategy="UNORDERED"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
             <state-transfer enabled="true" timeout="60000" chunk-size="10000" /> 
