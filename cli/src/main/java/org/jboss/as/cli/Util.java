@@ -54,6 +54,7 @@ public class Util {
     public static final String DEPLOYMENT = "deployment";
     public static final String DESCRIPTION = "description";
     public static final String DOMAIN_FAILURE_DESCRIPTION = "domain-failure-description";
+    public static final String DOMAIN_RESULTS = "domain-results";
     public static final String ENABLED = "enabled";
     public static final String EXPRESSIONS_ALLOWED = "expressions-allowed";
     public static final String FAILURE_DESCRIPTION = "failure-description";
@@ -76,6 +77,7 @@ public class Util {
     public static final String OPERATION_HEADERS = "operation-headers";
     public static final String OUTCOME = "outcome";
     public static final String PROFILE = "profile";
+    public static final String PERSISTENT = "persistent";
     public static final String READ_ATTRIBUTE = "read-attribute";
     public static final String READ_CHILDREN_NAMES = "read-children-names";
     public static final String READ_CHILDREN_TYPES = "read-children-types";
