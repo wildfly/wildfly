@@ -143,7 +143,6 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
 
             ServerEnvironment serverEnvironment = injectedEnvironment.getValue();
             bundlesDir = serverEnvironment.getBundlesDir();
-
             if (bundlesDir.isDirectory() == false)
                 throw MESSAGES.cannotFindBundleDir(bundlesDir);
 
@@ -202,24 +201,21 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
         if (isValidModuleIdentifier(identifier)) {
             ModuleIdentifier moduleId = ModuleIdentifier.fromString(identifier);
 
-            // Attempt to install bundle from the bundles hirarchy
+            // Attempt to install the bundle from the bundles hirarchy
             File bundleFile = ModuleIdentityArtifactProvider.getRepositoryEntry(bundlesDir, moduleId);
             if (bundleFile != null) {
                 URL bundleURL = bundleFile.toURI().toURL();
                 return installBundleFromURL(bundleManager, bundleURL, startLevel);
-            } else {
-                Module module = null;
-                try {
-                    ModuleLoader moduleLoader = Module.getBootModuleLoader();
-                    module = moduleLoader.loadModule(moduleId);
-                } catch (ModuleLoadException e) {
-                    ROOT_LOGGER.debugf("Cannot load module: %s", moduleId);
-                }
-                // Register module with the OSGi layer
-                if (module != null) {
-                    OSGiMetaData metadata = getModuleMetadata(module);
-                    return bundleManager.registerModule(serviceTarget, module, metadata);
-                }
+            }
+
+            // Attempt to load the module from the modules hirarchy
+            try {
+                ModuleLoader moduleLoader = Module.getBootModuleLoader();
+                Module module = moduleLoader.loadModule(moduleId);
+                OSGiMetaData metadata = getModuleMetadata(module);
+                return bundleManager.registerModule(serviceTarget, module, metadata);
+            } catch (ModuleLoadException e) {
+                ROOT_LOGGER.debugf("Cannot load module: %s", moduleId);
             }
         }
 
