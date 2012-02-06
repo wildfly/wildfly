@@ -50,6 +50,7 @@ public class SecurityRealmService implements Service<SecurityRealmService>, Secu
     public static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("server", "controller", "management", "security_realm");
 
     private final InjectedValue<DomainCallbackHandler> callbackHandler = new InjectedValue<DomainCallbackHandler>();
+    private final InjectedValue<SubjectSupplemental> subjectSupplemental = new InjectedValue<SubjectSupplemental>();
     private final InjectedValue<SSLIdentityService> sslIdentity = new InjectedValue<SSLIdentityService>();
     private final InjectedValue<CallbackHandlerFactory> secretCallbackFactory = new InjectedValue<CallbackHandlerFactory>();
 
@@ -79,6 +80,10 @@ public class SecurityRealmService implements Service<SecurityRealmService>, Secu
         return callbackHandler;
     }
 
+    public InjectedValue<SubjectSupplemental> getSubjectSupplementalInjector() {
+        return subjectSupplemental;
+    }
+
     public InjectedValue<SSLIdentityService> getSSLIdentityInjector() {
         return sslIdentity;
     }
@@ -96,7 +101,7 @@ public class SecurityRealmService implements Service<SecurityRealmService>, Secu
         DomainCallbackHandler response = callbackHandler.getOptionalValue();
         if (response == null) {
             response = new DomainCallbackHandler() {
-                public Class[] getSupportedCallbacks() {
+                public Class<Callback>[] getSupportedCallbacks() {
                     return new Class[0];
                 }
 
@@ -112,6 +117,15 @@ public class SecurityRealmService implements Service<SecurityRealmService>, Secu
         }
 
         return response;
+    }
+
+    /**
+     * Used to obtain the linked SubjectSupplemental if available.
+     *
+     * @return {@link SubjectSupplemental} The linkes SubjectSupplemental.
+     */
+    public SubjectSupplemental getSubjectSupplemental() {
+        return subjectSupplemental.getOptionalValue();
     }
 
     public SSLContext getSSLContext() {

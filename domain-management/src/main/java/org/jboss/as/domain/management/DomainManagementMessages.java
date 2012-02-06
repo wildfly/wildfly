@@ -426,4 +426,29 @@ public interface DomainManagementMessages {
     @Message(id = 15247, value = "Only one of '%s' or '%s' is required.")
     OperationFailedException operationFailedOnlyOneOfRequired(String attr1, String attr2);
 
+    /**
+     * Creates an IllegalArgumentException indicating that a value can not be null.
+     *
+     * @param name - The name of the paramter that can not be null.
+     * @return an {@link IllegalArgumentException} for the error.
+     */
+    @Message(id = 15248, value = "'%s' can not be null.")
+    IllegalArgumentException canNotBeNull(String name);
+
+    /**
+     * Creates a String for use in an OperationFailedException to indicate that no security context has been established for a
+     * call that requires one.
+     */
+    @Message(id = 15249, value = "No security context has been established.")
+    String noSecurityContextEstablished();
+
+    /**
+     * Creates a String for use in an OperationFailedException to indicate that an unexpected number of RealmUser instances have
+     * been found.
+     *
+     * @param count - The number of RealmUser instances found.
+     */
+    @Message(id = 15250, value = "An unexpected number (%d) of RealmUsers are associated with the SecurityContext.")
+    String unexpectedNumberOfRealmUsers(int count);
+
 }

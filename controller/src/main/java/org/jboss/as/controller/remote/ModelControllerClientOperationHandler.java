@@ -32,6 +32,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USE
 import java.io.DataInput;
 import java.io.IOException;
 
+import javax.security.auth.Subject;
+
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 import org.jboss.as.protocol.StreamUtils;
@@ -56,11 +58,20 @@ import org.jboss.dmr.ModelNode;
 public class ModelControllerClientOperationHandler implements ManagementRequestHandlerFactory {
 
     private final ModelController controller;
-    private final ManagementChannelAssociation channelAssociation;
 
-    public ModelControllerClientOperationHandler(final ModelController controller, final ManagementChannelAssociation channelAssociation) {
+    private final ManagementChannelAssociation channelAssociation;
+    private final Subject subject;
+
+    public ModelControllerClientOperationHandler(final ModelController controller,
+            final ManagementChannelAssociation channelAssociation) {
+        this(controller, channelAssociation, null);
+    }
+
+    public ModelControllerClientOperationHandler(final ModelController controller,
+            final ManagementChannelAssociation channelAssociation, final Subject subject) {
         this.controller = controller;
         this.channelAssociation = channelAssociation;
+        this.subject = subject;
     }
 
     @Override
@@ -91,7 +102,13 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
                 @Override
                 public void execute(final ManagementRequestContext<Void> context) throws Exception {
                     final ManagementResponseHeader response = ManagementResponseHeader.create(context.getRequestHeader());
-                    final ModelNode result = doExecute(operation, attachmentsLength, context);
+                    final ModelNode result;
+                    SecurityActions.setSecurityContextSubject(subject);
+                    try {
+                        result = doExecute(operation, attachmentsLength, context);
+                    } finally {
+                        SecurityActions.clearSubjectSecurityContext();
+                    }
 
                     final FlushableDataOutput output = context.writeMessage(response);
                     try {

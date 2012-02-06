@@ -26,6 +26,7 @@ import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 import java.io.IOException;
 
+import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
@@ -52,7 +53,7 @@ public class JaasCallbackHandler implements Service<DomainCallbackHandler>, Doma
     public static final String SERVICE_SUFFIX = "jaas";
 
     private static final Class[] CALLBACKS = { AuthorizeCallback.class, RealmCallback.class, NameCallback.class,
-            VerifyPasswordCallback.class };
+            VerifyPasswordCallback.class, SubjectCallback.class };
 
     private final String name;
 
@@ -77,6 +78,7 @@ public class JaasCallbackHandler implements Service<DomainCallbackHandler>, Doma
 
         NameCallback nameCallBack = null;
         VerifyPasswordCallback verifyPasswordCallback = null;
+        SubjectCallback subjectCallback = null;
 
         for (Callback current : callbacks) {
             if (current instanceof NameCallback) {
@@ -84,6 +86,8 @@ public class JaasCallbackHandler implements Service<DomainCallbackHandler>, Doma
             } else if (current instanceof RealmCallback) {
             } else if (current instanceof VerifyPasswordCallback) {
                 verifyPasswordCallback = (VerifyPasswordCallback) current;
+            } else if (current instanceof SubjectCallback) {
+                subjectCallback = (SubjectCallback) current;
             } else {
                 throw new UnsupportedCallbackException(current);
             }
@@ -102,7 +106,8 @@ public class JaasCallbackHandler implements Service<DomainCallbackHandler>, Doma
         final char[] password = verifyPasswordCallback.getPassword().toCharArray();
 
         try {
-            LoginContext ctx = new LoginContext(name, new CallbackHandler() {
+            Subject subject = subjectCallback != null && subjectCallback.getSubject() != null ? subjectCallback.getSubject() : new Subject();
+            LoginContext ctx = new LoginContext(name, subject, new CallbackHandler() {
 
                 public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
                     for (Callback current : callbacks) {
@@ -120,6 +125,11 @@ public class JaasCallbackHandler implements Service<DomainCallbackHandler>, Doma
             });
             ctx.login();
             verifyPasswordCallback.setVerified(true);
+            subject.getPrivateCredentials().add(new PasswordCredential(userName, password));
+            if (subjectCallback != null) {
+                // Only want to deliberately pass it back if authentication completed.
+                subjectCallback.setSubject(subject);
+            }
         } catch (LoginException e) {
             verifyPasswordCallback.setVerified(false);
         }

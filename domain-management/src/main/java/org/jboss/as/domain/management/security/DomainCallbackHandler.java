@@ -22,6 +22,7 @@
 
 package org.jboss.as.domain.management.security;
 
+import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 
 /**
@@ -32,7 +33,7 @@ import javax.security.auth.callback.CallbackHandler;
 public interface DomainCallbackHandler extends CallbackHandler {
 
     // TODO - Switch to collections to clean up how these are checked and to introduce safety to prevent the 'set' from being modified.
-    Class[] getSupportedCallbacks();
+    Class<Callback>[] getSupportedCallbacks();
 
     /**
      * Is this DomainCallbackHanler ready for handling remote requests.

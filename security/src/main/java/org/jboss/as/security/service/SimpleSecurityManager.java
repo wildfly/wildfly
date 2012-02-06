@@ -37,9 +37,12 @@ import java.util.UUID;
 
 import javax.security.auth.Subject;
 
+import org.jboss.as.controller.security.SubjectUserInfo;
+import org.jboss.as.domain.management.security.PasswordCredential;
 import org.jboss.as.security.SecurityMessages;
 import org.jboss.as.security.remoting.RemotingContext;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
+import org.jboss.remoting3.security.UserInfo;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.AuthorizationManager;
 import org.jboss.security.RunAs;
@@ -219,20 +222,45 @@ public class SimpleSecurityManager {
         RunAs currentRunAs = current.getIncomingRunAs();
         boolean trusted = currentRunAs != null && currentRunAs instanceof RunAsIdentity;
 
-        // TODO - Set unauthenticated identity if no auth to occur
         if (trusted == false) {
+            /*
+             * We should only be switching to a context based on an identity from the Remoting connection
+             * if we don't already have a trusted identity - this allows for beans to reauthenticate as a
+             * different identity.
+             */
+            boolean authenticated = false;
             if (RemotingContext.isSet()) {
                 // In this case the principal and credential will not have been set to set some random values.
                 SecurityContextUtil util = current.getUtil();
 
-                Principal p = new SimplePrincipal(UUID.randomUUID().toString());
-                String credential = UUID.randomUUID().toString();
+                UserInfo userInfo = RemotingContext.getConnection().getUserInfo();
+                Principal p = null;
+                String credential = null;
+                Subject subject = null;
+                if (userInfo instanceof SubjectUserInfo) {
+                    SubjectUserInfo sinfo = (SubjectUserInfo) userInfo;
+                    subject = sinfo.getSubject();
 
-                util.createSubjectInfo(p, credential, null);
+                    Set<PasswordCredential> pcSet = subject.getPrivateCredentials(PasswordCredential.class);
+                    if (pcSet.size() > 0) {
+                        PasswordCredential pc = pcSet.iterator().next();
+                        p = new SimplePrincipal(pc.getUserName());
+                        credential = new String(pc.getCredential());
+                        RemotingContext.clear(); // Now that it has been used clear it.
+                    }
+                }
+                if (p == null || credential == null) {
+                    p = new SimplePrincipal(UUID.randomUUID().toString());
+                    credential = UUID.randomUUID().toString();
+                }
+
+                util.createSubjectInfo(p, credential, subject);
             }
 
             // If we have a trusted identity no need for a re-auth.
-            boolean authenticated = authenticate(current);
+            if (authenticated == false) {
+                authenticated = authenticate(current);
+            }
             if (authenticated == false) {
                 // TODO - Better type needed.
                 throw SecurityMessages.MESSAGES.invalidUserException();

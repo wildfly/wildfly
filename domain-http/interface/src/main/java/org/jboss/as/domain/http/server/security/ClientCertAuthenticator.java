@@ -23,16 +23,23 @@
 package org.jboss.as.domain.http.server.security;
 
 import static org.jboss.as.domain.http.server.Constants.FORBIDDEN;
+import static org.jboss.as.domain.http.server.Constants.INTERNAL_SERVER_ERROR;
+import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
 
+import java.io.IOException;
 import java.security.Principal;
+import java.util.Set;
 
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
+import javax.security.auth.Subject;
 
+import org.jboss.as.controller.security.SubjectUserInfo;
 import org.jboss.com.sun.net.httpserver.Authenticator;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
 import org.jboss.com.sun.net.httpserver.HttpPrincipal;
 import org.jboss.com.sun.net.httpserver.HttpsExchange;
+import org.jboss.com.sun.net.httpserver.HttpExchange.AttributeScope;
 
 /**
  * A simple authenticator to be used when the ONLY supported mechanism is ClientCert.
@@ -43,9 +50,11 @@ import org.jboss.com.sun.net.httpserver.HttpsExchange;
  */
 public class ClientCertAuthenticator extends Authenticator {
 
+    private final AuthenticationProvider authenticationProvider;
     private final String realm;
 
-    public ClientCertAuthenticator(final String realm) {
+    public ClientCertAuthenticator(final AuthenticationProvider authenticationProvider, final String realm) {
+        this.authenticationProvider = authenticationProvider;
         this.realm = realm;
     }
 
@@ -54,6 +63,17 @@ public class ClientCertAuthenticator extends Authenticator {
      */
     @Override
     public Result authenticate(HttpExchange exchange) {
+        Subject subject = (Subject) exchange.getAttribute(Subject.class.getName(), AttributeScope.CONNECTION);
+        // If we have a cached Subject with a HttpPrincipal this connection is already authenticated so no further action
+        // required.
+        if (subject != null) {
+            Set<HttpPrincipal> httpPrincipals = subject.getPrincipals(HttpPrincipal.class);
+            if (httpPrincipals.size() > 0) {
+                return new Success(httpPrincipals.iterator().next());
+            }
+        }
+
+        Result response = null;
         if (exchange instanceof HttpsExchange) {
             HttpsExchange httpsExch = (HttpsExchange) exchange;
             SSLSession session = httpsExch.getSSLSession();
@@ -61,14 +81,33 @@ public class ClientCertAuthenticator extends Authenticator {
                 try {
                     Principal p = session.getPeerPrincipal();
 
-                    return new Success(new HttpPrincipal(p.getName(), realm));
+                    response = new Success(new HttpPrincipal(p.getName(), realm));
 
                 } catch (SSLPeerUnverifiedException e) {
                 }
             }
         }
 
-        return new Failure(FORBIDDEN);
+        if (response != null) {
+            if (response instanceof Success) {
+                // For this method to have been called a Subject with HttpPrincipal was not found within the HttpExchange so now
+                // create a new one.
+                HttpPrincipal principal = ((Success) response).getPrincipal();
+
+                try {
+                    SubjectUserInfo userInfo = authenticationProvider.getCallbackHandler().createSubjectUserInfo(principal);
+                    exchange.setAttribute(Subject.class.getName(), userInfo.getSubject(), AttributeScope.CONNECTION);
+
+                } catch (IOException e) {
+                    ROOT_LOGGER.debug("Unable to create SubjectUserInfo", e);
+                    response = new Authenticator.Failure(INTERNAL_SERVER_ERROR);
+                }
+            }
+        } else {
+            response = new Failure(FORBIDDEN);
+        }
+
+        return response;
     }
 
 }
