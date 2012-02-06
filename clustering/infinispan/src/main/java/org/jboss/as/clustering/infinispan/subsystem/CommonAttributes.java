@@ -1,8 +1,8 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.clustering.infinispan.subsystem.validators.IndexingTypeValidator;
-import org.jboss.as.clustering.infinispan.subsystem.validators.StartModeValidator;
-import org.jboss.as.clustering.infinispan.subsystem.validators.TransactionModeValidator;
+import org.infinispan.eviction.EvictionStrategy;
+import org.infinispan.transaction.LockingMode;
+import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.as.clustering.subsystem.ObjectListAttributeDefinition;
 import org.jboss.as.clustering.subsystem.ObjectTypeAttributeDefinition;
 import org.jboss.as.clustering.subsystem.SimpleListAttributeDefinition;
@@ -10,6 +10,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -85,7 +86,6 @@ public interface CommonAttributes {
                     .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
-
     // make default-cache non required (AS7-3488)
     SimpleAttributeDefinition DEFAULT_CACHE =
             new SimpleAttributeDefinitionBuilder(ModelKeys.DEFAULT_CACHE, ModelType.STRING, true)
@@ -146,7 +146,7 @@ public interface CommonAttributes {
                     .setXmlName(Attribute.INDEXING.getLocalName())
                     .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new IndexingTypeValidator(false))
+                    .setValidator(new EnumValidator<Indexing>(Indexing.class, true, false))
                     .setDefaultValue(new ModelNode().set("NONE"))
                     .build();
     SimpleAttributeDefinition INTERVAL =
@@ -162,8 +162,7 @@ public interface CommonAttributes {
                     .setXmlName(Attribute.ISOLATION.getLocalName())
                     .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-//                   preparation for adding validation
-//                  .setValidator(new LockingIsolationTypeValidator(false))
+                    .setValidator(new EnumValidator<IsolationLevel>(IsolationLevel.class, true, false))
                     .setDefaultValue(new ModelNode().set("REPEATABLE_READ"))
                     .build();
     SimpleAttributeDefinition JNDI_NAME =
@@ -198,6 +197,7 @@ public interface CommonAttributes {
             new SimpleAttributeDefinitionBuilder(ModelKeys.LOCKING, ModelType.STRING, true)
                     .setXmlName(Attribute.LOCKING.getLocalName())
                     .setAllowExpression(false)
+                    .setValidator(new EnumValidator<LockingMode>(LockingMode.class, true, false))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
     SimpleAttributeDefinition LOCK_TIMEOUT =
@@ -235,7 +235,7 @@ public interface CommonAttributes {
                     .setXmlName(Attribute.MODE.getLocalName())
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new TransactionModeValidator(false))
+                    .setValidator(new EnumValidator<TransactionMode>(TransactionMode.class, true, false))
                     .setDefaultValue(new ModelNode().set("NONE"))
                     .build();
     SimpleAttributeDefinition NAME =
@@ -371,7 +371,7 @@ public interface CommonAttributes {
                     .setXmlName(Attribute.START.getLocalName())
                     .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new StartModeValidator(false))
+                    .setValidator(new EnumValidator<StartMode>(StartMode.class, true, false))
                     .setDefaultValue(new ModelNode().set("LAZY"))
                     .build();
     SimpleAttributeDefinition STOP_TIMEOUT =
@@ -387,8 +387,7 @@ public interface CommonAttributes {
                     .setXmlName(Attribute.STRATEGY.getLocalName())
                     .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-//                   preparation for adding validation
-//                   .setValidator(new EvictionStrategyValidator(false))
+                    .setValidator(new EnumValidator<EvictionStrategy>(EvictionStrategy.class, true, false))
                     .setDefaultValue(new ModelNode().set("NONE"))
                     .build();
     SimpleAttributeDefinition STRIPING =
@@ -444,7 +443,7 @@ public interface CommonAttributes {
     AttributeDefinition[] DISTRIBUTED_CACHE_ATTRIBUTES = {OWNERS, VIRTUAL_NODES, L1_LIFESPAN};
 
     AttributeDefinition[] LOCKING_ATTRIBUTES = {ISOLATION, STRIPING, ACQUIRE_TIMEOUT, CONCURRENCY_LEVEL};
-    AttributeDefinition[] TRANSACTION_ATTRIBUTES = {MODE, STOP_TIMEOUT, EAGER_LOCKING};
+    AttributeDefinition[] TRANSACTION_ATTRIBUTES = {MODE, STOP_TIMEOUT, LOCKING};
     AttributeDefinition[] EVICTION_ATTRIBUTES = {STRATEGY, MAX_ENTRIES};
     AttributeDefinition[] EXPIRATION_ATTRIBUTES = {MAX_IDLE, LIFESPAN, INTERVAL};
     AttributeDefinition[] STATE_TRANSFER_ATTRIBUTES = {ENABLED, TIMEOUT, CHUNK_SIZE};
