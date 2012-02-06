@@ -58,7 +58,7 @@
     <xs:attribute name="sticky-session" type="xs:boolean" use="optional" default="true"/>
 
     <!-- mod_cluster parameters that describe node behaviour -->
-    <xs:attribute name="excluded-contexts" type="xs:string" use="optional" default="ROOT,invoker,jbossws,juddi,console" />
+    <xs:attribute name="excluded-contexts" type="xs:string" use="optional" default="ROOT,console" />
     <xs:attribute name="auto-enable-contexts" type="xs:boolean" use="optional" default="true" />
     <xs:attribute name="stop-context-timeout" type="xs:int" use="optional" default="10">
       <xs:annotation>

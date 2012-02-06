@@ -100,7 +100,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         config.setAutoEnableContexts(true);
         config.setStopContextTimeout(10);
         config.setSocketTimeout(20000);
-        config.setExcludedContexts("ROOT,invoker,jbossws,juddi,console");
+        config.setExcludedContexts("ROOT,console");
 
         // Read node to set configuration.
         if (modelconf.hasDefined(CommonAttributes.ADVERTISE_SOCKET)) {

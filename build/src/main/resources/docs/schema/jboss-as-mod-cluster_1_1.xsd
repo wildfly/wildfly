@@ -144,7 +144,7 @@
                 <xs:documentation>The amount of time in seconds for which to wait for clean shutdown of a context.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="excluded-contexts" type="excluded-contextsType" default="ROOT invoker jbossws juddi console">
+        <xs:attribute name="excluded-contexts" type="excluded-contextsType" default="ROOT,console">
             <xs:annotation>
                 <xs:documentation>Contexts not to be registered with httpd.</xs:documentation>
             </xs:annotation>
