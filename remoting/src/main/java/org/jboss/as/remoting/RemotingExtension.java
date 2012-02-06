@@ -60,6 +60,7 @@ import static org.jboss.as.remoting.CommonAttributes.SERVER_AUTH;
 import static org.jboss.as.remoting.CommonAttributes.SOCKET_BINDING;
 import static org.jboss.as.remoting.CommonAttributes.STRENGTH;
 import static org.jboss.as.remoting.CommonAttributes.VALUE;
+import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -364,7 +365,7 @@ public class RemotingExtension implements Extension {
                                     try {
                                         saslElement.get(QOP).add(SaslQop.fromString(q).getString().toLowerCase());
                                     } catch (IllegalArgumentException e) {
-                                        throw new IllegalArgumentException("Invalid QOP value: " + q);
+                                        throw MESSAGES.invalidQOPV(q);
                                     }
                                 }
                                 break;
@@ -384,7 +385,7 @@ public class RemotingExtension implements Extension {
                                     try {
                                         saslElement.get(STRENGTH).add(SaslStrength.valueOf(s.toUpperCase()).name().toLowerCase());
                                     } catch (IllegalArgumentException e) {
-                                        throw new IllegalArgumentException("Invalid Strength value: " + s);
+                                        throw MESSAGES.invalidStrength(s);
                                     }
                                 }
                                 break;

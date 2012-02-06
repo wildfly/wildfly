@@ -23,8 +23,14 @@
 package org.jboss.as.remoting;
 
 import org.jboss.logging.BasicLogger;
+import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
+import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
+
+import java.net.InetSocketAddress;
+
+import static org.jboss.logging.Logger.Level.INFO;
 
 /**
  * Date: 05.11.2011
@@ -38,4 +44,8 @@ public interface RemotingLogger extends BasicLogger {
      * A logger with a category of the package name.
      */
     RemotingLogger ROOT_LOGGER = Logger.getMessageLogger(RemotingLogger.class, RemotingLogger.class.getPackage().getName());
+
+    @LogMessage(level = INFO)
+    @Message(id = 17100, value = "Listening on %s")
+    void listeningOnSocket(InetSocketAddress address);
 }

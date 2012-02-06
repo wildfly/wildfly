@@ -22,11 +22,6 @@
 
 package org.jboss.as.remoting;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.URI;
-import java.net.URISyntaxException;
-
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceName;
@@ -38,6 +33,13 @@ import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
 import org.xnio.IoFuture;
 import org.xnio.OptionMap;
+
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
+
+import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
 
 /**
  * A {@link RemoteOutboundConnectionService} manages a remoting connection created out of a remote:// URI scheme.
@@ -72,7 +74,7 @@ public class RemoteOutboundConnectionService extends AbstractOutboundConnectionS
                 // TODO: Allow a way to pass the options
                 endpoint.addConnectionProvider(REMOTE_URI_SCHEME, new RemoteConnectionProviderFactory(), OptionMap.EMPTY);
             } catch (IOException ioe) {
-                throw new StartException("Could not register a connection provider factory for " + REMOTE_URI_SCHEME + " uri scheme", ioe);
+                throw MESSAGES.couldNotRegisterConnectionProvider(REMOTE_URI_SCHEME, ioe);
             }
         }
     }
@@ -86,7 +88,7 @@ public class RemoteOutboundConnectionService extends AbstractOutboundConnectionS
             // if nothing really wants to create a connection out of it.
             uri = this.getConnectionURI();
         } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
+            throw MESSAGES.couldNotConnect(e);
         }
         final Endpoint endpoint = this.endpointInjectedValue.getValue();
         return endpoint.connect(uri, this.connectionCreationOptions, getCallbackHandler());
