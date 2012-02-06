@@ -95,8 +95,7 @@ public class TransportGuaranteeTestCase {
             log.info("Done");
 
         } catch (Exception e) {
-            // ignore
-            log.error(e);
+            throw new RuntimeException(e);
         }
 
 

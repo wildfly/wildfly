@@ -242,10 +242,12 @@ public class SimpleSecurityManager {
                     subject = sinfo.getSubject();
 
                     Set<PasswordCredential> pcSet = subject.getPrivateCredentials(PasswordCredential.class);
-                    PasswordCredential pc = pcSet.iterator().next();
-                    p = new SimplePrincipal(pc.getUserName());
-                    credential = new String(pc.getCredential());
-                    RemotingContext.clear(); // Now that it has been used clear it.
+                    if (pcSet.size() > 0) {
+                        PasswordCredential pc = pcSet.iterator().next();
+                        p = new SimplePrincipal(pc.getUserName());
+                        credential = new String(pc.getCredential());
+                        RemotingContext.clear(); // Now that it has been used clear it.
+                    }
                 }
                 if (p == null || credential == null) {
                     p = new SimplePrincipal(UUID.randomUUID().toString());

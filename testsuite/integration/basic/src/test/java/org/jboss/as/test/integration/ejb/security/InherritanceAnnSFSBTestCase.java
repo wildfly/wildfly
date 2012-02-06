@@ -33,8 +33,6 @@ import org.junit.Test;
 import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
-import javax.ejb.EJBAccessException;
-import javax.naming.Context;
 
 @RunWith(Arquillian.class)
 @RunAsClient
