@@ -23,7 +23,6 @@
 package org.jboss.as.remoting;
 
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
@@ -107,8 +106,8 @@ public interface RemotingMessages {
     @Message(id = 17127, value = "Invalid Strength value: %s")
     IllegalStateException invalidStrength(String strengthValue);
 
-    @Message(id = 17128, value = "")
-    OperationFailedException couldNotCreateURI(@Param ModelNode node);
+    @Message(id = 17128, value = "Cannot create a valid URI from %s -- %s")
+    OperationFailedException couldNotCreateURI(String uri, String msg);
 
     @Message(id = 17129, value = "")
     UnsupportedCallbackException unsupportedCallback(@Param Callback current);

@@ -117,7 +117,7 @@ class GenericOutboundConnectionAdd extends AbstractOutboundConnectionAddHandler 
         try {
             return new URI(uri);
         } catch (URISyntaxException e) {
-            throw MESSAGES.couldNotCreateURI(new ModelNode().set("Cannot create a valid URI from " + uri + " -- " + e.toString()));
+            throw MESSAGES.couldNotCreateURI(uri,e.toString());
         }
     }
 }
