@@ -22,35 +22,6 @@
 
 package org.jboss.as.domain.http.server;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.domain.http.server.multipart.BoundaryDelimitedInputStream;
-import org.jboss.as.domain.http.server.multipart.MimeHeaderParser;
-import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.as.domain.management.security.DomainCallbackHandler;
-import org.jboss.com.sun.net.httpserver.Authenticator;
-import org.jboss.com.sun.net.httpserver.Headers;
-import org.jboss.com.sun.net.httpserver.HttpContext;
-import org.jboss.com.sun.net.httpserver.HttpExchange;
-import org.jboss.com.sun.net.httpserver.HttpServer;
-import org.jboss.dmr.ModelNode;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.domain.http.server.Constants.ACCEPT;
@@ -75,6 +46,36 @@ import static org.jboss.as.domain.http.server.Constants.US_ASCII;
 import static org.jboss.as.domain.http.server.Constants.UTF_8;
 import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
 import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.domain.http.server.multipart.BoundaryDelimitedInputStream;
+import org.jboss.as.domain.http.server.multipart.MimeHeaderParser;
+import org.jboss.as.domain.management.SecurityRealm;
+import org.jboss.as.domain.management.security.DomainCallbackHandler;
+import org.jboss.as.protocol.mgmt.ProtocolUtils;
+import org.jboss.com.sun.net.httpserver.Authenticator;
+import org.jboss.com.sun.net.httpserver.Headers;
+import org.jboss.com.sun.net.httpserver.HttpContext;
+import org.jboss.com.sun.net.httpserver.HttpExchange;
+import org.jboss.com.sun.net.httpserver.HttpServer;
+import org.jboss.dmr.ModelNode;
 
 /**
  * An embedded web server that provides a JSON over HTTP API to the domain management model.
@@ -153,7 +154,7 @@ class DomainApiHandler implements ManagementHttpHandler {
             String origin = headers.getFirst(ORIGIN);
             String host = headers.getFirst(HOST);
             String protocol = http.getHttpContext().getServer() instanceof HttpServer ? HTTP : HTTPS;
-            String allowedOrigin = protocol + "://" + host;
+            String allowedOrigin = protocol + "://" + ProtocolUtils.formatPossibleIpv6Address(host);
 
             // This will reject multi-origin Origin headers due to the exact match.
             if (origin.equals(allowedOrigin) == false) {

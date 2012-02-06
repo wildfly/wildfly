@@ -38,6 +38,7 @@ import javax.security.sasl.RealmCallback;
 import javax.security.sasl.RealmChoiceCallback;
 
 import org.jboss.as.protocol.ProtocolChannelClient;
+import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.ServerMessages;
 import org.jboss.msc.service.Service;
@@ -52,9 +53,9 @@ import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.Endpoint;
 import org.xnio.OptionMap;
+import org.xnio.OptionMap.Builder;
 import org.xnio.Options;
 import org.xnio.Sequence;
-import org.xnio.OptionMap.Builder;
 
 /**
  * Service used to connect to the host controller.  Will maintain the connection for the length of the service life.
@@ -97,7 +98,7 @@ public class HostControllerConnectionService implements Service<Channel> {
             final ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
             configuration.setEndpoint(endpointInjector.getValue());
             configuration.setConnectionTimeout(15000);
-            configuration.setUri(new URI("remote://" + hostName + ":" + socketAddress.getPort()));
+            configuration.setUri(new URI("remote://" + ProtocolUtils.formatPossibleIpv6Address(hostName) + ":" + socketAddress.getPort()));
 
             OptionMap original = configuration.getOptionMap();
             Builder builder = OptionMap.builder();

@@ -47,6 +47,7 @@ import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -201,7 +202,7 @@ public class ManagementClient {
             portOp.get(NAME).set("bound-port");
             final int port = executeForResult(portOp).asInt();
 
-            return URI.create(socketBinding + "://" + ip + ":" + port);
+            return URI.create(socketBinding + "://" + ProtocolUtils.formatPossibleIpv6Address(ip) + ":" + port);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -326,7 +327,7 @@ public class ManagementClient {
 
     private JMXServiceURL getRemoteJMXURL() {
         try {
-            return new JMXServiceURL("service:jmx:remoting-jmx://" + mgmtAddress + ":" + mgmtPort);
+            return new JMXServiceURL("service:jmx:remoting-jmx://" + ProtocolUtils.formatPossibleIpv6Address(mgmtAddress) + ":" + mgmtPort);
         } catch (Exception e) {
             throw new RuntimeException("Could not create JMXServiceURL:" + this, e);
         }
