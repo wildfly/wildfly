@@ -1,20 +1,44 @@
 #!/bin/sh
 
-# JBoss Diagnostic Reporter (JDR)
-#
-# This script creates a JDR report containing useful information for
-# diagnosing problems with the application server.  The report consists 
-# of a zip file containing log files, configuration, a list of all files
-# in the distribution and, if available, runtime metrics.
-#
-
 DIRNAME=`dirname "$0"`
+PROGNAME=`basename "$0"`
+GREP="grep"
+
+# Use the maximum available, or set MAX_FD != -1 to use that
+MAX_FD="maximum"
+
+#
+# Helper to complain.
+#
+warn() {
+    echo "${PROGNAME}: $*"
+}
+
+#
+# Helper to puke.
+#
+die() {
+    warn $*
+    exit 1
+}
 
 # OS specific support (must be 'true' or 'false').
 cygwin=false;
-if  [ `uname|grep -i CYGWIN` ]; then
-    cygwin = true;
-fi
+darwin=false;
+linux=false;
+case "`uname`" in
+    CYGWIN*)
+        cygwin=true
+        ;;
+
+    Darwin*)
+        darwin=true
+        ;;
+
+    Linux)
+        linux=true
+        ;;
+esac
 
 # For Cygwin, ensure paths are in UNIX format before anything is touched
 if $cygwin ; then
@@ -27,7 +51,8 @@ if $cygwin ; then
 fi
 
 # Setup JBOSS_HOME
-RESOLVED_JBOSS_HOME=`cd "$DIRNAME/../.."; pwd`  
+# Setup JBOSS_HOME
+RESOLVED_JBOSS_HOME=`cd "$DIRNAME/.."; pwd`
 if [ "x$JBOSS_HOME" = "x" ]; then
     # get the full path (without any relative bits)
     JBOSS_HOME=$RESOLVED_JBOSS_HOME
@@ -53,6 +78,18 @@ if [ "x$JBOSS_MODULEPATH" = "x" ]; then
     JBOSS_MODULEPATH="$JBOSS_HOME/modules"
 fi
 
+###
+# Setup the JBoss Vault Tool classpath
+###
+
+# Shared libs
+JBOSS_VAULT_CLASSPATH="$JBOSS_MODULEPATH/org/picketbox/main/*"
+JBOSS_VAULT_CLASSPATH="$JBOSS_VAULT_CLASSPATH:$JBOSS_MODULEPATH/org/jboss/logging/main/*"
+JBOSS_VAULT_CLASSPATH="$JBOSS_VAULT_CLASSPATH:$JBOSS_MODULEPATH/org/jboss/common-core/main/*"
+JBOSS_VAULT_CLASSPATH="$JBOSS_VAULT_CLASSPATH:$JBOSS_MODULEPATH/org/jboss/as/security/main/*"
+
+export JBOSS_VAULT_CLASSPATH
+
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
     JBOSS_HOME=`cygpath --path --windows "$JBOSS_HOME"`
@@ -60,11 +97,21 @@ if $cygwin; then
     JBOSS_CLASSPATH=`cygpath --path --windows "$JBOSS_CLASSPATH"`
     JBOSS_ENDORSED_DIRS=`cygpath --path --windows "$JBOSS_ENDORSED_DIRS"`
     JBOSS_MODULEPATH=`cygpath --path --windows "$JBOSS_MODULEPATH"`
+    JBOSS_VAULT_CLASSPATH=`cygpath --path --windows "$JBOSS_VAULT_CLASSPATH"`
 fi
 
-eval \"$JAVA\" $JAVA_OPTS \
-         -jar \"$JBOSS_HOME/jboss-modules.jar\" \
-         -mp \"${JBOSS_MODULEPATH}\" \
-         org.jboss.as.jdr \
-         -Djboss.home.dir=\"$JBOSS_HOME\" \
-         "$@" 
+# Display our environment
+echo "========================================================================="
+echo ""
+echo "  JBoss Vault"
+echo ""
+echo "  JBOSS_HOME: $JBOSS_HOME"
+echo ""
+echo "  JAVA: $JAVA"
+echo ""
+echo "  VAULT Classpath: $JBOSS_VAULT_CLASSPATH"
+echo "========================================================================="
+echo ""
+
+"$JAVA" -classpath "$JBOSS_VAULT_CLASSPATH" \
+   org.jboss.as.security.vault.VaultTool
