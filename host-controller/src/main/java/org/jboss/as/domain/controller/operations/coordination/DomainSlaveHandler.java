@@ -85,8 +85,12 @@ public class DomainSlaveHandler implements OperationStepHandler {
         try {
             for (Map.Entry<String, ProxyTask> entry : tasks.entrySet()) {
                 ProxyTask task = entry.getValue();
-                ModelNode result = null;
+                ModelNode result;
                 try {
+                    // The ProxyTask will execute a request with a transaction and
+                    // publish the "prepared" result from the host when the host gets
+                    // to where it needs to either commit or rollback the tx.
+                    // We block waiting for that result.
                     result = entry.getValue().getUncommittedResult();
                 } catch (Exception e) {
                     result = new ModelNode();
@@ -102,7 +106,7 @@ public class DomainSlaveHandler implements OperationStepHandler {
                 }
 
                 if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {
-                    HOST_CONTROLLER_LOGGER.tracef("ParsedResult for remote host %s is %s", entry.getKey(), result);
+                    HOST_CONTROLLER_LOGGER.tracef("Preliminary result for remote host %s is %s", entry.getKey(), result);
                 }
                 domainOperationContext.addHostControllerResult(entry.getKey(), result);
             }
@@ -117,23 +121,22 @@ public class DomainSlaveHandler implements OperationStepHandler {
                 for (ProxyTask task : tasks.values()) {
                     task.finalizeTransaction(!rollback);
                 }
-                final short timeout = 10;
+                // Now get the final results from the hosts
                 for (Map.Entry<String, Future<ModelNode>> entry : futures.entrySet()) {
                     Future<ModelNode> future = entry.getValue();
                     try {
                         ModelNode finalResult = future.isCancelled() ? getCancelledResult() : future.get();
                         domainOperationContext.addHostControllerResult(entry.getKey(), finalResult);
+
+                        if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {
+                            HOST_CONTROLLER_LOGGER.tracef("Final result for remote host %s is %s", entry.getKey(), finalResult);
+                        }
                     } catch (InterruptedException e) {
                         interrupted = true;
                         CONTROLLER_LOGGER.interruptedAwaitingFinalResponse(entry.getKey());
-
                     } catch (ExecutionException e) {
                         CONTROLLER_LOGGER.caughtExceptionAwaitingFinalResponse(e.getCause(), entry.getKey());
                     }
-//                    catch (TimeoutException e) {
-//                        log.warnf("Host %s did not respond to %s within [%d] seconds", entry.getKey(), (rollback ? "rollback" : "commit"), timeout);
-//                    }
-
                 }
             } finally {
                 if (interrupted) {

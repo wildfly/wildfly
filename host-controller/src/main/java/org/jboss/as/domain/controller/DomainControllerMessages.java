@@ -282,25 +282,25 @@ public interface DomainControllerMessages {
     String noHandlerForOperation(String operationName, PathAddress address);
 
     /**
-     * A message indicating the operation targets host, but the host is not registered.
+     * An exception indicating the operation targets a host, but the host is not registered.
      *
      * @param name the name of the host.
      *
-     * @return the message.
+     * @return the exception.
      */
     @Message(id = 10851, value = "Operation targets host %s but that host is not registered")
-    String invalidOperationTargetHost(String name);
+    OperationFailedException invalidOperationTargetHost(String name);
 
     /**
-     * A message indicating an exception was caught storing the deployment content.
+     * An exception indicating an exception was caught storing the deployment content.
      *
      * @param exceptionName the name of the caught exception.
      * @param exception     the exception.
      *
-     * @return the message.
+     * @return the exception.
      */
     @Message(id = 10852, value = "Caught %s storing deployment content -- %s")
-    String caughtExceptionStoringDeploymentContent(String exceptionName, Throwable exception);
+    OperationFailedException caughtExceptionStoringDeploymentContent(String exceptionName, Throwable exception);
 
     /**
      * Creates an exception indicating an unexpected initial path key.

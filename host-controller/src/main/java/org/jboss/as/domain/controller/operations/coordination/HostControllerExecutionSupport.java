@@ -39,7 +39,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USE
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -71,7 +70,7 @@ interface HostControllerExecutionSupport {
      *
      * @return map of servers to the operation they should execute. Will not be {@code null} but may be empty
      */
-    Map<Set<ServerIdentity>, ModelNode> getServerOps(ServerOperationProvider provider);
+    Map<ServerIdentity, ModelNode> getServerOps(ServerOperationProvider provider);
 
     /**
      * Gets the result of this operation (if any) on this host controller, along with any operations
@@ -127,14 +126,6 @@ interface HostControllerExecutionSupport {
                                                             final String hostName,
                                                             final DomainModelProvider domainModelProvider,
                                                             final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry) {
-            return create(operation, hostName, domainModelProvider, ignoredDomainResourceRegistry, null);
-        }
-
-        private static HostControllerExecutionSupport create(final ModelNode operation,
-                                                            final String hostName,
-                                                            final DomainModelProvider domainModelProvider,
-                                                            final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
-                                                            final Integer index) {
             String targetHost = null;
             String runningServerTarget = null;
             ModelNode runningServerOp = null;
@@ -161,20 +152,19 @@ interface HostControllerExecutionSupport {
 
 
             if (targetHost != null && !hostName.equals(targetHost)) {
-                // ParsedOp representing another host
-                result = new IgnoredOpExecutionSupport(index);
+                // HostControllerExecutionSupport representing another host
+                result = new IgnoredOpExecutionSupport();
             }
             else if (runningServerTarget != null) {
-                // ParsedOp representing a server op
+                // HostControllerExecutionSupport representing a server op
                 final ModelNode domainModel = domainModelProvider.getDomainModel();
                 final String serverGroup = domainModel.require(HOST).require(targetHost).require(SERVER_CONFIG).require(runningServerTarget).require(GROUP).asString();
                 final ServerIdentity serverIdentity = new ServerIdentity(targetHost, serverGroup, runningServerTarget);
-                result = new DirectServerOpExecutionSupport(index, serverIdentity, runningServerOp);
+                result = new DirectServerOpExecutionSupport(serverIdentity, runningServerOp);
             }
             else if (COMPOSITE.equals(operation.require(OP).asString())) {
                 // Recurse into the steps to see what's required
                 if (operation.hasDefined(STEPS)) {
-                    int stepNum = 0;
                     List<HostControllerExecutionSupport> parsedSteps = new ArrayList<HostControllerExecutionSupport>();
                     for (ModelNode step : operation.get(STEPS).asList()) {
                         //Remove the caller-type=user header
@@ -182,20 +172,20 @@ interface HostControllerExecutionSupport {
                             step = step.clone();
                             step.get(OPERATION_HEADERS, CALLER_TYPE).set(USER);
                         }
-                        parsedSteps.add(create(step, hostName, domainModelProvider, ignoredDomainResourceRegistry, stepNum++));
+                        parsedSteps.add(create(step, hostName, domainModelProvider, ignoredDomainResourceRegistry));
                     }
-                    result = new MultiStepOpExecutionSupport(index, parsedSteps);
+                    result = new MultiStepOpExecutionSupport(parsedSteps);
                 }
                 else {
                     // Will fail later
-                    result = new DomainOpExecutionSupport(index, operation, address);
+                    result = new DomainOpExecutionSupport(operation, address);
                 }
             }
             else if (targetHost == null && ignoredDomainResourceRegistry.isResourceExcluded(address)) {
-                result = new IgnoredOpExecutionSupport(index);
+                result = new IgnoredOpExecutionSupport();
             }
             else {
-                result = new DomainOpExecutionSupport(index, operation, address);
+                result = new DomainOpExecutionSupport(operation, address);
             }
 
             return result;
@@ -204,8 +194,7 @@ interface HostControllerExecutionSupport {
 
         private static class IgnoredOpExecutionSupport extends SimpleOpExecutionSupport {
 
-            private IgnoredOpExecutionSupport(Integer index) {
-                super(index);
+            private IgnoredOpExecutionSupport() {
             }
 
             @Override
@@ -214,17 +203,16 @@ interface HostControllerExecutionSupport {
             }
 
             @Override
-            public Map<Set<ServerIdentity>, ModelNode> getServerOps(ServerOperationProvider provider) {
+            public Map<ServerIdentity, ModelNode> getServerOps(ServerOperationProvider provider) {
                 return Collections.emptyMap();
             }
         }
 
         private static class DirectServerOpExecutionSupport extends SimpleOpExecutionSupport {
-            private Map<Set<ServerIdentity>, ModelNode> serverOps;
+            private Map<ServerIdentity, ModelNode> serverOps;
 
-            private DirectServerOpExecutionSupport(final Integer index, final ServerIdentity serverIdentity, ModelNode serverOp) {
-                super(index);
-                this.serverOps = Collections.singletonMap(Collections.singleton(serverIdentity), serverOp);
+            private DirectServerOpExecutionSupport(final ServerIdentity serverIdentity, ModelNode serverOp) {
+                this.serverOps = Collections.singletonMap(serverIdentity, serverOp);
             }
 
             @Override
@@ -233,7 +221,7 @@ interface HostControllerExecutionSupport {
             }
 
             @Override
-            public Map<Set<ServerIdentity>, ModelNode> getServerOps(ServerOperationProvider provider) {
+            public Map<ServerIdentity, ModelNode> getServerOps(ServerOperationProvider provider) {
                 return serverOps;
             }
         }
@@ -243,8 +231,7 @@ interface HostControllerExecutionSupport {
             private final ModelNode domainOp;
             private final PathAddress domainOpAddress;
 
-            private DomainOpExecutionSupport(Integer index, ModelNode domainOp, final PathAddress domainOpAddress) {
-                super(index);
+            private DomainOpExecutionSupport(ModelNode domainOp, final PathAddress domainOpAddress) {
                 this.domainOp = domainOp;
                 this.domainOpAddress = domainOpAddress;
             }
@@ -255,119 +242,55 @@ interface HostControllerExecutionSupport {
             }
 
             @Override
-            public Map<Set<ServerIdentity>, ModelNode> getServerOps(ServerOperationProvider provider) {
-                return provider.getServerOperations(domainOp, domainOpAddress);
+            public Map<ServerIdentity, ModelNode> getServerOps(ServerOperationProvider provider) {
+                // TODO change ServerOperationResolver to just provide the unbundled map
+                Map<Set<ServerIdentity>, ModelNode> bundled = provider.getServerOperations(domainOp, domainOpAddress);
+                Map<ServerIdentity, ModelNode> unbundled = new HashMap<ServerIdentity, ModelNode>();
+                for (Map.Entry<Set<ServerIdentity>, ModelNode> entry : bundled.entrySet()) {
+                    ModelNode op = entry.getValue();
+                    for (ServerIdentity id : entry.getKey()) {
+                        unbundled.put(id, op);
+                    }
+                }
+                return unbundled;
             }
         }
 
         private abstract static class SimpleOpExecutionSupport implements HostControllerExecutionSupport {
-            private final String domainStep;
 
-            private SimpleOpExecutionSupport(Integer index) {
-                this.domainStep = index == null ? null : "step-" + (index + 1);
+            private SimpleOpExecutionSupport() {
             }
 
             @Override
             public ModelNode getFormattedDomainResult(ModelNode resultNode) {
-                ModelNode formatted = new ModelNode();
-                if (domainStep != null) {
-                    formatted.get(domainStep).set(resultNode);
-                } else {
-                    formatted.set(resultNode);
-                }
-                return formatted;
+                return resultNode;
             }
         }
 
         private static class MultiStepOpExecutionSupport implements HostControllerExecutionSupport {
 
-            private final String domainStep;
             private final List<HostControllerExecutionSupport> steps;
 
-            private MultiStepOpExecutionSupport(final Integer index, final List<HostControllerExecutionSupport> steps) {
+            private MultiStepOpExecutionSupport(final List<HostControllerExecutionSupport> steps) {
                 this.steps = steps;
-                this.domainStep = index == null ? null : "step-" + (index + 1);
             }
 
-            @Override
-            public Map<Set<ServerIdentity>, ModelNode> getServerOps(ServerOperationProvider provider) {
-                Map<Set<ServerIdentity>, List<ModelNode>> buildingBlocks = new HashMap<Set<ServerIdentity>, List<ModelNode>>();
+            public Map<ServerIdentity, ModelNode> getServerOps(ServerOperationProvider provider) {
+                final Map<ServerIdentity, ModelNode> result = new HashMap<ServerIdentity, ModelNode>();
+                int stepNum = 1;
                 for (HostControllerExecutionSupport step : steps) {
-                    Map<Set<ServerIdentity>, ModelNode> stepResult = step.getServerOps(provider);
-                    if (stepResult.size() == 0) {
-                        continue;
-                    }
-                    else if (buildingBlocks.size() == 0) {
-                        for (Map.Entry<Set<ServerIdentity>, ModelNode> entry : stepResult.entrySet()) {
-                            List<ModelNode> list = new ArrayList<ModelNode>();
-                            list.add(entry.getValue());
-                            buildingBlocks.put(entry.getKey(), list);
+                    String stepLabel = "step-" + stepNum++;
+                    Map<ServerIdentity, ModelNode> stepResults = step.getServerOps(provider);
+                    for (Map.Entry<ServerIdentity, ModelNode> entry : stepResults.entrySet()) {
+                        ModelNode serverNode = result.get(entry.getKey());
+                        if (serverNode == null) {
+                            serverNode = new ModelNode();
+                            result.put(entry.getKey(), serverNode);
                         }
-                    }
-                    else {
-                        for (Map.Entry<Set<ServerIdentity>, ModelNode> entry : stepResult.entrySet()) {
-                            List<ModelNode> existingOp = buildingBlocks.get(entry.getKey());
-                            if (existingOp != null) {
-                                existingOp.add(entry.getValue());
-                            }
-                            else {
-                                Set<ServerIdentity> newSet = new HashSet<ServerIdentity>(entry.getKey());
-                                Set<Set<ServerIdentity>> existingSets = new HashSet<Set<ServerIdentity>>(buildingBlocks.keySet());
-                                for (Set<ServerIdentity> existing : existingSets) {
-                                    Set<ServerIdentity> copy = new HashSet<ServerIdentity>(existing);
-                                    copy.retainAll(newSet);
-                                    if (copy.size() > 0) {
-                                        if (copy.size() == existing.size()) {
-                                            // Just add the new step and store back
-                                            buildingBlocks.get(existing).add(entry.getValue());
-                                        }
-                                        else {
-                                            // Add the new step to the intersection; store the old set of steps
-                                            // under a key that includes the remainder
-                                            List<ModelNode> existingSteps = buildingBlocks.remove(existing);
-                                            List<ModelNode> newSteps = new ArrayList<ModelNode>(existingSteps);
-                                            buildingBlocks.put(copy, newSteps);
-                                            existing.removeAll(copy);
-                                            buildingBlocks.put(existing, existingSteps);
-                                        }
-
-                                        // no longer track the servers we've stored
-                                        newSet.removeAll(copy);
-                                    }
-                                }
-
-                                // Any servers not stored above get their own entry
-                                if (newSet.size() > 0) {
-                                    List<ModelNode> toAdd = new ArrayList<ModelNode>();
-                                    toAdd.add(entry.getValue());
-                                    buildingBlocks.put(newSet, toAdd);
-                                }
-                            }
-                        }
+                        serverNode.get(stepLabel).set(entry.getValue());
                     }
                 }
 
-                Map<Set<ServerIdentity>, ModelNode> result;
-                if (buildingBlocks.size() > 0) {
-                    result = new HashMap<Set<ServerIdentity>, ModelNode>();
-                    for (Map.Entry<Set<ServerIdentity>, List<ModelNode>> entry : buildingBlocks.entrySet()) {
-                        List<ModelNode> ops = entry.getValue();
-                        if (ops.size() == 1) {
-                            result.put(entry.getKey(), ops.get(0));
-                        }
-                        else {
-                            ModelNode composite = Util.getEmptyOperation(COMPOSITE, new ModelNode());
-                            ModelNode steps = composite.get(STEPS);
-                            for (ModelNode step : entry.getValue()) {
-                                steps.add(step);
-                            }
-                            result.put(entry.getKey(), composite);
-                        }
-                    }
-                }
-                else {
-                    result = Collections.emptyMap();
-                }
                 return result;
             }
 
@@ -413,13 +336,7 @@ interface HostControllerExecutionSupport {
                         allSteps.get("step-" + (i + 1), OUTCOME).set(IGNORED);
                     }
                 }
-                ModelNode formatted = new ModelNode();
-                if (domainStep != null) {
-                    formatted.get(domainStep).set(allSteps);
-                } else {
-                    formatted.set(allSteps);
-                }
-                return formatted;
+                return allSteps;
             }
         }
     }

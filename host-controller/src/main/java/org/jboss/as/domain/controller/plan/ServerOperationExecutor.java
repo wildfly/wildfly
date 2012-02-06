@@ -11,7 +11,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public interface NewServerOperationExecutor {
+public interface ServerOperationExecutor {
 
     /**
      * Execute an operation against the given server

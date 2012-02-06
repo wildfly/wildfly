@@ -35,6 +35,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USE
 import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -71,20 +73,17 @@ public class ServerOperationsResolverHandler implements OperationStepHandler {
     private final PathAddress originalAddress;
     private final ImmutableManagementResourceRegistration originalRegistration;
     private final ModelNode localResponse;
-    private final boolean recordResponse;
 
     ServerOperationsResolverHandler(final ServerOperationResolver resolver,
                                     final HostControllerExecutionSupport hostControllerExecutionSupport,
                                     final PathAddress originalAddress,
                                     final ImmutableManagementResourceRegistration originalRegistration,
-                                    final ModelNode response,
-                                    final boolean recordResponse) {
+                                    final ModelNode response) {
         this.resolver = resolver;
         this.hostControllerExecutionSupport = hostControllerExecutionSupport;
         this.originalAddress = originalAddress;
         this.originalRegistration = originalRegistration;
         this.localResponse = response;
-        this.recordResponse = recordResponse;
     }
 
     @Override
@@ -114,7 +113,7 @@ public class ServerOperationsResolverHandler implements OperationStepHandler {
                         return ops;
                     }
                 };
-            Map<Set<ServerIdentity>, ModelNode> serverOps = hostControllerExecutionSupport.getServerOps(provider);
+            Map<ServerIdentity, ModelNode> serverOps = hostControllerExecutionSupport.getServerOps(provider);
 
             ModelNode domainOpResult = nullDomainOp ? new ModelNode(IGNORED) : (context.hasResult() ? context.getResult() : new ModelNode());
 
@@ -143,20 +142,32 @@ public class ServerOperationsResolverHandler implements OperationStepHandler {
         return result;
     }
 
-    private void createOverallResult(Map<Set<ServerIdentity>, ModelNode> serverOps, final ModelNode localResult, final ModelNode overallResult) {
+    private void createOverallResult(final Map<ServerIdentity, ModelNode> serverOps,
+                                     final ModelNode localResult, final ModelNode overallResult) {
 
         ModelNode domainResult = hostControllerExecutionSupport.getFormattedDomainResult(localResult);
         overallResult.get(DOMAIN_RESULTS).set(domainResult);
 
         ModelNode serverOpsNode = overallResult.get(SERVER_OPERATIONS);
-        for (Map.Entry<Set<ServerIdentity>, ModelNode> entry : serverOps.entrySet()) {
+
+        // Group servers with the same ops together to save bandwidth
+        final Map<ModelNode, Set<ServerIdentity>> bundled = new HashMap<ModelNode, Set<ServerIdentity>>();
+        for (Map.Entry<ServerIdentity, ModelNode> entry : serverOps.entrySet()) {
+            Set<ServerIdentity> idSet = bundled.get(entry.getValue());
+            if (idSet == null) {
+                idSet = new HashSet<ServerIdentity>();
+                bundled.put(entry.getValue(), idSet);
+            }
+            idSet.add(entry.getKey());
+        }
+        for (Map.Entry<ModelNode, Set<ServerIdentity>> entry : bundled.entrySet()) {
             ModelNode setNode = serverOpsNode.add();
             ModelNode serverNode = setNode.get("servers");
             serverNode.setEmptyList();
-            for (ServerIdentity server : entry.getKey()) {
+            for (ServerIdentity server : entry.getValue()) {
                 serverNode.add(server.getServerName(), server.getServerGroupName());
             }
-            setNode.get(OP).set(entry.getValue());
+            setNode.get(OP).set(entry.getKey());
         }
     }
 }

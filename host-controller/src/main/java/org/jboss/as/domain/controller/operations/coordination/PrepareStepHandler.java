@@ -72,11 +72,11 @@ public class PrepareStepHandler  implements OperationStepHandler {
 
         if (context.isBooting()) {
             executeDirect(context, operation);
-        }
-        else if (operation.hasDefined(OPERATION_HEADERS)
+        } else if (operation.hasDefined(OPERATION_HEADERS)
                 && operation.get(OPERATION_HEADERS).hasDefined(EXECUTE_FOR_COORDINATOR)
                 && operation.get(OPERATION_HEADERS).get(EXECUTE_FOR_COORDINATOR).asBoolean()) {
             // Coordinator wants us to execute locally and send result including the steps needed for execution on the servers
+            // TODO verify this is actually the master requesting this
             slaveHandler.execute(context, operation);
         } else if (isServerOperation(operation)) {
             // Pass direct requests for the server through whether they come from the master or not

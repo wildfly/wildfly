@@ -101,21 +101,22 @@ public class OperationCoordinatorStepHandler {
             if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {
                 HOST_CONTROLLER_LOGGER.trace("Remote single host");
             }
-            // Possibly a two step operation, but not coordinated by this host. Execute direct and let the remote HC
-            // coordinate any two step process (if there is one)
+            // This host is the master, but this op is addressed specifically to another host.
+            // This is possibly a two step operation, but it's not coordinated by this host.
+            // Execute direct (which will proxy the request to the intended HC) and let the remote HC coordinate
+            // any two step process (if there is one)
             executeDirect(context, operation);
         }
         else if (!routing.isTwoStep()) {
-            // It's a domain level op (probably a read) that does not require bringing in other hosts or servers
+            // It's a domain or host level op (probably a read) that does not require bringing in other hosts or servers
             executeDirect(context, operation);
         }
         else {
             // Else we are responsible for coordinating a two-phase op
-            // -- apply to DomainController models across domain and then push to servers
+            // -- domain level op: apply to HostController models across domain and then push to servers
+            // -- host level op: apply to our model  and then push to servers
             executeTwoPhaseOperation(context, operation, routing);
         }
-
-
     }
 
     public void setExecutorService(ExecutorService executorService) {
@@ -140,7 +141,7 @@ public class OperationCoordinatorStepHandler {
      * Directly handles the op in the standard way the default prepare step handler would
      * @param context the operation execution context
      * @param operation the operation
-     * @throws OperationFailedException
+     * @throws OperationFailedException if there is no handler registered for the operation
      */
     private void executeDirect(OperationContext context, ModelNode operation) throws OperationFailedException {
         if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {
@@ -210,7 +211,7 @@ public class OperationCoordinatorStepHandler {
                     if (proxy != null) {
                         remoteProxies.put(host, proxy);
                     } else if (!global) {
-                        throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidOperationTargetHost(host)));
+                        throw MESSAGES.invalidOperationTargetHost(host);
                     }
                 }
 
@@ -252,7 +253,7 @@ public class OperationCoordinatorStepHandler {
                     opNode.get(CONTENT).get(0).get(HASH).set(hash);
             }
         } catch (IOException ioe) {
-            throw new OperationFailedException(new ModelNode().set(MESSAGES.caughtExceptionStoringDeploymentContent(ioe.getClass().getSimpleName(), ioe)));
+            throw MESSAGES.caughtExceptionStoringDeploymentContent(ioe.getClass().getSimpleName(), ioe);
         }
     }
 

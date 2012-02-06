@@ -35,7 +35,7 @@ import org.jboss.dmr.Property;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class NewRolloutPlanController implements ServerUpdateResultHandler {
+public class RolloutPlanController implements ServerUpdateResultHandler {
 
     public static enum Result {
         SUCCESS,
@@ -48,15 +48,15 @@ public class NewRolloutPlanController implements ServerUpdateResultHandler {
     private final Map<String, ServerUpdatePolicy> updatePolicies = new HashMap<String, ServerUpdatePolicy>();
     private final boolean shutdown;
     private final long gracefulShutdownPeriod;
-    private final NewServerOperationExecutor serverOperationExecutor;
+    private final ServerOperationExecutor serverOperationExecutor;
     private final DomainOperationContext domainOperationContext;
     private final ConcurrentMap<String, Map<ServerIdentity, ModelNode>> serverResults = new ConcurrentHashMap<String, Map<ServerIdentity, ModelNode>>();
 
-    public NewRolloutPlanController(final Map<String, Map<ServerIdentity, ModelNode>> opsByGroup,
-                                    final ModelNode rolloutPlan,
-                                    final DomainOperationContext domainOperationContext,
-                                    final NewServerOperationExecutor serverOperationExecutor,
-                                    final ExecutorService executor) {
+    public RolloutPlanController(final Map<String, Map<ServerIdentity, ModelNode>> opsByGroup,
+                                 final ModelNode rolloutPlan,
+                                 final DomainOperationContext domainOperationContext,
+                                 final ServerOperationExecutor serverOperationExecutor,
+                                 final ExecutorService executor) {
         this.domainOperationContext = domainOperationContext;
         this.serverOperationExecutor = serverOperationExecutor;
 
@@ -163,10 +163,10 @@ public class NewRolloutPlanController implements ServerUpdateResultHandler {
     private Runnable createServerTask(final ServerIdentity serverIdentity, final ModelNode serverOp, final ServerUpdatePolicy policy) {
         Runnable result;
         if (shutdown) {
-            result = new NewServerRestartTask(serverOperationExecutor, serverIdentity, policy, this, gracefulShutdownPeriod);
+            result = new ServerRestartTask(serverOperationExecutor, serverIdentity, policy, this, gracefulShutdownPeriod);
         }
         else {
-            result = new NewRunningServerUpdateTask(serverOperationExecutor, serverIdentity, serverOp, policy, this);
+            result = new RunningServerUpdateTask(serverOperationExecutor, serverIdentity, serverOp, policy, this);
         }
         return result;
     }
