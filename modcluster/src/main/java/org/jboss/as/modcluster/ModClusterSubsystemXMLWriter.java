@@ -193,6 +193,7 @@ public class ModClusterSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         writeAttributeAs(writer, AUTO_ENABLE, AUTO_ENABLE_CONTEXTS, config);
         writeAttributeAs(writer, STOP_TIMEOUT, STOP_CONTEXT_TIMEOUT, config);
         writeAttributeAs(writer, EXCLUDED_CONTEXTS, EXCLUDED_CONTEXTS, config);
+        writeAttributeAs(writer, SESSION_DRAINING_STRATEGY, SESSION_DRAINING_STRATEGY, config);
 
         writer.writeEndElement();
     }

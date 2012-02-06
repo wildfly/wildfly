@@ -149,10 +149,23 @@
                 <xs:documentation>Contexts not to be registered with httpd.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="session-draining-strategy" type="session-draining-strategyType" default="DEFAULT">
+            <xs:annotation>
+                <xs:documentation>Indicates the session draining strategy used during undeployment of a web application.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:simpleType name='excluded-contextsType'>
         <xs:list itemType='xs:string'/>
+    </xs:simpleType>
+
+    <xs:simpleType name="session-draining-strategyType">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="DEFAULT"/>
+            <xs:enumeration value="ALWAYS"/>
+            <xs:enumeration value="NEVER"/>
+        </xs:restriction>
     </xs:simpleType>
 
     <!-- General SSL definitions -->

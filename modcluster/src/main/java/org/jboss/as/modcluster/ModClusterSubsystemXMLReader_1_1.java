@@ -55,6 +55,7 @@ import static org.jboss.as.modcluster.CommonAttributes.STICKY_SESSION_REMOVE;
 import static org.jboss.as.modcluster.CommonAttributes.STOP_CONTEXT_TIMEOUT;
 import static org.jboss.as.modcluster.CommonAttributes.TTL;
 import static org.jboss.as.modcluster.CommonAttributes.WORKER_TIMEOUT;
+import static org.jboss.as.modcluster.CommonAttributes.SESSION_DRAINING_STRATEGY;
 
 import java.util.List;
 
@@ -248,6 +249,9 @@ public class ModClusterSubsystemXMLReader_1_1 extends ModClusterSubsystemXMLRead
                     break;
                 case EXCLUDED_CONTEXTS:
                     conf.get(EXCLUDED_CONTEXTS).set(ParseUtils.parsePossibleExpression(value));
+                    break;
+                case SESSION_DRAINING_STRATEGY:
+                    conf.get(SESSION_DRAINING_STRATEGY).set(value);
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);

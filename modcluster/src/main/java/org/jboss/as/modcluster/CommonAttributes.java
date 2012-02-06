@@ -90,6 +90,7 @@ interface CommonAttributes {
     String PROXIES = "proxies";
     String URL = "url";
     String CONTEXTS = "contexts";
+    String SESSION_DRAINING_STRATEGY = "session-draining-strategy";
     String SOCKET_BINDING = "socket-binding";
     String SECURITY_KEY = "security-key";
     String OUTBOUT_SOCKET_BINDINGS = "outbound-socket-bindings";

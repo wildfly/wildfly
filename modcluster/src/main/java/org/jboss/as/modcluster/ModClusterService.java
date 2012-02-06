@@ -39,6 +39,7 @@ import org.jboss.as.web.WebServer;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modcluster.container.catalina.CatalinaEventHandlerAdapter;
 import org.jboss.modcluster.config.impl.ModClusterConfig;
+import org.jboss.modcluster.config.impl.SessionDrainingStrategyEnum;
 import org.jboss.modcluster.load.LoadBalanceFactorProvider;
 import org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProvider;
 import org.jboss.modcluster.load.impl.SimpleLoadBalanceFactorProvider;
@@ -158,6 +159,11 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         if (modelconf.hasDefined(CommonAttributes.SOCKET_TIMEOUT)) {
             // the default value is 20000 = 20 seconds.
             config.setSocketTimeout(modelconf.get(CommonAttributes.SOCKET_TIMEOUT).asInt() * 1000);
+        }
+        if (modelconf.hasDefined(CommonAttributes.SESSION_DRAINING_STRATEGY)) {
+            // TODO: Please review.
+            config.setSessionDrainingStrategy(
+                    SessionDrainingStrategyEnum.valueOf(modelconf.get(CommonAttributes.AUTO_ENABLE_CONTEXTS).asString()));
         }
 
         if (modelconf.hasDefined(CommonAttributes.STICKY_SESSION))
