@@ -206,7 +206,7 @@
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:messaging:1.1">
             <hornetq-server>
-   		       <clustered>true</clustered>
+   		        <clustered>true</clustered>
                 <shared-store>true</shared-store>
                 <persistence-enabled>true</persistence-enabled>
                 <journal-file-size>102400</journal-file-size>
