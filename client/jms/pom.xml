@@ -34,22 +34,26 @@
     </parent>
 
     <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-ejb-client-bom</artifactId>
+    <artifactId>jboss-as-jms-client-bom</artifactId>
     <packaging>pom</packaging>
 
-    <name>JBoss Application Server: EJB Client BOM</name>
+
+    <name>JBoss Application Server: JMS Client BOM</name>
 
     <description>
-        This artifact provides a bill of materials (BOM) for remoting based EJB usage.
-        Importing this bom into your project will give you the maven artifacts you need
-        to perform remote EJB calls.
+        This artifact provides a bill of materials (BOM) for JMS client usage.
     </description>
 
     <dependencies>
 
         <dependency>
-            <groupId>org.jboss</groupId>
-            <artifactId>jboss-ejb-client</artifactId>
+            <groupId>org.hornetq</groupId>
+            <artifactId>hornetq-core-client</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hornetq</groupId>
+            <artifactId>hornetq-jms-client</artifactId>
         </dependency>
 
         <dependency>
@@ -73,6 +77,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.netty</groupId>
+            <artifactId>netty</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.remoting3</groupId>
             <artifactId>jboss-remoting</artifactId>
         </dependency>
@@ -83,13 +92,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.spec.javax.transaction</groupId>
-            <artifactId>jboss-transaction-api_1.1_spec</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.spec.javax.ejb</groupId>
-            <artifactId>jboss-ejb-api_3.1_spec</artifactId>
+            <groupId>org.jboss.spec.javax.jms</groupId>
+            <artifactId>jboss-jms-api_1.1_spec</artifactId>
         </dependency>
 
         <dependency>
