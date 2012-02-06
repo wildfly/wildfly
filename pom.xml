@@ -228,7 +228,7 @@
         <version.org.jboss.xnio>3.0.3.GA</version.org.jboss.xnio>
         <version.org.jboss.xnio.xnio-api>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-nio>
-        <version.org.jgroups>3.0.4.Final</version.org.jgroups>
+        <version.org.jgroups>3.0.5.Final</version.org.jgroups>
         <version.org.mockito>1.8.5</version.org.mockito>
         <version.org.picketbox>4.0.6.final</version.org.picketbox>
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
