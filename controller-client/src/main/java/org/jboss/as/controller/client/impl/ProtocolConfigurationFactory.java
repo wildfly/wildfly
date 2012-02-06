@@ -22,11 +22,12 @@
 
 package org.jboss.as.controller.client.impl;
 
-import org.jboss.as.controller.client.ModelControllerClientConfiguration;
-import org.jboss.as.protocol.ProtocolChannelClient;
-
 import java.net.URI;
 import java.net.URISyntaxException;
+
+import org.jboss.as.controller.client.ModelControllerClientConfiguration;
+import org.jboss.as.protocol.ProtocolChannelClient;
+import org.jboss.as.protocol.mgmt.ProtocolUtils;
 
 /**
  * Transformation class of the model controller client configuration to the
@@ -39,7 +40,7 @@ class ProtocolConfigurationFactory {
     static ProtocolChannelClient.Configuration create(final ModelControllerClientConfiguration client) throws URISyntaxException {
         final ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
 
-        configuration.setUri(new URI("remote://" + client.getHost() +  ":" + client.getPort()));
+        configuration.setUri(new URI("remote://" + ProtocolUtils.formatPossibleIpv6Address(client.getHost()) +  ":" + client.getPort()));
         final long timeout = client.getConnectionTimeout();
         if(timeout > 0) {
             configuration.setConnectionTimeout(timeout);

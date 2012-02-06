@@ -22,7 +22,6 @@
 
 package org.jboss.as.host.controller;
 
-import org.jboss.as.controller.client.OperationAttachments;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_MODEL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
@@ -36,9 +35,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_CODENAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import org.jboss.as.domain.controller.LocalHostControllerInfo;
-import org.jboss.as.domain.controller.SlaveRegistrationException;
-import org.jboss.as.domain.controller.operations.ApplyRemoteMasterDomainModelHandler;
 import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
@@ -59,9 +55,13 @@ import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.remote.ExistingChannelModelControllerClient;
 import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
+import org.jboss.as.domain.controller.LocalHostControllerInfo;
+import org.jboss.as.domain.controller.SlaveRegistrationException;
+import org.jboss.as.domain.controller.operations.ApplyRemoteMasterDomainModelHandler;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.host.controller.mgmt.DomainControllerProtocol;
@@ -73,6 +73,7 @@ import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
+import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.repository.RemoteFileRequestAndHandler.CannotCreateLocalDirectoryException;
@@ -260,7 +261,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
 
             // Gather the required information to connect to the remote DC
             final ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
-            configuration.setUri(new URI("remote://" + localHostInfo.getRemoteDomainControllerHost() + ":" + localHostInfo.getRemoteDomainControllertPort()));
+            configuration.setUri(new URI("remote://" + ProtocolUtils.formatPossibleIpv6Address(localHostInfo.getRemoteDomainControllerHost()) + ":" + localHostInfo.getRemoteDomainControllertPort()));
             configuration.setEndpoint(endpointInjector.getValue());
 
             final SecurityRealm realm = securityRealmInjector.getOptionalValue();
