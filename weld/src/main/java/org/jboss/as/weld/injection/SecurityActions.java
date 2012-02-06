@@ -22,6 +22,7 @@
 
 package org.jboss.as.weld.injection;
 
+import java.lang.reflect.AccessibleObject;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
@@ -67,4 +68,17 @@ final class SecurityActions {
         }
     }
 
+
+    static void setAccessible(final AccessibleObject object) {
+        if (System.getSecurityManager() == null) {
+            object.setAccessible(true);
+        } else {
+            AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                public Object run() {
+                    object.setAccessible(true);
+                    return null;
+                }
+            });
+        }
+    }
 }
