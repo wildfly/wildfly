@@ -1,0 +1,18 @@
+<!DOCTYPE ejb-jar PUBLIC
+    "-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 2.0//EN"
+    "http://java.sun.com/dtd/ejb-jar_2_0.dtd">
+
+<ejb-jar>
+    <enterprise-beans>
+      <session>
+          <ejb-name>GoodBye</ejb-name>
+          <home>org.jboss.as.test.integration.ejb.security.runas.ejb2mdb.GoodByeHome</home>
+          <remote>org.jboss.as.test.integration.ejb.security.runas.ejb2mdb.GoodBye</remote>
+          <local-home>org.jboss.as.test.integration.ejb.security.runas.ejb2mdb.GoodByeLocalHome</local-home>
+          <local>org.jboss.as.test.integration.ejb.security.runas.ejb2mdb.GoodByeLocal</local>
+          <ejb-class>org.jboss.as.test.integration.ejb.security.runas.ejb2mdb.GoodByeBean</ejb-class>
+          <session-type>Stateless</session-type>
+          <transaction-type>Bean</transaction-type>
+      </session>
+    </enterprise-beans>
+</ejb-jar>
