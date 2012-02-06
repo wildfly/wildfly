@@ -38,6 +38,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -54,9 +55,10 @@ import static junit.framework.Assert.fail;
  */
 public class AbstractValidationUnitTest {
 		
-		private static final String SCHEMAS_LOCATION = "docs/schema";
-		private static final String JBOSS_DIST_PROP_NAME = "jboss.dist";
-		
+    private static final String SCHEMAS_LOCATION = "docs/schema";
+    private static final String JBOSS_DIST_PROP_NAME = "jboss.dist";
+
+    private static final Set<String> EXCLUDED_SCHEMA_FILES = new HashSet<String>();
     private static final Map<String, File> JBOSS_SCHEMAS_MAP = new HashMap<String, File>();
     private static Map<String, String> NAMESPACE_MAP = new HashMap<String, String>();
 
@@ -64,38 +66,37 @@ public class AbstractValidationUnitTest {
     private static final File JBOSS_DIST_DIR;
 
     static {
+        // exclude JBoss EJB specific files which redefine the javaee namespace
+        // triggering the https://issues.apache.org/jira/browse/XERCESJ-1130 bug
+        EXCLUDED_SCHEMA_FILES.add("jboss-ejb3-2_0.xsd");
+        EXCLUDED_SCHEMA_FILES.add("jboss-ejb3-spec-2_0.xsd");
+        EXCLUDED_SCHEMA_FILES.add("jboss-ejb-cache_1_0.xsd");
+        EXCLUDED_SCHEMA_FILES.add("jboss-ejb-iiop_1_0.xsd");
+        EXCLUDED_SCHEMA_FILES.add("jboss-ejb-pool_1_0.xsd");
+        EXCLUDED_SCHEMA_FILES.add("jboss-ejb-resource-adapter-binding_1_0.xsd");
+        EXCLUDED_SCHEMA_FILES.add("jboss-ejb-security_1_0.xsd");
+        EXCLUDED_SCHEMA_FILES.add("jboss-ejb-security-role_1_0.xsd");
+    }
+
+    static {
         NAMESPACE_MAP.put("http://java.sun.com/xml/ns/javaee/javaee_6.xsd", "schema/javaee_6.xsd");
         NAMESPACE_MAP.put("http://www.w3.org/2001/xml.xsd", "schema/xml.xsd");
+        NAMESPACE_MAP.put("http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd", "schema/ejb-jar_3_1.xsd");
 				
-				/*
-				final File MODULE_DIR = new File(System.getProperty("jboss.ts.dir"));
-				final File TARGET_DIR = new File(MODULE_DIR, "../../build/target/");
-				
-        final File[] children = TARGET_DIR.listFiles();
-        if (children != null) {
-            for (File child : children) {
-                if (child.getName().startsWith("jboss-")) {
-                    BASE_DIR = child;
-                    break;
+        String asDir = System.getProperty(JBOSS_DIST_PROP_NAME);
+        if( null == asDir ){
+                JBOSS_DIST_DIR = null;
+        }else{
+                JBOSS_DIST_DIR = new File(asDir);
+                if( ! JBOSS_DIST_DIR.exists() )
+                        throw new IllegalStateException("Directory set in '"+JBOSS_DIST_PROP_NAME+"' does not exist: " + JBOSS_DIST_DIR.getAbsolutePath());
+
+                final File schemaDir = new File(JBOSS_DIST_DIR, SCHEMAS_LOCATION);
+                final File[] xsds = schemaDir.listFiles(new SchemaFilter(EXCLUDED_SCHEMA_FILES.toArray(new String[EXCLUDED_SCHEMA_FILES.size()])));
+                for (File xsd : xsds) {
+                        JBOSS_SCHEMAS_MAP.put(xsd.getName(), xsd);
                 }
-            }
         }
-			 */
-				
-				String asDir = System.getProperty(JBOSS_DIST_PROP_NAME);
-				if( null == asDir ){
-						JBOSS_DIST_DIR = null;
-				}else{
-						JBOSS_DIST_DIR = new File(asDir);
-						if( ! JBOSS_DIST_DIR.exists() )
-								throw new IllegalStateException("Directory set in '"+JBOSS_DIST_PROP_NAME+"' does not exist: " + JBOSS_DIST_DIR.getAbsolutePath());
-								
-						final File schemaDir = new File(JBOSS_DIST_DIR, SCHEMAS_LOCATION);
-						final File[] xsds = schemaDir.listFiles(SchemaFilter.FILTER);
-						for (File xsd : xsds) {
-								JBOSS_SCHEMAS_MAP.put(xsd.getName(), xsd);
-						}
-				}
     }
 
     static final EntityResolver DEFAULT_ENTITY_RESOLVER = new EntityResolver() {
@@ -213,11 +214,29 @@ public class AbstractValidationUnitTest {
      */
     private static class SchemaFilter implements FilenameFilter {
         private static final Pattern PATTERN = Pattern.compile("jboss.*\\.xsd$");
-        static final SchemaFilter FILTER = new SchemaFilter();
-
+        private final String[] exclusions;
+        
+        SchemaFilter() {
+            this.exclusions = new String[0];
+        }
+        
+        SchemaFilter(final String[] exclusions) {
+            this.exclusions = exclusions;
+        }
+        
         @Override
         public boolean accept(final File dir, final String name) {
-            return PATTERN.matcher(name).find();
+            final boolean accepted = PATTERN.matcher(name).find();
+            if (accepted) {
+                // check for explicit excluded files
+                for (final String excludedFile : exclusions) {
+                    if (excludedFile.equals(name)) {
+                        // file is in exclude list, so we don't accept this file
+                        return false;
+                    }
+                }
+            }
+            return accepted;
         }
     }
 
