@@ -17,7 +17,13 @@ DESCRIPTION
                      'runtime-name' (e.g. two versions of \"foo.war\") both available in
                      the deployment content repository, in which case the deployments
                      would need to have distinct 'name' values but would have the same 'runtime-name'.
-                     
+
+    - PERSISTENT   - indicates whether the existence of the deployment should be recorded
+                     in the persistent server configuration. Only relevant to a standalone
+                     mode server. Default is 'true'. A deployment managed by a deployment scanner
+                     would have this set to 'false' to ensure the deployment is only deployed
+                     at server start if the scanner again detects the deployment.
+
     - ENABLED - boolean indicating whether the deployment content is currently deployed
                 in the runtime (or should be deployed in the runtime the next time the server starts.)
     
@@ -27,8 +33,14 @@ DESCRIPTION
                STOPPED indicates that the deployment was manually stopped.
 
     In the domain mode, the name and the runtime name (as in the standalone mode) are followed
-    by a table with headers SERVER-GROUP and ENABLED (STATUS is not available), i.e.
-    the value of ENABLED is displayed per server group. 
+    by a table with headers SERVER-GROUP and STATE, the STATE could contain the following values:
+    
+    added     - the deployment has been added to the server group but it's not enabled;
+    enabled   - the deployment has been added and enabled for the server group
+                (this is the expected state of a deployment when it is deployed to
+                a server group with the CLI deploy command);
+    not added - the server group is not referencing the deployment.
+
 
 ARGUMENTS
 
