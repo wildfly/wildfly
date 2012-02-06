@@ -207,7 +207,7 @@ public class RemotingSubsystemTestCase extends AbstractSubsystemBaseTest {
         current.updateCurrentConnector(false);
     }
 
-    @Test
+    @Test @Ignore("AS7-3632")
     public void testSubsystemWithBadConnectorProperty() throws Exception {
         final int port = 12345;
         KernelServices services = installInController(new AdditionalInitialization(){
