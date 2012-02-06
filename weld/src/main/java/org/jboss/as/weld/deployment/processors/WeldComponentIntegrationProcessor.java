@@ -137,6 +137,7 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
         ServiceBuilder<WeldManagedReferenceFactory> builder = target.addService(serviceName, factory)
                 .addDependency(weldServiceName, WeldContainer.class, factory.getWeldContainer());
 
+
         configuration.setInstanceFactory(factory);
         configuration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
             @Override

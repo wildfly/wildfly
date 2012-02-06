@@ -22,8 +22,6 @@
 package org.jboss.as.weld.injection;
 
 import java.lang.reflect.Method;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.List;
 
 import javax.enterprise.context.spi.CreationalContext;
@@ -45,13 +43,7 @@ final class InjectableMethod {
         this.beans = beans;
         this.method = method;
         this.injectionPoints = injectionPoints;
-        AccessController.doPrivileged(new PrivilegedAction<Object>() {
-            @Override
-            public Object run() {
-                method.setAccessible(true);
-                return null;
-            }
-        });
+        SecurityActions.setAccessible(method);
     }
 
 
