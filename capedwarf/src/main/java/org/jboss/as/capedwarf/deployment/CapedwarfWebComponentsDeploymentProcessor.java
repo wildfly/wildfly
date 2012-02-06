@@ -1,20 +1,18 @@
 package org.jboss.as.capedwarf.deployment;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.metadata.javaee.spec.Environment;
 import org.jboss.metadata.javaee.spec.EnvironmentRefsGroupMetaData;
-import org.jboss.metadata.javaee.spec.MutableRemoteEnvironment;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.javaee.spec.ResourceReferenceMetaData;
 import org.jboss.metadata.javaee.spec.ResourceReferencesMetaData;
-import org.jboss.metadata.web.jboss.JBossServletMetaData;
-import org.jboss.metadata.web.jboss.JBossServletsMetaData;
-import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.FilterMappingMetaData;
 import org.jboss.metadata.web.spec.FilterMetaData;
 import org.jboss.metadata.web.spec.FiltersMetaData;
 import org.jboss.metadata.web.spec.ListenerMetaData;
 import org.jboss.metadata.web.spec.ServletMappingMetaData;
+import org.jboss.metadata.web.spec.ServletMetaData;
+import org.jboss.metadata.web.spec.ServletsMetaData;
+import org.jboss.metadata.web.spec.WebMetaData;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,7 +35,7 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
     private final ListenerMetaData CDAS_LISTENER;
     private final FilterMetaData GAE_FILTER;
     private final FilterMappingMetaData GAE_FILTER_MAPPING;
-    private final JBossServletMetaData GAE_SERVLET;
+    private final ServletMetaData GAE_SERVLET;
     private final ServletMappingMetaData GAE_SERVLET_MAPPING;
     private final ResourceReferenceMetaData INFINISPAN_REF;
 
@@ -53,8 +51,8 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
     }
 
     @Override
-    protected void doDeploy(DeploymentUnit unit, JBossWebMetaData webMetaData, Type type) {
-        if (type == Type.MERGED) {
+    protected void doDeploy(DeploymentUnit unit, WebMetaData webMetaData, Type type) {
+        if (type == Type.SPEC) {
             addGaeListenerTo(webMetaData);
             addCdiListenerTo(webMetaData);
             addAsListenerTo(webMetaData);
@@ -69,7 +67,7 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
         }
     }
 
-    protected void addContextParamsTo(JBossWebMetaData webMetaData, ParamValueMetaData param) {
+    protected void addContextParamsTo(WebMetaData webMetaData, ParamValueMetaData param) {
         List<ParamValueMetaData> contextParams = webMetaData.getContextParams();
         if (contextParams == null) {
             contextParams = new ArrayList<ParamValueMetaData>();
@@ -78,15 +76,15 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
         contextParams.add(param);
     }
 
-    private void addGaeListenerTo(JBossWebMetaData webMetaData) {
+    private void addGaeListenerTo(WebMetaData webMetaData) {
         getListeners(webMetaData).add(0, GAE_LISTENER);
     }
 
-    private void addCdiListenerTo(JBossWebMetaData webMetaData) {
+    private void addCdiListenerTo(WebMetaData webMetaData) {
         getListeners(webMetaData).add(CDI_LISTENER);
     }
 
-    private void addAsListenerTo(JBossWebMetaData webMetaData) {
+    private void addAsListenerTo(WebMetaData webMetaData) {
         getListeners(webMetaData).add(CDAS_LISTENER);
     }
 
@@ -108,7 +106,7 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
         return listener;
     }
 
-    private List<ListenerMetaData> getListeners(JBossWebMetaData webMetaData) {
+    private List<ListenerMetaData> getListeners(WebMetaData webMetaData) {
         List<ListenerMetaData> listeners = webMetaData.getListeners();
         if (listeners == null) {
             listeners = new ArrayList<ListenerMetaData>();
@@ -117,7 +115,7 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
         return listeners;
     }
 
-    private void addGaeFilterTo(JBossWebMetaData webMetaData) {
+    private void addGaeFilterTo(WebMetaData webMetaData) {
         getFilters(webMetaData).add(GAE_FILTER);
     }
 
@@ -128,7 +126,7 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
         return filter;
     }
 
-    private FiltersMetaData getFilters(JBossWebMetaData webMetaData) {
+    private FiltersMetaData getFilters(WebMetaData webMetaData) {
         FiltersMetaData filters = webMetaData.getFilters();
         if (filters == null) {
             filters = new FiltersMetaData();
@@ -137,7 +135,7 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
         return filters;
     }
 
-    private void addGaeFilterMappingTo(JBossWebMetaData webMetaData) {
+    private void addGaeFilterMappingTo(WebMetaData webMetaData) {
         getFilterMappings(webMetaData).add(0, GAE_FILTER_MAPPING);
     }
 
@@ -148,7 +146,7 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
         return filterMapping;
     }
 
-    private List<FilterMappingMetaData> getFilterMappings(JBossWebMetaData webMetaData) {
+    private List<FilterMappingMetaData> getFilterMappings(WebMetaData webMetaData) {
         List<FilterMappingMetaData> filterMappings = webMetaData.getFilterMappings();
         if (filterMappings == null) {
             filterMappings = new ArrayList<FilterMappingMetaData>();
@@ -157,32 +155,32 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
         return filterMappings;
     }
 
-    private void addAuthServletTo(JBossWebMetaData webMetaData) {
+    private void addAuthServletTo(WebMetaData webMetaData) {
         getServlets(webMetaData).add(GAE_SERVLET);
     }
 
-    private JBossServletsMetaData getServlets(JBossWebMetaData webMetaData) {
-        JBossServletsMetaData servletsMetaData = webMetaData.getServlets();
+    private ServletsMetaData getServlets(WebMetaData webMetaData) {
+        ServletsMetaData servletsMetaData = webMetaData.getServlets();
         if (servletsMetaData == null) {
-            servletsMetaData = new JBossServletsMetaData();
+            servletsMetaData = new ServletsMetaData();
             webMetaData.setServlets(servletsMetaData);
         }
         return servletsMetaData;
     }
 
-    private JBossServletMetaData createAuthServlet() {
-        JBossServletMetaData servlet = new JBossServletMetaData();
+    private ServletMetaData createAuthServlet() {
+        ServletMetaData servlet = new ServletMetaData();
         servlet.setServletName(AUTH_SERVLET_NAME);
         servlet.setServletClass("org.jboss.capedwarf.users.AuthServlet");
         servlet.setEnabled(true);
         return servlet;
     }
 
-    private void addAuthServletMappingTo(JBossWebMetaData webMetaData) {
+    private void addAuthServletMappingTo(WebMetaData webMetaData) {
         getServletMappings(webMetaData).add(GAE_SERVLET_MAPPING);
     }
 
-    private List<ServletMappingMetaData> getServletMappings(JBossWebMetaData webMetaData) {
+    private List<ServletMappingMetaData> getServletMappings(WebMetaData webMetaData) {
         List<ServletMappingMetaData> servletMappings = webMetaData.getServletMappings();
         if (servletMappings == null) {
             servletMappings = new ArrayList<ServletMappingMetaData>();
@@ -206,19 +204,16 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
         return ref;
     }
 
-    private void addResourceReference(JBossWebMetaData webMetaData) {
+    private void addResourceReference(WebMetaData webMetaData) {
         ResourceReferencesMetaData references = webMetaData.getResourceReferences();
         if (references == null) {
             references = new ResourceReferencesMetaData();
-            Environment env = webMetaData.getJndiEnvironmentRefsGroup();
+            EnvironmentRefsGroupMetaData env = webMetaData.getJndiEnvironmentRefsGroup();
             if (env == null) {
                 env = new EnvironmentRefsGroupMetaData();
                 webMetaData.setJndiEnvironmentRefsGroup(env);
             }
-            if (env instanceof MutableRemoteEnvironment) {
-                MutableRemoteEnvironment mre = (MutableRemoteEnvironment) env;
-                mre.setResourceReferences(references);
-            }
+            env.setResourceReferences(references);
         }
         references.add(INFINISPAN_REF);
     }
