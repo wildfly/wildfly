@@ -54,7 +54,7 @@ To be able to easily deploy (or undeploy) your application from the application 
     </plugins>
     
 You'll be able to deploy your application via `mvn package jboss-as:deploy`. See <https://github.com/jbossas/jboss-as-maven-plugin> for further information how to use the plugin.
- 	
+	
 Testing your application with Arquillian
 ----------------------------------------
 
@@ -95,6 +95,43 @@ Apart from setting a container, you need to choose a testing framework (e.g. JUn
 
 *Note: Don't forget to set JBOSS_HOME environment variable so Arquillian will be able to find your container location.
 If you want to experiment with Arquillian settings, you can find plenty of information at <http://arqpreview-alrubinger.rhcloud.com/>*
+
+Arquillian allows you to setup two distinct protocols for communication between Arquillian and application server, a Servlet
+based and a JMX based one. In order to have a protocol activated, you need to add its artifact into `<dependencies>` section and configure
+it in `arquillian.xml` file. We recommend you to use the Servlet 3.0 protocol. To set up it, add following dependency:
+
+    <dependency>
+        <groupId>org.jboss.arquillian.protocol</groupId>
+        <artifactId>arquillian-protocol-servlet</artifactId>
+        <scope>test</scope>
+    </dependency>
+
+Arquillian configuration file (`arquillian.xml`) is located by default in `src/test/resources` directory. You need to setup
+Servlet protocol as default:
+
+    <?xml version="1.0" encoding="UTF-8"?>
+    <arquillian xmlns="http://jboss.org/schema/arquillian"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://jboss.org/schema/arquillian
+        http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
+
+        <!-- Uncomment to have test archives exported to the file system for inspection -->
+        <!--    <engine>  -->
+        <!--       <property name="deploymentExportPath">target/</property>  -->
+        <!--    </engine> -->
+
+        <!-- Force the use of the Servlet 3.0 protocol with all containers, as it is the most mature -->
+        <defaultProtocol type="Servlet 3.0" />
+
+        <!-- Example configuration for a managed/remote JBoss AS 7 instance -->
+        <container qualifier="jboss" default="true">
+        <!-- If you want to use the JBOSS_HOME environment variable, just delete the jbossHome property -->
+        <!--<configuration>-->
+        <!--<property name="jbossHome">/path/to/jboss/as</property>-->
+        <!--</configuration>-->
+        </container>
+    </arquillian>
+
 
 Testing your application with Arquillian Drone
 ----------------------------------------------
