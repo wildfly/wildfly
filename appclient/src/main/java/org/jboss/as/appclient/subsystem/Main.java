@@ -41,6 +41,7 @@ import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.process.CommandLineConstants;
+import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.as.server.Bootstrap;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.SystemExiter;
@@ -197,7 +198,7 @@ public final class Main {
                     }
                 } else if (arg.equals(CommandLineConstants.SHORT_HOST) || arg.equals(CommandLineConstants.HOST)) {
                     String urlSpec = args[++i];
-                    ret.hostUrl = urlSpec;
+                    ret.hostUrl = ProtocolUtils.formatPossibleIpv6Address(urlSpec);
                 } else if (arg.startsWith(CommandLineConstants.SHORT_HOST)) {
                     String urlSpec = parseValue(arg, CommandLineConstants.SHORT_HOST);
                     ret.hostUrl = urlSpec;
