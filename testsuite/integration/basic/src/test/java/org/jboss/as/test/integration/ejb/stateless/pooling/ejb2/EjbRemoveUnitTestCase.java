@@ -103,9 +103,10 @@ public class EjbRemoveUnitTestCase {
     }
 
     @AfterClass
-    public static void afterClass() {
+    public static void afterClass() throws Exception {
         EJBManagementUtil.removeStrictMaxPool(MANAGEMENT_HOST, MANAGEMENT_PORT, POOL_NAME2);
         EJBManagementUtil.removeStrictMaxPool(MANAGEMENT_HOST, MANAGEMENT_PORT, POOL_NAME3);
+        getModelControllerClient().close();
     }
 
     private static ModelControllerClient getModelControllerClient() throws UnknownHostException {
