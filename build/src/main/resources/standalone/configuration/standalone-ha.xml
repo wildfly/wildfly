@@ -382,7 +382,7 @@
             <security-domains>
                 <security-domain name="other" cache-type="default">
                     <authentication>
-                        <login-module code="UsersRoles" flag="required"/>
+                        <login-module code="Disabled" flag="required"/>
                     </authentication>
                 </security-domain>
                 <security-domain name="messaging" cache-type="default">
