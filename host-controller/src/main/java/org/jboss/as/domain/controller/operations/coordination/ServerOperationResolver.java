@@ -240,7 +240,7 @@ public class ServerOperationResolver {
         if (forDomain && hostModel.hasDefined(INTERFACE) && hostModel.get(INTERFACE).keys().contains(pathName)) {
             // Host will take precedence; ignore the domain
             result = Collections.emptyMap();
-        } else if (ADD.equals(operation.get(OP).asString()) && InterfaceDescription.isOperationDefined(operation)) {
+        } else if (forDomain && ADD.equals(operation.get(OP).asString()) && InterfaceDescription.isOperationDefined(operation)) {
             // don't create named interfaces
             result = Collections.emptyMap();
         } else if (hostModel.hasDefined(SERVER_CONFIG)) {
