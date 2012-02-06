@@ -19,10 +19,10 @@
         <r:remote-outbound-connection>
             <xsl:attribute name="name"><xsl:value-of select="$connectionName"/></xsl:attribute>
             <xsl:attribute name="outbound-socket-binding-ref">binding-<xsl:value-of select="$connectionName"/></xsl:attribute>
-            <r:connection-creation-options>
-                <r:option name="SASL_POLICY_NOANONYMOUS" value="false"/>
-                <r:option name="SSL_ENABLED" value="false"/>
-            </r:connection-creation-options>
+            <r:properties>
+                <r:property name="SASL_POLICY_NOANONYMOUS" value="false"/>
+                <r:property name="SSL_ENABLED" value="false"/>
+            </r:properties>
         </r:remote-outbound-connection>
     </xsl:variable>
 
