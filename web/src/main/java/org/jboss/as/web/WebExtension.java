@@ -22,6 +22,7 @@
 
 package org.jboss.as.web;
 
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -32,6 +33,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
+import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
@@ -78,6 +80,8 @@ public class WebExtension implements Extension {
         registration.registerOperationHandler(ADD, WebSubsystemAdd.INSTANCE, WebSubsystemAdd.INSTANCE, false);
         registration.registerOperationHandler(DESCRIBE, WebSubsystemDescribe.INSTANCE, WebSubsystemDescribe.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         registration.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, WebSubsystemDescriptionProviders.SUBSYSTEM_REMOVE, false);
+        registration.registerReadWriteAttribute(Constants.DEFAULT_VIRTUAL_SERVER, null, new ReloadRequiredWriteAttributeHandler(new ModelTypeValidator(ModelType.STRING)), Storage.CONFIGURATION);
+        registration.registerReadWriteAttribute(Constants.NATIVE, null, new ReloadRequiredWriteAttributeHandler(new ModelTypeValidator(ModelType.BOOLEAN)), Storage.CONFIGURATION);
         subsystem.registerXMLElementWriter(WebSubsystemParser.getInstance());
 
         // connectors
