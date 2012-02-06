@@ -4562,12 +4562,12 @@
                 <artifactId>jboss-negotiation-common</artifactId>
                 <version>${version.org.jboss.security.jboss-negotiation}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.jboss.security</groupId>
                 <artifactId>jboss-negotiation-extras</artifactId>
                 <version>${version.org.jboss.security.jboss-negotiation}</version>
-            </dependency>            
+            </dependency>
 
             <dependency>
                 <groupId>org.jboss.security</groupId>
@@ -5902,6 +5902,7 @@
                 <module>build-config</module>
                 <module>arquillian</module>
                 <module>cli</module>
+                <module>client/ejb</module>
                 <module>clustering</module>
                 <module>cmp</module>
                 <module>configadmin</module>
