@@ -21,15 +21,18 @@
  */
 package org.jboss.as.test.integration.web.formauth;
 
+import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.security.Constants.AUTHENTICATION;
 import static org.jboss.as.security.Constants.CODE;
 import static org.jboss.as.security.Constants.FLAG;
-import static org.jboss.as.security.Constants.MODULE_OPTIONS;
 import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -59,9 +62,11 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.security.Constants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
 import org.junit.Ignore;
@@ -79,6 +84,8 @@ import org.junit.runner.RunWith;
 public class FormAuthUnitTestCase {
 
     private static Logger log = Logger.getLogger(FormAuthUnitTestCase.class);
+    
+    private static String securityDomain = "jbossweb-form-auth";
 
     @ArquillianResource
     private URL baseURLNoAuth;
@@ -91,12 +98,11 @@ public class FormAuthUnitTestCase {
         String resourcesLocation = "org/jboss/as/test/integration/web/formauth/resources/";
 
         try {
-            ModelControllerClient mcc = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
-            createSecurityDomains(mcc);
+            // create required security domains
+            createSecurityDomain();
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
+            // ignore
         }
-
         WebArchive war = ShrinkWrap.create(WebArchive.class, "form-auth.war");
         war.setWebXML(tccl.getResource(resourcesLocation + "web.xml"));
         war.addAsWebInfResource(tccl.getResource(resourcesLocation + "jboss-web.xml"), "jboss-web.xml");
@@ -113,6 +119,9 @@ public class FormAuthUnitTestCase {
         war.addAsWebResource(tccl.getResource(resourcesLocation + "restricted/errors.jsp"), "restricted/errors.jsp");
         war.addAsWebResource(tccl.getResource(resourcesLocation + "restricted/error.html"), "restricted/error.html");
         war.addAsWebResource(tccl.getResource(resourcesLocation + "restricted/login.html"), "restricted/login.html");
+        
+
+        war.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr\n"),"MANIFEST.MF");
 
         log.info(war.toString(true));
         return war;
@@ -121,58 +130,76 @@ public class FormAuthUnitTestCase {
     @AfterClass
     public static void undeployment() {
         try {
-            ModelControllerClient mcc = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
-            removeSecurityDomains(mcc);
+            removeSecurityDomain();
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
     }
 
-    private static void createSecurityDomains(ModelControllerClient client) throws Exception {        
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
+    public static void createSecurityDomain() throws Exception {
 
+        log.debug("start of the domain creation");
+
+        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
+
+        final List<ModelNode> updates = new ArrayList<ModelNode>();
         ModelNode op = new ModelNode();
+
         op.get(OP).set(ADD);
         op.get(OP_ADDR).add(SUBSYSTEM, "security");
-        op.get(OP_ADDR).add(SECURITY_DOMAIN, "jbossweb-form-auth");
-
-        ModelNode rolesmodule = new ModelNode();
-        rolesmodule.get(CODE).set("org.jboss.security.auth.spi.UsersRolesLoginModule");
-        rolesmodule.get(FLAG).set("required");
-        rolesmodule.get(MODULE_OPTIONS).add("unauthenticatedIdentity", "nobody");
-        rolesmodule.get(MODULE_OPTIONS).add("usersProperties", "users.properties");
-        rolesmodule.get(MODULE_OPTIONS).add("rolesProperties", "roles.properties");
-
-        op.get(AUTHENTICATION).set(Arrays.asList(rolesmodule));
+        op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
         updates.add(op);
 
-        applyUpdates(updates, client);
-    }
+        op = new ModelNode();
+        op.get(OP).set(ADD);
+        op.get(OP_ADDR).add(SUBSYSTEM, "security");
+        op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
+        op.get(OP_ADDR).add(AUTHENTICATION, Constants.CLASSIC);
 
-    public static void removeSecurityDomains(final ModelControllerClient client) throws Exception {
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
+        ModelNode loginModule = op.get(Constants.LOGIN_MODULES).add();
+        loginModule.get(CODE).set("UsersRoles");
+        loginModule.get(FLAG).set("required");
+        op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+        updates.add(op);
+
+        try {
+            applyUpdates(updates, client);
+        }
+        catch (Exception e) {
+            log.error(e);
+            throw e;
+        }
+        log.debug("end of the domain creation");
+    }
+    public static void removeSecurityDomain() throws Exception {
+        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
 
         ModelNode op = new ModelNode();
         op.get(OP).set(REMOVE);
         op.get(OP_ADDR).add(SUBSYSTEM, "security");
-        op.get(OP_ADDR).add(SECURITY_DOMAIN, "jbossweb-form-auth");
-        updates.add(op);
+        op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
+        // Don't rollback when the AS detects the war needs the module
+        op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
 
-        applyUpdates(updates, client);
+        applyUpdate(op, client, true);
     }
 
     public static void applyUpdates(final List<ModelNode> updates, final ModelControllerClient client) throws Exception {
         for (ModelNode update : updates) {
-            log.info("+++ Update on " + client + ":\n" + update.toString());
-            ModelNode result = client.execute(new OperationBuilder(update).build());
-            if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
-                if (result.hasDefined("result"))
-                    log.info(result.get("result"));
-            } else if (result.hasDefined("failure-description")) {
-                throw new RuntimeException(result.get("failure-description").toString());
-            } else {
-                throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
+            applyUpdate(update, client, false);
+        }
+    }
+    
+    public static void applyUpdate(ModelNode update, final ModelControllerClient client, boolean allowFailure) throws Exception {
+        ModelNode result = client.execute(new OperationBuilder(update).build());
+        if (result.hasDefined("outcome") && (allowFailure || "success".equals(result.get("outcome").asString()))) {
+            if (result.hasDefined("result")) {
+                System.out.println(result.get("result"));
             }
+        } else if (result.hasDefined("failure-description")) {
+            throw new RuntimeException(result.get("failure-description").toString());
+        } else {
+            throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
         }
     }
 
