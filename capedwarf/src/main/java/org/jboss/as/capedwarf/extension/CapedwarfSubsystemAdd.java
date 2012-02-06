@@ -125,6 +125,7 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
         builder.addDependency(ContextNames.bindInfoFor("java:/ConnectionFactory").getBinderServiceName(), ManagedReferenceFactory.class, consumerService.getFactory());
         builder.addDependency(ContextNames.bindInfoFor("java:/queue/" + CAPEDWARF).getBinderServiceName(), ManagedReferenceFactory.class, consumerService.getQueue());
         builder.addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, consumerService.getLoader());
+        builder.addDependency(ServiceName.JBOSS.append("messaging").append("default")); // depending on messaging sub-system impl details ...
         builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
         return consumerService;
     }
