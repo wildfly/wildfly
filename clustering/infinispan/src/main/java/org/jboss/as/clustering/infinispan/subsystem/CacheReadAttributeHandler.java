@@ -24,7 +24,6 @@ import org.jboss.dmr.ModelNode;
 public class CacheReadAttributeHandler implements OperationStepHandler {
 
     public static final CacheReadAttributeHandler INSTANCE = new CacheReadAttributeHandler();
-
     private final ParametersValidator nameValidator = new ParametersValidator();
 
     private CacheReadAttributeHandler() {
@@ -49,9 +48,8 @@ public class CacheReadAttributeHandler implements OperationStepHandler {
 
         // special processing for cache mode value store in MODE
         if (attributeName.equals(ModelKeys.MODE)) {
-            // 1. Get the current cache mode
+            // 1. Get the current cache and translate to Mode values of SYNC / ASYNC
             // 2. set the return value
-            CacheMode mode = CacheWriteAttributeHandler.getCacheMode(operation) ;
             context.getResult().set(Mode.forCacheMode(CacheMode.valueOf(currentValue.asString())).name());
         }
         else {

@@ -100,7 +100,9 @@ public class CacheWriteAttributeHandler implements OperationStepHandler, SelfReg
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     context.reloadRequired();
-                    context.completeStep();
+                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
+                        context.revertReloadRequired();
+                    }
                 }
             }, OperationContext.Stage.RUNTIME);
         }

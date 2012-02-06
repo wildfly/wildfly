@@ -4,10 +4,10 @@ import java.util.List;
 
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.jboss.as.clustering.infinispan.subsystem.validators.CacheModeValidator;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -25,7 +25,7 @@ public abstract class ClusteredCacheAdd extends CacheAdd {
                     .setXmlName(Attribute.MODE.getLocalName())
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new CacheModeValidator(false))
+                    .setValidator(new EnumValidator<CacheMode>(CacheMode.class, true, false))
                     .build();
 
     ClusteredCacheAdd(CacheMode mode) {
