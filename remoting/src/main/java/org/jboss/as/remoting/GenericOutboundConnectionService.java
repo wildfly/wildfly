@@ -31,6 +31,8 @@ import org.jboss.remoting3.Endpoint;
 import org.xnio.IoFuture;
 import org.xnio.OptionMap;
 
+import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
+
 /**
  * A {@link GenericOutboundConnectionService} manages a remote outbound connection which is configured via
  * a {@link URI}. Unlike the remote outbound connection and the local outbound connection where we know the protocol
@@ -50,7 +52,7 @@ public class GenericOutboundConnectionService extends AbstractOutboundConnection
         super(connectionName, connectionCreationOptions);
 
         if (destination == null) {
-            throw new IllegalArgumentException("Destination URI cannot be null while creating a outbound remote connection service");
+            throw MESSAGES.destinationUriEmpty();
         }
         this.destination = destination;
     }
