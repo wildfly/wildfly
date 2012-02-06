@@ -34,7 +34,7 @@ import org.jboss.ejb3.annotation.SecurityDomain;
 @Stateful(name = "Stateful")
 @Remote(StatefulRemote.class)
 @Local(StatefulLocal.class)
-@SecurityDomain("other")
+@SecurityDomain("ejb3-tests")
 public class StatefulBean implements StatefulRemote, StatefulLocal {
     public String access(TestObject o) {
         return "Session30";

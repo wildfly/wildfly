@@ -32,7 +32,7 @@ import org.jboss.ejb3.annotation.SecurityDomain;
  */
 @Stateless
 @Remote(MyStateless.class)
-@SecurityDomain("other")
+@SecurityDomain("ejb3-tests")
 public class StatelessBean implements MyStateless {
     // static so it's shared by all
     private static String state;

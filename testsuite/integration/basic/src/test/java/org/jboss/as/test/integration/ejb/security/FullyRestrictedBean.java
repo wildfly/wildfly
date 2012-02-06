@@ -34,7 +34,7 @@ import javax.ejb.Singleton;
 @Singleton
 @DenyAll
 @LocalBean
-@SecurityDomain("other")
+@SecurityDomain("ejb3-tests")
 public class FullyRestrictedBean extends AnnotatedSLSB {
 
     @Override
