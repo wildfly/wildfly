@@ -291,6 +291,11 @@
                 <xs:documentation></xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="locking" type="tns:locking-mode" default="OPTIMISTIC">
+            <xs:annotation>
+                <xs:documentation></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="eviction">
@@ -797,6 +802,21 @@
                 </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="SYNC">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="locking-mode">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="OPTIMISTIC">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="PESSIMISTIC">
                 <xs:annotation>
                     <xs:documentation></xs:documentation>
                 </xs:annotation>
