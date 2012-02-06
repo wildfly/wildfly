@@ -166,8 +166,10 @@ public class SubsystemState  extends Observable implements Serializable, Service
         private final Integer startlevel;
 
         public OSGiCapability(String identifier, Integer startlevel) {
+            if (identifier == null)
+                throw new IllegalArgumentException("Null identifier");
             this.identifier = identifier;
-            this.startlevel = startlevel;
+            this.startlevel = (startlevel != null ? startlevel : 1);
         }
 
         public String getIdentifier() {

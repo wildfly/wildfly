@@ -55,9 +55,12 @@ import org.jboss.osgi.resolver.v2.XRequirementBuilder;
 import org.jboss.osgi.resolver.v2.XResourceConstants;
 import org.jboss.osgi.spi.util.BundleInfo;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
+import org.osgi.framework.Constants;
 import org.osgi.framework.resource.Capability;
 import org.osgi.framework.resource.Requirement;
+import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.service.repository.Repository;
 import org.osgi.service.startlevel.StartLevel;
 
@@ -69,10 +72,12 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -92,6 +97,7 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
     final InjectedValue<ServerEnvironment> injectedEnvironment = new InjectedValue<ServerEnvironment>();
     final InjectedValue<Repository> injectedRepository = new InjectedValue<Repository>();
     final InjectedValue<Bundle> injectedSystemBundle = new InjectedValue<Bundle>();
+    final InjectedValue<PackageAdmin> injectedPackageAdmin = new InjectedValue<PackageAdmin>();
     final InjectedValue<StartLevel> injectedStartLevel = new InjectedValue<StartLevel>();
     final InjectedValue<SubsystemState> injectedSubsystemState = new InjectedValue<SubsystemState>();
     ServiceController<?> serviceController;
@@ -107,6 +113,7 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
         builder.addDependency(SubsystemState.SERVICE_NAME, SubsystemState.class, service.injectedSubsystemState);
         builder.addDependency(RepositoryProvider.SERVICE_NAME, Repository.class, service.injectedRepository);
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManagerService.class, service.injectedBundleManager);
+        builder.addDependency(Services.PACKAGE_ADMIN, PackageAdmin.class, service.injectedPackageAdmin);
         builder.addDependency(Services.SYSTEM_BUNDLE, Bundle.class, service.injectedSystemBundle);
         builder.addDependency(Services.START_LEVEL, StartLevel.class, service.injectedStartLevel);
         builder.addDependency(Services.FRAMEWORK_INIT);
@@ -122,7 +129,13 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
         serviceController = context.getController();
         ROOT_LOGGER.debugf("Starting: %s in mode %s", serviceController.getName(), serviceController.getMode());
 
-        final Map<ServiceName, OSGiCapability> pendingServices = new LinkedHashMap<ServiceName, OSGiCapability>();
+        final Map<ServiceName, OSGiCapability> installedServices = new LinkedHashMap<ServiceName, OSGiCapability>();
+        final Set<ServiceName> resolvableServices = new LinkedHashSet<ServiceName>();
+
+        final BundleContext syscontext = injectedSystemBundle.getValue().getBundleContext();
+        final String slstr = syscontext.getProperty(Constants.FRAMEWORK_BEGINNING_STARTLEVEL);
+        final Integer beginningStartLevel = Integer.parseInt(slstr != null ? slstr : "1");
+
         try {
             final BundleManagerService bundleManager = injectedBundleManager.getValue();
             final ServiceContainer serviceContainer = serviceController.getServiceContainer();
@@ -144,31 +157,36 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
             for (OSGiCapability moduleMetaData : configcaps) {
                 ServiceName serviceName = installModule(bundleManager, moduleMetaData);
                 if (serviceName != null) {
-                    pendingServices.put(serviceName, moduleMetaData);
+                    installedServices.put(serviceName, moduleMetaData);
+                    if (moduleMetaData.getStartLevel() <= beginningStartLevel) {
+                        resolvableServices.add(serviceName);
+                    }
                 }
             }
 
-            // Install a service that has a dependency on all pending bundle INSTALLED services
-            ServiceName servicesInstalled = Services.AUTOINSTALL_PROVIDER.append("INSTALLED");
-            ServiceBuilder<Void> builder = serviceTarget.addService(servicesInstalled, new AbstractService<Void>() {
-                public void start(StartContext context) throws StartException {
-                    ROOT_LOGGER.debugf("Auto bundles installed");
-                }
-            });
-            builder.addDependencies(pendingServices.keySet());
-            builder.install();
-
             // Install a service that starts the bundles
-            builder = serviceTarget.addService(Services.AUTOINSTALL_PROVIDER_COMPLETE, new AbstractService<Void>() {
+            ServiceBuilder<Void> builder = serviceTarget.addService(Services.AUTOINSTALL_PROVIDER_COMPLETE, new AbstractService<Void>() {
                 public void start(StartContext context) throws StartException {
-                    for (ServiceName serviceName : pendingServices.keySet()) {
-                        OSGiCapability moduleMetaData = pendingServices.get(serviceName);
+                    // Resolve all bundles up until and including the Framework beginning start level
+                    // [AS7-2434] Incremental bundle resolution approach may lead to unresolvable user bundles
+                    Set<Bundle> resolvableBundles = new LinkedHashSet<Bundle>();
+                    for (ServiceName serviceName : resolvableServices) {
+                        ServiceController<?> requiredService = serviceContainer.getRequiredService(serviceName);
+                        resolvableBundles.add((Bundle) requiredService.getValue());
+                    }
+                    Bundle[] bundleArr = resolvableBundles.toArray(new Bundle[resolvableBundles.size()]);
+                    PackageAdmin packageAdmin = injectedPackageAdmin.getValue();
+                    packageAdmin.resolveBundles(bundleArr);
+                    // Start the resolvable bundles one-by-one
+                    for (ServiceName serviceName : resolvableServices) {
+                        OSGiCapability moduleMetaData = installedServices.get(serviceName);
                         startBundle(serviceContainer, serviceName, moduleMetaData);
                     }
                     ROOT_LOGGER.debugf("Auto bundles bundles started");
                 }
             });
-            builder.addDependencies(servicesInstalled);
+            ServiceName[] serviceNameArray = resolvableServices.toArray(new ServiceName[resolvableServices.size()]);
+            builder.addDependencies(serviceNameArray);
             builder.install();
 
         } catch (Exception ex) {
@@ -250,16 +268,14 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
     }
 
     void startBundle(final ServiceContainer serviceContainer, ServiceName serviceName, OSGiCapability moduleMetaData) {
-        if (moduleMetaData.getStartLevel() != null) {
-            ServiceController<Bundle> controller = (ServiceController<Bundle>) serviceContainer.getRequiredService(serviceName);
-            Bundle bundle = controller.getValue();
-            StartLevel startLevel = injectedStartLevel.getValue();
-            startLevel.setBundleStartLevel(bundle, moduleMetaData.getStartLevel());
-            try {
-                bundle.start();
-            } catch (BundleException ex) {
-                ROOT_LOGGER.cannotStart(ex, bundle);
-            }
+        ServiceController<Bundle> controller = (ServiceController<Bundle>) serviceContainer.getRequiredService(serviceName);
+        Bundle bundle = controller.getValue();
+        StartLevel startLevel = injectedStartLevel.getValue();
+        startLevel.setBundleStartLevel(bundle, moduleMetaData.getStartLevel());
+        try {
+            bundle.start();
+        } catch (BundleException ex) {
+            ROOT_LOGGER.cannotStart(ex, bundle);
         }
     }
 
