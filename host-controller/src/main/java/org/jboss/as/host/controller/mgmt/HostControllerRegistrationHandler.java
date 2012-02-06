@@ -36,6 +36,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_VERSION;
 import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.domain.controller.DomainControllerMessages;
 import org.jboss.as.domain.controller.SlaveRegistrationException;
 import org.jboss.as.domain.controller.operations.ReadMasterDomainModelHandler;
 import static org.jboss.as.host.controller.HostControllerLogger.DOMAIN_LOGGER;
@@ -116,7 +117,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
             final RegistrationContext registration = context.getAttachment();
             registration.initialize(hostName, hostInfo, context);
             if(domainController.isHostRegistered(hostName)) {
-                registration.failed(SlaveRegistrationException.ErrorCode.HOST_ALREADY_EXISTS, hostName);
+                registration.failed(SlaveRegistrationException.ErrorCode.HOST_ALREADY_EXISTS, DomainControllerMessages.MESSAGES.slaveAlreadyRegistered(hostName));
             }
             // Read the domain model async, this will block until the registration process is complete
             context.executeAsync(new ManagementRequestContext.AsyncTask<RegistrationContext>() {
@@ -195,7 +196,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
             synchronized (this) {
                 // Check again with the controller lock held
                 if(domainController.isHostRegistered(hostName)) {
-                    failed(SlaveRegistrationException.ErrorCode.HOST_ALREADY_EXISTS, hostName);
+                    failed(SlaveRegistrationException.ErrorCode.HOST_ALREADY_EXISTS, DomainControllerMessages.MESSAGES.slaveAlreadyRegistered(hostName));
                     return;
                 }
                 // Send model back to HC
