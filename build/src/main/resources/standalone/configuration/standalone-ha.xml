@@ -352,8 +352,8 @@
                 </jms-destinations>
             </hornetq-server>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:modcluster:1.0">
-            <mod-cluster-config advertise-socket="modcluster"/>
+        <subsystem xmlns="urn:jboss:domain:modcluster:1.1">
+            <advertise socket-binding="modcluster"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:naming:1.1"/>
         <subsystem xmlns="urn:jboss:domain:osgi:1.2" activation="lazy">
