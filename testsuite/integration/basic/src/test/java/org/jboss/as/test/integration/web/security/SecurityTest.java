@@ -60,7 +60,13 @@ public class SecurityTest {
     @AfterClass
     public static void after() throws Exception {
         // remove test security domains
-        removeSecurityDomain();
+        try {
+            removeSecurityDomain();
+            log.info("Domain Removed - Allegedly");
+        } catch (Exception e) {
+            log.error(e);
+            throw e;
+        }
     }
 
     public static void createSecurityDomain() throws Exception {

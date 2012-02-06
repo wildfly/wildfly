@@ -26,6 +26,7 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.openjpa.lib.log.Log;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.security.Constants;
@@ -132,8 +133,7 @@ public class SecurityTest {
 
             applyUpdates(updates, client);
         } catch (Exception e) {
-            // ignore
-            logger.debug("Ignoring exception while closing model controller client", e);
+            throw e;
         }
     }
 
@@ -147,6 +147,7 @@ public class SecurityTest {
         ModelNode result = client.execute(new OperationBuilder(update).build());
         if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
             if (result.hasDefined("result")) {
+                logger.infof("Result %s", result.get("result"));
                 System.out.println(result.get("result"));
             }
         } else if (result.hasDefined("failure-description")) {
