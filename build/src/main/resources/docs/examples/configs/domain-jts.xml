@@ -280,7 +280,7 @@
                 </properties>
                 <capabilities>
                     <!-- modules registered with the OSGi layer on startup -->
-                    <capability name="javax.servlet25.api"/>
+                    <capability name="javax.servlet.api:v25"/>
                     <capability name="javax.transaction.api"/>
                     <!-- bundles started in startlevel 1 -->
                     <capability name="org.apache.felix.log" startlevel="1"/>
@@ -634,7 +634,7 @@
                 </properties>
                 <capabilities>
                     <!-- modules registered with the OSGi layer on startup -->
-                    <capability name="javax.servlet25.api"/>
+                    <capability name="javax.servlet.api:v25"/>
                     <capability name="javax.transaction.api"/>
                     <!-- bundles started in startlevel 1 -->
                     <capability name="org.apache.felix.log" startlevel="1"/>
