@@ -23,6 +23,7 @@
 package org.jboss.as.server.mgmt.domain;
 
 import org.jboss.as.protocol.ProtocolChannelClient;
+import org.jboss.as.protocol.ProtocolMessages;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
@@ -114,7 +115,7 @@ public class HostControllerServerConnection extends ManagementClientChannelStrat
         if(channel == null) {
             synchronized (this) {
                 if(this.channel == null) {
-                    throw new IOException("Channel closed"); // TODO better error handling
+                    throw ProtocolMessages.MESSAGES.channelClosed();
                 }
             }
         }
@@ -162,7 +163,7 @@ public class HostControllerServerConnection extends ManagementClientChannelStrat
             channel.addCloseHandler(new CloseHandler<Channel>() {
                 @Override
                 public void handleClose(final Channel closed, final IOException exception) {
-                    // Cancel all active operations
+                    // Cancel active operations
                     channelHandler.handleChannelClosed(closed, exception);
                     synchronized (this) {
                         if(channel == closed) {

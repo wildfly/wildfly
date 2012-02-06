@@ -340,7 +340,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
                     // current semantic is a reasonable one.
                     try {
                         masterDomainControllerClient.register();
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         //We could not connect to the host
                         ROOT_LOGGER.cannotConnectToMaster(e);
                         System.exit(ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE);

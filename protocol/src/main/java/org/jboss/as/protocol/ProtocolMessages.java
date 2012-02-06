@@ -376,4 +376,12 @@ public interface ProtocolMessages {
     @Message(id = 12174, value = "Could not connect to %s. The connection failed")
     ConnectException failedToConnect(URI uri, @Cause IOException cause);
 
+    /**
+     * Creates an exception indicating that the channel is closed.
+     *
+     * @return an {@link java.io.IOException} for the error.
+     */
+    @Message(id = 12175, value = "Channel closed")
+    IOException channelClosed();
+
 }

@@ -28,6 +28,7 @@ import org.jboss.as.domain.management.CallbackHandlerFactory;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.host.controller.mgmt.DomainControllerProtocol;
 import org.jboss.as.protocol.ProtocolChannelClient;
+import org.jboss.as.protocol.ProtocolMessages;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
@@ -120,7 +121,7 @@ class RemoteDomainConnection extends ManagementClientChannelStrategy {
         if(channel == null) {
             synchronized (this) {
                 if(this.channel == null) {
-                    throw new IOException("Channel closed"); // TODO better error handling
+                    throw ProtocolMessages.MESSAGES.channelClosed();
                 }
             }
         }
