@@ -25,7 +25,7 @@ public abstract class ClusteredCacheAdd extends CacheAdd {
                     .setXmlName(Attribute.MODE.getLocalName())
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new EnumValidator<CacheMode>(CacheMode.class, true, false))
+                    .setValidator(new EnumValidator<Mode>(Mode.class, true, false))
                     .build();
 
     ClusteredCacheAdd(CacheMode mode) {

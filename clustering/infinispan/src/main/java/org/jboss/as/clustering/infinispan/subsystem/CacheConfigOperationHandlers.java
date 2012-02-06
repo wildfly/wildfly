@@ -270,14 +270,14 @@ public class CacheConfigOperationHandlers {
                     String containerName = containerAddress.getLastElement().getValue();
                     ServiceName cacheConfigurationServiceName = CacheConfigurationService.getServiceName(containerName, cacheName);
 
-                    final ServiceController<?> controller = context.getServiceRegistry(false).getService(cacheConfigurationServiceName);
-                    if(controller != null) {
-                        context.reloadRequired();
-                    }
+//                    final ServiceController<?> controller = context.getServiceRegistry(false).getService(cacheConfigurationServiceName);
+//                    if(controller != null) {
+//                        context.reloadRequired();
+//                    }
+                    context.reloadRequired();
                     if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                         context.revertReloadRequired();
                     }
-                    // context.completeStep();
                 }
             }, OperationContext.Stage.RUNTIME);
         }
