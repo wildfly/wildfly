@@ -38,13 +38,18 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_REQUIRES_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PLATFORM_MBEAN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROCESS_STATE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART_REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
@@ -52,6 +57,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
@@ -574,9 +580,11 @@ public class CoreResourceManagementTestCase {
         }
     }
 
+    /**
+     * Test for AS7-3600
+     */
     @Test
     public void testAddRemoveHostInterface() throws Exception {
-        //Test for AS7-3600
         final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
         final String ifaceName = "testing-interface";
 
@@ -598,6 +606,41 @@ public class CoreResourceManagementTestCase {
         validateResponse(masterClient.execute(remove));
 
         validateFailedResponse(masterClient.execute(read));
+    }
+
+    /**
+     * Test for AS7-3643
+     */
+    @Test
+    public void testCanFindServerRestartRequiredAfterChangingSocketBindingPortOffset() throws Exception {
+        final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
+
+        ModelNode read = new ModelNode();
+        read.get(OP).set(READ_ATTRIBUTE_OPERATION);
+        read.get(OP_ADDR).add(HOST, "master").add(SERVER_CONFIG, "main-one");
+        read.get(NAME).set("socket-binding-port-offset");
+        ModelNode result = validateResponse(masterClient.execute(read));
+        int original = result.isDefined() ? result.asInt() : 0;
+
+        //The bug causing AS7-3643 caused execution of this op to fail
+        ModelNode write = new ModelNode();
+        write.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+        write.get(OP_ADDR).add(HOST, "master").add(SERVER_CONFIG, "main-one");
+        write.get(NAME).set("socket-binding-port-offset");
+        write.get(VALUE).set(original + 1);
+        result = validateResponse(masterClient.execute(write));
+
+        //TODO investigate the extra quotes around main-server-group
+        final String mainServerGroup = "\"main-server-group\"";
+        Assert.assertEquals(SUCCESS, result.get(SERVER_GROUPS, mainServerGroup, "main-one", RESPONSE, OUTCOME).asString());
+        ModelNode headers = result.get(SERVER_GROUPS, "\"main-server-group\"", "main-one", RESPONSE, RESPONSE_HEADERS);
+        Assert.assertEquals(RESTART_REQUIRED, headers.get(PROCESS_STATE).asString());
+        Assert.assertTrue(RESTART_REQUIRED, headers.get(OPERATION_REQUIRES_RESTART).asBoolean());
+
+
+        //Now just set back to the original
+        write.get(VALUE).set(original);
+        validateResponse(masterClient.execute(write));
     }
 
     private void testCannotInvokeManagedServerOperationsComposite(ModelNode compositeAddress, ModelNode stepAddress) throws Exception {
