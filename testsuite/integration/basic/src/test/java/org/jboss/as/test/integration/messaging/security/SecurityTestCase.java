@@ -31,6 +31,7 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSession.QueueQuery;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -91,6 +92,26 @@ public class SecurityTestCase {
             session = sf.createSession();
         } catch (Exception e) {
             if ("Unable to validate user: null".equals(e.getMessage())) {
+                success = true;
+            }
+        } finally {
+            if (session != null) {
+                session.close();
+            }
+        }
+
+        Assert.assertTrue(success);
+    }
+
+    @Test
+    public void testDefaultClusterUser() throws Exception {
+        final ClientSessionFactory sf = createClientSessionFactory("localhost", 5445);
+        ClientSession session = null;
+        boolean success = false;
+        try {
+            session = sf.createSession(ConfigurationImpl.DEFAULT_CLUSTER_USER, ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD, false, true, true, false, 1);
+        } catch (Exception e) {
+            if (("Unable to validate user: " + ConfigurationImpl.DEFAULT_CLUSTER_USER).equals(e.getMessage())) {
                 success = true;
             }
         } finally {
