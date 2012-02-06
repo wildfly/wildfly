@@ -275,7 +275,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
                 }
 
                 @Override
-                public void registrationComplete(ModelNode result, ManagementChannelHandler handler) {
+                public void registrationComplete(ManagementChannelHandler handler) {
                     //
                 }
             });

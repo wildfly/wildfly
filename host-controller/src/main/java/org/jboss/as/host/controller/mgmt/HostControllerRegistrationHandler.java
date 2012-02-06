@@ -132,7 +132,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                         return;
                     }
                     // Send a registered notification back
-                    registration.sendCompletedMessage(result);
+                    registration.sendCompletedMessage();
                 }
             });
         }
@@ -280,9 +280,9 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
             }
         }
 
-        void sendCompletedMessage(final ModelNode result) {
+        void sendCompletedMessage() {
             try {
-                sendResponse(responseChannel, DomainControllerProtocol.PARAM_OK, result);
+                sendResponse(responseChannel, DomainControllerProtocol.PARAM_OK, null);
             } catch (IOException e) {
                 ProtocolLogger.ROOT_LOGGER.debugf(e, "failed to process message");
             }
@@ -304,8 +304,10 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
         try {
             // response type
             output.writeByte(responseType);
-            // operation result
-            response.writeExternal(output);
+            if(response != null) {
+                // operation result
+                response.writeExternal(output);
+            }
             // response end
             output.writeByte(ManagementProtocol.RESPONSE_END);
             output.close();

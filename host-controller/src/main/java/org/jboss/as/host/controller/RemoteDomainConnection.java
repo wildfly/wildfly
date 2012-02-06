@@ -283,8 +283,8 @@ class RemoteDomainConnection extends ManagementClientChannelStrategy {
         return callback.applyDomainModel(bootOperations);
     }
 
-    void registered(final ModelNode result) {
-        callback.registrationComplete(result, channelHandler);
+    void registered() {
+        callback.registrationComplete(channelHandler);
     }
 
     static class RegistrationResult {
@@ -332,10 +332,9 @@ class RemoteDomainConnection extends ManagementClientChannelStrategy {
         /**
          * Event that the registration was completed.
          *
-         * @param result the result
          * @param handler the handler
          */
-        void registrationComplete(ModelNode result, ManagementChannelHandler handler);
+        void registrationComplete(ManagementChannelHandler handler);
 
     }
 
@@ -414,9 +413,6 @@ class RemoteDomainConnection extends ManagementClientChannelStrategy {
                 resultHandler.done(new RegistrationResult(errorCode, message));
                 return;
             }
-            final ModelNode result = new ModelNode();
-            result.readExternal(input);
-            registered(result);
             resultHandler.done(new RegistrationResult());
         }
     }
