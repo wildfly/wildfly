@@ -41,6 +41,8 @@ import org.jboss.remoting3.OpenListener;
 import org.jboss.remoting3.Registration;
 import org.xnio.OptionMap;
 
+import static org.jboss.as.remoting.RemotingMessages.*;
+
 
 /**
  * Abstract service responsible for listening for channel open requests.
@@ -92,7 +94,7 @@ public abstract class AbstractChannelOpenListenerService<T> implements Service<V
             // Add to global registry
             registry.getValue().register(registration);
         } catch (Exception e) {
-            throw new StartException(e);
+            throw MESSAGES.couldNotStartChanelListener(e);
         }
     }
 
@@ -106,7 +108,7 @@ public abstract class AbstractChannelOpenListenerService<T> implements Service<V
         // When the server/host is stopping we don't accept new connections
         // this should be using the graceful shutdown control
         if(closed) {
-            throw new IllegalStateException("shutting down.");
+            throw MESSAGES.channelShuttingDown();
         }
         final T createdChannel = createChannel(channel);
         channels.add(createdChannel);

@@ -40,6 +40,7 @@ import java.net.URISyntaxException;
 import java.util.List;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
 
 /**
  * @author Jaikiran Pai
@@ -50,10 +51,10 @@ class GenericOutboundConnectionAdd extends AbstractOutboundConnectionAddHandler 
 
     static ModelNode getAddOperation(final String connectionName, final String uri, PathAddress address) {
         if (connectionName == null || connectionName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Connection name cannot be null or empty");
+            throw MESSAGES.connectionNameEmpty();
         }
         if (uri == null || uri.trim().isEmpty()) {
-            throw new IllegalArgumentException("Connection URI cannot be null for connection named " + connectionName);
+            throw MESSAGES.connectionUriEmpty(connectionName);
         }
         final ModelNode addOperation = new ModelNode();
         addOperation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
@@ -116,7 +117,7 @@ class GenericOutboundConnectionAdd extends AbstractOutboundConnectionAddHandler 
         try {
             return new URI(uri);
         } catch (URISyntaxException e) {
-            throw new OperationFailedException(new ModelNode().set("Cannot create a valid URI from " + uri + " -- " + e.toString()));
+            throw MESSAGES.couldNotCreateURI(new ModelNode().set("Cannot create a valid URI from " + uri + " -- " + e.toString()));
         }
     }
 }

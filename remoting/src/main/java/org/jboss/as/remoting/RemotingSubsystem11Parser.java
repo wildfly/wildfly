@@ -59,6 +59,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttri
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.remoting.CommonAttributes.*;
+import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
 
 /**
  * Parser for remoting subsystem 1.1 version
@@ -277,7 +278,7 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
                         try {
                             saslElement.get(QOP).add(SaslQop.fromString(q).getString().toLowerCase());
                         } catch (IllegalArgumentException e) {
-                            throw new IllegalArgumentException("Invalid QOP value: " + q);
+                            throw MESSAGES.invalidQOPV(q);
                         }
                     }
                     break;
@@ -297,7 +298,7 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
                         try {
                             saslElement.get(STRENGTH).add(SaslStrength.valueOf(s.toUpperCase()).name().toLowerCase());
                         } catch (IllegalArgumentException e) {
-                            throw new IllegalArgumentException("Invalid Strength value: " + s);
+                            throw MESSAGES.invalidStrength(s);
                         }
                     }
                     break;
@@ -551,10 +552,10 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
 
     static ModelNode getConnectionAddOperation(final String connectionName, final String outboundSocketBindingRef, PathAddress address) {
         if (connectionName == null || connectionName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Connection name cannot be null or empty");
+            throw MESSAGES.connectionNameEmpty();
         }
         if (outboundSocketBindingRef == null || outboundSocketBindingRef.trim().isEmpty()) {
-            throw new IllegalArgumentException("Outbound socket binding reference cannot be null or empty for connection named " + connectionName);
+            throw MESSAGES.outboundSocketBindingEmpty(connectionName);
         }
         final ModelNode addOperation = new ModelNode();
         addOperation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);

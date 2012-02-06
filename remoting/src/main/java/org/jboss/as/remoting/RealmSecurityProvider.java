@@ -21,6 +21,7 @@
  */
 package org.jboss.as.remoting;
 
+import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
 import static org.xnio.Options.SASL_MECHANISMS;
 import static org.xnio.Options.SASL_POLICY_NOANONYMOUS;
 import static org.xnio.Options.SASL_POLICY_NOPLAINTEXT;
@@ -44,7 +45,6 @@ import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
-import javax.security.sasl.SaslException;
 
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.remoting3.Remoting;
@@ -122,7 +122,7 @@ public class RealmSecurityProvider implements RemotingSecurityProvider {
             mechanisms.add(ANONYMOUS);
             builder.set(SASL_POLICY_NOANONYMOUS, false);
         } else {
-            throw new IllegalStateException("A security realm has been specified but no supported mechanism identified.");
+            throw MESSAGES.noSupportingMechanismsForRealm();
         }
 
         SslMode sslMode = getSslMode();
@@ -185,7 +185,7 @@ public class RealmSecurityProvider implements RemotingSecurityProvider {
 
                 public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
                     for (Callback current : callbacks) {
-                        throw new UnsupportedCallbackException(current, "ANONYMOUS mechanism so not expecting a callback");
+                        throw MESSAGES.anonymousMechanismNotExpected(current);
                     }
                 }
             };
@@ -201,14 +201,14 @@ public class RealmSecurityProvider implements RemotingSecurityProvider {
                     for (Callback current : callbacks) {
                         if (current instanceof NameCallback) {
                             NameCallback ncb = (NameCallback) current;
-                            if (DOLLAR_LOCAL.equals(ncb.getDefaultName()) == false) {
-                                throw new SaslException("Only " + DOLLAR_LOCAL + " user is acceptable.");
+                            if (!DOLLAR_LOCAL.equals(ncb.getDefaultName())) {
+                                throw MESSAGES.onlyLocalUserIsAcceptable(DOLLAR_LOCAL);
                             }
                         } else if (current instanceof AuthorizeCallback) {
                             AuthorizeCallback acb = (AuthorizeCallback) current;
                             acb.setAuthorized(acb.getAuthenticationID().equals(acb.getAuthorizationID()));
                         } else {
-                            throw new UnsupportedCallbackException(current);
+                            throw MESSAGES.unsupportedCallback(current);
                         }
                     }
 
@@ -228,7 +228,7 @@ public class RealmSecurityProvider implements RemotingSecurityProvider {
                             AuthorizeCallback acb = (AuthorizeCallback) current;
                             acb.setAuthorized(acb.getAuthenticationID().equals(acb.getAuthorizationID()));
                         } else {
-                            throw new UnsupportedCallbackException(current);
+                            throw MESSAGES.unsupportedCallback(current);
                         }
                     }
 

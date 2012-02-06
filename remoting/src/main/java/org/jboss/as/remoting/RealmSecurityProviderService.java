@@ -32,6 +32,8 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
+import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
+
 /**
  * The service to make the RealmAuthenticationProvider available.
  *
@@ -55,11 +57,11 @@ public class RealmSecurityProviderService implements Service<RemotingSecurityPro
         String path = tmpDirValue.getValue();
         File authDir = new File(path, "auth");
         if (authDir.exists()) {
-            if (authDir.isDirectory() == false) {
-                throw new StartException("Unable to create tmp dir for auth tokens as file already exists.");
+            if (!authDir.isDirectory()) {
+                throw MESSAGES.unableToCreateTempDirForAuthTokensFileExists();
             }
-        } else if (authDir.mkdirs() == false) {
-            throw new StartException("Unable to create auth dir.");
+        } else if (!authDir.mkdirs()) {
+            throw MESSAGES.unableToCreateAuthDir();
         } else {
             // As a precaution make perms user restricted for directories created (if the OS allows)
             authDir.setWritable(false, false);

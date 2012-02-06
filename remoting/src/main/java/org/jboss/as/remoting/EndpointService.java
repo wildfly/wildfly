@@ -34,6 +34,8 @@ import org.jboss.remoting3.Remoting;
 import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
 import org.xnio.OptionMap;
 
+import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
+
 /**
  * An MSC service for Remoting endpoints.
  *
@@ -76,7 +78,7 @@ public final class EndpointService implements Service<Endpoint> {
                 }
             }
         } catch (IOException e) {
-            throw new StartException("Failed to start service", e);
+            throw MESSAGES.couldNotStart(e);
         }
         this.endpoint = endpoint;
     }
@@ -98,12 +100,12 @@ public final class EndpointService implements Service<Endpoint> {
     /** {@inheritDoc} */
     public synchronized Endpoint getValue() throws IllegalStateException {
         final Endpoint endpoint = this.endpoint;
-        if (endpoint == null) throw new IllegalStateException();
+        if (endpoint == null) throw MESSAGES.endpointEmpty();
         return endpoint;
     }
 
     public enum EndpointType {
         MANAGEMENT,
-        SUBSYSTEM;
+        SUBSYSTEM
     }
 }

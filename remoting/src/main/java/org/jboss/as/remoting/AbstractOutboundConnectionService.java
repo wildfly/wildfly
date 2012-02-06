@@ -22,6 +22,7 @@
 
 package org.jboss.as.remoting;
 
+import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
 import static org.xnio.Options.SSL_ENABLED;
 import static org.xnio.Options.SSL_STARTTLS;
 
@@ -102,7 +103,7 @@ public abstract class AbstractOutboundConnectionService<T extends AbstractOutbou
                     NameCallback ncb = (NameCallback) current;
                     ncb.setName("anonymous");
                 } else {
-                    throw new UnsupportedCallbackException(current);
+                    throw MESSAGES.unsupportedCallback(current);
                 }
             }
         }
