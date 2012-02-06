@@ -234,7 +234,7 @@
         <version.org.picketbox>4.0.6.final</version.org.picketbox>
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
         <version.org.picketlink>2.0.1.final</version.org.picketlink>
-        <version.org.projectodd.stilts>0.1.20</version.org.projectodd.stilts>
+        <version.org.projectodd.stilts>0.1.26</version.org.projectodd.stilts>
         <version.org.python.jython.standalone>2.5.2</version.org.python.jython.standalone>
         <version.org.rhq.helpers>3.0.4</version.org.rhq.helpers>
         <version.org.scannotation>1.0.2</version.org.scannotation>

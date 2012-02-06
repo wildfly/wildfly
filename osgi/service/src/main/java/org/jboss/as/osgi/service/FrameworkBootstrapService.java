@@ -38,6 +38,7 @@ import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.ModuleSpec;
 import org.jboss.modules.filter.PathFilter;
 import org.jboss.modules.filter.PathFilters;
+import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
@@ -65,14 +66,19 @@ import org.osgi.framework.ServiceReference;
 import javax.management.MBeanServer;
 import javax.naming.spi.ObjectFactory;
 import java.io.File;
+import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Dictionary;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import static org.jboss.as.network.SocketBinding.JBOSS_BINDING_NAME;
 import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_MODULES;
@@ -92,6 +98,7 @@ public class FrameworkBootstrapService implements Service<Void> {
     public static final ServiceName SERVICE_BASE_NAME = ServiceName.JBOSS.append("osgi", "as");
     public static final ServiceName FRAMEWORK_BASE_NAME = SERVICE_BASE_NAME.append("framework");
     public static final ServiceName FRAMEWORK_BOOTSTRAP = FRAMEWORK_BASE_NAME.append("bootstrap");
+    public static final String MAPPED_OSGI_SOCKET_BINDINGS = "org.jboss.as.osgi.socket.bindings";
 
     private final InjectedValue<ServerEnvironment> injectedEnvironment = new InjectedValue<ServerEnvironment>();
     private final InjectedValue<SubsystemState> injectedSubsystemState = new InjectedValue<SubsystemState>();
@@ -102,7 +109,7 @@ public class FrameworkBootstrapService implements Service<Void> {
         ServiceBuilder<?> builder = target.addService(FRAMEWORK_BOOTSTRAP, service);
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedEnvironment);
         builder.addDependency(SubsystemState.SERVICE_NAME, SubsystemState.class, service.injectedSubsystemState);
-        builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append("osgi-http"), SocketBinding.class, service.httpServerPortBinding);
+        builder.addDependency(JBOSS_BINDING_NAME.append("osgi-http"), SocketBinding.class, service.httpServerPortBinding);
         builder.addListener(listeners);
         return builder.install();
     }
@@ -213,7 +220,7 @@ public class FrameworkBootstrapService implements Service<Void> {
             sysPackages.add("org.jboss.logging;version=3.1.0");
             sysPackages.add("org.slf4j;version=1.6.1");
             syspackages = sysPackages.toString();
-            syspackages = syspackages.substring(1, syspackages.length() -1);
+            syspackages = syspackages.substring(1, syspackages.length() - 1);
             props.put(PROP_JBOSS_OSGI_SYSTEM_PACKAGES, syspackages);
         }
 
@@ -249,22 +256,48 @@ public class FrameworkBootstrapService implements Service<Void> {
             ServiceController<?> controller = context.getController();
             ROOT_LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
             serviceContainer = context.getController().getServiceContainer();
+            final BundleContext syscontext = injectedBundleContext.getValue();
 
-            jndiServiceListener = new JNDIServiceListener(injectedBundleContext.getValue());
+            // Register the JNDI service listener
+            jndiServiceListener = new JNDIServiceListener(syscontext);
             try {
-                injectedBundleContext.getValue().addServiceListener(jndiServiceListener,
-                        "(" + Constants.OBJECTCLASS + "=" + ObjectFactory.class.getName() + ")");
-            } catch (Exception e) {
-                throw new IllegalStateException(e);
+                String filter = "(" + Constants.OBJECTCLASS + "=" + ObjectFactory.class.getName() + ")";
+                syscontext.addServiceListener(jndiServiceListener, filter);
+            } catch (InvalidSyntaxException e) {
+                // ignore
+            }
+
+            // Register the socket-binding services
+            String bindingNames = syscontext.getProperty(MAPPED_OSGI_SOCKET_BINDINGS);
+            if (bindingNames != null) {
+                final Set<ServiceName> socketBindingNames = new HashSet<ServiceName>();
+                for (String sufix : bindingNames.split(",")) {
+                    socketBindingNames.add(JBOSS_BINDING_NAME.append(sufix));
+                }
+                ServiceTarget serviceTarget = context.getChildTarget();
+                ServiceName serviceName = Services.SYSTEM_SERVICES_PROVIDER.append("BINDINGS");
+                ServiceBuilder<Void> builder = serviceTarget.addService(serviceName, new AbstractService<Void>() {
+                    public void start(StartContext context) throws StartException {
+                        for (ServiceName serviceName : socketBindingNames) {
+                            SocketBinding binding = (SocketBinding) serviceContainer.getRequiredService(serviceName).getValue();
+                            Dictionary<String, String> props = new Hashtable<String, String>();
+                            props.put("socketBinding", serviceName.getSimpleName());
+                            InetSocketAddress value = binding.getSocketAddress();
+                            syscontext.registerService(InetSocketAddress.class.getName(), value, props);
+                        }
+                    }
+                });
+                ServiceName[] serviceNameArray = socketBindingNames.toArray(new ServiceName[socketBindingNames.size()]);
+                builder.addDependencies(serviceNameArray);
+                builder.install();
             }
         }
 
         @Override
         public void stop(StopContext context) {
-            injectedBundleContext.getValue().removeServiceListener(jndiServiceListener);
-
             ServiceController<?> controller = context.getController();
             ROOT_LOGGER.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
+            injectedBundleContext.getValue().removeServiceListener(jndiServiceListener);
         }
 
         @Override
@@ -398,12 +431,12 @@ public class FrameworkBootstrapService implements Service<Void> {
         public void serviceChanged(ServiceEvent event) {
             ServiceReference ref = event.getServiceReference();
             switch (event.getType()) {
-            case ServiceEvent.REGISTERED:
-                handleJNDIRegistration(ref, true);
-                break;
-            case ServiceEvent.UNREGISTERING:
-                handleJNDIRegistration(ref, false);
-                break;
+                case ServiceEvent.REGISTERED:
+                    handleJNDIRegistration(ref, true);
+                    break;
+                case ServiceEvent.UNREGISTERING:
+                    handleJNDIRegistration(ref, false);
+                    break;
             }
         }
 
