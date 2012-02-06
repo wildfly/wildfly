@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.domain.suites;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
@@ -32,6 +33,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_DEFAULTS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -570,7 +572,32 @@ public class CoreResourceManagementTestCase {
             Assert.assertTrue(desc.toString() + " does not contain " + errorCode, desc.toString().contains(errorCode));
             i++;
         }
+    }
 
+    @Test
+    public void testAddRemoveHostInterface() throws Exception {
+        //Test for AS7-3600
+        final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
+        final String ifaceName = "testing-interface";
+
+        ModelNode add = new ModelNode();
+        add.get(OP).set(ADD);
+        add.get(OP_ADDR).add(HOST, "master").add(INTERFACE, ifaceName);
+        add.get(ANY_ADDRESS).set(true);
+
+        validateResponse(masterClient.execute(add));
+
+        ModelNode read = new ModelNode();
+        read.get(OP).set(READ_RESOURCE_OPERATION);
+        read.get(OP_ADDR).add(HOST, "master").add(SERVER, "main-one").add(INTERFACE, ifaceName);
+        validateResponse(masterClient.execute(read));
+
+        ModelNode remove = new ModelNode();
+        remove.get(OP).set(REMOVE);
+        remove.get(OP_ADDR).add(HOST, "master").add(INTERFACE, ifaceName);
+        validateResponse(masterClient.execute(remove));
+
+        validateFailedResponse(masterClient.execute(read));
     }
 
     private void testCannotInvokeManagedServerOperationsComposite(ModelNode compositeAddress, ModelNode stepAddress) throws Exception {
