@@ -74,6 +74,8 @@ public class RunAsPrincipalTestCase extends SecurityTest {
                 .addClass(SecurityTest.class)
                 .addAsResource(CallerWithIdentity.class.getPackage(),"users.properties", "users.properties")
                 .addAsResource(CallerWithIdentity.class.getPackage(),"roles.properties", "roles.properties")
+                .addAsWebInfResource("ejb3/security/web.xml", "web.xml")
+                .addAsWebInfResource("ejb3/security/jboss-web.xml", "jboss-web.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr\n"),"MANIFEST.MF");
         log.info(war.toString(true));
         return war;

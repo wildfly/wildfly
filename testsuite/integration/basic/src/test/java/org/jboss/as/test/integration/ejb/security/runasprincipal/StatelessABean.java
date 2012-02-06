@@ -34,7 +34,7 @@ import javax.ejb.Stateless;
 @Stateless
 @Local(WhoAmI.class)
 @RolesAllowed("Admin")
-@SecurityDomain("other")
+@SecurityDomain("ejb3-tests")
 public class StatelessABean implements WhoAmI {
     @EJB(beanName = "StatelessBBean")
     private WhoAmI beanB;

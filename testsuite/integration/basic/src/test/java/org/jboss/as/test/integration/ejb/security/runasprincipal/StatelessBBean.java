@@ -35,7 +35,7 @@ import javax.ejb.Stateless;
 @Stateless
 @Local(WhoAmI.class)
 @RolesAllowed("Admin")
-@SecurityDomain("other")
+@SecurityDomain("ejb3-tests")
 public class StatelessBBean implements WhoAmI {
     @Resource
     private SessionContext ctx;

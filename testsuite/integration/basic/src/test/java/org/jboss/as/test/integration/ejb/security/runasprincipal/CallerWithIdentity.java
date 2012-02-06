@@ -36,7 +36,7 @@ import javax.ejb.Stateless;
 @Remote(WhoAmI.class)
 @RunAs("Admin")
 @RunAsPrincipal("jackinabox")
-@SecurityDomain("other")
+@SecurityDomain("ejb3-tests")
 public class CallerWithIdentity implements WhoAmI {
     @EJB(beanName = "StatelessABean")
     private WhoAmI beanA;
