@@ -16,6 +16,7 @@ import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
@@ -182,6 +183,9 @@ class HornetQService implements Service<HornetQServer> {
 
             // Now start the server
             server = new HornetQServerImpl(configuration, mbeanServer.getOptionalValue(), hornetQSecurityManagerAS7);
+            if (ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD.equals(server.getConfiguration().getClusterPassword())) {
+                server.getConfiguration().setClusterPassword(java.util.UUID.randomUUID().toString());
+            }
 
             // FIXME started by the JMSService
             // HornetQ expects the TCCL to be set to something that can find the
