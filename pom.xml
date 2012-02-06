@@ -3085,7 +3085,19 @@
 
             <dependency>
                 <groupId>org.hornetq</groupId>
+                <artifactId>hornetq-core-client</artifactId>
+                <version>${version.org.hornetq}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hornetq</groupId>
                 <artifactId>hornetq-jms</artifactId>
+                <version>${version.org.hornetq}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hornetq</groupId>
+                <artifactId>hornetq-jms-client</artifactId>
                 <version>${version.org.hornetq}</version>
             </dependency>
 
@@ -5903,6 +5915,7 @@
                 <module>arquillian</module>
                 <module>cli</module>
                 <module>client/ejb</module>
+                <module>client/jms</module>
                 <module>clustering</module>
                 <module>cmp</module>
                 <module>configadmin</module>
