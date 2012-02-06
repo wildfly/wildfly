@@ -1189,7 +1189,7 @@
             <maven-bundle group="org.jboss.as" artifact="jboss-as-osgi-configadmin"/>
         </bundle-def>
 
-        <bundle-def name="javax.servlet25.api">
+        <bundle-def name="javax.servlet.api" slot="v25">
             <maven-bundle group="org.jboss.osgi.http" artifact="jbosgi-http-api"/>
         </bundle-def>
 
