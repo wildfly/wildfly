@@ -21,6 +21,12 @@
 */
 package org.jboss.as.jmx;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
 import java.util.List;
 
 import javax.management.MBeanServerConnection;
@@ -29,6 +35,7 @@ import javax.management.remote.JMXServiceURL;
 import javax.xml.stream.XMLStreamException;
 
 import junit.framework.Assert;
+
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.extension.ExtensionRegistry;
@@ -47,12 +54,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.junit.Test;
 import org.xnio.OptionMap;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 /**
  *
@@ -180,10 +181,9 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         Assert.assertTrue(model.get(SUBSYSTEM).hasDefined(JMXExtension.SUBSYSTEM_NAME));
 
         //Make sure that we can connect to the MBean server
-        String host = "localhost";
         int port = 12345;
         String urlString = System.getProperty("jmx.service.url",
-            "service:jmx:remoting-jmx://" + host + ":" + port);
+            "service:jmx:remoting-jmx://localhost:" + port);
         JMXServiceURL serviceURL = new JMXServiceURL(urlString);
 
         MBeanServerConnection connection = null;

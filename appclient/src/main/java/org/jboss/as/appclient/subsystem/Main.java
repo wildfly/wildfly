@@ -21,6 +21,8 @@
  */
 package org.jboss.as.appclient.subsystem;
 
+import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -39,18 +41,17 @@ import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.process.CommandLineConstants;
+import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.as.server.Bootstrap;
-import org.jboss.as.version.ProductConfig;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.SystemExiter;
+import org.jboss.as.version.ProductConfig;
 import org.jboss.logmanager.handlers.ConsoleHandler;
 import org.jboss.logmanager.log4j.BridgeRepositorySelector;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.stdio.StdioContext;
-
-import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
 
 /**
  * The application client entry point
@@ -197,7 +198,7 @@ public final class Main {
                     }
                 } else if (arg.equals(CommandLineConstants.SHORT_HOST) || arg.equals(CommandLineConstants.HOST)) {
                     String urlSpec = args[++i];
-                    ret.hostUrl = urlSpec;
+                    ret.hostUrl = ProtocolUtils.formatPossibleIpv6Address(urlSpec);
                 } else if (arg.startsWith(CommandLineConstants.SHORT_HOST)) {
                     String urlSpec = parseValue(arg, CommandLineConstants.SHORT_HOST);
                     ret.hostUrl = urlSpec;
