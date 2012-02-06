@@ -178,7 +178,7 @@ public class CliLauncher {
             }
 
             if (gui) {
-                cmdCtx = initCommandContext(defaultControllerHost, defaultControllerPort, username, password, false, connect);
+                cmdCtx = initCommandContext(defaultControllerHost, defaultControllerPort, username, password, false, true);
                 processGui(cmdCtx);
                 return;
             }
