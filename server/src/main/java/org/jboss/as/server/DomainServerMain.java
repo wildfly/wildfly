@@ -35,6 +35,7 @@ import java.util.Arrays;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.process.protocol.StreamUtils;
+import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.as.remoting.EndpointService;
 import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
@@ -140,7 +141,7 @@ public final class DomainServerMain {
         for (;;) try {
             String hostName = StreamUtils.readUTFZBytes(initialInput);
             int port = StreamUtils.readInt(initialInput);
-            // TODO remove managementSubsystemEndpoint !?
+            // TODO remove managementSubsystemEndpoint ?
             // This property does not make sense on reconnect, since there can't be any configuration changes
             // while the channel is down. Other changes are either applied to the runtime directly or require a restart.
             boolean managementSubsystemEndpoint = StreamUtils.readBoolean(initialInput);
@@ -173,7 +174,6 @@ public final class DomainServerMain {
     private static void addCommunicationServices(final ServiceTarget serviceTarget, final String serverName, final String serverProcessName, final byte[] authKey,
             final InetSocketAddress managementSocket, final boolean managementSubsystemEndpoint, final boolean isReconnect) {
 
-
         final ServiceName endpointName;
         if (!managementSubsystemEndpoint) {
             endpointName = ManagementRemotingServices.MANAGEMENT_ENDPOINT;
@@ -187,7 +187,7 @@ public final class DomainServerMain {
 
         try {
             final int port = managementSocket.getPort();
-            final String host = InetAddress.getByName(managementSocket.getHostName()).getHostName();
+            final String host = ProtocolUtils.formatPossibleIpv6Address(InetAddress.getByName(managementSocket.getHostName()).getHostName());
             final HostControllerServerClient client = new HostControllerServerClient(serverName, serverProcessName, host, port, authKey);
                     serviceTarget.addService(HostControllerServerClient.SERVICE_NAME, client)
                         .addDependency(endpointName, Endpoint.class, client.getEndpointInjector())
