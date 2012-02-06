@@ -280,7 +280,7 @@ class DomainApiHandler implements ManagementHttpHandler {
 
         try {
             dmr = isGet ? convertGetRequest(request) : convertPostRequest(http.getRequestBody(), encode);
-        } catch (IllegalArgumentException iae) {
+        } catch (Exception iae) {
             ROOT_LOGGER.debugf("Unable to construct ModelNode '%s'", iae.getMessage());
             sendError(http,isGet,iae);
             return;
