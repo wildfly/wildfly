@@ -190,9 +190,7 @@
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:messaging:1.1">
                 <hornetq-server>
-                    <!-- disable messaging persistence -->
-                    <persistence-enabled>false</persistence-enabled>
-                    <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
+                    <persistence-enabled>true</persistence-enabled>
                     <journal-file-size>102400</journal-file-size>
                     <journal-min-files>2</journal-min-files>
 
@@ -541,9 +539,7 @@
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:messaging:1.1">
                 <hornetq-server>
-                    <!-- disable messaging persistence -->
-                    <persistence-enabled>false</persistence-enabled>
-                    <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
+                    <persistence-enabled>true</persistence-enabled>
                     <journal-file-size>102400</journal-file-size>
                     <journal-min-files>2</journal-min-files>
 
