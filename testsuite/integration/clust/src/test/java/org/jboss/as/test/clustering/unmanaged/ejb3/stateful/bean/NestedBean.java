@@ -24,6 +24,8 @@ package org.jboss.as.test.clustering.unmanaged.ejb3.stateful.bean;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.inject.Inject;
+
 import org.jboss.ejb3.annotation.Clustered;
 
 /**
@@ -34,9 +36,12 @@ import org.jboss.ejb3.annotation.Clustered;
 @javax.ejb.Stateful(name = "NestedBean")
 public class NestedBean implements Nested {
     private AtomicInteger count = new AtomicInteger(0);
-    
+
+    @Inject
+    private Counter counter;
+
     @Override
     public int increment() {
-        return this.count.incrementAndGet();
+        return this.count.incrementAndGet() + counter.getCount();
     }
 }

@@ -37,11 +37,11 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.clustering.unmanaged.ejb3.stateful.bean.CounterDecorator;
 import org.jboss.as.test.clustering.unmanaged.ejb3.stateful.bean.StatefulBean;
 import org.jboss.as.test.clustering.unmanaged.ejb3.stateful.bean.StatefulCDIInterceptor;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.BeforeClass;
@@ -80,25 +80,29 @@ public class StatefulFailoverTestCase {
     @Deployment(name = DEPLOYMENT1, managed = false, testable = false)
     @TargetsContainer(CONTAINER1)
     public static Archive<?> deployment0() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "stateful.war");
-        war.addPackage(StatefulBean.class.getPackage());
-        war.setWebXML(StatefulBean.class.getPackage(), "web.xml");
-        war.addAsWebInfResource(new StringAsset("<beans><interceptors><class>" + StatefulCDIInterceptor.class.getName() + "</class></interceptors></beans>"), "beans.xml");
-        System.out.println(war.toString(true));
+        WebArchive war = createDeployment();
         return war;
     }
 
     @Deployment(name = DEPLOYMENT2, managed = false, testable = false)
     @TargetsContainer(CONTAINER2)
     public static Archive<?> deployment1() {
+        WebArchive war = createDeployment();
+        return war;
+    }
+
+    private static WebArchive createDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "stateful.war");
         war.addPackage(StatefulBean.class.getPackage());
         war.setWebXML(StatefulBean.class.getPackage(), "web.xml");
-        war.addAsWebInfResource(new StringAsset("<beans><interceptors><class>" + StatefulCDIInterceptor.class.getName() + "</class></interceptors></beans>"), "beans.xml");
+        war.addAsWebInfResource(new StringAsset("<beans>" +
+                "<interceptors><class>" + StatefulCDIInterceptor.class.getName() + "</class></interceptors>" +
+                "<decorators><class>" + CounterDecorator.class.getName() + "</class></decorators>" +
+                "</beans>"), "beans.xml");
         System.out.println(war.toString(true));
         return war;
     }
-    
+
     @Test
     @InSequence(1)
     /* @OperateOnDeployment(DEPLOYMENT1) -- See http://community.jboss.org/thread/176096 */
@@ -114,42 +118,42 @@ public class StatefulFailoverTestCase {
         String url2 = "http://127.0.0.1:8180/stateful/count";
 
         try {
-            assertQueryCount(10101, client, url1);
-            assertQueryCount(20202, client, url1);
+            assertQueryCount(20010101, client, url1);
+            assertQueryCount(20020202, client, url1);
 
             controller.start(CONTAINER2);
             deployer.deploy(DEPLOYMENT2);
 
-            assertQueryCount(30303, client, url1);
-            assertQueryCount(40404, client, url1);
+            assertQueryCount(20030303, client, url1);
+            assertQueryCount(20040404, client, url1);
 
-            assertQueryCount(50505, client, url2);
-            assertQueryCount(60606, client, url2);
+            assertQueryCount(20050505, client, url2);
+            assertQueryCount(20060606, client, url2);
 
             controller.stop(CONTAINER2);
 
-            assertQueryCount(70707, client, url1);
-            assertQueryCount(80808, client, url1);
+            assertQueryCount(20070707, client, url1);
+            assertQueryCount(20080808, client, url1);
 
             controller.start(CONTAINER2);
 
-            assertQueryCount(90909, client, url1);
-            assertQueryCount(101010, client, url1);
+            assertQueryCount(20090909, client, url1);
+            assertQueryCount(20101010, client, url1);
 
-            assertQueryCount(111111, client, url2);
-            assertQueryCount(121212, client, url2);
+            assertQueryCount(20111111, client, url2);
+            assertQueryCount(20121212, client, url2);
 
             controller.stop(CONTAINER1);
-            assertQueryCount(131313, client, url2);
-            assertQueryCount(141414, client, url2);
-            
+            assertQueryCount(20131313, client, url2);
+            assertQueryCount(20141414, client, url2);
+
             controller.start(CONTAINER1);
 
-            assertQueryCount(151515, client, url1);
-            assertQueryCount(161616, client, url1);
+            assertQueryCount(20151515, client, url1);
+            assertQueryCount(20161616, client, url1);
 
-            assertQueryCount(171717, client, url1);
-            assertQueryCount(181818, client, url1);
+            assertQueryCount(20171717, client, url1);
+            assertQueryCount(20181818, client, url1);
         } finally {
             client.getConnectionManager().shutdown();
 
@@ -157,7 +161,7 @@ public class StatefulFailoverTestCase {
             this.cleanup(DEPLOYMENT2, CONTAINER2);
         }
     }
-    
+
     @Test
     @InSequence(2)
     /* @OperateOnDeployment(DEPLOYMENT1) -- See http://community.jboss.org/thread/176096 */
@@ -173,43 +177,43 @@ public class StatefulFailoverTestCase {
         String url2 = "http://127.0.0.1:8180/stateful/count";
 
         try {
-            assertQueryCount(10101, client, url1);
-            assertQueryCount(20202, client, url1);
+            assertQueryCount(20010101, client, url1);
+            assertQueryCount(20020202, client, url1);
 
             controller.start(CONTAINER2);
             deployer.deploy(DEPLOYMENT2);
 
-            assertQueryCount(30303, client, url1);
-            assertQueryCount(40404, client, url1);
+            assertQueryCount(20030303, client, url1);
+            assertQueryCount(20040404, client, url1);
 
-            assertQueryCount(50505, client, url2);
-            assertQueryCount(60606, client, url2);
+            assertQueryCount(20050505, client, url2);
+            assertQueryCount(20060606, client, url2);
 
             deployer.undeploy(DEPLOYMENT2);
 
-            assertQueryCount(70707, client, url1);
-            assertQueryCount(80808, client, url1);
+            assertQueryCount(20070707, client, url1);
+            assertQueryCount(20080808, client, url1);
 
             deployer.deploy(DEPLOYMENT2);
 
-            assertQueryCount(90909, client, url1);
-            assertQueryCount(101010, client, url1);
+            assertQueryCount(20090909, client, url1);
+            assertQueryCount(20101010, client, url1);
 
-            assertQueryCount(111111, client, url2);
-            assertQueryCount(121212, client, url2);
+            assertQueryCount(20111111, client, url2);
+            assertQueryCount(20121212, client, url2);
 
             deployer.undeploy(DEPLOYMENT1);
 
-            assertQueryCount(131313, client, url2);
-            assertQueryCount(141414, client, url2);
-            
+            assertQueryCount(20131313, client, url2);
+            assertQueryCount(20141414, client, url2);
+
             deployer.deploy(DEPLOYMENT1);
 
-            assertQueryCount(151515, client, url1);
-            assertQueryCount(161616, client, url1);
+            assertQueryCount(20151515, client, url1);
+            assertQueryCount(20161616, client, url1);
 
-            assertQueryCount(171717, client, url2);
-            assertQueryCount(181818, client, url2);
+            assertQueryCount(20171717, client, url2);
+            assertQueryCount(20181818, client, url2);
         } finally {
             client.getConnectionManager().shutdown();
 
@@ -217,11 +221,11 @@ public class StatefulFailoverTestCase {
             this.cleanup(DEPLOYMENT2, CONTAINER2);
         }
     }
-    
+
     private int queryCount(HttpClient client, String url) throws IOException {
         HttpResponse response = client.execute(new HttpGet(url));
         try {
-            if (response.getStatusLine().getStatusCode() >= 400 && response.getStatusLine().getStatusCode() < 500) 
+            if (response.getStatusLine().getStatusCode() >= 400 && response.getStatusLine().getStatusCode() < 500)
                return -1;
 
             assertEquals(200, response.getStatusLine().getStatusCode());
@@ -230,7 +234,7 @@ public class StatefulFailoverTestCase {
             response.getEntity().getContent().close();
         }
     }
-    
+
     private void cleanup(String deployment, String container) {
         try {
             this.deployer.undeploy(deployment);
@@ -239,7 +243,7 @@ public class StatefulFailoverTestCase {
             e.printStackTrace(System.err);
         }
     }
- 
+
     private void assertQueryCount(int i, HttpClient client, String url) throws IOException, InterruptedException {
            int maxWait = GRACE_TIME;
            int count = 0;
