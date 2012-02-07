@@ -8,6 +8,7 @@ target
 .classpath
 .settings
 .metadata
+.faces-config.xml.faceside
 # ignore IDEA files
 *.iml
 *.ipr
