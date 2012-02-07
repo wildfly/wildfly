@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.infinispan.configuration.cache.CacheMode;
-import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;

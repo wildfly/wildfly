@@ -478,7 +478,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         } else if (storeKey.equals(ModelKeys.JDBC_STORE)) {
             builder.cacheLoader(this.createJDBCStore(properties, store));
             String datasource = store.require(ModelKeys.DATASOURCE).asString();
-            dependencies.add(new Dependency<Object>(ServiceName.JBOSS.append("data-source").append("reference-factory").append(datasource)));
+            dependencies.add(new Dependency<Object>(ServiceName.JBOSS.append("data-source", datasource)));
             properties.setProperty("datasourceJndiLocation", datasource);
             properties.setProperty("connectionFactoryClass", ManagedConnectionFactory.class.getName());
         } else if (storeKey.equals(ModelKeys.REMOTE_STORE)) {
