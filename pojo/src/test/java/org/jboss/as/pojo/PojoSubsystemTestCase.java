@@ -43,21 +43,4 @@ public class PojoSubsystemTestCase extends AbstractSubsystemBaseTest {
         return "<subsystem xmlns=\"urn:jboss:domain:pojo:1.0\" />";
     }
 
-
-    protected AdditionalInitialization createAdditionalInitialization() {
-        return new AdditionalInitialization(){
-            @Override
-            protected OperationContext.Type getType() {
-                return OperationContext.Type.MANAGEMENT;
-            }
-
-
-            @Override
-            protected ValidationConfiguration getModelValidationConfiguration() {
-                //TODO fix providers https://issues.jboss.org/browse/AS7-1795
-                return null;
-            }
-        };
-    }
-
-}
+ }
