@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cache-container name="jdbccontainer" default-cache="jdbccache">
+    <local-cache name="jdbccache">
+        <transaction mode="NON_DURABLE_XA"/>
+        <jdbc-store datasource="java:jboss/datasources/ExampleDS" passivation="false" preload="true" purge="false">
+            <property name="databaseType">H2</property>
+            <entry-table prefix="stringbased">
+                <id-column name="id" type="VARCHAR"/>
+                <data-column name="datum" type="BINARY"/>
+                <timestamp-column name="version" type="BIGINT"/>
+            </entry-table>
+        </jdbc-store>
+    </local-cache>
+</cache-container>

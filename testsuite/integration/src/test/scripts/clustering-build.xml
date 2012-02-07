@@ -26,5 +26,18 @@
         <ts.config-as.add-port-offset name="jbossas-clustering-udp-1" offset="100" nativePort="9999" httpPort="9990"/>
 
     </target>
+    
+    <target name="build-clustering-udp-jdbc-store" description="Builds server configuration for UDP tests with jdbc-store enabled">
+
+        <echo message="Building config clustering-udp-0-jdbc-store"/>
+        <echo>clustering-udp-0-jdbc-store node0: ${node0}</echo>
+        <copy todir="target/jbossas-clustering-udp-0-jdbc-store" overwrite="true">
+            <fileset dir="${basedir}/target/jbossas"/>
+        </copy>
+        <ts.config-as.add-cache-container name="jbossas-clustering-udp-0-jdbc-store" containerdef="${cache.container.def}" />
+        <ts.config-as.ip-with-multicast name="jbossas-clustering-udp-0-jdbc-store" node="${node0}" mcastaddr="${udpGroup}"/>
+        <ts.config-as.add-port-offset name="jbossas-clustering-udp-0-jdbc-store" />
+
+    </target>
 
 </project>
