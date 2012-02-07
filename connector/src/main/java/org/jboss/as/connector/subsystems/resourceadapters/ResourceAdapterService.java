@@ -43,9 +43,9 @@ import org.jboss.msc.value.InjectedValue;
  * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano
  *         Maestri</a>
  */
-final class ResourceAdapterService implements Service<ModifiableResourceAdapter> {
+final class ResourceAdapterService implements Service<ResourceAdapter> {
 
-    private final ModifiableResourceAdapter value;
+    private final ResourceAdapter value;
 
     private final InjectedValue<ResourceAdaptersService.ModifiableResourceAdaptors> resourceAdapters = new InjectedValue<ResourceAdaptersService.ModifiableResourceAdaptors>();
 
@@ -56,7 +56,7 @@ final class ResourceAdapterService implements Service<ModifiableResourceAdapter>
     }
 
     @Override
-    public ModifiableResourceAdapter getValue() throws IllegalStateException {
+    public ResourceAdapter getValue() throws IllegalStateException {
         return value;
     }
 

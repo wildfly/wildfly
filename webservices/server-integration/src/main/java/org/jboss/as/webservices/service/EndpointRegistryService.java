@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -50,12 +50,10 @@ public final class EndpointRegistryService implements Service<EndpointRegistry> 
 
     private static final ServiceName MBEAN_SERVER_NAME = ServiceName.JBOSS.append("mbean", "server");
     private static final EndpointRegistryService INSTANCE = new EndpointRegistryService();
-
-    private volatile EndpointRegistry registry;
     private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
+    private volatile EndpointRegistry registry;
 
     private EndpointRegistryService() {
-        // forbidden inheritance
     }
 
     @Override
@@ -82,10 +80,10 @@ public final class EndpointRegistryService implements Service<EndpointRegistry> 
         return injectedMBeanServer;
     }
 
-    public static ServiceController<?> install(final ServiceTarget serviceTarget, final ServiceListener<Object>... listeners) {
+    public static ServiceController<?> install(final ServiceTarget serviceTarget, final ServiceListener<Object> listener) {
         final ServiceBuilder<EndpointRegistry> builder = serviceTarget.addService(WSServices.REGISTRY_SERVICE, INSTANCE);
         builder.addDependency(DependencyType.REQUIRED, MBEAN_SERVER_NAME, MBeanServer.class, INSTANCE.getMBeanServerInjector());
-        builder.addListener(listeners);
+        builder.addListener(listener);
         builder.setInitialMode(Mode.ACTIVE);
         return builder.install();
     }

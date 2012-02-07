@@ -74,7 +74,7 @@ public final class WSHandlerChainAnnotationProcessor implements DeploymentUnitPr
         }
         // wars define resource roots
         AttachmentList<ResourceRoot> resourceRoots = unit.getAttachment(RESOURCE_ROOTS);
-        if (EjbDeploymentMarker.isEjbDeployment(unit)) {
+        if (!unit.getName().endsWith(".war") && EjbDeploymentMarker.isEjbDeployment(unit)) {
             // ejb archives don't define resource roots, using root resource
             resourceRoots = new AttachmentList<ResourceRoot>(ResourceRoot.class);
             final ResourceRoot root = unit.getAttachment(DEPLOYMENT_ROOT);

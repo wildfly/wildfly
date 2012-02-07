@@ -201,7 +201,7 @@ public class AppClientWrapper implements Runnable {
                 " -Djline.WindowsTerminal.directConsole=false" +
                 " -jar "+ asDist + "/jboss-modules.jar" +
                 " -mp "+ asDist + "/modules" +
-                " -logmodule org.jboss.logmanager org.jboss.as.appclient" +
+                " org.jboss.as.appclient" +
                 " -Djboss.server.base.dir="+ asInst + "/appclient" +
                 " -Djboss.home.dir="+ asInst + 
                 " " +appClientArg + " " + args;

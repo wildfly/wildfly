@@ -18,7 +18,7 @@
     <version>7.1.0.Final-SNAPSHOT</version>
 
     <name>JBoss Application Server Test Suite: Integration - Smoke</name>
-    
+
     <properties>
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
@@ -38,6 +38,33 @@
                 </excludes>
             </testResource>
         </testResources>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-users</id>
+                        <phase>generate-test-resources</phase>
+                        <goals><goal>copy-resources</goal></goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/jbossas-smoke/standalone/configuration</outputDirectory>
+                            <overwrite>true</overwrite>
+                            <resources>
+                                <resource>
+                                    <directory>../../shared/src/main/resources</directory>
+                                    <includes>
+                                        <include>*-users.properties</include>
+                                        <include>*-roles.properties</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
 
 
@@ -145,8 +172,8 @@
                 </plugins>
             </build>
         </profile>
-        
-        
+
+
         <!-- With -DnoWebProfile, the all tests will run with standalone-full.xml. -->
         <!-- This changes the FULL exec so that it includes all tests. -->
         <profile>
@@ -186,8 +213,8 @@
                 </plugins>
             </build>
         </profile>
-        
-        
+
+
 
         <!-- When -Dtest=... is set, only the default surefire execution with standalone-full.xml will run. -->
         <profile>

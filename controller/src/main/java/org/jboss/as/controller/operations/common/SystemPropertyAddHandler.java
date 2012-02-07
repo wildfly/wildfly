@@ -18,37 +18,36 @@
  */
 package org.jboss.as.controller.operations.common;
 
-import java.util.List;
-import java.util.Locale;
-import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+
+import java.util.Locale;
+
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.msc.service.ServiceController;
 
 /**
- * Base class for domain/host and server system property add handlers.
+ * Operation handler for adding domain/host and server system properties.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class SystemPropertyAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
+public class SystemPropertyAddHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = ADD;
 
-    public static final SystemPropertyAddHandler INSTANCE_WITH_BOOTTIME = new SystemPropertyAddHandler(true);
-    public static final SystemPropertyAddHandler INSTANCE_WITHOUT_BOOTTIME = new SystemPropertyAddHandler(false);
+    public static final SystemPropertyAddHandler INSTANCE_WITH_BOOTTIME = new SystemPropertyAddHandler(null, true);
+    public static final SystemPropertyAddHandler INSTANCE_WITHOUT_BOOTTIME = new SystemPropertyAddHandler(null, false);
 
     public static ModelNode getOperation(ModelNode address, String value) {
         return getOperation(address, value, null);
@@ -69,12 +68,18 @@ public class SystemPropertyAddHandler extends AbstractAddStepHandler implements 
 
 
     private final ParametersValidator validator = new ParametersValidator();
+    private final ProcessEnvironment processEnvironment;
     private final boolean useBoottime;
 
     /**
      * Create the SystemPropertyAddHandler
+     *
+     * @param processEnvironment the local process environment, or {@code null} if interaction with the process
+     *                           environment is not required
+     * @param useBoottime {@code true} if the system property resource should support the "boot-time" attribute
      */
-    private SystemPropertyAddHandler(boolean useBoottime) {
+    public SystemPropertyAddHandler(ProcessEnvironment processEnvironment, boolean useBoottime) {
+        this.processEnvironment = processEnvironment;
         this.useBoottime = useBoottime;
         validator.registerValidator(VALUE, new StringLengthValidator(0, true));
         if (useBoottime) {
@@ -82,25 +87,59 @@ public class SystemPropertyAddHandler extends AbstractAddStepHandler implements 
         }
     }
 
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+    @Override
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         validator.validate(operation);
 
-        final String value = operation.get(VALUE).isDefined() ? operation.get(VALUE).asString() : null;
+        final String name = PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement().getValue();
+        final String value = operation.hasDefined(VALUE) ? operation.get(VALUE).asString() : null;
+
+        final boolean applyToRuntime = processEnvironment != null && processEnvironment.isRuntimeSystemPropertyUpdateAllowed(name, value, context.isBooting());
+        final boolean reload = !applyToRuntime && context.getProcessType().isServer();
+
+        final ModelNode model = context.createResource(PathAddress.EMPTY_ADDRESS).getModel();
         if (value == null) {
             model.get(VALUE).set(new ModelNode());
         } else {
             model.get(VALUE).set(value);
         }
         if (useBoottime) {
-            boolean boottime = operation.get(BOOT_TIME).isDefined() ? operation.get(BOOT_TIME).asBoolean() : true;
+            boolean boottime = !operation.hasDefined(BOOT_TIME) || operation.get(BOOT_TIME).asBoolean();
             model.get(BOOT_TIME).set(boottime);
         }
-    }
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
-        final String name = PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement().getValue();
-        final String value = operation.get(VALUE).isDefined() ? operation.get(VALUE).asString() : null;
-        SecurityActions.setSystemProperty(name, value);
+        if (applyToRuntime) {
+            context.addStep(new OperationStepHandler() {
+                public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+
+                    SecurityActions.setSystemProperty(name, value);
+                    if (processEnvironment != null) {
+                        processEnvironment.systemPropertyUpdated(name, value);
+                    }
+
+                    context.completeStep(new OperationContext.RollbackHandler() {
+                        @Override
+                        public void handleRollback(OperationContext context, ModelNode operation) {
+                            SecurityActions.clearSystemProperty(name);
+                            if (processEnvironment != null) {
+                                processEnvironment.systemPropertyUpdated(name, null);
+                            }
+                        }
+                    });
+                }
+            }, OperationContext.Stage.RUNTIME);
+        } else if (reload) {
+            context.reloadRequired();
+        }
+
+        context.completeStep(new OperationContext.RollbackHandler() {
+            @Override
+            public void handleRollback(OperationContext context, ModelNode operation) {
+                if (reload) {
+                    context.revertReloadRequired();
+                }
+            }
+        });
     }
 
     protected boolean requiresRuntimeVerification() {

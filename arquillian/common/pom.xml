@@ -24,9 +24,7 @@
         <version>7.1.0.Final-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-arquillian-common</artifactId>
-    <version>7.1.0.Final-SNAPSHOT</version>
 
     <name>JBoss Application Server: Arquillian Common</name>
 
@@ -56,6 +54,10 @@
         <dependency>
             <groupId>org.jboss.arquillian.testenricher</groupId>
             <artifactId>arquillian-testenricher-resource</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.jboss.arquillian.container</groupId>
+          <artifactId>arquillian-container-test-impl-base</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.as</groupId>

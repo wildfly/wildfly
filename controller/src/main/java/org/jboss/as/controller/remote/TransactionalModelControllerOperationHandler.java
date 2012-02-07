@@ -21,8 +21,6 @@
  */
 package org.jboss.as.controller.remote;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-import org.jboss.as.controller.ProxyController;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
@@ -30,78 +28,55 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import java.io.DataInput;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
+import org.jboss.as.protocol.ProtocolLogger;
 import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
-import org.jboss.as.protocol.mgmt.ManagementProtocolHeader;
-import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
+import org.jboss.as.protocol.mgmt.ManagementRequestHandlerFactory;
 import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
+import org.jboss.as.protocol.mgmt.ManagementChannelAssociation;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.dmr.ModelNode;
-import org.jboss.remoting3.Channel;
-import org.jboss.remoting3.MessageOutputStream;
 
 /**
- * This model controller relies on the clients connecting with
+ * The transactional request handler for a remote {@link ProxyController}.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author Emanuel Muckenhuber
  */
-public class TransactionalModelControllerOperationHandler extends AbstractModelControllerOperationHandler<Void, TransactionalModelControllerOperationHandler.ExecuteRequestContext> {
+public class TransactionalModelControllerOperationHandler implements ManagementRequestHandlerFactory {
 
     private final ModelController controller;
-    public TransactionalModelControllerOperationHandler(final ModelController controller, final ExecutorService executorService) {
-        super(executorService);
+    private final ManagementChannelAssociation channelAssociation;
+    public TransactionalModelControllerOperationHandler(final ModelController controller, final ManagementChannelAssociation channelAssociation) {
         this.controller = controller;
+        this.channelAssociation = channelAssociation;
     }
 
     @Override
-    protected ManagementRequestHeader validateRequest(ManagementProtocolHeader header) throws IOException {
-        final ManagementRequestHeader request =  super.validateRequest(header);
-        // Initialize the request context
-        if(request.getOperationId() == ModelControllerProtocol.EXECUTE_TX_REQUEST) {
-            final ExecuteRequestContext executeRequestContext = new ExecuteRequestContext();
-            final ActiveOperation<Void, ExecuteRequestContext> support = registerActiveOperation(request.getBatchId(), executeRequestContext);
-            executeRequestContext.setActiveOperation(support);
-
-        } else if (request.getOperationId() == ModelControllerProtocol.LEGACY_MASTER_HC_PING_REQUEST) {
-            registerActiveOperation(request.getBatchId(), new ExecuteRequestContext());
-        }
-        return request;
-    }
-
-    @Override
-    protected ManagementRequestHandler<Void, ExecuteRequestContext> getRequestHandler(byte operationType) {
-        switch(operationType) {
+    public ManagementRequestHandler<?, ?> resolveHandler(RequestHandlerChain handlers, ManagementRequestHeader request) {
+        switch(request.getOperationId()) {
             case ModelControllerProtocol.EXECUTE_TX_REQUEST:
+                // Initialize the request context
+                final ExecuteRequestContext executeRequestContext = new ExecuteRequestContext();
+                executeRequestContext.operation = handlers.registerActiveOperation(request.getBatchId(), executeRequestContext);
                 return new ExecuteRequestHandler();
             case ModelControllerProtocol.COMPLETE_TX_REQUEST:
                 return new CompleteTxOperationHandler();
-            case ModelControllerProtocol.LEGACY_MASTER_HC_PING_REQUEST:
-                return new LegacyMasterHcPingRequestHandler();
         }
-        return super.getRequestHandler(operationType);
-    }
-
-    private static class LegacyMasterHcPingRequestHandler implements ManagementRequestHandler<Void, TransactionalModelControllerOperationHandler.ExecuteRequestContext> {
-        @Override
-        public void handleRequest(DataInput input, ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
-            context.executeAsync(ProtocolUtils.<ExecuteRequestContext>emptyResponseTask());
-            resultHandler.done(null);
-        }
+        return handlers.resolveNext();
     }
 
     /**
-     * Execute a request.
+     * The request handler for requests from {@link org.jboss.as.controller.remote.RemoteProxyController#execute}.
      */
     private class ExecuteRequestHandler implements ManagementRequestHandler<Void, ExecuteRequestContext> {
 
@@ -112,33 +87,27 @@ public class TransactionalModelControllerOperationHandler extends AbstractModelC
             operation.readExternal(input);
             ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_INPUTSTREAMS_LENGTH);
             final int attachmentsLength = input.readInt();
-            // For backwards compatibility we have to send an empty response?
-            final ManagementResponseHeader response = ManagementResponseHeader.create(context.getRequestHeader());
-            final FlushableDataOutput os = context.writeMessage(response);
-            try {
-                os.write(ManagementProtocol.RESPONSE_END);
-                os.close();
-            } finally {
-                StreamUtils.safeClose(os);
-            }
-            // Execute the actual task
             context.executeAsync(new ManagementRequestContext.AsyncTask<ExecuteRequestContext>() {
+
                 @Override
                 public void execute(ManagementRequestContext<ExecuteRequestContext> context) throws Exception {
                     doExecute(operation, attachmentsLength, context);
                 }
-            });
 
+            });
         }
 
         protected void doExecute(final ModelNode operation, final int attachmentsLength, final ManagementRequestContext<ExecuteRequestContext> context) {
             final ExecuteRequestContext executeRequestContext = context.getAttachment();
-            final Integer batchId = executeRequestContext.getBatchId();
-            final AbstractModelControllerOperationHandler.OperationMessageHandlerProxy messageHandlerProxy = new AbstractModelControllerOperationHandler.OperationMessageHandlerProxy(context.getChannel(), batchId);
-            final ProxyOperationControlProxy control = new ProxyOperationControlProxy(context.getChannel(), batchId, executeRequestContext);
-            final AbstractModelControllerOperationHandler.OperationAttachmentsProxy attachmentsProxy = new AbstractModelControllerOperationHandler.OperationAttachmentsProxy(context.getChannel(), batchId, attachmentsLength);
+            // Set the response information
+            executeRequestContext.initialize(context);
+            final Integer batchId = executeRequestContext.getOperationId();
+            final OperationMessageHandlerProxy messageHandlerProxy = new OperationMessageHandlerProxy(channelAssociation, batchId);
+            final ProxyOperationControlProxy control = new ProxyOperationControlProxy(executeRequestContext);
+            final OperationAttachmentsProxy attachmentsProxy = OperationAttachmentsProxy.create(channelAssociation, batchId, attachmentsLength);
             final ModelNode result;
             try {
+                // Execute the operation
                 result = controller.execute(
                         operation,
                         messageHandlerProxy,
@@ -155,189 +124,167 @@ public class TransactionalModelControllerOperationHandler extends AbstractModelC
             if (result.hasDefined(FAILURE_DESCRIPTION)) {
                 control.operationFailed(result);
             } else {
-                // The model controller will block in OperationControl.prepared until the {@code ProxyStepHandler}
-                // send a message to either commit or rollback the current operation
+                // controller.execute() will block in OperationControl.prepared until the {@code PoxyController}
+                // sent a CompleteTxRequest, which will either commit or rollback the operation
                 control.operationCompleted(result);
             }
         }
-
     }
 
     /**
-     * Handler which tells the OperationControl to either commit or rollback.
+     * The request handler for requests from {@link org.jboss.as.controller.remote.RemoteProxyController.CompleteTxRequest}
      */
-    private class CompleteTxOperationHandler implements ManagementRequestHandler<Void, TransactionalModelControllerOperationHandler.ExecuteRequestContext> {
+    private class CompleteTxOperationHandler implements ManagementRequestHandler<Void, ExecuteRequestContext> {
 
         @Override
         public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<Void> resultHandler, final ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
-            final byte commitOrRollback = input.readByte();
             final ExecuteRequestContext executeRequestContext = context.getAttachment();
-            executeRequestContext.completeTx(commitOrRollback == ModelControllerProtocol.PARAM_COMMIT);
-            context.executeAsync(ProtocolUtils.<ExecuteRequestContext>emptyResponseTask());
+            final byte commitOrRollback = input.readByte();
+
+            // Complete transaction, either commit or rollback
+            executeRequestContext.completeTx(context, commitOrRollback == ModelControllerProtocol.PARAM_COMMIT);
         }
 
     }
 
-    /**
-     * A proxy to the proxy operation control proxy on the remote caller.
-     */
-    private class ProxyOperationControlProxy implements ProxyController.ProxyOperationControl {
-        private final int batchId;
-        private final Channel channel;
-        private final ExecuteRequestContext executeRequestContext;
+    static class ProxyOperationControlProxy implements ProxyController.ProxyOperationControl {
 
-        public ProxyOperationControlProxy(final Channel channel, final int batchId, final ExecuteRequestContext executeRequestContext) {
-            this.batchId = batchId;
-            this.channel = channel;
-            this.executeRequestContext = executeRequestContext;
-        }
-
-        @Override
-        public void operationPrepared(final ModelController.OperationTransaction transaction, final ModelNode result) {
-            try {
-                executeRequest(new OperationStatusRequest(result) {
-                    @Override
-                    public byte getOperationType() {
-                        return ModelControllerProtocol.OPERATION_PREPARED_REQUEST;
-                    }
-
-                    @Override
-                    protected void sendRequest(ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<ExecuteRequestContext> context, FlushableDataOutput output) throws IOException {
-                        executeRequestContext.setActiveTX(transaction);
-                        super.sendRequest(resultHandler, context, output);
-                    }
-
-                    @Override
-                    public void handleRequest(DataInput input, ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
-                        //
-                    }
-                });
-            } catch (Exception e) {
-                executeRequestContext.handleFailed(e);
-                throw new RuntimeException(e);
-            }
-
-            try {
-                // Block until we receive the {@code ModelControllerProtocol.COMPLETE_TX_REQUEST}
-                executeRequestContext.awaitTxCompleted();
-            } catch (InterruptedException e) {
-                executeRequestContext.handleFailed(e);
-                Thread.currentThread().interrupt();
-            }
+        private final ExecuteRequestContext requestContext;
+        ProxyOperationControlProxy(ExecuteRequestContext requestContext) {
+            this.requestContext = requestContext;
         }
 
         @Override
         public void operationFailed(final ModelNode response) {
-            executeRequest(new OperationStatusRequest(response) {
-
-                @Override
-                public byte getOperationType() {
-                    return ModelControllerProtocol.OPERATION_FAILED_REQUEST;
-                }
-
-                @Override
-                public void handleRequest(DataInput input, ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
-                    // Mark the active operation as complete. Even though the operation failed we don't want to throw an exception.
-                    executeRequestContext.getResultHandler().done(null);
-                }
-
-            });
+            requestContext.failed(response);
         }
 
         @Override
         public void operationCompleted(final ModelNode response) {
-            executeRequest(new OperationStatusRequest(response) {
-
-                @Override
-                public byte getOperationType() {
-                    return ModelControllerProtocol.OPERATION_COMPLETED_REQUEST;
-                }
-
-                @Override
-                public void handleRequest(DataInput input, ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
-                    // Mark the active operation as complete.
-                    executeRequestContext.getResultHandler().done(null);
-                }
-            });
-
-        }
-
-        protected void executeRequest(ManagementRequest<Void, ExecuteRequestContext> request) {
-            try {
-                executeRequest(channel, batchId, request);
-            } catch(Exception e) {
-                executeRequestContext.handleFailed(e);
-            }
-        }
-
-        protected Future<Void> executeRequest(final Channel channel, final int batchId, ManagementRequest<Void, ExecuteRequestContext> request) {
-            final ActiveOperation<Void, ExecuteRequestContext> support = TransactionalModelControllerOperationHandler.this.getActiveOperation(batchId);
-            if(support == null) {
-                throw MESSAGES.noActiveTransaction(batchId);
-            }
-            return TransactionalModelControllerOperationHandler.this.executeRequest(request, channel, support);
-        }
-    }
-
-    abstract class OperationStatusRequest extends AbstractManagementRequest<Void, ExecuteRequestContext> {
-
-        private final ModelNode response;
-
-        protected OperationStatusRequest(ModelNode response) {
-            this.response = response;
+            requestContext.completed(response);
         }
 
         @Override
-        protected void sendRequest(final ActiveOperation.ResultHandler<Void> resultHandler,
-                                   final ManagementRequestContext<ExecuteRequestContext> context,
-                                   final FlushableDataOutput output) throws IOException {
-            output.write(ModelControllerProtocol.PARAM_RESPONSE);
-            response.writeExternal(output);
-
+        public void operationPrepared(final ModelController.OperationTransaction transaction, final ModelNode result) {
+            requestContext.prepare(transaction, result);
+            try {
+                // Wait for the commit or rollback message
+                requestContext.txCompletedLatch.await();
+            } catch (InterruptedException e) {
+                requestContext.getResultHandler().failed(e);
+                Thread.currentThread().interrupt();
+            }
         }
-
     }
 
     static class ExecuteRequestContext {
+
+        private boolean prepared;
         private ModelController.OperationTransaction activeTx;
         private ActiveOperation<Void, ExecuteRequestContext> operation;
+        private ManagementRequestContext<ExecuteRequestContext> responseChannel;
         private final CountDownLatch txCompletedLatch = new CountDownLatch(1);
 
-        synchronized void setActiveOperation(ActiveOperation<Void, ExecuteRequestContext> operation) {
-            assert operation != null;
-            this.operation = operation;
+        Integer getOperationId() {
+            return operation.getOperationId();
         }
 
-        synchronized void setActiveTX(ModelController.OperationTransaction activeTx) {
-            this.activeTx = activeTx;
+        ActiveOperation.ResultHandler<Void> getResultHandler() {
+            return operation.getResultHandler();
         }
 
-        synchronized void completeTx(boolean commit) {
+        synchronized void initialize(final ManagementRequestContext<ExecuteRequestContext> context) {
+            assert ! prepared;
+            assert responseChannel == null;
+            assert activeTx == null;
+            // 1) initialize (set the response information)
+            this.responseChannel = context;
+        }
+
+        synchronized void prepare(final ModelController.OperationTransaction tx, final ModelNode result) {
+            assert !prepared;
+            assert activeTx == null;
+            assert responseChannel != null;
+            try {
+                // 2) send the operation-prepared notification (just clear response info)
+                sendResponse(responseChannel, ModelControllerProtocol.PARAM_OPERATION_PREPARED, result);
+                activeTx = tx;
+                prepared = true;
+            } catch (IOException e) {
+                getResultHandler().failed(e);
+            } finally {
+                responseChannel = null;
+            }
+        }
+
+        synchronized void completeTx(final ManagementRequestContext<ExecuteRequestContext> context, final boolean commit) {
+            assert prepared;
+            assert activeTx != null;
+            assert responseChannel == null;
+            responseChannel = context;
             if (commit) {
                 activeTx.commit();
             } else {
                 activeTx.rollback();
             }
-            //
             txCompletedLatch.countDown();
         }
 
-        synchronized ActiveOperation.ResultHandler<Void> getResultHandler() {
-            return operation.getResultHandler();
+        synchronized void failed(final ModelNode response) {
+            if(prepared) {
+                // in case commit or rollback throws an exception, to conform with the API we still send a operation-completed message
+                completed(response);
+            } else {
+                assert responseChannel != null;
+                try {
+                    // 2) send the operation-failed message (done)
+                    sendResponse(responseChannel, ModelControllerProtocol.PARAM_OPERATION_FAILED, response);
+                } catch (IOException e) {
+                    ProtocolLogger.ROOT_LOGGER.debugf(e, "failed to process message");
+                } finally {
+                    getResultHandler().done(null);
+                }
+            }
         }
 
-        synchronized Integer getBatchId() {
-            return operation.getOperationId();
-        }
-
-        void handleFailed(final Exception e) {
-            getResultHandler().failed(e);
-            txCompletedLatch.countDown();
-        }
-
-        void awaitTxCompleted() throws InterruptedException {
-            txCompletedLatch.await();
+        synchronized void completed(final ModelNode response) {
+            assert prepared;
+            assert responseChannel != null;
+            try {
+                // 4) operation-completed (done)
+                sendResponse(responseChannel, ModelControllerProtocol.PARAM_OPERATION_COMPLETED, response);
+            } catch (IOException e) {
+                ProtocolLogger.ROOT_LOGGER.debugf(e, "failed to process message");
+            } finally {
+                getResultHandler().done(null);
+            }
         }
 
     }
+
+    /**
+     * Send a operation response.
+     *
+     * @param context the request context
+     * @param responseType the response type
+     * @param response the operation response
+     * @throws java.io.IOException for any error
+     */
+    static void sendResponse(final ManagementRequestContext<ExecuteRequestContext> context, final byte responseType, final ModelNode response) throws IOException {
+        final ManagementResponseHeader header = ManagementResponseHeader.create(context.getRequestHeader());
+        final FlushableDataOutput output = context.writeMessage(header);
+        try {
+            // response type
+            output.writeByte(responseType);
+            // operation result
+            response.writeExternal(output);
+            // response end
+            output.writeByte(ManagementProtocol.RESPONSE_END);
+            output.close();
+        } finally {
+            StreamUtils.safeClose(output);
+        }
+
+    }
+
 }

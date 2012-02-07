@@ -90,9 +90,9 @@ public class ServiceDeploymentParsingProcessor implements DeploymentUnitProcesso
             if(xmlDescriptor != null)
                 phaseContext.getDeploymentUnit().putAttachment(JBossServiceXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
             else
-                throw new DeploymentUnitProcessingException("Failed to parse service xml [" + serviceXmlFile + "]");
+                throw SarMessages.MESSAGES.failedXmlParsing(serviceXmlFile);
         } catch(Exception e) {
-            throw new DeploymentUnitProcessingException("Failed to parse service xml [" + serviceXmlFile + "]", e);
+            throw SarMessages.MESSAGES.failedXmlParsing(e, serviceXmlFile);
         } finally {
             VFSUtils.safeClose(xmlStream);
         }

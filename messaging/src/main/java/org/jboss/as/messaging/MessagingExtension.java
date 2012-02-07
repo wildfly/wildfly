@@ -22,18 +22,15 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.messaging.CommonAttributes.QUEUE;
-
 import java.util.EnumSet;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
@@ -47,19 +44,27 @@ import org.jboss.as.messaging.jms.ConnectionFactoryRemove;
 import org.jboss.as.messaging.jms.ConnectionFactoryWriteAttributeHandler;
 import org.jboss.as.messaging.jms.JMSQueueAdd;
 import org.jboss.as.messaging.jms.JMSQueueAddJndiHandler;
+import org.jboss.as.messaging.jms.JMSQueueConfigurationRuntimeHandler;
+import org.jboss.as.messaging.jms.JMSQueueConfigurationWriteHandler;
 import org.jboss.as.messaging.jms.JMSQueueControlHandler;
+import org.jboss.as.messaging.jms.JMSQueueReadAttributeHandler;
 import org.jboss.as.messaging.jms.JMSQueueRemove;
 import org.jboss.as.messaging.jms.JMSTopicAdd;
 import org.jboss.as.messaging.jms.JMSTopicAddJndiHandler;
+import org.jboss.as.messaging.jms.JMSTopicConfigurationRuntimeHandler;
 import org.jboss.as.messaging.jms.JMSTopicConfigurationWriteHandler;
 import org.jboss.as.messaging.jms.JMSTopicControlHandler;
 import org.jboss.as.messaging.jms.JMSTopicReadAttributeHandler;
 import org.jboss.as.messaging.jms.JMSTopicRemove;
-import org.jboss.as.messaging.jms.JmsQueueConfigurationWriteHandler;
-import org.jboss.as.messaging.jms.JmsQueueReadAttributeHandler;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryAdd;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryRemove;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryWriteAttributeHandler;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.messaging.CommonAttributes.QUEUE;
 
 /**
  * Domain extension that integrates HornetQ.
@@ -252,7 +257,7 @@ public class MessagingExtension implements Extension {
         connectorServiceParam.registerReadWriteAttribute(CommonAttributes.VALUE.getName(), null, ConnectorServiceParamWriteAttributeHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
 
         // Messaging paths
-        for(final String path : CommonAttributes.PATHS) {
+        for (final String path : CommonAttributes.PATHS) {
             ManagementResourceRegistration bindings = serverRegistration.registerSubModel(PathElement.pathElement(PATH, path),
                     new MessagingSubsystemProviders.PathProvider(path));
             MessagingPathHandlers.register(bindings);
@@ -280,10 +285,10 @@ public class MessagingExtension implements Extension {
         final ManagementResourceRegistration queues = serverRegistration.registerSubModel(JMS_QUEUE_PATH, MessagingSubsystemProviders.JMS_QUEUE_RESOURCE);
         queues.registerOperationHandler(ADD, JMSQueueAdd.INSTANCE, JMSQueueAdd.INSTANCE, false);
         queues.registerOperationHandler(REMOVE, JMSQueueRemove.INSTANCE, JMSQueueRemove.INSTANCE, false);
-        JmsQueueConfigurationWriteHandler.INSTANCE.registerAttributes(queues, registerRuntimeOnly);
+        JMSQueueConfigurationWriteHandler.INSTANCE.registerAttributes(queues, registerRuntimeOnly);
         JMSQueueAddJndiHandler.INSTANCE.registerOperation(queues);
         if (registerRuntimeOnly) {
-            JmsQueueReadAttributeHandler.INSTANCE.registerAttributes(queues);
+            JMSQueueReadAttributeHandler.INSTANCE.registerAttributes(queues);
             JMSQueueControlHandler.INSTANCE.registerOperations(queues);
         }
         // setExpiryAddress, setDeadLetterAddress  -- no -- just toggle the 'queue-address', make this a mutable attr of address-setting
@@ -309,10 +314,30 @@ public class MessagingExtension implements Extension {
         securityRole.registerOperationHandler(ADD, SecurityRoleAdd.INSTANCE, SecurityRoleAdd.INSTANCE);
         securityRole.registerOperationHandler(REMOVE, SecurityRoleRemove.INSTANCE, SecurityRoleRemove.INSTANCE);
         SecurityRoleAttributeHandler.INSTANCE.registerAttributes(securityRole, registerRuntimeOnly);
+
+        if (context.isRuntimeOnlyRegistrationValid()) {
+
+            ResourceDefinition deploymentsDef = new SimpleResourceDefinition(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME), getResourceDescriptionResolver("deployed"));
+            final ManagementResourceRegistration deploymentsRegistration = subsystem.registerDeploymentModel(deploymentsDef);
+            final ManagementResourceRegistration serverModel = deploymentsRegistration.registerSubModel(new HornetQServerResourceDefinition(true));
+
+            // JMS Queues
+            final ManagementResourceRegistration deploymentQueue = serverModel.registerSubModel(JMS_QUEUE_PATH, MessagingSubsystemProviders.JMS_QUEUE_RESOURCE);
+            JMSQueueReadAttributeHandler.INSTANCE.registerAttributes(deploymentQueue);
+            JMSQueueControlHandler.INSTANCE.registerOperations(deploymentQueue);
+            JMSQueueConfigurationRuntimeHandler.INSTANCE.registerAttributes(deploymentQueue);
+
+            // topics
+            final ManagementResourceRegistration deploymentTopics = serverModel.registerSubModel(TOPIC_PATH, MessagingSubsystemProviders.JMS_TOPIC_RESOURCE);
+            JMSTopicReadAttributeHandler.INSTANCE.registerAttributes(deploymentTopics);
+            JMSTopicControlHandler.INSTANCE.registerOperations(deploymentTopics);
+            JMSTopicConfigurationRuntimeHandler.INSTANCE.registerAttributes(deploymentTopics);
+
+        }
     }
 
     public void initializeParsers(ExtensionParsingContext context) {
-        for(Namespace namespace : Namespace.values()) {
+        for (Namespace namespace : Namespace.values()) {
             if (namespace == Namespace.UNKNOWN) {
                 continue;
             }

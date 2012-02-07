@@ -21,13 +21,8 @@
  */
 package org.jboss.as.ejb3.remote;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
-
+import org.jboss.as.clustering.registry.Registry;
+import org.jboss.as.clustering.registry.RegistryCollector;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.utils.DescriptorUtils;
@@ -42,6 +37,9 @@ import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.DeploymentRepositoryListener;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
+import org.jboss.as.network.ClientMapping;
+import org.jboss.ejb.client.ClusterContext;
+import org.jboss.ejb.client.ClusterNodeManager;
 import org.jboss.ejb.client.EJBClientInvocationContext;
 import org.jboss.ejb.client.EJBLocator;
 import org.jboss.ejb.client.EJBReceiver;
@@ -50,11 +48,13 @@ import org.jboss.ejb.client.EJBReceiverInvocationContext;
 import org.jboss.ejb.client.EntityEJBLocator;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.StatefulEJBLocator;
+import org.jboss.ejb.client.TransactionID;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.marshalling.cloner.ClassLoaderClassCloner;
 import org.jboss.marshalling.cloner.ClonerConfiguration;
 import org.jboss.marshalling.cloner.ObjectCloner;
 import org.jboss.marshalling.cloner.ObjectCloners;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -62,14 +62,24 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 /**
  * {@link EJBReceiver} for local same-VM invocations. This handles all invocations on remote interfaces
  * withing the server JVM.
  *
  * @author Stuart Douglas
  */
-public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbReceiver> {
+public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbReceiver>, RegistryCollector.Listener<String, List<ClientMapping>> {
 
+    public static final ServiceName DEFAULT_LOCAL_EJB_RECEIVER_SERVICE_NAME = ServiceName.JBOSS.append("ejb").append("default-local-ejb-receiver-service");
     public static final ServiceName BY_VALUE_SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "localEjbReceiver", "value");
     public static final ServiceName BY_REFERENCE_SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "localEjbReceiver", "reference");
 
@@ -77,6 +87,8 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
 
     private final List<EJBReceiverContext> contexts = new CopyOnWriteArrayList<EJBReceiverContext>();
     private final InjectedValue<DeploymentRepository> deploymentRepository = new InjectedValue<DeploymentRepository>();
+    @SuppressWarnings("rawtypes")
+    private final InjectedValue<RegistryCollector> clusterRegistryCollector = new InjectedValue<RegistryCollector>();
     private final Listener deploymentListener = new Listener();
     private final boolean allowPassByReference;
 
@@ -178,12 +190,24 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
         }
     }
 
+    @Override
+    protected <T> StatefulEJBLocator<T> openSession(EJBReceiverContext context, Class<T> viewType, String appName, String moduleName, String distinctName, String beanName) throws IllegalArgumentException {
+        final EjbDeploymentInformation ejbInfo = findBean(appName, moduleName, distinctName, beanName);
+        final EJBComponent component = ejbInfo.getEjbComponent();
+        if (!(component instanceof StatefulSessionComponent)) {
+            throw new IllegalArgumentException("EJB " + beanName + " is not a Stateful Session bean in app: " + appName + " module: " + moduleName + " distinct name:" + distinctName);
+        }
+        final StatefulSessionComponent statefulComponent = (StatefulSessionComponent) component;
+        final SessionID sessionID = statefulComponent.createSession();
+        return new StatefulEJBLocator<T>(viewType, appName, moduleName, beanName, distinctName, sessionID, statefulComponent.getCache().getStrictAffinity());
+    }
+
     private Object clone(final Class<?> target, final ObjectCloner cloner, final Object object, final boolean allowPassByReference) {
         if (object == null) {
             return null;
         }
 
-        if (allowPassByReference && target.isAssignableFrom(object.getClass())) {
+        if (allowPassByReference && (target.isPrimitive() || target.isAssignableFrom(object.getClass()))) {
             return object;
         }
         return clone(cloner, object);
@@ -205,20 +229,43 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
 
 
     @Override
-    protected SessionID openSession(final EJBReceiverContext ejbReceiverContext, final String appName, final String moduleName, final String distinctName, final String beanName) throws Exception {
-        final EjbDeploymentInformation ejbInfo = findBean(appName, moduleName, distinctName, beanName);
-        final EJBComponent component = ejbInfo.getEjbComponent();
-        if (component instanceof StatefulSessionComponent) {
-            final StatefulSessionComponent stateful = (StatefulSessionComponent) component;
-            return stateful.createSession();
-        } else {
-            throw new IllegalArgumentException("EJB " + beanName + " is not a Stateful Session bean in app: " + appName + " module: " + moduleName + " distinct name:" + distinctName);
+    protected boolean exists(final String appName, final String moduleName, final String distinctName, final String beanName) {
+        try {
+            final EjbDeploymentInformation ejbDeploymentInformation = findBean(appName, moduleName, distinctName, beanName);
+            return ejbDeploymentInformation != null;
+        } catch (IllegalArgumentException iae) {
+            return false;
         }
     }
 
     @Override
-    protected void verify(final String appName, final String moduleName, final String distinctName, final String beanName) throws Exception {
-        findBean(appName, moduleName, distinctName, beanName);
+    protected int sendPrepare(EJBReceiverContext context, TransactionID transactionID) throws XAException {
+        // send a XA_OK since a local receiver doesn't have to do anything more
+        return XAResource.XA_OK;
+    }
+
+    @Override
+    protected void sendCommit(EJBReceiverContext context, TransactionID transactionID, boolean onePhase) throws XAException {
+        // no-op, since a local ejb receiver doesn't have to do anything more.
+        return;
+    }
+
+    @Override
+    protected void sendRollback(EJBReceiverContext context, TransactionID transactionID) throws XAException {
+        // no-op, since a local ejb receiver doesn't have to do anything more.
+        return;
+    }
+
+    @Override
+    protected void sendForget(EJBReceiverContext context, TransactionID transactionID) throws XAException {
+        // no-op, since a local ejb receiver doesn't have to do anything more.
+        return;
+    }
+
+    @Override
+    protected void beforeCompletion(EJBReceiverContext context, TransactionID transactionID) {
+        // no-op, since a local ejb receiver doesn't have to do anything more.
+        return;
     }
 
     private EjbDeploymentInformation findBean(final String appName, final String moduleName, final String distinctName, final String beanName) {
@@ -237,6 +284,10 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
     public void start(final StartContext context) throws StartException {
 
         deploymentRepository.getValue().addListener(deploymentListener);
+        // register ourselves as a listener to new cluster formations/removal
+        @SuppressWarnings("unchecked")
+        RegistryCollector<String, List<ClientMapping>> collector = this.clusterRegistryCollector.getValue();
+        collector.addListener(this);
     }
 
     @Override
@@ -246,6 +297,10 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
         }
         this.contexts.clear();
         deploymentRepository.getValue().removeListener(deploymentListener);
+        // remove ourselves from cluster creation/removal event notifications
+        @SuppressWarnings("unchecked")
+        RegistryCollector<String, List<ClientMapping>> collector = this.clusterRegistryCollector.getValue();
+        collector.removeListener(this);
     }
 
     @Override
@@ -255,6 +310,38 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
 
     public InjectedValue<DeploymentRepository> getDeploymentRepository() {
         return deploymentRepository;
+    }
+
+    @Override
+    public void registryAdded(Registry<String, List<ClientMapping>> registry) {
+        final String clusterName = registry.getName();
+        for (final EJBReceiverContext receiverContext : this.contexts) {
+            final ClusterContext clusterContext = receiverContext.getClientContext().getOrCreateClusterContext(clusterName);
+            // TODO: we currently don't take into account any nodes in the cluster for Local EJB receiver.
+            // We just register the current local receiver for the cluster context which effectively means that
+            // any invocations via the LocalEJBReceiver for any clusters will be pinned to the current local node.
+            // We need to decide whether we want to create remote ejb receiver(s) for the cluster nodes, out of this
+            // local receiver
+            clusterContext.addClusterNode(this.getNodeName(), new LocalClusterNodeManager());
+        }
+        // TODO: We also should register a listener for listening to removed/added nodes from the cluster
+    }
+
+    @Override
+    public void registryRemoved(Registry<String, List<ClientMapping>> registry) {
+        // Removal of the registry (service) on one node of a cluster doesn't mean the entire
+        // cluster has been removed.
+        // TODO: We need a different/better hook for entire cluster removal event
+        // Maybe if the cluster node count reaches 0 then send a cluster removal message?
+//        final String clusterName = registry.getName();
+//        for (final EJBReceiverContext receiverContext : this.contexts) {
+//            receiverContext.getClientContext().removeCluster(clusterName);
+//        }
+    }
+
+    @SuppressWarnings("rawtypes")
+    public Injector<RegistryCollector> getClusterRegistryCollectorInjector() {
+        return this.clusterRegistryCollector;
     }
 
     private static class ImmediateResultProducer implements EJBReceiverInvocationContext.ResultProducer {
@@ -297,6 +384,19 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
         @Override
         public void deploymentRemoved(final DeploymentModuleIdentifier deployment) {
             LocalEjbReceiver.this.deregisterModule(deployment.getApplicationName(), deployment.getModuleName(), deployment.getDistinctName());
+        }
+    }
+
+    private class LocalClusterNodeManager implements ClusterNodeManager {
+
+        @Override
+        public String getNodeName() {
+            return LocalEjbReceiver.this.getNodeName();
+        }
+
+        @Override
+        public EJBReceiver getEJBReceiver() {
+            return LocalEjbReceiver.this;
         }
     }
 }

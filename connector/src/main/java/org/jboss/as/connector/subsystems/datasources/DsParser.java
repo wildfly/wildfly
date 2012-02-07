@@ -44,6 +44,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATA_SOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJOR_VERSION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MINOR_VERSION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
@@ -254,7 +255,9 @@ public class DsParser extends AbstractParser {
 
         operation.get(OP_ADDR).set(driverAddress);
 
-
+        boolean driverClassMatched = false;
+        boolean xaDatasourceClassMatched = false;
+        boolean datasourceClassMatched = false;
         //elements reading
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
@@ -272,18 +275,30 @@ public class DsParser extends AbstractParser {
                 case START_ELEMENT: {
                     switch (Driver.Tag.forName(reader.getLocalName())) {
                         case DATASOURCE_CLASS: {
+                            if (datasourceClassMatched) {
+                                throw new ParserException(bundle.unexpectedElement(DRIVER_DATASOURCE_CLASS_NAME.getXmlName()));
+                            }
                             String value = rawElementText(reader);
-                            DRIVER_MAJOR_VERSION.parseAndSetParameter(value, operation, reader);
+                            DRIVER_DATASOURCE_CLASS_NAME.parseAndSetParameter(value, operation, reader);
+                            datasourceClassMatched = true;
                             break;
                         }
                         case XA_DATASOURCE_CLASS: {
+                            if (xaDatasourceClassMatched) {
+                                throw new ParserException(bundle.unexpectedElement(DRIVER_XA_DATASOURCE_CLASS_NAME.getXmlName()));
+                            }
                             String value = rawElementText(reader);
                             DRIVER_XA_DATASOURCE_CLASS_NAME.parseAndSetParameter(value, operation, reader);
+                            xaDatasourceClassMatched = true;
                             break;
                         }
                         case DRIVER_CLASS: {
+                            if (driverClassMatched) {
+                                throw new ParserException(bundle.unexpectedElement(DRIVER_CLASS_NAME.getXmlName()));
+                            }
                             String value = rawElementText(reader);
                             DRIVER_CLASS_NAME.parseAndSetParameter(value, operation, reader);
+                            driverClassMatched = true;
                             break;
                         }
                         default:
@@ -473,6 +488,7 @@ public class DsParser extends AbstractParser {
     private void parseDsSecurity(XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException, ParserException,
             ValidateException {
 
+        boolean securityDomainMatched = false;
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
                 case END_ELEMENT: {
@@ -501,8 +517,12 @@ public class DsParser extends AbstractParser {
                             break;
                         }
                         case SECURITY_DOMAIN: {
+                            if (securityDomainMatched) {
+                                throw new ParserException(bundle.unexpectedElement(SECURITY_DOMAIN.getXmlName()));
+                            }
                             String value = rawElementText(reader);
                             SECURITY_DOMAIN.parseAndSetParameter(value, operation, reader);
+                            securityDomainMatched = true;
                             break;
                         }
                         case REAUTH_PLUGIN: {

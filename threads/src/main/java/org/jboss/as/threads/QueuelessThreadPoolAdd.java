@@ -21,8 +21,10 @@
  */
 package org.jboss.as.threads;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import java.util.List;
-import java.util.Locale;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -30,17 +32,10 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import org.jboss.as.threads.ThreadsSubsystemThreadPoolOperationUtils.QueuelessOperationParameters;
+import org.jboss.as.threads.ThreadPoolManagementUtils.QueuelessThreadPoolParameters;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Adds a queueless thread pool.
@@ -48,20 +43,32 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class QueuelessThreadPoolAdd extends AbstractAddStepHandler implements DescriptionProvider {
+public class QueuelessThreadPoolAdd extends AbstractAddStepHandler {
 
-    static final QueuelessThreadPoolAdd INSTANCE = new QueuelessThreadPoolAdd();
+    static final AttributeDefinition[] BLOCKING_ATTRIBUTES = new AttributeDefinition[] {PoolAttributeDefinitions.KEEPALIVE_TIME,
+        PoolAttributeDefinitions.MAX_THREADS, PoolAttributeDefinitions.THREAD_FACTORY};
 
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {PoolAttributeDefinitions.KEEPALIVE_TIME,
-        PoolAttributeDefinitions.MAX_THREADS, PoolAttributeDefinitions.PROPERTIES, PoolAttributeDefinitions.THREAD_FACTORY,
-        PoolAttributeDefinitions.HANDOFF_EXECUTOR, PoolAttributeDefinitions.BLOCKING};
+    static final AttributeDefinition[] NON_BLOCKING_ATTRIBUTES = new AttributeDefinition[BLOCKING_ATTRIBUTES.length + 1];
 
     static final AttributeDefinition[] RW_ATTRIBUTES = new AttributeDefinition[] {PoolAttributeDefinitions.KEEPALIVE_TIME,
-        PoolAttributeDefinitions.MAX_THREADS, PoolAttributeDefinitions.BLOCKING};
+        PoolAttributeDefinitions.MAX_THREADS};
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return ThreadsSubsystemProviders.ADD_QUEUELESS_THREAD_POOL_DESC.getModelDescription(locale);
+    static {
+        System.arraycopy(BLOCKING_ATTRIBUTES, 0, NON_BLOCKING_ATTRIBUTES, 0, BLOCKING_ATTRIBUTES.length);
+        NON_BLOCKING_ATTRIBUTES[NON_BLOCKING_ATTRIBUTES.length - 1] = PoolAttributeDefinitions.HANDOFF_EXECUTOR;
+    }
+
+    private final boolean blocking;
+    private final ThreadFactoryResolver threadFactoryResolver;
+    private final HandoffExecutorResolver handoffExecutorResolver;
+    private final ServiceName serviceNameBase;
+
+    public QueuelessThreadPoolAdd(boolean blocking, ThreadFactoryResolver threadFactoryResolver,
+                                  HandoffExecutorResolver handoffExecutorResolver, ServiceName serviceNameBase) {
+        this.blocking = blocking;
+        this.threadFactoryResolver = threadFactoryResolver;
+        this.handoffExecutorResolver = handoffExecutorResolver;
+        this.serviceNameBase = serviceNameBase;
     }
 
     @Override
@@ -70,7 +77,8 @@ public class QueuelessThreadPoolAdd extends AbstractAddStepHandler implements De
         final String name = address.getLastElement().getValue();
         model.get(NAME).set(name);
 
-        for(final AttributeDefinition attribute : ATTRIBUTES) {
+        AttributeDefinition[] attributes = blocking ? BLOCKING_ATTRIBUTES : NON_BLOCKING_ATTRIBUTES;
+        for(final AttributeDefinition attribute : attributes) {
             attribute.validateAndSet(operation, model);
         }
     }
@@ -79,30 +87,29 @@ public class QueuelessThreadPoolAdd extends AbstractAddStepHandler implements De
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
             final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-        final ModelNode resolved = new ModelNode();
-        resolved.get(OP).set(operation.get(OP));
-        resolved.get(OP_ADDR).set(operation.get(OP_ADDR));
-        for(final AttributeDefinition attribute : ATTRIBUTES) {
-            resolved.get(attribute.getName()).set(attribute.resolveModelAttribute(context, model));
-        }
+        final QueuelessThreadPoolParameters params = ThreadPoolManagementUtils.parseQueuelessThreadPoolParameters(context, operation, model, blocking);
 
-        final QueuelessOperationParameters params = ThreadsSubsystemThreadPoolOperationUtils.parseQueuelessThreadPoolOperationParameters(resolved);
+        final QueuelessThreadPoolService service = new QueuelessThreadPoolService(params.getMaxThreads(), blocking, params.getKeepAliveTime());
 
-        ServiceTarget target = context.getServiceTarget();
-        final ServiceName serviceName = ThreadsServices.executorName(params.getName());
-        final QueuelessThreadPoolService service = new QueuelessThreadPoolService(params.getMaxThreads().getScaledCount(), params.isBlocking(), params.getKeepAliveTime());
+        ThreadPoolManagementUtils.installThreadPoolService(service, params.getName(), serviceNameBase,
+                params.getThreadFactory(), threadFactoryResolver, service.getThreadFactoryInjector(),
+                params.getHandoffExecutor(), handoffExecutorResolver, blocking ?  null : service.getHandoffExecutorInjector(),
+                context.getServiceTarget(), newControllers, verificationHandler);
+    }
 
-        //TODO add the handoffExceutor injection
+    boolean isBlocking() {
+        return blocking;
+    }
 
-        final ServiceBuilder<ManagedQueuelessExecutorService> serviceBuilder = target.addService(serviceName, service);
-        ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target, params.getName() + "-threads");
+    ServiceName getServiceNameBase() {
+        return serviceNameBase;
+    }
 
-        if (verificationHandler != null) {
-            serviceBuilder.addListener(verificationHandler);
-        }
-        ServiceController<?> sc = serviceBuilder.install();
-        if (newControllers != null) {
-            newControllers.add(sc);
-        }
+    ThreadFactoryResolver getThreadFactoryResolver() {
+        return threadFactoryResolver;
+    }
+
+    HandoffExecutorResolver getHandoffExecutorResolver() {
+        return handoffExecutorResolver;
     }
 }

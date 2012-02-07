@@ -175,7 +175,7 @@ public class OperationParsingTestCase extends TestCase {
         assertFalse(handler.endsOnPropertyValueSeparator());
         assertFalse(handler.endsOnNodeSeparator());
         assertFalse(handler.endsOnNodeTypeNameSeparator());
-        assertTrue(handler.isRequestComplete());
+        assertFalse(handler.isRequestComplete());
 
         assertEquals("read-resource", handler.getOperationName());
 
@@ -213,7 +213,7 @@ public class OperationParsingTestCase extends TestCase {
         assertFalse(handler.endsOnPropertyValueSeparator());
         assertFalse(handler.endsOnNodeSeparator());
         assertFalse(handler.endsOnNodeTypeNameSeparator());
-        assertTrue(handler.isRequestComplete());
+        assertFalse(handler.isRequestComplete());
 
         assertEquals("composite", handler.getOperationName());
 
@@ -238,7 +238,7 @@ public class OperationParsingTestCase extends TestCase {
         assertFalse(handler.endsOnPropertyValueSeparator());
         assertFalse(handler.endsOnNodeSeparator());
         assertFalse(handler.endsOnNodeTypeNameSeparator());
-        assertTrue(handler.isRequestComplete());
+        assertFalse(handler.isRequestComplete());
 
         assertEquals("read-resource", handler.getOperationName());
 

@@ -79,7 +79,6 @@ public class StatefulSessionBeanClassTable implements ClassTable {
         SerializationGroupImpl.class,
         SerializationGroupMemberImpl.class,
         AbstractBackingCacheEntry.class,
-        StatefulSessionBeanObjectResolver.SerializableAdapter.class,
         StatefulSerializedProxy.class,
     };
 
@@ -92,27 +91,15 @@ public class StatefulSessionBeanClassTable implements ClassTable {
         return writers;
     }
 
-    private final byte beanClassIndex;
-    private final Class<?> beanClass;
-    private final Writer beanClassWriter;
-
-    public StatefulSessionBeanClassTable(Class<?> beanClass) {
-        this.beanClassIndex = Byte.MAX_VALUE;
-        this.beanClass = beanClass;
-        this.beanClassWriter = new ByteWriter(this.beanClassIndex);
-    }
-
     @Override
     public Writer getClassWriter(final Class<?> clazz) throws IOException {
-        return clazz.equals(this.beanClass) ? this.beanClassWriter : writers.get(clazz);
+        return writers.get(clazz);
     }
 
     @Override
     public Class<?> readClass(final Unmarshaller unmarshaller) throws IOException, ClassNotFoundException {
         int index = unmarshaller.readUnsignedByte();
-        if (index == this.beanClassIndex) {
-            return this.beanClass;
-        } else if (index >= classes.length) {
+        if (index >= classes.length) {
             throw new ClassNotFoundException(String.format("ClassTable %s cannot find a class for class index %d", this.getClass().getName(), index));
         }
         return classes[index];

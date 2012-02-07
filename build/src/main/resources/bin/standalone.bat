@@ -15,7 +15,7 @@ if "%OS%" == "Windows_NT" (
 )
 
 rem Read an optional configuration file.
-if "x%STANDALONE_CONF%" == "x" (   
+if "x%STANDALONE_CONF%" == "x" (
    set "STANDALONE_CONF=%DIRNAME%standalone.conf.bat"
 )
 if exist "%STANDALONE_CONF%" (
@@ -26,10 +26,20 @@ if exist "%STANDALONE_CONF%" (
 )
 
 pushd %DIRNAME%..
-if "x%JBOSS_HOME%" == "x" (
-  set "JBOSS_HOME=%CD%"
-)
+set "RESOLVED_JBOSS_HOME=%CD%"
 popd
+
+if "x%JBOSS_HOME%" == "x" (
+  set "JBOSS_HOME=%RESOLVED_JBOSS_HOME%"
+)
+
+pushd "%JBOSS_HOME%"
+set "SANITIZED_JBOSS_HOME=%CD%"
+popd
+
+if "%RESOLVED_JBOSS_HOME%" NEQ "%SANITIZED_JBOSS_HOME%" (
+    echo WARNING JBOSS_HOME may be pointing to a different installation - unpredictable results may occur.
+)
 
 set DIRNAME=
 
@@ -50,13 +60,36 @@ if "x%JAVA_HOME%" == "x" (
   set "JAVA=%JAVA_HOME%\bin\java"
 )
 
-rem Add -server to the JVM options, if supported
-"%JAVA%" -server -version 2>&1 | findstr /I hotspot > nul
-if not errorlevel == 1 (
-  set "JAVA_OPTS=%JAVA_OPTS% -server"
+if not "%PRESERVE_JAVA_OPTS%" == "true" (
+  rem Add -client to the JVM options, if supported (32 bit VM), and not overriden
+  echo "%JAVA_OPTS%" | findstr /I \-server > nul
+  if errorlevel == 1 (
+    "%JAVA%" -client -version 2>&1 | findstr /I /C:"Client VM" > nul
+    if not errorlevel == 1 (
+      set "JAVA_OPTS=-client %JAVA_OPTS%"
+    )
+  )
+
+  rem Add compressed oops, if supported (64 bit VM), and not overriden
+  echo "%JAVA_OPTS%" | findstr /I "\-XX:\-UseCompressedOops \-client" > nul
+  if errorlevel == 1 (
+    "%JAVA%" -XX:+UseCompressedOops -version > nul 2>&1
+    if not errorlevel == 1 (
+      set "JAVA_OPTS=-XX:+UseCompressedOops %JAVA_OPTS%"
+    )
+  )
+
+  rem Add tiered compilation, if supported (64 bit VM), and not overriden
+  echo "%JAVA_OPTS%" | findstr /I "\-XX:\-TieredCompilation \-client" > nul
+  if errorlevel == 1 (
+    "%JAVA%" -XX:+TieredCompilation -version > nul 2>&1
+    if not errorlevel == 1 (
+      set "JAVA_OPTS=-XX:+TieredCompilation %JAVA_OPTS%"
+    )
+  )
 )
 
-rem Find run.jar, or we can't continue
+rem Find jboss-modules.jar, or we can't continue
 if exist "%JBOSS_HOME%\jboss-modules.jar" (
     set "RUNJAR=%JBOSS_HOME%\jboss-modules.jar"
 ) else (
@@ -75,6 +108,19 @@ if "x%JBOSS_MODULEPATH%" == "x" (
   set  "JBOSS_MODULEPATH=%JBOSS_HOME%\modules"
 )
 
+rem Set the standalone base dir
+if "x%JBOSS_BASE_DIR%" == "x" (
+  set  "JBOSS_BASE_DIR=%JBOSS_HOME%\standalone"
+)
+rem Set the standalone log dir
+if "x%JBOSS_LOG_DIR%" == "x" (
+  set  "JBOSS_LOG_DIR=%JBOSS_BASE_DIR%\log"
+)
+rem Set the standalone configuration dir
+if "x%JBOSS_CONFIG_DIR%" == "x" (
+  set  "JBOSS_CONFIG_DIR=%JBOSS_BASE_DIR%/configuration"
+)
+
 echo ===============================================================================
 echo.
 echo   JBoss Bootstrap Environment
@@ -90,13 +136,11 @@ echo.
 
 :RESTART
 "%JAVA%" %JAVA_OPTS% ^
- "-Dorg.jboss.boot.log.file=%JBOSS_HOME%\standalone\log\boot.log" ^
- "-Dlogging.configuration=file:%JBOSS_HOME%/standalone/configuration/logging.properties" ^
+ "-Dorg.jboss.boot.log.file=%JBOSS_LOG_DIR%\boot.log" ^
+ "-Dlogging.configuration=file:%JBOSS_CONFIG_DIR%/logging.properties" ^
     -jar "%JBOSS_HOME%\jboss-modules.jar" ^
     -mp "%JBOSS_MODULEPATH%" ^
-    -logmodule "org.jboss.logmanager" ^
     -jaxpmodule "javax.xml.jaxp-provider" ^
-    -mbeanserverbuildermodule "org.jboss.as.jmx" ^
      org.jboss.as.standalone ^
     -Djboss.home.dir="%JBOSS_HOME%" ^
      %*

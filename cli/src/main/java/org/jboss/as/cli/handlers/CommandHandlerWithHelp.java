@@ -77,7 +77,7 @@ public abstract class CommandHandlerWithHelp extends CommandHandlerWithArguments
         }
 
         if(!isAvailable(ctx)) {
-            ctx.printLine("The command is not available in the current context (e.g. required subsystems or connection to the controller might be unavailable).");
+            ctx.error("The command is not available in the current context (e.g. required subsystems or connection to the controller might be unavailable).");
             return;
         }
 
@@ -95,12 +95,12 @@ public abstract class CommandHandlerWithHelp extends CommandHandlerWithArguments
                     helpLine = reader.readLine();
                 }
             } catch(java.io.IOException e) {
-                ctx.printLine("Failed to read help/help.txt: " + e.getLocalizedMessage());
+                ctx.error("Failed to read help/help.txt: " + e.getLocalizedMessage());
             } finally {
                 StreamUtils.safeClose(reader);
             }
         } else {
-            ctx.printLine("Failed to locate command description " + filename);
+            ctx.error("Failed to locate command description " + filename);
         }
         return;
     }
@@ -108,7 +108,7 @@ public abstract class CommandHandlerWithHelp extends CommandHandlerWithArguments
     protected abstract void doHandle(CommandContext ctx) throws CommandFormatException;
 
     @Override
-    public boolean isBatchMode() {
+    public boolean isBatchMode(CommandContext ctx) {
         return false;
     }
 

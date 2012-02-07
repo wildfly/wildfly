@@ -21,6 +21,10 @@
  */
 package org.jboss.as.jdr;
 
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
+
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
@@ -28,13 +32,12 @@ import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.WARN;
-import static org.jboss.logging.Logger.Level.INFO;
-
 /**
  * JBoss Diagnostic Reporter (JDR) logger.
- * Uses id's 14500 to 14599.
+ *
+ * This module is using message IDs in the range 13300-13399. This file is using the subset 13300-13349 for
+ * logger messages. See http://community.jboss.org/docs/DOC-16810 for the full list of currently reserved
+ * JBAS message id blocks.
  *
  * @author Mike M. Clark
  */
@@ -49,27 +52,41 @@ interface JdrLogger extends BasicLogger {
      * Indicates that a JDR report has been initiated.
      */
     @LogMessage(level = INFO)
-    @Message(id=14500, value="Starting creation of a JBoss Diagnostic Report (JDR).")
+    @Message(id=13300, value="Starting creation of a JBoss Diagnostic Report (JDR).")
     void startingCollection();
 
     /**
      * Indicates that a JDR report has completed
      */
     @LogMessage(level = INFO)
-    @Message(id=14501, value="Completed creation of a JBoss Diagnostic Report (JDR).")
+    @Message(id=13301, value="Completed creation of a JBoss Diagnostic Report (JDR).")
     void endingCollection();
 
     /**
      * Indicates that the JBoss home directory was not set.
      */
     @LogMessage(level = ERROR)
-    @Message(id=14502, value="Unable to create JDR report, JBoss Home directory cannot be determined.")
+    @Message(id=13302, value="Unable to create JDR report, JBoss Home directory cannot be determined.")
     void jbossHomeNotSet();
 
     /**
      * The sosreport python library threw an exception
      */
     @LogMessage(level = WARN)
-    @Message(id=14503, value="JDR python interpreter encountered an exception.")
+    @Message(id=13303, value="JDR python interpreter encountered an exception.")
     void pythonExceptionEncountered(@Cause Throwable cause);
+
+    /**
+     * JDR was unable to decode a path URL for standarization across platforms.
+     */
+    @LogMessage(level = WARN)
+    @Message(id=13304, value="Unable to decode a url while creating JDR report.")
+    void urlDecodeExceptionEncountered(@Cause Throwable cause);
+
+    /**
+     * JDR plugin location is not a directory as expected.
+     */
+    @LogMessage(level = WARN)
+    @Message(id=13305, value="Plugin contrib location is not a directory.  Ignoring.")
+    void contribNotADirectory();
 }

@@ -23,6 +23,7 @@
 package org.jboss.as.osgi.service;
 
 import org.jboss.as.jmx.MBeanServerService;
+import org.jboss.as.naming.InitialContext;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.osgi.parser.SubsystemState;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
@@ -37,6 +38,7 @@ import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.ModuleSpec;
 import org.jboss.modules.filter.PathFilter;
 import org.jboss.modules.filter.PathFilters;
+import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
@@ -57,17 +59,26 @@ import org.jboss.osgi.framework.internal.FrameworkBuilder;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
+import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceEvent;
+import org.osgi.framework.ServiceReference;
 
 import javax.management.MBeanServer;
+import javax.naming.spi.ObjectFactory;
 import java.io.File;
-import java.util.ArrayList;
+import java.net.InetSocketAddress;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Dictionary;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.jboss.as.network.SocketBinding.JBOSS_BINDING_NAME;
 import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_MODULES;
@@ -87,18 +98,18 @@ public class FrameworkBootstrapService implements Service<Void> {
     public static final ServiceName SERVICE_BASE_NAME = ServiceName.JBOSS.append("osgi", "as");
     public static final ServiceName FRAMEWORK_BASE_NAME = SERVICE_BASE_NAME.append("framework");
     public static final ServiceName FRAMEWORK_BOOTSTRAP = FRAMEWORK_BASE_NAME.append("bootstrap");
+    public static final String MAPPED_OSGI_SOCKET_BINDINGS = "org.jboss.as.osgi.socket.bindings";
 
     private final InjectedValue<ServerEnvironment> injectedEnvironment = new InjectedValue<ServerEnvironment>();
     private final InjectedValue<SubsystemState> injectedSubsystemState = new InjectedValue<SubsystemState>();
     private final InjectedValue<SocketBinding> httpServerPortBinding = new InjectedValue<SocketBinding>();
 
     public static ServiceController<?> addService(final ServiceTarget target, final ServiceListener<Object>... listeners) {
-        final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
         FrameworkBootstrapService service = new FrameworkBootstrapService();
         ServiceBuilder<?> builder = target.addService(FRAMEWORK_BOOTSTRAP, service);
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedEnvironment);
         builder.addDependency(SubsystemState.SERVICE_NAME, SubsystemState.class, service.injectedSubsystemState);
-        builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append("osgi-http"), SocketBinding.class, service.httpServerPortBinding);
+        builder.addDependency(JBOSS_BINDING_NAME.append("osgi-http"), SocketBinding.class, service.httpServerPortBinding);
         builder.addListener(listeners);
         return builder.install();
     }
@@ -125,7 +136,10 @@ public class FrameworkBootstrapService implements Service<Void> {
             ServiceTarget target = context.getChildTarget();
             AutoInstallIntegration.addService(target);
             FrameworkModuleIntegration.addService(target, props);
+            JAXPServiceProvider.addService(target);
             ModuleLoaderIntegration.addService(target);
+            ModuleIdentityArtifactProvider.addService(target);
+            RepositoryProvider.addService(target);
             SystemServicesIntegration.addService(target);
 
             // Configure the {@link Framework} builder
@@ -182,8 +196,7 @@ public class FrameworkBootstrapService implements Service<Void> {
             StringBuffer buffer = new StringBuffer();
             buffer.append("javax.api,");
             buffer.append("javax.inject.api,");
-            buffer.append("org.apache.commons.logging,");
-            buffer.append("org.apache.log4j,");
+            buffer.append("org.apache.xerces,");
             buffer.append("org.jboss.as.configadmin,");
             buffer.append("org.jboss.as.osgi,");
             buffer.append("org.jboss.logging,");
@@ -200,20 +213,14 @@ public class FrameworkBootstrapService implements Service<Void> {
             Set<String> sysPackages = new LinkedHashSet<String>();
             sysPackages.addAll(Arrays.asList(SystemPathsProvider.DEFAULT_SYSTEM_PACKAGES));
             sysPackages.addAll(Arrays.asList(SystemPathsProvider.DEFAULT_FRAMEWORK_PACKAGES));
-            sysPackages.add("javax.inject,");
-            sysPackages.add("org.apache.commons.logging;version=1.1.1");
-            sysPackages.add("org.apache.log4j;version=1.2");
-            sysPackages.add("org.jboss.as.configadmin.service;version=7.0");
-            sysPackages.add("org.jboss.as.osgi.service;version=7.0");
-            sysPackages.add("org.jboss.logging;version=3.0.0");
-            sysPackages.add("org.jboss.osgi.deployment.interceptor;version=1.0");
-            sysPackages.add("org.jboss.osgi.spi.capability;version=1.0");
-            sysPackages.add("org.jboss.osgi.spi.util;version=1.0");
-            sysPackages.add("org.jboss.osgi.testing;version=1.0");
-            sysPackages.add("org.jboss.osgi.vfs;version=1.0");
-            sysPackages.add("org.slf4j;version=1.5.10");
+            sysPackages.add("javax.inject");
+            sysPackages.add("org.apache.xerces.jaxp");
+            sysPackages.add("org.jboss.as.configadmin.service");
+            sysPackages.add("org.jboss.as.osgi.service");
+            sysPackages.add("org.jboss.logging;version=3.1.0");
+            sysPackages.add("org.slf4j;version=1.6.1");
             syspackages = sysPackages.toString();
-            syspackages = syspackages.substring(1, syspackages.length() -1);
+            syspackages = syspackages.substring(1, syspackages.length() - 1);
             props.put(PROP_JBOSS_OSGI_SYSTEM_PACKAGES, syspackages);
         }
 
@@ -229,6 +236,7 @@ public class FrameworkBootstrapService implements Service<Void> {
         private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
         private final InjectedValue<BundleContext> injectedBundleContext = new InjectedValue<BundleContext>();
         private ServiceContainer serviceContainer;
+        private JNDIServiceListener jndiServiceListener;
 
         public static ServiceController<?> addService(final ServiceTarget target) {
             SystemServicesIntegration service = new SystemServicesIntegration();
@@ -248,12 +256,48 @@ public class FrameworkBootstrapService implements Service<Void> {
             ServiceController<?> controller = context.getController();
             ROOT_LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
             serviceContainer = context.getController().getServiceContainer();
+            final BundleContext syscontext = injectedBundleContext.getValue();
+
+            // Register the JNDI service listener
+            jndiServiceListener = new JNDIServiceListener(syscontext);
+            try {
+                String filter = "(" + Constants.OBJECTCLASS + "=" + ObjectFactory.class.getName() + ")";
+                syscontext.addServiceListener(jndiServiceListener, filter);
+            } catch (InvalidSyntaxException e) {
+                // ignore
+            }
+
+            // Register the socket-binding services
+            String bindingNames = syscontext.getProperty(MAPPED_OSGI_SOCKET_BINDINGS);
+            if (bindingNames != null) {
+                final Set<ServiceName> socketBindingNames = new HashSet<ServiceName>();
+                for (String sufix : bindingNames.split(",")) {
+                    socketBindingNames.add(JBOSS_BINDING_NAME.append(sufix));
+                }
+                ServiceTarget serviceTarget = context.getChildTarget();
+                ServiceName serviceName = Services.SYSTEM_SERVICES_PROVIDER.append("BINDINGS");
+                ServiceBuilder<Void> builder = serviceTarget.addService(serviceName, new AbstractService<Void>() {
+                    public void start(StartContext context) throws StartException {
+                        for (ServiceName serviceName : socketBindingNames) {
+                            SocketBinding binding = (SocketBinding) serviceContainer.getRequiredService(serviceName).getValue();
+                            Dictionary<String, String> props = new Hashtable<String, String>();
+                            props.put("socketBinding", serviceName.getSimpleName());
+                            InetSocketAddress value = binding.getSocketAddress();
+                            syscontext.registerService(InetSocketAddress.class.getName(), value, props);
+                        }
+                    }
+                });
+                ServiceName[] serviceNameArray = socketBindingNames.toArray(new ServiceName[socketBindingNames.size()]);
+                builder.addDependencies(serviceNameArray);
+                builder.install();
+            }
         }
 
         @Override
         public void stop(StopContext context) {
             ServiceController<?> controller = context.getController();
             ROOT_LOGGER.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
+            injectedBundleContext.getValue().removeServiceListener(jndiServiceListener);
         }
 
         @Override
@@ -359,6 +403,67 @@ public class FrameworkBootstrapService implements Service<Void> {
             } catch (ModuleLoadException ex) {
                 throw new IllegalStateException(ex);
             }
+        }
+    }
+
+    // This listener registers OSGi Services that are registered under javax.naming.spi.ObjectFactory with the AS7 naming system.
+    private static class JNDIServiceListener implements org.osgi.framework.ServiceListener {
+        private static final String OSGI_JNDI_URL_SCHEME = "osgi.jndi.url.scheme";
+        private final BundleContext bundleContext;
+
+        public JNDIServiceListener(BundleContext bundleContext) {
+            this.bundleContext = bundleContext;
+
+            try {
+                // Register the pre-existing services
+                ServiceReference[] refs = bundleContext.getServiceReferences(ObjectFactory.class.getName(), null);
+                if (refs != null) {
+                    for (ServiceReference ref : refs) {
+                        handleJNDIRegistration(ref, true);
+                    }
+                }
+            } catch (InvalidSyntaxException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+
+        @Override
+        public void serviceChanged(ServiceEvent event) {
+            ServiceReference ref = event.getServiceReference();
+            switch (event.getType()) {
+                case ServiceEvent.REGISTERED:
+                    handleJNDIRegistration(ref, true);
+                    break;
+                case ServiceEvent.UNREGISTERING:
+                    handleJNDIRegistration(ref, false);
+                    break;
+            }
+        }
+
+        private void handleJNDIRegistration(ServiceReference ref, boolean register) {
+            String[] objClasses = (String[]) ref.getProperty(Constants.OBJECTCLASS);
+            for (String objClass : objClasses) {
+                if (ObjectFactory.class.getName().equals(objClass)) {
+                    for (String scheme : getStringPlusProperty(ref.getProperty(OSGI_JNDI_URL_SCHEME))) {
+                        if (register)
+                            InitialContext.addUrlContextFactory(scheme, (ObjectFactory) bundleContext.getService(ref));
+                        else
+                            InitialContext.removeUrlContextFactory(scheme, (ObjectFactory) bundleContext.getService(ref));
+                    }
+                }
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        private static Collection<String> getStringPlusProperty(Object property) {
+            if (property instanceof Collection) {
+                return (Collection<String>) property;
+            } else if (property instanceof String[]) {
+                return Arrays.asList((String[]) property);
+            } else if (property instanceof String) {
+                return Collections.singleton((String) property);
+            }
+            return Collections.emptyList();
         }
     }
 }

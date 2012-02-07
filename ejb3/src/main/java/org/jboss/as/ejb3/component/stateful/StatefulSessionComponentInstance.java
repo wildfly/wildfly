@@ -70,11 +70,15 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
         if (existingSession != null) {
             this.id = existingSession;
         } else {
-            final UUID uuid = UUID.randomUUID();
-            ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
-            bb.putLong(uuid.getMostSignificantBits());
-            bb.putLong(uuid.getLeastSignificantBits());
-            this.id = SessionID.createSessionID(bb.array());
+            SessionID id = null;
+            do {
+                final UUID uuid = UUID.randomUUID();
+                ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
+                bb.putLong(uuid.getMostSignificantBits());
+                bb.putLong(uuid.getLeastSignificantBits());
+                id = SessionID.createSessionID(bb.array());
+            } while (!component.getCache().hasAffinity(id));
+            this.id = id;
         }
         this.afterBegin = component.createInterceptor(component.getAfterBegin(), factoryContext);
         this.afterCompletion = component.createInterceptor(component.getAfterCompletion(), factoryContext);

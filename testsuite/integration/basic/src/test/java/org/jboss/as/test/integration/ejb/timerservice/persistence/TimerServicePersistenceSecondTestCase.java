@@ -21,7 +21,6 @@
  */
 package org.jboss.as.test.integration.ejb.timerservice.persistence;
 
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -34,7 +33,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests that an @Timout method is called when a timer is created programatically.
+ * Tests that an @Timeout method is called when a timer is created programatically.
  *
  * @author Stuart Douglas
  */
@@ -54,10 +53,23 @@ public class TimerServicePersistenceSecondTestCase {
      */
     @Test
     public void testTimerServiceCalled() throws NamingException {
-        InitialContext ctx = new InitialContext();
         Assert.assertTrue(SimpleTimerServiceBean.awaitTimerCall());
     }
 
+    /**
+     * The timer should not be restored, as it was cancelled
+     */
+    @Test
+    public void testTimerServiceNotCalled() throws NamingException {
+        Assert.assertFalse(CancelledTimerServiceBean.quickAwaitTimerCall());
+    }
 
+    /**
+     * The timer should not be restored, it was non-persistent one
+     */
+    @Test
+    public void testTimerServiceNonPersistent() throws NamingException {
+        Assert.assertFalse(NonPersistentTimerServiceBean.quickAwaitTimerCall());
+    }
 
 }

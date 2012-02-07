@@ -43,7 +43,6 @@ public class LocalDataSourceService extends AbstractDataSourceService {
     @Override
     public AS7DataSourceDeployer getDeployer() throws ValidateException {
         return new AS7DataSourceDeployer(dataSourceConfig.getValue().getUnModifiableInstance());
-
     }
 
     public Injector<ModifiableDataSource> getDataSourceConfigInjector() {

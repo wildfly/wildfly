@@ -82,11 +82,11 @@ public final class ServerConfigService implements Service<ServerConfig> {
         }
     }
 
-    public static ServiceController<?> install(final ServiceTarget serviceTarget, final ServerConfigImpl serverConfig, final ServiceListener<Object>... listeners) {
+    public static ServiceController<?> install(final ServiceTarget serviceTarget, final ServerConfigImpl serverConfig, final ServiceListener<Object> listener) {
         final ServiceBuilder<ServerConfig> builder = serviceTarget.addService(WSServices.CONFIG_SERVICE, new ServerConfigService(serverConfig));
         builder.addDependency(DependencyType.REQUIRED, MBEAN_SERVER_NAME, MBeanServer.class, serverConfig.getMBeanServerInjector());
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, serverConfig.getServerEnvironmentInjector());
-        builder.addListener(listeners);
+        builder.addListener(listener);
         builder.setInitialMode(Mode.ACTIVE);
         return builder.install();
     }

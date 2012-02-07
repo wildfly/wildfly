@@ -1,15 +1,43 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2011, Red Hat Middleware LLC, and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 package org.jboss.as.clustering.ejb3.cache.backing.infinispan;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
+import org.infinispan.distribution.DataLocality;
+import org.infinispan.distribution.DistributionManager;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryPassivated;
 import org.infinispan.notifications.cachelistener.event.CacheEntryActivatedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryPassivatedEvent;
+import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.MarshalledValue;
 import org.jboss.as.clustering.MarshalledValueFactory;
 import org.jboss.as.clustering.infinispan.invoker.BatchOperation;
@@ -17,6 +45,7 @@ import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager;
 import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager.LockResult;
 import org.jboss.as.clustering.lock.TimeoutException;
+import org.jboss.as.clustering.registry.Registry;
 import org.jboss.as.ejb3.cache.Cacheable;
 import org.jboss.as.ejb3.cache.PassivationManager;
 import org.jboss.as.ejb3.cache.impl.backing.clustering.ClusteredBackingCacheEntryStoreConfig;
@@ -24,8 +53,15 @@ import org.jboss.as.ejb3.cache.spi.BackingCacheEntry;
 import org.jboss.as.ejb3.cache.spi.GroupCompatibilityChecker;
 import org.jboss.as.ejb3.cache.spi.impl.AbstractBackingCacheEntryStore;
 import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
+import org.jboss.ejb.client.Affinity;
+import org.jboss.ejb.client.ClusterAffinity;
+import org.jboss.ejb.client.NodeAffinity;
 import org.jboss.logging.Logger;
 
+/**
+ * Infinispan-based backing cache entry store.
+ * @author Paul Ferraro
+ */
 @Listener
 public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends Cacheable<K>, E extends BackingCacheEntry<K, V>, C> extends AbstractBackingCacheEntryStore<K, V, E>{
     private final Logger log = Logger.getLogger(getClass());
@@ -40,8 +76,10 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
     private final CacheInvoker invoker;
     private final PassivationManager<K, E> passivationManager;
     private final boolean clustered;
+    private final Random random = new Random(System.currentTimeMillis());
+    private final Registry<String, ?> registry;
 
-    public InfinispanBackingCacheEntryStore(Cache<MarshalledValue<K, C>, MarshalledValue<E, C>> cache, CacheInvoker invoker, PassivationManager<K, E> passivationManager, StatefulTimeoutInfo timeout, ClusteredBackingCacheEntryStoreConfig config, boolean controlCacheLifecycle, MarshalledValueFactory<C> keyFactory, MarshalledValueFactory<C> valueFactory, C context, SharedLocalYieldingClusterLockManager lockManager, LockKeyFactory<K, C> lockKeyFactory) {
+    public InfinispanBackingCacheEntryStore(Cache<MarshalledValue<K, C>, MarshalledValue<E, C>> cache, CacheInvoker invoker, PassivationManager<K, E> passivationManager, StatefulTimeoutInfo timeout, ClusteredBackingCacheEntryStoreConfig config, boolean controlCacheLifecycle, MarshalledValueFactory<C> keyFactory, MarshalledValueFactory<C> valueFactory, C context, SharedLocalYieldingClusterLockManager lockManager, LockKeyFactory<K, C> lockKeyFactory, Registry<String, ?> registry) {
         super(timeout, config);
         this.cache = cache;
         this.invoker = invoker;
@@ -53,6 +91,7 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
         this.context = context;
         this.lockManager = this.clustered ? lockManager : null;
         this.lockKeyFactory = lockKeyFactory;
+        this.registry = registry;
     }
 
     @Override
@@ -70,8 +109,41 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
     }
 
     @Override
+    public boolean hasAffinity(K key) {
+        DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
+        if (dist != null) {
+            DataLocality locality = dist.getLocality(key);
+            return locality.isLocal() || locality.isUncertain();
+        }
+        return true;
+    }
+
+    @Override
+    public Affinity getStrictAffinity() {
+        return new ClusterAffinity(this.cache.getCacheManager().getClusterName());
+    }
+
+    @Override
+    public Affinity getWeakAffinity(K key) {
+        if (!this.hasAffinity(key)) {
+            // Locate nodes on which the cache entry will reside
+            List<Address> addresses = this.cache.getAdvancedCache().getDistributionManager().locate(key);
+            if (!addresses.contains(this.cache.getCacheManager().getAddress())) {
+                // Otherwise choose random node from hash targets
+                Map.Entry<String, ?> entry = this.registry.getRemoteEntry(addresses.get(random.nextInt(addresses.size())));
+                if (entry != null) {
+                    return new NodeAffinity(entry.getKey());
+                }
+            }
+        }
+        return new NodeAffinity(this.registry.getLocalEntry().getKey());
+    }
+
+    @Override
     public void insert(E entry) {
-        final MarshalledValue<K, C> key = this.marshalKey(entry.getId());
+        K id = entry.getId();
+        this.trace("insert(%s)", id);
+        final MarshalledValue<K, C> key = this.marshalKey(id);
 
         this.acquireSessionOwnership(key, true);
         try {
@@ -91,6 +163,7 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
 
     @Override
     public E get(K id, boolean lock) {
+        this.trace("get(%s. %s)", id, lock);
         final MarshalledValue<K, C> key = this.marshalKey(id);
 
         if (lock) {
@@ -108,7 +181,9 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
 
     @Override
     public void update(E entry, boolean modified) {
-        final MarshalledValue<K, C> key = this.marshalKey(entry.getId());
+        K id = entry.getId();
+        this.trace("update(%s, %s)", id, modified);
+        final MarshalledValue<K, C> key = this.marshalKey(id);
         try {
             if (modified) {
                 final MarshalledValue<E, C> value = this.marshalEntry(entry);
@@ -128,6 +203,7 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
 
     @Override
     public E remove(K id) {
+        this.trace("remove(%s)", id);
         final MarshalledValue<K, C> key = this.marshalKey(id);
         Operation<MarshalledValue<E, C>> operation = new Operation<MarshalledValue<E, C>>() {
             @Override
@@ -186,12 +262,13 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
 
         this.trace("Acquiring %slock on %s", newLock ? "new " : "", lockKey);
 
+        long timeout = this.cache.getCacheConfiguration().locking().lockAcquisitionTimeout();
         try {
-            LockResult result = this.lockManager.lock(lockKey, this.cache.getCacheConfiguration().locking().lockAcquisitionTimeout(), newLock);
+            LockResult result = this.lockManager.lock(lockKey, timeout, newLock);
             this.trace("Lock acquired (%s) on %s", result, lockKey);
             return result;
         } catch (TimeoutException e) {
-            throw InfinispanEjbMessages.MESSAGES.lockAcquisitionTimeout(e, lockKey);
+            throw InfinispanEjbMessages.MESSAGES.lockAcquisitionTimeout(lockKey, timeout);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw InfinispanEjbMessages.MESSAGES.lockAcquisitionInterruption(e, lockKey);

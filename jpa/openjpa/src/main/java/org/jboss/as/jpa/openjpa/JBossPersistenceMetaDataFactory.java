@@ -22,23 +22,23 @@
 
 package org.jboss.as.jpa.openjpa;
 
+import java.net.URL;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.persistence.Entity;
+
+import org.apache.openjpa.persistence.PersistenceMetaDataFactory;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
-
-import javax.persistence.Entity;
-
-import java.net.URL;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.openjpa.persistence.PersistenceMetaDataFactory;
 
 /**
  * OpenJPA MetaDataFactory that uses the annotation index provided by PersistenceUnitMetadata
@@ -48,11 +48,13 @@ import org.apache.openjpa.persistence.PersistenceMetaDataFactory;
  */
 public class JBossPersistenceMetaDataFactory extends PersistenceMetaDataFactory {
 
-    private static ThreadLocal<PersistenceUnitMetadata> persistenceUnitMetadata = new ThreadLocal<PersistenceUnitMetadata>();
+    private static final ThreadLocal<PersistenceUnitMetadata> PERSISTENCE_UNIT_METADATA = new ThreadLocal<PersistenceUnitMetadata>();
+    /** Cache of the type names, used when restarting the persistence unit service */
+    private static final Map<PersistenceUnitMetadata, Set<String>> CACHED_TYPENAMES = new HashMap<PersistenceUnitMetadata, Set<String>>();
 
     @Override
     protected Set<String> parsePersistentTypeNames(ClassLoader loader) {
-        PersistenceUnitMetadata pu = persistenceUnitMetadata.get();
+        PersistenceUnitMetadata pu = PERSISTENCE_UNIT_METADATA.get();
         if (pu == null) {
             return Collections.emptySet();
         }
@@ -61,14 +63,25 @@ public class JBossPersistenceMetaDataFactory extends PersistenceMetaDataFactory 
     }
 
     static void setThreadLocalPersistenceUnitMetadata(PersistenceUnitMetadata pu) {
-        persistenceUnitMetadata.set(pu);
+        PERSISTENCE_UNIT_METADATA.set(pu);
     }
 
     static void clearThreadLocalPersistenceUnitMetadata() {
-        persistenceUnitMetadata.remove();
+        PERSISTENCE_UNIT_METADATA.remove();
+    }
+
+    static void cleanup(PersistenceUnitMetadata pu) {
+        CACHED_TYPENAMES.remove(pu);
     }
 
     private Set<String> findPersistenceTypeNames(PersistenceUnitMetadata pu) {
+        synchronized (CACHED_TYPENAMES) {
+            Set<String> typeNames = CACHED_TYPENAMES.get(pu);
+            if (typeNames != null) {
+                return typeNames;
+            }
+        }
+
         Set<String> persistenceTypeNames = new HashSet<String>();
 
         for (Map.Entry<URL, Index> entry : pu.getAnnotationIndex().entrySet()) {
@@ -80,6 +93,9 @@ public class JBossPersistenceMetaDataFactory extends PersistenceMetaDataFactory 
                     persistenceTypeNames.add(classInfo.name().toString());
                 }
             }
+        }
+        synchronized (CACHED_TYPENAMES) {
+            CACHED_TYPENAMES.put(pu, persistenceTypeNames);
         }
         return persistenceTypeNames;
     }

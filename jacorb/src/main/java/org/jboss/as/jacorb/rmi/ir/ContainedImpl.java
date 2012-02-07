@@ -23,7 +23,7 @@ package org.jboss.as.jacorb.rmi.ir;
 
 import java.io.UnsupportedEncodingException;
 
-import org.omg.CORBA.BAD_INV_ORDER;
+import org.jboss.as.jacorb.JacORBMessages;
 import org.omg.CORBA.ContainedPackage.Description;
 import org.omg.CORBA.Container;
 import org.omg.CORBA.ContainerHelper;
@@ -38,9 +38,6 @@ import org.omg.CORBA.RepositoryHelper;
  * @author <a href="mailto:osh@sparre.dk">Ole Husgaard</a>
  */
 abstract class ContainedImpl extends IRObjectImpl implements LocalContained {
-
-    private static final org.jboss.logging.Logger logger =
-            org.jboss.logging.Logger.getLogger(ContainedImpl.class);
 
     ContainedImpl(String id, String name, String version,
                   LocalContainer defined_in,
@@ -59,46 +56,38 @@ abstract class ContainedImpl extends IRObjectImpl implements LocalContained {
     }
 
     public java.lang.String id() {
-        logger.trace("ContainedImpl[" + id + "].id() entered.");
         return id;
     }
 
     public void id(java.lang.String id) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public java.lang.String name() {
-        logger.trace("ContainedImpl[" + id + "].name() entered.");
         return name;
     }
 
     public void name(java.lang.String name) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public java.lang.String version() {
-        logger.trace("ContainedImpl[" + id + "].version() entered.");
         return version;
     }
 
     public void version(java.lang.String version) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public Container defined_in() {
-        logger.debug("ContainedImpl[" + id + "].defined_in() entered.");
         return ContainerHelper.narrow(defined_in.getReference());
     }
 
     public java.lang.String absolute_name() {
-        logger.trace("ContainedImpl[" + id + "].absolute_name() returning \"" +
-                absolute_name + "\".");
         return absolute_name;
     }
 
     public Repository containing_repository() {
-        logger.debug("ContainedImpl[" + id +
-                "].containing_repository() entered.");
         return RepositoryHelper.narrow(repository.getReference());
     }
 
@@ -106,7 +95,7 @@ abstract class ContainedImpl extends IRObjectImpl implements LocalContained {
 
     public void move(Container new_container,
                      String new_name, String new_version) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     /**
@@ -145,7 +134,7 @@ abstract class ContainedImpl extends IRObjectImpl implements LocalContained {
         try {
             return (getRepository().getObjectIdPrefix() + id).getBytes("UTF-8");
         } catch (UnsupportedEncodingException ex) {
-            throw new RuntimeException("UTF-8 encoding not supported.");
+            throw JacORBMessages.MESSAGES.unsupportedUTF8Encoding();
         }
     }
 }

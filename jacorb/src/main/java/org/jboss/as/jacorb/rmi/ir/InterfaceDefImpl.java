@@ -21,41 +21,41 @@
  */
 package org.jboss.as.jacorb.rmi.ir;
 
-import org.omg.CORBA.InterfaceDefOperations;
-import org.omg.CORBA.InterfaceDefPOATie;
-import org.omg.CORBA.InterfaceDefHelper;
+import org.jboss.as.jacorb.JacORBMessages;
+import org.omg.CORBA.AliasDef;
 import org.omg.CORBA.Any;
-import org.omg.CORBA.TypeCode;
-import org.omg.CORBA.IRObject;
+import org.omg.CORBA.AttributeDef;
+import org.omg.CORBA.AttributeDescription;
+import org.omg.CORBA.AttributeMode;
+import org.omg.CORBA.ConstantDef;
 import org.omg.CORBA.Contained;
 import org.omg.CORBA.ContainedPackage.Description;
 import org.omg.CORBA.DefinitionKind;
-import org.omg.CORBA.IDLType;
-import org.omg.CORBA.StructMember;
-import org.omg.CORBA.UnionMember;
-import org.omg.CORBA.InterfaceDef;
-import org.omg.CORBA.ConstantDef;
 import org.omg.CORBA.EnumDef;
-import org.omg.CORBA.ValueDef;
-import org.omg.CORBA.ValueBoxDef;
-import org.omg.CORBA.Initializer;
-import org.omg.CORBA.StructDef;
-import org.omg.CORBA.UnionDef;
-import org.omg.CORBA.ModuleDef;
-import org.omg.CORBA.AliasDef;
-import org.omg.CORBA.NativeDef;
-import org.omg.CORBA.OperationDef;
-import org.omg.CORBA.OperationMode;
-import org.omg.CORBA.ParameterDescription;
-import org.omg.CORBA.AttributeDef;
-import org.omg.CORBA.AttributeMode;
 import org.omg.CORBA.ExceptionDef;
-import org.omg.CORBA.OperationDescription;
-import org.omg.CORBA.AttributeDescription;
+import org.omg.CORBA.IDLType;
+import org.omg.CORBA.IRObject;
+import org.omg.CORBA.Initializer;
+import org.omg.CORBA.InterfaceDef;
+import org.omg.CORBA.InterfaceDefHelper;
+import org.omg.CORBA.InterfaceDefOperations;
+import org.omg.CORBA.InterfaceDefPOATie;
+import org.omg.CORBA.InterfaceDefPackage.FullInterfaceDescription;
 import org.omg.CORBA.InterfaceDescription;
 import org.omg.CORBA.InterfaceDescriptionHelper;
-import org.omg.CORBA.BAD_INV_ORDER;
-import org.omg.CORBA.InterfaceDefPackage.FullInterfaceDescription;
+import org.omg.CORBA.ModuleDef;
+import org.omg.CORBA.NativeDef;
+import org.omg.CORBA.OperationDef;
+import org.omg.CORBA.OperationDescription;
+import org.omg.CORBA.OperationMode;
+import org.omg.CORBA.ParameterDescription;
+import org.omg.CORBA.StructDef;
+import org.omg.CORBA.StructMember;
+import org.omg.CORBA.TypeCode;
+import org.omg.CORBA.UnionDef;
+import org.omg.CORBA.UnionMember;
+import org.omg.CORBA.ValueBoxDef;
+import org.omg.CORBA.ValueDef;
 
 /**
  * Interface IR object.
@@ -71,9 +71,6 @@ class InterfaceDefImpl
     // Attributes ----------------------------------------------------
 
     // Static --------------------------------------------------------
-
-    private static final org.jboss.logging.Logger logger =
-            org.jboss.logging.Logger.getLogger(InterfaceDefImpl.class);
 
     // Constructors --------------------------------------------------
 
@@ -137,26 +134,13 @@ class InterfaceDefImpl
     // ContainerOperations implementation ----------------------------
 
     public Contained lookup(String search_name) {
-        logger.debug("InterfaceDefImpl.lookup(\"" + search_name +
-                "\") entered.");
         Contained res = delegate.lookup(search_name);
-        logger.debug("InterfaceDefImpl.lookup(\"" + search_name +
-                "\") returning " + ((res == null) ? "null" : "non-null"));
         return res;
-        //return delegate.lookup(search_name);
     }
 
     public Contained[] contents(DefinitionKind limit_type,
                                 boolean exclude_inherited) {
-        logger.debug("InterfaceDefImpl.contents() entered.");
-        Contained[] res = delegate.contents(limit_type, exclude_inherited);
-        logger.debug("InterfaceDefImpl.contents() " + res.length +
-                " contained to return.");
-        for (int i = 0; i < res.length; ++i)
-            logger.debug("  InterfaceDefImpl.contents() [" + i + "]: " +
-                    res[i].id());
-        return res;
-        //return delegate.contents(limit_type, exclude_inherited);
+        return delegate.contents(limit_type, exclude_inherited);
     }
 
     public Contained[] lookup_name(String search_name, int levels_to_search,
@@ -245,14 +229,8 @@ class InterfaceDefImpl
         if (base_interfaces_ref == null) {
             base_interfaces_ref = new InterfaceDef[base_interfaces.length];
             for (int i = 0; i < base_interfaces_ref.length; ++i) {
-                logger.debug("InterfaceDefImpl.base_interfaces(): " +
-                        "looking up \"" + base_interfaces[i] + "\".");
                 Contained c = repository.lookup_id(base_interfaces[i]);
-                logger.debug("InterfaceDefImpl.base_interfaces(): " +
-                        "Got: " + ((c == null) ? "null" : c.id()));
                 base_interfaces_ref[i] = InterfaceDefHelper.narrow(c);
-                logger.debug("InterfaceDefImpl.base_interfaces(): " +
-                        "ref: " + ((c == null) ? "null" : "not null"));
             }
         }
 
@@ -260,7 +238,7 @@ class InterfaceDefImpl
     }
 
     public void base_interfaces(org.omg.CORBA.InterfaceDef[] arg) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public boolean is_abstract() {
@@ -268,7 +246,7 @@ class InterfaceDefImpl
     }
 
     public void is_abstract(boolean arg) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public boolean is_a(java.lang.String interface_id) {
@@ -305,7 +283,7 @@ class InterfaceDefImpl
     public AttributeDef create_attribute(String id, String name,
                                          String version, IDLType type,
                                          AttributeMode mode) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public OperationDef create_operation(String id, String name, String version,
@@ -313,7 +291,7 @@ class InterfaceDefImpl
                                          ParameterDescription[] params,
                                          ExceptionDef[] exceptions,
                                          String[] contexts) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
 

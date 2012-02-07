@@ -56,7 +56,7 @@ public class SerializationGroupMemberImpl<K extends Serializable, V extends Cach
     /**
      * The underlying object (e.g. bean context).
      */
-    private V value;
+    private transient V value;
 
     /** The group. Never serialize the group; only the groupCache does that */
     private transient SerializationGroup<K, V, G> group;

@@ -25,11 +25,11 @@ package org.jboss.as.jacorb.service;
 import java.net.InetSocketAddress;
 import java.util.Properties;
 
+import org.jboss.as.jacorb.JacORBLogger;
 import org.jboss.as.jacorb.JacORBSubsystemConstants;
 import org.jboss.as.jacorb.naming.jndi.CorbaUtils;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.CurrentServiceContainer;
-import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -48,8 +48,6 @@ import org.omg.CORBA.ORB;
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
 public class CorbaORBService implements Service<ORB> {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.jacorb");
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("jacorb", "orb-service");
 
@@ -76,7 +74,7 @@ public class CorbaORBService implements Service<ORB> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        log.debugf("Starting Service " + context.getController().getName().getCanonicalName());
+        JacORBLogger.ROOT_LOGGER.debugServiceStartup(context.getController().getName().getCanonicalName());
 
         try {
             // set the ORBClass and ORBSingleton class as system properties.
@@ -137,12 +135,12 @@ public class CorbaORBService implements Service<ORB> {
 
         CorbaUtils.setOrbProperties(properties);
 
-        log.info("CORBA ORB Service Started");
+        JacORBLogger.ROOT_LOGGER.corbaORBServiceStarted();
     }
 
     @Override
     public void stop(StopContext context) {
-        log.debugf("Stopping Service " + context.getController().getName().getCanonicalName());
+        JacORBLogger.ROOT_LOGGER.debugServiceStop(context.getController().getName().getCanonicalName());
         // stop the ORB asynchronously.
         context.asynchronous();
         Thread destroyThread = SecurityActions.createThread(new ORBDestroyer(this.orb, context), "ORB Destroy Thread");

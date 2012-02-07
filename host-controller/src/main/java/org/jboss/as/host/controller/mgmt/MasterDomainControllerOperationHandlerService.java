@@ -21,12 +21,14 @@
 */
 package org.jboss.as.host.controller.mgmt;
 
+import org.jboss.as.controller.remote.ModelControllerClientOperationHandler;
 import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
 
 import org.jboss.as.controller.remote.AbstractModelControllerOperationHandlerFactoryService;
 import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerFactoryService;
 import org.jboss.as.domain.controller.DomainController;
-import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
+import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
+import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
@@ -44,17 +46,19 @@ public class MasterDomainControllerOperationHandlerService extends AbstractModel
     public static final ServiceName SERVICE_NAME = DomainController.SERVICE_NAME.append(ModelControllerClientOperationHandlerFactoryService.OPERATION_HANDLER_NAME_SUFFIX);
 
     private final DomainController domainController;
-    private final UnregisteredHostChannelRegistry registry;
 
-    public MasterDomainControllerOperationHandlerService(final DomainController domainController, final UnregisteredHostChannelRegistry registry) {
+    public MasterDomainControllerOperationHandlerService(final DomainController domainController) {
         this.domainController = domainController;
-        this.registry = registry;
     }
 
     @Override
     public Channel.Key startReceiving(final Channel channel) {
-        final MasterDomainControllerOperationHandlerImpl handler = new MasterDomainControllerOperationHandlerImpl(getExecutor(), getController(), registry, domainController);
-        Channel.Key key = channel.addCloseHandler(new CloseHandler<Channel>() {
+        final ManagementChannelHandler handler = new ManagementChannelHandler(ManagementClientChannelStrategy.create(channel), getExecutor());
+        // Assemble the request handlers for the domain channel
+        handler.addHandlerFactory(new HostControllerRegistrationHandler(handler, getController(), domainController));
+        handler.addHandlerFactory(new ModelControllerClientOperationHandler(getController(), handler));
+        handler.addHandlerFactory(new MasterDomainControllerOperationHandlerImpl(domainController));
+        final Channel.Key key = channel.addCloseHandler(new CloseHandler<Channel>() {
             @Override
             public void handleClose(Channel closed, IOException exception) {
                 handler.shutdown();
@@ -67,7 +71,8 @@ public class MasterDomainControllerOperationHandlerService extends AbstractModel
                 }
             }
         });
-        channel.receiveMessage(handler);
+        channel.receiveMessage(handler.getReceiver());
         return key;
     }
+
 }

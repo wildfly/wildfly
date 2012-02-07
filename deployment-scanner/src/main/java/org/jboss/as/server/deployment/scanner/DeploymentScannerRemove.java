@@ -22,26 +22,20 @@
 
 package org.jboss.as.server.deployment.scanner;
 
-import java.util.Locale;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * Operation removing a {@link DeploymentScannerService}.
  *
  * @author Emanuel Muckenhuber
  */
-class DeploymentScannerRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
-
-    static final String OPERATION_NAME = ModelDescriptionConstants.REMOVE;
-
+class DeploymentScannerRemove extends AbstractRemoveStepHandler {
     static final DeploymentScannerRemove INSTANCE = new DeploymentScannerRemove();
 
     private DeploymentScannerRemove() {
@@ -63,7 +57,7 @@ class DeploymentScannerRemove extends AbstractRemoveStepHandler implements Descr
     }
 
     @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return DeploymentSubsystemDescriptions.getScannerRemove(locale);
+    protected boolean requireNoChildResources() {
+        return true;
     }
 }

@@ -26,6 +26,8 @@ import java.util.Collection;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
+import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.ViewDescription;
@@ -41,6 +43,9 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.logging.Logger;
+import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Value;
+import org.jboss.msc.value.Values;
 
 /**
  * Sets up JNDI bindings for each of the views exposed by a {@link SessionBeanComponentDescription session bean}
@@ -107,6 +112,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
         final String globalJNDIBaseName = "java:global/" + (applicationName != null ? applicationName + "/" : "") + sessionBean.getModuleName() + "/" + sessionBean.getEJBName();
         final String appJNDIBaseName = "java:app/" + sessionBean.getModuleName() + "/" + sessionBean.getEJBName();
         final String moduleJNDIBaseName = "java:module/" + sessionBean.getEJBName();
+        final String remoteJNDIBaseName = "java:jboss/exported/" + (applicationName != null ? applicationName + "/" : "") + sessionBean.getModuleName() + "/" + sessionBean.getEJBName();
 
         // the base ServiceName which will be used to create the ServiceName(s) for each of the view bindings
         final StringBuilder jndiBindingsLogMessage = new StringBuilder();
@@ -137,6 +143,12 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
             final String moduleJNDIName = moduleJNDIBaseName + "!" + viewClassName;
             registerBinding(sessionBean, viewDescription, moduleJNDIName);
             logBinding(jndiBindingsLogMessage, moduleJNDIName);
+
+            if(ejbViewDescription.getMethodIntf() != MethodIntf.REMOTE || ejbViewDescription.getMethodIntf() != MethodIntf.HOME) {
+                final String remoteJNDIName = remoteJNDIBaseName + "!" + viewClassName;
+                registerRemoteBinding(sessionBean, viewDescription, remoteJNDIName);
+                logBinding(jndiBindingsLogMessage, remoteJNDIName);
+            }
         }
 
         // EJB3.1 spec, section 4.4.1 Global JNDI Access states:
@@ -173,10 +185,21 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
     private void registerBinding(final EJBComponentDescription componentDescription, final ViewDescription viewDescription, final String jndiName) {
         if (appclient) {
             final EEModuleDescription moduleDescription = componentDescription.getModuleDescription();
-            moduleDescription.getBindingConfigurations().add(new BindingConfiguration(jndiName, new RemoteViewInjectionSource(null, moduleDescription.getApplicationName(), moduleDescription.getModuleName(), moduleDescription.getDistinctName(), componentDescription.getComponentName(), viewDescription.getViewClassName(), componentDescription.isStateful())));
+            moduleDescription.getBindingConfigurations().add(new BindingConfiguration(jndiName, new RemoteViewInjectionSource(null, moduleDescription.getEarApplicationName(), moduleDescription.getModuleName(), moduleDescription.getDistinctName(), componentDescription.getComponentName(), viewDescription.getViewClassName(), componentDescription.isStateful())));
         } else {
             viewDescription.getBindingNames().add(jndiName);
         }
+    }
+
+    private void registerRemoteBinding(final EJBComponentDescription componentDescription, final ViewDescription viewDescription, final String jndiName) {
+        final EEModuleDescription moduleDescription = componentDescription.getModuleDescription();
+        final InjectedValue<ClassLoader> viewClassLoader = new InjectedValue<ClassLoader>();
+        moduleDescription.getBindingConfigurations().add(new BindingConfiguration(jndiName, new RemoteViewInjectionSource(null, moduleDescription.getEarApplicationName(), moduleDescription.getModuleName(), moduleDescription.getDistinctName(), componentDescription.getComponentName(), viewDescription.getViewClassName(), componentDescription.isStateful(), viewClassLoader)));
+        componentDescription.getConfigurators().add(new ComponentConfigurator() {
+            public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                viewClassLoader.setValue(Values.immediateValue(configuration.getModuleClassLoder()));
+            }
+        });
     }
 
     private void logBinding(final StringBuilder jndiBindingsLogMessage, final String jndiName) {

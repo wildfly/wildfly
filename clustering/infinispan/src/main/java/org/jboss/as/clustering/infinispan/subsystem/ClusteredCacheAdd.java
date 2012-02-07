@@ -5,7 +5,12 @@ import java.util.List;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.operations.validation.EnumValidator;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Base class for clustered cache add operations
@@ -14,17 +19,27 @@ import org.jboss.dmr.ModelNode;
  */
 public abstract class ClusteredCacheAdd extends CacheAdd {
 
+    // the attribute definition for the cache mode
+    public static SimpleAttributeDefinition MODE =
+            new SimpleAttributeDefinitionBuilder(ModelKeys.MODE, ModelType.STRING, false)
+                    .setXmlName(Attribute.MODE.getLocalName())
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setValidator(new EnumValidator<Mode>(Mode.class, true, false))
+                    .build();
+
     ClusteredCacheAdd(CacheMode mode) {
         super(mode);
     }
 
+    // used in createOperation only
     void populateMode(ModelNode fromModel, ModelNode toModel) {
-        toModel.get(ModelKeys.MODE).set(Mode.forCacheMode(CacheMode.valueOf(fromModel.get(ModelKeys.CACHE_MODE).asString())).name());
+        toModel.get(ModelKeys.MODE).set(Mode.forCacheMode(CacheMode.valueOf(fromModel.get(ModelKeys.MODE).asString())).name());
     }
 
     @Override
     void populateCacheMode(ModelNode fromModel, ModelNode toModel) throws OperationFailedException {
-        toModel.get(ModelKeys.CACHE_MODE).set(Mode.valueOf(fromModel.require(ModelKeys.MODE).asString()).apply(this.mode).name());
+        toModel.get(ModelKeys.MODE).set(Mode.valueOf(fromModel.require(ModelKeys.MODE).asString()).apply(this.mode).name());
     }
 
     @Override
@@ -50,13 +65,13 @@ public abstract class ClusteredCacheAdd extends CacheAdd {
      * @return initialised Configuration object
      */
     @Override
-    void processModelNode(ModelNode cache, ConfigurationBuilder builder, List<Dependency<?>> dependencies) {
+    void processModelNode(String containerName, ModelNode cache, ConfigurationBuilder builder, List<Dependency<?>> dependencies) {
 
         // process cache attributes and elements
-        super.processModelNode(cache, builder, dependencies);
+        super.processModelNode(containerName, cache, builder, dependencies);
 
         // process clustered cache attributes and elements
-        if (CacheMode.valueOf(cache.get(ModelKeys.CACHE_MODE).asString()).isSynchronous()) {
+        if (CacheMode.valueOf(cache.get(ModelKeys.MODE).asString()).isSynchronous()) {
             if (cache.hasDefined(ModelKeys.REMOTE_TIMEOUT)) {
                 builder.clustering().sync().replTimeout(cache.get(ModelKeys.REMOTE_TIMEOUT).asLong());
             }

@@ -24,6 +24,7 @@ package org.jboss.as.host.controller.operations;
 
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
+import org.jboss.as.host.controller.HostControllerEnvironment;
 
 /**
  * Default implementation of {@link LocalHostControllerInfo}.
@@ -33,8 +34,9 @@ import org.jboss.as.domain.controller.LocalHostControllerInfo;
 public class LocalHostControllerInfoImpl implements LocalHostControllerInfo {
 
     private final ControlledProcessState processState;
+    private final HostControllerEnvironment hostEnvironment;
 
-    private String localHostName;
+    private final String localHostName;
     private boolean master;
     private String nativeManagementInterface;
     private int nativeManagementPort;
@@ -48,12 +50,21 @@ public class LocalHostControllerInfoImpl implements LocalHostControllerInfo {
     private String nativeManagementSecurityRealm;
     private String httpManagementSecurityRealm;
 
-    public LocalHostControllerInfoImpl(final ControlledProcessState processState) {
+    /** Constructor solely for test cases */
+    public LocalHostControllerInfoImpl(final ControlledProcessState processState, final String localHostName) {
         this.processState = processState;
+        this.hostEnvironment = null;
+        this.localHostName = localHostName;
+    }
+
+    public LocalHostControllerInfoImpl(final ControlledProcessState processState, final HostControllerEnvironment hostEnvironment) {
+        this.processState = processState;
+        this.hostEnvironment = hostEnvironment;
+        this.localHostName = null;
     }
 
     public String getLocalHostName() {
-        return localHostName;
+        return hostEnvironment == null ? localHostName : hostEnvironment.getHostControllerName();
     }
 
     @Override
@@ -114,10 +125,6 @@ public class LocalHostControllerInfoImpl implements LocalHostControllerInfo {
 
     void setMasterDomainController(boolean master) {
         this.master = master;
-    }
-
-    void setLocalHostName(String localHostName) {
-        this.localHostName = localHostName;
     }
 
     void setNativeManagementInterface(String nativeManagementInterface) {

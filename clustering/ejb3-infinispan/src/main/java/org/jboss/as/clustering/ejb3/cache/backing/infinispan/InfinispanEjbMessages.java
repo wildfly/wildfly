@@ -45,8 +45,8 @@ public interface InfinispanEjbMessages {
     @Message(id = 10361, value = "Failed to deserialize %s")
     IllegalArgumentException deserializationFailure(@Cause Throwable cause, Object key);
 
-    @Message(id = 10362, value = "Failed to acquire ownership of %s")
-    RuntimeException lockAcquisitionTimeout(@Cause Throwable cause, Object key);
+    @Message(id = 10362, value = "Failed to acquire ownership of %s within %d ms")
+    RuntimeException lockAcquisitionTimeout(Object key, long timeout);
 
     @Message(id = 10363, value = "Interrupted while acquiring ownership of %s")
     RuntimeException lockAcquisitionInterruption(@Cause Throwable cause, Object key);

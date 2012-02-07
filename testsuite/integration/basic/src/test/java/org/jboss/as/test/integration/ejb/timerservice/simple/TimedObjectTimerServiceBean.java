@@ -21,13 +21,15 @@
  */
 package org.jboss.as.test.integration.ejb.timerservice.simple;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import javax.annotation.Resource;
+import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TimedObject;
 import javax.ejb.Timer;
 import javax.ejb.TimerService;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author Stuart Douglas
@@ -35,28 +37,57 @@ import java.util.concurrent.TimeUnit;
 @Stateless
 public class TimedObjectTimerServiceBean implements TimedObject {
 
-    private static final CountDownLatch latch = new CountDownLatch(1);
+    private static CountDownLatch latch = new CountDownLatch(1);
+    private static int TIMER_CALL_WAITING_S = 2;
 
     private static boolean timerServiceCalled = false;
 
     @Resource
+    private SessionContext sessionContext;
+
     private TimerService timerService;
 
-    public void createTimer() {
-        timerService.createTimer(100, null);
+    private static String timerInfo;
+    private static boolean isPersistent;
+    private static boolean isCalendar;
+
+    public synchronized TimerService getTimerService() {
+        if (timerService == null) {
+            timerService = (TimerService) sessionContext.lookup("java:comp/TimerService");
+        }
+        return timerService;
     }
 
     public static boolean awaitTimerCall() {
         try {
-            latch.await(2, TimeUnit.SECONDS);
+            latch.await(TIMER_CALL_WAITING_S, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
         return timerServiceCalled;
     }
 
+    public void resetTimerServiceCalled() {
+        timerServiceCalled = false;
+        latch = new CountDownLatch(1);
+    }
+
+    public String getTimerInfo() {
+        return timerInfo;
+    }
+    public boolean isPersistent() {
+        return isPersistent;
+    }
+    public boolean isCalendar() {
+        return isCalendar;
+    }
+
     @Override
     public void ejbTimeout(final Timer timer) {
+        timerInfo = new String((String) timer.getInfo());
+        isPersistent = timer.isPersistent();
+        isCalendar = timer.isCalendarTimer();
+
         timerServiceCalled = true;
         latch.countDown();
     }

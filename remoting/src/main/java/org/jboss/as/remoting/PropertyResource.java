@@ -45,30 +45,28 @@ import org.jboss.msc.service.ServiceName;
  */
 public class PropertyResource extends SimpleResourceDefinition {
 
-    static final PropertyResource INSTANCE = new PropertyResource();
+    static final PropertyResource INSTANCE_CONNECTOR = new PropertyResource(CONNECTOR);
 
     static final SimpleAttributeDefinition VALUE = new NamedValueAttributeDefinition(CommonAttributes.VALUE, Attribute.VALUE, null, ModelType.STRING, true);
 
-    private PropertyResource() {
+    private final String parent;
+
+    protected PropertyResource(String parent) {
         super(PathElement.pathElement(PROPERTY),
                 RemotingExtension.getResourceDescriptionResolver(PROPERTY),
-                PropertyAdd.INSTANCE,
-                PropertyRemove.INSTANCE);
+                new PropertyAdd(parent),
+                new PropertyRemove(parent));
+        this.parent = parent;
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadWriteAttribute(VALUE, null, new PropertyWriteAttributeHandler());
+        resourceRegistration.registerReadWriteAttribute(VALUE, null, new PropertyWriteAttributeHandler(parent));
     }
 
     private static void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel,
-            ServiceVerificationHandler verificationHandler) {
-        try {
-            ConnectorAdd.INSTANCE.launchServices(context, parentAddress, parentAddress.getLastElement().getValue(), parentModel, verificationHandler, null);
-        } catch (OperationFailedException e) {
-            //TODO handle better?
-            throw new RuntimeException(e);
-        }
+            ServiceVerificationHandler verificationHandler) throws OperationFailedException {
+        ConnectorAdd.INSTANCE.launchServices(context, parentAddress.getLastElement().getValue(), parentModel, verificationHandler, null);
     }
 
     private static ServiceName getParentServiceName(PathAddress parentAddress) {
@@ -77,9 +75,9 @@ public class PropertyResource extends SimpleResourceDefinition {
 
     private static class PropertyWriteAttributeHandler extends RestartParentWriteAttributeHandler {
 
-        public PropertyWriteAttributeHandler() {
+        public PropertyWriteAttributeHandler(String parent) {
             // FIXME PropertyWriteAttributeHandler constructor
-            super(CONNECTOR, VALUE);
+            super(parent, VALUE);
         }
 
         @Override
@@ -96,10 +94,8 @@ public class PropertyResource extends SimpleResourceDefinition {
 
     private static class PropertyAdd extends RestartParentResourceAddHandler {
 
-        static final PropertyAdd INSTANCE = new PropertyAdd();
-
-        private PropertyAdd() {
-            super(CONNECTOR);
+        private PropertyAdd(String parent) {
+            super(parent);
         }
 
         protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException{
@@ -108,7 +104,7 @@ public class PropertyResource extends SimpleResourceDefinition {
 
         @Override
         protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel,
-                ServiceVerificationHandler verificationHandler) {
+                ServiceVerificationHandler verificationHandler) throws OperationFailedException {
             PropertyResource.recreateParentService(context, parentAddress, parentModel, verificationHandler);
         }
 
@@ -119,16 +115,13 @@ public class PropertyResource extends SimpleResourceDefinition {
     }
 
     private static class PropertyRemove extends RestartParentResourceRemoveHandler {
-
-        static final PropertyRemove INSTANCE = new PropertyRemove();
-
-        private PropertyRemove() {
-            super(CONNECTOR);
+        private PropertyRemove(String parent) {
+            super(parent);
         }
 
         @Override
         protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel,
-                ServiceVerificationHandler verificationHandler)  {
+                ServiceVerificationHandler verificationHandler) throws OperationFailedException {
             PropertyResource.recreateParentService(context, parentAddress, parentModel, verificationHandler);
         }
 

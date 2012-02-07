@@ -37,8 +37,10 @@ import org.jboss.invocation.InterceptorFactory;
  * Logs any exceptions/errors that happen during invocation of EJB methods, as specified by the
  * EJB3 spec, section 14.3
  * <p/>
- * Note: This should be the first interceptor in the chain of interceptors, for this to be able to
+ * Note: This should be the near the start of interceptor in the chain of interceptors, for this to be able to
  * catch all kinds of errors/exceptions.
+ *
+ * It should also be run inside the exception transforming interceptor, to make sure that the original exception is logged
  *
  * @author Jaikiran Pai
  */

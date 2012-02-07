@@ -21,39 +21,74 @@
  */
 package org.jboss.as.test.integration.ejb.timerservice.simple;
 
-import javax.annotation.Resource;
-import javax.ejb.Stateless;
-import javax.ejb.Timeout;
-import javax.ejb.TimerService;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Resource;
+import javax.ejb.SessionContext;
+import javax.ejb.Stateless;
+import javax.ejb.Timeout;
+import javax.ejb.Timer;
+import javax.ejb.TimerService;
+
+import org.apache.log4j.Logger;
 
 /**
  * @author Stuart Douglas
  */
 @Stateless
 public class AnnotationTimerServiceBean {
-
-    private static final CountDownLatch latch = new CountDownLatch(1);
+    private static final Logger log = Logger.getLogger(AnnotationTimerServiceBean.class);
+    private static CountDownLatch latch = new CountDownLatch(1);
 
     private static boolean timerServiceCalled = false;
+    private static int TIMER_CALL_WAITING_S = 2;
+
+    private static String timerInfo;
+    private static boolean isPersistent;
+    private static boolean isCalendar;
 
     @Resource
+    private SessionContext sessionContext;
+
     private TimerService timerService;
 
-    public void createTimer() {
-        timerService.createTimer(100, null);
+    public synchronized TimerService getTimerService() {
+        if(timerService == null) {
+            timerService = (TimerService) sessionContext.lookup("java:comp/TimerService");
+        }
+        return timerService;
+    }
+
+    public void resetTimerServiceCalled() {
+        timerServiceCalled = false;
+        latch = new CountDownLatch(1);
+    }
+
+    public String getTimerInfo() {
+        return timerInfo;
+    }
+    public boolean isPersistent() {
+        return isPersistent;
+    }
+    public boolean isCalendar() {
+        return isCalendar;
     }
 
     @Timeout
-    public void timeout() {
+    public void timeout(Timer timer) {
+        log.info("Timer is: " + timer + ", timer info is: " + timer.getInfo());
+        timerInfo = new String((String) timer.getInfo());
+        isPersistent = timer.isPersistent();
+        isCalendar = timer.isCalendarTimer();
+
         timerServiceCalled = true;
         latch.countDown();
     }
 
     public static boolean awaitTimerCall() {
         try {
-            latch.await(2, TimeUnit.SECONDS);
+            latch.await(TIMER_CALL_WAITING_S, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

@@ -21,6 +21,9 @@
  */
 package org.jboss.as.ejb3.deployment.processors.merging;
 
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
+
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.metadata.ClassAnnotationInformation;
@@ -28,9 +31,7 @@ import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
+import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 
 /**
  * @author Stuart Douglas
@@ -59,7 +60,8 @@ public class TransactionManagementMergingProcessor extends AbstractMergingProces
 
     @Override
     protected void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final EJBComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
-        if(componentConfiguration.getDescriptorData() == null) {
+        final EnterpriseBeanMetaData beanMetaData = componentConfiguration.getDescriptorData();
+        if(componentConfiguration.isEntity() || beanMetaData == null) {
             return;
         }
         final TransactionManagementType type = componentConfiguration.getDescriptorData().getTransactionType();

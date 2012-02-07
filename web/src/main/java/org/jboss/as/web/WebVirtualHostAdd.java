@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
+import static org.jboss.as.web.WebMessages.MESSAGES;
 
 import java.util.List;
 import java.util.Locale;
@@ -131,7 +132,7 @@ class WebVirtualHostAdd extends AbstractAddStepHandler implements DescriptionPro
 
         if (operation.hasDefined(Constants.DEFAULT_WEB_MODULE)) {
             if (welcome)
-                throw new OperationFailedException(new ModelNode().set("A default module can not be specified when the welcome root is enabled."));
+                throw new OperationFailedException(new ModelNode().set(MESSAGES.noRootWebappWithWelcomeWebapp()));
             service.setDefaultWebModule(operation.get(Constants.DEFAULT_WEB_MODULE).asString());
         }
 

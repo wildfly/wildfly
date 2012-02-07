@@ -26,9 +26,11 @@ import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROCESS_STATE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
@@ -323,24 +325,51 @@ class ModelControllerImpl implements ModelController {
                     }
 
                     public void asyncCancel(final boolean interruptionDesired) {
-                        Thread thread = opThread.get();
-                        if (thread != null) {
+                        Thread thread = opThread.getAndSet(Thread.currentThread());
+                        if (thread == null) {
+                            setCancelled();
+                        } else {
+                            // Interrupt the request execution
                             thread.interrupt();
+                            // Wait for the cancellation to clear opThread
+                            boolean interrupted = false;
+                            synchronized (opThread) {
+                                while (opThread.get() != null) {
+                                    try {
+                                        opThread.wait();
+                                    } catch (InterruptedException ie) {
+                                        interrupted = true;
+                                    }
+                                }
+                            }
+                            setCancelled();
+                            if (interrupted) {
+                                Thread.currentThread().interrupt();
+                            }
                         }
                     }
 
                     void handleResult(final ModelNode result) {
-                        setResult(result);
+                        if (result != null && result.hasDefined(OUTCOME) && CANCELLED.equals(result.get(OUTCOME).asString())) {
+                            setCancelled();
+                        } else {
+                            setResult(result);
+                        }
                     }
                 }
                 final OpTask opTask = new OpTask();
                 executor.execute(new Runnable() {
                     public void run() {
-                        opThread.set(Thread.currentThread());
                         try {
-                            opTask.handleResult(ModelControllerImpl.this.execute(operation, messageHandler, OperationTransactionControl.COMMIT, attachments));
+                            if (opThread.compareAndSet(null, Thread.currentThread())) {
+                                ModelNode response = ModelControllerImpl.this.execute(operation, messageHandler, OperationTransactionControl.COMMIT, attachments);
+                                opTask.handleResult(response);
+                            }
                         } finally {
-                            opThread.set(null);
+                            synchronized (opThread) {
+                                opThread.set(null);
+                                opThread.notifyAll();
+                            }
                         }
                     }
                 });

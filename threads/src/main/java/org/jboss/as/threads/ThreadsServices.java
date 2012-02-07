@@ -25,6 +25,8 @@ package org.jboss.as.threads;
 import org.jboss.msc.service.ServiceName;
 
 /**
+ * Utilities related to threa management services.
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ThreadsServices {
@@ -35,6 +37,18 @@ public final class ThreadsServices {
     public static final ServiceName THREAD = ServiceName.JBOSS.append("thread");
     public static final ServiceName FACTORY = THREAD.append("factory");
     public static final ServiceName EXECUTOR = THREAD.append("executor");
+
+    /**
+     * Standard implementation of {@link HandoffExecutorResolver} -- a {@link HandoffExecutorResolver.SimpleResolver} with a base service name
+     * of {@link #EXECUTOR}.
+     */
+    public static final HandoffExecutorResolver STANDARD_HANDOFF_EXECUTOR_RESOLVER = new HandoffExecutorResolver.SimpleResolver(ThreadsServices.EXECUTOR);
+
+    /**
+     * Standard implementation of {@link ThreadFactoryResolver} -- a {@link ThreadFactoryResolver.SimpleResolver} with a base service name
+     * of {@link #EXECUTOR}.
+     */
+    public static final ThreadFactoryResolver STANDARD_THREAD_FACTORY_RESOLVER = new ThreadFactoryResolver.SimpleResolver(ThreadsServices.FACTORY);
 
     public static ServiceName threadFactoryName(String name) {
         return FACTORY.append(name);

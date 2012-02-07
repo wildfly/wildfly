@@ -40,6 +40,8 @@ public class PoolConfigService implements Service<PoolConfig> {
 
     public static final ServiceName DEFAULT_MDB_POOL_CONFIG_SERVICE_NAME = EJB_POOL_CONFIG_BASE_SERVICE_NAME.append("mdb-default");
 
+    public static final ServiceName DEFAULT_ENTITY_POOL_CONFIG_SERVICE_NAME = EJB_POOL_CONFIG_BASE_SERVICE_NAME.append("entity-default");
+
     private final PoolConfig poolConfig;
 
     public PoolConfigService(final PoolConfig poolConfig) {

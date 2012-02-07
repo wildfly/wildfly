@@ -27,7 +27,7 @@ import javax.transaction.UserTransaction;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.ejb.remote.common.EJBRemoteManagementUtil;
+import org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.EJBClientTransactionContext;
 import org.jboss.ejb.client.StatelessEJBLocator;
@@ -83,7 +83,7 @@ public class EJBClientUserTransactionTestCase {
     @BeforeClass
     public static void beforeTestClass() throws Exception {
         // the node name that the test methods can use
-        nodeName = EJBRemoteManagementUtil.getNodeName("localhost", 9999);
+        nodeName = EJBManagementUtil.getNodeName("localhost", 9999);
         logger.info("Using node name " + nodeName);
 
     }

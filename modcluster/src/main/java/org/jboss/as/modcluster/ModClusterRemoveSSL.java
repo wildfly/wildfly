@@ -25,19 +25,18 @@ package org.jboss.as.modcluster;
 import java.util.Locale;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author Jean-Frederic Clere
  */
-class ModClusterRemoveSSL extends AbstractRemoveStepHandler implements DescriptionProvider {
+class ModClusterRemoveSSL extends ReloadRequiredRemoveStepHandler implements DescriptionProvider {
 
     static final ModClusterRemoveSSL INSTANCE = new ModClusterRemoveSSL();
-
-    private ModClusterRemoveSSL() {
-        //
-    }
 
     @Override
     public ModelNode getModelDescription(Locale locale) {

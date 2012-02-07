@@ -18,10 +18,6 @@
  */
 package org.jboss.as.test.integration.domain.management.util;
 
-import static org.jboss.as.arquillian.container.Authentication.PASSWORD;
-import static org.jboss.as.arquillian.container.Authentication.USERNAME;
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -60,6 +56,8 @@ import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
 import org.jboss.dmr.ModelNode;
 import org.jboss.sasl.util.UsernamePasswordHashUtil;
 import org.xnio.IoUtils;
+
+import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 
 /**
  * Utility for controlling the lifecycle of a domain.
@@ -115,7 +113,6 @@ public class DomainLifecycleUtil {
             File usersFile = new File(domainPath + "/configuration/mgmt-users.properties");
             FileOutputStream fos = new FileOutputStream(usersFile);
             PrintWriter pw = new PrintWriter(fos);
-            pw.println(USERNAME + "=" + new UsernamePasswordHashUtil().generateHashedHexURP(USERNAME, "ManagementRealm", PASSWORD.toCharArray()));
             pw.println("slave=" + new UsernamePasswordHashUtil().generateHashedHexURP("slave", "ManagementRealm", "slave_user_password".toCharArray()));
             pw.close();
             fos.close();
@@ -134,8 +131,6 @@ public class DomainLifecycleUtil {
             cmd.add(modulesJar.getAbsolutePath());
             cmd.add("-mp");
             cmd.add(modulePath);
-            cmd.add("-logmodule");
-            cmd.add("org.jboss.logmanager");
             //cmd.add("-jaxpmodule");
             //cmd.add("javax.xml.jaxp-provider");
             cmd.add("org.jboss.as.process-controller");

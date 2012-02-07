@@ -25,16 +25,16 @@ import java.io.UnsupportedEncodingException;
 
 import org.ietf.jgss.GSSException;
 import org.ietf.jgss.Oid;
+import org.jboss.as.jacorb.JacORBLogger;
+import org.jboss.as.jacorb.JacORBMessages;
 import org.jboss.as.jacorb.JacORBSubsystemConstants;
 import org.jboss.as.jacorb.service.CorbaORBService;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.ejb.jboss.IORASContextMetaData;
 import org.jboss.metadata.ejb.jboss.IORSASContextMetaData;
 import org.jboss.metadata.ejb.jboss.IORSecurityConfigMetaData;
 import org.jboss.metadata.ejb.jboss.IORTransportConfigMetaData;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_PARAM;
-import org.omg.CORBA.MARSHAL;
 import org.omg.CORBA.ORB;
 import org.omg.CSI.ITTAnonymous;
 import org.omg.CSI.ITTDistinguishedName;
@@ -79,8 +79,6 @@ import org.omg.SSLIOP.TAG_SSL_SEC_TRANS;
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
 public final class CSIv2Util {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.jacorb");
 
     /**
      * DER-encoded ASN.1 representation of the GSSUP mechanism OID.
@@ -132,7 +130,7 @@ public final class CSIv2Util {
     public static TaggedComponent createSSLTaggedComponent(IORSecurityConfigMetaData metadata, Codec codec, int sslPort,
                                                            ORB orb) {
         if (metadata == null) {
-            log.debugf("createSSLTaggedComponent() called with null metadata");
+            JacORBLogger.ROOT_LOGGER.createSSLTaggedComponentWithNullMetaData();
             return null;
         }
 
@@ -146,8 +144,7 @@ public final class CSIv2Util {
             byte[] componentData = codec.encode_value(any);
             tc = new TaggedComponent(TAG_SSL_SEC_TRANS.value, componentData);
         } catch (InvalidTypeForEncoding e) {
-            log.warn("Caught unexcepted exception while encoding SSL component", e);
-            throw new RuntimeException(e);
+            throw JacORBMessages.MESSAGES.unexpectedException(e);
         }
         return tc;
     }
@@ -171,7 +168,7 @@ public final class CSIv2Util {
     public static TaggedComponent createSecurityTaggedComponent(IORSecurityConfigMetaData metadata, Codec codec,
                                                                 int sslPort, ORB orb) {
         if (metadata == null) {
-            log.debugf("createSecurityTaggedComponent() called with null metadata");
+            JacORBLogger.ROOT_LOGGER.createSecurityTaggedComponentWithNullMetaData();
             return null;
         }
 
@@ -190,8 +187,7 @@ public final class CSIv2Util {
             byte[] b = codec.encode_value(any);
             tc = new TaggedComponent(TAG_CSI_SEC_MECH_LIST.value, b);
         } catch (InvalidTypeForEncoding e) {
-            log.warn("Caught unexcepted exception while encoding CompoundSecMechList", e);
-            throw new RuntimeException(e);
+            throw JacORBMessages.MESSAGES.unexpectedException(e);
         }
         return tc;
     }
@@ -371,8 +367,7 @@ public final class CSIv2Util {
                 byte[] b = codec.encode_value(any);
                 tc = new TaggedComponent(TAG_TLS_SEC_TRANS.value, b);
             } catch (InvalidTypeForEncoding e) {
-                log.warn("Caught unexcepted exception while encoding TLS_SEC_TRANS", e);
-                throw new RuntimeException(e);
+                throw JacORBMessages.MESSAGES.unexpectedException(e);
             }
         }
 
@@ -482,7 +477,7 @@ public final class CSIv2Util {
             Oid oid = new Oid(GSSUPMechOID.value.substring(4));
             retval = oid.getDER();
         } catch (GSSException e) {
-            log.warn("Caught exception while encoding GSSUPMechOID", e);
+            JacORBLogger.ROOT_LOGGER.caughtExceptionEncodingGSSUPMechOID(e);
         }
         return retval;
     }
@@ -795,11 +790,11 @@ public final class CSIv2Util {
             // no component with TAG_CSI_SEC_MECH_LIST was found.
             return null;
         } catch (org.omg.IOP.CodecPackage.TypeMismatch e) {
-            // unexpected exception in codec.decode_value.
-            throw new MARSHAL("Unexpected exception: " + e);
+            // unexpected exception in codec
+            throw JacORBMessages.MESSAGES.unexpectedException(e);
         } catch (org.omg.IOP.CodecPackage.FormatMismatch e) {
-            // unexpected exception in codec.decode_value.
-            throw new MARSHAL("Unexpected exception: " + e);
+            // unexpected exception in codec
+            throw JacORBMessages.MESSAGES.unexpectedException(e);
         }
     }
 

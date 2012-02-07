@@ -23,6 +23,8 @@
 package org.jboss.as.ejb3.subsystem;
 
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.threads.ThreadsServices;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * User: jpai
@@ -36,6 +38,7 @@ public interface EJB3SubsystemModel {
     String IIOP = "iiop";
 
     String CONNECTOR_REF = "connector-ref";
+    String IN_VM_REMOTE_INTERFACE_INVOCATION_PASS_BY_VALUE = "in-vm-remote-interface-invocation-pass-by-value";
 
     String DEFAULT_MDB_INSTANCE_POOL = "default-mdb-instance-pool";
     String DEFAULT_RESOURCE_ADAPTER_NAME = "default-resource-adapter-name";
@@ -44,6 +47,8 @@ public interface EJB3SubsystemModel {
     String DEFAULT_SLSB_INSTANCE_POOL = "default-slsb-instance-pool";
     String INSTANCE_ACQUISITION_TIMEOUT = "timeout";
     String INSTANCE_ACQUISITION_TIMEOUT_UNIT = "timeout-unit";
+    String DEFAULT_ENTITY_BEAN_INSTANCE_POOL = "default-entity-bean-instance-pool";
+    String DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING = "default-entity-bean-optimistic-locking";
 
     String MAX_POOL_SIZE = "max-pool-size";
     String STRICT_MAX_BEAN_INSTANCE_POOL = "strict-max-bean-instance-pool";
@@ -79,7 +84,9 @@ public interface EJB3SubsystemModel {
     String SUBDIRECTORY_COUNT = "subdirectory-count";
 
     String CLUSTER_PASSIVATION_STORE = "cluster-passivation-store";
-    String BACKING_CACHE = "backing-cache";
+    String BEAN_CACHE = "bean-cache";
+    String CACHE_CONTAINER = "cache-container";
+    String CLIENT_MAPPINGS_CACHE = "client-mappings-cache";
     String PASSIVATE_EVENTS_ON_REPLICATE = "passivate-events-on-replicate";
 
     PathElement REMOTE_SERVICE_PATH = PathElement.pathElement(SERVICE, REMOTE);
@@ -87,4 +94,6 @@ public interface EJB3SubsystemModel {
     PathElement TIMER_SERVICE_PATH = PathElement.pathElement(SERVICE, TIMER_SERVICE);
     PathElement THREAD_POOL_PATH = PathElement.pathElement(THREAD_POOL);
     PathElement IIOP_PATH = PathElement.pathElement(SERVICE, IIOP);
+
+    ServiceName BASE_THREAD_POOL_SERVICE_NAME = ThreadsServices.EXECUTOR.append("ejb3");
 }

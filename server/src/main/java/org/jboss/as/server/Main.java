@@ -29,6 +29,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
+import java.util.StringTokenizer;
 
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.process.CommandLineConstants;
@@ -51,31 +52,12 @@ import org.jboss.stdio.StdioContext;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author John Bailey
  * @author Brian Stansberry
+ * @author Anil Saldhana
  */
 public final class Main {
 
     public static void usage() {
-        System.out.println("Usage: ./standalone.sh [args...]\n");
-        System.out.println("where args include:");
-        System.out.println("    --admin-only                       Set the server's running type to ADMIN_ONLY causing it to open administrative interfaces ");
-        System.out.println("                                       and accept management requests but not start other runtime services or accept end user requests.\n");
-        System.out.println("    -b=<value>                         Set system property jboss.bind.address to the given value\n");
-        System.out.println("    -b <value>                         Set system property jboss.bind.address to the given value\n");
-        System.out.println("    -b<interface>=<value>              Set system property jboss.bind.address.<interface> to the given value\n");
-        System.out.println("    -c=<config>                        Name of the server configuration file to use (default is \"standalone.xml\")\n");
-        System.out.println("    -c <config>                        Name of the server configuration file to use (default is \"standalone.xml\")\n");
-        System.out.println("    -D<name>[=<value>]                 Set a system property\n");
-        System.out.println("    -h                                 Display this message and exit\n");
-        System.out.println("    --help                             Display this message and exit");
-        System.out.println("    -P=<url>                           Load system properties from the given url\n");
-        System.out.println("    -P <url>                           Load system properties from the given url\n");
-        System.out.println("    --properties=<url>                 Load system properties from the given url\n");
-        System.out.println("    --server-config=<config>           Name of the server configuration file to use (default is \"standalone.xml\")\n");
-        System.out.println("    -u=<value>                         Set system property jboss.default.multicast.address to the given value\n");
-        System.out.println("    -u <value>                         Set system property jboss.default.multicast.address to the given value\n");
-        System.out.println("    -V                                 Print version and exit\n");
-        System.out.println("    -v                                 Print version and exit\n");
-        System.out.println("    --version                          Print version and exit\n");
+        CommandLineArgument.printUsage(System.out);
     }
 
     private Main() {
@@ -96,18 +78,17 @@ public final class Main {
         } catch (Throwable ignored) {
         }
 
-        // Install JBoss Stdio to avoid any nasty crosstalk.
-        StdioContext.install();
-        final StdioContext context = StdioContext.create(
-            new NullInputStream(),
-            new LoggingOutputStream(Logger.getLogger("stdout"), Level.INFO),
-            new LoggingOutputStream(Logger.getLogger("stderr"), Level.ERROR)
-        );
-        StdioContext.setStdioContextSelector(new SimpleStdioContextSelector(context));
-
         try {
             Module.registerURLStreamHandlerFactoryModule(Module.getBootModuleLoader().loadModule(ModuleIdentifier.create("org.jboss.vfs")));
             ServerEnvironment serverEnvironment = determineEnvironment(args, new Properties(SecurityActions.getSystemProperties()), SecurityActions.getSystemEnvironment(), ServerEnvironment.LaunchType.STANDALONE);
+            // Install JBoss Stdio to avoid any nasty crosstalk, after command line arguments are processed.
+            StdioContext.install();
+            final StdioContext context = StdioContext.create(
+                    new NullInputStream(),
+                    new LoggingOutputStream(Logger.getLogger("stdout"), Level.INFO),
+                    new LoggingOutputStream(Logger.getLogger("stderr"), Level.ERROR)
+            );
+            StdioContext.setStdioContextSelector(new SimpleStdioContextSelector(context));
             if (serverEnvironment == null) {
                 abort(null);
             } else {
@@ -205,7 +186,7 @@ public final class Main {
 
                     int idx = arg.indexOf('=');
                     if (idx == arg.length() - 1) {
-                        System.err.printf("Argument expected for option %s\n", arg);
+                        System.err.printf(ServerMessages.MESSAGES.noArgValue(arg));
                         usage();
                         return null;
                     }
@@ -239,15 +220,18 @@ public final class Main {
                     SecurityActions.setSystemProperty(ServerEnvironment.JBOSS_DEFAULT_MULTICAST_ADDRESS, value);
                 } else if (CommandLineConstants.ADMIN_ONLY.equals(arg)) {
                     runningMode = RunningMode.ADMIN_ONLY;
+                } else if (arg.startsWith(CommandLineConstants.SECURITY_PROP)) {
+                    //Value can be a comma separated key value pair
+                    //Drop the first 2 characters
+                    String token = arg.substring(2);
+                    processSecurityProperties(token);
                 } else {
                     System.err.printf(ServerMessages.MESSAGES.invalidCommandLineOption(arg));
-                    System.err.println();
                     usage();
                     return null;
                 }
             } catch (IndexOutOfBoundsException e) {
                 System.err.printf(ServerMessages.MESSAGES.valueExpectedForCommandLineOption(arg));
-                System.err.println();
                 usage();
                 return null;
             }
@@ -312,5 +296,23 @@ public final class Main {
         }
 
         return url;
+    }
+
+    private static void processSecurityProperties(String secProperties){
+        StringTokenizer tokens = new StringTokenizer(secProperties, ",");
+        while(tokens != null && tokens.hasMoreTokens()){
+            String token = tokens.nextToken();
+
+            int idx = token.indexOf('=');
+            if (idx == token.length() - 1) {
+                System.err.printf(ServerMessages.MESSAGES.valueExpectedForCommandLineOption(secProperties));
+                System.err.println();
+                usage();
+                return;
+            }
+            String value = token.substring(idx + 1);
+            String key = token.substring(0, idx);
+            SecurityActions.setSecurityProperty(key, value);
+        }
     }
 }

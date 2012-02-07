@@ -120,6 +120,14 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
     @Override
     public void stop(StopContext context) {
         DEPLOYMENT_CONNECTOR_LOGGER.debugf("Stopping service %s", ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE);
+        super.stop(context);
+        if (mdr != null && mdr.getValue() != null) {
+            try {
+                mdr.getValue().unregisterResourceAdapter(value.getDeployment().getDeploymentName());
+            } catch (Throwable t) {
+                DEPLOYMENT_CONNECTOR_LOGGER.debug("Exception during unregistering deployment", t);
+            }
+        }
     }
 
     public CommonDeployment getDeploymentMD() {

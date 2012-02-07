@@ -50,7 +50,7 @@ public class CalendarTimerTask extends TimerTask<CalendarTimer> {
 
         // if we have any more schedules remaining, then schedule a new task
         if (calendarTimer.getNextExpiration() != null && !calendarTimer.isInRetry()) {
-            calendarTimer.scheduleTimeout();
+            calendarTimer.scheduleTimeout(false);
         }
 
         // finally invoke the timeout method through the invoker
@@ -82,6 +82,13 @@ public class CalendarTimerTask extends TimerTask<CalendarTimer> {
     }
 
     @Override
+    protected void scheduleTimeoutIfRequired() {
+        if(this.timer.getNextExpiration() != null) {
+            this.timer.scheduleTimeout(false);
+        }
+    }
+
+    @Override
     protected void postTimeoutProcessing() {
         final CalendarTimer calendarTimer = this.getTimer();
         final TimerState timerState = calendarTimer.getState();
@@ -92,7 +99,7 @@ public class CalendarTimerTask extends TimerTask<CalendarTimer> {
             } else {
                 calendarTimer.setTimerState(TimerState.ACTIVE);
                 // persist changes
-                timerService.persistTimer(calendarTimer);
+                timerService.persistTimer(calendarTimer, false);
             }
         }
     }

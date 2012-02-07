@@ -22,6 +22,7 @@
 package org.jboss.as.threads;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
@@ -53,17 +54,15 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.threads.CommonAttributes.ALLOW_CORE_TIMEOUT;
-import static org.jboss.as.threads.CommonAttributes.BLOCKING;
+import static org.jboss.as.threads.CommonAttributes.BLOCKING_BOUNDED_QUEUE_THREAD_POOL;
+import static org.jboss.as.threads.CommonAttributes.BLOCKING_QUEUELESS_THREAD_POOL;
 import static org.jboss.as.threads.CommonAttributes.BOUNDED_QUEUE_THREAD_POOL;
 import static org.jboss.as.threads.CommonAttributes.CORE_THREADS;
-import static org.jboss.as.threads.CommonAttributes.COUNT;
 import static org.jboss.as.threads.CommonAttributes.GROUP_NAME;
 import static org.jboss.as.threads.CommonAttributes.HANDOFF_EXECUTOR;
 import static org.jboss.as.threads.CommonAttributes.KEEPALIVE_TIME;
 import static org.jboss.as.threads.CommonAttributes.MAX_THREADS;
-import static org.jboss.as.threads.CommonAttributes.PER_CPU;
 import static org.jboss.as.threads.CommonAttributes.PRIORITY;
-import static org.jboss.as.threads.CommonAttributes.PROPERTIES;
 import static org.jboss.as.threads.CommonAttributes.QUEUELESS_THREAD_POOL;
 import static org.jboss.as.threads.CommonAttributes.QUEUE_LENGTH;
 import static org.jboss.as.threads.CommonAttributes.SCHEDULED_THREAD_POOL;
@@ -77,7 +76,6 @@ import static org.jboss.as.threads.CommonAttributes.UNIT;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -92,7 +90,6 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import junit.framework.Assert;
-
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ExpressionResolver;
@@ -220,40 +217,40 @@ public class ThreadsSubsystemTestCase {
         assertEquals(ModelType.STRING, threadFactoryDescription.require(ATTRIBUTES).require(THREAD_NAME_PATTERN).require(TYPE)
                 .asType());
         assertEquals(ModelType.INT, threadFactoryDescription.require(ATTRIBUTES).require(PRIORITY).require(TYPE).asType());
-        assertEquals(ModelType.LIST, threadFactoryDescription.require(ATTRIBUTES).require(PROPERTIES).require(TYPE).asType());
 
-        ModelNode boundedQueueThreadPoolDesc = threadsDescription.get(CHILDREN, BOUNDED_QUEUE_THREAD_POOL, MODEL_DESCRIPTION,
-                "*");
+        ModelNode blockingBoundedQueueThreadPoolDesc = threadsDescription.get(CHILDREN, BLOCKING_BOUNDED_QUEUE_THREAD_POOL, MODEL_DESCRIPTION, "*");
+        assertEquals(ModelType.STRING, blockingBoundedQueueThreadPoolDesc.require(ATTRIBUTES).require(NAME).require(TYPE).asType());
+        assertEquals(ModelType.STRING, blockingBoundedQueueThreadPoolDesc.require(ATTRIBUTES).require(THREAD_FACTORY).require(TYPE)
+                .asType());
+
+        assertEquals(ModelType.INT, blockingBoundedQueueThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(TYPE)
+                .asType());
+        assertEquals(ModelType.INT, blockingBoundedQueueThreadPoolDesc.require(ATTRIBUTES).require(CORE_THREADS).require(TYPE)
+                .asType());
+        assertEquals(ModelType.INT, blockingBoundedQueueThreadPoolDesc.require(ATTRIBUTES).require(QUEUE_LENGTH).require(TYPE)
+                .asType());
+        assertEquals(ModelType.OBJECT, blockingBoundedQueueThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(TYPE)
+                .asType());
+        assertEquals(ModelType.LONG, blockingBoundedQueueThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(VALUE_TYPE)
+                .require(TIME).require(TYPE).asType());
+        assertEquals(ModelType.STRING,
+                blockingBoundedQueueThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(VALUE_TYPE).require(UNIT)
+                        .require(TYPE).asType());
+        assertEquals(ModelType.BOOLEAN, blockingBoundedQueueThreadPoolDesc.require(ATTRIBUTES).require(ALLOW_CORE_TIMEOUT)
+                .require(TYPE).asType());
+        assertFalse(blockingBoundedQueueThreadPoolDesc.require(ATTRIBUTES).has(HANDOFF_EXECUTOR));
+
+        ModelNode boundedQueueThreadPoolDesc = threadsDescription.get(CHILDREN, BOUNDED_QUEUE_THREAD_POOL, MODEL_DESCRIPTION, "*");
         assertEquals(ModelType.STRING, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(NAME).require(TYPE).asType());
         assertEquals(ModelType.STRING, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(THREAD_FACTORY).require(TYPE)
                 .asType());
-        assertEquals(ModelType.LIST, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(PROPERTIES).require(TYPE).asType());
-        assertEquals(ModelType.PROPERTY, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(PROPERTIES).require(VALUE_TYPE).asType());
-        assertEquals(ModelType.OBJECT, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(TYPE)
+
+        assertEquals(ModelType.INT, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(TYPE)
                 .asType());
-        assertEquals(
-                ModelType.INT,
-                boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(VALUE_TYPE).require(COUNT)
-                        .require(TYPE).asType());
-        assertEquals(ModelType.INT,
-                boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(VALUE_TYPE).require(PER_CPU)
-                        .require(TYPE).asType());
-        assertEquals(ModelType.OBJECT, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(CORE_THREADS).require(TYPE)
+        assertEquals(ModelType.INT, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(CORE_THREADS).require(TYPE)
                 .asType());
-        assertEquals(ModelType.INT,
-                boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(CORE_THREADS).require(VALUE_TYPE).require(COUNT)
-                        .require(TYPE).asType());
-        assertEquals(ModelType.INT,
-                boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(CORE_THREADS).require(VALUE_TYPE).require(PER_CPU)
-                        .require(TYPE).asType());
-        assertEquals(ModelType.OBJECT, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(QUEUE_LENGTH).require(TYPE)
+        assertEquals(ModelType.INT, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(QUEUE_LENGTH).require(TYPE)
                 .asType());
-        assertEquals(ModelType.INT,
-                boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(QUEUE_LENGTH).require(VALUE_TYPE).require(COUNT)
-                        .require(TYPE).asType());
-        assertEquals(ModelType.INT,
-                boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(QUEUE_LENGTH).require(VALUE_TYPE).require(PER_CPU)
-                        .require(TYPE).asType());
         assertEquals(ModelType.OBJECT, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(TYPE)
                 .asType());
         assertEquals(ModelType.LONG, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(VALUE_TYPE)
@@ -261,31 +258,33 @@ public class ThreadsSubsystemTestCase {
         assertEquals(ModelType.STRING,
                 boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(VALUE_TYPE).require(UNIT)
                         .require(TYPE).asType());
-        assertEquals(ModelType.BOOLEAN, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(BLOCKING).require(TYPE).asType());
         assertEquals(ModelType.BOOLEAN, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(ALLOW_CORE_TIMEOUT)
                 .require(TYPE).asType());
         assertEquals(ModelType.STRING, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(HANDOFF_EXECUTOR).require(TYPE)
                 .asType());
 
+        ModelNode blockingQueueLessThreadPoolDesc = threadsDescription.get(CHILDREN, BLOCKING_QUEUELESS_THREAD_POOL, MODEL_DESCRIPTION, "*");
+        assertEquals(ModelType.STRING, blockingQueueLessThreadPoolDesc.require(ATTRIBUTES).require(NAME).require(TYPE).asType());
+        assertEquals(ModelType.STRING, blockingQueueLessThreadPoolDesc.require(ATTRIBUTES).require(THREAD_FACTORY).require(TYPE)
+                .asType());
+        assertEquals(ModelType.INT, blockingQueueLessThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(TYPE).asType());
+        assertEquals(ModelType.LONG, blockingQueueLessThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(VALUE_TYPE)
+                .require(TIME).require(TYPE).asType());
+        assertEquals(ModelType.STRING,
+                blockingQueueLessThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(VALUE_TYPE).require(UNIT)
+                        .require(TYPE).asType());
+        assertFalse(blockingQueueLessThreadPoolDesc.require(ATTRIBUTES).has(HANDOFF_EXECUTOR));
+
         ModelNode queueLessThreadPoolDesc = threadsDescription.get(CHILDREN, QUEUELESS_THREAD_POOL, MODEL_DESCRIPTION, "*");
         assertEquals(ModelType.STRING, queueLessThreadPoolDesc.require(ATTRIBUTES).require(NAME).require(TYPE).asType());
         assertEquals(ModelType.STRING, queueLessThreadPoolDesc.require(ATTRIBUTES).require(THREAD_FACTORY).require(TYPE)
                 .asType());
-        assertEquals(ModelType.LIST, queueLessThreadPoolDesc.require(ATTRIBUTES).require(PROPERTIES).require(TYPE).asType());
-        assertEquals(ModelType.PROPERTY, queueLessThreadPoolDesc.require(ATTRIBUTES).require(PROPERTIES).require(VALUE_TYPE).asType());
-        assertEquals(
-                ModelType.INT,
-                boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(VALUE_TYPE).require(COUNT)
-                        .require(TYPE).asType());
-        assertEquals(ModelType.INT,
-                boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(VALUE_TYPE).require(PER_CPU)
-                        .require(TYPE).asType());
-        assertEquals(ModelType.LONG, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(VALUE_TYPE)
+        assertEquals(ModelType.INT, queueLessThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(TYPE).asType());
+        assertEquals(ModelType.LONG, queueLessThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(VALUE_TYPE)
                 .require(TIME).require(TYPE).asType());
         assertEquals(ModelType.STRING,
-                boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(VALUE_TYPE).require(UNIT)
+                queueLessThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(VALUE_TYPE).require(UNIT)
                         .require(TYPE).asType());
-        assertEquals(ModelType.BOOLEAN, queueLessThreadPoolDesc.require(ATTRIBUTES).require(BLOCKING).require(TYPE).asType());
         assertEquals(ModelType.STRING, queueLessThreadPoolDesc.require(ATTRIBUTES).require(HANDOFF_EXECUTOR).require(TYPE)
                 .asType());
 
@@ -293,19 +292,11 @@ public class ThreadsSubsystemTestCase {
         assertEquals(ModelType.STRING, scheduledThreadPoolDesc.require(ATTRIBUTES).require(NAME).require(TYPE).asType());
         assertEquals(ModelType.STRING, scheduledThreadPoolDesc.require(ATTRIBUTES).require(THREAD_FACTORY).require(TYPE)
                 .asType());
-        assertEquals(ModelType.LIST, scheduledThreadPoolDesc.require(ATTRIBUTES).require(PROPERTIES).require(TYPE).asType());
-        assertEquals(ModelType.PROPERTY, scheduledThreadPoolDesc.require(ATTRIBUTES).require(PROPERTIES).require(VALUE_TYPE).asType());
-        assertEquals(
-                ModelType.INT,
-                boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(VALUE_TYPE).require(COUNT)
-                        .require(TYPE).asType());
-        assertEquals(ModelType.INT,
-                boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(VALUE_TYPE).require(PER_CPU)
-                        .require(TYPE).asType());
-        assertEquals(ModelType.LONG, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(VALUE_TYPE)
+        assertEquals(ModelType.INT, scheduledThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(TYPE).asType());
+        assertEquals(ModelType.LONG, scheduledThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(VALUE_TYPE)
                 .require(TIME).require(TYPE).asType());
         assertEquals(ModelType.STRING,
-                boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(VALUE_TYPE).require(UNIT)
+                scheduledThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(VALUE_TYPE).require(UNIT)
                         .require(TYPE).asType());
 
         ModelNode unboundedThreadPoolDesc = threadsDescription.get(CHILDREN, UNBOUNDED_QUEUE_THREAD_POOL, MODEL_DESCRIPTION,
@@ -313,19 +304,11 @@ public class ThreadsSubsystemTestCase {
         assertEquals(ModelType.STRING, unboundedThreadPoolDesc.require(ATTRIBUTES).require(NAME).require(TYPE).asType());
         assertEquals(ModelType.STRING, unboundedThreadPoolDesc.require(ATTRIBUTES).require(THREAD_FACTORY).require(TYPE)
                 .asType());
-        assertEquals(ModelType.LIST, unboundedThreadPoolDesc.require(ATTRIBUTES).require(PROPERTIES).require(TYPE).asType());
-        assertEquals(ModelType.PROPERTY, unboundedThreadPoolDesc.require(ATTRIBUTES).require(PROPERTIES).require(VALUE_TYPE).asType());
-        assertEquals(
-                ModelType.INT,
-                boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(VALUE_TYPE).require(COUNT)
-                        .require(TYPE).asType());
-        assertEquals(ModelType.INT,
-                boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(VALUE_TYPE).require(PER_CPU)
-                        .require(TYPE).asType());
-        assertEquals(ModelType.LONG, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(VALUE_TYPE)
+        assertEquals(ModelType.INT, unboundedThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(TYPE).asType());
+        assertEquals(ModelType.LONG, unboundedThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(VALUE_TYPE)
                 .require(TIME).require(TYPE).asType());
         assertEquals(ModelType.STRING,
-                boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(VALUE_TYPE).require(UNIT)
+                unboundedThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(VALUE_TYPE).require(UNIT)
                         .require(TYPE).asType());
 
     }
@@ -350,22 +333,17 @@ public class ThreadsSubsystemTestCase {
 
     @Test
     public void testSimpleThreadFactoryInvalidPriorityValue() throws Exception {
-        List<ModelNode> updates = createSubSystem("<thread-factory name=\"test-factory\" priority=\"12\"/>");
-        assertEquals(2, updates.size());
-        executeForResult(updates.get(0));
         try {
-            executeForResult(updates.get(1));
+            createSubSystem("<thread-factory name=\"test-factory\" priority=\"12\"/>");
             fail("Expected failure for invalid priority");
-        } catch (OperationFailedException e) {
+        } catch (XMLStreamException e) {
         }
     }
 
     @Test
     public void testFullThreadFactory() throws Exception {
         List<ModelNode> updates = createSubSystem("<thread-factory name=\"test-factory\"" + "   group-name=\"test-group\""
-                + "   thread-name-pattern=\"test-pattern\"" + "   priority=\"5\">" + "   <properties>"
-                + "      <property name=\"propA\" value=\"valueA\"/>" + "      <property name=\"propB\" value=\"valueB\"/>"
-                + "   </properties>" + "</thread-factory>");
+                + "   thread-name-pattern=\"test-pattern\"" + "   priority=\"5\"/>");
 
         executeForResult(updates.get(0));
         controller.execute(updates.get(1), null, null, null);
@@ -382,20 +360,6 @@ public class ThreadsSubsystemTestCase {
         assertEquals("test-group", threadFactory.require("test-factory").require("group-name").asString());
         assertEquals("test-pattern", threadFactory.require("test-factory").require("thread-name-pattern").asString());
         assertEquals(5, threadFactory.require("test-factory").require("priority").asInt());
-
-        ModelNode props = threadFactory.require("test-factory").require("properties");
-        assertTrue(props.isDefined());
-        assertEquals(2, props.asList().size());
-        for (ModelNode prop : props.asList()) {
-            Property property = prop.asProperty();
-            if (property.getName().equals("propA")) {
-                assertEquals("valueA", property.getValue().asString());
-            } else if (property.getName().equals("propB")) {
-                assertEquals("valueB", property.getValue().asString());
-            } else {
-                fail("Unknown property " + property);
-            }
-        }
     }
 
     @Test
@@ -422,8 +386,26 @@ public class ThreadsSubsystemTestCase {
 
     @Test
     public void testSimpleUnboundedQueueThreadPool() throws Exception {
+        List<ModelNode> updates = createSubSystem("<unbounded-queue-thread-pool name=\"test-pool\"><max-threads count=\"1\"/></unbounded-queue-thread-pool>");
+        assertEquals(2, updates.size());
+        for (ModelNode update : updates) {
+            try {
+                executeForResult(update);
+            } catch (OperationFailedException e) {
+                throw new RuntimeException(e.getFailureDescription().toString());
+            }
+        }
+
+        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode threadPool = subsystem.require("unbounded-queue-thread-pool");
+        assertEquals(1, threadPool.keys().size());
+        assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
+    }
+
+    @Test
+    public void testSimpleUnboundedQueueThreadPool1_0() throws Exception {
         List<ModelNode> updates = createSubSystem("<unbounded-queue-thread-pool name=\"test-pool\">"
-                + "   <max-threads count=\"1\" per-cpu=\"2\"/>" + "</unbounded-queue-thread-pool>");
+                + "   <max-threads count=\"1\" per-cpu=\"2\"/>" + "</unbounded-queue-thread-pool>", Namespace.THREADS_1_0);
         assertEquals(2, updates.size());
         for (ModelNode update : updates) {
             try {
@@ -444,14 +426,31 @@ public class ThreadsSubsystemTestCase {
         List<ModelNode> updates = createSubSystem(
                 "<thread-factory name=\"test-factory\"/>" +
                 "<unbounded-queue-thread-pool name=\"test-pool\">" +
-                "   <max-threads count=\"100\" per-cpu=\"5\"/>" +
+                "   <max-threads count=\"100\"/>" +
+                "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
+                "   <thread-factory name=\"test-factory\"/>" +
+                "</unbounded-queue-thread-pool>");
+
+        executeForResult(updates.get(0));
+        executeForResult(updates.get(1));
+        executeForResult(updates.get(2));
+
+        checkFullUnboundedThreadPool();
+    }
+
+    @Test
+    public void testFullUnboundedQueueThreadPool1_0() throws Exception {
+        List<ModelNode> updates = createSubSystem(
+                "<thread-factory name=\"test-factory\"/>" +
+                "<unbounded-queue-thread-pool name=\"test-pool\">" +
+                "   <max-threads count=\"100\" per-cpu=\"0\"/>" +
                 "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
                 "   <thread-factory name=\"test-factory\"/>" +
                 "   <properties>" +
                 "      <property name=\"propA\" value=\"valueA\"/>" +
                 "      <property name=\"propB\" value=\"valueB\"/>" +
                 "   </properties>" +
-                "</unbounded-queue-thread-pool>");
+                "</unbounded-queue-thread-pool>", Namespace.THREADS_1_0);
 
         executeForResult(updates.get(0));
         executeForResult(updates.get(1));
@@ -465,32 +464,37 @@ public class ThreadsSubsystemTestCase {
         ModelNode threadPool = subsystem.require("unbounded-queue-thread-pool");
         assertEquals(1, threadPool.keys().size());
         assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
-        assertEquals(new BigDecimal(100), threadPool.require("test-pool").require(MAX_THREADS).require(COUNT).asBigDecimal());
-        assertEquals(new BigDecimal(5), threadPool.require("test-pool").require(MAX_THREADS).require(PER_CPU).asBigDecimal());
+        assertEquals(100, threadPool.require("test-pool").require(MAX_THREADS).asInt());
         assertEquals(1000L, threadPool.require("test-pool").require(KEEPALIVE_TIME).require(TIME).asLong());
         assertEquals("MILLISECONDS", threadPool.require("test-pool").require(KEEPALIVE_TIME).require(UNIT).asString());
-
-        ModelNode props = threadPool.require("test-pool").require("properties");
-        assertTrue(props.isDefined());
-        assertEquals(2, props.asList().size());
-        for (ModelNode prop : props.asList()) {
-            Property property = prop.asProperty();
-            if (property.getName().equals("propA")) {
-                assertEquals("valueA", property.getValue().asString());
-            } else if (property.getName().equals("propB")) {
-                assertEquals("valueB", property.getValue().asString());
-            } else {
-                fail("Unknown property " + property);
-            }
-        }
     }
 
     @Test
     public void testSeveralUnboundedQueueThreadPools() throws Exception {
+        List<ModelNode> updates = createSubSystem("<unbounded-queue-thread-pool name=\"test-poolA\"><max-threads count=\"1\"/></unbounded-queue-thread-pool>"
+                + "<unbounded-queue-thread-pool name=\"test-poolB\"><max-threads count=\"2\"/></unbounded-queue-thread-pool>");
+        assertEquals(3, updates.size());
+        for (ModelNode update : updates) {
+            try {
+                executeForResult(update);
+            } catch (OperationFailedException e) {
+                throw new RuntimeException(e.getFailureDescription().toString());
+            }
+        }
+
+        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode threadFactory = subsystem.require("unbounded-queue-thread-pool");
+        assertEquals(2, threadFactory.keys().size());
+        assertEquals("test-poolA", threadFactory.require("test-poolA").require("name").asString());
+        assertEquals("test-poolB", threadFactory.require("test-poolB").require("name").asString());
+    }
+
+    @Test
+    public void testSeveralUnboundedQueueThreadPools1_0() throws Exception {
         List<ModelNode> updates = createSubSystem("<unbounded-queue-thread-pool name=\"test-poolA\">"
                 + "   <max-threads count=\"1\" per-cpu=\"2\"/>" + "</unbounded-queue-thread-pool>"
                 + "<unbounded-queue-thread-pool name=\"test-poolB\">" + "   <max-threads count=\"1\" per-cpu=\"2\"/>"
-                + "</unbounded-queue-thread-pool>");
+                + "</unbounded-queue-thread-pool>", Namespace.THREADS_1_0);
         assertEquals(3, updates.size());
         for (ModelNode update : updates) {
             try {
@@ -509,8 +513,25 @@ public class ThreadsSubsystemTestCase {
 
     @Test
     public void testSimpleScheduledThreadPool() throws Exception {
+        List<ModelNode> updates = createSubSystem("<scheduled-thread-pool name=\"test-pool\"><max-threads count=\"1\"/></scheduled-thread-pool>");
+        assertEquals(2, updates.size());
+        for (ModelNode update : updates) {
+            try {
+                executeForResult(update);
+            } catch (OperationFailedException e) {
+                throw new RuntimeException(e.getFailureDescription().toString());
+            }
+        }
+
+        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode threadPool = subsystem.require("scheduled-thread-pool");
+        assertEquals(1, threadPool.keys().size());
+        assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
+    }
+    @Test
+    public void testSimpleScheduledThreadPool1_0() throws Exception {
         List<ModelNode> updates = createSubSystem("<scheduled-thread-pool name=\"test-pool\">"
-                + "   <max-threads count=\"1\" per-cpu=\"2\"/>" + "</scheduled-thread-pool>");
+                + "   <max-threads count=\"1\" per-cpu=\"2\"/>" + "</scheduled-thread-pool>", Namespace.THREADS_1_0);
         assertEquals(2, updates.size());
         for (ModelNode update : updates) {
             try {
@@ -531,14 +552,31 @@ public class ThreadsSubsystemTestCase {
         List<ModelNode> updates = createSubSystem(
                 "<thread-factory name=\"test-factory\"/>" +
                 "<scheduled-thread-pool name=\"test-pool\">" +
-                "   <max-threads count=\"100\" per-cpu=\"5\"/>" +
+                "   <max-threads count=\"100\"/>" +
+                "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
+                "   <thread-factory name=\"test-factory\"/>" +
+                "</scheduled-thread-pool>");
+
+        executeForResult(updates.get(0));
+        executeForResult(updates.get(1));
+        executeForResult(updates.get(2));
+
+        checkFullScheduledThreadPool();
+    }
+
+    @Test
+    public void testFullScheduledThreadPool1_0() throws Exception {
+        List<ModelNode> updates = createSubSystem(
+                "<thread-factory name=\"test-factory\"/>" +
+                "<scheduled-thread-pool name=\"test-pool\">" +
+                "   <max-threads count=\"100\" per-cpu=\"0\"/>" +
                 "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
                 "   <thread-factory name=\"test-factory\"/>" +
                 "   <properties>" +
                 "      <property name=\"propA\" value=\"valueA\"/>" +
                 "      <property name=\"propB\" value=\"valueB\"/>" +
                 "   </properties>" +
-                "</scheduled-thread-pool>");
+                "</scheduled-thread-pool>", Namespace.THREADS_1_0);
 
         executeForResult(updates.get(0));
         executeForResult(updates.get(1));
@@ -552,32 +590,37 @@ public class ThreadsSubsystemTestCase {
         ModelNode threadPool = subsystem.require("scheduled-thread-pool");
         assertEquals(1, threadPool.keys().size());
         assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
-        assertEquals(new BigDecimal(100), threadPool.require("test-pool").require(MAX_THREADS).require(COUNT).asBigDecimal());
-        assertEquals(new BigDecimal(5), threadPool.require("test-pool").require(MAX_THREADS).require(PER_CPU).asBigDecimal());
+        assertEquals(100, threadPool.require("test-pool").require(MAX_THREADS).asInt());
         assertEquals(1000L, threadPool.require("test-pool").require(KEEPALIVE_TIME).get(TIME).asLong());
         assertEquals("MILLISECONDS", threadPool.require("test-pool").require(KEEPALIVE_TIME).get(UNIT).asString());
-
-        ModelNode props = threadPool.require("test-pool").require("properties");
-        assertTrue(props.isDefined());
-        assertEquals(2, props.asList().size());
-        for (ModelNode prop : props.asList()) {
-            Property property = prop.asProperty();
-            if (property.getName().equals("propA")) {
-                assertEquals("valueA", property.getValue().asString());
-            } else if (property.getName().equals("propB")) {
-                assertEquals("valueB", property.getValue().asString());
-            } else {
-                fail("Unknown property " + property);
-            }
-        }
     }
 
     @Test
     public void testSeveralScheduledThreadPools() throws Exception {
+        List<ModelNode> updates = createSubSystem("<scheduled-thread-pool name=\"test-poolA\"><max-threads count=\"1\"/></scheduled-thread-pool>"
+                + "<scheduled-thread-pool name=\"test-poolB\"><max-threads count=\"1\"/></scheduled-thread-pool>");
+        assertEquals(3, updates.size());
+        for (ModelNode update : updates) {
+            try {
+                executeForResult(update);
+            } catch (OperationFailedException e) {
+                throw new RuntimeException(e.getFailureDescription().toString());
+            }
+        }
+
+        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode threadFactory = subsystem.require("scheduled-thread-pool");
+        assertEquals(2, threadFactory.keys().size());
+        assertEquals("test-poolA", threadFactory.require("test-poolA").require("name").asString());
+        assertEquals("test-poolB", threadFactory.require("test-poolB").require("name").asString());
+    }
+
+    @Test
+    public void testSeveralScheduledThreadPools1_0() throws Exception {
         List<ModelNode> updates = createSubSystem("<scheduled-thread-pool name=\"test-poolA\">"
                 + "   <max-threads count=\"1\" per-cpu=\"2\"/>" + "</scheduled-thread-pool>"
                 + "<scheduled-thread-pool name=\"test-poolB\">" + "   <max-threads count=\"1\" per-cpu=\"2\"/>"
-                + "</scheduled-thread-pool>");
+                + "</scheduled-thread-pool>", Namespace.THREADS_1_0);
         assertEquals(3, updates.size());
         for (ModelNode update : updates) {
             try {
@@ -596,8 +639,27 @@ public class ThreadsSubsystemTestCase {
 
     @Test
     public void testSimpleQueuelessThreadPool() throws Exception {
+        List<ModelNode> updates = createSubSystem("<queueless-thread-pool name=\"test-pool\"><max-threads count=\"1\"/></queueless-thread-pool>");
+        assertEquals(2, updates.size());
+        for (ModelNode update : updates) {
+            try {
+                executeForResult(update);
+            } catch (OperationFailedException e) {
+                throw new RuntimeException(e.getFailureDescription().toString());
+            }
+        }
+
+        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode threadPool = subsystem.require("queueless-thread-pool");
+        assertEquals(1, threadPool.keys().size());
+        assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
+    }
+
+    @Test
+    public void testSimpleQueuelessThreadPool1_0() throws Exception {
         List<ModelNode> updates = createSubSystem("<queueless-thread-pool name=\"test-pool\">"
-                + "   <max-threads count=\"1\" per-cpu=\"2\"/>" + "</queueless-thread-pool>");
+                + "   <max-threads count=\"1\" per-cpu=\"2\"/>" + "</queueless-thread-pool>",
+                Namespace.THREADS_1_0);
         assertEquals(2, updates.size());
         for (ModelNode update : updates) {
             try {
@@ -617,8 +679,30 @@ public class ThreadsSubsystemTestCase {
     public void testFullQueuelessThreadPool() throws Exception {
         List<ModelNode> updates = createSubSystem(
                 "<thread-factory name=\"test-factory\"/>" +
-                "<queueless-thread-pool name=\"test-pool\" blocking=\"true\">" +
-                "   <max-threads count=\"100\" per-cpu=\"5\"/>" +
+                "<queueless-thread-pool name=\"other\"><max-threads count=\"1\"/></queueless-thread-pool>" +
+                "<queueless-thread-pool name=\"test-pool\">" +
+                "   <max-threads count=\"100\"/>" +
+                "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
+                "   <thread-factory name=\"test-factory\"/>" +
+                "   <handoff-executor name=\"other\"/>" +
+                "</queueless-thread-pool>");
+
+        executeForResult(updates.get(0));
+        executeForResult(updates.get(1));
+        executeForResult(updates.get(2));
+        executeForResult(updates.get(3));
+
+        checkFullQueuelessThreadPool();
+
+    }
+
+    @Test
+    public void testFullQueuelessThreadPool1_0() throws Exception {
+        List<ModelNode> updates = createSubSystem(
+                "<thread-factory name=\"test-factory\"/>" +
+                "<queueless-thread-pool name=\"other\"><max-threads count=\"1\"/></queueless-thread-pool>" +
+                "<queueless-thread-pool name=\"test-pool\">" +
+                "   <max-threads count=\"100\"/>" +
                 "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
                 "   <thread-factory name=\"test-factory\"/>" +
                 "   <handoff-executor name=\"other\"/>" +
@@ -626,11 +710,12 @@ public class ThreadsSubsystemTestCase {
                 "      <property name=\"propA\" value=\"valueA\"/>" +
                 "      <property name=\"propB\" value=\"valueB\"/>" +
                 "   </properties>" +
-                "</queueless-thread-pool>");
+                "</queueless-thread-pool>", Namespace.THREADS_1_0);
 
         executeForResult(updates.get(0));
         executeForResult(updates.get(1));
         executeForResult(updates.get(2));
+        executeForResult(updates.get(3));
 
         checkFullQueuelessThreadPool();
 
@@ -639,37 +724,151 @@ public class ThreadsSubsystemTestCase {
     private void checkFullQueuelessThreadPool() throws Exception {
         ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
         ModelNode threadPool = subsystem.require("queueless-thread-pool");
-        assertEquals(1, threadPool.keys().size());
+        assertEquals(2, threadPool.keys().size());
         assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
-        assertTrue(threadPool.require("test-pool").require("blocking").asBoolean());
-        assertEquals(new BigDecimal(100), threadPool.require("test-pool").require(MAX_THREADS).require(COUNT).asBigDecimal());
-        assertEquals(new BigDecimal(5), threadPool.require("test-pool").require(MAX_THREADS).require(PER_CPU).asBigDecimal());
+        assertEquals(100, threadPool.require("test-pool").require(MAX_THREADS).asInt());
         assertEquals(1000L, threadPool.require("test-pool").require(KEEPALIVE_TIME).require(TIME).asLong());
         assertEquals("MILLISECONDS", threadPool.require("test-pool").require(KEEPALIVE_TIME).require(UNIT).asString());
         assertEquals("other", threadPool.require("test-pool").require("handoff-executor").asString());
-
-        ModelNode props = threadPool.require("test-pool").require("properties");
-        assertTrue(props.isDefined());
-        assertEquals(2, props.asList().size());
-        for (ModelNode prop : props.asList()) {
-            Property property = prop.asProperty();
-            if (property.getName().equals("propA")) {
-                assertEquals("valueA", property.getValue().asString());
-            } else if (property.getName().equals("propB")) {
-                assertEquals("valueB", property.getValue().asString());
-            } else {
-                fail("Unknown property " + property);
-            }
-        }
-
     }
 
     @Test
     public void testSeveralQueuelessThreadPools() throws Exception {
+        List<ModelNode> updates = createSubSystem("<queueless-thread-pool name=\"test-poolA\"><max-threads count=\"1\"/></queueless-thread-pool>"
+                + "<queueless-thread-pool name=\"test-poolB\"><max-threads count=\"1\"/></queueless-thread-pool>");
+        assertEquals(3, updates.size());
+        for (ModelNode update : updates) {
+            try {
+                executeForResult(update);
+            } catch (OperationFailedException e) {
+                throw new RuntimeException(e.getFailureDescription().toString());
+            }
+        }
+
+        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode threadFactory = subsystem.require("queueless-thread-pool");
+        assertEquals(2, threadFactory.keys().size());
+        assertEquals("test-poolA", threadFactory.require("test-poolA").require("name").asString());
+        assertEquals("test-poolB", threadFactory.require("test-poolB").require("name").asString());
+    }
+
+    @Test
+    public void testSimpleBlockingQueuelessThreadPool() throws Exception {
+        List<ModelNode> updates = createSubSystem("<blocking-queueless-thread-pool name=\"test-pool\"><max-threads count=\"1\"/></blocking-queueless-thread-pool>");
+        assertEquals(2, updates.size());
+        for (ModelNode update : updates) {
+            try {
+                executeForResult(update);
+            } catch (OperationFailedException e) {
+                throw new RuntimeException(e.getFailureDescription().toString());
+            }
+        }
+
+        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode threadPool = subsystem.require("blocking-queueless-thread-pool");
+        assertEquals(1, threadPool.keys().size());
+        assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
+    }
+
+    @Test
+    public void testSimpleBlockingQueuelessThreadPool1_0() throws Exception {
+        List<ModelNode> updates = createSubSystem("<queueless-thread-pool name=\"test-pool\" blocking=\"true\">"
+                + "   <max-threads count=\"1\" per-cpu=\"2\"/>" + "</queueless-thread-pool>",
+                Namespace.THREADS_1_0);
+        assertEquals(2, updates.size());
+        for (ModelNode update : updates) {
+            try {
+                executeForResult(update);
+            } catch (OperationFailedException e) {
+                throw new RuntimeException(e.getFailureDescription().toString());
+            }
+        }
+
+        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode threadPool = subsystem.require("blocking-queueless-thread-pool");
+        assertEquals(1, threadPool.keys().size());
+        assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
+    }
+
+    @Test
+    public void testFullBlockingQueuelessThreadPool() throws Exception {
+        List<ModelNode> updates = createSubSystem(
+                "<thread-factory name=\"test-factory\"/>" +
+                "<blocking-queueless-thread-pool name=\"test-pool\">" +
+                "   <max-threads count=\"100\"/>" +
+                "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
+                "   <thread-factory name=\"test-factory\"/>" +
+                "</blocking-queueless-thread-pool>");
+
+        executeForResult(updates.get(0));
+        executeForResult(updates.get(1));
+        executeForResult(updates.get(2));
+
+        checkFullBlockingQueuelessThreadPool();
+
+    }
+
+    @Test
+    public void testFullBlockingQueuelessThreadPool1_0() throws Exception {
+        List<ModelNode> updates = createSubSystem(
+                "<thread-factory name=\"test-factory\"/>" +
+                "<queueless-thread-pool name=\"test-pool\" blocking=\"true\">" +
+                "   <max-threads count=\"100\"/>" +
+                "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
+                "   <thread-factory name=\"test-factory\"/>" +
+                "   <handoff-executor name=\"other\"/>" +
+                "   <properties>" +
+                "      <property name=\"propA\" value=\"valueA\"/>" +
+                "      <property name=\"propB\" value=\"valueB\"/>" +
+                "   </properties>" +
+                "</queueless-thread-pool>", Namespace.THREADS_1_0);
+
+        executeForResult(updates.get(0));
+        executeForResult(updates.get(1));
+        executeForResult(updates.get(2));
+
+        checkFullBlockingQueuelessThreadPool();
+
+    }
+
+    private void checkFullBlockingQueuelessThreadPool() throws Exception {
+        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode threadPool = subsystem.require("blocking-queueless-thread-pool");
+        assertEquals(1, threadPool.keys().size());
+        assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
+        assertEquals(100, threadPool.require("test-pool").require(MAX_THREADS).asInt());
+        assertEquals(1000L, threadPool.require("test-pool").require(KEEPALIVE_TIME).require(TIME).asLong());
+        assertEquals("MILLISECONDS", threadPool.require("test-pool").require(KEEPALIVE_TIME).require(UNIT).asString());
+        assertFalse(threadPool.has("handoff-executor"));
+    }
+
+    @Test
+    public void testSeveralBlockingQueuelessThreadPools() throws Exception {
+        List<ModelNode> updates = createSubSystem("<blocking-queueless-thread-pool name=\"test-poolA\">" +
+                "<max-threads count=\"1\"/></blocking-queueless-thread-pool>"
+                + "<blocking-queueless-thread-pool name=\"test-poolB\"><max-threads count=\"1\"/></blocking-queueless-thread-pool>");
+        assertEquals(3, updates.size());
+        for (ModelNode update : updates) {
+            try {
+                executeForResult(update);
+            } catch (OperationFailedException e) {
+                throw new RuntimeException(e.getFailureDescription().toString());
+            }
+        }
+
+        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode threadFactory = subsystem.require("blocking-queueless-thread-pool");
+        assertEquals(2, threadFactory.keys().size());
+        assertEquals("test-poolA", threadFactory.require("test-poolA").require("name").asString());
+        assertEquals("test-poolB", threadFactory.require("test-poolB").require("name").asString());
+    }
+
+    @Test
+    public void testSeveralQueuelessThreadPools1_0() throws Exception {
         List<ModelNode> updates = createSubSystem("<queueless-thread-pool name=\"test-poolA\">"
                 + "   <max-threads count=\"1\" per-cpu=\"2\"/>" + "</queueless-thread-pool>"
                 + "<queueless-thread-pool name=\"test-poolB\">" + "   <max-threads count=\"1\" per-cpu=\"2\"/>"
-                + "</queueless-thread-pool>");
+                + "</queueless-thread-pool>", Namespace.THREADS_1_0);
         assertEquals(3, updates.size());
         for (ModelNode update : updates) {
             try {
@@ -688,9 +887,28 @@ public class ThreadsSubsystemTestCase {
 
     @Test
     public void testSimpleBoundedQueueThreadPool() throws Exception {
+        List<ModelNode> updates = createSubSystem("<bounded-queue-thread-pool name=\"test-pool\">" +
+                "<max-threads count=\"1\"/><queue-length count=\"1\"/></bounded-queue-thread-pool>");
+        assertEquals(2, updates.size());
+        for (ModelNode update : updates) {
+            try {
+                executeForResult(update);
+            } catch (OperationFailedException e) {
+                throw new RuntimeException(e.getFailureDescription().toString());
+            }
+        }
+
+        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode threadPool = subsystem.require("bounded-queue-thread-pool");
+        assertEquals(1, threadPool.keys().size());
+        assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
+    }
+
+    @Test
+    public void testSimpleBoundedQueueThreadPool1_0() throws Exception {
         List<ModelNode> updates = createSubSystem("<bounded-queue-thread-pool name=\"test-pool\">"
-                + "   <max-threads count=\"1\" per-cpu=\"2\"/>" + "   <queue-length count=\"1\" per-cpu=\"2\"/>"
-                + "</bounded-queue-thread-pool>");
+                + "   <max-threads count=\"1\" per-cpu=\"0\"/>" + "   <queue-length count=\"1\"/>"
+                + "</bounded-queue-thread-pool>", Namespace.THREADS_1_0);
         assertEquals(2, updates.size());
         for (ModelNode update : updates) {
             try {
@@ -710,10 +928,33 @@ public class ThreadsSubsystemTestCase {
     public void testFullBoundedQueueThreadPool() throws Exception {
         List<ModelNode> updates = createSubSystem(
                 "<thread-factory name=\"test-factory\"/>" +
-                "<bounded-queue-thread-pool name=\"test-pool\" blocking=\"true\" allow-core-timeout=\"true\">" +
-                "   <core-threads count=\"200\" per-cpu=\"15\"/>" +
-                "   <max-threads count=\"100\" per-cpu=\"5\"/>" +
-                "   <queue-length count=\"300\" per-cpu=\"25\"/>" +
+                "<queueless-thread-pool name=\"other\"><max-threads count=\"1\"/></queueless-thread-pool>" +
+                "<bounded-queue-thread-pool name=\"test-pool\" allow-core-timeout=\"true\">" +
+                "   <core-threads count=\"200\"/>" +
+                "   <max-threads count=\"100\"/>" +
+                "   <queue-length count=\"300\"/>" +
+                "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
+                "   <thread-factory name=\"test-factory\"/>" +
+                "   <handoff-executor name=\"other\"/>" +
+                "</bounded-queue-thread-pool>");
+
+        executeForResult(updates.get(0));
+        executeForResult(updates.get(1));
+        executeForResult(updates.get(2));
+        executeForResult(updates.get(3));
+
+        checkFullBoundedQueueThreadPool();
+    }
+
+    @Test
+    public void testFullBoundedQueueThreadPool1_0() throws Exception {
+        List<ModelNode> updates = createSubSystem(
+                "<thread-factory name=\"test-factory\"/>" +
+                "<queueless-thread-pool name=\"other\"><max-threads count=\"1\"/></queueless-thread-pool>" +
+                "<bounded-queue-thread-pool name=\"test-pool\" allow-core-timeout=\"true\">" +
+                "   <core-threads count=\"200\"/>" +
+                "   <max-threads count=\"100\" per-cpu=\"0\"/>" +
+                "   <queue-length count=\"300\"/>" +
                 "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
                 "   <thread-factory name=\"test-factory\"/>" +
                 "   <handoff-executor name=\"other\"/>" +
@@ -721,11 +962,12 @@ public class ThreadsSubsystemTestCase {
                 "      <property name=\"propA\" value=\"valueA\"/>" +
                 "      <property name=\"propB\" value=\"valueB\"/>" +
                 "   </properties>" +
-                "</bounded-queue-thread-pool>");
+                "</bounded-queue-thread-pool>", Namespace.THREADS_1_0);
 
         executeForResult(updates.get(0));
         executeForResult(updates.get(1));
         executeForResult(updates.get(2));
+        executeForResult(updates.get(3));
 
         checkFullBoundedQueueThreadPool();
     }
@@ -735,40 +977,19 @@ public class ThreadsSubsystemTestCase {
         ModelNode threadPool = subsystem.require("bounded-queue-thread-pool");
         assertEquals(1, threadPool.keys().size());
         assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
-        assertTrue(threadPool.require("test-pool").require("blocking").asBoolean());
         assertTrue(threadPool.require("test-pool").require("allow-core-timeout").asBoolean());
-        assertEquals(new BigDecimal(200), threadPool.require("test-pool").require(CORE_THREADS).require(COUNT).asBigDecimal());
-        assertEquals(new BigDecimal(15), threadPool.require("test-pool").require(CORE_THREADS).require(PER_CPU).asBigDecimal());
-        assertEquals(new BigDecimal(300), threadPool.require("test-pool").require(QUEUE_LENGTH).require(COUNT).asBigDecimal());
-        assertEquals(new BigDecimal(25), threadPool.require("test-pool").require(QUEUE_LENGTH).require(PER_CPU).asBigDecimal());
-        assertEquals(new BigDecimal(100), threadPool.require("test-pool").require(MAX_THREADS).require(COUNT).asBigDecimal());
-        assertEquals(new BigDecimal(5), threadPool.require("test-pool").require(MAX_THREADS).require(PER_CPU).asBigDecimal());
+        assertEquals(200, threadPool.require("test-pool").require(CORE_THREADS).asInt());
+        assertEquals(300, threadPool.require("test-pool").require(QUEUE_LENGTH).asInt());
+        assertEquals(100, threadPool.require("test-pool").require(MAX_THREADS).asInt());
         assertEquals(1000L, threadPool.require("test-pool").require(KEEPALIVE_TIME).require(TIME).asLong());
         assertEquals("MILLISECONDS", threadPool.require("test-pool").require(KEEPALIVE_TIME).require(UNIT).asString());
         assertEquals("other", threadPool.require("test-pool").require("handoff-executor").asString());
-
-        ModelNode props = threadPool.require("test-pool").require("properties");
-        assertTrue(props.isDefined());
-        assertEquals(2, props.asList().size());
-        for (ModelNode prop : props.asList()) {
-            Property property = prop.asProperty();
-            if (property.getName().equals("propA")) {
-                assertEquals("valueA", property.getValue().asString());
-            } else if (property.getName().equals("propB")) {
-                assertEquals("valueB", property.getValue().asString());
-            } else {
-                fail("Unknown property " + property);
-            }
-        }
     }
 
     @Test
     public void testSeveralBoundedQueueThreadPools() throws Exception {
-        List<ModelNode> updates = createSubSystem("<bounded-queue-thread-pool name=\"test-poolA\">"
-                + "   <max-threads count=\"1\" per-cpu=\"2\"/>" + "   <queue-length count=\"1\" per-cpu=\"2\"/>"
-                + "</bounded-queue-thread-pool>" + "<bounded-queue-thread-pool name=\"test-poolB\">"
-                + "   <max-threads count=\"1\" per-cpu=\"2\"/>" + "   <queue-length count=\"1\" per-cpu=\"2\"/>"
-                + "</bounded-queue-thread-pool>");
+        List<ModelNode> updates = createSubSystem("<bounded-queue-thread-pool name=\"test-poolA\"><max-threads count=\"1\"/><queue-length count=\"1\"/></bounded-queue-thread-pool>"
+                + "<bounded-queue-thread-pool name=\"test-poolB\"><max-threads count=\"1\"/><queue-length count=\"1\"/></bounded-queue-thread-pool>");
         assertEquals(3, updates.size());
         for (ModelNode update : updates) {
             try {
@@ -780,6 +1001,170 @@ public class ThreadsSubsystemTestCase {
 
         ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
         ModelNode threadFactory = subsystem.require("bounded-queue-thread-pool");
+        assertEquals(2, threadFactory.keys().size());
+        assertEquals("test-poolA", threadFactory.require("test-poolA").require("name").asString());
+        assertEquals("test-poolB", threadFactory.require("test-poolB").require("name").asString());
+    }
+
+    @Test
+    public void testSeveralBoundedQueueThreadPools1_0() throws Exception {
+        List<ModelNode> updates = createSubSystem("<bounded-queue-thread-pool name=\"test-poolA\">"
+                + "   <max-threads count=\"1\" per-cpu=\"2\"/>" + "   <queue-length count=\"1\" per-cpu=\"2\"/>"
+                + "</bounded-queue-thread-pool>" + "<bounded-queue-thread-pool name=\"test-poolB\">"
+                + "   <max-threads count=\"1\" per-cpu=\"2\"/>" + "   <queue-length count=\"1\" per-cpu=\"2\"/>"
+                + "</bounded-queue-thread-pool>", Namespace.THREADS_1_0);
+        assertEquals(3, updates.size());
+        for (ModelNode update : updates) {
+            try {
+                executeForResult(update);
+            } catch (OperationFailedException e) {
+                throw new RuntimeException(e.getFailureDescription().toString());
+            }
+        }
+
+        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode threadFactory = subsystem.require("bounded-queue-thread-pool");
+        assertEquals(2, threadFactory.keys().size());
+        assertEquals("test-poolA", threadFactory.require("test-poolA").require("name").asString());
+        assertEquals("test-poolB", threadFactory.require("test-poolB").require("name").asString());
+    }
+
+    @Test
+    public void testSimpleBlockingBoundedQueueThreadPool() throws Exception {
+        List<ModelNode> updates = createSubSystem("<blocking-bounded-queue-thread-pool name=\"test-pool\">" +
+                "<max-threads count=\"1\"/><queue-length count=\"1\"/></blocking-bounded-queue-thread-pool>");
+        assertEquals(2, updates.size());
+        for (ModelNode update : updates) {
+            try {
+                executeForResult(update);
+            } catch (OperationFailedException e) {
+                throw new RuntimeException(e.getFailureDescription().toString());
+            }
+        }
+
+        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode threadPool = subsystem.require("blocking-bounded-queue-thread-pool");
+        assertEquals(1, threadPool.keys().size());
+        assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
+    }
+
+    @Test
+    public void testSimpleBlockingBoundedQueueThreadPool1_0() throws Exception {
+        List<ModelNode> updates = createSubSystem("<bounded-queue-thread-pool name=\"test-pool\" blocking=\"true\">"
+                + "   <max-threads count=\"1\" per-cpu=\"0\"/>" + "   <queue-length count=\"1\"/>"
+                + "</bounded-queue-thread-pool>", Namespace.THREADS_1_0);
+        assertEquals(2, updates.size());
+        for (ModelNode update : updates) {
+            try {
+                executeForResult(update);
+            } catch (OperationFailedException e) {
+                throw new RuntimeException(e.getFailureDescription().toString());
+            }
+        }
+
+        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode threadPool = subsystem.require("blocking-bounded-queue-thread-pool");
+        assertEquals(1, threadPool.keys().size());
+        assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
+    }
+
+    @Test
+    public void testFullBlockingBoundedQueueThreadPool() throws Exception {
+        List<ModelNode> updates = createSubSystem(
+                "<thread-factory name=\"test-factory\"/>" +
+                "<blocking-bounded-queue-thread-pool name=\"test-pool\" allow-core-timeout=\"true\">" +
+                "   <core-threads count=\"200\"/>" +
+                "   <max-threads count=\"100\"/>" +
+                "   <queue-length count=\"300\"/>" +
+                "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
+                "   <thread-factory name=\"test-factory\"/>" +
+                "</blocking-bounded-queue-thread-pool>");
+
+        executeForResult(updates.get(0));
+        executeForResult(updates.get(1));
+        executeForResult(updates.get(2));
+
+        checkFullBlockingBoundedQueueThreadPool();
+    }
+
+    @Test
+    public void testFullBlockingBoundedQueueThreadPool1_0() throws Exception {
+        List<ModelNode> updates = createSubSystem(
+                "<thread-factory name=\"test-factory\"/>" +
+                "<bounded-queue-thread-pool name=\"test-pool\" blocking=\"true\" allow-core-timeout=\"true\">" +
+                "   <core-threads count=\"200\"/>" +
+                "   <max-threads count=\"100\" per-cpu=\"0\"/>" +
+                "   <queue-length count=\"300\"/>" +
+                "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
+                "   <thread-factory name=\"test-factory\"/>" +
+                "   <handoff-executor name=\"other\"/>" +
+                "   <properties>" +
+                "      <property name=\"propA\" value=\"valueA\"/>" +
+                "      <property name=\"propB\" value=\"valueB\"/>" +
+                "   </properties>" +
+                "</bounded-queue-thread-pool>", Namespace.THREADS_1_0);
+
+        executeForResult(updates.get(0));
+        executeForResult(updates.get(1));
+        executeForResult(updates.get(2));
+
+        checkFullBlockingBoundedQueueThreadPool();
+    }
+
+    private void checkFullBlockingBoundedQueueThreadPool() throws Exception {
+        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode threadPool = subsystem.require("blocking-bounded-queue-thread-pool");
+        assertEquals(1, threadPool.keys().size());
+        assertEquals("test-pool", threadPool.require("test-pool").require("name").asString());
+        assertTrue(threadPool.require("test-pool").require("allow-core-timeout").asBoolean());
+        assertEquals(200, threadPool.require("test-pool").require(CORE_THREADS).asInt());
+        assertEquals(300, threadPool.require("test-pool").require(QUEUE_LENGTH).asInt());
+        assertEquals(100, threadPool.require("test-pool").require(MAX_THREADS).asInt());
+        assertEquals(1000L, threadPool.require("test-pool").require(KEEPALIVE_TIME).require(TIME).asLong());
+        assertEquals("MILLISECONDS", threadPool.require("test-pool").require(KEEPALIVE_TIME).require(UNIT).asString());
+        assertFalse(threadPool.has(HANDOFF_EXECUTOR));
+    }
+
+    @Test
+    public void testSeveralBlockingBoundedQueueThreadPools() throws Exception {
+        List<ModelNode> updates = createSubSystem("<blocking-bounded-queue-thread-pool name=\"test-poolA\">" +
+                "<max-threads count=\"1\"/><queue-length count=\"1\"/></blocking-bounded-queue-thread-pool>"
+                + "<blocking-bounded-queue-thread-pool name=\"test-poolB\">" +
+                "<max-threads count=\"1\"/><queue-length count=\"1\"/></blocking-bounded-queue-thread-pool>");
+        assertEquals(3, updates.size());
+        for (ModelNode update : updates) {
+            try {
+                executeForResult(update);
+            } catch (OperationFailedException e) {
+                throw new RuntimeException(e.getFailureDescription().toString());
+            }
+        }
+
+        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode threadFactory = subsystem.require("blocking-bounded-queue-thread-pool");
+        assertEquals(2, threadFactory.keys().size());
+        assertEquals("test-poolA", threadFactory.require("test-poolA").require("name").asString());
+        assertEquals("test-poolB", threadFactory.require("test-poolB").require("name").asString());
+    }
+
+    @Test
+    public void testSeveralBlockingBoundedQueueThreadPools1_0() throws Exception {
+        List<ModelNode> updates = createSubSystem("<bounded-queue-thread-pool name=\"test-poolA\" blocking=\"true\">"
+                + "   <max-threads count=\"1\" per-cpu=\"2\"/>" + "   <queue-length count=\"1\" per-cpu=\"2\"/>"
+                + "</bounded-queue-thread-pool>" + "<bounded-queue-thread-pool name=\"test-poolB\" blocking=\"true\">"
+                + "   <max-threads count=\"1\" per-cpu=\"2\"/>" + "   <queue-length count=\"1\" per-cpu=\"2\"/>"
+                + "</bounded-queue-thread-pool>", Namespace.THREADS_1_0);
+        assertEquals(3, updates.size());
+        for (ModelNode update : updates) {
+            try {
+                executeForResult(update);
+            } catch (OperationFailedException e) {
+                throw new RuntimeException(e.getFailureDescription().toString());
+            }
+        }
+
+        ModelNode subsystem = model.require("profile").require("test").require("subsystem").require("threads");
+        ModelNode threadFactory = subsystem.require("blocking-bounded-queue-thread-pool");
         assertEquals(2, threadFactory.keys().size());
         assertEquals("test-poolA", threadFactory.require("test-poolA").require("name").asString());
         assertEquals("test-poolB", threadFactory.require("test-poolB").require("name").asString());
@@ -866,16 +1251,19 @@ public class ThreadsSubsystemTestCase {
             return registerSubsystem(name);
         }
     }
-
     static List<ModelNode> createSubSystem(String subsystemContents) throws XMLStreamException {
-        final String xmlContent = "      <subsystem xmlns=\"urn:jboss:domain:threads:1.0\">" + subsystemContents
+        return createSubSystem(subsystemContents, Namespace.CURRENT);
+    }
+
+    static List<ModelNode> createSubSystem(String subsystemContents, Namespace namespace) throws XMLStreamException {
+        final String xmlContent = "      <subsystem xmlns=\"" + namespace.getUriString() + "\">" + subsystemContents
                 + "      </subsystem>"; // +
 
         final Reader reader = new StringReader(xmlContent);
         XMLStreamReader xmlReader = XMLInputFactory.newInstance().createXMLStreamReader(reader);
 
         XMLMapper xmlMapper = XMLMapper.Factory.create();
-        xmlMapper.registerRootElement(new QName(org.jboss.as.threads.Namespace.CURRENT.getUriString(), "subsystem"),
+        xmlMapper.registerRootElement(new QName(namespace.getUriString(), "subsystem"),
                 ThreadsParser.INSTANCE);
 
         List<ModelNode> updates = new ArrayList<ModelNode>();

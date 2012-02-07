@@ -36,6 +36,7 @@ import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
+import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.interceptors.ComponentTypeIdentityInterceptorFactory;
@@ -43,12 +44,16 @@ import org.jboss.as.ejb3.component.pool.PoolConfig;
 import org.jboss.as.ejb3.component.pool.PoolConfigService;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.session.StatelessRemoteViewInstanceFactory;
+import org.jboss.as.ejb3.component.session.StatelessWriteReplaceInterceptor;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.tx.EjbBMTInterceptor;
 import org.jboss.as.ejb3.tx.TimerCMTTxInterceptor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassIndex;
+import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
+import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -68,8 +73,8 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
      * @param ejbModuleDescription the module description
      */
     public StatelessComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbModuleDescription,
-                                         final ServiceName deploymentUnitServiceName) {
-        super(componentName, componentClassName, ejbModuleDescription, deploymentUnitServiceName);
+                                         final ServiceName deploymentUnitServiceName, final SessionBeanMetaData descriptorData) {
+        super(componentName, componentClassName, ejbModuleDescription, deploymentUnitServiceName, descriptorData);
     }
 
     @Override
@@ -120,6 +125,7 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
     protected void setupViewInterceptors(EJBViewDescription view) {
         // let super do its job first
         super.setupViewInterceptors(view);
+        addViewSerializationInterceptor(view);
 
         // add the instance associating interceptor at the start of the interceptor chain
         view.getConfigurators().addFirst(new ViewConfigurator() {
@@ -157,6 +163,21 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
 
     }
 
+    private void addViewSerializationInterceptor(final ViewDescription view) {
+        view.setSerializable(true);
+        view.setUseWriteReplace(true);
+        view.getConfigurators().add(new ViewConfigurator() {
+            @Override
+            public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+                final DeploymentReflectionIndex index = context.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
+                ClassReflectionIndex<WriteReplaceInterface> classIndex = index.getClassIndex(WriteReplaceInterface.class);
+                for (Method method : classIndex.getMethods()) {
+                    configuration.addClientInterceptor(method, new StatelessWriteReplaceInterceptor.Factory(configuration.getViewServiceName().getCanonicalName()), InterceptorOrder.Client.WRITE_REPLACE);
+                }
+            }
+        });
+    }
+
     @Override
     protected ViewConfigurator getSessionBeanObjectViewConfigurator() {
         return StatelessSessionBeanObjectViewConfigurator.INSTANCE;
@@ -187,7 +208,8 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
         public void configureDependency(ServiceBuilder<?> serviceBuilder, Service<Component> service) throws DeploymentUnitProcessingException {
             final StatelessSessionComponentCreateService statelessSessionComponentService = (StatelessSessionComponentCreateService) service;
             final String poolName = this.statelessComponentDescription.getPoolConfigName();
-            // if no pool name has been explicitly set, then inject the optional "default slsb pool config"
+            // if no pool name has been explicitly set, then inject the *optional* "default slsb pool config".
+            // If the default slsb pool config itself is not configured, then the pooling is disabled for the bean
             if (poolName == null) {
                 serviceBuilder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, PoolConfigService.DEFAULT_SLSB_POOL_CONFIG_SERVICE_NAME,
                         PoolConfig.class, statelessSessionComponentService.getPoolConfigInjector());

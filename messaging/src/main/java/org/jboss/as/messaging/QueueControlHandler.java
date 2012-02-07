@@ -57,21 +57,21 @@ public class QueueControlHandler extends AbstractQueueControlHandler<QueueContro
     public void registerOperations(ManagementResourceRegistration registry) {
         super.registerOperations(registry);
 
-        final EnumSet<OperationEntry.Flag> readOnly = EnumSet.of(OperationEntry.Flag.READ_ONLY);
+        final EnumSet<OperationEntry.Flag> flags = EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.RUNTIME_ONLY);
 
         registry.registerOperationHandler(LIST_SCHEDULED_MESSAGES, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getListScheduledMessages(locale);
             }
-        }, readOnly);
+        }, flags);
 
         registry.registerOperationHandler(LIST_SCHEDULED_MESSAGES_AS_JSON, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, LIST_SCHEDULED_MESSAGES_AS_JSON, "queue", ModelType.STRING, true);
             }
-        }, readOnly);
+        }, flags);
     }
 
     @Override

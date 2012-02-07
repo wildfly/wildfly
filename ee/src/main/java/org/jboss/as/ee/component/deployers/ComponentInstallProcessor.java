@@ -91,6 +91,11 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
             try {
                 ROOT_LOGGER.tracef("Installing component %s", configuration.getComponentClass().getName());
                 deployComponent(phaseContext, configuration, dependencies, bindingDependencyService);
+
+                //we need to make sure that the web deployment has a dependency on all components it the app, so web components are started
+                //when the web subsystem is starting
+                //we only add a dependency on components in the same sub deployment, otherwise we get circular dependencies when initialize-in-order is used
+                deploymentUnit.addToAttachmentList(org.jboss.as.server.deployment.Attachments.WEB_DEPENDENCIES, configuration.getComponentDescription().getStartServiceName());
             } catch (Exception e) {
                 throw MESSAGES.failedToInstallComponent(e, configuration.getComponentName());
             }

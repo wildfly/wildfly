@@ -30,6 +30,7 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
+import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -69,7 +70,8 @@ public class DeploymentDescriptorMethodProcessor implements DeploymentUnitProces
             for (final ComponentDescription component : eeModuleDescription.getComponentDescriptions()) {
                 if (component instanceof EJBComponentDescription) {
                     try {
-                        handleSessionBean((EJBComponentDescription) component, classIndex, reflectionIndex);
+                        if (component instanceof SessionBeanComponentDescription || component instanceof MessageDrivenComponentDescription)
+                            handleSessionBean((EJBComponentDescription) component, classIndex, reflectionIndex);
                         if (component instanceof StatelessComponentDescription || component instanceof MessageDrivenComponentDescription) {
                             handleStatelessSessionBean((EJBComponentDescription) component, classIndex, reflectionIndex);
                         }
@@ -174,7 +176,7 @@ public class DeploymentDescriptorMethodProcessor implements DeploymentUnitProces
             }
         }
 
-        if (metaData instanceof SessionBeanMetaData) {
+        if (component.isStateful()) {
 
             final SessionBeanMetaData sessionBeanMetadata = (SessionBeanMetaData) metaData;
             // pre-passivate(s) of the interceptor configured (if any) in the deployment descriptor

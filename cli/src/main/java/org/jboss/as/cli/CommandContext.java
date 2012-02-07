@@ -21,6 +21,7 @@
  */
 package org.jboss.as.cli;
 
+import java.io.File;
 import java.util.Collection;
 
 import org.jboss.as.cli.batch.BatchManager;
@@ -68,6 +69,20 @@ public interface CommandContext {
      * @param col  the collection of strings to print as columns.
      */
     void printColumns(Collection<String> col);
+
+    /**
+     * Prints an error message to the CLI's output and passes the error code
+     * which in non-interactive mode will be used as the program's exit code.
+     * @param message the error message
+     * @param code the error code (should be greater than 0)
+     */
+    void error(String message, int code);
+
+    /**
+     * This method invokes error(message, 1).
+     * @param message the error message
+     */
+    void error(String message);
 
     /**
      * Clears the screen.
@@ -227,4 +242,34 @@ public interface CommandContext {
      * @param listener  the listener
      */
     void addEventListener(CliEventListener listener);
+
+    /**
+     * Returns value that should be used as the exit code of the JVM process.
+     * @return  JVM exit code
+     */
+    int getExitCode();
+
+    /**
+     * Executes the command or operation. Or, if the context is in the batch mode
+     * and the command is allowed in the batch, adds the command (or operation) to the
+     * currently active batch.
+     * NOTE: errors are not handled by this method, they won't affect the exit code or
+     * even be logged. Error handling is the responsibility of the caller.
+     *
+     * @param line  command or operation to handle
+     * @throws CommandFormatException  in case there was an error handling the command or operation
+     */
+    void handle(String line) throws CommandLineException;
+
+    /**
+     * Returns current default filesystem directory.
+     * @return  current default filesystem directory.
+     */
+    File getCurrentDir();
+
+    /**
+     * Changes the current default filesystem directory to the argument.
+     * @param dir  the new default directory
+     */
+    void setCurrentDir(File dir);
 }

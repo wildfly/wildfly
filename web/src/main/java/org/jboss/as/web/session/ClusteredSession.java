@@ -21,6 +21,8 @@
  */
 package org.jboss.as.web.session;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -367,7 +369,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
     @Override
     public long getCreationTime() {
         if (!isValidInternal())
-            throw new IllegalStateException(sm.getString("clusteredSession.getCreationTime.ise"));
+            throw MESSAGES.expiredSession();
 
         return (this.creationTime);
     }
@@ -419,7 +421,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
     @Override
     public long getLastAccessedTime() {
         if (!isValidInternal()) {
-            throw new IllegalStateException(sm.getString("clusteredSession.getLastAccessedTime.ise"));
+            throw MESSAGES.expiredSession();
         }
 
         return this.lastAccessedTime;
@@ -438,7 +440,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
     @Override
     public void setManager(Manager manager) {
         if ((manager instanceof ClusteredSessionManager<?>) == false)
-            throw new IllegalArgumentException("manager must implement ClusteredManager");
+            throw MESSAGES.invalidManager();
         @SuppressWarnings("unchecked")
         ClusteredSessionManager<O> unchecked = (ClusteredSessionManager<O>) manager;
         this.manager = unchecked;
@@ -523,13 +525,13 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
                         }
                     }
                 } catch (TimeoutException e) {
-                    throw new RuntimeException("Caught " + e.getClass().getSimpleName() + " acquiring ownership of " + this.realId, e);
+                    throw MESSAGES.failAcquiringOwnership(realId, e);
                 } finally {
                     this.ownershipLock.unlock();
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                throw new RuntimeException("Interrupted while acquiring ownership of " + this.realId, e);
+                throw MESSAGES.interruptedAcquiringOwnership(realId, e);
             }
         }
     }
@@ -570,7 +572,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
     @Override
     public boolean isNew() {
         if (!isValidInternal())
-            throw new IllegalStateException(sm.getString("clusteredSession.isNew.ise"));
+            throw MESSAGES.expiredSession();
 
         return (this.isNew);
     }
@@ -611,7 +613,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
     @Override
     public void invalidate() {
         if (!isValid())
-            throw new IllegalStateException(sm.getString("clusteredSession.invalidate.ise"));
+            throw MESSAGES.expiredSession();
 
         // Cause this session to expire globally
         boolean notify = true;
@@ -770,7 +772,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
     @Override
     public Object getAttribute(String name) {
         if (!isValid())
-            throw new IllegalStateException(sm.getString("clusteredSession.getAttribute.ise"));
+            throw MESSAGES.expiredSession();
 
         return getAttributeInternal(name);
     }
@@ -779,7 +781,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
     @SuppressWarnings("unchecked")
     public Enumeration<String> getAttributeNames() {
         if (!isValid())
-            throw new IllegalStateException(sm.getString("clusteredSession.getAttributeNames.ise"));
+            throw MESSAGES.expiredSession();
 
         return (new Enumerator(getAttributesInternal().keySet(), true));
     }
@@ -788,7 +790,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
     public void setAttribute(String name, Object value) {
         // Name cannot be null
         if (name == null)
-            throw new IllegalArgumentException(sm.getString("clusteredSession.setAttribute.namenull"));
+            throw MESSAGES.expiredSession();
 
         // Null value is the same as removeAttribute()
         if (value == null) {
@@ -798,11 +800,11 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
 
         // Validate our current state
         if (!isValidInternal()) {
-            throw new IllegalStateException(sm.getString("clusteredSession.setAttribute.ise"));
+            throw MESSAGES.expiredSession();
         }
 
         if (canAttributeBeReplicated(value) == false) {
-            throw new IllegalArgumentException(sm.getString("clusteredSession.setAttribute.iae"));
+            throw MESSAGES.failToReplicateAttribute();
         }
 
         // Construct an event with the new value
@@ -816,7 +818,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
             try {
                 ((HttpSessionBindingListener) value).valueBound(event);
             } catch (Throwable t) {
-                manager.getContainer().getLogger().error(sm.getString("clusteredSession.bindingEvent"), t);
+                manager.getContainer().getLogger().error(MESSAGES.errorValueBoundEvent(t));
             }
         }
 
@@ -835,7 +837,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
             try {
                 ((HttpSessionBindingListener) unbound).valueUnbound(new HttpSessionBindingEvent(getSession(), name));
             } catch (Throwable t) {
-                manager.getContainer().getLogger().error(sm.getString("clusteredSession.bindingEvent"), t);
+                manager.getContainer().getLogger().error(MESSAGES.errorValueUnboundEvent(t));
             }
         }
 
@@ -876,7 +878,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
                     } catch (Exception e) {
                         // Ignore
                     }
-                    manager.getContainer().getLogger().error(sm.getString("clusteredSession.attributeEvent"), t);
+                    manager.getContainer().getLogger().error(MESSAGES.errorSessionAttributeEvent(t));
                 }
             }
         }
@@ -908,7 +910,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
     @Override
     public String[] getValueNames() {
         if (!isValidInternal())
-            throw new IllegalStateException(sm.getString("clusteredSession.getValueNames.ise"));
+            throw MESSAGES.expiredSession();
 
         return (keys());
     }
@@ -953,7 +955,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
      * {@inheritDoc}
      */
     public void update(IncomingDistributableSessionData sessionData) {
-        assert sessionData != null : "sessionData is null";
+        assert sessionData != null : MESSAGES.nullSessionData();
 
         this.version.set(sessionData.getVersion());
 
@@ -1033,8 +1035,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
     public synchronized void processSessionReplication() {
         // Replicate the session.
         if (log.isTraceEnabled()) {
-            log.trace("processSessionReplication(): session is dirty. Will increment " + "version from: " + getVersion()
-                    + " and replicate.");
+            log.tracef("processSessionReplication(): session is dirty. Will increment version from: %s and replicate.", getVersion());
         }
         version.incrementAndGet();
 
@@ -1165,7 +1166,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
                         } catch (Exception e) {
                             // Ignore
                         }
-                        manager.getContainer().getLogger().error(sm.getString("clusteredSession.sessionEvent"), t);
+                        manager.getContainer().getLogger().error(MESSAGES.errorSessionEvent(t));
                     }
                 }
             }
@@ -1229,7 +1230,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
      */
     public void expire(boolean notify, boolean localCall, boolean localOnly, ClusteredSessionNotificationCause cause) {
         if (log.isTraceEnabled()) {
-            log.trace("The session has expired with id: " + id + " -- is expiration local? " + localOnly);
+            log.tracef("The session has expired with id: %s  -- is expiration local? %s", id, localOnly);
         }
 
         // If another thread is already doing this, stop
@@ -1283,7 +1284,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
                             } catch (Exception e) {
                                 // Ignore
                             }
-                            manager.getContainer().getLogger().error(sm.getString("clusteredSession.sessionEvent"), t);
+                            manager.getContainer().getLogger().error(MESSAGES.errorSessionEvent(t));
                         }
                     }
                 }
@@ -1359,7 +1360,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
                         try {
                             ((HttpSessionActivationListener) attribute).sessionWillPassivate(event);
                         } catch (Throwable t) {
-                            manager.getContainer().getLogger().error(sm.getString("clusteredSession.attributeEvent"), t);
+                            manager.getContainer().getLogger().error(MESSAGES.errorSessionActivationEvent(t));
                         }
                     }
                 }
@@ -1406,7 +1407,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
                         try {
                             ((HttpSessionActivationListener) attribute).sessionDidActivate(event);
                         } catch (Throwable t) {
-                            manager.getContainer().getLogger().error(sm.getString("clusteredSession.attributeEvent"), t);
+                            manager.getContainer().getLogger().error(MESSAGES.errorSessionActivationEvent(t));
                         }
                     }
                 }
@@ -1513,7 +1514,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
             Object attr = attributes.remove(excludedAttributes[i]);
             if (attr != null) {
                 if (log.isTraceEnabled()) {
-                    log.trace("Excluding attribute " + excludedAttributes[i] + " from replication");
+                    log.tracef("Excluding attribute %s from replication", excludedAttributes[i]);
                 }
                 if (excluded == null) {
                     excluded = new HashMap<String, Object>();
@@ -1554,14 +1555,14 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
 
             // still null???
             if (distributedCacheManager == null) {
-                throw new RuntimeException("DistributedCacheManager is null.");
+                throw MESSAGES.nullDistributedCacheManager();
             }
         }
     }
 
     protected final void sessionAttributesDirty() {
         if (!sessionAttributesDirty && log.isTraceEnabled())
-            log.trace("Marking session attributes dirty " + id);
+            log.tracef("Marking session attributes dirty %s", id);
 
         sessionAttributesDirty = true;
     }
@@ -1681,7 +1682,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
                         } catch (Exception e) {
                             // Ignore
                         }
-                        manager.getContainer().getLogger().error(sm.getString("clusteredSession.attributeEvent"), t);
+                        manager.getContainer().getLogger().error(MESSAGES.errorSessionAttributeEvent(t));
                     }
                 }
 
@@ -1754,7 +1755,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
 
     private void sessionMetadataDirty() {
         if (!sessionMetadataDirty && !isNew && log.isTraceEnabled())
-            log.trace("Marking session metadata dirty " + id);
+            log.tracef("Marking session metadata dirty %s", id);
         sessionMetadataDirty = true;
     }
 

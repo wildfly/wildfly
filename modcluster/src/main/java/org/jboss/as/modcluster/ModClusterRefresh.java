@@ -44,7 +44,7 @@ public class ModClusterRefresh implements OperationStepHandler, DescriptionProvi
     @Override
     public void execute(OperationContext context, ModelNode operation)
             throws OperationFailedException {
-        if (context.getType() == OperationContext.Type.SERVER) {
+        if (context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {

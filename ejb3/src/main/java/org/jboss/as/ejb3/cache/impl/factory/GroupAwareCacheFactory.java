@@ -56,7 +56,7 @@ import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
  */
 public class GroupAwareCacheFactory<K extends Serializable, V extends Cacheable<K>> implements CacheFactory<K, V>, BackingCacheLifecycleListener {
 
-    private final AtomicReference<PassivatingBackingCache<UUID, Cacheable<UUID>, SerializationGroup<K, V, UUID>>> groupCacheRef = new AtomicReference<PassivatingBackingCache<UUID, Cacheable<UUID>, SerializationGroup<K, V, UUID>>>();
+    private final AtomicReference<SerializationGroupContainer<K, V>> groupContainerRef = new AtomicReference<SerializationGroupContainer<K, V>>();
     private final AtomicInteger memberCounter = new AtomicInteger();
     private final BackingCacheEntryStoreSource<K, V, UUID> storeSource;
 
@@ -71,13 +71,15 @@ public class GroupAwareCacheFactory<K extends Serializable, V extends Cacheable<
 
         // Create/find the cache for SerializationGroup that the container
         // may be associated with
-        PassivatingBackingCache<UUID, Cacheable<UUID>, SerializationGroup<K, V, UUID>> groupCache = this.groupCacheRef.get();
-        if (groupCache == null) {
-            groupCache = this.createGroupCache(passivationManager, timeout);
-            if (!groupCacheRef.compareAndSet(null, groupCache)) {
-                groupCache = this.groupCacheRef.get();
+        SerializationGroupContainer<K, V> groupContainer = this.groupContainerRef.get();
+        if (groupContainer == null) {
+            groupContainer = this.createGroupContainer(passivationManager, timeout);
+            if (!this.groupContainerRef.compareAndSet(null, groupContainer)) {
+                groupContainer = this.groupContainerRef.get();
             }
         }
+        groupContainer.addMemberPassivationManager(passivationManager);
+        PassivatingBackingCache<UUID, Cacheable<UUID>, SerializationGroup<K, V, UUID>> groupCache = groupContainer.getGroupCache();
 
         SerializationGroupMemberContainer<K, V, UUID> container = new SerializationGroupMemberContainer<K, V, UUID>(passivationManager, groupCache, this.storeSource);
 
@@ -95,7 +97,7 @@ public class GroupAwareCacheFactory<K extends Serializable, V extends Cacheable<
         return new GroupAwareCache<K, V, UUID, SerializationGroupMember<K, V, UUID>>(backingCache, true);
     }
 
-    private PassivatingBackingCache<UUID, Cacheable<UUID>, SerializationGroup<K, V, UUID>> createGroupCache(PassivationManager<K, V> passivationManager, StatefulTimeoutInfo timeout) {
+    private SerializationGroupContainer<K, V> createGroupContainer(PassivationManager<K, V> passivationManager, StatefulTimeoutInfo timeout) {
         SerializationGroupContainer<K, V> container = new SerializationGroupContainer<K, V>(passivationManager);
 
         BackingCacheEntryStore<UUID, Cacheable<UUID>, SerializationGroup<K, V, UUID>> store = storeSource.createGroupIntegratedObjectStore(container, timeout);
@@ -104,15 +106,16 @@ public class GroupAwareCacheFactory<K extends Serializable, V extends Cacheable<
 
         container.setGroupCache(groupCache);
 
-        return groupCache;
+        return container;
     }
 
+    // TODO Make the group cache a service
     @Override
     public void lifecycleChange(LifecycleState newState) {
         switch (newState) {
             case STARTING: {
                 if (this.memberCounter.incrementAndGet() == 1) {
-                    PassivatingBackingCache<UUID, Cacheable<UUID>, SerializationGroup<K, V, UUID>> groupCache = this.groupCacheRef.get();
+                    PassivatingBackingCache<UUID, Cacheable<UUID>, SerializationGroup<K, V, UUID>> groupCache = this.groupContainerRef.get().getGroupCache();
                     synchronized (groupCache) {
                         groupCache.start();
                     }
@@ -121,7 +124,7 @@ public class GroupAwareCacheFactory<K extends Serializable, V extends Cacheable<
             }
             case STOPPED: {
                 if (this.memberCounter.decrementAndGet() == 0) {
-                    PassivatingBackingCache<UUID, Cacheable<UUID>, SerializationGroup<K, V, UUID>> groupCache = this.groupCacheRef.get();
+                    PassivatingBackingCache<UUID, Cacheable<UUID>, SerializationGroup<K, V, UUID>> groupCache = this.groupContainerRef.get().getGroupCache();
                     synchronized (groupCache) {
                         groupCache.stop();
                     }

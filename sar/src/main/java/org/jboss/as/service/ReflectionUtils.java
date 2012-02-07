@@ -62,7 +62,7 @@ final class ReflectionUtils {
         }
 
         final String className = classHierarchy.get(0).getIndexedClass().getName();
-        throw new IllegalStateException("Get method for property '" + propertyName + "' not found for: " + className);
+        throw SarMessages.MESSAGES.propertyMethodNotFound("Get", propertyName, className);
     }
 
     static Method getSetter(final List<ClassReflectionIndex<?>> classHierarchy, final String propertyName) {
@@ -82,7 +82,7 @@ final class ReflectionUtils {
         }
 
         final String className = classHierarchy.get(0).getIndexedClass().getName();
-        throw new IllegalStateException("Set method for property '" + propertyName + "' not found for: " + className);
+        throw SarMessages.MESSAGES.propertyMethodNotFound("Set", propertyName, className);
     }
 
     static Method getMethod(final List<ClassReflectionIndex<?>> classHierarchy, final String methodName, final Class<?>[] types, final boolean fail) {
@@ -94,7 +94,7 @@ final class ReflectionUtils {
         }
         if (fail) {
             final String className = classHierarchy.get(0).getIndexedClass().getName();
-            throw new IllegalStateException(noSuchMethod(className, methodName, types));
+            throw SarMessages.MESSAGES.methodNotFound(methodName, parameterList(types), className);
         } else {
             return null;
         }
@@ -104,7 +104,7 @@ final class ReflectionUtils {
         try {
             return constructor.newInstance(args);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Class not instantiated", e);
+            throw SarMessages.MESSAGES.classNotInstantiated(e);
         }
     }
 
@@ -112,7 +112,7 @@ final class ReflectionUtils {
         try {
             return Class.forName(className, false, classLoader);
         } catch (final ClassNotFoundException e) {
-            throw new IllegalArgumentException("Class not found", e);
+            throw SarMessages.MESSAGES.classNotFound(e);
         }
     }
 
@@ -128,24 +128,15 @@ final class ReflectionUtils {
         return Collections.unmodifiableList(retVal);
     }
 
-    private static String noSuchMethod(final String className, final String methodName, final Class<?>[] parameterTypes) {
-        StringBuffer message = new StringBuffer();
-        message.append("Method '");
-        message.append(methodName);
-        appendParameterList(message, parameterTypes);
-        message.append("' not found for: ").append(className);
-        return message.toString();
-    }
-
-    private static void appendParameterList(final StringBuffer stringBuffer, final Class<?>[] parameterTypes) {
-        stringBuffer.append('(');
+    private static String parameterList(final Class<?>[] parameterTypes) {
+        final StringBuilder result = new StringBuilder();
         if (parameterTypes != null && parameterTypes.length > 0) {
-            stringBuffer.append(parameterTypes[0]);
+            result.append(parameterTypes[0]);
             for (int i = 1; i < parameterTypes.length; i++) {
-                stringBuffer.append(", ").append(parameterTypes[i]);
+                result.append(", ").append(parameterTypes[i]);
             }
         }
-        stringBuffer.append(')');
+        return result.toString();
     }
 
 }

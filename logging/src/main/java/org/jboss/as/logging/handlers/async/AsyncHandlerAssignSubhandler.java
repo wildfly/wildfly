@@ -32,6 +32,8 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.logging.LoggingLogger;
 import org.jboss.as.logging.loggers.AbstractLogHandlerAssignmentHandler;
 import org.jboss.as.logging.util.LogServices;
 import org.jboss.dmr.ModelNode;
@@ -66,6 +68,20 @@ public class AsyncHandlerAssignSubhandler extends AbstractLogHandlerAssignmentHa
         String asyncHandlerName = address.getLastElement().getValue();
         String handlerNameToAdd = NAME.resolveModelAttribute(context, model).asString();
         addHandler(context, asyncHandlerName, handlerNameToAdd);
+    }
+
+    @Override
+    protected void rollbackRuntime(OperationContext context, final ModelNode operation, final ModelNode model, List<ServiceController<?>> controllers) {
+        PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        String asyncHandlerName = address.getLastElement().getValue();
+        String handlerName = model.get(NAME.getName()).asString();
+        try {
+            AsyncHandlerUnassignSubhandler.removeHandler(context, asyncHandlerName, handlerName);
+        } catch (OperationFailedException e) {
+            LoggingLogger.ROOT_LOGGER.errorRevertingOperation(e, getClass().getSimpleName(),
+                    operation.require(ModelDescriptionConstants.OP).asString(),
+                    PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)));
+        }
     }
 
     @Override

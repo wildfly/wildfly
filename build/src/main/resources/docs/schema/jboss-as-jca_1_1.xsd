@@ -24,12 +24,12 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            targetNamespace="urn:jboss:domain:jca:1.1"
            xmlns="urn:jboss:domain:jca:1.1"
-           xmlns:threads="urn:jboss:domain:threads:1.0"
+           xmlns:threads="urn:jboss:domain:threads:1.1"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
            version="1.0">
 
-    <xs:import namespace="urn:jboss:domain:threads:1.0" schemaLocation="jboss-as-threads_1_0.xsd"/>
+    <xs:import namespace="urn:jboss:domain:threads:1.1" schemaLocation="jboss-as-threads_1_1.xsd"/>
 
     <xs:element name="subsystem" type="subsystemType"/>
 
@@ -166,20 +166,17 @@
         <xs:annotation>
             <xs:documentation>
             <![CDATA[
-                See threads:bounded-queue-thread-pool.
+                See threads:blocking-bounded-queue-thread-pool.
             ]]>
             </xs:documentation>
         </xs:annotation>
         <xs:all>
-            <xs:element name="core-threads" type="threads:scaled-count" minOccurs="0"/>
-            <xs:element name="queue-length" type="threads:scaled-count"/>
-            <xs:element name="max-threads" type="threads:scaled-count"/>
+            <xs:element name="core-threads" type="threads:countType" minOccurs="0"/>
+            <xs:element name="queue-length" type="threads:countType"/>
+            <xs:element name="max-threads" type="threads:countType"/>
             <xs:element name="keepalive-time" type="threads:time" minOccurs="0"/>
             <xs:element name="thread-factory" type="threads:ref" minOccurs="0"/>
-            <xs:element name="handoff-executor" type="threads:ref" minOccurs="0"/>
-            <xs:element name="properties" type="threads:properties" minOccurs="0"/>
         </xs:all>
         <xs:attribute name="allow-core-timeout" use="optional" type="xs:boolean"/>
-        <xs:attribute name="blocking" use="optional" type="xs:boolean"/>
     </xs:complexType>
 </xs:schema>

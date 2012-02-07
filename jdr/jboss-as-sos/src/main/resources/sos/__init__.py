@@ -15,24 +15,60 @@
 ## along with this program; if not, write to the Free Software
 ## Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
+"""
+This module houses the i18n setup and message function. The default is to use
+gettext to internationalize messages. If the client calls set_i18n and passes a
+path to a resource bundle the _ method will be changed to use java
+ResourceBundle code to present messages.
+"""
+
 __version__ = "@SOSVERSION@"
 
-try:
-    from java.util import ResourceBundle
+import gettext
+gettext_dir = "/usr/share/locale"
+gettext_app = "sos"
 
-    rb = ResourceBundle.getBundle("sos.po.sos")
+gettext.bindtextdomain(gettext_app, gettext_dir)
 
-    def _sos(msg):
-        try:
-            return rb.getString(msg).encode('utf-8')
-        except:
-            return msg
-except:
-    import gettext
-    gettext_dir = "/usr/share/locale"
-    gettext_app = "sos"
+def _default(msg):
+    return gettext.dgettext(gettext_app, msg)
 
-    gettext.bindtextdomain(gettext_app, gettext_dir)
+_sos = _default
 
-    def _sos(msg):
-        return gettext.dgettext(gettext_app, msg)
+def _get_classloader(jarfile):
+    """Makes a new classloader loaded with the jarfile. This is useful since it
+    seems very difficult to get jars added to the correct classpath for
+    ResourceBundle.getBundle to find."""
+    from java.net import URLClassLoader, URL
+    from java.io import File
+    import jarray
+
+    file_ = File(jarfile)
+    ary = jarray.array([file_.toURL()], URL)
+    classloader = URLClassLoader.newInstance(ary)
+    return classloader
+
+def set_i18n(path=None, basename="sos.po.sos"):
+    """Use this method to change the default i18n behavior from gettext to java
+    ResourceBundle.getString. This is really only useful when using jython.
+    Path is expected to be the path to a jarfile that contains the translation
+    files (.properties)"""
+
+    # Since we are trying to modify the module-level _sos variable
+    # we have to declare it global
+    global _sos
+
+    try:
+        from java.util import ResourceBundle, Locale
+
+        rb = ResourceBundle.getBundle(basename,
+                Locale.getDefault(), _get_classloader(path))
+
+        def _java(msg):
+            try:
+                return rb.getString(msg).encode('utf-8')
+            except:
+                return msg
+        _sos = _java
+    except:
+        pass

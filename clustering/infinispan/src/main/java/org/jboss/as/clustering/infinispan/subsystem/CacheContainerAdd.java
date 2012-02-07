@@ -58,7 +58,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
 import org.jgroups.Channel;
 
 /**
@@ -79,9 +78,19 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
     }
 
     private static void populate(ModelNode source, ModelNode target) {
-        target.get(ModelKeys.DEFAULT_CACHE).set(source.require(ModelKeys.DEFAULT_CACHE));
+        // AS7-3488 make default-cache non required attrinbute
+        // target.get(ModelKeys.DEFAULT_CACHE).set(source.get(ModelKeys.DEFAULT_CACHE));
+        if (source.hasDefined(ModelKeys.DEFAULT_CACHE)) {
+            target.get(ModelKeys.DEFAULT_CACHE).set(source.get(ModelKeys.DEFAULT_CACHE));
+        }
+        if (source.hasDefined(ModelKeys.ALIASES)) {
+            target.get(ModelKeys.ALIASES).set(source.get(ModelKeys.ALIASES));
+        }
         if (source.hasDefined(ModelKeys.JNDI_NAME)) {
             target.get(ModelKeys.JNDI_NAME).set(source.get(ModelKeys.JNDI_NAME));
+        }
+        if (source.hasDefined(ModelKeys.START)) {
+            target.get(ModelKeys.START).set(source.get(ModelKeys.START));
         }
         if (source.hasDefined(ModelKeys.LISTENER_EXECUTOR)) {
             target.get(ModelKeys.LISTENER_EXECUTOR).set(source.get(ModelKeys.LISTENER_EXECUTOR));
@@ -91,12 +100,6 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         }
         if (source.hasDefined(ModelKeys.REPLICATION_QUEUE_EXECUTOR)) {
             target.get(ModelKeys.REPLICATION_QUEUE_EXECUTOR).set(source.get(ModelKeys.REPLICATION_QUEUE_EXECUTOR));
-        }
-        if (source.hasDefined(ModelKeys.ALIAS)) {
-            ModelNode aliases = target.get(ModelKeys.ALIAS);
-            for (ModelNode alias : source.get(ModelKeys.ALIAS).asList()) {
-                aliases.add(alias);
-            }
         }
     }
 
@@ -113,26 +116,30 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
 
-        String defaultCache = model.require(ModelKeys.DEFAULT_CACHE).asString();
+        // make default cache non required (AS7-3488)
+        String defaultCache = model.get(ModelKeys.DEFAULT_CACHE).asString();
 
-        Transport transportConfig = new Transport();
+        boolean hasTransport = model.hasDefined(ModelKeys.TRANSPORT) && model.get(ModelKeys.TRANSPORT).hasDefined(ModelKeys.TRANSPORT_NAME);
+        Transport transportConfig = hasTransport ? new Transport() : null;
         EmbeddedCacheManagerDependencies dependencies = new EmbeddedCacheManagerDependencies(transportConfig);
 
         ServiceName[] aliases = null;
-        if (model.hasDefined(ModelKeys.ALIAS)) {
-            List<ModelNode> list = operation.get(ModelKeys.ALIAS).asList();
+        if (model.hasDefined(ModelKeys.ALIASES)) {
+            List<ModelNode> list = operation.get(ModelKeys.ALIASES).asList();
             aliases = new ServiceName[list.size()];
             for (int i = 0; i < list.size(); i++) {
                 aliases[i] = EmbeddedCacheManagerService.getServiceName(list.get(i).asString());
             }
         }
 
+        ServiceController.Mode initialMode = model.hasDefined(ModelKeys.START) ? StartMode.valueOf(model.get(ModelKeys.START).asString()).getMode() : ServiceController.Mode.ON_DEMAND;
+
         ServiceTarget target = context.getServiceTarget();
         ServiceName serviceName = EmbeddedCacheManagerService.getServiceName(name);
         ServiceBuilder<EmbeddedCacheManager> containerBuilder = target.addService(serviceName, new EmbeddedCacheManagerService(name, defaultCache, dependencies))
                 .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, dependencies.getMBeanServerInjector())
                 .addAliases(aliases)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .setInitialMode(initialMode)
         ;
 
         String jndiName = (model.hasDefined(ModelKeys.JNDI_NAME) ? InfinispanJndiName.toJndiName(model.get(ModelKeys.JNDI_NAME).asString()) : InfinispanJndiName.defaultCacheContainerJndiName(name)).getAbsoluteName();
@@ -143,44 +150,31 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
                 .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiName))
                 .addDependency(serviceName, CacheContainer.class, new ManagedReferenceInjector<CacheContainer>(binder.getManagedObjectInjector()))
                 .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binder.getNamingStoreInjector())
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .setInitialMode(ServiceController.Mode.PASSIVE)
         ;
         newControllers.add(binderBuilder.install());
 
-        // Because caches are added after this method completes, we can never be sure whether or not
-        // we need a transport. The service TransportRequiredService is set by ClusteredCacheAdd subclasses
-        // to indicate that a transport needs to be initialised in the enclosing cache container.
-        // The transport will only be initialised in EmbeddedCacheManagerService.start() if this value is true.
-        // Here, we always assume that a transport may be required and so perform the necessary setup.
-        String stack = null;
-
-        //
-        // the transport is stored as a child resource /subsystem=infinispan/cache-container=name/singleton=transport
-        // in the form of a ModelNode, so we need to retrieve it from the model
-        //
-        if (model.hasDefined(ModelKeys.SINGLETON)) {
-            ModelNode transport = model.get(ModelKeys.SINGLETON, ModelKeys.TRANSPORT);
+        if (hasTransport) {
+            String stack = null;
+            ModelNode transport = model.get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
             if (transport.hasDefined(ModelKeys.STACK)) {
                 stack = transport.get(ModelKeys.STACK).asString();
             }
             if (transport.hasDefined(ModelKeys.LOCK_TIMEOUT)) {
                 transportConfig.setLockTimeout(transport.get(ModelKeys.LOCK_TIMEOUT).asLong());
             }
-            if (transport.hasDefined(ModelKeys.SITE)) {
-                transportConfig.setSite(transport.get(ModelKeys.SITE).asString());
-            }
-            if (transport.hasDefined(ModelKeys.RACK)) {
-                transportConfig.setRack(transport.get(ModelKeys.RACK).asString());
-            }
-            if (transport.hasDefined(ModelKeys.MACHINE)) {
-                transportConfig.setMachine(transport.get(ModelKeys.MACHINE).asString());
-            }
             addExecutorDependency(containerBuilder, transport, ModelKeys.EXECUTOR, transportConfig.getExecutorInjector());
-        }
 
-        ServiceName channelServiceName = ChannelService.getServiceName(name);
-        // add an optional dependency on a ChannelService which has the cache-container name
-        containerBuilder.addDependency(DependencyType.OPTIONAL, channelServiceName, Channel.class, transportConfig.getChannelInjector());
+            ServiceName channelServiceName = ChannelService.getServiceName(name);
+            containerBuilder.addDependency(channelServiceName, Channel.class, transportConfig.getChannelInjector());
+
+            InjectedValue<ChannelFactory> channelFactory = new InjectedValue<ChannelFactory>();
+            ServiceBuilder<Channel> channelBuilder = target.addService(channelServiceName, new ChannelService(name, channelFactory))
+                    .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, channelFactory)
+                    .setInitialMode(ServiceController.Mode.ON_DEMAND)
+            ;
+            newControllers.add(channelBuilder.install());
+        }
 
         addExecutorDependency(containerBuilder, model, ModelKeys.LISTENER_EXECUTOR, dependencies.getListenerExecutorInjector());
         addScheduledExecutorDependency(containerBuilder, model, ModelKeys.EVICTION_EXECUTOR, dependencies.getEvictionExecutorInjector());
@@ -188,16 +182,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
 
         newControllers.add(containerBuilder.install());
 
-        InjectedValue<ChannelFactory> channelFactory = new InjectedValue<ChannelFactory>();
-        // Set initial mode to NEVER - Cache add operations will update mode to ON_DEMAND when necessary
-        ServiceBuilder<Channel> channelBuilder = target.addService(channelServiceName, new ChannelService(name, channelFactory))
-                .addAliases(EmbeddedCacheManagerService.getTransportServiceName(name))
-                .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, channelFactory)
-                .setInitialMode(ServiceController.Mode.NEVER)
-        ;
-        newControllers.add(channelBuilder.install());
-
-        log.debugf("Cache container %s installed", name);
+        log.debugf("%s cache container installed", name);
      }
 
     private void addExecutorDependency(ServiceBuilder<EmbeddedCacheManager> builder, ModelNode model, String key, Injector<Executor> injector) {
@@ -271,24 +256,9 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         private final InjectedValue<Executor> executor = new InjectedValue<Executor>();
 
         private Long lockTimeout;
-        private String site;
-        private String rack;
-        private String machine;
 
         void setLockTimeout(long lockTimeout) {
             this.lockTimeout = lockTimeout;
-        }
-
-        void setSite(String site) {
-            this.site = site;
-        }
-
-        void setRack(String rack) {
-            this.rack = rack;
-        }
-
-        void setMachine(String machine) {
-            this.machine = machine;
         }
 
         Injector<Channel> getChannelInjector() {
@@ -300,8 +270,8 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         }
 
         @Override
-        public Value<Channel> getChannel() {
-            return this.channel;
+        public Channel getChannel() {
+            return this.channel.getValue();
         }
 
         @Override
@@ -314,19 +284,5 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
             return this.lockTimeout;
         }
 
-        @Override
-        public String getSite() {
-            return this.site;
-        }
-
-        @Override
-        public String getRack() {
-            return this.rack;
-        }
-
-        @Override
-        public String getMachine() {
-            return this.machine;
-        }
     }
 }

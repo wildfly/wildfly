@@ -26,10 +26,20 @@ if exist "%STANDALONE_CONF%" (
 )
 
 pushd %DIRNAME%..
-if "x%JBOSS_HOME%" == "x" (
-  set "JBOSS_HOME=%CD%"
-)
+set "RESOLVED_JBOSS_HOME=%CD%"
 popd
+
+if "x%JBOSS_HOME%" == "x" (
+  set "JBOSS_HOME=%RESOLVED_JBOSS_HOME%" 
+)
+
+pushd "%JBOSS_HOME%"
+set "SANITIZED_JBOSS_HOME=%CD%"
+popd
+
+if "%RESOLVED_JBOSS_HOME%" NEQ "%SANITIZED_JBOSS_HOME%" (
+    echo WARNING JBOSS_HOME may be pointing to a different installation - unpredictable results may occur.
+)
 
 set DIRNAME=
 
@@ -81,7 +91,6 @@ if "x%JBOSS_MODULEPATH%" == "x" (
  "-Dlogging.configuration=file:%JBOSS_HOME%/standalone/configuration/logging.properties" ^
     -jar "%JBOSS_HOME%\jboss-modules.jar" ^
     -mp "%JBOSS_MODULEPATH%" ^
-    -logmodule "org.jboss.logmanager" ^
     -jaxpmodule "javax.xml.jaxp-provider" ^
      org.jboss.as.standalone ^
     -Djboss.home.dir="%JBOSS_HOME%" ^

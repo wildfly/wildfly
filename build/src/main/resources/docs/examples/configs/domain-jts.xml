@@ -79,7 +79,7 @@
             <subsystem xmlns="urn:jboss:domain:configadmin:1.0"/>
             <subsystem xmlns="urn:jboss:domain:datasources:1.0">
                 <datasources>
-                    <datasource jndi-name="java:jboss/datasources/ExampleDS" enabled="true" use-java-context="true" pool-name="ExampleDS">
+                    <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true">
                         <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
                         <driver>h2</driver>
                         <pool></pool>
@@ -127,7 +127,10 @@
                 </timer-service>
                 <remote connector-ref="remoting-connector" thread-pool-name="default"/>
                 <thread-pools>
-                    <thread-pool name="default" max-threads="10" keepalive-time="100"/>
+                    <thread-pool name="default">
+                        <max-threads count="10"/>
+                        <keepalive-time time="100" unit="milliseconds"/>
+                    </thread-pool>
                 </thread-pools>
                 <iiop enable-by-default="true" use-qualified-name="true"/>
             </subsystem>
@@ -139,12 +142,12 @@
                         <expiration max-idle="100000"/>
                     </local-cache>
                     <local-cache name="local-query">
-                        <transaction mode="NON_XA"/>
+                        <transaction mode="NONE"/>
                         <eviction strategy="LRU" max-entries="10000"/>
                         <expiration max-idle="100000"/>
                     </local-cache>
                     <local-cache name="timestamps">
-                        <transaction mode="NON_XA"/>
+                        <transaction mode="NONE"/>
                         <eviction strategy="NONE"/>
                     </local-cache>
                 </cache-container>
@@ -156,19 +159,19 @@
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
             <subsystem xmlns="urn:jboss:domain:jca:1.1">
-                <archive-validation enabled="true"/>
-                <bean-validation enabled="true"/>
+                <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
+                <bean-validation enabled="false"/>
                 <default-workmanager>
-                    <short-running-threads blocking="true">
-                        <core-threads count="10" per-cpu="20"/>
-                        <queue-length count="10" per-cpu="20"/>
-                        <max-threads count="10" per-cpu="20"/>
+                    <short-running-threads>
+                        <core-threads count="50"/>
+                        <queue-length count="50"/>
+                        <max-threads count="50"/>
                         <keepalive-time time="10" unit="seconds"/>
                     </short-running-threads>
-                    <long-running-threads blocking="true">
-                        <core-threads count="10" per-cpu="20"/>
-                        <queue-length count="10" per-cpu="20"/>
-                        <max-threads count="10" per-cpu="20"/>
+                    <long-running-threads>
+                        <core-threads count="50"/>
+                        <queue-length count="50"/>
+                        <max-threads count="50"/>
                         <keepalive-time time="10" unit="seconds"/>
                     </long-running-threads>
                 </default-workmanager>
@@ -187,9 +190,7 @@
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:messaging:1.1">
                 <hornetq-server>
-                    <!-- disable messaging persistence -->
-                    <persistence-enabled>false</persistence-enabled>
-                    <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
+                    <persistence-enabled>true</persistence-enabled>
                     <journal-file-size>102400</journal-file-size>
                     <journal-min-files>2</journal-min-files>
 
@@ -277,17 +278,13 @@
                 </properties>
                 <capabilities>
                     <!-- modules registered with the OSGi layer on startup -->
-                    <capability name="javax.api"/>
-                    <capability name="javax.servlet.api"/>
+                    <capability name="javax.servlet.api:v25"/>
                     <capability name="javax.transaction.api"/>
-                    <!-- bundles installed on startup -->
-                    <capability name="org.osgi.compendium"/>
                     <!-- bundles started in startlevel 1 -->
+                    <capability name="org.apache.felix.log" startlevel="1"/>
+                    <capability name="org.jboss.osgi.logging" startlevel="1"/>
                     <capability name="org.apache.felix.configadmin" startlevel="1"/>
                     <capability name="org.jboss.as.osgi.configadmin" startlevel="1"/>
-                    <!-- bundles started in startlevel 2 -->
-                    <capability name="org.jboss.netty" startlevel="2"/>
-                    <capability name="org.projectodd.stilts" startlevel="2"/>
                 </capabilities>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:remoting:1.1">
@@ -304,7 +301,7 @@
                     </security-domain>
                 </security-domains>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:threads:1.0"/>
+            <subsystem xmlns="urn:jboss:domain:threads:1.1"/>
             <subsystem xmlns="urn:jboss:domain:transactions:1.1">
                 <recovery-environment socket-binding="txn-recovery-environment"
                                       status-socket-binding="txn-status-manager"/>
@@ -323,27 +320,14 @@
                     <alias name="example.com"/>
                 </virtual-server>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:webservices:1.0" xmlns:javaee="http://java.sun.com/xml/ns/javaee" xmlns:jaxwsconfig="urn:jboss:jbossws-jaxws-config:4.0">
+            <subsystem xmlns="urn:jboss:domain:webservices:1.1">
                 <modify-wsdl-address>true</modify-wsdl-address>
                 <wsdl-host>${jboss.bind.address:127.0.0.1}</wsdl-host>
-                <!--
-                <wsdl-port>8080</wsdl-port>
-                <wsdl-secure-port>8443</wsdl-secure-port>
-                -->
-                <endpoint-config>
-                    <jaxwsconfig:config-name>Standard-Endpoint-Config</jaxwsconfig:config-name>
-                </endpoint-config>
-                <endpoint-config>
-                    <jaxwsconfig:config-name>Recording-Endpoint-Config</jaxwsconfig:config-name>
-                    <jaxwsconfig:pre-handler-chains>
-                        <javaee:handler-chain xmlns="http://java.sun.com/xml/ns/javaee">
-                            <javaee:protocol-bindings>##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM</javaee:protocol-bindings>
-                            <javaee:handler>
-                                <javaee:handler-name>RecordingHandler</javaee:handler-name>
-                                <javaee:handler-class>org.jboss.ws.common.invocation.RecordingServerHandler</javaee:handler-class>
-                            </javaee:handler>
-                        </javaee:handler-chain>
-                    </jaxwsconfig:pre-handler-chains>
+                <endpoint-config name="Standard-Endpoint-Config"/>
+                <endpoint-config name="Recording-Endpoint-Config">
+                    <pre-handler-chain name="recording-handlers" protocol-bindings="##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM">
+                        <handler name="RecordingHandler" class="org.jboss.ws.common.invocation.RecordingServerHandler"/>
+                    </pre-handler-chain>
                 </endpoint-config>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:weld:1.0"/>
@@ -390,7 +374,7 @@
             <subsystem xmlns="urn:jboss:domain:configadmin:1.0"/>
             <subsystem xmlns="urn:jboss:domain:datasources:1.0">
                 <datasources>
-                    <datasource jndi-name="java:jboss/datasources/ExampleDS" enabled="true" use-java-context="true" pool-name="java:jboss/datasources/ExampleDS">
+                    <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true">
                         <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
                         <driver>h2</driver>
                         <pool></pool>
@@ -432,7 +416,7 @@
                 </caches>
                 <passivation-stores>
                     <file-passivation-store name="file"/>
-                    <cluster-passivation-store name="infinispan" backing-cache="sfsb"/>
+                    <cluster-passivation-store name="infinispan" cache-container="ejb"/>
                 </passivation-stores>
                 <async thread-pool-name="default"/>
                 <timer-service thread-pool-name="default">
@@ -440,35 +424,40 @@
                 </timer-service>
                 <remote connector-ref="remoting-connector" thread-pool-name="default"/>
                 <thread-pools>
-                    <thread-pool name="default" max-threads="10" keepalive-time="100"/>
+                    <thread-pool name="default">
+                        <max-threads count="10"/>
+                        <keepalive-time time="100" unit="milliseconds"/>
+                    </thread-pool>
                 </thread-pools>
                 <iiop enable-by-default="true" use-qualified-name="true"/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:infinispan:1.1" default-cache-container="cluster">
-                <cache-container name="cluster" default-cache="default">
-                    <alias>ha-partition</alias>
+                <cache-container name="cluster" aliases="ha-partition" default-cache="default">
+                    <transport lock-timeout="60000"/>
                     <replicated-cache name="default" mode="SYNC" batching="true">
                         <locking isolation="REPEATABLE_READ"/>
                     </replicated-cache>
                 </cache-container>
-                <cache-container name="web" default-cache="repl">
-                    <alias>standard-session-cache</alias>
+                <cache-container name="web" aliases="standard-session-cache" default-cache="repl">
+                    <transport lock-timeout="60000"/>
                     <replicated-cache name="repl" mode="ASYNC" batching="true">
                         <file-store/>
                     </replicated-cache>
                     <distributed-cache name="dist" mode="ASYNC" batching="true">
                         <file-store/>
                     </distributed-cache>
+                    <replicated-cache name="sso" mode="SYNC" batching="true"/>
                 </cache-container>
-                <cache-container name="sfsb" default-cache="repl">
-                    <alias>sfsb-cache</alias>
-                    <alias>jboss.cache:service=EJB3SFSBClusteredCache</alias>
+                <cache-container name="ejb" aliases="sfsb sfsb-cache" default-cache="repl">
+                    <transport lock-timeout="60000"/>
                     <replicated-cache name="repl" mode="ASYNC" batching="true">
                         <eviction strategy="LRU" max-entries="10000"/>
                         <file-store/>
                     </replicated-cache>
+                    <replicated-cache name="remote-connector-client-mappings" mode="SYNC" batching="true"/>
                 </cache-container>
                 <cache-container name="hibernate" default-cache="local-query">
+                    <transport lock-timeout="60000"/>
                     <invalidation-cache name="entity" mode="SYNC">
                         <eviction strategy="LRU" max-entries="10000"/>
                         <expiration max-idle="100000"/>
@@ -488,16 +477,16 @@
                 <archive-validation enabled="true"/>
                 <bean-validation enabled="true"/>
                 <default-workmanager>
-                    <short-running-threads blocking="true">
-                        <core-threads count="10" per-cpu="20"/>
-                        <queue-length count="10" per-cpu="20"/>
-                        <max-threads count="10" per-cpu="20"/>
+                    <short-running-threads>
+                        <core-threads count="50"/>
+                        <queue-length count="50"/>
+                        <max-threads count="50"/>
                         <keepalive-time time="10" unit="seconds"/>
                     </short-running-threads>
-                    <long-running-threads blocking="true">
-                        <core-threads count="10" per-cpu="20"/>
-                        <queue-length count="10" per-cpu="20"/>
-                        <max-threads count="10" per-cpu="20"/>
+                    <long-running-threads>
+                        <core-threads count="50"/>
+                        <queue-length count="50"/>
+                        <max-threads count="50"/>
                         <keepalive-time time="10" unit="seconds"/>
                     </long-running-threads>
                 </default-workmanager>
@@ -519,8 +508,6 @@
                     <protocol type="UFC"/>
                     <protocol type="MFC"/>
                     <protocol type="FRAG2"/>
-                    <protocol type="pbcast.STATE_TRANSFER"/>
-                    <protocol type="pbcast.FLUSH"/>
                 </stack>
                 <stack name="tcp">
                     <transport type="TCP" socket-binding="jgroups-tcp" diagnostics-socket-binding="jgroups-diagnostics"/>
@@ -537,8 +524,6 @@
                     <protocol type="UFC"/>
                     <protocol type="MFC"/>
                     <protocol type="FRAG2"/>
-                    <protocol type="pbcast.STATE_TRANSFER"/>
-                    <protocol type="pbcast.FLUSH"/>
                 </stack>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jmx:1.1">
@@ -554,9 +539,7 @@
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:messaging:1.1">
                 <hornetq-server>
-                    <!-- disable messaging persistence -->
-                    <persistence-enabled>false</persistence-enabled>
-                    <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
+                    <persistence-enabled>true</persistence-enabled>
                     <journal-file-size>102400</journal-file-size>
                     <journal-min-files>2</journal-min-files>
 
@@ -647,17 +630,13 @@
                 </properties>
                 <capabilities>
                     <!-- modules registered with the OSGi layer on startup -->
-                    <capability name="javax.api"/>
-                    <capability name="javax.servlet.api"/>
+                    <capability name="javax.servlet.api:v25"/>
                     <capability name="javax.transaction.api"/>
-                    <!-- bundles installed on startup -->
-                    <capability name="org.osgi.compendium"/>
                     <!-- bundles started in startlevel 1 -->
+                    <capability name="org.apache.felix.log" startlevel="1"/>
+                    <capability name="org.jboss.osgi.logging" startlevel="1"/>
                     <capability name="org.apache.felix.configadmin" startlevel="1"/>
                     <capability name="org.jboss.as.osgi.configadmin" startlevel="1"/>
-                    <!-- bundles started in startlevel 2 -->
-                    <capability name="org.jboss.netty" startlevel="2"/>
-                    <capability name="org.projectodd.stilts" startlevel="2"/>
                 </capabilities>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:remoting:1.1">
@@ -691,27 +670,14 @@
                     <alias name="example.com"/>
                 </virtual-server>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:webservices:1.0" xmlns:javaee="http://java.sun.com/xml/ns/javaee" xmlns:jaxwsconfig="urn:jboss:jbossws-jaxws-config:4.0">
+            <subsystem xmlns="urn:jboss:domain:webservices:1.1">
                 <modify-wsdl-address>true</modify-wsdl-address>
                 <wsdl-host>${jboss.bind.address:127.0.0.1}</wsdl-host>
-                <!--
-                <wsdl-port>8080</wsdl-port>
-                <wsdl-secure-port>8443</wsdl-secure-port>
-                -->
-                <endpoint-config>
-                    <jaxwsconfig:config-name>Standard-Endpoint-Config</jaxwsconfig:config-name>
-                </endpoint-config>
-                <endpoint-config>
-                    <jaxwsconfig:config-name>Recording-Endpoint-Config</jaxwsconfig:config-name>
-                    <jaxwsconfig:pre-handler-chains>
-                        <javaee:handler-chain xmlns="http://java.sun.com/xml/ns/javaee">
-                            <javaee:protocol-bindings>##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM</javaee:protocol-bindings>
-                            <javaee:handler>
-                                <javaee:handler-name>RecordingHandler</javaee:handler-name>
-                                <javaee:handler-class>org.jboss.ws.common.invocation.RecordingServerHandler</javaee:handler-class>
-                            </javaee:handler>
-                        </javaee:handler-chain>
-                    </jaxwsconfig:pre-handler-chains>
+                <endpoint-config name="Standard-Endpoint-Config"/>
+                <endpoint-config name="Recording-Endpoint-Config">
+                    <pre-handler-chain name="recording-handlers" protocol-bindings="##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM">
+                        <handler name="RecordingHandler" class="org.jboss.ws.common.invocation.RecordingServerHandler"/>
+                    </pre-handler-chain>
                 </endpoint-config>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:weld:1.0"/>

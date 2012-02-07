@@ -5,7 +5,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -18,9 +17,6 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-import org.jboss.logging.Logger;
-
 
 /**
  * Attribute handler for cache-container resource.
@@ -28,8 +24,6 @@ import org.jboss.logging.Logger;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
 public class CacheContainerReadAttributeHandler implements OperationStepHandler {
-
-    private static final Logger log = Logger.getLogger(CacheContainerReadAttributeHandler.class.getPackage().getName());
 
     public static final CacheContainerReadAttributeHandler INSTANCE = new CacheContainerReadAttributeHandler();
 
@@ -66,17 +60,7 @@ public class CacheContainerReadAttributeHandler implements OperationStepHandler 
         final ModelNode submodel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
         final ModelNode currentValue = submodel.get(attributeName).clone();
 
-        final AttributeDefinition attributeDefinition = getAttributeDefinition(attributeName);
-
-        // if the attribute is ALIAS, transform from LIST to comma-delimited String
-        if (attributeDefinition.getName().equals(CommonAttributes.ALIAS.getName())) {
-            // convert from LIST to String (note that the value of the list ModelNode may be undefined)
-            String listAsString = convertListToString(attributeDefinition.getName(), currentValue);
-            context.getResult().set(listAsString);
-        }
-        else {
-            context.getResult().set(currentValue);
-        }
+        context.getResult().set(currentValue);
 
         // since we are not updating the model, there is no need for a RUNTIME step
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
@@ -92,23 +76,5 @@ public class CacheContainerReadAttributeHandler implements OperationStepHandler 
 
     protected AttributeDefinition getAttributeDefinition(final String attributeName) {
         return attributeDefinitions == null ? null : attributeDefinitions.get(attributeName);
-    }
-
-    private String convertListToString(String name, ModelNode value) {
-
-        // the model need not have any aliases defined
-        if (value.getType() == ModelType.UNDEFINED)
-            return "" ;
-
-        assert (value.getType() == ModelType.LIST) : MESSAGES.validationFailed(name);
-        StringBuilder result = new StringBuilder();
-        List<ModelNode> list = value.asList();
-        int size = list.size();
-        for (int i = 0; i < size; i++) {
-            result.append(list.get(i).asString()) ;
-            if (i < size-1)
-                result.append(",") ;
-        }
-        return result.toString() ;
     }
 }

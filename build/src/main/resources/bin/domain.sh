@@ -44,9 +44,16 @@ if $cygwin ; then
 fi
 
 # Setup JBOSS_HOME
+RESOLVED_JBOSS_HOME=`cd "$DIRNAME/.."; pwd`
 if [ "x$JBOSS_HOME" = "x" ]; then
     # get the full path (without any relative bits)
-    JBOSS_HOME=`cd "$DIRNAME/.."; pwd`
+    JBOSS_HOME=$RESOLVED_JBOSS_HOME
+else
+ SANITIZED_JBOSS_HOME=`cd "$JBOSS_HOME"; pwd`
+ if [ "$RESOLVED_JBOSS_HOME" != "$SANITIZED_JBOSS_HOME" ]; then
+   echo "WARNING JBOSS_HOME may be pointing to a different installation - unpredictable results may occur."
+   echo ""
+ fi
 fi
 export JBOSS_HOME
 
@@ -84,7 +91,8 @@ if [ "x$SERVER_SET" = "x" ]; then
     if [ "x$HAS_HOTSPOT" != "x" -o "x$HAS_OPENJDK" != "x" ]; then
         # MacOS does not support -server flag
         if [ "$darwin" != "true" ]; then
-            JAVA_OPTS="-server $JAVA_OPTS"
+            PROCESS_CONTROLLER_JAVA_OPTS="-server $PROCESS_CONTROLLER_JAVA_OPTS"
+            HOST_CONTROLLER_JAVA_OPTS="-server $HOST_CONTROLLER_JAVA_OPTS"
             JVM_OPTVERSION="-server $JVM_OPTVERSION"
         fi
     fi
@@ -94,6 +102,38 @@ fi
 
 if [ "x$JBOSS_MODULEPATH" = "x" ]; then
     JBOSS_MODULEPATH="$JBOSS_HOME/modules"
+fi
+
+if $linux; then
+    # consolidate the host-controller and command line opts
+    HOST_CONTROLLER_OPTS="$HOST_CONTROLLER_JAVA_OPTS $@"
+    # process the host-controller options
+    for var in $HOST_CONTROLLER_OPTS
+    do
+      case $var in
+        -Djboss.domain.base.dir=*)
+             JBOSS_BASE_DIR=`readlink -m ${var#*=}`
+             ;;
+        -Djboss.domain.log.dir=*)
+             JBOSS_LOG_DIR=`readlink -m ${var#*=}`
+             ;;
+        -Djboss.domain.config.dir=*)
+             JBOSS_CONFIG_DIR=`readlink -m ${var#*=}`
+             ;;
+      esac
+    done
+fi
+# determine the default base dir, if not set
+if [ "x$JBOSS_BASE_DIR" = "x" ]; then
+   JBOSS_BASE_DIR="$JBOSS_HOME/domain"
+fi
+# determine the default log dir, if not set
+if [ "x$JBOSS_LOG_DIR" = "x" ]; then
+   JBOSS_LOG_DIR="$JBOSS_BASE_DIR/log"
+fi
+# determine the default configuration dir, if not set
+if [ "x$JBOSS_CONFIG_DIR" = "x" ]; then
+   JBOSS_CONFIG_DIR="$JBOSS_BASE_DIR/configuration"
 fi
 
 # For Cygwin, switch paths to Windows format before running java
@@ -122,18 +162,17 @@ echo ""
 while true; do
    if [ "x$LAUNCH_JBOSS_IN_BACKGROUND" = "x" ]; then
       # Execute the JVM in the foreground
-      eval \"$JAVA\" $PROCESS_CONTROLLER_JAVA_OPTS \
-         \"-Dorg.jboss.boot.log.file=$JBOSS_HOME/domain/log/process-controller/boot.log\" \
-         \"-Dlogging.configuration=file:$JBOSS_HOME/domain/configuration/logging.properties\" \
+      eval \"$JAVA\" -D\"[Process Controller]\" $PROCESS_CONTROLLER_JAVA_OPTS \
+         \"-Dorg.jboss.boot.log.file=$JBOSS_LOG_DIR/process-controller.log\" \
+         \"-Dlogging.configuration=file:$JBOSS_CONFIG_DIR/logging.properties\" \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"${JBOSS_MODULEPATH}\" \
-         -logmodule "org.jboss.logmanager" \
          org.jboss.as.process-controller \
          -jboss-home \"$JBOSS_HOME\" \
          -jvm \"$JAVA\" \
          -- \
-         \"-Dorg.jboss.boot.log.file=$JBOSS_HOME/domain/log/host-controller/boot.log\" \
-         \"-Dlogging.configuration=file:$JBOSS_HOME/domain/configuration/logging.properties\" \
+         \"-Dorg.jboss.boot.log.file=$JBOSS_LOG_DIR/host-controller.log\" \
+         \"-Dlogging.configuration=file:$JBOSS_CONFIG_DIR/logging.properties\" \
          $HOST_CONTROLLER_JAVA_OPTS \
          -- \
          -default-jvm \"$JAVA\" \
@@ -141,18 +180,17 @@ while true; do
       JBOSS_STATUS=$?
    else
       # Execute the JVM in the background
-      eval \"$JAVA\" $PROCESS_CONTROLLER_JAVA_OPTS \
-         \"-Dorg.jboss.boot.log.file=$JBOSS_HOME/domain/log/process-controller/boot.log\" \
-         \"-Dlogging.configuration=file:$JBOSS_HOME/domain/configuration/logging.properties\" \
+      eval \"$JAVA\" -D\"[Process Controller]\" $PROCESS_CONTROLLER_JAVA_OPTS \
+         \"-Dorg.jboss.boot.log.file=$JBOSS_LOG_DIR/process-controller.log\" \
+         \"-Dlogging.configuration=file:$JBOSS_CONFIG_DIR/logging.properties\" \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"${JBOSS_MODULEPATH}\" \
-         -logmodule "org.jboss.logmanager" \
          org.jboss.as.process-controller \
          -jboss-home \"$JBOSS_HOME\" \
          -jvm \"$JAVA\" \
          -- \
-         \"-Dorg.jboss.boot.log.file=$JBOSS_HOME/domain/log/host-controller/boot.log\" \
-         \"-Dlogging.configuration=file:$JBOSS_HOME/domain/configuration/logging.properties\" \
+         \"-Dorg.jboss.boot.log.file=$JBOSS_LOG_DIR/host-controller.log\" \
+         \"-Dlogging.configuration=file:$JBOSS_CONFIG_DIR/logging.properties\" \
          $HOST_CONTROLLER_JAVA_OPTS \
          -- \
          -default-jvm \"$JAVA\" \
@@ -189,7 +227,7 @@ while true; do
       fi
       if [ "x$JBOSS_PIDFILE" != "x" ]; then
             grep "$JBOSS_PID" $JBOSS_PIDFILE && rm $JBOSS_PIDFILE
-      fi 
+      fi
    fi
    if [ "$JBOSS_STATUS" -eq 10 ]; then
       echo "Restarting JBoss..."

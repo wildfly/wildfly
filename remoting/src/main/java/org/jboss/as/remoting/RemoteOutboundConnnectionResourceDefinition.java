@@ -48,7 +48,12 @@ class RemoteOutboundConnnectionResourceDefinition extends AbstractOutboundConnec
 
     private RemoteOutboundConnnectionResourceDefinition() {
         super(ADDRESS, RemotingExtension.getResourceDescriptionResolver(CommonAttributes.REMOTE_OUTBOUND_CONNECTION),
-                RemoteOutboundConnectionAdd.INSTANCE, OutboundConnectionRemoveHandler.INSTANCE);
+                RemoteOutboundConnectionAdd.INSTANCE, RemoteOutboundConnectionRemoveHandler.INSTANCE);
+    }
+
+    @Override
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerSubModel(new PropertyResource(CommonAttributes.REMOTE_OUTBOUND_CONNECTION));
     }
 
     @Override

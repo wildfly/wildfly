@@ -115,14 +115,6 @@ public abstract class AbstractResourceAdapterDeploymentService {
                 managementRepository.getValue().getConnectors().remove(value.getDeployment().getConnector());
             }
 
-            if (mdr != null && mdr.getValue() != null) {
-                try {
-                    mdr.getValue().unregisterResourceAdapter(value.getDeployment().getDeploymentName());
-                } catch (Throwable t) {
-                    DEPLOYMENT_CONNECTOR_LOGGER.debug("Exception during unregistering deployment", t);
-                }
-            }
-
             if (mdr != null && mdr.getValue() != null && value.getDeployment() != null
                     && value.getDeployment().getCfs() != null && value.getDeployment().getCfJndiNames() != null) {
                 for (int i = 0; i < value.getDeployment().getCfs().length; i++) {
@@ -177,7 +169,13 @@ public abstract class AbstractResourceAdapterDeploymentService {
             }
 
             if (value.getDeployment() != null && value.getDeployment().getResourceAdapter() != null) {
-                value.getDeployment().getResourceAdapter().stop();
+                ClassLoader old = SecurityActions.getThreadContextClassLoader();
+                try {
+                    SecurityActions.setThreadContextClassLoader(value.getDeployment().getResourceAdapter().getClass().getClassLoader());
+                    value.getDeployment().getResourceAdapter().stop();
+                } finally {
+                    SecurityActions.setThreadContextClassLoader(old);
+                }
             }
         }
     }
@@ -260,6 +258,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
             final ServiceName connectionFactoryServiceName = ConnectionFactoryService.SERVICE_NAME_BASE.append(jndi);
             serviceTarget.addService(connectionFactoryServiceName, connectionFactoryService)
+                    .addDependency(ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(deploymentName))
                     .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
             final ConnectionFactoryReferenceFactoryService referenceFactoryService = new ConnectionFactoryReferenceFactoryService();
@@ -267,6 +266,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
                     .append(jndi);
             serviceTarget.addService(referenceFactoryServiceName, referenceFactoryService)
                     .addDependency(connectionFactoryServiceName, Object.class, referenceFactoryService.getDataSourceInjector())
+                    .addDependency(ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(deploymentName))
                     .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
             final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndi);

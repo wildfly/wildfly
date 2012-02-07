@@ -92,6 +92,7 @@ public class CommandLineConstants {
     public static final String PROCESS_CONTROLLER_BIND_PORT = "--pc-port";
 
     public static final String SYS_PROP = "-D";
+    public static final String SECURITY_PROP = "-S";
 
     public static final String PUBLIC_BIND_ADDRESS = "-b";
 

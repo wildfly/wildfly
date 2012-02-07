@@ -24,6 +24,7 @@ package org.jboss.as.domain.management;
 import javax.net.ssl.SSLContext;
 
 import org.jboss.as.domain.management.security.DomainCallbackHandler;
+import org.jboss.as.domain.management.security.SubjectSupplemental;
 
 /**
  * Interface to the security realm.
@@ -43,6 +44,11 @@ public interface SecurityRealm {
     DomainCallbackHandler getCallbackHandler();
 
     /**
+     * @return The associated SubjectSupplemental (if set) to supplement the contents of the Subject.
+     */
+    SubjectSupplemental getSubjectSupplemental();
+
+    /**
      * Used to obtain the SSLContext as configured for this security realm.
      *
      * @return the SSLContext server identity for this realm.
@@ -51,8 +57,8 @@ public interface SecurityRealm {
     SSLContext getSSLContext();
 
     /**
-     * Identify if a trust store has been configured for authentication, if defined
-     * it means CLIENT-CERT type authentication can occur.
+     * Identify if a trust store has been configured for authentication, if defined it means CLIENT-CERT type authentication can
+     * occur.
      *
      * @return true if a trust store has been configured for authentication.
      */

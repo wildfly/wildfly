@@ -109,7 +109,7 @@ public class RemotingSubsystemTestCase extends AbstractSubsystemBaseTest {
         assertEquals(1, connector.require(CommonAttributes.PROPERTY).require("org.xnio.Options.WORKER_ACCEPT_THREADS").require(CommonAttributes.VALUE).asInt());
     }
 
-    @Test @Ignore("AS7-2717")
+    @Test
     public void testSubsystemWithThreadAttributeChange() throws Exception {
         final int port = 12345;
         KernelServices services = installInController(new AdditionalInitialization(){
@@ -154,7 +154,7 @@ public class RemotingSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
 
-    @Test @Ignore("AS7-2717")
+    @Test
     public void testSubsystemWithConnectorPropertyChange() throws Exception {
         final int port = 12345;
         KernelServices services = installInController(new AdditionalInitialization(){
@@ -207,7 +207,7 @@ public class RemotingSubsystemTestCase extends AbstractSubsystemBaseTest {
         current.updateCurrentConnector(false);
     }
 
-    @Test @Ignore("AS7-2717")
+    @Test @Ignore("AS7-3632")
     public void testSubsystemWithBadConnectorProperty() throws Exception {
         final int port = 12345;
         KernelServices services = installInController(new AdditionalInitialization(){
@@ -258,12 +258,15 @@ public class RemotingSubsystemTestCase extends AbstractSubsystemBaseTest {
         ServiceName remoteOutboundConnectionServiceName = RemoteOutboundConnectionService.REMOTE_OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(remoteOutboundConnectionName);
         ServiceController<?> remoteOutboundConnectionService = services.getContainer().getRequiredService(remoteOutboundConnectionServiceName);
         assertNotNull("Remote outbound connection service for outbound connection:" + remoteOutboundConnectionName + " was null", remoteOutboundConnectionService);
-
+        RemoteOutboundConnectionService remoteService = (RemoteOutboundConnectionService) remoteOutboundConnectionService.getService();
+        assertEquals(2, remoteService.connectionCreationOptions.size());
 
         final String localOutboundConnectionName = "local-conn1";
         ServiceName localOutboundConnectionServiceName = LocalOutboundConnectionService.LOCAL_OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(localOutboundConnectionName);
         ServiceController<?> localOutboundConnectionService = services.getContainer().getRequiredService(localOutboundConnectionServiceName);
         assertNotNull("Local outbound connection service for outbound connection:" + localOutboundConnectionName + " was null", localOutboundConnectionService);
+        LocalOutboundConnectionService localService = (LocalOutboundConnectionService)localOutboundConnectionService.getService();
+        assertEquals(2, localService.connectionCreationOptions.size());
     }
 
     @Override

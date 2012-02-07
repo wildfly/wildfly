@@ -35,7 +35,7 @@ import java.util.Map;
 import javax.servlet.http.HttpSessionBindingEvent;
 import javax.servlet.http.HttpSessionBindingListener;
 
-import org.infinispan.manager.CacheContainer;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.web.session.mocks.InvalidateSessionRequestHandler;
 import org.jboss.as.web.session.mocks.SetAttributesRequestHandler;
 import org.jboss.logging.Logger;
@@ -56,7 +56,7 @@ public class FailedExpirationTestCase {
     private static long testCount = System.currentTimeMillis();
 
     private final JGroupsSystemPropertySupport jgSupport = new JGroupsSystemPropertySupport();
-    private CacheContainer cacheContainer;
+    private EmbeddedCacheManager cacheContainer;
     private DistributableSessionManager<?> manager;
     private String tempDir;
 

@@ -23,6 +23,7 @@
 package org.jboss.as.domain.controller.operations.coordination;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONCURRENT_GROUPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
@@ -41,6 +42,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_OPERATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
 import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
@@ -58,8 +60,8 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.domain.controller.ServerIdentity;
-import org.jboss.as.domain.controller.plan.NewRolloutPlanController;
-import org.jboss.as.domain.controller.plan.NewServerOperationExecutor;
+import org.jboss.as.domain.controller.plan.RolloutPlanController;
+import org.jboss.as.domain.controller.plan.ServerOperationExecutor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -183,6 +185,7 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
     private void pushToServers(final OperationContext context, final Map<ServerIdentity, ProxyTask> tasks,
                                final Map<ServerIdentity, Future<ModelNode>> futures) throws OperationFailedException {
 
+
         final String localHostName = domainOperationContext.getLocalHostInfo().getLocalHostName();
         Map<String, ModelNode> hostResults = new HashMap<String, ModelNode>(domainOperationContext.getHostControllerResults());
         if (domainOperationContext.getCoordinatorResult().isDefined()) {
@@ -196,7 +199,7 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
             if (trace) {
                 HOST_CONTROLLER_LOGGER.tracef("Rollout plan is %s", rolloutPlan);
             }
-            final NewServerOperationExecutor operationExecutor = new NewServerOperationExecutor() {
+            final ServerOperationExecutor operationExecutor = new ServerOperationExecutor() {
                 @Override
                 public ModelNode executeServerOperation(ServerIdentity server, ModelNode operation) {
                     ProxyController proxy = hostProxies.get(server.getHostName());
@@ -212,6 +215,7 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
                             }
                         }
                     }
+
                     // TODO this seems a bit convoluted. It's already an executor service thread calling this method
                     // But now we use another thread to actually make the invocation, so the first can read
                     // the result and decide how it fits in the overall rollout plan
@@ -245,12 +249,12 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
                 }
             };
 
-            NewRolloutPlanController rolloutPlanController = new NewRolloutPlanController(opsByGroup, rolloutPlan, domainOperationContext, operationExecutor, executorService);
-            NewRolloutPlanController.Result planResult = rolloutPlanController.execute();
+            RolloutPlanController rolloutPlanController = new RolloutPlanController(opsByGroup, rolloutPlan, domainOperationContext, operationExecutor, executorService);
+            RolloutPlanController.Result planResult = rolloutPlanController.execute();
             if (trace) {
                 HOST_CONTROLLER_LOGGER.tracef("Rollout plan result is %s", planResult);
             }
-            if (planResult == NewRolloutPlanController.Result.FAILED) {
+            if (planResult == RolloutPlanController.Result.FAILED) {
                 domainOperationContext.setCompleteRollback(true);
                 // AS7-801 -- we need to record a failure description here so the local host change gets aborted
                 // Waiting to do it in the DomainFinalResultHandler on the way out is too late
@@ -273,7 +277,7 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
             if (hostResult.hasDefined(SERVER_OPERATIONS)) {
                 String host = entry.getKey();
                 for (ModelNode item : hostResult.get(SERVER_OPERATIONS).asList()) {
-                    ModelNode op = item.require(OP);
+                    ModelNode op = translateDomainMappedOperation(item.require(OP));
                     for (Property prop : item.require(SERVERS).asPropertyList()) {
                         String group = prop.getValue().asString();
                         Map<ServerIdentity, ModelNode> groupMap = result.get(group);
@@ -287,6 +291,20 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
             }
         }
         return result;
+    }
+
+    private ModelNode translateDomainMappedOperation(final ModelNode domainMappedOperation) {
+        if (domainMappedOperation.hasDefined(OP)) {
+            // Simple op; return it
+            return domainMappedOperation;
+        }
+        ModelNode composite = new ModelNode();
+        composite.get(OP).set(COMPOSITE);
+        ModelNode steps = composite.get(STEPS).setEmptyList();
+        for (Property property : domainMappedOperation.asPropertyList()) {
+            steps.add(translateDomainMappedOperation(property.getValue()));
+        }
+        return composite;
     }
 
     private ModelNode getRolloutPlan(ModelNode rolloutPlan, Map<String, Map<ServerIdentity, ModelNode>> opsByGroup) throws OperationFailedException {

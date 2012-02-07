@@ -22,6 +22,11 @@
 
 package org.jboss.as.server.deployment.module;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -32,15 +37,10 @@ import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.as.server.moduleservice.ExtensionIndex;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
-import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * A processor which adds extension-list resource roots.
@@ -48,8 +48,6 @@ import java.util.Set;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ModuleExtensionListProcessor implements DeploymentUnitProcessor {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.server.deployment.module.module-extension-list-processor");
 
     public ModuleExtensionListProcessor() {
     }
@@ -72,11 +70,11 @@ public final class ModuleExtensionListProcessor implements DeploymentUnitProcess
                             entry.getImplementationVersion(), entry.getImplementationVendorId());
 
                     if (extension != null) {
-                        moduleSpecification.addLocalDependency(new ModuleDependency(moduleLoader, extension, false, false, true));
+                        moduleSpecification.addLocalDependency(new ModuleDependency(moduleLoader, extension, false, false, true, false));
                         nextPhaseDeps.add(ServiceModuleLoader.moduleSpecServiceName(extension));
                         nextPhaseDeps.add(ServiceModuleLoader.moduleSpecServiceName(extension));
                     } else {
-                        log.warnf("Could not find Extension-List entry " + entry + " referenced from " + resourceRoot);
+                        ServerLogger.DEPLOYMENT_LOGGER.cannotFindExtensionListEntry(entry, resourceRoot);
                     }
                 }
             }
@@ -96,10 +94,10 @@ public final class ModuleExtensionListProcessor implements DeploymentUnitProcess
                                     .getImplementationVendorId());
                             if (extension != null) {
                                 moduleSpecification.addLocalDependency(new ModuleDependency(moduleLoader, extension, false, false,
-                                        true));
+                                        true, false));
                                 nextPhaseDeps.add(ServiceModuleLoader.moduleSpecServiceName(extension));
                             } else {
-                                log.warnf("Could not find Extension-List entry " + entry + " referenced from " + resourceRoot);
+                                ServerLogger.DEPLOYMENT_LOGGER.cannotFindExtensionListEntry(entry, resourceRoot);
                             }
                         }
                     }

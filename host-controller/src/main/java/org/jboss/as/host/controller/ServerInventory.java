@@ -28,9 +28,10 @@ import javax.security.auth.callback.CallbackHandler;
 
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.process.ProcessInfo;
-import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
+import org.jboss.as.process.ProcessMessageHandler;
+import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
+import org.jboss.as.protocol.mgmt.ManagementRequestHandlerFactory;
 import org.jboss.dmr.ModelNode;
-import org.jboss.remoting3.Channel;
 
 /**
  * Inventory of the managed servers.
@@ -142,17 +143,34 @@ public interface ServerInventory {
     /**
      * Notification that a channel for communication with a managed server process has been registered.
      *
-     * @param serverProcessName  process name of the server
-     * @param channel remoting channel to use for communicating with the server
-     * @param callback callback the listener is to invoke when an operation handler is available for handling
-     *                 management operations from the server. The callback will be invoked before this method returns
+     * @param serverProcessName the name of the server process
+     * @param channelHandler remoting channel to use for communicating with the server
      */
-    void serverRegistered(String serverProcessName, Channel channel, ProxyCreatedCallback callback);
+    void serverCommunicationRegistered(String serverProcessName, ManagementChannelHandler channelHandler);
+
+    /**
+     * Notification that a server has been reconnected.
+     *
+     * This will also check whether a server is still in sync with the current domain model, or there were updates
+     * while the server was disconnected.
+     *
+     * @param serverProcessName the name of the server process
+     * @param channelHandler mgmt channel handler for communication with the server
+     * @return {@code true} if the server is still in sync, {@code false} otherwise
+     */
+    boolean serverReconnected(String serverProcessName, ManagementChannelHandler channelHandler);
+
+    /**
+     * Notification that the server is started.
+     *
+     * @param serverProcessName the name of the server process
+     */
+    void serverStarted(String serverProcessName);
 
     /**
      * Notification that the start of a server process has failed.
      *
-     * @param serverProcessName  the name of the server process
+     * @param serverProcessName the name of the server process
      */
     void serverStartFailed(String serverProcessName);
 
@@ -161,7 +179,41 @@ public interface ServerInventory {
      *
      * @param serverProcessName the name of the server process
      */
-    void serverStopped(String serverProcessName);
+    void serverProcessStopped(String serverProcessName);
+
+    /**
+     * Signal the end of the PC connection, regardless of the reason.
+     */
+    void connectionFinished();
+
+    /**
+     * Notification that a server has been added to the process-controller.
+     *
+     * @param processName the process name
+     */
+    void serverProcessAdded(String processName);
+
+    /**
+     * Notification that a server process has been started.
+     *
+     * @param processName the process name
+     */
+    void serverProcessStarted(String processName);
+
+    /**
+     * Notification that a server has been removed from the process-controller.
+     *
+     * @param processName the process name
+     */
+    void serverProcessRemoved(String processName);
+
+    /**
+     * Notification that an operation failed on the process-controller.
+     *
+     * @param processName the process name
+     * @param type the operation type
+     */
+    void operationFailed(String processName, ProcessMessageHandler.OperationType type);
 
     /**
      * Notification that managed server process information is available.
@@ -169,17 +221,5 @@ public interface ServerInventory {
      * @param processInfos map of process name to information about the process
      */
     void processInventory(Map<String, ProcessInfo> processInfos);
-
-    /**
-     * Callback to invoke when an operation handler is available for handling management operations from a server
-     */
-    interface ProxyCreatedCallback {
-        /**
-         * Provides the operation handler.
-         *
-         * @param handler the handler
-         */
-        void proxyOperationHandlerCreated(ManagementMessageHandler handler);
-    }
 
 }

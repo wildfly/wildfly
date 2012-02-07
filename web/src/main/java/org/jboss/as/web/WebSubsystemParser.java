@@ -34,6 +34,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttri
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.web.Constants.*;
+import static org.jboss.as.web.WebMessages.MESSAGES;
 
 import java.util.Collections;
 import java.util.List;
@@ -41,6 +42,7 @@ import java.util.List;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -532,13 +534,13 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     break;
                 case DEFAULT_WEB_MODULE:
                     if (welcome)
-                        throw new XMLStreamException("A default web module can not be specified when the welcome root has been enabled", reader.getLocation());
+                        throw new XMLStreamException(MESSAGES.noRootWebappWithWelcomeWebapp(), reader.getLocation());
                     defaultWebModule = value;
                     break;
                 case ENABLE_WELCOME_ROOT:
                     welcome = Boolean.parseBoolean(value);
                     if (welcome && defaultWebModule != null)
-                        throw new XMLStreamException("The welcome root can not be enabled on a host that has a default web module", reader.getLocation());
+                        throw new XMLStreamException(MESSAGES.noWelcomeWebappWithDefaultWebModule(), reader.getLocation());
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
@@ -609,6 +611,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
 
     static ModelNode parseSso(XMLExtendedStreamReader reader) throws XMLStreamException {
         final ModelNode sso = new ModelNode();
+        sso.setEmptyObject();
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
@@ -891,10 +894,10 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 ssl.get(KEY_ALIAS).set(value);
                 break;
             case PASSWORD:
-                ssl.get(PASSWORD).set(value);
+                ssl.get(PASSWORD).set(ParseUtils.parsePossibleExpression(value));
                 break;
             case CERTIFICATE_KEY_FILE:
-                ssl.get(CERTIFICATE_KEY_FILE).set(value);
+                ssl.get(CERTIFICATE_KEY_FILE).set(ParseUtils.parsePossibleExpression(value));
                 break;
             case CIPHER_SUITE:
                 ssl.get(CIPHER_SUITE).set(value);
@@ -909,10 +912,10 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 ssl.get(VERIFY_DEPTH).set(Integer.valueOf(value));
                 break;
             case CERTIFICATE_FILE:
-                ssl.get(CERTIFICATE_FILE).set(value);
+                ssl.get(CERTIFICATE_FILE).set(ParseUtils.parsePossibleExpression(value));
                 break;
             case CA_CERTIFICATE_FILE:
-                ssl.get(CA_CERTIFICATE_FILE).set(value);
+                ssl.get(CA_CERTIFICATE_FILE).set(ParseUtils.parsePossibleExpression(value));
                 break;
             case CA_REVOCATION_URL:
                 ssl.get(CA_REVOCATION_URL).set(value);
@@ -924,7 +927,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 ssl.get(SESSION_TIMEOUT).set(value);
                 break;
             case CA_CERTIFICATE_PASSWORD:
-                ssl.get(CA_CERTIFICATE_PASSWORD).set(value);
+                ssl.get(CA_CERTIFICATE_PASSWORD).set(ParseUtils.parsePossibleExpression(value));
                 break;
             case KEYSTORE_TYPE:
                 ssl.get(KEYSTORE_TYPE).set(value);

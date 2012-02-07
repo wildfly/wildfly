@@ -25,8 +25,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.server.Bootstrap;
+import org.jboss.as.server.ServerLogger;
+import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.Services;
-import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
@@ -56,7 +57,7 @@ import org.jboss.msc.service.StopContext;
 public class ServiceModuleLoader extends ModuleLoader implements Service<ServiceModuleLoader> {
 
     // Provide logging
-    private static final Logger log = Logger.getLogger("org.jboss.as.server.moduleservice");
+    private static final ServerLogger log = ServerLogger.MODULE_SERVICE_LOGGER;
 
     /**
      * Listener class that atomically retrieves the moduleSpec, and automatically removes the Module when the module spec
@@ -165,7 +166,8 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
     public ModuleSpec findModule(ModuleIdentifier identifier) throws ModuleLoadException {
         ServiceController<ModuleSpec> controller = (ServiceController<ModuleSpec>) serviceContainer.getService(moduleSpecServiceName(identifier));
         if (controller == null) {
-            throw new ModuleLoadException("Could not load module " + identifier + " as corresponding module spec service " + identifier + " was not found");
+            ServerLogger.MODULE_SERVICE_LOGGER.debugf("Could not load module '%s' as corresponding module spec service '%s' was not found", identifier, identifier);
+            return null;
         }
         ModuleSpecLoadListener listener = new ModuleSpecLoadListener(identifier);
         controller.addListener(listener);
@@ -180,7 +182,7 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
     @Override
     public synchronized void start(StartContext context) throws StartException {
         if (serviceContainer != null) {
-            throw new IllegalStateException("ServiceModuleLoader already started");
+            throw ServerMessages.MESSAGES.serviceModuleLoaderAlreadyStarted();
         }
         serviceContainer = context.getController().getServiceContainer();
     }
@@ -188,7 +190,7 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
     @Override
     public synchronized void stop(StopContext context) {
         if (serviceContainer == null) {
-            throw new IllegalStateException("ServiceModuleLoader already stopped");
+            throw ServerMessages.MESSAGES.serviceModuleLoaderAlreadyStopped();
         }
         serviceContainer = null;
     }
@@ -216,7 +218,7 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
      */
     public static ServiceName moduleSpecServiceName(ModuleIdentifier identifier) {
         if (!identifier.getName().startsWith(MODULE_PREFIX)) {
-            throw new IllegalArgumentException(identifier + " cannot be loaded from a ServiceModuleLoader as its name does not start with " + MODULE_PREFIX);
+            ServerMessages.MESSAGES.missingModulePrefix(identifier, MODULE_PREFIX);
         }
         return MODULE_SPEC_SERVICE_PREFIX.append(identifier.getName()).append(identifier.getSlot());
     }
@@ -229,7 +231,7 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
      */
     public static ServiceName moduleServiceName(ModuleIdentifier identifier) {
         if (!identifier.getName().startsWith(MODULE_PREFIX)) {
-            throw new IllegalArgumentException(identifier + " cannot be loaded from a ServiceModuleLoader as its name does not start with " + MODULE_PREFIX);
+            ServerMessages.MESSAGES.missingModulePrefix(identifier, MODULE_PREFIX);
         }
         return MODULE_SERVICE_PREFIX.append(identifier.getName()).append(identifier.getSlot());
     }

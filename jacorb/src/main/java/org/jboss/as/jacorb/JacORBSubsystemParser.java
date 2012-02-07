@@ -136,7 +136,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
                     break;
                 }
                 case SECURITY: {
-                    this.parseSecurityConfig(reader, node);
+                    this.parseSecurityConfig_1_0(reader, node);
                     break;
                 }
                 case PROPERTY: {
@@ -194,7 +194,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
                     break;
                 }
                 case SECURITY: {
-                    this.parseSecurityConfig(reader, node);
+                    this.parseSecurityConfig_1_1(reader, node);
                     break;
                 }
                 case PROPERTIES: {
@@ -339,12 +339,11 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
             String[] initializers = initializersList.split(",");
             // read each configured initializer and set the appropriate values in the model node.
             for (String initializer : initializers) {
-                SimpleAttributeDefinition definition = JacORBSubsystemDefinitions.valueOf(initializer);
+                SimpleAttributeDefinition definition = (SimpleAttributeDefinition)JacORBSubsystemDefinitions.valueOf(initializer);
                 if (definition != null && JacORBSubsystemDefinitions.ORB_INIT_ATTRIBUTES.contains(definition))
                     node.get(definition.getName()).set("on");
                 else
-                    throw new XMLStreamException(
-                            "Unexpected element value. Should be one of [security,transactions]");
+                    throw JacORBMessages.MESSAGES.invalidInitializerConfig(initializer, reader.getLocation());
             }
         }
     }
@@ -397,7 +396,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
                     // parse the poa request-processors config attributes.
                     EnumSet<Attribute> attributes =
                             EnumSet.of(Attribute.POA_REQUEST_PROC_POOL_SIZE, Attribute.POA_REQUEST_PROC_MAX_THREADS);
-                    this.parseAttributes(reader, node, attributes, EnumSet.copyOf(attributes));
+                    this.parseAttributes(reader, node, attributes, null);
                     // the request-processors element doesn't have child elements.
                     requireNoContent(reader);
                     break;
@@ -449,7 +448,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
 
     /**
      * <p>
-     * Parses the {@code security} section of the JacORB subsystem configuration.
+     * Parses the {@code security} section of the JacORB subsystem configuration according to the XSD version 1.0.
      * </p>
      *
      * @param reader the {@code XMLExtendedStreamReader} used to read the configuration XML.
@@ -457,12 +456,65 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
      * @throws javax.xml.stream.XMLStreamException
      *          if an error occurs while parsing the XML.
      */
-    private void parseSecurityConfig(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
+    private void parseSecurityConfig_1_0(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
+        // parse all security attributes.
+        EnumSet<Attribute> expectedAttributes = EnumSet.of(Attribute.SECURITY_SUPPORT_SSL,
+                Attribute.SECURITY_ADD_COMPONENT_INTERCEPTOR, Attribute.SECURITY_CLIENT_SUPPORTS,
+                Attribute.SECURITY_CLIENT_REQUIRES, Attribute.SECURITY_SERVER_SUPPORTS, Attribute.SECURITY_SERVER_REQUIRES,
+                Attribute.SECURITY_USE_DOMAIN_SF, Attribute.SECURITY_USE_DOMAIN_SSF);
+
+        EnumSet<Attribute> parsedAttributes = EnumSet.noneOf(Attribute.class);
+
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            requireNoNamespaceAttribute(reader, i);
+            String attrValue = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            // check for unexpected attributes.
+            if (!expectedAttributes.contains(attribute))
+                throw unexpectedAttribute(reader, i);
+            // check for duplicate attributes.
+            if (!parsedAttributes.add(attribute)) {
+                throw duplicateAttribute(reader, attribute.getLocalName());
+            }
+
+            switch (attribute) {
+                // check the attributes that need to be converted from int to string.
+                case SECURITY_CLIENT_SUPPORTS:
+                case SECURITY_CLIENT_REQUIRES:
+                case SECURITY_SERVER_SUPPORTS:
+                case SECURITY_SERVER_REQUIRES:
+                    SSLConfigValue value = SSLConfigValue.fromValue(attrValue);
+                    if (value == null)
+                        throw JacORBMessages.MESSAGES.invalidSSLConfig(attrValue, reader.getLocation());
+                    attrValue = value.toString();
+                default:
+                    SimpleAttributeDefinition definition = ((SimpleAttributeDefinition) JacORBSubsystemDefinitions.
+                        valueOf(attribute.getLocalName()));
+                    // a null definition represents an attribute that has been deprecated and is no longer used.
+                    if (definition != null)
+                        definition.parseAndSetParameter(attrValue, node, reader);
+            }
+        }
+
+        // the security element doesn't have child elements.
+        requireNoContent(reader);
+    }
+
+    /**
+     * <p>
+     * Parses the {@code security} section of the JacORB subsystem configuration according to the XSD version 1.1.
+     * </p>
+     *
+     * @param reader the {@code XMLExtendedStreamReader} used to read the configuration XML.
+     * @param node   the {@code ModelNode} that will hold the parsed security configuration.
+     * @throws javax.xml.stream.XMLStreamException
+     *          if an error occurs while parsing the XML.
+     */
+    private void parseSecurityConfig_1_1(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
         // parse all security attributes.
         EnumSet<Attribute> expectedAttributes = EnumSet.of(Attribute.SECURITY_SUPPORT_SSL, Attribute.SECURITY_SECURITY_DOMAIN,
-                Attribute.SECURITY_ADD_COMPONENT_INTERCEPTOR, Attribute.SECURITY_CLIENT_SUPPORTS, Attribute.SECURITY_CLIENT_REQUIRES,
-                Attribute.SECURITY_SERVER_SUPPORTS, Attribute.SECURITY_SERVER_REQUIRES, Attribute.SECURITY_USE_DOMAIN_SF,
-                Attribute.SECURITY_USE_DOMAIN_SSF);
+                Attribute.SECURITY_ADD_COMPONENT_INTERCEPTOR, Attribute.SECURITY_CLIENT_SUPPORTS,
+                Attribute.SECURITY_CLIENT_REQUIRES, Attribute.SECURITY_SERVER_SUPPORTS, Attribute.SECURITY_SERVER_REQUIRES);
         this.parseAttributes(reader, node, expectedAttributes, null);
         // the security element doesn't have child elements.
         requireNoContent(reader);
@@ -622,10 +674,11 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
                 throw duplicateAttribute(reader, attribute.getLocalName());
             }
             requiredAttributes.remove(attribute);
-            JacORBSubsystemDefinitions.valueOf(attribute.getLocalName()).parseAndSetParameter(attrValue, node, reader);
+            ((SimpleAttributeDefinition)JacORBSubsystemDefinitions.valueOf(attribute.getLocalName())).
+                    parseAndSetParameter(attrValue, node, reader);
         }
 
-      // throw an exception if a required attribute wasn't found.
+        // throw an exception if a required attribute wasn't found.
         if (!requiredAttributes.isEmpty()) {
             throw missingRequired(reader, requiredAttributes);
         }

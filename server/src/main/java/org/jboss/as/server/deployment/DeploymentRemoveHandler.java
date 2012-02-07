@@ -18,25 +18,31 @@
  */
 package org.jboss.as.server.deployment;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
+import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getContents;
 
 import java.util.List;
 import java.util.Locale;
 
+import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.controller.descriptions.ServerDescriptions;
-import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -46,43 +52,40 @@ import org.jboss.msc.service.ServiceName;
  */
 public class DeploymentRemoveHandler implements OperationStepHandler, DescriptionProvider {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.server.controller");
-
     public static final String OPERATION_NAME = REMOVE;
 
     private final ContentRepository contentRepository;
-    private final boolean standalone;
 
-    public DeploymentRemoveHandler(ContentRepository contentRepository, boolean standalone) {
+    public DeploymentRemoveHandler(ContentRepository contentRepository) {
         this.contentRepository = contentRepository;
-        this.standalone = standalone;
     }
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
         final List<byte[]> removedHashes = DeploymentUtils.getDeploymentHash(resource);
 
-        final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
-
-        context.removeResource(PathAddress.EMPTY_ADDRESS);
+        final Resource deployment = context.removeResource(PathAddress.EMPTY_ADDRESS);
+        final ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
+        final ManagementResourceRegistration mutableRegistration = context.getResourceRegistrationForUpdate();
+        final ModelNode model = deployment.getModel();
 
         if (context.getType() == OperationContext.Type.SERVER) {
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     String deploymentUnitName = null;
 
-                    boolean enabled = model.hasDefined(ENABLED) ? model.get(ENABLED).asBoolean() : true;
+                    boolean enabled = !model.hasDefined(ENABLED) || model.get(ENABLED).asBoolean();
                     if (enabled) {
-                        final ModelNode opAddr = operation.get(OP_ADDR);
-                        final PathAddress address = PathAddress.pathAddress(opAddr);
-                        final String name = address.getLastElement().getValue();
+                        final String name = PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement().getValue();
                         deploymentUnitName = model.hasDefined(RUNTIME_NAME) ? model.get(RUNTIME_NAME).asString() : name;
                         final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
                         context.removeService(deploymentUnitServiceName);
                         context.removeService(deploymentUnitServiceName.append("contents"));
                     }
                     if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-                        recoverServices(context, operation, model);
+                        if (enabled) {
+                            recoverServices(context, model, deployment, registration, mutableRegistration);
+                        }
 
                         if (enabled && context.hasFailureDescription()) {
                             ServerLogger.ROOT_LOGGER.undeploymentRolledBack(deploymentUnitName, context.getFailureDescription().asString());
@@ -93,14 +96,13 @@ public class DeploymentRemoveHandler implements OperationStepHandler, Descriptio
                         if (enabled) {
                             ServerLogger.ROOT_LOGGER.deploymentUndeployed(deploymentUnitName);
                         }
-                        if (standalone) {
-                            for (byte[] hash : removedHashes) {
-                                try {
-                                    contentRepository.removeContent(hash);
-                                } catch (Exception e) {
-                                    //TODO
-                                    log.infof(e, "Exception occurred removing %s", hash);
-                                }
+
+                        for (byte[] hash : removedHashes) {
+                            try {
+                                contentRepository.removeContent(hash);
+                            } catch (Exception e) {
+                                //TODO
+                                ServerLogger.DEPLOYMENT_LOGGER.failedToRemoveDeploymentContent(e, HashUtil.bytesToHexString(hash));
                             }
                         }
                     }
@@ -110,21 +112,18 @@ public class DeploymentRemoveHandler implements OperationStepHandler, Descriptio
         context.completeStep();
     }
 
-    protected boolean requiresRuntime(OperationContext context) {
-        return context.getType() == OperationContext.Type.SERVER;
-    }
-
     @Override
     public ModelNode getModelDescription(Locale locale) {
         return ServerDescriptions.getRemoveDeploymentOperation(locale);
     }
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
-        boolean enabled = model.hasDefined(ENABLED) ? model.get(ENABLED).asBoolean() : true;
-        if (!enabled) return;
-    }
-
-    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
-        // TODO:  RE-ADD SERVICES
+    private void recoverServices(OperationContext context, ModelNode model, Resource deployment,
+                                   ImmutableManagementResourceRegistration registration,
+                                   ManagementResourceRegistration mutableRegistration) {
+        final String name = model.require(NAME).asString();
+        final String runtimeName = model.hasDefined(RUNTIME_NAME) ? model.get(RUNTIME_NAME).asString() : name;
+        final DeploymentHandlerUtil.ContentItem[] contents = getContents(model.require(CONTENT));
+        final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
+        DeploymentHandlerUtil.doDeploy(context, runtimeName, name, verificationHandler, deployment, registration, mutableRegistration, contents);
     }
 }

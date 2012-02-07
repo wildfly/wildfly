@@ -54,7 +54,7 @@ public class CmpSubsystemAdd extends AbstractBoottimeAddStepHandler implements D
     static CmpSubsystemAdd INSTANCE = new CmpSubsystemAdd();
 
     protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
-        logger.info("Activating EJB CMP Subsystem");
+        logger.debug("Activating EJB CMP Subsystem");
         final boolean appclient = context.getProcessType() == ProcessType.APPLICATION_CLIENT;
 
         final KeyGeneratorFactoryRegistry keyGeneratorFactoryRegistry = new KeyGeneratorFactoryRegistry();

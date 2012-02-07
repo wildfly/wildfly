@@ -38,6 +38,34 @@
                 </excludes>
             </testResource>
         </testResources>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-users</id>
+                        <phase>generate-test-resources</phase>
+                        <goals><goal>copy-resources</goal></goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/jbossas/standalone/configuration</outputDirectory>
+                            <overwrite>true</overwrite>
+                            <resources>
+                                <resource>
+                                    <directory>../../shared/src/main/resources</directory>
+                                    <includes>
+                                        <include>*-users.properties</include>
+                                        <include>*-roles.properties</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+
     </build>
 
     <profiles>
@@ -105,6 +133,7 @@
                                         <include>org/jboss/as/test/integration/messaging/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/management/cli/HelpTestCase.java</include>
                                         <include>org/jboss/as/test/integration/management/cli/JmsTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/naming/remote/**/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/ee/injection/resource/resourceref/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/ee/injection/resource/enventry/EnvEntryTestCase.java</include>
                                         <include>org/jboss/as/test/integration/ee/injection/resource/basic/*TestCase.java</include>
@@ -148,6 +177,7 @@
                                         <exclude>org/jboss/as/test/integration/messaging/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/management/cli/HelpTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/management/cli/JmsTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/naming/remote/**/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ee/injection/resource/resourceref/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ee/injection/resource/enventry/EnvEntryTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ee/injection/resource/basic/*TestCase.java</exclude>

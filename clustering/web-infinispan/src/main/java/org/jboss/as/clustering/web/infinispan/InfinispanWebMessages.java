@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.web.infinispan;
 
-import org.jboss.as.clustering.ClusteringMessages;
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
@@ -35,7 +34,7 @@ import org.jboss.metadata.web.jboss.ReplicationGranularity;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @MessageBundle(projectCode = "JBAS")
-interface InfinispanWebMessages extends ClusteringMessages {
+interface InfinispanWebMessages {
     /**
      * The messages
      */
@@ -82,7 +81,10 @@ interface InfinispanWebMessages extends ClusteringMessages {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 10333, value = "Failed to store session attributes for session: %s")
+    @Message(id = 10333, value = "Failed to load session attributes for session: %s")
+    RuntimeException failedToLoadSessionAttributes(@Cause Throwable cause, String sessionId);
+
+    @Message(id = 10334, value = "Failed to store session attributes for session: %s")
     RuntimeException failedToStoreSessionAttributes(@Cause Throwable cause, String sessionId);
 
     /**
@@ -94,7 +96,7 @@ interface InfinispanWebMessages extends ClusteringMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 10334, value = "Attempt to put value of type %s into %s entry")
+    @Message(id = 10335, value = "Attempt to put value of type %s into %s entry")
     IllegalArgumentException invalidMapValue(String typeClassName, Object map);
 
     /**
@@ -104,6 +106,6 @@ interface InfinispanWebMessages extends ClusteringMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 10335, value = "Unknown replication granularity: %s")
+    @Message(id = 10336, value = "Unknown replication granularity: %s")
     IllegalArgumentException unknownReplicationGranularity(ReplicationGranularity value);
 }

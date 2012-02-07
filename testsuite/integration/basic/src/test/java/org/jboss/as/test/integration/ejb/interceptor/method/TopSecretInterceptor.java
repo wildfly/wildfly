@@ -30,11 +30,11 @@ import javax.interceptor.InvocationContext;
  */
 public class TopSecretInterceptor {
 
-        public static boolean called = false;
+    public static boolean called = false;
     public static boolean postConstructCalled = false;
 
-    //as this is a method level interceptor this should not be called
-    //see the interceptors spec
+    // as this is a method level interceptor this should not be called
+    // see the interceptors spec
     @PostConstruct
     public void postConstruct(final InvocationContext invocationContext) throws Exception {
         postConstructCalled = true;

@@ -21,6 +21,8 @@
  */
 package org.jboss.as.web;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 
@@ -36,7 +38,6 @@ import org.apache.catalina.startup.ContextConfig;
 import org.apache.tomcat.InstanceManager;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
 import org.jboss.as.web.deployment.WebCtxLoader;
-import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -52,7 +53,6 @@ import org.jboss.msc.value.InjectedValue;
  */
 class WelcomeContextService implements Service<Context> {
 
-    private static final Logger log = Logger.getLogger("org.jboss.web");
     private final StandardContext context;
     private final InjectedValue<String> pathInjector = new InjectedValue<String>();
     private final InjectedValue<VirtualHost> hostInjector = new InjectedValue<VirtualHost>();
@@ -105,12 +105,12 @@ class WelcomeContextService implements Service<Context> {
                 host.addChild(context);
                 context.create();
             } catch (Exception e) {
-                throw new StartException("failed to create context", e);
+                throw new StartException(MESSAGES.createWelcomeContextFailed(), e);
             }
             try {
                 context.start();
             } catch (LifecycleException e) {
-                throw new StartException("failed to start context", e);
+                throw new StartException(MESSAGES.startWelcomeContextFailed(), e);
             }
     }
 
@@ -120,12 +120,12 @@ class WelcomeContextService implements Service<Context> {
             hostInjector.getValue().getHost().removeChild(context);
             context.stop();
         } catch (LifecycleException e) {
-            log.error("exception while stopping context", e);
+            WebLogger.WEB_LOGGER.stopWelcomeContextFailed(e);
         }
         try {
             context.destroy();
         } catch (Exception e) {
-            log.error("exception while destroying context", e);
+            WebLogger.WEB_LOGGER.destroyWelcomeContextFailed(e);
         }
     }
 
@@ -133,7 +133,7 @@ class WelcomeContextService implements Service<Context> {
     public synchronized Context getValue() throws IllegalStateException {
         final Context context = this.context;
         if (context == null) {
-            throw new IllegalStateException();
+            throw MESSAGES.nullValue();
         }
         return context;
     }

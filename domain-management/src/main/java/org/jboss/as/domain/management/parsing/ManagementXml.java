@@ -27,8 +27,10 @@ import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JAAS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP_CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
@@ -71,9 +73,11 @@ import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
+import org.jboss.as.domain.management.security.JaasAuthenticationResourceDefinition;
 import org.jboss.as.domain.management.security.KeystoreAttributes;
 import org.jboss.as.domain.management.security.LdapAuthenticationResourceDefinition;
 import org.jboss.as.domain.management.security.PropertiesAuthenticationResourceDefinition;
+import org.jboss.as.domain.management.security.PropertiesAuthorizationResourceDefinition;
 import org.jboss.as.domain.management.security.SSLServerIdentityResourceDefinition;
 import org.jboss.as.domain.management.security.SecretServerIdentityResourceDefinition;
 import org.jboss.as.domain.management.security.UserResourceDefinition;
@@ -83,7 +87,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
- * Bits of parsing and marshalling logic that are related to {@code <management>} elements in domain.xml, host.xml
+ * Bits of parsing and marshaling logic that are related to {@code <management>} elements in domain.xml, host.xml
  * and standalone.xml.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
@@ -235,7 +239,13 @@ public class ManagementXml {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case SECURITY_REALM: {
-                    parseSecurityRealm(reader, address, expectedNs, list);
+                    switch (expectedNs) {
+                        case DOMAIN_1_0:
+                            parseSecurityRealm_1_0(reader, address, expectedNs, list);
+                            break;
+                        default:
+                            parseSecurityRealm_1_1(reader, address, expectedNs, list);
+                    }
                     break;
                 }
                 default: {
@@ -245,7 +255,7 @@ public class ManagementXml {
         }
     }
 
-    private void parseSecurityRealm(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list)
+    private void parseSecurityRealm_1_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list)
             throws XMLStreamException {
         requireSingleAttribute(reader, Attribute.NAME.getLocalName());
         // After double checking the name of the only attribute we can retrieve it.
@@ -267,14 +277,7 @@ public class ManagementXml {
                     parseServerIdentities(reader, expectedNs, realmAddress, list);
                     break;
                 case AUTHENTICATION: {
-                    switch (expectedNs) {
-                        case DOMAIN_1_0:
-                            parseAuthentication_1_0(reader, expectedNs, realmAddress, list);
-                            break;
-                        default:
-                            parseAuthentication_1_1(reader, expectedNs, realmAddress, list);
-                    }
-
+                    parseAuthentication_1_0(reader, expectedNs, realmAddress, list);
                     break;
                 }
                 default: {
@@ -282,8 +285,41 @@ public class ManagementXml {
                 }
             }
         }
+    }
 
+    private void parseSecurityRealm_1_1(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list)
+            throws XMLStreamException {
+        requireSingleAttribute(reader, Attribute.NAME.getLocalName());
+        // After double checking the name of the only attribute we can retrieve it.
+        final String realmName = reader.getAttributeValue(0);
 
+        final ModelNode realmAddress = address.clone();
+        realmAddress.add(SECURITY_REALM, realmName);
+        final ModelNode add = new ModelNode();
+        add.get(OP_ADDR).set(realmAddress);
+        add.get(OP).set(ADD);
+        list.add(add);
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case SERVER_IDENTITIES:
+                    parseServerIdentities(reader, expectedNs, realmAddress, list);
+                    break;
+                case AUTHENTICATION: {
+                    parseAuthentication_1_1(reader, expectedNs, realmAddress, list);
+                    break;
+                }
+                case AUTHORIZATION:
+                    parseAuthorization(reader, expectedNs, realmAddress, list);
+                    break;
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
     }
 
     private void parseServerIdentities(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode realmAddress, final List<ModelNode> list)
@@ -404,7 +440,6 @@ public class ManagementXml {
 
     private void parseAuthentication_1_0(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode realmAddress, final List<ModelNode> list)
             throws XMLStreamException {
-
         int userCount = 0;
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
@@ -447,6 +482,14 @@ public class ManagementXml {
             final Element element = Element.forName(reader.getLocalName());
 
             switch (element) {
+                case JAAS: {
+                    if (usernamePasswordFound) {
+                        throw unexpectedElement(reader);
+                    }
+                    parseJaasAuthentication(reader, expectedNs, realmAddress, list);
+                    usernamePasswordFound = true;
+                    break;
+                }
                 case LDAP: {
                     if (usernamePasswordFound) {
                         throw unexpectedElement(reader);
@@ -534,6 +577,41 @@ public class ManagementXml {
 
         if (required.size() > 0)
             throw missingRequired(reader, required);
+
+        requireNoContent(reader);
+    }
+
+    private void parseJaasAuthentication(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+            final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
+        ModelNode addr = realmAddress.clone().add(AUTHENTICATION, JAAS);
+        ModelNode jaas = Util.getEmptyOperation(ADD, addr);
+        list.add(jaas);
+
+        boolean nameFound = false;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME:
+                        if (nameFound) {
+                            throw unexpectedAttribute(reader, i);
+                        }
+                        nameFound = true;
+                        JaasAuthenticationResourceDefinition.NAME.parseAndSetParameter(value, jaas, reader);
+                        break;
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+        if (nameFound == false) {
+            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
+        }
 
         requireNoContent(reader);
     }
@@ -650,7 +728,7 @@ public class ManagementXml {
 
         requireNoContent(reader);
         // This property was not supported in version 1.0 of the schema, however it is set to true here to ensure
-        // the default behaviour is a document based on 1.0 of the schema is parsed, 1.1 now defaults this to false.
+        // the default behaviour if a document based on 1.0 of the schema is parsed, 1.1 now defaults this to false.
         properties.get(PLAIN_TEXT).set(true);
     }
 
@@ -762,6 +840,66 @@ public class ManagementXml {
         list.add(op);
     }
 
+    private void parseAuthorization(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+            final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
+        boolean authzFound = false;
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            // Only a single element within the authorization element is currently supported.
+            if (authzFound) {
+                throw unexpectedElement(reader);
+            }
+            switch (element) {
+                case PROPERTIES: {
+                    parsePropertiesAuthorization(reader, realmAddress, list);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+
+        }
+    }
+
+    private void parsePropertiesAuthorization(final XMLExtendedStreamReader reader, final ModelNode realmAddress,
+            final List<ModelNode> list) throws XMLStreamException {
+        ModelNode addr = realmAddress.clone().add(AUTHORIZATION, PROPERTIES);
+        ModelNode properties = Util.getEmptyOperation(ADD, addr);
+        list.add(properties);
+
+        String path = null;
+
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case PATH:
+                        path = value;
+                        PropertiesAuthorizationResourceDefinition.PATH.parseAndSetParameter(value, properties, reader);
+                        break;
+                    case RELATIVE_TO: {
+                        PropertiesAuthorizationResourceDefinition.RELATIVE_TO.parseAndSetParameter(value, properties, reader);
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        if (path == null)
+            throw missingRequired(reader, Collections.singleton(Attribute.PATH));
+
+        requireNoContent(reader);
+    }
+
     public void writeManagement(final XMLExtendedStreamWriter writer, final ModelNode management, boolean allowInterfaces)
             throws XMLStreamException {
         boolean hasSecurityRealm = management.hasDefined(SECURITY_REALM);
@@ -804,6 +942,10 @@ public class ManagementXml {
             if (realm.hasDefined(AUTHENTICATION)) {
                 writeAuthentication(writer, realm);
             }
+
+            if (realm.hasDefined(AUTHORIZATION)) {
+                writeAuthorization(writer, realm);
+            }
             writer.writeEndElement();
         }
         writer.writeEndElement();
@@ -845,7 +987,12 @@ public class ManagementXml {
             KeystoreAttributes.KEYSTORE_PASSWORD.marshallAsAttribute(truststore, writer);
         }
 
-        if (authentication.hasDefined(LDAP)) {
+        if (authentication.hasDefined(JAAS)) {
+            ModelNode jaas = authentication.get(JAAS);
+            writer.writeStartElement(Element.JAAS.getLocalName());
+            JaasAuthenticationResourceDefinition.NAME.marshallAsAttribute(jaas, writer);
+            writer.writeEndElement();
+        } else if (authentication.hasDefined(LDAP)) {
             ModelNode userLdap = authentication.get(LDAP);
             writer.writeStartElement(Element.LDAP.getLocalName());
             LdapAuthenticationResourceDefinition.CONNECTION.marshallAsAttribute(userLdap, writer);
@@ -862,13 +1009,11 @@ public class ManagementXml {
             }
             writer.writeEndElement();
         } else if (authentication.hasDefined(PROPERTIES)) {
-
             ModelNode properties = authentication.require(PROPERTIES);
             writer.writeEmptyElement(Element.PROPERTIES.getLocalName());
             PropertiesAuthenticationResourceDefinition.PATH.marshallAsAttribute(properties, writer);
             PropertiesAuthenticationResourceDefinition.RELATIVE_TO.marshallAsAttribute(properties, writer);
             PropertiesAuthenticationResourceDefinition.PLAIN_TEXT.marshallAsAttribute(properties, writer);
-
         } else if (authentication.hasDefined(USERS)) {
             ModelNode userDomain = authentication.get(USERS);
             ModelNode users = userDomain.hasDefined(USER) ? userDomain.require(USER) : new ModelNode().setEmptyObject();
@@ -883,6 +1028,19 @@ public class ManagementXml {
             }
 
             writer.writeEndElement();
+        }
+
+        writer.writeEndElement();
+    }
+
+    private void writeAuthorization(XMLExtendedStreamWriter writer, ModelNode realm) throws XMLStreamException {
+        writer.writeStartElement(Element.AUTHORIZATION.getLocalName());
+        ModelNode authorization = realm.require(AUTHORIZATION);
+        if (authorization.hasDefined(PROPERTIES)) {
+            ModelNode properties = authorization.require(PROPERTIES);
+            writer.writeEmptyElement(Element.PROPERTIES.getLocalName());
+            PropertiesAuthorizationResourceDefinition.PATH.marshallAsAttribute(properties, writer);
+            PropertiesAuthorizationResourceDefinition.RELATIVE_TO.marshallAsAttribute(properties, writer);
         }
 
         writer.writeEndElement();

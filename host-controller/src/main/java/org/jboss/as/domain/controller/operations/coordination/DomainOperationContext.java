@@ -23,6 +23,10 @@
 package org.jboss.as.domain.controller.operations.coordination;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_OPERATIONS;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,6 +36,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 
 /**
  * Stores overall contextual information for an operation executing on the domain.
@@ -44,9 +49,10 @@ public class DomainOperationContext {
     private final ModelNode coordinatorResult = new ModelNode();
     private final ConcurrentMap<String, ModelNode> hostControllerResults = new ConcurrentHashMap<String, ModelNode>();
     private final ConcurrentMap<ServerIdentity, ModelNode> serverResults = new ConcurrentHashMap<ServerIdentity, ModelNode>();
+
     private final Map<String, Boolean> serverGroupStatuses = new ConcurrentHashMap<String, Boolean>();
-    private boolean completeRollback = true;
-    private boolean failureReported;
+    private volatile boolean completeRollback = true;
+    private volatile boolean failureReported;
 
     public DomainOperationContext(final LocalHostControllerInfo localHostInfo) {
         this.localHostInfo = localHostInfo;
@@ -86,7 +92,7 @@ public class DomainOperationContext {
 
     public boolean isServerGroupRollback(String serverGroup) {
         Boolean ok = serverGroupStatuses.get(serverGroup);
-        return ok == null ? true : ok.booleanValue();
+        return ok == null || ok.booleanValue();
     }
 
     public void setServerGroupRollback(String serverGroup, boolean rollback) {
@@ -112,5 +118,67 @@ public class DomainOperationContext {
 
     public void setFailureReported(boolean failureReported) {
         this.failureReported = failureReported;
+    }
+
+    public ModelNode getServerResult(String hostName, String serverName, String... stepLabels) {
+        ModelNode result;
+        ServerIdentity id = new ServerIdentity(hostName, null, serverName);
+        ModelNode serverResult = getServerResults().get(id).clone();
+        if (stepLabels.length == 0) {
+            result = serverResult;
+        } else {
+            result = new ModelNode();
+            ModelNode hostResults;
+            if (hostName.equals(localHostInfo.getLocalHostName())) {
+                hostResults = coordinatorResult;
+            } else {
+                hostResults = hostControllerResults.get(hostName);
+            }
+            String[] translatedSteps = getTranslatedSteps(serverName, hostResults, stepLabels);
+            if (translatedSteps != null && serverResult.hasDefined(RESULT)) {
+                result.set(serverResult.get(RESULT).get(translatedSteps));
+            }
+        }
+        return result;
+    }
+
+    private String[] getTranslatedSteps(String serverName, ModelNode hostResults, String[] stepLabels) {
+        String[] result = null;
+        ModelNode domainMappedOp = getDomainMappedOperation(serverName, hostResults);
+        if (domainMappedOp != null) {
+            result = new String[stepLabels.length];
+            ModelNode level = domainMappedOp;
+            for (int i = 0; i < stepLabels.length; i++) {
+                String translated = getTranslatedStepIndex(stepLabels[i], level);
+                if (translated == null) {
+                    return null;
+                }
+                result[i] = translated;
+                level = level.get(stepLabels[i]);
+            }
+        }
+        return result;
+    }
+
+    private String getTranslatedStepIndex(String stepLabel, ModelNode level) {
+        int i = 1;
+        for (String key : level.keys()) {
+            if (stepLabel.equals(key)) {
+                return "step-" + i;
+            }
+            i++;
+        }
+        return null;
+    }
+
+    private ModelNode getDomainMappedOperation(String serverName, ModelNode hostResults) {
+        for (ModelNode set : hostResults.get(RESULT, SERVER_OPERATIONS).asList()) {
+            for (Property prop : set.get(SERVERS).asPropertyList()) {
+                if (prop.getName().equals(serverName)) {
+                    return set.get(OP);
+                }
+            }
+        }
+        return null;
     }
 }

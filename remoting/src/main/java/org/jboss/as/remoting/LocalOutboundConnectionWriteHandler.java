@@ -27,6 +27,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -40,13 +41,13 @@ class LocalOutboundConnectionWriteHandler extends AbstractWriteAttributeHandler<
     static final LocalOutboundConnectionWriteHandler INSTANCE = new LocalOutboundConnectionWriteHandler();
 
     private LocalOutboundConnectionWriteHandler() {
-        super(AbstractOutboundConnectionResourceDefinition.CONNECTION_CREATION_OPTIONS, LocalOutboundConnectionResourceDefinition.OUTBOUND_SOCKET_BINDING_REF);
+        super(LocalOutboundConnectionResourceDefinition.OUTBOUND_SOCKET_BINDING_REF);
     }
 
     @Override
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Boolean> handbackHolder) throws OperationFailedException {
-        final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-        boolean handback = applyModelToRuntime(context, operation, attributeName, model);
+        final ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
+        boolean handback = applyModelToRuntime(context, operation, fullModel);
         handbackHolder.setHandback(handback);
         return handback;
     }
@@ -54,13 +55,13 @@ class LocalOutboundConnectionWriteHandler extends AbstractWriteAttributeHandler<
     @Override
     protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Boolean handback) throws OperationFailedException {
         if (handback != null && !handback.booleanValue()) {
-            final ModelNode restored = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().clone();
+            final ModelNode restored = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
             restored.get(attributeName).set(valueToRestore);
-            applyModelToRuntime(context, operation, attributeName, restored);
+            applyModelToRuntime(context, operation, restored);
         } // else we didn't update the runtime in applyUpdateToRuntime
     }
 
-    private boolean applyModelToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode model) throws OperationFailedException {
+    private boolean applyModelToRuntime(OperationContext context, ModelNode operation, ModelNode fullModel) throws OperationFailedException {
 
         boolean reloadRequired = false;
         final String connectionName = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
@@ -68,18 +69,12 @@ class LocalOutboundConnectionWriteHandler extends AbstractWriteAttributeHandler<
         final ServiceRegistry registry = context.getServiceRegistry(true);
         ServiceController sc = registry.getService(serviceName);
         if (sc != null && sc.getState() == ServiceController.State.UP) {
-            LocalOutboundConnectionService svc = LocalOutboundConnectionService.class.cast(sc.getValue());
-            if (AbstractOutboundConnectionResourceDefinition.CONNECTION_CREATION_OPTIONS.getName().equals(attributeName)) {
-                svc.setConnectionCreationOptions(AbstractOutboundConnectionAddHandler.getConnectionCreationOptions(model));
-            } else {
-                // We can't change the socket binding ref on a running service
                 reloadRequired = true;
-            }
         } else {
             // Service isn't up so we can bounce it
             context.removeService(serviceName); // safe even if the service doesn't exist
             // install the service with new values
-            LocalOutboundConnectionAdd.INSTANCE.installRuntimeService(context, connectionName, model, null);
+            LocalOutboundConnectionAdd.INSTANCE.installRuntimeService(context, operation, fullModel, null);
         }
         return reloadRequired;
     }

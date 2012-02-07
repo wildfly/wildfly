@@ -39,7 +39,7 @@ import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
-import org.jboss.as.ejb3.remote.TCCLBasedEJBClientContextSelector;
+import org.jboss.as.ejb3.remote.TCCLEJBClientContextSelectorService;
 import org.jboss.as.jsr77.ejb.ManagementEjbDeploymentInformation;
 import org.jboss.as.jsr77.ejb.ManagementHomeEjbComponentView;
 import org.jboss.as.jsr77.ejb.ManagementRemoteEjbComponentView;
@@ -61,7 +61,7 @@ public class RegisterManagementEJBService implements Service<Void>{
     static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(ServiceName.of(JSR77ManagementExtension.SUBSYSTEM_NAME, "ejb"));
 
     final InjectedValue<DeploymentRepository> deploymentRepositoryValue = new InjectedValue<DeploymentRepository>();
-    final InjectedValue<TCCLBasedEJBClientContextSelector> ejbClientContextSelectorValue = new InjectedValue<TCCLBasedEJBClientContextSelector>();
+    final InjectedValue<TCCLEJBClientContextSelectorService> ejbClientContextSelectorValue = new InjectedValue<TCCLEJBClientContextSelectorService>();
     final InjectedValue<EJBClientContext> ejbClientContextValue = new InjectedValue<EJBClientContext>();
     final InjectedValue<MBeanServer> mbeanServerValue = new InjectedValue<MBeanServer>();
     private volatile DeploymentModuleIdentifier moduleIdentifier;

@@ -21,6 +21,7 @@ package org.jboss.as.host.controller;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
@@ -32,8 +33,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_SUBSYSTEM_ENDPOINT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
@@ -49,10 +51,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_OPTIONS;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import java.io.File;
-import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -74,11 +77,11 @@ import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.SocketBindingAddHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.domain.controller.DomainController;
-import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.host.controller.ManagedServer.ManagedServerBootConfiguration;
 import org.jboss.as.process.DefaultJvmUtils;
-import org.jboss.as.server.jmx.PluggableMBeanServer;
+import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.server.services.net.BindingGroupAddHandler;
 import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingAddHandler;
 import org.jboss.as.server.services.net.RemoteDestinationOutboundSocketBindingAddHandler;
@@ -158,6 +161,16 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         this.jvmElement = new JvmElement(jvmName, hostVM, groupVM, serverVM);
     }
 
+    /**
+     * Create and verify the configuration before trying to start the process.
+     *
+     * @return the process boot configuration
+     */
+    public ManagedServerBootConfiguration createConfiguration() {
+        return new ProcessedBootConfiguration(getServerLaunchCommand(), getBootUpdates(),
+                 getServerLaunchEnvironment(), isManagementSubsystemEndpoint(), environment);
+    }
+
     @Override
     public List<ModelNode> getBootUpdates() {
 
@@ -183,12 +196,12 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         List<ModelNode> updates = new ArrayList<ModelNode>();
 
         addNamespaces(updates);
-        addServerName(updates);
         addProfileName(updates);
         addSchemaLocations(updates);
         addExtensions(updates);
         addPaths(updates);
         addSystemProperties(updates);
+        addVault(updates);
         addInterfaces(updates);
         addSocketBindings(updates, portOffSet, socketBindingRef);
         addSubsystems(updates);
@@ -210,6 +223,8 @@ class ModelCombiner implements ManagedServerBootConfiguration {
 
         command.add(getJavaCommand());
 
+        command.add("-D[" + ManagedServer.getServerProcessName(serverName) + "]");
+
         JvmOptionsBuilderFactory.getInstance().addOptions(jvmElement, command);
 
         //These need to go in on the command-line
@@ -227,25 +242,19 @@ class ModelCombiner implements ManagedServerBootConfiguration {
             command.add(sb.toString());
         }
 
-        command.add("-Dorg.jboss.boot.log.file=" + environment.getDomainBaseDir().getAbsolutePath() + "/servers/" + serverName + "/log/boot.log");
+        command.add("-Dorg.jboss.boot.log.file=" + getAbsolutePath(environment.getDomainServersDir(), serverName, "log", "boot.log"));
         // TODO: make this better
         String loggingConfiguration = System.getProperty("logging.configuration");
         if (loggingConfiguration == null) {
-            loggingConfiguration = "file:" + environment.getDomainConfigurationDir().getAbsolutePath() + "/logging.properties";
+            loggingConfiguration = "file:" + getAbsolutePath(environment.getDomainConfigurationDir(), "logging.properties");
         }
         command.add("-Dlogging.configuration=" + loggingConfiguration);
         command.add("-jar");
         command.add("jboss-modules.jar");
         command.add("-mp");
         command.add("modules");
-        command.add("-logmodule");
-        command.add("org.jboss.logmanager");
         command.add("-jaxpmodule");
         command.add("javax.xml.jaxp-provider");
-        if (ManagementFactory.getPlatformMBeanServer() instanceof PluggableMBeanServer){
-            command.add("-mbeanserverbuildermodule");
-            command.add("org.jboss.as.jmx");
-        }
         command.add("org.jboss.as.server");
 
         return command;
@@ -294,10 +303,6 @@ class ModelCombiner implements ManagedServerBootConfiguration {
                 map.put(prop.getName(), NamespaceAddHandler.getAddNamespaceOperation(EMPTY, prop.getName(), prop.getValue().asString()));
             }
         }
-    }
-
-    private void addServerName(List<ModelNode> updates) {
-        updates.add(Util.getWriteAttributeOperation(EMPTY, NAME, serverName));
     }
 
     private void addProfileName(List<ModelNode> updates) {
@@ -390,6 +395,32 @@ class ModelCombiner implements ManagedServerBootConfiguration {
                 String val = propResource.hasDefined(VALUE) ? propResource.get(VALUE).asString() : null;
                 props.put(prop.getName(), val);
             }
+        }
+    }
+
+    private void addVault(List<ModelNode> updates) {
+        if(hostModel.get(CORE_SERVICE).isDefined()){
+           addVault(updates,hostModel.get(CORE_SERVICE).get(VAULT));
+        }
+    }
+
+    private void addVault(List<ModelNode> updates, ModelNode vaultNode){
+        if(vaultNode.isDefined()){
+            ModelNode vault = new ModelNode();
+            ModelNode codeNode =vaultNode.get(Attribute.CODE.getLocalName());
+            if(codeNode.isDefined()){
+                vault.get(Attribute.CODE.getLocalName()).set(codeNode.asString());
+            }
+            vault.get(OP).set(ADD);
+            ModelNode vaultAddress = new ModelNode();
+            vaultAddress.add(CORE_SERVICE, VAULT);
+            vault.get(OP_ADDR).set(vaultAddress);
+
+            ModelNode optionsNode = vaultNode.get(VAULT_OPTIONS);
+            if(optionsNode.isDefined()){
+                vault.get(VAULT_OPTIONS).set(optionsNode);
+            }
+            updates.add(vault);
         }
     }
 
@@ -500,7 +531,7 @@ class ModelCombiner implements ManagedServerBootConfiguration {
     private void addDeployments(List<ModelNode> updates) {
         if (serverGroup.hasDefined(DEPLOYMENT)) {
 
-            FileRepository remoteRepository = null;
+            HostFileRepository remoteRepository = null;
             if (! domainController.getLocalHostInfo().isMasterDomainController()) {
                 remoteRepository = domainController.getRemoteFileRepository();
             }
@@ -539,4 +570,56 @@ class ModelCombiner implements ManagedServerBootConfiguration {
     private ModelNode pathAddress(PathElement...elements) {
         return PathAddress.pathAddress(elements).toModelNode();
     }
+
+    static String getAbsolutePath(final File root, final String... paths) {
+        File path = root;
+        for(String segment : paths) {
+            path = new File(path, segment);
+        }
+        return path.getAbsolutePath();
+    }
+
+    static class ProcessedBootConfiguration implements ManagedServerBootConfiguration {
+
+        List<String> command;
+        List<ModelNode> bootUpdates;
+        Map<String, String> environment;
+        boolean managementSubsystemEndpoint;
+        HostControllerEnvironment hostControllerEnvironment;
+
+        ProcessedBootConfiguration(List<String> command, List<ModelNode> bootUpdates, Map<String, String> environment,
+                                   boolean managementSubsystemEndpoint, HostControllerEnvironment hostControllerEnvironment) {
+            this.command = command;
+            this.bootUpdates = bootUpdates;
+            this.environment = environment;
+            this.managementSubsystemEndpoint = managementSubsystemEndpoint;
+            this.hostControllerEnvironment = hostControllerEnvironment;
+        }
+
+        @Override
+        public List<ModelNode> getBootUpdates() {
+            return bootUpdates;
+        }
+
+        @Override
+        public Map<String, String> getServerLaunchEnvironment() {
+            return environment;
+        }
+
+        @Override
+        public List<String> getServerLaunchCommand() {
+            return command;
+        }
+
+        @Override
+        public HostControllerEnvironment getHostControllerEnvironment() {
+            return hostControllerEnvironment;
+        }
+
+        @Override
+        public boolean isManagementSubsystemEndpoint() {
+            return managementSubsystemEndpoint;
+        }
+    }
+
 }

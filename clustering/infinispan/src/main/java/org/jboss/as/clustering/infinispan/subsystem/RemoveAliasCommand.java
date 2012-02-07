@@ -35,14 +35,14 @@ public class RemoveAliasCommand implements OperationStepHandler {
         nameValidator.validate(operation);
         final String aliasToRemove = operation.require(NAME).asString();
         final ModelNode submodel = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
-        final ModelNode currentValue = submodel.get(CommonAttributes.ALIAS.getName()).clone();
+        final ModelNode currentValue = submodel.get(CommonAttributes.ALIASES.getName()).clone();
 
         ModelNode newValue = removeAliasFromList(currentValue, aliasToRemove) ;
 
         // now set the new ALIAS attribute
         final ModelNode syntheticOp = new ModelNode();
-        syntheticOp.get(CommonAttributes.ALIAS.getName()).set(newValue);
-        CommonAttributes.ALIAS.validateAndSet(syntheticOp, submodel);
+        syntheticOp.get(CommonAttributes.ALIASES.getName()).set(newValue);
+        CommonAttributes.ALIASES.validateAndSet(syntheticOp, submodel);
 
         // since we modified the model, set reload required
         if (requiresRuntime(context)) {
@@ -66,7 +66,7 @@ public class RemoveAliasCommand implements OperationStepHandler {
      * @return {@code true} if a runtime stage handler should be added; {@code false} otherwise.
      */
     protected boolean requiresRuntime(OperationContext context) {
-        return context.getType() == OperationContext.Type.SERVER && !context.isBooting();
+        return context.getProcessType().isServer() && !context.isBooting();
     }
 
     /**
@@ -76,11 +76,16 @@ public class RemoveAliasCommand implements OperationStepHandler {
      * @param alias
      * @return LIST ModelNode with the alias removed
      */
-    private ModelNode removeAliasFromList(ModelNode list, String alias) {
+    private ModelNode removeAliasFromList(ModelNode list, String alias) throws OperationFailedException {
 
         // check for empty string
         if (alias == null || alias.equals(""))
             return list ;
+
+        // check for undefined list (AS7-3476)
+        if (!list.isDefined()) {
+            throw new OperationFailedException(new ModelNode().set("cannot remove alias " + alias + " from empty list"));
+        }
 
         ModelNode newList = new ModelNode() ;
         List<ModelNode> listElements = list.asList();

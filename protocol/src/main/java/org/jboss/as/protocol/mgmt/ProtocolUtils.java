@@ -23,14 +23,14 @@
 package org.jboss.as.protocol.mgmt;
 
 import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
-import org.jboss.as.protocol.StreamUtils;
-import org.jboss.remoting3.MessageOutputStream;
 
 import java.io.DataInput;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import org.jboss.as.protocol.StreamUtils;
 
 /**
  * Utility class providing methods for common management tasks.
@@ -113,6 +113,19 @@ public final class ProtocolUtils {
             throw new EOFException();
         }
         return (byte) b;
+    }
+
+    public static String formatPossibleIpv6Address(String address) {
+        if (address == null) {
+            return address;
+        }
+        if (!address.contains(":")) {
+            return address;
+        }
+        if (address.startsWith("[") && address.endsWith("]")) {
+            return address;
+        }
+        return "[" + address + "]";
     }
 
     public static interface ResponseWriter {

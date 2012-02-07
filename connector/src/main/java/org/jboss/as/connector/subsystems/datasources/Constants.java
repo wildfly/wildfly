@@ -21,10 +21,8 @@
  */
 package org.jboss.as.connector.subsystems.datasources;
 
-import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.dmr.ModelNode;
@@ -36,11 +34,12 @@ import org.jboss.jca.common.api.metadata.common.Credential;
 import org.jboss.jca.common.api.metadata.common.Recovery;
 import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.Driver;
-import org.jboss.jca.common.api.metadata.ds.DsSecurity;
 import org.jboss.jca.common.api.metadata.ds.Statement;
 import org.jboss.jca.common.api.metadata.ds.TimeOut;
 import org.jboss.jca.common.api.metadata.ds.Validation;
 import org.jboss.jca.common.api.metadata.ds.XaDataSource;
+
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
 
 /**
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
@@ -196,12 +195,16 @@ class Constants {
     static SimpleAttributeDefinition JNDINAME = new SimpleAttributeDefinition(JNDINAME_NAME, DataSource.Attribute.JNDI_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE, new ParameterValidator() {
         @Override
         public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
-            if (value.isDefined() && value.getType() != ModelType.EXPRESSION) {
-            String str = value.asString();
-            if (! str.startsWith("java:/") && ! str.startsWith("java:jboss/")) {
-                throw new OperationFailedException(new ModelNode().set("Jndi name have to start with java:/ or java:jboss/"));
+            if (value.isDefined()) {
+                if (value.getType() != ModelType.EXPRESSION) {
+                    String str = value.asString();
+                    if (!str.startsWith("java:/") && !str.startsWith("java:jboss/")) {
+                        throw MESSAGES.jndiNameInvalidFormat();
+                    }
+                }
+            } else {
+                throw MESSAGES.jndiNameRequired();
             }
-        }
         }
 
         @Override
@@ -258,15 +261,15 @@ class Constants {
 
     static SimpleAttributeDefinition EXCEPTIONSORTERCLASSNAME = new SimpleAttributeDefinition(EXCEPTIONSORTERCLASSNAME_NAME, org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition EXCEPTIONSORTER_PROPERTIES = new SimpleAttributeDefinition(EXCEPTIONSORTER_PROPERTIES_NAME, org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition EXCEPTIONSORTER_PROPERTIES = new SimpleAttributeDefinition(EXCEPTIONSORTER_PROPERTIES_NAME, org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.OBJECT, true, true, MeasurementUnit.NONE);
 
     static SimpleAttributeDefinition STALECONNECTIONCHECKERCLASSNAME = new SimpleAttributeDefinition(STALECONNECTIONCHECKERCLASSNAME_NAME, org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition STALECONNECTIONCHECKER_PROPERTIES = new SimpleAttributeDefinition(STALECONNECTIONCHECKER_PROPERTIES_NAME, org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition STALECONNECTIONCHECKER_PROPERTIES = new SimpleAttributeDefinition(STALECONNECTIONCHECKER_PROPERTIES_NAME, org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.OBJECT, true, true, MeasurementUnit.NONE);
 
     static SimpleAttributeDefinition VALIDCONNECTIONCHECKERCLASSNAME = new SimpleAttributeDefinition(VALIDCONNECTIONCHECKERCLASSNAME_NAME, org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition VALIDCONNECTIONCHECKER_PROPERTIES = new SimpleAttributeDefinition(VALIDCONNECTIONCHECKER_PROPERTIES_NAME, org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition VALIDCONNECTIONCHECKER_PROPERTIES = new SimpleAttributeDefinition(VALIDCONNECTIONCHECKER_PROPERTIES_NAME, org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.OBJECT, true, true, MeasurementUnit.NONE);
 
 
     static SimpleAttributeDefinition VALIDATEONMATCH = new SimpleAttributeDefinition(VALIDATEONMATCH_NAME, Validation.Tag.VALIDATE_ON_MATCH.getLocalName(),new ModelNode().set(Defaults.VALIDATE_ON_MATCH), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
@@ -291,7 +294,7 @@ class Constants {
 
     static SimpleAttributeDefinition REAUTHPLUGIN_CLASSNAME = new SimpleAttributeDefinition(REAUTHPLUGIN_CLASSNAME_NAME, org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition REAUTHPLUGIN_PROPERTIES = new SimpleAttributeDefinition(REAUTHPLUGIN_PROPERTIES_NAME, org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition REAUTHPLUGIN_PROPERTIES = new SimpleAttributeDefinition(REAUTHPLUGIN_PROPERTIES_NAME, org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.OBJECT, true, true, MeasurementUnit.NONE);
 
     static SimpleAttributeDefinition RECOVERY_USERNAME = new SimpleAttributeDefinition(RECOVERY_USERNAME_NAME, Credential.Tag.USER_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
@@ -301,13 +304,13 @@ class Constants {
 
     static SimpleAttributeDefinition RECOVERLUGIN_CLASSNAME = new SimpleAttributeDefinition(RECOVER_PLUGIN_CLASSNAME_NAME, org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition RECOVERLUGIN_PROPERTIES = new SimpleAttributeDefinition(RECOVER_PLUGIN_PROPERTIES_NAME, org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition RECOVERLUGIN_PROPERTIES = new SimpleAttributeDefinition(RECOVER_PLUGIN_PROPERTIES_NAME, org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.OBJECT, true, true, MeasurementUnit.NONE);
 
     static SimpleAttributeDefinition NO_RECOVERY = new SimpleAttributeDefinition(NO_RECOVERY_NAME, Recovery.Attribute.NO_RECOVERY.getLocalName(),  new ModelNode(), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
 
     static SimpleAttributeDefinition XADATASOURCE_PROPERTIES = new SimpleAttributeDefinition(XADATASOURCEPROPERTIES_NAME, XaDataSource.Tag.XA_DATASOURCE_PROPERTY.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition XADATASOURCE_PROPERTY_VALUE = new SimpleAttributeDefinition(XADATASOURCEPROPERTIES_VALUE_NAME, XaDataSource.Tag.XA_DATASOURCE_PROPERTY.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition XADATASOURCE_PROPERTY_VALUE = new SimpleAttributeDefinition(XADATASOURCEPROPERTIES_VALUE_NAME, XaDataSource.Tag.XA_DATASOURCE_PROPERTY.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
     static final SimpleAttributeDefinition DRIVER_NAME = new SimpleAttributeDefinition(DRIVER_NAME_NAME, Driver.Attribute.NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 

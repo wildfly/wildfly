@@ -21,12 +21,21 @@
  */
 package org.jboss.as.webservices.dmr;
 
+import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
+import static org.jboss.as.webservices.dmr.Constants.ENDPOINT;
+import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONFIG;
+import static org.jboss.as.webservices.dmr.Constants.MODIFY_WSDL_ADDRESS;
+import static org.jboss.as.webservices.dmr.Constants.WSDL_HOST;
+import static org.jboss.as.webservices.dmr.Constants.WSDL_PORT;
+import static org.jboss.as.webservices.dmr.Constants.WSDL_SECURE_PORT;
+
 import java.net.UnknownHostException;
 import java.util.List;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
@@ -44,14 +53,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-
-import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
-import static org.jboss.as.webservices.dmr.Constants.ENDPOINT;
-import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONFIG;
-import static org.jboss.as.webservices.dmr.Constants.MODIFY_WSDL_ADDRESS;
-import static org.jboss.as.webservices.dmr.Constants.WSDL_HOST;
-import static org.jboss.as.webservices.dmr.Constants.WSDL_PORT;
-import static org.jboss.as.webservices.dmr.Constants.WSDL_SECURE_PORT;
 
 /**
  * @author alessio.soldano@jboss.com
@@ -127,12 +128,14 @@ public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
             ServerConfigImpl serverConfig = createServerConfig(model, false);
             newControllers.add(ServerConfigService.install(serviceTarget, serverConfig, verificationHandler));
             newControllers.add(EndpointRegistryService.install(serviceTarget, verificationHandler));
-            newControllers.add(PortComponentLinkService.install(serviceTarget, verificationHandler));
+
+            String defaultHost = context.getRootResource().getChild(PathElement.pathElement("subsystem", "web")).getModel().get("default-virtual-server").asString();
+            newControllers.add(PortComponentLinkService.install(serviceTarget, defaultHost, verificationHandler));
         }
     }
 
     private static ServerConfigImpl createServerConfig(ModelNode configuration, boolean appclient) {
-        final ServerConfigImpl config = ServerConfigImpl.getInstance();
+        final ServerConfigImpl config = ServerConfigImpl.newInstance();
         try {
             ModelNode wsdlHost = configuration.require(WSDL_HOST).resolve();
             config.setWebServiceHost(wsdlHost.asString());

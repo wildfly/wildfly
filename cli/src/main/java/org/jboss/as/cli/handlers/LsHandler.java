@@ -87,7 +87,7 @@ public class LsHandler extends CommandHandlerWithHelp {
             try {
                 ctx.getCommandLineParser().parse(nodePath, handler);
             } catch (CommandFormatException e) {
-                ctx.printLine(e.getLocalizedMessage());
+                ctx.error(e.getLocalizedMessage());
             }
         } else {
             address = new DefaultOperationRequestAddress(ctx.getPrefix());
@@ -197,10 +197,10 @@ public class LsHandler extends CommandHandlerWithHelp {
                                         childDescriptions = descrResult.get(Util.CHILDREN);
                                     }
                                 } else {
-                                    ctx.printLine("Result is not available for read-resource-description request: " + outcome);
+                                    ctx.error("Result is not available for read-resource-description request: " + outcome);
                                 }
                             } else {
-                                ctx.printLine("Failed to get resource description: " + outcome);
+                                ctx.error("Failed to get resource description: " + outcome);
                             }
                         }
 
@@ -221,13 +221,13 @@ public class LsHandler extends CommandHandlerWithHelp {
                                         }
                                     }
                                 } else {
-                                    ctx.printLine("Result is not available for read-children-types request: " + outcome);
+                                    ctx.error("Result is not available for read-children-types request: " + outcome);
                                 }
                             } else {
-                                ctx.printLine("Failed to fetch type names: " + outcome);
+                                ctx.error("Failed to fetch type names: " + outcome);
                             }
                         } else {
-                            ctx.printLine("The result for children type names is not available: " + outcome);
+                            ctx.error("The result for children type names is not available: " + outcome);
                         }
 
                         if(resultNode.hasDefined(Util.STEP_2)) {
@@ -325,17 +325,17 @@ public class LsHandler extends CommandHandlerWithHelp {
                                         }
                                     }
                                 } else {
-                                    ctx.printLine("Result is not available for read-resource request: " + outcome);
+                                    ctx.error("Result is not available for read-resource request: " + outcome);
                                 }
                             } else {
-                                ctx.printLine("Failed to fetch attributes: " + outcome);
+                                ctx.error("Failed to fetch attributes: " + outcome);
                             }
                         } else {
-                            ctx.printLine("The result for attributes is not available: " + outcome);
+                            ctx.error("The result for attributes is not available: " + outcome);
                         }
                     }
                 } else {
-                    ctx.printLine("Failed to fetch the list of children: " + outcome);
+                    ctx.error("Failed to fetch the list of children: " + outcome);
                 }
             } catch (Exception e) {
                 e.printStackTrace();

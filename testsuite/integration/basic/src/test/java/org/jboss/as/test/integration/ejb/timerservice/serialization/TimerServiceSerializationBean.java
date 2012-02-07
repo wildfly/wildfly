@@ -36,14 +36,18 @@ import java.util.concurrent.TimeUnit;
 public class TimerServiceSerializationBean {
 
     private static final CountDownLatch latch = new CountDownLatch(1);
-
+    private static int TIMER_INIT_TIME_MS = 100;
+    private static int TIMER_TIMEOUT_TIME_MS = 100;
+    // should to be greater then (timer init time + timeout time)
+    private static int TIMER_CALL_WAITING_S = 2;
+    
     private static InfoA info;
 
     @Resource
     private TimerService timerService;
 
     public void createTimer() {
-        timerService.createTimer(100, 100, new InfoA());
+        timerService.createTimer(TIMER_INIT_TIME_MS, TIMER_TIMEOUT_TIME_MS, new InfoA());
     }
 
     @Timeout
@@ -54,7 +58,7 @@ public class TimerServiceSerializationBean {
 
     public static InfoA awaitTimerCall() {
         try {
-            latch.await(2, TimeUnit.SECONDS);
+            latch.await(TIMER_CALL_WAITING_S, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

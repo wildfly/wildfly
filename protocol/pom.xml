@@ -40,7 +40,7 @@
         <test.level>INFO</test.level>
     </properties>
 
-    <dependencies>
+    <dependencies>    
         <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging</artifactId>

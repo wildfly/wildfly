@@ -22,6 +22,12 @@
 
 package org.jboss.as.jdr;
 
+import static org.jboss.as.jdr.JdrMessages.MESSAGES;
+import static org.jboss.as.jdr.JdrLogger.ROOT_LOGGER;
+import static java.io.File.separator;
+
+import java.io.File;
+import java.io.FileFilter;
 import org.jboss.as.controller.client.ModelControllerClient;
 
 import org.python.core.adapter.ClassicPyObjectAdapter;
@@ -34,23 +40,99 @@ import org.python.util.PythonInterpreter;
  * for executing sosreport
  *
  * @author Jesse Jaggars
+ * @author Mike M. Clark
  */
 public class SoSReport {
 
     PyObject sosreport;
+    PyObject sysPath;
+    PythonInterpreter interpreter;
     private static final String SET_OPTION = "set_option";
     private static final String SET_GLOBAL = "set_global_plugin_option";
 
-    public SoSReport(PythonInterpreter interpreter, String pyLocation) {
-        interpreter.exec("import sys");
-        interpreter.exec("sys.path.append(\"" + pyLocation + "\")");
+    /**
+     * @param interpreter the jython interpreter instance to use
+     * @param pyLocation the full path to the jar containing sosreport
+     * @param jbossHomeDir the full path to JBOSS_HOME
+     */
+    public SoSReport(PythonInterpreter interpreter, String pyLocation, String jbossHomeDir) {
+        this.interpreter = interpreter;
+
+        interpreter.exec("from sys import path");
+        sysPath = interpreter.get("path");
+
+        addToJythonPath(pyLocation);
+        setI18NJar(pyLocation);
+
         interpreter.exec("from sos.sosreport import SoSReport");
         interpreter.exec("reporter = SoSReport([])");
         this.sosreport = interpreter.get("reporter");
 
+        String contribPath = determineContribLocation(pyLocation);
+        addContribScriptsToPath(contribPath);
+
         enableOption("--batch");
         enableOption("--report");
         enableOption("--silent");
+        setHome(jbossHomeDir);
+    }
+
+    private void setI18NJar(String pyLocation) {
+        interpreter.exec("import sos");
+        PyObject sos = interpreter.get("sos");
+        sos.invoke("set_i18n", new PyString(pyLocation));
+    }
+
+    private void addToJythonPath(String location) {
+        sysPath.invoke("append", new PyString(location));
+    }
+
+    /**
+     * Determines the location of the contrib directory used
+     * to add additional sosreport plugins.  The location is
+     * determined by the jdr sosreport location (which are included
+     * in a jar file). The contrib directory is expected to be in the
+     * same directory
+     *
+     * @param pyLocation the jdr sos report scripts jar file path
+     */
+    private String determineContribLocation(String pyLocation) {
+        int lastSeparatorIndex = pyLocation.lastIndexOf(separator);
+        String contribLocation = pyLocation.substring(0, lastSeparatorIndex + 1) + "contrib";
+        ROOT_LOGGER.debug("JDR plugin contrib directory location: " + contribLocation);
+        return contribLocation;
+    }
+
+    private void addContribScriptsToPath(String contrib) {
+        addToJythonPath(contrib);
+        interpreter.exec("import sos.plugins");
+        interpreter.exec("sos_path = sos.plugins.__path__");
+        PyObject sosModulePath = interpreter.get("sos_path");
+        sosModulePath.invoke("append", new PyString(contrib));
+        addJarsToJythonPath(sosModulePath, contrib);
+    }
+
+    private void addJarsToJythonPath(PyObject sosModulePath, String contribPath) {
+        File contrib = new File(contribPath);
+        if (!contrib.exists()) {
+            ROOT_LOGGER.debug("No plugin contrib directory found");
+        } else if (!contrib.isDirectory()) {
+            ROOT_LOGGER.contribNotADirectory();
+        } else {
+            File[] jarFiles = contrib.listFiles(new FileFilter() {
+
+                @Override
+                public boolean accept(File pathname) {
+                    return pathname.getName().endsWith(".jar") || pathname.getName().endsWith(".zip");
+                }
+            });
+
+            for (int i = 0; i < jarFiles.length; ++i) {
+                String jarFile = jarFiles[i].getPath();
+                ROOT_LOGGER.debug("Adding plugin contrib jar file to jython path: " + jarFile);
+                sosModulePath.invoke("append", new PyString(jarFile));
+            }
+        }
     }
 
     /**
@@ -107,12 +189,14 @@ public class SoSReport {
      * Sets the ModelControllerClient instance for sosreport to use.
      *
      * @param controllerClient the ModelControllerClient instance to use
-     * */
-    public void setClientController(ModelControllerClient controllerClient) {
-        if (controllerClient != null ) {
-            setGlobal("controller_client_proxy",
-                    new ModelControllerClientProxy(controllerClient));
+     * @throws IllegalArgumentException if <code>controllerClient</code> is <code>null</code>
+     *
+     */
+    public void setControllerClient(ModelControllerClient controllerClient) {
+        if (controllerClient == null ) {
+            throw MESSAGES.varNull("controllerClient");
         }
+        setGlobal("controller_client_proxy", new ModelControllerClientProxy(controllerClient));
     }
 
     /**
@@ -163,21 +247,31 @@ public class SoSReport {
     }
 
     /**
-     * Sets the port for the management api that sosreport should
-     * contact.
-     *
-     * @param port the port to use
-     * */
-    public void setPort(int port) {
-        setGlobal("as7_port", Integer.valueOf(port).toString());
-    }
-
-    /**
      * Sets JBOSS_HOME for sosreport to use
      *
      * @param homeDir the path to JBOSS_HOME
      * */
     public void setHome(String homeDir) {
         setGlobal("as7_home", homeDir);
+    }
+
+    /**
+     * Sets the host controller name for sosreport to use
+     * This is null in standalone mode
+     *
+     * @param hostControllerName the host controller name to use
+     * */
+    public void setHostControllerName(String hostControllerName) {
+        setGlobal("as7_host_controller_name", hostControllerName);
+    }
+
+    /**
+     * Sets the server instance name for sosreport to use
+     * This is null in standalone mode
+     *
+     * @param serverName the server instance name to use
+     * */
+    public void setServerName(String serverName) {
+        setGlobal("as7_server_name", serverName);
     }
 }

@@ -35,7 +35,7 @@ import org.jboss.wsf.spi.deployment.Endpoint;
  * Creates Endpoint Service instance when starting the Endpoint
  *
  * @author alessio.soldano@jboss.com
- * @author <a href="mailto:opalka dot richard at gmail dot com">Richard Opalka</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public final class EndpointServiceDeploymentAspect extends EndpointLifecycleDeploymentAspect {
 

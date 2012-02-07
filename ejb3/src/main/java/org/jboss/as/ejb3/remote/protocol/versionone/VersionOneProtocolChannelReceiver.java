@@ -22,17 +22,14 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
-
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-
+import org.jboss.as.clustering.registry.Registry;
+import org.jboss.as.clustering.registry.RegistryCollector;
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.DeploymentRepositoryListener;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
+import org.jboss.as.network.ClientMapping;
 import org.jboss.logging.Logger;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.remoting3.Channel;
@@ -40,10 +37,20 @@ import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.MessageInputStream;
 import org.xnio.IoUtils;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+
 /**
  * @author Jaikiran Pai
  */
-public class VersionOneProtocolChannelReceiver implements Channel.Receiver, DeploymentRepositoryListener {
+public class VersionOneProtocolChannelReceiver implements Channel.Receiver, DeploymentRepositoryListener,
+        RegistryCollector.Listener<String, List<ClientMapping>> {
 
     /**
      * Logger
@@ -59,22 +66,21 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
     private static final byte HEADER_TX_BEFORE_COMPLETION_REQUEST = 0x13;
 
     private final Channel channel;
-
     private final DeploymentRepository deploymentRepository;
-
     private final EJBRemoteTransactionsRepository transactionsRepository;
-
     private final MarshallerFactory marshallerFactory;
-
     private final ExecutorService executorService;
+    private final RegistryCollector<String, List<ClientMapping>> clientMappingRegistryCollector;
 
     public VersionOneProtocolChannelReceiver(final Channel channel, final DeploymentRepository deploymentRepository,
-                                             final EJBRemoteTransactionsRepository transactionsRepository, final MarshallerFactory marshallerFactory, final ExecutorService executorService) {
+                                             final EJBRemoteTransactionsRepository transactionsRepository, final RegistryCollector<String, List<ClientMapping>> clientMappingRegistryCollector,
+                                             final MarshallerFactory marshallerFactory, final ExecutorService executorService) {
         this.marshallerFactory = marshallerFactory;
         this.channel = channel;
         this.executorService = executorService;
         this.deploymentRepository = deploymentRepository;
         this.transactionsRepository = transactionsRepository;
+        this.clientMappingRegistryCollector = clientMappingRegistryCollector;
     }
 
     public void startReceiving() {
@@ -83,6 +89,22 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         this.channel.receiveMessage(this);
         // listen to module availability/unavailability events
         this.deploymentRepository.addListener(this);
+        // listen to new clusters (a.k.a groups) being started/stopped
+        this.clientMappingRegistryCollector.addListener(this);
+        // Send the cluster topology for existing clusters in the registry
+        // and for each of these clusters added ourselves as a listener for cluster
+        // topology changes (members added/removed events in the cluster)
+        final Collection<Registry<String, List<ClientMapping>>> clusters = this.clientMappingRegistryCollector.getRegistries();
+        try {
+            this.sendNewClusterFormedMessage(clusters);
+        } catch (IOException ioe) {
+            // just log and don't throw an error
+            logger.warn("Could not send cluster formation message to the client on channel " + channel, ioe);
+        }
+        for (final Registry<String, List<ClientMapping>> cluster : clusters) {
+            // add the listener
+            cluster.addListener(new ClusterTopologyUpdateListener(cluster.getName(), this));
+        }
     }
 
     @Override
@@ -93,8 +115,8 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             throw new RuntimeException(e);
         } finally {
             this.deploymentRepository.removeListener(this);
+            this.clientMappingRegistryCollector.removeListener(this);
         }
-        throw new RuntimeException("NYI: .handleError");
     }
 
     @Override
@@ -105,6 +127,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             // ignore
         } finally {
             this.deploymentRepository.removeListener(this);
+            this.clientMappingRegistryCollector.removeListener(this);
         }
     }
 
@@ -186,8 +209,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         try {
             this.sendModuleUnAvailability(new DeploymentModuleIdentifier[]{deploymentModuleIdentifier});
         } catch (IOException e) {
-            // TODO: Change this to WARN once https://issues.jboss.org/browse/REM3-123 is fixed
-            logger.debug("Could not send module un-availability notification of module " + deploymentModuleIdentifier + " to channel " + this.channel, e);
+            logger.warn("Could not send module un-availability notification of module " + deploymentModuleIdentifier + " to channel " + this.channel, e);
         }
     }
 
@@ -211,13 +233,132 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         }
     }
 
+    @Override
+    public void registryAdded(Registry<String, List<ClientMapping>> registry) {
+        try {
+            logger.debug("Received new cluster formation notification for cluster " + registry.getName());
+            this.sendNewClusterFormedMessage(Collections.singleton(registry));
+        } catch (IOException ioe) {
+            logger.warn("Could not send a cluster formation message for cluster: " + registry.getName()
+                    + " to the client on channel " + channel, ioe);
+        }
+    }
+
+    @Override
+    public void registryRemoved(Registry<String, List<ClientMapping>> registry) {
+        // Removal of the registry (service) on one node of a cluster doesn't mean the entire
+        // cluster has been removed.
+        // TODO: We need a different/better hook for entire cluster removal event
+        // Maybe if the cluster node count reaches 0 then send a cluster removal message?
+//        try {
+//            logger.debug("Received cluster removal notification for cluster " + registry.getName());
+//            this.sendClusterRemovedMessage(registry);
+//        } catch (IOException ioe) {
+//            logger.warn("Could not send a cluster removal message for cluster: " + registry.getName()
+//                    + " to the client on channel " + channel, ioe);
+//        }
+    }
+
+    /**
+     * Sends a cluster formation message for the passed clusters, over the remoting channel
+     *
+     * @param clusters The new clusters
+     * @throws IOException If any exception occurs while sending the message over the channel
+     */
+    private void sendNewClusterFormedMessage(final Collection<Registry<String, List<ClientMapping>>> clientMappingRegistries) throws IOException {
+        final DataOutputStream outputStream = new DataOutputStream(this.channel.writeMessage());
+        final ClusterTopologyWriter clusterTopologyWriter = new ClusterTopologyWriter();
+        try {
+            logger.debug("Writing out cluster formation message for " + clientMappingRegistries.size() + " clusters, to channel " + this.channel);
+            clusterTopologyWriter.writeCompleteClusterTopology(outputStream, clientMappingRegistries);
+        } finally {
+            outputStream.close();
+        }
+    }
+
+    /**
+     * Sends out a cluster removal message for the passed cluster, over the remoting channel
+     *
+     * @param cluster The cluster which was removed
+     * @throws IOException If any exception occurs while sending the message over the channel
+     */
+    private void sendClusterRemovedMessage(final Registry<String, List<ClientMapping>> registry) throws IOException {
+        final DataOutputStream outputStream = new DataOutputStream(this.channel.writeMessage());
+        final ClusterTopologyWriter clusterTopologyWriter = new ClusterTopologyWriter();
+        try {
+            logger.debug("Cluster " + registry.getName() + " removed, writing cluster removal message to channel " + this.channel);
+            clusterTopologyWriter.writeClusterRemoved(outputStream, Collections.singleton(registry));
+        } finally {
+            outputStream.close();
+        }
+    }
+
     private class ChannelCloseHandler implements CloseHandler<Channel> {
 
         @Override
         public void handleClose(Channel closedChannel, IOException exception) {
-            logger.debug("Channel " + closedChannel + " closed. removing deployment listener " + this);
+            logger.debug("Channel " + closedChannel + " closed");
             VersionOneProtocolChannelReceiver.this.deploymentRepository.removeListener(VersionOneProtocolChannelReceiver.this);
+            VersionOneProtocolChannelReceiver.this.clientMappingRegistryCollector.removeListener(VersionOneProtocolChannelReceiver.this);
+        }
+    }
+
+    /**
+     * A {@link GroupMembershipListener} which writes out messages to the client, over a {@link Channel remoting channel}
+     * upon cluster topology updates
+     */
+    private class ClusterTopologyUpdateListener implements Registry.Listener<String, List<ClientMapping>> {
+        private final String clusterName;
+        private final VersionOneProtocolChannelReceiver channelReceiver;
+
+        ClusterTopologyUpdateListener(final String clusterName, final VersionOneProtocolChannelReceiver channelReceiver) {
+            this.channelReceiver = channelReceiver;
+            this.clusterName = clusterName;
         }
 
+        @Override
+        public void addedEntries(Map<String, List<ClientMapping>> added) {
+            try {
+                this.sendClusterNodesAdded(added);
+            } catch (IOException ioe) {
+                logger.warn("Could not write a new cluster node addition message to channel " + this.channelReceiver.channel, ioe);
+            }
+        }
+
+        @Override
+        public void updatedEntries(Map<String, List<ClientMapping>> updated) {
+            // We don't support client mapping updates just yet
+        }
+
+        @Override
+        public void removedEntries(Set<String> removed) {
+            try {
+                this.sendClusterNodesRemoved(removed);
+            } catch (IOException ioe) {
+                logger.warn("Could not write a cluster node removal message to channel " + this.channelReceiver.channel, ioe);
+            }
+        }
+
+        private void sendClusterNodesRemoved(final Set<String> removedNodes) throws IOException {
+            final DataOutputStream outputStream = new DataOutputStream(this.channelReceiver.channel.writeMessage());
+            final ClusterTopologyWriter clusterTopologyWriter = new ClusterTopologyWriter();
+            try {
+                logger.debug(removedNodes.size() + " nodes removed from cluster " + clusterName + ", writing a protocol message to channel " + this.channelReceiver.channel);
+                clusterTopologyWriter.writeNodesRemoved(outputStream, clusterName, removedNodes);
+            } finally {
+                outputStream.close();
+            }
+        }
+
+        private void sendClusterNodesAdded(final Map<String, List<ClientMapping>> addedNodes) throws IOException {
+            final DataOutputStream outputStream = new DataOutputStream(this.channelReceiver.channel.writeMessage());
+            final ClusterTopologyWriter clusterTopologyWriter = new ClusterTopologyWriter();
+            try {
+                logger.debug(addedNodes.size() + " nodes added to cluster " + clusterName + ", writing a protocol message to channel " + this.channelReceiver.channel);
+                clusterTopologyWriter.writeNewNodesAdded(outputStream, clusterName, addedNodes);
+            } finally {
+                outputStream.close();
+            }
+        }
     }
 }

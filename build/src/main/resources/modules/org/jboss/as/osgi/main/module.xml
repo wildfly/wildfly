@@ -23,6 +23,9 @@
   -->
 
 <module xmlns="urn:jboss:module:1.1" name="org.jboss.as.osgi">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
 
     <resources>
         <!-- Insert resources here -->
@@ -31,6 +34,7 @@
     <dependencies>
         <module name="javax.api"/>
         <module name="javax.annotation.api"/>
+        <module name="org.apache.xerces" services="import"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.ee"/>
         <module name="org.jboss.as.jmx"/>
@@ -43,9 +47,8 @@
         <module name="org.jboss.msc"/>
         <module name="org.jboss.vfs"/>
         <module name="org.jboss.osgi.framework"/>
-        <module name="org.jboss.osgi.resolver"/>
+        <module name="org.jboss.osgi.repository"/>
         <module name="org.jboss.osgi.spi"/>
-        <module name="org.jboss.osgi.vfs"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.osgi.core"/>
     </dependencies>

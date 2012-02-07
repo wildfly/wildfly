@@ -16,22 +16,15 @@
  */
 package org.jboss.as.test.smoke.stilts;
 
-import static org.jboss.as.test.smoke.stilts.bundle.SimpleStomplet.DESTINATION_QUEUE_ONE;
-
-import java.io.InputStream;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 import junit.framework.Assert;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.smoke.stilts.bundle.SimpleStomplet;
 import org.jboss.as.test.smoke.stilts.bundle.SimpleStompletActivator;
 import org.jboss.logging.Logger;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.osgi.resolver.v2.XRequirementBuilder;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -40,7 +33,9 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.BundleContext;
-import org.osgi.service.startlevel.StartLevel;
+import org.osgi.framework.resource.Resource;
+import org.osgi.service.packageadmin.PackageAdmin;
+import org.osgi.service.repository.Repository;
 import org.projectodd.stilts.stomp.StompMessage;
 import org.projectodd.stilts.stomp.StompMessages;
 import org.projectodd.stilts.stomp.client.ClientSubscription;
@@ -48,9 +43,16 @@ import org.projectodd.stilts.stomp.client.ClientTransaction;
 import org.projectodd.stilts.stomp.client.MessageHandler;
 import org.projectodd.stilts.stomp.client.StompClient;
 import org.projectodd.stilts.stomp.client.SubscriptionBuilder;
-import org.projectodd.stilts.stomp.spi.StompSession;
 import org.projectodd.stilts.stomplet.Stomplet;
-import org.projectodd.stilts.stomplet.simple.SimpleSubscribableStomplet;
+
+import javax.inject.Inject;
+import java.io.InputStream;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import static org.jboss.as.test.smoke.stilts.bundle.SimpleStomplet.DESTINATION_QUEUE_ONE;
 
 /**
  * A simple {@link Stomplet} test case.
@@ -62,6 +64,9 @@ import org.projectodd.stilts.stomplet.simple.SimpleSubscribableStomplet;
 @RunWith(Arquillian.class)
 public class SimpleStompletTestCase {
 
+    @Inject
+    public BundleContext context;
+
     @Deployment(testable = false)
     public static Archive<?> deploy() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "simple-stomplet");
@@ -72,8 +77,10 @@ public class SimpleStompletTestCase {
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 builder.addBundleActivator(SimpleStompletActivator.class);
-                builder.addImportPackages(StompMessage.class, StompSession.class, Stomplet.class, SimpleSubscribableStomplet.class);
-                builder.addImportPackages(BundleContext.class, StartLevel.class, Logger.class);
+                builder.addImportPackages(BundleContext.class, PackageAdmin.class, Logger.class);
+                builder.addImportPackages(Repository.class, Resource.class, XRequirementBuilder.class);
+                builder.addImportPackages(ModuleIdentifier.class);
+                builder.addDynamicImportPackages("org.projectodd.stilts.*");
                 return builder.openStream();
             }
         });

@@ -27,32 +27,54 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.test.integration.management.util.ModelUtil.createCompositeNode;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.transform.stream.StreamSource;
+
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
+import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
+import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension.ResourceAdapterSubsystemParser;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
+import org.jboss.as.test.shared.staxmapper.XMLExtendedStreamWriterFactory;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import org.jboss.staxmapper.XMLMapper;
+import org.junit.Assert;
 /**
  *
  * @author Dominik Pospisil <dpospisi@redhat.com>
@@ -87,7 +109,7 @@ public class AbstractMgmtTestBase {
         }
     }
 
-    protected ModelNode executeOperation(final ModelNode op, boolean unwrapResult) throws IOException, MgmtOperationException {
+    protected static ModelNode executeOperation(final ModelNode op, boolean unwrapResult) throws IOException, MgmtOperationException {
         ModelNode ret = modelControllerClient.execute(op);
         if (! unwrapResult) return ret;
 
@@ -97,11 +119,11 @@ public class AbstractMgmtTestBase {
         return ret.get(RESULT);
     }
 
-    protected ModelNode executeOperation(final ModelNode op) throws IOException, MgmtOperationException  {
+    protected static ModelNode executeOperation(final ModelNode op) throws IOException, MgmtOperationException  {
         return executeOperation(op, true);
     }
 
-    protected ModelNode executeOperation(final String address, final String operation) throws IOException, MgmtOperationException {
+    protected static ModelNode executeOperation(final String address, final String operation) throws IOException, MgmtOperationException {
         return executeOperation(createOpNode(address, operation));
     }
 
@@ -128,7 +150,7 @@ public class AbstractMgmtTestBase {
         return modelControllerClient.execute(ob.build());
     }
 
-    protected void remove(final ModelNode address) throws IOException, MgmtOperationException {
+    protected static void remove(final ModelNode address) throws IOException, MgmtOperationException {
         final ModelNode operation = new ModelNode();
         operation.get(OP).set("remove");
         operation.get(OP_ADDR).set(address);
@@ -163,6 +185,63 @@ public class AbstractMgmtTestBase {
             }
         }
     	return toReturn;
+    }
+    public static String ModelToXml(String subsystemName, String childType,XMLElementWriter<SubsystemMarshallingContext> parser)throws Exception {
+    	final ModelNode address = new ModelNode();
+        address.add("subsystem", subsystemName);
+        address.protect();
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set("read-children-resources");
+        operation.get("child-type").set(childType);
+        operation.get(RECURSIVE).set(true);
+        operation.get(OP_ADDR).set(address);
+        
+        final ModelNode result = executeOperation(operation);
+        Assert.assertNotNull(result);
+
+        ModelNode dsNode = new ModelNode();
+        dsNode.get(childType).set(result);
+        
+        StringWriter strWriter = new StringWriter();
+        XMLExtendedStreamWriter writer = XMLExtendedStreamWriterFactory.create(XMLOutputFactory.newFactory()
+                .createXMLStreamWriter(strWriter));
+        parser.writeContent(writer, new SubsystemMarshallingContext(dsNode, writer));
+        writer.flush();
+        return strWriter.toString();
+    }
+    
+    public static List<ModelNode> XmlToModelOperations(String xml,String nameSpaceUriString,XMLElementReader<List<ModelNode>> parser) throws Exception {
+    	
+    	XMLMapper mapper = XMLMapper.Factory.create();
+        mapper.registerRootElement(new QName(nameSpaceUriString, "subsystem"), parser);
+        
+        StringReader strReader = new StringReader(xml);
+       
+        XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new StreamSource(strReader));
+        List<ModelNode> newList = new ArrayList<ModelNode>();
+        mapper.parseDocument(newList, reader);
+        
+        return newList;
+    }
+    public static ModelNode operationListToCompositeOperation(List<ModelNode> operations){
+    	return operationListToCompositeOperation(operations,true);
+    }
+    public static ModelNode operationListToCompositeOperation(List<ModelNode> operations, boolean skipFirst){
+    	if(skipFirst) operations.remove(0);
+    	ModelNode steps[]=new ModelNode[operations.size()];
+    	operations.toArray(steps);
+    	return createCompositeNode(steps);
+    }
+    public static String readXmlResource(final String name) throws IOException {
+    	File f=new File(name);
+        BufferedReader reader = new BufferedReader(new FileReader(f));
+        StringWriter writer = new StringWriter();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            writer.write(line);
+        }
+        return writer.toString();
     }
 
 }

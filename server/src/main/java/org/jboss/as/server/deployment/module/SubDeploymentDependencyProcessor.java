@@ -56,7 +56,7 @@ public class SubDeploymentDependencyProcessor implements DeploymentUnitProcessor
             final ModuleIdentifier parentModule = parent.getAttachment(Attachments.MODULE_IDENTIFIER);
             if (parentModule != null) {
                 // access to ear classes
-                ModuleDependency moduleDependency = new ModuleDependency(moduleLoader, parentModule, false, false, true);
+                ModuleDependency moduleDependency = new ModuleDependency(moduleLoader, parentModule, false, false, true, false);
                 moduleDependency.addImportFilter(PathFilters.acceptAll(), true);
                 moduleSpec.addLocalDependency(moduleDependency);
             }
@@ -70,7 +70,7 @@ public class SubDeploymentDependencyProcessor implements DeploymentUnitProcessor
                 final ModuleSpecification subModule = subDeployment.getAttachment(Attachments.MODULE_SPECIFICATION);
                 if (!subModule.isPrivateModule()) {
                     ModuleIdentifier identifier = subDeployment.getAttachment(Attachments.MODULE_IDENTIFIER);
-                    ModuleDependency dependency = new ModuleDependency(moduleLoader, identifier, false, false, true);
+                    ModuleDependency dependency = new ModuleDependency(moduleLoader, identifier, false, false, true, false);
                     dependency.addImportFilter(PathFilters.acceptAll(), true);
                     accessibleModules.add(dependency);
                 }

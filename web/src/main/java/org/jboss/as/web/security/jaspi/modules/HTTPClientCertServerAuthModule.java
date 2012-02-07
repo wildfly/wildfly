@@ -28,6 +28,7 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.util.StringManager;
 import org.apache.coyote.ActionCode;
+import org.jboss.as.web.WebLogger;
 import org.jboss.logging.Logger;
 
 import javax.security.auth.Subject;
@@ -48,8 +49,6 @@ import java.security.cert.X509Certificate;
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
 public class HTTPClientCertServerAuthModule extends WebServerAuthModule {
-
-    private static Logger log = Logger.getLogger("org.jboss.as.web.security");
 
     protected Context context;
 
@@ -88,11 +87,11 @@ public class HTTPClientCertServerAuthModule extends WebServerAuthModule {
             certs = (X509Certificate[]) request.getAttribute(CERTIFICATES_ATTR);
         }
         if ((certs == null) || (certs.length < 1)) {
-            log.debugf("No certificates included with this request");
+            WebLogger.WEB_SECURITY_LOGGER.debugf("No certificates included with this request");
             try {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, sm.getString("authenticator.certificates"));
             } catch (IOException e) {
-                log.errorf("Caught Exception: %s", e.getLocalizedMessage());
+             // Ignore IOException here (client disconnect)
             }
             return (AuthStatus.FAILURE);
         }
@@ -100,11 +99,11 @@ public class HTTPClientCertServerAuthModule extends WebServerAuthModule {
         // Authenticate the specified certificate chain
         principal = context.getRealm().authenticate(certs);
         if (principal == null) {
-            log.debugf("Realm.authenticate() returned false");
+            WebLogger.WEB_SECURITY_LOGGER.debugf("Realm.authenticate() returned false");
             try {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, sm.getString("authenticator.unauthorized"));
             } catch (IOException e) {
-                log.errorf("Caught Exception: %s", e.getLocalizedMessage());
+             // Ignore IOException here (client disconnect)
             }
             return (AuthStatus.FAILURE);
         }

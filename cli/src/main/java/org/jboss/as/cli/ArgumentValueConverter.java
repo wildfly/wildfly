@@ -22,7 +22,7 @@
 package org.jboss.as.cli;
 
 
-import java.util.List;
+import java.util.Collection;
 
 import org.jboss.as.cli.operation.ParsedOperationRequestHeader;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
@@ -136,7 +136,7 @@ public interface ArgumentValueConverter {
         }
     };
 
-    ArgumentValueConverter ROLLOUT_PLAN = new DMRWithFallbackConverter() {
+    ArgumentValueConverter HEADERS = new DMRWithFallbackConverter() {
         private final DefaultCallbackHandler callback = new DefaultCallbackHandler();
         private final DefaultParsingState initialState = new DefaultParsingState("INITIAL_STATE");
         {
@@ -147,16 +147,15 @@ public interface ArgumentValueConverter {
         protected ModelNode fromNonDMRString(String value) throws CommandFormatException {
             callback.reset();
             ParserUtil.parse(value, callback, initialState);
-            final List<ParsedOperationRequestHeader> headers = callback.getHeaders();
+            final Collection<ParsedOperationRequestHeader> headers = callback.getHeaders();
             if(headers.isEmpty()) {
-                return null;
+                throw new CommandFormatException("'" + value +
+                        "' doesn't follow format {[rollout server_group_list [rollback-across-groups];] (<header_name>=<header_value>;)*}");
             }
-            if(headers.size() > 1) {
-                throw new CommandFormatException("Too many headers: " + headers);
-            }
-            final ParsedOperationRequestHeader header = headers.get(0);
             final ModelNode node = new ModelNode();
-            header.addTo(null, node);
+            for(ParsedOperationRequestHeader header : headers) {
+                header.addTo(null, node);
+            }
             return node;
         }
     };

@@ -41,10 +41,6 @@ public class IncomingDistributableSessionDataImpl implements IncomingDistributab
     private volatile Map<String, Object> attributes;
 
     public IncomingDistributableSessionDataImpl(Integer version, Long timestamp, DistributableSessionMetadata metadata) {
-        assert version != null : MESSAGES.nullVar("version");
-        assert timestamp != null : MESSAGES.nullVar("timestamp");
-        assert metadata != null : MESSAGES.nullVar("metadata");
-
         this.version = version.intValue();
         this.timestamp = timestamp.longValue();
         this.metadata = metadata;

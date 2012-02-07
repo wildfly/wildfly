@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.descriptor;
 
+import javax.annotation.Resource;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.interceptor.InvocationContext;
@@ -31,7 +32,7 @@ import javax.interceptor.InvocationContext;
 @Stateless
 @LocalBean
 public class SimpleStatelessBean {
-//    @Resource(name="test")
+    @Resource(name="test")
     private String test;
 
     // added in ejb-jar.xml

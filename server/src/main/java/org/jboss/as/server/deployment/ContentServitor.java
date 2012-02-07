@@ -22,7 +22,7 @@
 package org.jboss.as.server.deployment;
 
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.server.deployment.repository.api.ContentRepository;
+import org.jboss.as.repository.ContentRepository;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;

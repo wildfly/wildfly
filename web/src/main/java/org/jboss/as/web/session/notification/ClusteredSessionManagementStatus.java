@@ -22,6 +22,8 @@
 
 package org.jboss.as.web.session.notification;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 /**
  * Encapsulates the status of how the local container is managing the given session.
  * @author Brian Stansberry
@@ -41,7 +43,7 @@ public class ClusteredSessionManagementStatus {
      */
     public ClusteredSessionManagementStatus(String realId, boolean locallyUsed, Boolean locallyActive, Boolean locallyOwned) {
         if (realId == null) {
-            throw new IllegalArgumentException("realId is null");
+            throw MESSAGES.nullRealId();
         }
         this.realId = realId;
         this.locallyUsed = locallyUsed;

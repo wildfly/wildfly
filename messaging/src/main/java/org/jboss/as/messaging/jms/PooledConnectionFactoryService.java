@@ -22,6 +22,7 @@
 
 package org.jboss.as.messaging.jms;
 
+import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.connector.ConnectorServices;
@@ -100,6 +101,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import static org.jboss.as.messaging.CommonAttributes.*;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 /**
@@ -127,13 +129,19 @@ public class PooledConnectionFactoryService implements Service<Void> {
     private static final String JMS_QUEUE = "javax.jms.Queue";
     private static final String STRING_TYPE = "java.lang.String";
     private static final String INTEGER_TYPE = "java.lang.Integer";
+    private static final String LONG_TYPE = "java.lang.Long";
     private static final String SESSION_DEFAULT_TYPE = "SessionDefaultType";
     private static final String TRY_LOCK = "UseTryLock";
     private static final String JMS_MESSAGE_LISTENER = "javax.jms.MessageListener";
+    private static final String DEFAULT_MAX_RECONNECTS = "5";
+    private static final String GROUP_ADDRESS = "discoveryAddress";
+    private static final String DISCOVERY_INITIAL_WAIT_TIMEOUT = "discoveryInitialWaitTimeout";
+    private static final String GROUP_PORT = "discoveryPort";
+    private static final String REFRESH_TIMEOUT = "discoveryRefreshTimeout";
 
     private static final Collection<String> JMS_ACTIVATION_CONFIG_PROPERTIES = new HashSet<String>();
 
-    {
+   {
         // All the activation-config-properties that are mandated to be supported by the RA, as per EJB3.1 spec,
         // section 5.4.15 through 5.4.17
 
@@ -145,6 +153,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
 
     private Injector<Object> transactionManager = new InjectedValue<Object>();
     private List<String> connectors;
+    private String discoveryGroupName;
     private List<PooledConnectionFactoryConfigProperties> adapterParams;
     private String name;
     private Map<String, SocketBinding> socketBindings = new HashMap<String, SocketBinding>();
@@ -152,9 +161,10 @@ public class PooledConnectionFactoryService implements Service<Void> {
     private String jndiName;
     private String txSupport;
 
-    public PooledConnectionFactoryService(String name, List<String> connectors, List<PooledConnectionFactoryConfigProperties> adapterParams, String jndiName, String txSupport) {
+   public PooledConnectionFactoryService(String name, List<String> connectors, String discoveryGroupName, List<PooledConnectionFactoryConfigProperties> adapterParams, String jndiName, String txSupport) {
         this.name = name;
         this.connectors = connectors;
+        this.discoveryGroupName = discoveryGroupName;
         this.adapterParams = adapterParams;
         this.jndiName = jndiName;
         this.txSupport = txSupport;
@@ -211,11 +221,30 @@ public class PooledConnectionFactoryService implements Service<Void> {
             if (connectorParams.length() > 0) {
                 properties.add(simpleProperty(CONNECTION_PARAMETERS, STRING_TYPE, connectorParams.toString()));
             }
+
+            if(discoveryGroupName != null) {
+                DiscoveryGroupConfiguration discoveryGroupConfiguration = hornetQService.getValue().getConfiguration().getDiscoveryGroupConfigurations().get(discoveryGroupName);
+                properties.add(simpleProperty(GROUP_ADDRESS, STRING_TYPE, discoveryGroupConfiguration.getGroupAddress()));
+                properties.add(simpleProperty(DISCOVERY_INITIAL_WAIT_TIMEOUT, LONG_TYPE, "" + discoveryGroupConfiguration.getDiscoveryInitialWaitTimeout()));
+                properties.add(simpleProperty(GROUP_PORT, INTEGER_TYPE, "" + discoveryGroupConfiguration.getGroupPort()));
+                properties.add(simpleProperty(REFRESH_TIMEOUT, LONG_TYPE, "" + discoveryGroupConfiguration.getRefreshTimeout()));
+            }
+
+            boolean hasReconnect = false;
+            final String reconnectName = JMSServices.RECONNECT_ATTEMPTS_METHOD;
             for (PooledConnectionFactoryConfigProperties adapterParam : adapterParams) {
+                hasReconnect |= reconnectName.equals(adapterParam.getName());
+
                 properties.add(simpleProperty(adapterParam.getName(), adapterParam.getType(), adapterParam.getValue()));
             }
 
+            // The default -1, which will hang forever until a server appears
+            if (!hasReconnect) {
+                properties.add(simpleProperty(reconnectName, Integer.class.getName(), DEFAULT_MAX_RECONNECTS));
+            }
+
             TransactionManagerLocator.container = container;
+            AS7RecoveryRegistry.container = container;
             properties.add(simpleProperty("TransactionManagerLocatorClass", STRING_TYPE, TransactionManagerLocator.class.getName()));
             properties.add(simpleProperty("TransactionManagerLocatorMethod", STRING_TYPE, "getTransactionManager"));
 

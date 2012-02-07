@@ -22,8 +22,10 @@
 
 package org.jboss.as.xts;
 
+import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
+import org.jboss.msc.service.StartException;
 
 /**
  * Date: 05.11.2011
@@ -37,4 +39,37 @@ public interface XtsAsMessages {
      * The messages
      */
     XtsAsMessages MESSAGES = Messages.getBundle(XtsAsMessages.class);
+
+    /**
+     * Creates an exception indicating that the TxBridge inbound recovery service failed to start.
+     *
+     * @return a {@link StartException} for the error.
+     */
+    @Message(id = 18400, value = "TxBridge inbound recovery service start failed")
+    StartException txBridgeInboundRecoveryServiceFailedToStart();
+
+    /**
+     * Creates an exception indicating that the TxBridge outbound recovery service failed to start.
+     *
+     * @return a {@link StartException} for the error.
+     */
+    @Message(id = 18401, value = "TxBridge outbound recovery service start failed")
+    StartException txBridgeOutboundRecoveryServiceFailedToStart();
+
+    /**
+     * Creates an exception indicating that the XTS service failed to start.
+     *
+     * @return a {@link StartException} for the error.
+     */
+    @Message(id = 18402, value = "XTS service start failed")
+    StartException xtsServiceFailedToStart();
+
+    /**
+     * Creates an exception indicating that this operation can not be performed when the XTS service is not started.
+     *
+     * @return a {@link IllegalStateException} for the error.
+     */
+    @Message(id = 18403, value = "Service not started")
+    IllegalStateException xtsServiceIsNotStarted();
+
 }

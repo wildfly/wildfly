@@ -22,10 +22,6 @@
 
 package org.jboss.as.messaging.jms;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
-
 import java.util.List;
 import java.util.Locale;
 
@@ -41,9 +37,15 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.messaging.MessagingDescriptions;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
 
 /**
  * Update handler adding a topic to the JMS subsystem. The
@@ -77,16 +79,30 @@ public class JMSTopicAdd extends AbstractAddStepHandler implements DescriptionPr
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
         final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+        final ServiceTarget serviceTarget = context.getServiceTarget();
 
-        ENTRIES.resolveModelAttribute(context, model);
+        final ModelNode entries = ENTRIES.resolveModelAttribute(context, model);
+        final String[] jndiBindings = JndiEntriesAttribute.getJndiBindings(entries);
+        installServices(verificationHandler, newControllers, name, hqServiceName, serviceTarget, jndiBindings);
+    }
 
-        final JMSTopicService service = new JMSTopicService(name, JndiEntriesAttribute.getJndiBindings(operation));
+    public void installServices(final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers, final String name, final ServiceName hqServiceName, final ServiceTarget serviceTarget, final String[] jndiBindings) {
+        final JMSTopicService service = new JMSTopicService(name, jndiBindings);
         final ServiceName serviceName = JMSServices.getJmsTopicBaseServiceName(hqServiceName).append(name);
-        newControllers.add(context.getServiceTarget().addService(serviceName, service)
+
+        final ServiceBuilder<Void> serviceBuilder = serviceTarget.addService(serviceName, service);
+
+        if(verificationHandler != null) {
+            serviceBuilder.addListener(verificationHandler);
+        }
+
+        final ServiceController<Void> controller = serviceBuilder
                 .addDependency(JMSServices.getJmsManagerBaseServiceName(hqServiceName), JMSServerManager.class, service.getJmsServer())
-                .addListener(verificationHandler)
                 .setInitialMode(Mode.ACTIVE)
-                .install());
+                .install();
+        if(newControllers != null) {
+            newControllers.add(controller);
+        }
     }
 
     @Override

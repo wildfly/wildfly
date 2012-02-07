@@ -40,6 +40,10 @@
     <dependencies>
         <dependency>
             <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
             <artifactId>hibernate-infinispan</artifactId>
         </dependency>
         <dependency>

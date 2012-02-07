@@ -21,6 +21,7 @@
  */
 package org.jboss.as.weld.injection;
 
+import java.io.Serializable;
 import java.util.Map;
 
 import javax.enterprise.context.spi.CreationalContext;
@@ -31,11 +32,14 @@ import org.jboss.as.weld.WeldMessages;
 /**
 * @author Stuart Douglas
 */
-class WeldManagedReference implements ManagedReference {
+class WeldManagedReference implements ManagedReference, Serializable {
     private final CreationalContext<?> context;
     private final Object instance;
-    private final WeldEEInjection injectionTarget;
-    private final Map<Class<?>, WeldEEInjection> interceptorInjections;
+
+    //the following fields are transient, as they are only needed at creation time,
+    //and should not be needed after injection is complete
+    private final transient WeldEEInjection injectionTarget;
+    private final transient Map<Class<?>, WeldEEInjection> interceptorInjections;
 
     public WeldManagedReference(CreationalContext<?> ctx, Object instance, final WeldEEInjection injectionTarget, final Map<Class<?>, WeldEEInjection> interceptorInjections) {
         this.context = ctx;

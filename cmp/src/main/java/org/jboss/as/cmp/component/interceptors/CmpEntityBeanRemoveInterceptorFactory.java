@@ -63,7 +63,7 @@ public class CmpEntityBeanRemoveInterceptorFactory implements InterceptorFactory
                     throw new NoSuchEJBException("Invocation was not associated with an instance, primary key was null, instance may have been removed");
                 }
 
-                final CmpEntityBeanComponentInstance instance = (CmpEntityBeanComponentInstance) component.getCache().get(primaryKey);
+                final CmpEntityBeanComponentInstance instance = (CmpEntityBeanComponentInstance) context.getPrivateData(ComponentInstance.class);
                 //Call the ejbRemove method
                 Method oldMethod = context.getMethod();
                 try {

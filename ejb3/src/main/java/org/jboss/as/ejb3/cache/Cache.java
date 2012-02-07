@@ -30,7 +30,7 @@ import java.io.Serializable;
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
  * @version $Revision: $
  */
-public interface Cache<K extends Serializable, V extends Identifiable<K>> extends Removable<K> {
+public interface Cache<K extends Serializable, V extends Identifiable<K>> extends Removable<K>, AffinitySupport<K> {
     /**
      * Creates and caches a new instance of <code>T</code>.
      *

@@ -44,7 +44,7 @@ public class ModClusterReset implements OperationStepHandler, DescriptionProvide
     @Override
     public void execute(OperationContext context, ModelNode operation)
             throws OperationFailedException {
-        if (context.getType() == OperationContext.Type.SERVER) {
+        if (context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {

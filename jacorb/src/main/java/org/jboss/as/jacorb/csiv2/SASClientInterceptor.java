@@ -25,14 +25,13 @@ package org.jboss.as.jacorb.csiv2;
 import java.security.Principal;
 
 import org.jacorb.orb.MinorCodes;
-import org.jboss.logging.Logger;
+import org.jboss.as.jacorb.JacORBLogger;
+import org.jboss.as.jacorb.JacORBMessages;
 import org.jboss.security.SecurityContextAssociation;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.CompletionStatus;
 import org.omg.CORBA.LocalObject;
-import org.omg.CORBA.MARSHAL;
-import org.omg.CORBA.NO_PERMISSION;
 import org.omg.CORBA.ORB;
 import org.omg.CSI.AuthorizationElement;
 import org.omg.CSI.EstablishContext;
@@ -66,10 +65,6 @@ public class SASClientInterceptor extends LocalObject implements ClientRequestIn
     private static final IdentityToken absentIdentityToken;
 
     private static final AuthorizationElement[] noAuthorizationToken = {};
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.jacorb");
-
-    private static final boolean traceEnabled = log.isTraceEnabled();
 
     static {
         absentIdentityToken = new IdentityToken();
@@ -159,9 +154,9 @@ public class SASClientInterceptor extends LocalObject implements ClientRequestIn
                 }
             }
         } catch (java.io.UnsupportedEncodingException e) {
-            throw new MARSHAL("Unexpected exception: " + e);
+            throw JacORBMessages.MESSAGES.unexpectedException(e);
         } catch (org.omg.IOP.CodecPackage.InvalidTypeForEncoding e) {
-            throw new MARSHAL("Unexpected exception: " + e);
+            throw JacORBMessages.MESSAGES.unexpectedException(e);
         }
     }
 
@@ -178,22 +173,19 @@ public class SASClientInterceptor extends LocalObject implements ClientRequestIn
 
             // At this point contextBody should contain a CompleteEstablishContext message, which does not require any
             // treatment. ContextError messages should arrive via receive_exception().
-            if (traceEnabled) {
-                log.trace("receive_reply: got SAS reply, type " + contextBody.discriminator());
-            }
+            JacORBLogger.ROOT_LOGGER.traceReceiveReply(contextBody.discriminator());
 
             if (contextBody.discriminator() == MTContextError.value) {
                 // should not happen.
-                log.warn("Unexpected ContextError in SAS reply");
-                throw new NO_PERMISSION("Unexpected ContextError in SAS reply", MinorCodes.SAS_CSS_FAILURE,
+                throw JacORBMessages.MESSAGES.unexpectedContextErrorInSASReply(MinorCodes.SAS_CSS_FAILURE,
                         CompletionStatus.COMPLETED_YES);
             }
         } catch (BAD_PARAM e) {
             // no service context with sasContextId: do nothing
         } catch (FormatMismatch e) {
-            throw new MARSHAL("Could not parse SAS reply: " + e, 0, CompletionStatus.COMPLETED_YES);
+            throw JacORBMessages.MESSAGES.errorParsingSASReply(e, 0, CompletionStatus.COMPLETED_YES);
         } catch (TypeMismatch e) {
-            throw new MARSHAL("Could not parse SAS reply: " + e, 0, CompletionStatus.COMPLETED_YES);
+            throw JacORBMessages.MESSAGES.errorParsingSASReply(e, 0, CompletionStatus.COMPLETED_YES);
         }
     }
 
@@ -207,18 +199,14 @@ public class SASClientInterceptor extends LocalObject implements ClientRequestIn
             // At this point contextBody may contain a either a CompleteEstablishContext message or a ContextError message.
             // Neither message requires any treatment. We decoded the context body just to check that it contains
             // a well-formed message.
-            if (traceEnabled) {
-                log.trace("receive_exception: got SAS reply, type " + contextBody.discriminator());
-            }
+            JacORBLogger.ROOT_LOGGER.traceReceiveException(contextBody.discriminator());
+
         } catch (BAD_PARAM e) {
             // no service context with sasContextId: do nothing.
         } catch (FormatMismatch e) {
-            throw new MARSHAL("Could not parse SAS reply: " + e, MinorCodes.SAS_CSS_FAILURE,
-                    CompletionStatus.COMPLETED_MAYBE);
+            throw JacORBMessages.MESSAGES.errorParsingSASReply(e, MinorCodes.SAS_CSS_FAILURE, CompletionStatus.COMPLETED_MAYBE);
         } catch (TypeMismatch e) {
-            throw new MARSHAL("Could not parse SAS reply: " + e, MinorCodes.SAS_CSS_FAILURE,
-                    CompletionStatus.COMPLETED_MAYBE);
-        }
+            throw JacORBMessages.MESSAGES.errorParsingSASReply(e, MinorCodes.SAS_CSS_FAILURE, CompletionStatus.COMPLETED_MAYBE);        }
     }
 
     @Override

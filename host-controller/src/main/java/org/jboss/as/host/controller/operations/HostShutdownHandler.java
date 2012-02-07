@@ -60,8 +60,8 @@ public class HostShutdownHandler implements OperationStepHandler, DescriptionPro
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 if (restart) {
-                    //Add to the exit code so that we get respawned
-                    System.exit(ExitCodes.RESTART_PROCESS_FROM_STARTUP_SCRIPT);
+                    //Add the exit code so that we get respawned
+                    domainController.stopLocalHost(ExitCodes.RESTART_PROCESS_FROM_STARTUP_SCRIPT);
                 } else {
                     domainController.stopLocalHost();
                 }

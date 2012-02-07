@@ -42,6 +42,7 @@ public class InterceptorOrder {
         public static final int REENTRANCY_INTERCEPTOR = 0x501;
         public static final int BMT_TRANSACTION_INTERCEPTOR = 0x520;
         public static final int ENTITY_BEAN_REMOVE_INTERCEPTOR = 0x550;
+        public static final int JPA_SFSB_INTERCEPTOR = 0x560;
         public static final int JPA_SESSION_BEAN_INTERCEPTOR = 0x600;
         public static final int SINGLETON_CONTAINER_MANAGED_CONCURRENCY_INTERCEPTOR = 0x700;
         public static final int CMP_RELATIONSHIP_INTERCEPTOR = 0x800;
@@ -121,7 +122,6 @@ public class InterceptorOrder {
     }
 
     public static final class View {
-        public static final int EJB_EXCEPTION_LOGGING_INTERCEPTOR = 0x000;
         public static final int TCCL_INTERCEPTOR = 0x001;
         public static final int INVOCATION_TYPE = 0x005;
         public static final int EE_SETUP = 0x010;
@@ -129,7 +129,8 @@ public class InterceptorOrder {
         public static final int JNDI_NAMESPACE_INTERCEPTOR = 0x050;
         public static final int NOT_BUSINESS_METHOD_EXCEPTION = 0x100;
         public static final int REMOTE_EXCEPTION_TRANSFORMER = 0x200;
-        public static final int INVALID_METHOD_EXCEPTION = 0x201;
+        public static final int EJB_EXCEPTION_LOGGING_INTERCEPTOR = 0x210;
+        public static final int INVALID_METHOD_EXCEPTION = 0x230;
         public static final int SECURITY_CONTEXT = 0x250;
         public static final int EJB_SECURITY_AUTHORIZATION_INTERCEPTOR = 0x300;
         public static final int INVOCATION_CONTEXT_INTERCEPTOR = 0x400;
@@ -138,7 +139,6 @@ public class InterceptorOrder {
         public static final int CMT_TRANSACTION_INTERCEPTOR = 0x500;
         public static final int HOME_METHOD_INTERCEPTOR = 0x600;
         public static final int ASSOCIATING_INTERCEPTOR = 0x700;
-        public static final int JPA_SFSB_INTERCEPTOR = 0x800;
         public static final int SESSION_REMOVE_INTERCEPTOR = 0x900;
         public static final int COMPONENT_DISPATCHER = 0xA00;
 

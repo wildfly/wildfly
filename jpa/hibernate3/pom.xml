@@ -35,7 +35,7 @@
 
     <artifactId>jboss-as-jpa-hibernate3</artifactId>
 
-    <name>JBoss Application Server: Hibernate 3.6.x JPA integration </name>
+    <name>JBoss Application Server: Hibernate 3.6.x JPA integration</name>
 
     <dependencies>
 
@@ -129,11 +129,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.ant</groupId>
-            <artifactId>ant</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.codehaus.woodstox</groupId>
             <artifactId>woodstox-core-asl</artifactId>
             <scope>test</scope>
@@ -142,7 +137,7 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-commons-annotations</artifactId>
-			<version>3.2.0.Final</version>
+            <version>3.2.0.Final</version>
         </dependency>
 
         <dependency>

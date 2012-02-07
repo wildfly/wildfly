@@ -21,25 +21,42 @@
  */
 package org.jboss.as.host.controller.operations;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.PathElement;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_CODENAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import java.util.Locale;
 
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.host.controller.HostControllerService;
-import org.jboss.as.host.controller.HostModelUtil;
+import org.jboss.as.host.controller.HostControllerEnvironment;
+import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.platform.mbean.PlatformMBeanConstants;
 import org.jboss.as.platform.mbean.RootPlatformMBeanResource;
+import org.jboss.as.version.Version;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -51,14 +68,12 @@ public class LocalHostAddHandler implements OperationStepHandler, DescriptionPro
 
     public static final String OPERATION_NAME = "add-host";
 
-    private final LocalHostControllerInfoImpl hostControllerInfo;
+    private final HostControllerEnvironment hostControllerEnvironment;
+    private final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry;
 
-    public static LocalHostAddHandler getInstance(final LocalHostControllerInfoImpl hostControllerInfo) {
-        return new LocalHostAddHandler(hostControllerInfo);
-    }
-
-    private LocalHostAddHandler(final LocalHostControllerInfoImpl hostControllerInfo) {
-        this.hostControllerInfo = hostControllerInfo;
+    public LocalHostAddHandler(final HostControllerEnvironment hostControllerEnvironment, IgnoredDomainResourceRegistry ignoredDomainResourceRegistry) {
+        this.hostControllerEnvironment = hostControllerEnvironment;
+        this.ignoredDomainResourceRegistry = ignoredDomainResourceRegistry;
     }
 
     @Override
@@ -78,10 +93,7 @@ public class LocalHostAddHandler implements OperationStepHandler, DescriptionPro
         final Resource rootResource = context.createResource(PathAddress.EMPTY_ADDRESS);
         final ModelNode model = rootResource.getModel();
 
-
-        // TODO Revisit this
-        HostControllerService service = (HostControllerService) context.getServiceRegistry(false).getRequiredService(HostControllerService.HC_SERVICE_NAME).getService();
-        HostModelUtil.initCoreModel(model, service.getEnvironment());
+        initCoreModel(model, hostControllerEnvironment);
 
         // Create the empty management security resources
         context.createResource(PathAddress.pathAddress(PathElement.pathElement(CORE_SERVICE, MANAGEMENT)));
@@ -89,12 +101,52 @@ public class LocalHostAddHandler implements OperationStepHandler, DescriptionPro
         // Wire in the platform mbean resources. We're bypassing the context.createResource API here because
         // we want to use our own resource type. But it's ok as the createResource calls above have taken the lock
         rootResource.registerChild(PlatformMBeanConstants.ROOT_PATH, new RootPlatformMBeanResource());
+        // Wire in the ignored-resources resource
+        Resource.ResourceEntry ignoredRoot = ignoredDomainResourceRegistry.getRootResource();
+        rootResource.registerChild(ignoredRoot.getPathElement(), ignoredRoot);
 
-        final String localHostName = operation.require(NAME).asString();
-        model.get(NAME).set(localHostName);
+        // Add a step to store the HC name
+        ModelNode writeNameOp = Util.getWriteAttributeOperation(operation.get(OP_ADDR), NAME, operation.get(NAME));
+        context.addStep(writeNameOp, hostControllerEnvironment.getProcessNameWriteHandler(), OperationContext.Stage.IMMEDIATE);
 
-        hostControllerInfo.setLocalHostName(localHostName);
-
-        context.completeStep();
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
+
+    private static void initCoreModel(final ModelNode root, HostControllerEnvironment environment) {
+
+        root.get(RELEASE_VERSION).set(Version.AS_VERSION);
+        root.get(RELEASE_CODENAME).set(Version.AS_RELEASE_CODENAME);
+        root.get(MANAGEMENT_MAJOR_VERSION).set(Version.MANAGEMENT_MAJOR_VERSION);
+        root.get(MANAGEMENT_MINOR_VERSION).set(Version.MANAGEMENT_MINOR_VERSION);
+
+        // Community uses UNDEF values
+        ModelNode nameNode = root.get(PRODUCT_NAME);
+        ModelNode versionNode = root.get(PRODUCT_VERSION);
+
+        if (environment != null) {
+            String productName = environment.getProductConfig().getProductName();
+            String productVersion = environment.getProductConfig().getProductVersion();
+
+            if (productName != null) {
+                nameNode.set(productName);
+            }
+            if (productVersion != null) {
+                versionNode.set(productVersion);
+            }
+        }
+
+        root.get(NAME);
+        root.get(NAMESPACES).setEmptyList();
+        root.get(SCHEMA_LOCATIONS).setEmptyList();
+        root.get(EXTENSION);
+        root.get(SYSTEM_PROPERTY);
+        root.get(PATH);
+        root.get(CORE_SERVICE);
+        root.get(SERVER_CONFIG);
+        root.get(DOMAIN_CONTROLLER);
+        root.get(INTERFACE);
+        root.get(JVM);
+        root.get(RUNNING_SERVER);
+    }
+
 }

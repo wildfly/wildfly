@@ -48,7 +48,8 @@ public class HeaderState extends DefaultParsingState {
         setEnterHandler(new EnterStateCharacterHandler(headerName));
         putHandler(';', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
         putHandler('}', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
-        putHandler('=', new EnterStateCharacterHandler(headerValue));
+        final NameValueSeparatorState nameValueSep = new NameValueSeparatorState(headerValue);
+        enterState('=', nameValueSep);
         setDefaultHandler(new EnterStateCharacterHandler(headerValue));
         setReturnHandler(new CharacterHandler(){
             @Override
@@ -58,10 +59,19 @@ public class HeaderState extends DefaultParsingState {
                 }
                 final char ch = ctx.getCharacter();
                 if(ch == '=') {
-                    ctx.enterState(headerValue);
+                    ctx.enterState(nameValueSep);
                 } else if (!Character.isWhitespace(ch)) {
                     ctx.leaveState();
                 }
             }});
     }
+
+    private static class NameValueSeparatorState extends DefaultParsingState {
+        NameValueSeparatorState(HeaderValueState valueState) {
+            super("NAME_VALUE_SEPARATOR");
+            setDefaultHandler(new EnterStateCharacterHandler(valueState));
+            setReturnHandler(GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+            setIgnoreWhitespaces(true);
+        }
+    };
 }

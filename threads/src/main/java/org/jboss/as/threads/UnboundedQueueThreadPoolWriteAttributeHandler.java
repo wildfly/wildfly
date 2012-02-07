@@ -23,14 +23,7 @@ package org.jboss.as.threads;
 
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.threads.CommonAttributes.COUNT;
-import static org.jboss.as.threads.CommonAttributes.KEEPALIVE_TIME;
-import static org.jboss.as.threads.CommonAttributes.PER_CPU;
-import static org.jboss.as.threads.CommonAttributes.TIME;
-import static org.jboss.as.threads.CommonAttributes.UNIT;
 
-import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.OperationContext;
@@ -42,82 +35,44 @@ import org.jboss.msc.service.ServiceName;
 
 
 /**
+ * Handles attribute writes for an unbounded queue thread pool.
  *
  * @author Alexey Loubyansky
  */
 public class UnboundedQueueThreadPoolWriteAttributeHandler extends ThreadsWriteAttributeOperationHandler {
 
-    public static final UnboundedQueueThreadPoolWriteAttributeHandler INSTANCE = new UnboundedQueueThreadPoolWriteAttributeHandler();
+    private final ServiceName serviceNameBase;
 
-    private UnboundedQueueThreadPoolWriteAttributeHandler() {
+    public UnboundedQueueThreadPoolWriteAttributeHandler(ServiceName serviceNameBase) {
         super(UnboundedQueueThreadPoolAdd.ATTRIBUTES, UnboundedQueueThreadPoolAdd.RW_ATTRIBUTES);
+        this.serviceNameBase = serviceNameBase;
     }
 
     @Override
-    protected void applyOperation(final OperationContext context, ModelNode operation, String attributeName, ServiceController<?> service) {
+    protected void applyOperation(final OperationContext context, ModelNode model, String attributeName,
+                                  ServiceController<?> service, boolean forRollback) throws OperationFailedException {
 
         final UnboundedQueueThreadPoolService pool =  (UnboundedQueueThreadPoolService) service.getService();
-        try {
-            final ModelNode value = operation.require(CommonAttributes.VALUE);
-            if (CommonAttributes.KEEPALIVE_TIME.equals(attributeName)) {
-                if (!value.hasDefined(TIME)) {
-                    throw new IllegalArgumentException("Missing '" + TIME + "' for '" + KEEPALIVE_TIME + "'");
-                }
-                final TimeUnit unit;
-                if (!value.hasDefined(UNIT)) {
-                    unit = pool.getKeepAliveUnit();
-                } else {
-                    try {
-                    unit = Enum.valueOf(TimeUnit.class, value.get(UNIT).asString());
-                    } catch(IllegalArgumentException e) {
-                        throw new OperationFailedException(new ModelNode().set("Failed to parse '" + UNIT + "', allowed values are: " + Arrays.asList(TimeUnit.values())));
-                    }
-                }
-                final TimeSpec spec = new TimeSpec(unit, value.get(TIME).asLong());
-                pool.setKeepAlive(spec);
-            } else if(CommonAttributes.MAX_THREADS.equals(attributeName)) {
-                pool.setMaxThreads(getScaledCount(CommonAttributes.MAX_THREADS, value));
-            } else {
-                throw new IllegalArgumentException("Unexpected attribute '" + attributeName + "'");
-            }
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
 
-    protected int getScaledCount(String attributeName, final ModelNode value) {
-        if (!value.hasDefined(COUNT)) {
-            throw new IllegalArgumentException("Missing '" + COUNT + "' for '" + attributeName + "'");
+        if (PoolAttributeDefinitions.KEEPALIVE_TIME.getName().equals(attributeName)) {
+            TimeUnit defaultUnit = pool.getKeepAliveUnit();
+            final TimeSpec spec = getTimeSpec(context, model, defaultUnit);
+            pool.setKeepAlive(spec);
+        } else if(PoolAttributeDefinitions.MAX_THREADS.getName().equals(attributeName)) {
+            pool.setMaxThreads(PoolAttributeDefinitions.MAX_THREADS.resolveModelAttribute(context, model).asInt());
+        } else if (!forRollback) {
+            // Programming bug. Throw a RuntimeException, not OFE, as this is not a client error
+            throw ThreadsMessages.MESSAGES.unsupportedUnboundedQueueThreadPoolAttribute(attributeName);
         }
-        if (!value.hasDefined(PER_CPU)) {
-            throw new IllegalArgumentException("Missing '" + PER_CPU + "' for '" + attributeName + "'");
-        }
-
-        final BigDecimal count;
-        try {
-            count = value.get(COUNT).asBigDecimal();
-        } catch(NumberFormatException e) {
-            throw new IllegalArgumentException("Failed to parse '" + COUNT + "' as java.math.BigDecimal", e);
-        }
-        final BigDecimal perCpu;
-        try {
-            perCpu = value.get(PER_CPU).asBigDecimal();
-        } catch(NumberFormatException e) {
-            throw new IllegalArgumentException("Failed to parse '" + PER_CPU + "' as java.math.BigDecimal", e);
-        }
-
-        return new ScaledCount(count, perCpu).getScaledCount();
     }
 
     @Override
-    protected ServiceController<?> getService(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-        final String name = Util.getNameFromAddress(operation.require(OP_ADDR));
-        final ServiceName serviceName = ThreadsServices.executorName(name);
+    protected ServiceController<?> getService(final OperationContext context, final ModelNode model) throws OperationFailedException {
+        final String name = Util.getNameFromAddress(model.require(OP_ADDR));
+        final ServiceName serviceName = serviceNameBase.append(name);
         ServiceController<?> controller = context.getServiceRegistry(true).getService(serviceName);
         if(controller == null) {
-            throw new OperationFailedException(new ModelNode().set("Service " + serviceName + " not found."));
+            throw ThreadsMessages.MESSAGES.unboundedQueueThreadPoolServiceNotFound(serviceName);
         }
         return controller;
     }

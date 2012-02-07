@@ -22,6 +22,8 @@
 
 package org.jboss.as.web.session;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 import org.jboss.as.clustering.web.DistributableSessionMetadata;
 import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 
@@ -35,7 +37,7 @@ public class OutgoingDistributableSessionDataImpl implements OutgoingDistributab
     private final DistributableSessionMetadata metadata;
 
     public OutgoingDistributableSessionDataImpl(String realId, int version, Long timestamp, DistributableSessionMetadata metadata) {
-        assert realId != null : "realId is null";
+        assert realId != null : MESSAGES.nullSessionId();
 
         this.realId = realId;
         this.version = version;

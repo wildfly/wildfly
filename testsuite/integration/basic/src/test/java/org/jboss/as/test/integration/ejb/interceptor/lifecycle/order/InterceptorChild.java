@@ -27,7 +27,7 @@ import javax.interceptor.InvocationContext;
 import org.junit.Assert;
 
 /**
- *
+ * 
  * @author Stuart Douglas
  */
 public class InterceptorChild extends InterceptorParent {
@@ -35,7 +35,7 @@ public class InterceptorChild extends InterceptorParent {
     public static boolean childPostConstructCalled;
 
     @PostConstruct
-    public void child(InvocationContext ctx) throws Exception{
+    public void child(InvocationContext ctx) throws Exception {
         Assert.assertTrue(InterceptorParent.parentPostConstructCalled);
         Assert.assertTrue(FirstInterceptor.postConstructCalled);
         Assert.assertFalse(LastInterceptor.postConstructCalled);

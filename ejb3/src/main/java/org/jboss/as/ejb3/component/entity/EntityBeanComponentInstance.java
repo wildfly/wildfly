@@ -93,7 +93,7 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
     }
 
     @Override
-    public void destroy() {
+    protected void preDestroy() {
         try {
             invokeUnsetEntityContext();
         } catch (RemoteException e) {
@@ -101,7 +101,6 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        super.destroy();
     }
 
     protected void invokeUnsetEntityContext() throws Exception {
@@ -178,6 +177,8 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
                 context.putPrivateData(InvocationType.class, InvocationType.ENTITY_EJB_PASSIVATE);
                 ejbPassivate.processInvocation(context);
             }
+            primaryKey = null;
+            removed = false;
         } catch (RemoteException e) {
             throw new WrappedRemoteException(e);
         } catch (RuntimeException e) {
@@ -244,6 +245,9 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
         return synchronizeRegistered;
     }
 
+    protected void clearPrimaryKey() {
+        this.primaryKey = null;
+    }
 
     /**
      * Remove all timers for this entity bean. This method is transactional, so if the current TX is rolled back

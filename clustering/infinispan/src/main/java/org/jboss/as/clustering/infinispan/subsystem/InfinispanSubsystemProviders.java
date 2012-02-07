@@ -231,22 +231,22 @@ public class InfinispanSubsystemProviders {
         }
     };
 
-    static final DescriptionProvider REHASHING = new DescriptionProvider() {
+    static final DescriptionProvider STORE = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
-            return InfinispanDescriptions.getRehashingDescription(locale);
+            return InfinispanDescriptions.getCacheStoreDescription(locale);
         }
     };
-    static final DescriptionProvider REHASHING_ADD = new DescriptionProvider() {
+    static final DescriptionProvider STORE_ADD = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
-            return InfinispanDescriptions.getRehashingAddDescription(locale);
+            return InfinispanDescriptions.getCacheStoreAddDescription(locale);
         }
     };
-    static final DescriptionProvider REHASHING_REMOVE = new DescriptionProvider() {
+    static final DescriptionProvider STORE_REMOVE = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
-            return InfinispanDescriptions.getRehashingRemoveDescription(locale);
+            return InfinispanDescriptions.getCacheStoreRemoveDescription(locale);
         }
     };
 
@@ -268,4 +268,44 @@ public class InfinispanSubsystemProviders {
             return InfinispanDescriptions.getCacheStorePropertyRemoveDescription(locale);
         }
     };
+
+    static final DescriptionProvider FILE_STORE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return InfinispanDescriptions.getFileCacheStoreDescription(locale);
+        }
+    };
+    static final DescriptionProvider FILE_STORE_ADD = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return InfinispanDescriptions.getFileCacheStoreAddDescription(locale);
+        }
+    };
+
+    static final DescriptionProvider JDBC_STORE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return InfinispanDescriptions.getJdbcCacheStoreDescription(locale);
+        }
+    };
+    static final DescriptionProvider JDBC_STORE_ADD = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return InfinispanDescriptions.getJdbcCacheStoreAddDescription(locale);
+        }
+    };
+
+    static final DescriptionProvider REMOTE_STORE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return InfinispanDescriptions.getRemoteCacheStoreDescription(locale);
+        }
+    };
+    static final DescriptionProvider REMOTE_STORE_ADD = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return InfinispanDescriptions.getRemoteCacheStoreAddDescription(locale);
+        }
+    };
+
 }

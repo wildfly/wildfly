@@ -24,12 +24,12 @@ package org.jboss.as.cli.parsing.operation.header;
 
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
-import org.jboss.as.cli.operation.impl.RolloutPlanGroup;
 import org.jboss.as.cli.operation.impl.ParsedRolloutPlanHeader;
 import org.jboss.as.cli.operation.impl.SingleRolloutPlanGroup;
 import org.jboss.as.cli.parsing.ParsingContext;
 import org.jboss.as.cli.parsing.ParsingStateCallbackHandler;
 import org.jboss.as.cli.parsing.operation.HeaderValueState;
+import org.jboss.as.cli.parsing.operation.PropertyListState;
 import org.jboss.as.cli.parsing.operation.PropertyState;
 import org.jboss.as.cli.parsing.operation.PropertyValueState;
 
@@ -45,9 +45,9 @@ public class RolloutPlanHeaderCallbackHandler implements ParsingStateCallbackHan
     final StringBuilder buffer = new StringBuilder();
 
     private String name;
-    private RolloutPlanGroup group;
+    private SingleRolloutPlanGroup group;
     private boolean concurrent;
-    private int nameValueSep;
+    private int lastChunkIndex;
 
     public RolloutPlanHeaderCallbackHandler(DefaultCallbackHandler handler) {
         this.handler = handler;
@@ -64,14 +64,29 @@ public class RolloutPlanHeaderCallbackHandler implements ParsingStateCallbackHan
             group = new SingleRolloutPlanGroup();
         } else if(ConcurrentSignState.ID.equals(id)) {
             concurrent = true;
+            header.groupConcurrentSeparator(ctx.getLocation());
         } else if ("NAME_VALUE_SEPARATOR".equals(id)) {
             name = buffer.length() == 0 ? null : buffer.toString().trim();
             if(name == null || name.isEmpty()) {
                 throw new CommandFormatException("Property is missing name at index " + ctx.getLocation());
             }
-            nameValueSep = ctx.getLocation();
+            if(group != null) {
+                group.addProperty(name, lastChunkIndex);
+                group.propertyValueSeparator(ctx.getLocation());
+            } else {
+                header.planIdValueSeparator(ctx.getLocation());
+            }
+        } else if(ServerGroupSeparatorState.ID.equals(id)) {
+            header.groupSequenceSeparator(ctx.getLocation());
+        } else if(PropertyListState.ID.equals(id)) {
+            if(group != null) {
+                group.propertyListStart(ctx.getLocation());
+            } else {
+                header.propertyListStart(ctx.getLocation());
+            }
         }
         buffer.setLength(0);
+        lastChunkIndex = ctx.getLocation();
     }
 
     @Override
@@ -88,20 +103,22 @@ public class RolloutPlanHeaderCallbackHandler implements ParsingStateCallbackHan
 
             if(group == null) {
                 if("id".equals(name)) {
-                    header.setPlanRef(value);
+                    header.setPlanRef(lastChunkIndex, value);
                 } else {
-                    header.addProperty(name, value);
+                    header.addProperty(name, value, lastChunkIndex);
                 }
             } else {
-                ((SingleRolloutPlanGroup)group).addProperty(name, value, nameValueSep);
+                group.addProperty(name, value, lastChunkIndex);
+                if(!ctx.isEndOfContent()) {
+                    group.propertySeparator(ctx.getLocation());
+                }
             }
-            nameValueSep = -1;
         } else if(PropertyState.ID.equals(id)) {
             if(name == null && buffer.length() > 0) {
                 if(group != null) {
-                    ((SingleRolloutPlanGroup)group).addProperty(buffer.toString().trim(), "true", -1);
+                    group.addProperty(buffer.toString().trim(), lastChunkIndex);
                 } else {
-                    header.addProperty(buffer.toString().trim(), "true");
+                    header.addProperty(buffer.toString().trim(), lastChunkIndex);
                 }
                 buffer.setLength(0);
             } else {
@@ -113,7 +130,7 @@ public class RolloutPlanHeaderCallbackHandler implements ParsingStateCallbackHan
             if(groupName.isEmpty()) {
                 throw new CommandFormatException("Empty group name at index " + ctx.getLocation());
             }
-            ((SingleRolloutPlanGroup)group).setGroupName(groupName);
+            group.setGroupName(groupName, lastChunkIndex);
         } else if(ServerGroupState.ID.equals(id)) {
             if(concurrent) {
                 header.addConcurrentGroup(group);
@@ -122,6 +139,12 @@ public class RolloutPlanHeaderCallbackHandler implements ParsingStateCallbackHan
                 header.addGroup(group);
             }
             group = null;
+        } else if(!ctx.isEndOfContent() && PropertyListState.ID.equals(id)) {
+            if(group != null) {
+                group.propertyListEnd(ctx.getLocation());
+            } else {
+                header.propertyListEnd(ctx.getLocation());
+            }
         }
     }
 

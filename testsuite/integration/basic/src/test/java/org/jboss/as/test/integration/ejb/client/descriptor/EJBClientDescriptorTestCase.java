@@ -22,19 +22,14 @@
 
 package org.jboss.as.test.integration.ejb.client.descriptor;
 
-import javax.ejb.EJBException;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
-
+import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.Authentication;
-import org.jboss.as.test.integration.ejb.remote.common.EJBRemoteManagementUtil;
+import org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -44,6 +39,13 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import javax.ejb.EJBException;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
 
 /**
  * Tests that deployments containing a jboss-ejb-client.xml are processed correctly for EJB client context
@@ -71,10 +73,11 @@ public class EJBClientDescriptorTestCase {
     private static boolean outboundSocketCreated;
     private static boolean outboundConnectionCreated;
 
+    @ArquillianResource
+    private Deployer deployer;
 
-    @Deployment(name = "good-client-config", testable = false)
+    @Deployment(name = "good-client-config", testable = false, managed = false)
     public static Archive createDeployment() throws Exception {
-        setupRemoteOutboundConnection();
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME_ONE + ".jar");
         jar.addPackage(EchoBean.class.getPackage());
@@ -82,9 +85,8 @@ public class EJBClientDescriptorTestCase {
         return jar;
     }
 
-    @Deployment(name = "no-ejb-receiver-client-config", testable = false)
+    @Deployment(name = "no-ejb-receiver-client-config", testable = false, managed = false)
     public static Archive createNoEJBReceiverConfigDeployment() throws Exception {
-        setupRemoteOutboundConnection();
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME_TWO + ".jar");
         jar.addPackage(EchoBean.class.getPackage());
@@ -92,9 +94,8 @@ public class EJBClientDescriptorTestCase {
         return jar;
     }
 
-    @Deployment(name = "local-and-remote-receviers-config", testable = false)
+    @Deployment(name = "local-and-remote-receviers-config", testable = false, managed = false)
     public static Archive createLocalAndRemoteReceiverConfigDeployment() throws Exception {
-        setupRemoteOutboundConnection();
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME_THREE + ".jar");
         jar.addPackage(EchoBean.class.getPackage());
@@ -107,16 +108,17 @@ public class EJBClientDescriptorTestCase {
         final Hashtable props = new Hashtable();
         props.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
         context = new InitialContext(props);
+        setupRemoteOutboundConnection();
     }
 
     @AfterClass
     public static void afterClass() throws Exception {
         if (outboundSocketCreated) {
-            EJBRemoteManagementUtil.removeLocalOutboundSocket("localhost", 9999, "standard-sockets", outboundSocketName, Authentication.getCallbackHandler());
+            EJBManagementUtil.removeLocalOutboundSocket("localhost", 9999, "standard-sockets", outboundSocketName, Authentication.getCallbackHandler());
             logger.info("Removed local outbound socket " + outboundSocketName);
         }
         if (outboundConnectionCreated) {
-            EJBRemoteManagementUtil.removeRemoteOutboundConnection("localhost", 9999, outboundConnectionName, Authentication.getCallbackHandler());
+            EJBManagementUtil.removeRemoteOutboundConnection("localhost", 9999, outboundConnectionName, Authentication.getCallbackHandler());
             logger.info("Removed remote outbound connection " + outboundConnectionName);
         }
     }
@@ -124,17 +126,17 @@ public class EJBClientDescriptorTestCase {
     private static void setupRemoteOutboundConnection() throws Exception {
         if (!outboundSocketCreated) {
             final String socketBindingRef = "remoting";
-            EJBRemoteManagementUtil.createLocalOutboundSocket("localhost", 9999, "standard-sockets", outboundSocketName, socketBindingRef, Authentication.getCallbackHandler());
+            EJBManagementUtil.createLocalOutboundSocket("localhost", 9999, "standard-sockets", outboundSocketName, socketBindingRef, Authentication.getCallbackHandler());
             outboundSocketCreated = true;
             logger.info("Created local outbound socket " + outboundSocketName);
         }
 
         if (!outboundConnectionCreated) {
             final Map<String, String> connectionCreationOptions = new HashMap<String, String>();
-            connectionCreationOptions.put("SSL_ENABLED", "false");
-            connectionCreationOptions.put("SASL_POLICY_NOANONYMOUS", "false");
-
-            EJBRemoteManagementUtil.createRemoteOutboundConnection("localhost", 9999, outboundConnectionName, outboundSocketName, connectionCreationOptions, Authentication.getCallbackHandler());
+            connectionCreationOptions.put("SSL_ENABLED", "false"); //without class name should also work
+            connectionCreationOptions.put("org.xnio.Options.SASL_POLICY_NOANONYMOUS", "false");
+            logger.info("Creatng remote outbound connection " + outboundConnectionName);
+            EJBManagementUtil.createRemoteOutboundConnection("localhost", 9999, outboundConnectionName, outboundSocketName, connectionCreationOptions, Authentication.getCallbackHandler());
             outboundConnectionCreated = true;
             logger.info("Created remote outbound connection " + outboundConnectionName);
         }
@@ -146,15 +148,19 @@ public class EJBClientDescriptorTestCase {
      * @throws Exception
      */
     @Test
-    @OperateOnDeployment("good-client-config")
     public void testEJBClientContextConfiguration() throws Exception {
-        final RemoteEcho remoteEcho = (RemoteEcho) context.lookup("ejb:" + APP_NAME + "/" + MODULE_NAME_ONE + "/" + DISTINCT_NAME
-                + "/" + EchoBean.class.getSimpleName() + "!" + RemoteEcho.class.getName());
-        Assert.assertNotNull("Lookup returned a null bean proxy", remoteEcho);
-        final String msg = "Hello world from a EJB client descriptor test!!!";
-        final String echo = remoteEcho.echo(MODULE_NAME_ONE, msg);
-        logger.info("Received echo " + echo);
-        Assert.assertEquals("Unexpected echo returned from remote bean", msg, echo);
+        deployer.deploy("good-client-config");
+        try {
+            final RemoteEcho remoteEcho = (RemoteEcho) context.lookup("ejb:" + APP_NAME + "/" + MODULE_NAME_ONE + "/" + DISTINCT_NAME
+                    + "/" + EchoBean.class.getSimpleName() + "!" + RemoteEcho.class.getName());
+            Assert.assertNotNull("Lookup returned a null bean proxy", remoteEcho);
+            final String msg = "Hello world from a EJB client descriptor test!!!";
+            final String echo = remoteEcho.echo(MODULE_NAME_ONE, msg);
+            logger.info("Received echo " + echo);
+            Assert.assertEquals("Unexpected echo returned from remote bean", msg, echo);
+        } finally {
+            deployer.undeploy("good-client-config");
+        }
     }
 
     /**
@@ -164,21 +170,26 @@ public class EJBClientDescriptorTestCase {
      * @throws Exception
      */
     @Test
-    @OperateOnDeployment("no-ejb-receiver-client-config")
     public void testEJBClientContextWithNoReceiversConfiguration() throws Exception {
-        final RemoteEcho remoteEcho = (RemoteEcho) context.lookup("ejb:" + APP_NAME + "/" + MODULE_NAME_TWO + "/" + DISTINCT_NAME
-                + "/" + EchoBean.class.getSimpleName() + "!" + RemoteEcho.class.getName());
-        Assert.assertNotNull("Lookup returned a null bean proxy", remoteEcho);
-        final String msg = "Hello world from a EJB client descriptor test!!!";
+        deployer.deploy("no-ejb-receiver-client-config");
         try {
-            final String echo = remoteEcho.echo(MODULE_NAME_TWO, msg);
-            Assert.fail("Exepcted to fail due to no EJB receivers availability");
-        } catch (EJBException e) {
-            // no EJB receivers available, so expected to fail
-            logger.info("Received the expected exception during testing with no EJB receivers", e);
-            // TODO: We could even narrow down into the exception to ensure we got the right exception.
-            // But that's a bit brittle too since there's no guarantee in terms of API on what underlying
-            // exception will be thrown for non-availability of EJB receivers.
+            final RemoteEcho remoteEcho = (RemoteEcho) context.lookup("ejb:" + APP_NAME + "/" + MODULE_NAME_TWO + "/" + DISTINCT_NAME
+                    + "/" + EchoBean.class.getSimpleName() + "!" + RemoteEcho.class.getName());
+            Assert.assertNotNull("Lookup returned a null bean proxy", remoteEcho);
+            final String msg = "Hello world from a EJB client descriptor test!!!";
+            try {
+                final String echo = remoteEcho.echo(MODULE_NAME_TWO, msg);
+                Assert.fail("Exepcted to fail due to no EJB receivers availability");
+            } catch (EJBException e) {
+                // no EJB receivers available, so expected to fail
+                logger.info("Received the expected exception during testing with no EJB receivers", e);
+                // TODO: We could even narrow down into the exception to ensure we got the right exception.
+                // But that's a bit brittle too since there's no guarantee in terms of API on what underlying
+                // exception will be thrown for non-availability of EJB receivers.
+            }
+        } finally {
+            deployer.undeploy("no-ejb-receiver-client-config");
+
         }
     }
 
@@ -191,13 +202,18 @@ public class EJBClientDescriptorTestCase {
     @Test
     @OperateOnDeployment("local-and-remote-receviers-config")
     public void testLocalAndRemoteReceiversClientConfig() throws Exception {
-        final RemoteEcho remoteEcho = (RemoteEcho) context.lookup("ejb:" + APP_NAME + "/" + MODULE_NAME_THREE + "/" + DISTINCT_NAME
-                + "/" + EchoBean.class.getSimpleName() + "!" + RemoteEcho.class.getName());
-        Assert.assertNotNull("Lookup returned a null bean proxy", remoteEcho);
-        final String msg = "Hello world from a EJB client descriptor test!!!";
-        final String echo = remoteEcho.echo(MODULE_NAME_THREE, msg);
-        logger.info("Received echo " + echo);
-        Assert.assertEquals("Unexpected echo returned from remote bean", msg, echo);
+        deployer.deploy("local-and-remote-receviers-config");
+        try {
+            final RemoteEcho remoteEcho = (RemoteEcho) context.lookup("ejb:" + APP_NAME + "/" + MODULE_NAME_THREE + "/" + DISTINCT_NAME
+                    + "/" + EchoBean.class.getSimpleName() + "!" + RemoteEcho.class.getName());
+            Assert.assertNotNull("Lookup returned a null bean proxy", remoteEcho);
+            final String msg = "Hello world from a EJB client descriptor test!!!";
+            final String echo = remoteEcho.echo(MODULE_NAME_THREE, msg);
+            logger.info("Received echo " + echo);
+            Assert.assertEquals("Unexpected echo returned from remote bean", msg, echo);
+        } finally {
+            deployer.undeploy("local-and-remote-receviers-config");
+        }
     }
 
 }

@@ -96,4 +96,11 @@ public class ProductConfig implements Serializable {
         return String.format("JBoss AS %s \"%s\"", Version.AS_VERSION, Version.AS_RELEASE_CODENAME);
     }
 
+    public static String getPrettyVersionString(final String name, String version1, String version2) {
+        if(name != null) {
+            return String.format("JBoss %s %s (AS %s)", name, version1, version2);
+        }
+        return String.format("JBoss AS %s \"%s\"", version1, version2);
+    }
+
 }

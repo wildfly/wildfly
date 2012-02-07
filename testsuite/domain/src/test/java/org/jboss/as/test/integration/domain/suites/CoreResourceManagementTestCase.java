@@ -23,37 +23,66 @@
 package org.jboss.as.test.integration.domain.suites;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DIRECTORY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_RESULTS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_DEFAULTS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_REQUIRES_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PLATFORM_MBEAN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROCESS_STATE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART_REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import org.jboss.as.test.integration.domain.DomainTestSupport;
-
+import static org.jboss.as.test.integration.domain.DomainTestSupport.validateFailedResponse;
 import static org.jboss.as.test.integration.domain.DomainTestSupport.validateResponse;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
+import org.jboss.as.controller.CompositeOperationHandler;
+import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
+import org.jboss.as.controller.operations.common.SnapshotDeleteHandler;
+import org.jboss.as.controller.operations.common.SnapshotListHandler;
+import org.jboss.as.controller.operations.common.SnapshotTakeHandler;
+import org.jboss.as.test.integration.domain.DomainTestSupport;
+import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -408,6 +437,310 @@ public class CoreResourceManagementTestCase {
             Assert.assertFalse(response.get(RESULT).isDefined());
         }
     }
+
+    @Test
+    public void testDomainSnapshot() throws Exception {
+        final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
+
+        ModelNode snapshotOperation = new ModelNode();
+        snapshotOperation.get(OP).set(SnapshotTakeHandler.OPERATION_NAME);
+        snapshotOperation.get(OP_ADDR).setEmptyList();
+        final String snapshot = validateResponse(masterClient.execute(snapshotOperation)).asString();
+        Assert.assertNotNull(snapshot);
+        Assert.assertFalse(snapshot.isEmpty());
+
+        ModelNode listSnapshotOperation = new ModelNode();
+        listSnapshotOperation.get(OP).set(SnapshotListHandler.OPERATION_NAME);
+        listSnapshotOperation.get(OP_ADDR).setEmptyList();
+        ModelNode listResult = validateResponse(masterClient.execute(listSnapshotOperation));
+        Set<String> snapshots = new HashSet<String>();
+        for (ModelNode curr : listResult.get(NAMES).asList()) {
+            snapshots.add(listResult.get(DIRECTORY).asString() + "/" + curr.asString());
+        }
+
+        Assert.assertTrue(snapshots.contains(snapshot));
+
+        ModelNode deleteSnapshotOperation = new ModelNode();
+        deleteSnapshotOperation.get(OP).set(SnapshotDeleteHandler.OPERATION_NAME);
+        deleteSnapshotOperation.get(OP_ADDR).setEmptyList();
+        deleteSnapshotOperation.get(NAME).set(snapshot.substring(snapshot.lastIndexOf("/")  + 1));
+        validateResponse(masterClient.execute(deleteSnapshotOperation), false);
+
+        listResult = validateResponse(masterClient.execute(listSnapshotOperation));
+        snapshots = new HashSet<String>();
+        for (ModelNode curr : listResult.get(NAMES).asList()) {
+            snapshots.add(listResult.get(DIRECTORY).asString() + "/" + curr.asString());
+        }
+
+        Assert.assertFalse(snapshots.contains(snapshot));
+    }
+
+    @Test
+    public void testMasterSnapshot() throws Exception {
+        testSnapshot(new ModelNode().add(HOST, "master"));
+    }
+
+    @Test
+    public void testSlaveSnapshot() throws Exception {
+        testSnapshot(new ModelNode().add(HOST, "slave"));
+    }
+
+    @Test
+    public void testCannotInvokeManagedServerOperations() throws Exception {
+        final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
+
+        ModelNode serverAddTf = getAddThreadFactoryOperation(
+                new ModelNode().add("host", "master").add("server", "main-one").add("subsystem", "threads").add("thread-factory", "test-pool-123abc"));
+
+        ModelNode desc = validateFailedResponse(masterClient.execute(serverAddTf));
+        String errorCode = getNotAuthorizedErrorCode();
+        Assert.assertTrue(desc.toString() + " does not contain " + errorCode, desc.toString().contains(errorCode));
+
+        ModelNode slaveThreeAddress = new ModelNode().add("host", "slave").add("server", "main-three").add("subsystem", "threads").add("thread-factory", "test-pool-123abc");
+        serverAddTf = getAddThreadFactoryOperation(slaveThreeAddress);
+
+        desc = validateFailedResponse(masterClient.execute(serverAddTf));
+        Assert.assertTrue(desc.toString() + " does not contain " + errorCode, desc.toString().contains(errorCode));
+    }
+
+    @Test
+    public void testCannotInvokeManagedMasterServerOperationsInDomainComposite() throws Exception {
+        testCannotInvokeManagedServerOperationsComposite(new ModelNode().setEmptyList(), new ModelNode().add("host", "master").add("server", "main-one").add("subsystem", "threads"));
+    }
+
+    @Test
+    public void testCannotInvokeManagedSlaveServerOperationsInDomainComposite() throws Exception {
+        testCannotInvokeManagedServerOperationsComposite(new ModelNode().setEmptyList(), new ModelNode().add("host", "slave").add("server", "main-three").add("subsystem", "threads"));
+    }
+
+    @Test
+    public void testCannotInvokeManagedMasterServerOperationsInServerComposite() throws Exception {
+        testCannotInvokeManagedServerOperationsComposite(new ModelNode().add("host", "master").add("server", "main-one"), new ModelNode().add("subsystem", "threads"));
+    }
+
+    @Test
+    public void testCannotInvokeManagedSlaveServerOperationsInServerComposite() throws Exception {
+        testCannotInvokeManagedServerOperationsComposite(new ModelNode().add("host", "slave").add("server", "main-three"), new ModelNode().add("subsystem", "threads"));
+    }
+
+    @Test
+    public void testReadSystemPropertyResourceOnServerFromComposite() throws Exception {
+        final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
+
+        ModelNode composite = new ModelNode();
+        composite.get(OP).set(CompositeOperationHandler.NAME);
+        composite.get(OP_ADDR).setEmptyList();
+        composite.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+
+        ModelNode server1 = new ModelNode();
+        server1.get(OP).set(READ_RESOURCE_OPERATION);
+        server1.get(OP_ADDR).add("host", "master").add("server", "main-one");
+        ModelNode server3 = new ModelNode();
+        server3.get(OP).set(READ_RESOURCE_OPERATION);
+        server3.get(OP_ADDR).add("host", "slave").add("server", "main-three");
+        composite.get(STEPS).add(server1);
+        composite.get(STEPS).add(server3);
+
+        ModelNode result = masterClient.execute(composite);
+        validateResponse(result);
+    }
+
+    @Test
+    public void testSetSystemPropertyOnServerFromComposite() throws Exception {
+        final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
+
+        ModelNode composite = new ModelNode();
+        composite.get(OP).set(CompositeOperationHandler.NAME);
+        composite.get(OP_ADDR).setEmptyList();
+        composite.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+
+        ModelNode server1 = new ModelNode();
+        server1.get(OP).set(ADD);
+        server1.get(OP_ADDR).add("host", "master").add("server", "main-one").add("system-property", "domain-test-property");
+        ModelNode server3 = new ModelNode();
+        server3.get(OP).set(ADD);
+        server3.get(OP_ADDR).add("host", "slave").add("server", "main-three").add("system-property", "domain-test-property");
+        composite.get(STEPS).add(server1);
+        composite.get(STEPS).add(server3);
+
+        ModelNode result = masterClient.execute(composite);
+
+        String errorCode = getNotAuthorizedErrorCode();
+
+        validateFailedResponse(result);
+
+        List<Property> steps = result.get(RESULT, SERVER_GROUPS, "main-server-group").asPropertyList();
+        Assert.assertEquals(2, steps.size());
+        int i = 0;
+        for (Property property : steps) {
+            ModelNode stepResult = property.getValue().get("response");
+            ModelNode desc = validateFailedResponse(stepResult);
+            Assert.assertTrue(desc.toString() + " does not contain " + errorCode, desc.toString().contains(errorCode));
+            i++;
+        }
+    }
+
+    /**
+     * Test for AS7-3600
+     */
+    @Test
+    public void testAddRemoveHostInterface() throws Exception {
+        final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
+        final String ifaceName = "testing-interface";
+
+        ModelNode add = new ModelNode();
+        add.get(OP).set(ADD);
+        add.get(OP_ADDR).add(HOST, "master").add(INTERFACE, ifaceName);
+        add.get(ANY_ADDRESS).set(true);
+
+        validateResponse(masterClient.execute(add));
+
+        ModelNode read = new ModelNode();
+        read.get(OP).set(READ_RESOURCE_OPERATION);
+        read.get(OP_ADDR).add(HOST, "master").add(SERVER, "main-one").add(INTERFACE, ifaceName);
+        validateResponse(masterClient.execute(read));
+
+        ModelNode remove = new ModelNode();
+        remove.get(OP).set(REMOVE);
+        remove.get(OP_ADDR).add(HOST, "master").add(INTERFACE, ifaceName);
+        validateResponse(masterClient.execute(remove));
+
+        validateFailedResponse(masterClient.execute(read));
+    }
+
+    /**
+     * Test for AS7-3643
+     */
+    @Test
+    public void testCanFindServerRestartRequiredAfterChangingSocketBindingPortOffset() throws Exception {
+        final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
+
+        ModelNode read = new ModelNode();
+        read.get(OP).set(READ_ATTRIBUTE_OPERATION);
+        read.get(OP_ADDR).add(HOST, "master").add(SERVER_CONFIG, "main-one");
+        read.get(NAME).set("socket-binding-port-offset");
+        ModelNode result = validateResponse(masterClient.execute(read));
+        int original = result.isDefined() ? result.asInt() : 0;
+
+        //The bug causing AS7-3643 caused execution of this op to fail
+        ModelNode write = new ModelNode();
+        write.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+        write.get(OP_ADDR).add(HOST, "master").add(SERVER_CONFIG, "main-one");
+        write.get(NAME).set("socket-binding-port-offset");
+        write.get(VALUE).set(original + 1);
+        result = validateResponse(masterClient.execute(write));
+
+        final String mainServerGroup = "main-server-group";
+        Assert.assertEquals(SUCCESS, result.get(SERVER_GROUPS, mainServerGroup, "main-one", RESPONSE, OUTCOME).asString());
+        ModelNode headers = result.get(SERVER_GROUPS, mainServerGroup, "main-one", RESPONSE, RESPONSE_HEADERS);
+        Assert.assertEquals(RESTART_REQUIRED, headers.get(PROCESS_STATE).asString());
+        Assert.assertTrue(RESTART_REQUIRED, headers.get(OPERATION_REQUIRES_RESTART).asBoolean());
+
+
+        //Now just set back to the original
+        write.get(VALUE).set(original);
+        validateResponse(masterClient.execute(write));
+    }
+
+    private void testCannotInvokeManagedServerOperationsComposite(ModelNode compositeAddress, ModelNode stepAddress) throws Exception {
+        final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
+
+        ModelNode composite = new ModelNode();
+        composite.get(OP).set(CompositeOperationHandler.NAME);
+        composite.get(OP_ADDR).set(compositeAddress);
+        composite.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+
+        ModelNode goodServerOp = new ModelNode();
+        goodServerOp.get(OP).set(READ_RESOURCE_OPERATION);
+        goodServerOp.get(OP_ADDR).set(stepAddress);
+        composite.get(STEPS).add(goodServerOp);
+        composite.get(STEPS).add(getAddThreadFactoryOperation(stepAddress.clone().add("thread-factory", "test-pool-123abc")));
+
+        ModelNode result = masterClient.execute(composite);
+
+
+        String errorCode = getNotAuthorizedErrorCode();
+
+        ModelNode desc = validateFailedResponse(result);
+        Assert.assertTrue(desc.toString() + " does not contain " + errorCode, desc.toString().contains(errorCode));
+
+        List<Property> steps = result.get(RESULT).asPropertyList();
+        Assert.assertEquals(2, steps.size());
+        int i = 0;
+        for (Property property : steps) {
+            ModelNode stepResult = property.getValue();
+            Assert.assertEquals(FAILED, stepResult.get(OUTCOME).asString());
+            if (i == 0) {
+                Assert.assertFalse(stepResult.hasDefined(FAILURE_DESCRIPTION));
+            }
+            if (i++ == 1) {
+                desc = validateFailedResponse(stepResult);
+                Assert.assertTrue(desc.toString() + " does not contain " + errorCode, desc.toString().contains(errorCode));
+            }
+            i++;
+        }
+    }
+
+    private ModelNode getAddThreadFactoryOperation(ModelNode address) {
+
+
+        ModelNode serverTf = new ModelNode();
+        serverTf.get(OP).set("add");
+        serverTf.get(OP_ADDR).set(address);
+        serverTf.get("group-name").set("AAA");
+        serverTf.get("name").set("BBB");
+        serverTf.get("priority").set(6);
+        serverTf.get("thread-name-pattern").set("Test-ThreadA");
+
+        return serverTf;
+    }
+
+    private String getNotAuthorizedErrorCode() {
+        try {
+            throw ControllerMessages.MESSAGES.modelUpdateNotAuthorized("", PathAddress.EMPTY_ADDRESS);
+        }catch(Exception e) {
+            String msg = e.getMessage();
+            return msg.substring(0, msg.indexOf(":"));
+        }
+    }
+
+    private void testSnapshot(ModelNode addr) throws Exception {
+        final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
+
+        ModelNode snapshotOperation = new ModelNode();
+        snapshotOperation.get(OP).set(SnapshotTakeHandler.OPERATION_NAME);
+        snapshotOperation.get(OP_ADDR).set(addr);
+        ModelNode response = masterClient.execute(snapshotOperation);
+        final String snapshot = validateResponse(response).get(DOMAIN_RESULTS).asString();
+        Assert.assertNotNull(snapshot);
+        Assert.assertFalse(snapshot.isEmpty());
+
+        ModelNode listSnapshotOperation = new ModelNode();
+        listSnapshotOperation.get(OP).set(SnapshotListHandler.OPERATION_NAME);
+        listSnapshotOperation.get(OP_ADDR).set(addr);
+        ModelNode listResult = validateResponse(masterClient.execute(listSnapshotOperation)).get(DOMAIN_RESULTS);
+        Set<String> snapshots = new HashSet<String>();
+        for (ModelNode curr : listResult.get(NAMES).asList()) {
+            snapshots.add(listResult.get(DIRECTORY).asString() + "/" + curr.asString());
+        }
+
+        Assert.assertTrue(snapshots.contains(snapshot));
+
+        ModelNode deleteSnapshotOperation = new ModelNode();
+        deleteSnapshotOperation.get(OP).set(SnapshotDeleteHandler.OPERATION_NAME);
+        deleteSnapshotOperation.get(OP_ADDR).set(addr);
+        deleteSnapshotOperation.get(NAME).set(snapshot.substring(snapshot.lastIndexOf("/")  + 1));
+        validateResponse(masterClient.execute(deleteSnapshotOperation));
+
+        listResult = validateResponse(masterClient.execute(listSnapshotOperation)).get(DOMAIN_RESULTS);
+        snapshots = new HashSet<String>();
+        for (ModelNode curr : listResult.get(NAMES).asList()) {
+            snapshots.add(listResult.get(DIRECTORY).asString() + "/" + curr.asString());
+        }
+
+        Assert.assertFalse(snapshots.contains(snapshot));
+    }
+
 
     private static ModelNode getSystemPropertyAddOperation(ModelNode address, String value, Boolean boottime) {
         ModelNode result = getEmptyOperation(ADD, address);

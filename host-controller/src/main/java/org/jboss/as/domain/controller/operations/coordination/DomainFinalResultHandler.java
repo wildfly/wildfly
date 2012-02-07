@@ -22,29 +22,38 @@
 
 package org.jboss.as.domain.controller.operations.coordination;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_RESULTS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_FAILURE_DESCRIPTIONS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * Assembles the overall result for a domain operation from individual host and server results.
@@ -66,13 +75,14 @@ public class DomainFinalResultHandler implements OperationStepHandler {
 
         // On the way out, fix up the response
         final boolean isDomain = isDomainOperation(operation);
-        boolean shouldContinue = !collectDomainFailure(context, isDomain);
-        shouldContinue = shouldContinue && !collectContextFailure(context, isDomain);
-        shouldContinue = shouldContinue && !collectHostFailures(context, isDomain);
+        boolean shouldContinue = collectDomainFailure(context, isDomain);
+        shouldContinue = shouldContinue && collectContextFailure(context, isDomain);
+        shouldContinue = shouldContinue && collectHostFailures(context, isDomain);
         if(shouldContinue){
-            if (domainOperationContext.getServerResults().size() == 0) {
-                context.getResult().set(getSingleHostResult());
-            } else {
+            ModelNode contextResult = context.getResult();
+            contextResult.setEmptyObject(); // clear out any old data
+            contextResult.get(DOMAIN_RESULTS).set(getDomainResults(operation));
+            if (domainOperationContext.getServerResults().size() > 0) {
                 populateServerGroupResults(context, context.getResult());
             }
         }
@@ -82,13 +92,13 @@ public class DomainFinalResultHandler implements OperationStepHandler {
         final ModelNode coordinator = domainOperationContext.getCoordinatorResult();
         ModelNode domainFailure = null;
         if (isDomain &&  coordinator != null && coordinator.has(FAILURE_DESCRIPTION)) {
-            domainFailure = coordinator.hasDefined(FAILURE_DESCRIPTION) ? coordinator.get(FAILURE_DESCRIPTION) : new ModelNode().set(MESSAGES.unexplainedFailure());
+            domainFailure = coordinator.hasDefined(FAILURE_DESCRIPTION) ? coordinator.get(FAILURE_DESCRIPTION) : new ModelNode(MESSAGES.unexplainedFailure());
         }
         if (domainFailure != null) {
             context.getFailureDescription().get(DOMAIN_FAILURE_DESCRIPTION).set(domainFailure);
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 
     private boolean collectContextFailure(OperationContext context, final boolean isDomain) {
@@ -114,9 +124,9 @@ public class DomainFinalResultHandler implements OperationStepHandler {
 
             context.getFailureDescription().set(formattedFailure);
 
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 
     private boolean collectHostFailures(final OperationContext context, final boolean isDomain) {
@@ -143,29 +153,51 @@ public class DomainFinalResultHandler implements OperationStepHandler {
 
         if (hostFailureResults != null) {
             context.getFailureDescription().get(HOST_FAILURE_DESCRIPTIONS).set(hostFailureResults);
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 
-    private ModelNode getSingleHostResult() {
-        ModelNode singleHost = domainOperationContext.getCoordinatorResult();
-        if (singleHost != null
-                && (!singleHost.hasDefined(RESULT)
-                    || (ModelType.STRING == singleHost.get(RESULT).getType()
-                        && IGNORED.equals(singleHost.get(RESULT).asString())))) {
-            singleHost = null;
+    private ModelNode getDomainResults(final ModelNode operation, final String... stepLabels) {
+        ResponseProvider provider = new ResponseProvider(operation, domainOperationContext.getLocalHostInfo().getLocalHostName());
+        ModelNode result;
+        if (!provider.isLeaf()) {
+            result = new ModelNode();
+            String[] nextStepLabels = new String[stepLabels.length + 1];
+            System.arraycopy(stepLabels, 0, nextStepLabels, 0, stepLabels.length);
+            int i = 1;
+            for (ModelNode step : provider.getChildren()) {
+                String childStepLabel = "step-" + i++;
+                nextStepLabels[stepLabels.length] = childStepLabel;
+                result.get(childStepLabel).set(getDomainResults(step, nextStepLabels));
+            }
+        } else if (provider.getServer() == null) {
+            String hostName = provider.getHost();
+            boolean forMaster = hostName.equals(domainOperationContext.getLocalHostInfo().getLocalHostName());
+            ModelNode hostResponse = forMaster ? domainOperationContext.getCoordinatorResult()
+                    : domainOperationContext.getHostControllerResults().get(hostName);
+                result = getHostControllerResult(hostResponse, stepLabels);
+        } else {
+            result = domainOperationContext.getServerResult(provider.getHost(), provider.getServer(), stepLabels);
         }
-        if (singleHost == null) {
-            for (ModelNode node : domainOperationContext.getHostControllerResults().values()) {
-                if (node.hasDefined(RESULT) && !IGNORED.equals(node.get(RESULT).asString())) {
-                    singleHost = node;
-                    break;
+
+        return result == null ? new ModelNode() : result;
+    }
+
+    private ModelNode getHostControllerResult(final ModelNode fullResult, final String... stepLabels) {
+        ModelNode result = null;
+        if (fullResult != null && fullResult.hasDefined(RESULT) && fullResult.get(RESULT).hasDefined(DOMAIN_RESULTS)) {
+            ModelNode domainResults = fullResult.get(RESULT, DOMAIN_RESULTS);
+            result = domainResults.get(stepLabels);
+            if (result.has(OUTCOME) && !result.hasDefined(OUTCOME)) {
+                if (result.hasDefined(FAILURE_DESCRIPTION)) {
+                    result.get(OUTCOME).set(FAILED);
+                } else {
+                    result.get(OUTCOME).set(SUCCESS);
                 }
             }
         }
-
-        return singleHost == null ? new ModelNode() : singleHost.get(RESULT);
+        return result;
     }
 
     private void populateServerGroupResults(final OperationContext context, final ModelNode result) {
@@ -209,7 +241,7 @@ public class DomainFinalResultHandler implements OperationStepHandler {
         return address.size() == 0 || !address.getElement(0).getKey().equals(HOST);
     }
 
-    private class HostServer implements Comparable<HostServer> {
+    private static class HostServer implements Comparable<HostServer> {
         private final String hostName;
         private final String serverName;
         private final ModelNode result;
@@ -226,6 +258,63 @@ public class DomainFinalResultHandler implements OperationStepHandler {
                 return hostCompare;
             }
             return serverName.compareTo(hostServer.serverName);
+        }
+    }
+
+    private static class ResponseProvider {
+        private final String host;
+        private final String server;
+        private final List<ModelNode> children;
+
+        private ResponseProvider(final ModelNode operation, final String localHostName) {
+
+            boolean composite = COMPOSITE.equals(operation.require(OP).asString());
+            PathAddress opAddr = PathAddress.pathAddress(operation.get(OP_ADDR));
+            int addrSize = opAddr.size();
+            if (addrSize == 0) {
+                host = localHostName;
+                server = null;
+            } else if (HOST.equals(opAddr.getElement(0).getKey())) {
+                host = opAddr.getElement(0).getValue();
+                if (addrSize > 1 && SERVER.equals(opAddr.getElement(1).getKey())) {
+                    server =  opAddr.getElement(1).getValue();
+                    composite = composite && addrSize == 2;
+                } else {
+                    server = null;
+                }
+            } else {
+                // A domain op
+                host = localHostName;
+                server = null;
+                composite = false;
+            }
+
+            if (composite) {
+                if (operation.hasDefined(STEPS)) {
+                    children = new ArrayList<ModelNode>(operation.require(STEPS).asList());
+                } else {
+                    // This shouldn't be possible
+                    children = Collections.emptyList();
+                }
+            } else {
+                children = null;
+            }
+        }
+
+        private String getHost() {
+            return host;
+        }
+
+        private String getServer() {
+            return server;
+        }
+
+        private List<ModelNode> getChildren() {
+            return children;
+        }
+
+        private boolean isLeaf() {
+            return children == null;
         }
     }
 }

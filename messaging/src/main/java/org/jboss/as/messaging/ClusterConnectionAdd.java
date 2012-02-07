@@ -123,7 +123,7 @@ public class ClusterConnectionAdd extends AbstractAddStepHandler implements Desc
         final boolean duplicateDetection = CommonAttributes.CLUSTER_CONNECTION_USE_DUPLICATE_DETECTION.resolveModelAttribute(context, model).asBoolean();
         final boolean forwardWhenNoConsumers = CommonAttributes.FORWARD_WHEN_NO_CONSUMERS.resolveModelAttribute(context, model).asBoolean();
         final int maxHops = CommonAttributes.MAX_HOPS.resolveModelAttribute(context, model).asInt();
-        final int confirmationWindowSize = CommonAttributes.CONFIRMATION_WINDOW_SIZE.resolveModelAttribute(context, model).asInt();
+        final int confirmationWindowSize = CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE.resolveModelAttribute(context, model).asInt();
         final ModelNode discoveryNode = CommonAttributes.DISCOVERY_GROUP_NAME.resolveModelAttribute(context, model);
         final String discoveryGroupName = discoveryNode.isDefined() ? discoveryNode.asString() : null;
         final List<String> staticConnectors = discoveryGroupName == null ? getStaticConnectors(model) : null;

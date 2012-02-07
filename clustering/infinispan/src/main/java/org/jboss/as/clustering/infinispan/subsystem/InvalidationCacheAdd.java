@@ -9,7 +9,7 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class InvalidationCacheAdd extends NonDistributedCacheAdd {
+public class InvalidationCacheAdd extends ClusteredCacheAdd {
 
     static final InvalidationCacheAdd INSTANCE = new InvalidationCacheAdd();
 

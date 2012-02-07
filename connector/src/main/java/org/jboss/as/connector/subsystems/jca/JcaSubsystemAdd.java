@@ -61,11 +61,11 @@ class JcaSubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
-        final RaDeploymentActivator deploymentActivator = new RaDeploymentActivator();
+        final RaDeploymentActivator raDeploymentActivator = new RaDeploymentActivator();
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
-                deploymentActivator.activateProcessors(processorTarget);
+                raDeploymentActivator.activateProcessors(processorTarget);
             }
         }, OperationContext.Stage.RUNTIME);
 
@@ -115,6 +115,6 @@ class JcaSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .addListener(verificationHandler)
                 .install());
 
-        newControllers.addAll(deploymentActivator.activateServices(serviceTarget, verificationHandler));
+        newControllers.addAll(raDeploymentActivator.activateServices(serviceTarget, verificationHandler));
     }
 }

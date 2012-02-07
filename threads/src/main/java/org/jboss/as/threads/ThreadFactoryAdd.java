@@ -21,8 +21,10 @@
  */
 package org.jboss.as.threads;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import java.util.List;
-import java.util.Locale;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -30,10 +32,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -47,20 +45,15 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author <a href="alex@jboss.org">Alexey Loubyansky</a>
  */
-public class ThreadFactoryAdd extends AbstractAddStepHandler implements DescriptionProvider {
+public class ThreadFactoryAdd extends AbstractAddStepHandler {
 
     static final ThreadFactoryAdd INSTANCE = new ThreadFactoryAdd();
 
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {PoolAttributeDefinitions.PROPERTIES,
+    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {
         PoolAttributeDefinitions.GROUP_NAME, PoolAttributeDefinitions.THREAD_NAME_PATTERN, PoolAttributeDefinitions.PRIORITY};
 
     static final AttributeDefinition[] RW_ATTRIBUTES = new AttributeDefinition[] {
         PoolAttributeDefinitions.GROUP_NAME, PoolAttributeDefinitions.THREAD_NAME_PATTERN, PoolAttributeDefinitions.PRIORITY};
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return ThreadsSubsystemProviders.ADD_THREAD_FACTORY_DESC.getModelDescription(locale);
-    }
 
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {

@@ -21,7 +21,13 @@
  */
 package org.jboss.as.security;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CODE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -71,7 +77,7 @@ public class LoginModulesAttributeDefinition extends ListAttributeDefinition {
     @Override
     protected void addValueTypeDescription(ModelNode node, ResourceBundle bundle) {
         // This method being used indicates a misuse of this class
-        throw new UnsupportedOperationException("Use the ResourceDescriptionResolver variant");
+        throw SecurityMessages.MESSAGES.unsupportedOperationExceptionUseResourceDesc();
     }
 
     @Override
@@ -104,7 +110,7 @@ public class LoginModulesAttributeDefinition extends ListAttributeDefinition {
         try {
             fieldValidator.validateParameter(name, node);
         } catch (OperationFailedException e) {
-            throw new XMLStreamException(e.getFailureDescription().toString(), reader.getLocation());
+            throw SecurityMessages.MESSAGES.xmlStreamException(e.getFailureDescription().toString(), reader.getLocation());
         }
         return node;
     }
@@ -147,7 +153,11 @@ public class LoginModulesAttributeDefinition extends ListAttributeDefinition {
         flag.get(NILLABLE).set(false);
 
         for (ModuleFlag value : ModuleFlag.values())
-            flag.get(ALLOWED).add(value.name());
+            flag.get(ALLOWED).add(value.toString());
+
+        final ModelNode module = valueType.get(Constants.MODULE);
+        module.get(TYPE).set(ModelType.STRING);
+        module.get(NILLABLE).set(false);
 
         final ModelNode moduleOptions = valueType.get(Constants.MODULE_OPTIONS);
         moduleOptions.get(DESCRIPTION);  // placeholder

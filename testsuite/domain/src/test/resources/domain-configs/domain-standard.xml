@@ -157,18 +157,19 @@
                 </session-bean>
 
                 <thread-pools>
-                    <thread-pool name="default" max-threads="10" keepalive-time="100" />
+                    <thread-pool name="default">
+                        <max-threads count="10"/>
+                        <keepalive-time time="100" unit="milliseconds"/>
+                    </thread-pool>
                 </thread-pools>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:infinispan:1.1" default-cache-container="cluster">
-                <cache-container name="cluster" default-cache="default">
-                    <alias>ha-partition</alias>
+                <cache-container name="cluster" aliases="ha-partition" default-cache="default">
                     <replicated-cache name="default" mode="SYNC" batching="true">
                         <locking isolation="REPEATABLE_READ"/>
                     </replicated-cache>
                 </cache-container>
-                <cache-container name="web" default-cache="repl">
-                    <alias>standard-session-cache</alias>
+                <cache-container name="web" aliases="standard-session-cache" default-cache="repl">
                     <replicated-cache name="repl" mode="ASYNC" batching="true">
                         <file-store/>
                     </replicated-cache>
@@ -176,9 +177,7 @@
                         <file-store/>
                     </distributed-cache>
                 </cache-container>
-                <cache-container name="sfsb" default-cache="repl">
-                    <alias>sfsb-cache</alias>
-                    <alias>jboss.cache:service=EJB3SFSBClusteredCache</alias>
+                <cache-container name="sfsb" aliases="sfsb-cache jboss.cache:service=EJB3SFSBClusteredCache" default-cache="repl">
                     <replicated-cache name="repl" mode="ASYNC" batching="true">
                         <eviction strategy="LRU" max-entries="10000"/>
                         <file-store/>
@@ -249,6 +248,14 @@
                             <login-module code="UsersRoles" flag="required"/>
                         </authentication>
                     </security-domain>
+                    <security-domain name="messaging" cache-type="default">
+                        <authentication>
+                            <login-module code="UsersRoles" flag="required">
+                                <module-option name="usersProperties" value="${jboss.domain.config.dir}/messaging-users.properties"/>
+                                <module-option name="rolesProperties" value="${jboss.domain.config.dir}/messaging-roles.properties"/>
+                            </login-module>
+                        </authentication>
+                    </security-domain>
                 </security-domains>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:transactions:1.0">
@@ -260,7 +267,9 @@
                 </core-environment>
                 <coordinator-environment default-timeout="300"/>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:remoting:1.0"/>
+            <subsystem xmlns="urn:jboss:domain:remoting:1.1">
+                <connector name="remoting-connector" socket-binding="remoting"/>
+            </subsystem>
             <subsystem xmlns="urn:jboss:domain:jdr:1.0"/>
             <subsystem xmlns="urn:jboss:domain:jmx:1.0">
                  <jmx-connector registry-binding="jmx-connector-registry" server-binding="jmx-connector-server" />
@@ -274,16 +283,16 @@
                 <archive-validation enabled="true"/>
                 <bean-validation enabled="true"/>
                 <default-workmanager>
-                    <short-running-threads blocking="true">
-                        <core-threads count="10" per-cpu="20"/>
-                        <queue-length count="10" per-cpu="20"/>
-                        <max-threads count="10" per-cpu="20"/>
+                    <short-running-threads>
+                        <core-threads count="50"/>
+                        <queue-length count="50"/>
+                        <max-threads count="50"/>
                         <keepalive-time time="10" unit="seconds"/>
                     </short-running-threads>
-                    <long-running-threads blocking="true">
-                        <core-threads count="10" per-cpu="20"/>
-                        <queue-length count="10" per-cpu="20"/>
-                        <max-threads count="10" per-cpu="20"/>
+                    <long-running-threads>
+                        <core-threads count="50"/>
+                        <queue-length count="50"/>
+                        <max-threads count="50"/>
                         <keepalive-time time="10" unit="seconds"/>
                     </long-running-threads>
                 </default-workmanager>
@@ -338,10 +347,10 @@
 
                     <security-settings>
                        <security-setting match="#">
-                           <permission type="createNonDurableQueue" roles="guest"/>
-                           <permission type="deleteNonDurableQueue" roles="guest"/>
-                            <permission type="consume" roles="guest"/>
-                            <permission type="send" roles="guest"/>
+                          <permission type="createNonDurableQueue" roles="guest"/>
+                          <permission type="deleteNonDurableQueue" roles="guest"/>
+                          <permission type="consume" roles="guest"/>
+                          <permission type="send" roles="guest"/>
                        </security-setting>
                     </security-settings>
 
@@ -397,13 +406,9 @@
                 </hornetq-server>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
-           <subsystem xmlns="urn:jboss:domain:webservices:1.0">
+           <subsystem xmlns="urn:jboss:domain:webservices:1.1">
              <modify-wsdl-address>true</modify-wsdl-address>
              <wsdl-host>${jboss.bind.address:127.0.0.1}</wsdl-host>
-             <!--
-             <wsdl-port>8080</wsdl-port>
-             <wsdl-secure-port>8443</wsdl-secure-port>
-             -->
           </subsystem>
           <subsystem xmlns="urn:jboss:domain:modcluster:1.0">
              <mod-cluster-config advertise-socket="mod_cluster" />
@@ -496,18 +501,19 @@
                 </session-bean>
 
                 <thread-pools>
-                    <thread-pool name="default" max-threads="10" keepalive-time="100" />
+                    <thread-pool name="default">
+                        <max-threads count="10"/>
+                        <keepalive-time time="100" unit="milliseconds"/>
+                    </thread-pool>
                 </thread-pools>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:infinispan:1.1" default-cache-container="cluster">
-                <cache-container name="cluster" default-cache="default">
-                    <alias>ha-partition</alias>
+                <cache-container name="cluster" aliases="ha-partition" default-cache="default">
                     <replicated-cache name="default" mode="SYNC" batching="true">
                         <locking isolation="REPEATABLE_READ"/>
                     </replicated-cache>
                 </cache-container>
-                <cache-container name="web" default-cache="repl">
-                    <alias>standard-session-cache</alias>
+                <cache-container name="web" aliases="standard-session-cache" default-cache="repl">
                     <replicated-cache name="repl" mode="ASYNC" batching="true">
                         <file-store/>
                     </replicated-cache>
@@ -515,9 +521,7 @@
                         <file-store/>
                     </distributed-cache>
                 </cache-container>
-                <cache-container name="sfsb" default-cache="repl">
-                    <alias>sfsb-cache</alias>
-                    <alias>jboss.cache:service=EJB3SFSBClusteredCache</alias>
+                <cache-container name="sfsb" aliases="sfsb-cache jboss.cache:service=EJB3SFSBClusteredCache" default-cache="repl">
                     <replicated-cache name="repl" mode="ASYNC" batching="true">
                         <eviction strategy="LRU" max-entries="10000"/>
                         <file-store/>
@@ -588,6 +592,14 @@
                             <login-module code="UsersRoles" flag="required"/>
                         </authentication>
                     </security-domain>
+                    <security-domain name="messaging" cache-type="default">
+                        <authentication>
+                            <login-module code="UsersRoles" flag="required">
+                                <module-option name="usersProperties" value="${jboss.domain.config.dir}/messaging-users.properties"/>
+                                <module-option name="rolesProperties" value="${jboss.domain.config.dir}/messaging-roles.properties"/>
+                            </login-module>
+                        </authentication>
+                    </security-domain>
                 </security-domains>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:transactions:1.0">
@@ -599,7 +611,9 @@
                 </core-environment>
                 <coordinator-environment default-timeout="300"/>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:remoting:1.0"/>
+            <subsystem xmlns="urn:jboss:domain:remoting:1.1">
+                <connector name="remoting-connector" socket-binding="remoting"/>
+            </subsystem>
             <subsystem xmlns="urn:jboss:domain:jdr:1.0"/>
             <subsystem xmlns="urn:jboss:domain:jmx:1.0">
                  <jmx-connector registry-binding="jmx-connector-registry" server-binding="jmx-connector-server" />
@@ -613,13 +627,13 @@
                 <archive-validation enabled="true"/>
                 <bean-validation enabled="true"/>
                 <default-workmanager>
-                    <short-running-threads blocking="true">
+                    <short-running-threads>
                         <core-threads count="10" per-cpu="20"/>
                         <queue-length count="10" per-cpu="20"/>
                         <max-threads count="10" per-cpu="20"/>
                         <keepalive-time time="10" unit="seconds"/>
                     </short-running-threads>
-                    <long-running-threads blocking="true">
+                    <long-running-threads>
                         <core-threads count="10" per-cpu="20"/>
                         <queue-length count="10" per-cpu="20"/>
                         <max-threads count="10" per-cpu="20"/>
@@ -736,13 +750,9 @@
                 </hornetq-server>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
-           <subsystem xmlns="urn:jboss:domain:webservices:1.0">
+           <subsystem xmlns="urn:jboss:domain:webservices:1.1">
              <modify-wsdl-address>true</modify-wsdl-address>
              <wsdl-host>${jboss.bind.address:127.0.0.1}</wsdl-host>
-             <!--
-             <wsdl-port>8080</wsdl-port>
-             <wsdl-secure-port>8443</wsdl-secure-port>
-             -->
           </subsystem>
           <subsystem xmlns="urn:jboss:domain:modcluster:1.0">
              <mod-cluster-config advertise-socket="mod_cluster" />
@@ -754,19 +764,18 @@
                 </properties>
                 <capabilities>
                     <!-- modules registered with the OSGi layer on startup -->
-                    <capability name="javax.api"/>
-                    <capability name="javax.servlet.api"/>
+                    <capability name="javax.servlet.api:v25"/>
                     <capability name="javax.transaction.api"/>
-                    <!-- bundles installed on startup -->
-                    <capability name="org.osgi.compendium"/>
                     <!-- bundles started in startlevel 1 -->
+                    <capability name="org.apache.felix.log" startlevel="1"/>
+                    <capability name="org.jboss.osgi.logging" startlevel="1"/>
                     <capability name="org.apache.felix.configadmin" startlevel="1"/>
                     <capability name="org.jboss.as.osgi.configadmin" startlevel="1"/>
-                    <!-- bundles started in startlevel 2 -->
-                    <capability name="org.jboss.netty" startlevel="2"/>
-                    <capability name="org.projectodd.stilts" startlevel="2"/>
                 </capabilities>
             </subsystem>
+        </profile>
+        <profile name="ignored">
+            <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
         </profile>
     </profiles>
 
@@ -832,6 +841,9 @@
             </outbound-socket-binding>
             <!-- include socket-binding-group="standard-sockets"/-->
          </socket-binding-group>
+        <socket-binding-group name="ignored" default-interface="public">
+            <socket-binding name="http" port="8080"/>
+        </socket-binding-group>
     </socket-binding-groups>
 
     <server-groups>
@@ -847,6 +859,14 @@
                <heap size="64m" max-size="512m"/>
             </jvm>
             <socket-binding-group ref="osgi-sockets"/>
+        </server-group>
+
+        <server-group name="ignored-profile" profile="ignored">
+            <socket-binding-group ref="standard-sockets"/>
+        </server-group>
+
+        <server-group name="ignored-sockets" profile="default">
+            <socket-binding-group ref="ignored"/>
         </server-group>
     </server-groups>
 

@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.ee.injection.resource.resourceref;
 
+import java.net.URL;
+
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
@@ -35,7 +37,6 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -65,7 +66,7 @@ public class ResourceRefTestCase {
         war.addClasses(ResourceRefTestCase.class, DatasourceManagedBean.class);
         
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "resource-ref-test.jar");
-        jar.addClasses(ResourceRefBean.class, ResourceRefRemote.class, StatelessBean.class, StatelessBeanRemote.class);
+        jar.addClasses(ResourceRefBean.class, ResourceRefRemote.class, StatelessBean.class, StatelessBeanRemote.class, ResUrlChecker.class, ResUrlCheckerBean.class);
         jar.addAsManifestResource(ResourceRefTestCase.class.getPackage(),"jboss-ejb3.xml", "jboss-ejb3.xml");
         jar.addAsManifestResource(ResourceRefTestCase.class.getPackage(),"ejb-jar.xml", "ejb-jar.xml");
         
@@ -109,26 +110,6 @@ public class ResourceRefTestCase {
     }
     
     /**
-     * Test that resource-ref with proper res-type are correctly processed (i.e. no regression is caused by the EJBHTREE-1823
-     * fix)
-     * 
-     * @throws Exception
-     */
-    @Ignore("AS7-2744")
-    @Test
-    public void testResourceRefEntriesWithResType() throws Exception {
-        // lookup the bean
-        InitialContext context = new InitialContext();
-        ResourceRefRemote bean = (ResourceRefRemote) context.lookup("java:app/resource-ref-test/" + ResourceRefBean.class.getSimpleName() + "!" + ResourceRefRemote.class.getName());
-        Assert.assertNotNull("Bean returned from JNDI is null", bean);
-
-        // test other resource-refs which have res-type specified
-        boolean result = bean.areOtherResourcesAvailableInEnc();
-        Assert.assertTrue("Not all resources bound in ENC of the bean", result);
-
-    }
-    
-    /**
      * Test that the resources configured through resource-env-ref are bound
      * correctly
      *
@@ -147,5 +128,14 @@ public class ResourceRefTestCase {
        // check some other resource through resource-env-ref was handled
        Assert.assertTrue("resource-env-ref did not setup the other resource in java:comp/env of the bean", bean
              .isOtherResourceAvailableThroughResourceEnvRef());
+    }
+        
+    @Test
+    public void test2() throws Exception {
+        ResUrlChecker bean = (ResUrlChecker) new InitialContext().lookup("java:app/resource-ref-test/ResUrlCheckerBean");
+        // defined in jboss.xml
+        URL expected = new URL("http://localhost/url2");
+        URL actual = bean.getURL2();
+        Assert.assertEquals(expected, actual);
     }
 }

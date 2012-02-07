@@ -23,6 +23,7 @@
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
@@ -30,13 +31,16 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROBLEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URI;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALID;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
@@ -51,8 +55,8 @@ import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationRemoveHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyRemoveHandler;
+import org.jboss.as.controller.operations.common.ValidateAddressOperationHandler;
 import org.jboss.as.controller.operations.common.ValidateOperationHandler;
-import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -216,12 +220,23 @@ public class CommonDescriptions {
 
     public static ModelNode getValidateAddressOperation(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(GlobalOperationHandlers.VALIDATE_ADDRESS_OPERATION_NAME);
-        root.get(DESCRIPTION).set(bundle.getString("validate-address"));
-        root.get(REQUEST_PROPERTIES).setEmptyObject();
-        root.get(REPLY_PROPERTIES).setEmptyObject();
-        return root;
+        final ModelNode descr = getSingleParamSimpleReplyOperation(bundle, ValidateAddressOperationHandler.OPERATION_NAME, "global", VALUE, ModelType.OBJECT, false, ModelType.OBJECT, true);
+        final ModelNode valueType = descr.get(REPLY_PROPERTIES, VALUE_TYPE);
+        valueType.get(VALID, DESCRIPTION).set(bundle.getString("global." + ValidateAddressOperationHandler.OPERATION_NAME + ".reply." + VALID));
+        valueType.get(VALID, TYPE).set(ModelType.BOOLEAN);
+        valueType.get(PROBLEM, DESCRIPTION).set(bundle.getString("global." + ValidateAddressOperationHandler.OPERATION_NAME + ".reply." + PROBLEM));
+        valueType.get(PROBLEM, TYPE).set(ModelType.STRING);
+        return descr;
+    }
+
+    public static ModelNode getCompositeOperation(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode descr = getSingleParamSimpleReplyOperation(bundle, COMPOSITE, "root", STEPS, ModelType.LIST, false, ModelType.OBJECT, true);
+        final ModelNode steps = descr.get(REQUEST_PROPERTIES, STEPS);
+        steps.get(VALUE_TYPE).set(ModelType.OBJECT);
+        // TODO could probably describe better the response structure
+        // and make it different for domain and standalone mode
+        return descr;
     }
 
     public static ModelNode getSubsystemDescribeOperation(final Locale locale) {

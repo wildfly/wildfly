@@ -64,6 +64,9 @@ public class EjbAnnotationProcessor extends AbstractEEAnnotationProcessor {
         factories.add(new ResourceAdaptorAnnotationInformationFactory());
         factories.add(new InitAnnotationInformationFactory());
 
+        // pool
+        factories.add(new PoolAnnotationInformationFactory());
+
         //session synchronization
         factories.add(new BooleanAnnotationInformationFactory<AfterBegin>(AfterBegin.class));
         factories.add(new BooleanAnnotationInformationFactory<BeforeCompletion>(BeforeCompletion.class));

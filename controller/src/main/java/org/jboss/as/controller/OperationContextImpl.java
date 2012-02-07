@@ -24,6 +24,7 @@ package org.jboss.as.controller;
 
 import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 import java.io.InputStream;
 import java.util.Collection;
@@ -31,9 +32,11 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
@@ -51,12 +54,16 @@ import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.BatchServiceTarget;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceListener;
+import org.jboss.msc.service.ServiceListener.Inheritance;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceNotFoundException;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartException;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.Value;
 
@@ -81,10 +88,10 @@ final class OperationContextImpl extends AbstractOperationContext {
     private final Map<PathAddress, Object> affectsModel;
     /** Resources that have had their services restarted, used by ALLOW_RESOURCE_SERVICE_RESTART This should be confined to a thread, so no sync needed */
     private Map<PathAddress, Object> restartedResources = Collections.emptyMap();
+    /** A concurrent map for the attachments. **/
+    private final ConcurrentMap<AttachmentKey<?>, Object> valueAttachments = new ConcurrentHashMap<AttachmentKey<?>, Object>();
     /** Tracks whether any steps have gotten write access to the management resource registration*/
     private volatile boolean affectsResourceRegistration;
-
-    private boolean respectInterruption = true;
 
     private volatile Resource model;
 
@@ -96,6 +103,7 @@ final class OperationContextImpl extends AbstractOperationContext {
     private Step lockStep;
     /** The step that acquired the container monitor  */
     private Step containerMonitorStep;
+    private volatile Boolean requiresModelUpdateAuthorization;
 
     OperationContextImpl(final ModelControllerImpl modelController, final ProcessType processType,
                          final RunningMode runningMode, final EnumSet<ContextFlag> contextFlags,
@@ -206,7 +214,7 @@ final class OperationContextImpl extends AbstractOperationContext {
             acquireContainerMonitor();
             awaitContainerMonitor();
         }
-        return modelController.getServiceRegistry();
+        return new OperationContextServiceRegistry(modelController.getServiceRegistry());
     }
 
     public ServiceController<?> removeService(final ServiceName name) throws UnsupportedOperationException {
@@ -293,7 +301,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                         synchronized (map) {
                             ServiceName name = controller.getName();
                             if (map.get(name) == controller) {
-                                map.remove(controller.getName());
+                                map.remove(name);
                                 removalSteps.put(name, removalStep);
                                 map.notifyAll();
                             }
@@ -332,6 +340,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                 modelController.acquireLock(respectInterruption);
                 lockStep = activeStep;
             } catch (InterruptedException e) {
+                cancelled = true;
                 Thread.currentThread().interrupt();
                 throw MESSAGES.operationCancelledAsynchronously();
             }
@@ -352,6 +361,10 @@ final class OperationContextImpl extends AbstractOperationContext {
         try {
             modelController.awaitContainerMonitor(respectInterruption, 1);
         } catch (InterruptedException e) {
+            if (currentStage != Stage.DONE && resultAction != ResultAction.ROLLBACK) {
+                // We're not on the way out, so we've been cancelled on the way in
+                cancelled = true;
+            }
             Thread.currentThread().interrupt();
             throw MESSAGES.operationCancelledAsynchronously();
         }
@@ -382,6 +395,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (currentStage != Stage.MODEL) {
             throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
         }
+        authorizeModelUpdate();
         if (!isModelAffected()) {
             takeWriteLock();
             model = model.clone();
@@ -442,6 +456,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (currentStage != Stage.MODEL) {
             throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
         }
+        authorizeModelUpdate();
         if (!isModelAffected()) {
             takeWriteLock();
             model = model.clone();
@@ -481,6 +496,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (absoluteAddress.size() == 0) {
             throw MESSAGES.duplicateResourceAddress(absoluteAddress);
         }
+        authorizeModelUpdate();
         if (!isModelAffected()) {
             takeWriteLock();
             model = model.clone();
@@ -532,6 +548,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (currentStage != Stage.MODEL) {
             throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
         }
+        authorizeModelUpdate();
         if (!isModelAffected()) {
             takeWriteLock();
             model = model.clone();
@@ -591,14 +608,30 @@ final class OperationContextImpl extends AbstractOperationContext {
     @Override
     void releaseStepLocks(AbstractOperationContext.Step step) {
 
-        if (this.lockStep == step) {
-            modelController.releaseLock();
-            lockStep = null;
-        }
-        if (this.containerMonitorStep == step) {
-            awaitContainerMonitor();
-            modelController.releaseContainerMonitor();
-            containerMonitorStep = null;
+        try {
+            if (this.lockStep == step) {
+                modelController.releaseLock();
+                lockStep = null;
+            }
+            if (this.containerMonitorStep == step) {
+                // Note: If we allow this thread to be interrupted, an op that has been cancelled
+                // because of minor user impatience can release the controller lock while the
+                // container is unsettled. OTOH, if we don't allow interruption, if the
+                // container can't settle (e.g. a broken service is blocking in start()), the operation
+                // will not be cancellable. I (BES 2012/01/24) chose the former as the lesser evil.
+                // Any subsequent step that calls getServiceRegistry/getServiceTarget/removeService
+                // is going to have to await the monitor uninterruptibly anyway before proceeding.
+                try {
+                    modelController.awaitContainerMonitor(true, 1);
+                }  catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        } finally {
+            if (this.containerMonitorStep == step) {
+                modelController.releaseContainerMonitor();
+                containerMonitorStep = null;
+            }
         }
     }
 
@@ -620,6 +653,55 @@ final class OperationContextImpl extends AbstractOperationContext {
     @Override
     public ModelNode resolveExpressions(ModelNode node) throws OperationFailedException {
         return modelController.resolveExpressions(node);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <V> V getAttachment(final AttachmentKey<V> key) {
+        if (key == null) {
+            throw MESSAGES.nullVar("key");
+        }
+        return key.cast(valueAttachments.get(key));
+    }
+
+    @Override
+    public <V> V attach(final AttachmentKey<V> key, final V value) {
+        if (key == null) {
+            throw MESSAGES.nullVar("key");
+        }
+        return key.cast(valueAttachments.put(key, value));
+    }
+
+    @Override
+    public <V> V attachIfAbsent(final AttachmentKey<V> key, final V value) {
+        if (key == null) {
+            throw MESSAGES.nullVar("key");
+        }
+        return key.cast(valueAttachments.putIfAbsent(key, value));
+    }
+
+    @Override
+    public <V> V detach(final AttachmentKey<V> key) {
+        if (key == null) {
+            throw MESSAGES.nullVar("key");
+        }
+        return key.cast(valueAttachments.remove(key));
+    }
+
+    private void authorizeModelUpdate() {
+        if (isModelUpdateAuthorizationRequired()) {
+            ModelNode op = activeStep.operation;
+            if (op.hasDefined(OPERATION_HEADERS) && op.get(OPERATION_HEADERS).hasDefined(CALLER_TYPE) && USER.equals(op.get(OPERATION_HEADERS, CALLER_TYPE).asString())) {
+                throw ControllerMessages.MESSAGES.modelUpdateNotAuthorized(op.require(OP).asString(), PathAddress.pathAddress(op.get(OP_ADDR)));
+            }
+        }
+    }
+
+    private boolean isModelUpdateAuthorizationRequired() {
+        if (requiresModelUpdateAuthorization == null) {
+            requiresModelUpdateAuthorization = !isBooting() && getProcessType() == ProcessType.DOMAIN_SERVER;
+        }
+        return requiresModelUpdateAuthorization.booleanValue();
     }
 
     class ContextServiceTarget implements ServiceTarget {
@@ -818,42 +900,30 @@ final class OperationContextImpl extends AbstractOperationContext {
         public ServiceController<T> install() throws ServiceRegistryException, IllegalStateException {
             final Map<ServiceName, ServiceController<?>> map = realRemovingControllers;
             synchronized (map) {
-                // Wait for removal to complete
-                while (map.containsKey(name)) try {
-                    map.wait();
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                    throw MESSAGES.serviceInstallCancelled();
-                }
                 boolean intr = false;
                 try {
-                    while (map.containsKey(name)) try {
-                        map.wait();
-
-                        // If a step removed this ServiceName before, it's no longer responsible
-                        // for any ill effect
-                        removalSteps.remove(name);
-
-                        return realBuilder.install();
-                    } catch (InterruptedException e) {
-                        if (respectInterruption) {
-                            Thread.currentThread().interrupt();
-                            throw MESSAGES.serviceInstallCancelled();
-                        } else {
+                    while (map.containsKey(name)) {
+                        try {
+                            map.wait();
+                        } catch (InterruptedException e) {
                             intr = true;
+                            if (respectInterruption) {
+                                cancelled = true;
+                                throw MESSAGES.serviceInstallCancelled();
+                            } // else keep waiting and mark the thread interrupted at the end
                         }
                     }
+
+                    // If a step removed this ServiceName before, it's no longer responsible
+                    // for any ill effect
+                    removalSteps.remove(name);
+
+                    return realBuilder.install();
                 } finally {
                     if (intr) {
                         Thread.currentThread().interrupt();
                     }
                 }
-
-                // If a step removed this ServiceName before, it's no longer responsible
-                // for any ill effect
-                removalSteps.remove(name);
-
-                return realBuilder.install();
             }
         }
     }
@@ -915,5 +985,121 @@ final class OperationContextImpl extends AbstractOperationContext {
             }
             context.completeStep();
         }
+    }
+
+    private class OperationContextServiceRegistry implements ServiceRegistry {
+        private final ServiceRegistry registry;
+
+        public OperationContextServiceRegistry(ServiceRegistry registry) {
+            this.registry = registry;
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public ServiceController<?> getRequiredService(ServiceName serviceName) throws ServiceNotFoundException {
+            return new OperationContextServiceController(registry.getRequiredService(serviceName));
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public ServiceController<?> getService(ServiceName serviceName) {
+            ServiceController<?> controller = registry.getService(serviceName);
+            if (controller == null) {
+                return null;
+            }
+            return new OperationContextServiceController(controller);
+        }
+
+        @Override
+        public List<ServiceName> getServiceNames() {
+            return registry.getServiceNames();
+        }
+    }
+
+    private class OperationContextServiceController<S> implements ServiceController<S> {
+        private final ServiceController<S> controller;
+
+        public OperationContextServiceController(ServiceController<S> controller) {
+            this.controller = controller;
+        }
+
+        public ServiceController<?> getParent() {
+            return controller.getParent();
+        }
+
+        public ServiceContainer getServiceContainer() {
+            return controller.getServiceContainer();
+        }
+
+        public Mode getMode() {
+            return controller.getMode();
+        }
+
+        public boolean compareAndSetMode(Mode expected,
+                org.jboss.msc.service.ServiceController.Mode newMode) {
+            checkModeTransition(newMode);
+            return controller.compareAndSetMode(expected, newMode);
+        }
+
+        public void setMode(Mode mode) {
+            checkModeTransition(mode);
+            controller.setMode(mode);
+        }
+
+        private void checkModeTransition(Mode mode) {
+            if (mode == Mode.REMOVE) {
+                throw MESSAGES.useOperationContextRemoveService();
+            }
+        }
+
+        public org.jboss.msc.service.ServiceController.State getState() {
+            return controller.getState();
+        }
+
+        public org.jboss.msc.service.ServiceController.Substate getSubstate() {
+            return controller.getSubstate();
+        }
+
+        public S getValue() throws IllegalStateException {
+            return controller.getValue();
+        }
+
+        public Service<S> getService() throws IllegalStateException {
+            return controller.getService();
+        }
+
+        public ServiceName getName() {
+            return controller.getName();
+        }
+
+        public ServiceName[] getAliases() {
+            return controller.getAliases();
+        }
+
+        public void addListener(ServiceListener<? super S> serviceListener) {
+            controller.addListener(serviceListener);
+        }
+
+        public void addListener(Inheritance inheritance, ServiceListener<Object> serviceListener) {
+            controller.addListener(inheritance, serviceListener);
+        }
+
+        public void removeListener(ServiceListener<? super S> serviceListener) {
+            controller.removeListener(serviceListener);
+        }
+
+        public StartException getStartException() {
+            return controller.getStartException();
+        }
+
+        public void retry() {
+            controller.retry();
+        }
+
+        public Set<ServiceName> getImmediateUnavailableDependencies() {
+            return controller.getImmediateUnavailableDependencies();
+        }
+
+
     }
 }

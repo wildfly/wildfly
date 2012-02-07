@@ -25,6 +25,8 @@ package org.jboss.as.ejb3.subsystem;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.threads.Namespace;
+import org.jboss.as.threads.ThreadsParser;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementReader;
@@ -40,20 +42,12 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.parsing.ParseUtils.duplicateAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
-import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.parsing.ParseUtils.*;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.*;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PATH;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.RELATIVE_TO;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTE;
 
 /**
  * @author Jaikiran Pai
@@ -127,6 +121,15 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
             writer.writeEndElement();
         }
 
+        // write the entity bean element
+        if (model.hasDefined(EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_INSTANCE_POOL) || model.hasDefined(EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING)) {
+            // <entity-bean>
+            writer.writeStartElement(EJB3SubsystemXMLElement.ENTITY_BEAN.getLocalName());
+            // write out the mdb element contents
+            this.writeEntityBean(writer, model);
+            // </entity-bean>
+            writer.writeEndElement();
+        }
         // write the pools element
         if (model.hasDefined(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL)) {
             // <pools>
@@ -189,8 +192,8 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
         if (model.hasDefined(THREAD_POOL)) {
             // <timer-service>
             writer.writeStartElement(EJB3SubsystemXMLElement.THREAD_POOLS.getLocalName());
-            final ModelNode iiopModel = model.get(THREAD_POOL);
-            this.writeThreadPools(writer, iiopModel);
+            final ModelNode threadsModel = model.get(THREAD_POOL);
+            this.writeThreadPools(writer, threadsModel);
             // </timer-service>
             writer.writeEndElement();
         }
@@ -203,28 +206,25 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
             writer.writeEndElement();
         }
 
+        // in-vm-remote-interface-invocation element
+        if (model.hasDefined(IN_VM_REMOTE_INTERFACE_INVOCATION_PASS_BY_VALUE)) {
+            writer.writeStartElement(EJB3SubsystemXMLElement.IN_VM_REMOTE_INTERFACE_INVOCATION.getLocalName());
+            writer.writeAttribute(EJB3SubsystemXMLAttribute.PASS_BY_VALUE.getLocalName(), model.get(EJB3SubsystemModel.IN_VM_REMOTE_INTERFACE_INVOCATION_PASS_BY_VALUE).asString());
+            writer.writeEndElement();
+        }
 
         // write the subsystem end element
         writer.writeEndElement();
     }
 
     private void writeIIOP(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
-        writer.writeAttribute(EJB3SubsystemXMLAttribute.USE_QUALIFIED_NAME.getLocalName(), model.require(EJB3SubsystemModel.USE_QUALIFIED_NAME).asString());
-        writer.writeAttribute(EJB3SubsystemXMLAttribute.ENABLE_BY_DEFAULT.getLocalName(), model.require(EJB3SubsystemModel.ENABLE_BY_DEFAULT).asString());
+        EJB3IIOPResourceDefinition.ENABLE_BY_DEFAULT.marshallAsAttribute(model, writer);
+        EJB3IIOPResourceDefinition.USE_QUALIFIED_NAME.marshallAsAttribute(model, writer);
     }
 
     private void writeThreadPools(final XMLExtendedStreamWriter writer, final ModelNode threadPoolsModel) throws XMLStreamException {
         for (Property threadPool : threadPoolsModel.asPropertyList()) {
-            writer.writeStartElement(EJB3SubsystemXMLElement.THREAD_POOL.getLocalName());
-            writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), threadPool.getName());
-
-            if (threadPool.getValue().has(MAX_THREADS)) {
-                writer.writeAttribute(EJB3SubsystemXMLAttribute.MAX_THREADS.getLocalName(), threadPool.getValue().get(MAX_THREADS).asString());
-            }
-            if (threadPool.getValue().has(KEEPALIVE_TIME)) {
-                writer.writeAttribute(EJB3SubsystemXMLAttribute.KEEPALIVE_TIME.getLocalName(), threadPool.getValue().get(KEEPALIVE_TIME).asString());
-            }
-            writer.writeEndElement();
+            ThreadsParser.getInstance().writeUnboundedQueueThreadPool(writer, threadPool.getValue(), EJB3SubsystemXMLElement.THREAD_POOL.getLocalName(), true);
         }
     }
 
@@ -264,6 +264,11 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
                             this.parseMDB(reader, operations, ejb3SubsystemAddOperation);
                             break;
                         }
+                        case ENTITY_BEAN: {
+                            // read <entity-bean>
+                            this.parseEntityBean(reader, operations, ejb3SubsystemAddOperation);
+                            break;
+                        }
                         case POOLS: {
                             // read <pools>
                             this.parsePools(reader, operations);
@@ -292,10 +297,13 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
                             parseThreadPools(reader, operations);
                             break;
                         }
-                         case IIOP: {
+                        case IIOP: {
                             parseIIOP(reader, operations);
                             break;
                         }
+                        case IN_VM_REMOTE_INTERFACE_INVOCATION:
+                            parseInVMRemoteInterfaceInvocation(reader, ejb3SubsystemAddOperation);
+                            break;
                         default: {
                             throw unexpectedElement(reader);
                         }
@@ -307,18 +315,6 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
                 }
             }
         }
-    }
-
-    static String parseDefaultTimeout(XMLExtendedStreamReader reader, final String element) throws XMLStreamException {
-
-        // we don't expect any attributes for this element.
-        requireNoAttributes(reader);
-
-        final String value = reader.getElementText();
-        if (value == null || value.trim().isEmpty()) {
-            throw new XMLStreamException(MESSAGES.invalidValueForElement(value, element, reader.getLocation()));
-        }
-        return value.trim();
     }
 
     private void writeRemote(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
@@ -360,21 +356,30 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
     }
 
     /**
-     * Writes out the <session-bean> element and its nested elements
+     * Writes out the <entity-bean> element and its nested elements
      *
-     * @param writer XML writer
-     * @param model  The <session-bean> element {@link org.jboss.dmr.ModelNode}
+     * @param writer          XML writer
+     * @param entityModelNode The <mdb> element {@link org.jboss.dmr.ModelNode}
      * @throws javax.xml.stream.XMLStreamException
      *
      */
-    private void writeSessionBean(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
-        if (model.hasDefined(EJB3SubsystemModel.DEFAULT_SLSB_INSTANCE_POOL)) {
-            // <stateless>
-            writer.writeStartElement(EJB3SubsystemXMLElement.STATELESS.getLocalName());
-            // contents of <stateless> element
-            final ModelNode statelessBeanModeNode = model.get(EJB3SubsystemXMLElement.STATELESS.getLocalName());
-            this.writeDefaultSLSBPool(writer, statelessBeanModeNode);
-            // </stateless>
+    private void writeEntityBean(final XMLExtendedStreamWriter writer, final ModelNode entityModelNode) throws XMLStreamException {
+        if (entityModelNode.hasDefined(EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_INSTANCE_POOL)) {
+            // <bean-instance-pool-ref>
+            writer.writeStartElement(EJB3SubsystemXMLElement.BEAN_INSTANCE_POOL_REF.getLocalName());
+            final String poolRefName = entityModelNode.get(EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_INSTANCE_POOL).asString();
+            // write the value
+            writer.writeAttribute(EJB3SubsystemXMLAttribute.POOL_NAME.getLocalName(), poolRefName);
+            // </bean-instance-pool-ref>
+            writer.writeEndElement();
+        }
+        if (entityModelNode.hasDefined(EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING)) {
+            // <optimistic-locking>
+            writer.writeStartElement(EJB3SubsystemXMLElement.OPTIMISTIC_LOCKING.getLocalName());
+            final Boolean locking = entityModelNode.get(EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING).asBoolean();
+            // write the value
+            writer.writeAttribute(EJB3SubsystemXMLAttribute.ENABLED.getLocalName(), locking.toString());
+            // <optimistic-locking>
             writer.writeEndElement();
         }
     }
@@ -408,19 +413,6 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
             final String poolRefName = model.get(EJB3SubsystemModel.DEFAULT_SLSB_INSTANCE_POOL).asString();
             writer.writeAttribute(EJB3SubsystemXMLAttribute.POOL_NAME.getLocalName(), poolRefName);
             // </bean-instance-pool-ref>
-            writer.writeEndElement();
-        }
-
-    }
-
-    private void writePools(final XMLExtendedStreamWriter writer, final ModelNode poolsModelNode) throws XMLStreamException {
-        if (poolsModelNode.hasDefined(EJB3SubsystemXMLElement.BEAN_INSTANCE_POOLS.getLocalName())) {
-            // <bean-instance-pools>
-            writer.writeStartElement(EJB3SubsystemXMLElement.BEAN_INSTANCE_POOLS.getLocalName());
-            // write contents of bean-instance-pools
-            final ModelNode beanInstancePoolsModelNode = poolsModelNode.get(EJB3SubsystemXMLElement.BEAN_INSTANCE_POOLS.getLocalName());
-            this.writeBeanInstancePools(writer, beanInstancePoolsModelNode);
-            // </bean-instance-pools>
             writer.writeEndElement();
         }
 
@@ -475,7 +467,9 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
                 PassivationStoreResourceDefinition.IDLE_TIMEOUT.marshallAsAttribute(store, writer);
                 PassivationStoreResourceDefinition.IDLE_TIMEOUT_UNIT.marshallAsAttribute(store, writer);
                 ClusterPassivationStoreResourceDefinition.MAX_SIZE.marshallAsAttribute(store, writer);
-                ClusterPassivationStoreResourceDefinition.BACKING_CACHE.marshallAsAttribute(store, writer);
+                ClusterPassivationStoreResourceDefinition.CACHE_CONTAINER.marshallAsAttribute(store, writer);
+                ClusterPassivationStoreResourceDefinition.BEAN_CACHE.marshallAsAttribute(store, writer);
+                ClusterPassivationStoreResourceDefinition.CLIENT_MAPPINGS_CACHE.marshallAsAttribute(store, writer);
                 ClusterPassivationStoreResourceDefinition.PASSIVATE_EVENTS_ON_REPLICATE.marshallAsAttribute(store, writer);
                 writer.writeEndElement();
             }
@@ -598,8 +592,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
         operations.add(EJB3IIOPAdd.create(enableByDefault, useQualifiedName));
     }
 
-    private ModelNode parseMDB(final XMLExtendedStreamReader reader, List<ModelNode> operations, final ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
-        ModelNode mdbModelNode = new ModelNode();
+    private void parseMDB(final XMLExtendedStreamReader reader, List<ModelNode> operations, final ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
         // no attributes expected
         requireNoAttributes(reader);
 
@@ -627,7 +620,30 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
                 ejb3SubsystemAddOperation.get(EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME).set(defaultRAName);
             }
         }
-        return mdbModelNode;
+
+    }
+
+    private void parseEntityBean(final XMLExtendedStreamReader reader, List<ModelNode> operations, final ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
+        // no attributes expected
+        requireNoAttributes(reader);
+
+        while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
+            switch (EJB3SubsystemXMLElement.forName(reader.getLocalName())) {
+                case BEAN_INSTANCE_POOL_REF: {
+                    final String poolName = readStringAttributeElement(reader, EJB3SubsystemXMLAttribute.POOL_NAME.getLocalName());
+                    EJB3SubsystemRootResourceDefinition.DEFAULT_ENTITY_BEAN_INSTANCE_POOL.parseAndSetParameter(poolName, ejb3SubsystemAddOperation, reader);
+                    break;
+                }
+                case OPTIMISTIC_LOCKING: {
+                    final String enabled = readStringAttributeElement(reader, EJB3SubsystemXMLAttribute.ENABLED.getLocalName());
+                    EJB3SubsystemRootResourceDefinition.DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING.parseAndSetParameter(enabled, ejb3SubsystemAddOperation, reader);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
 
     }
 
@@ -841,7 +857,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
                     break;
                 }
                 case ALIASES: {
-                    for (String alias: reader.getListAttributeValue(i)) {
+                    for (String alias : reader.getListAttributeValue(i)) {
                         aliases.add(CacheFactoryResourceDefinition.ALIASES.parse(alias, reader).asString());
                     }
                     break;
@@ -943,7 +959,9 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
         Integer maxSize = null;
         Long timeout = null;
         String unit = null;
-        String backingCache = null;
+        String cacheContainer = null;
+        String beanCache = null;
+        String clientMappingsCache = null;
         Boolean passivateEventsOnReplicate = null;
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             requireNoNamespaceAttribute(reader, i);
@@ -965,8 +983,16 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
                     unit = PassivationStoreResourceDefinition.IDLE_TIMEOUT_UNIT.parse(value, reader).asString();
                     break;
                 }
-                case BACKING_CACHE: {
-                    backingCache = ClusterPassivationStoreResourceDefinition.BACKING_CACHE.parse(value, reader).asString();
+                case CACHE_CONTAINER: {
+                    cacheContainer = ClusterPassivationStoreResourceDefinition.CACHE_CONTAINER.parse(value, reader).asString();
+                    break;
+                }
+                case BEAN_CACHE: {
+                    beanCache = ClusterPassivationStoreResourceDefinition.BEAN_CACHE.parse(value, reader).asString();
+                    break;
+                }
+                case CLIENT_MAPPINGS_CACHE: {
+                    clientMappingsCache = ClusterPassivationStoreResourceDefinition.CLIENT_MAPPINGS_CACHE.parse(value, reader).asString();
                     break;
                 }
                 case PASSIVATE_EVENTS_ON_REPLICATE: {
@@ -983,7 +1009,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
             throw missingRequired(reader, Collections.singleton(EJB3SubsystemXMLAttribute.NAME.getLocalName()));
         }
         // create and add the operation
-        operations.add(this.createAddClusterPassivationStoreOperation(name, maxSize, timeout, unit, backingCache, passivateEventsOnReplicate));
+        operations.add(this.createAddClusterPassivationStoreOperation(name, maxSize, timeout, unit, cacheContainer, beanCache, clientMappingsCache, passivateEventsOnReplicate));
     }
 
     private void parseTimerService(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
@@ -1065,10 +1091,17 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
     private void parseThreadPools(final XMLExtendedStreamReader reader, final List<ModelNode> operations) throws XMLStreamException {
         // no attributes expected
         requireNoAttributes(reader);
+
+
+        final ModelNode parentAddress = new ModelNode();
+        parentAddress.add(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME);
+
         while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
+            EJB3SubsystemNamespace readerNS = EJB3SubsystemNamespace.forUri(reader.getNamespaceURI());
             switch (EJB3SubsystemXMLElement.forName(reader.getLocalName())) {
                 case THREAD_POOL: {
-                    this.parseThreadPool(reader, operations);
+                    ThreadsParser.getInstance().parseUnboundedQueueThreadPool(reader, readerNS.getUriString(),
+                            Namespace.THREADS_1_1, parentAddress, operations, THREAD_POOL, null);
                     break;
                 }
                 default: {
@@ -1076,53 +1109,6 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
                 }
             }
         }
-    }
-
-
-    private void parseThreadPool(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
-
-        final int attCount = reader.getAttributeCount();
-        String threadPoolName = null;
-        Integer maxThreads = null;
-        Integer keepAlive = null;
-        final EnumSet<EJB3SubsystemXMLAttribute> required = EnumSet.of(EJB3SubsystemXMLAttribute.NAME);
-        for (int i = 0; i < attCount; i++) {
-            requireNoNamespaceAttribute(reader, i);
-            final String value = reader.getAttributeValue(i);
-            final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
-            required.remove(attribute);
-            switch (attribute) {
-                case NAME:
-                    threadPoolName = value.trim();
-                    break;
-                case MAX_THREADS:
-                    maxThreads = EJB3ThreadPoolResourceDefinition.MAX_THREADS.parse(value, reader).asInt();
-                    break;
-                case KEEPALIVE_TIME:
-                    keepAlive = EJB3ThreadPoolResourceDefinition.KEEPALIVE_TIME.parse(value, reader).asInt();
-                    break;
-                default:
-                    throw unexpectedAttribute(reader, i);
-            }
-        }
-        if (!required.isEmpty()) {
-            throw missingRequired(reader, required);
-        }
-
-        requireNoContent(reader);
-        final ModelNode address = new ModelNode();
-        address.add(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME);
-        address.add(THREAD_POOL, threadPoolName);
-        final ModelNode threadPoolAdd = new ModelNode();
-        threadPoolAdd.get(OP).set(ADD);
-        threadPoolAdd.get(OP_ADDR).set(address);
-        if (maxThreads != null) {
-            threadPoolAdd.get(MAX_THREADS).set(maxThreads.intValue());
-        }
-        if (keepAlive != null) {
-            threadPoolAdd.get(KEEPALIVE_TIME).set(keepAlive.intValue());
-        }
-        operations.add(threadPoolAdd);
     }
 
     /**
@@ -1202,7 +1188,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
         }
         if (!aliases.isEmpty()) {
             ModelNode aliasModel = operation.get(ALIASES).setEmptyList();
-            for (String alias: aliases) {
+            for (String alias : aliases) {
                 aliasModel.add(alias);
             }
         }
@@ -1243,10 +1229,16 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
         return operation;
     }
 
-    private ModelNode createAddClusterPassivationStoreOperation(String name, Integer maxSize, Long idleTimeout, String idleTimeoutUnit, String backingCache, Boolean passivateEventsOnReplicate) {
+    private ModelNode createAddClusterPassivationStoreOperation(String name, Integer maxSize, Long idleTimeout, String idleTimeoutUnit, String cacheContainer, String beanCache, String clientMappingsCache, Boolean passivateEventsOnReplicate) {
         ModelNode operation = this.createAddPassivationStoreOperation(CLUSTER_PASSIVATION_STORE, name, maxSize, idleTimeout, idleTimeoutUnit);
-        if (backingCache != null) {
-            operation.get(BACKING_CACHE).set(backingCache);
+        if (cacheContainer != null) {
+            operation.get(CACHE_CONTAINER).set(cacheContainer);
+        }
+        if (beanCache != null) {
+            operation.get(BEAN_CACHE).set(beanCache);
+        }
+        if (clientMappingsCache != null) {
+            operation.get(CLIENT_MAPPINGS_CACHE).set(clientMappingsCache);
         }
         if (passivateEventsOnReplicate != null) {
             operation.get(PASSIVATE_EVENTS_ON_REPLICATE).set(passivateEventsOnReplicate);
@@ -1257,4 +1249,30 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
     private PathAddress getEJB3SubsystemAddress() {
         return PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME));
     }
+
+    private void parseInVMRemoteInterfaceInvocation(final XMLExtendedStreamReader reader, final ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        final EnumSet<EJB3SubsystemXMLAttribute> missingRequiredAttributes = EnumSet.of(EJB3SubsystemXMLAttribute.PASS_BY_VALUE);
+        String passByValue = null;
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case PASS_BY_VALUE:
+                    passByValue = EJB3SubsystemRootResourceDefinition.PASS_BY_VALUE.parse(value, reader).asString();
+                    // found the mandatory attribute
+                    missingRequiredAttributes.remove(EJB3SubsystemXMLAttribute.PASS_BY_VALUE);
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+        requireNoContent(reader);
+        if (!missingRequiredAttributes.isEmpty()) {
+            throw missingRequired(reader, missingRequiredAttributes);
+        }
+        EJB3SubsystemRootResourceDefinition.PASS_BY_VALUE.parseAndSetParameter(passByValue, ejb3SubsystemAddOperation, reader);
+    }
+
 }

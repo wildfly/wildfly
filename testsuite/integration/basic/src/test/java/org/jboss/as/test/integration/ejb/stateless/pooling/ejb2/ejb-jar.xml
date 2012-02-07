@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ejb-jar PUBLIC "-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 2.0//EN" "http://java.sun.com/dtd/ejb-jar_2_0.dtd">
+
+<ejb-jar >
+   <enterprise-beans>
+   
+     <session>
+        <ejb-name>CountedSession1</ejb-name>
+        <home>org.jboss.as.test.integration.ejb.stateless.pooling.ejb2.CountedSessionHome</home>
+        <remote>org.jboss.as.test.integration.ejb.stateless.pooling.ejb2.CountedSession</remote>
+        <ejb-class>org.jboss.as.test.integration.ejb.stateless.pooling.ejb2.CountedSessionBean1</ejb-class>
+        <session-type>Stateless</session-type>
+        <transaction-type>Container</transaction-type>        
+     </session>
+     
+     <session>
+        <ejb-name>CountedSession2</ejb-name>
+        <home>org.jboss.as.test.integration.ejb.stateless.pooling.ejb2.CountedSessionHome</home>
+        <remote>org.jboss.as.test.integration.ejb.stateless.pooling.ejb2.CountedSession</remote>
+        <ejb-class>org.jboss.as.test.integration.ejb.stateless.pooling.ejb2.CountedSessionBean2</ejb-class>
+        <session-type>Stateless</session-type>
+        <transaction-type>Container</transaction-type>        
+     </session>
+     
+     <session>
+        <ejb-name>CountedSession3</ejb-name>
+        <home>org.jboss.as.test.integration.ejb.stateless.pooling.ejb2.CountedSessionHome</home>
+        <remote>org.jboss.as.test.integration.ejb.stateless.pooling.ejb2.CountedSession</remote>
+        <ejb-class>org.jboss.as.test.integration.ejb.stateless.pooling.ejb2.CountedSessionBean3</ejb-class>
+        <session-type>Stateless</session-type>
+        <transaction-type>Container</transaction-type>        
+     </session>
+          
+   </enterprise-beans>
+</ejb-jar>

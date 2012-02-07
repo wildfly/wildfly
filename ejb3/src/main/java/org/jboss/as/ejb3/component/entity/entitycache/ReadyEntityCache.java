@@ -48,6 +48,10 @@ public interface ReadyEntityCache {
      * Gets an entity bean instance for the given primary key. This may return a cached instance,
      * or may associate the given ket with a pooled entity.
      *
+     * The returned entity will be referenced, and will have its reference count increased by one. It must be de-referenced
+     * via {@link #release(org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance, boolean)}
+     *
+     *
      * Implementors of this method must ensure that repeated calls to get within the same transaction
      * return the same instance for a given primary key. This must also take into account entity beans
      * created in the same transaction using the {@link #create(org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance)}
@@ -62,6 +66,7 @@ public interface ReadyEntityCache {
      */
     EntityBeanComponentInstance get(Object key) throws NoSuchEntityException;
 
+
     /**
      * Release the object from use. This will be called at transaction commit time.
      *
@@ -73,13 +78,6 @@ public interface ReadyEntityCache {
      * @param transactionSuccess True if the transaction succeeded
      */
     void release(EntityBeanComponentInstance instance, boolean transactionSuccess);
-
-    /**
-     * This method is called when the entity instance is about to be invoked upon.
-     *
-     * @param instance The entity
-     */
-    void reference(EntityBeanComponentInstance instance);
 
     /**
      * Discard the object, called when an exception occurs

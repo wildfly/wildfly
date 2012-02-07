@@ -21,22 +21,6 @@
  */
 package org.jboss.as.test.integration.respawn;
 
-import static org.jboss.as.arquillian.container.Authentication.PASSWORD;
-import static org.jboss.as.arquillian.container.Authentication.USERNAME;
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MASTER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SHUTDOWN;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -58,7 +42,6 @@ import java.util.List;
 import java.util.Set;
 
 import junit.framework.Assert;
-
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -72,6 +55,20 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.xnio.IoUtils;
+
+import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MASTER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SHUTDOWN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 /**
  * RespawnTestCase
@@ -128,7 +125,6 @@ public class RespawnTestCase {
         File usersFile = new File(domainConfigDir, "mgmt-users.properties");
         FileOutputStream fos = new FileOutputStream(usersFile);
         PrintWriter pw = new PrintWriter(fos);
-        pw.println(USERNAME + "=" + new UsernamePasswordHashUtil().generateHashedHexURP(USERNAME, "ManagementRealm", PASSWORD.toCharArray()));
         pw.println("slave=" + new UsernamePasswordHashUtil().generateHashedHexURP("slave", "ManagementRealm", "slave_user_password".toCharArray()));
         pw.close();
         fos.close();

@@ -61,21 +61,24 @@
                 <xs:documentation>Uniquely identifies this cache container.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <!-- Preparation for AS7-2883 -->
-        <!-- Will also need to remove alias element from cache-container -->
-        <!--xs:attribute name="aliases" type="tns:aliases">
+        <xs:attribute name="aliases" type="tns:aliases">
             <xs:annotation>
                 <xs:documentation>A set of aliases by which this cache container may also be referenced.</xs:documentation>
             </xs:annotation>
-        </xs:attribute-->
+        </xs:attribute>
         <xs:attribute name="jndi-name" type="xs:string">
             <xs:annotation>
                 <xs:documentation>The jndi name to which to bind this cache container.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="default-cache" type="xs:string" use="required">
+        <xs:attribute name="default-cache" type="xs:string">
             <xs:annotation>
                 <xs:documentation></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="start" type="tns:controller-mode" default="LAZY">
+            <xs:annotation>
+                <xs:documentation>Should this cache container be started on server startup, or lazily when requested by a service or deployment.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="listener-executor" type="xs:string">
@@ -119,11 +122,6 @@
         <xs:complexContent>
             <xs:extension base="tns:base-cache-container">
                 <xs:sequence>
-                    <xs:element name="alias" type="xs:string" minOccurs="0" maxOccurs="unbounded">
-                        <xs:annotation>
-                            <xs:documentation>Defines an additional name by which this cache container may be referenced.</xs:documentation>
-                        </xs:annotation>
-                    </xs:element>
                     <xs:element name="transport" type="tns:transport" minOccurs="0">
                         <xs:annotation>
                             <xs:documentation>Overrides the transport characteristics for this cache container.</xs:documentation>
@@ -167,28 +165,13 @@
                 <xs:documentation>Defines the executor used for asynchronous transport communication.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="lock-timeout" type="xs:long" default="60000">
+        <xs:attribute name="lock-timeout" type="xs:long" default="240000">
             <xs:annotation>
                 <xs:documentation>
                     Infinispan uses a distributed lock to maintain a coherent transaction log during state transfer or rehashing, which means that only one cache can be doing state transfer or rehashing at the same time.
                     This constraint is in place because more than one cache could be involved in a transaction.
                     This timeout controls the time to wait to acquire acquire a lock on the distributed lock.
                 </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="site" type="xs:string">
-            <xs:annotation>
-                <xs:documentation>Identifies the site where this node runs.</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="rack" type="xs:string">
-            <xs:annotation>
-                <xs:documentation>Identifies the rack where this node runs.</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="machine" type="xs:string">
-            <xs:annotation>
-                <xs:documentation>Identifies the machine where this node runs.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
@@ -308,6 +291,11 @@
                 <xs:documentation></xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="locking" type="tns:locking-mode" default="OPTIMISTIC">
+            <xs:annotation>
+                <xs:documentation></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="eviction">
@@ -349,7 +337,7 @@
                         <xs:documentation></xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
-                <xs:attribute name="queue-size" type="xs:int" default="1000">
+                <xs:attribute name="queue-size" type="xs:int" default="0">
                     <xs:annotation>
                         <xs:documentation></xs:documentation>
                     </xs:annotation>
@@ -371,13 +359,6 @@
     <xs:complexType name="invalidation-cache">
         <xs:complexContent>
             <xs:extension base="tns:clustered-cache">
-                <xs:sequence>
-                    <xs:element name="state-transfer" type="tns:state-transfer" minOccurs="0">
-                        <xs:annotation>
-                            <xs:documentation></xs:documentation>
-                        </xs:annotation>
-                    </xs:element>
-                </xs:sequence>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
@@ -400,7 +381,7 @@
         <xs:complexContent>
             <xs:extension base="tns:clustered-cache">
                 <xs:sequence>
-                    <xs:element name="rehashing" type="tns:rehashing" minOccurs="0">
+                    <xs:element name="state-transfer" type="tns:state-transfer" minOccurs="0">
                         <xs:annotation>
                             <xs:documentation></xs:documentation>
                         </xs:annotation>
@@ -669,25 +650,7 @@
                 <xs:documentation></xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="flush-timeout" type="xs:long" default="60000">
-            <xs:annotation>
-                <xs:documentation></xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-    </xs:complexType>
-
-    <xs:complexType name="rehashing">
-        <xs:attribute name="enabled" type="xs:boolean" default="true">
-            <xs:annotation>
-                <xs:documentation></xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="timeout" type="xs:long" default="600000">
-            <xs:annotation>
-                <xs:documentation></xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="wait" type="xs:long" default="600000">
+        <xs:attribute name="chunk-size" type="xs:integer" default="10000">
             <xs:annotation>
                 <xs:documentation></xs:documentation>
             </xs:annotation>
@@ -839,6 +802,21 @@
                 </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="SYNC">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="locking-mode">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="OPTIMISTIC">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="PESSIMISTIC">
                 <xs:annotation>
                     <xs:documentation></xs:documentation>
                 </xs:annotation>

@@ -37,9 +37,10 @@ import org.jacorb.config.Configuration;
 import org.jacorb.config.ConfigurationException;
 import org.jacorb.orb.ORB;
 import org.jacorb.orb.factory.ServerSocketFactory;
+import org.jboss.as.jacorb.JacORBLogger;
+import org.jboss.as.jacorb.JacORBMessages;
 import org.jboss.as.jacorb.JacORBSubsystemConstants;
 import org.jboss.as.jacorb.PropertiesMap;
-import org.jboss.logging.Logger;
 import org.jboss.security.JSSESecurityDomain;
 import org.jboss.security.SecurityConstants;
 
@@ -72,8 +73,6 @@ import org.jboss.security.SecurityConstants;
  */
 public class DomainServerSocketFactory implements ServerSocketFactory, Configurable {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.security");
-
     private SSLContext sslContext;
 
     private JSSESecurityDomain jsseSecurityDomain;
@@ -90,7 +89,7 @@ public class DomainServerSocketFactory implements ServerSocketFactory, Configura
      * @param orb a reference to the running {@code org.jacorb.orb.ORB} instance.
      */
     public DomainServerSocketFactory(ORB orb) {
-        log.tracef("Creating server socket factory: %s", this.getClass().getName());
+        JacORBLogger.ROOT_LOGGER.traceServerSocketFactoryCreation(this.getClass().getName());
     }
 
     @Override
@@ -126,19 +125,19 @@ public class DomainServerSocketFactory implements ServerSocketFactory, Configura
         // get the configured security domain name.
         String securityDomain = configuration.getAttribute(JacORBSubsystemConstants.SECURITY_SECURITY_DOMAIN);
         if (securityDomain == null)
-            throw new ConfigurationException("Error configuring domain server socket factory: security domain is null");
+            throw JacORBMessages.MESSAGES.errorConfiguringDomainSF();
 
         // use the security domain name to obtain the JSSE security domain.
         try {
             InitialContext context = new InitialContext();
             this.jsseSecurityDomain = (JSSESecurityDomain) context.lookup(SecurityConstants.JAAS_CONTEXT_ROOT +
                     securityDomain + "/jsse");
-            log.debugf("Obtained JSSE security domain with name %s", securityDomain);
+            JacORBLogger.ROOT_LOGGER.debugJSSEDomainRetrieval(securityDomain);
         } catch (NamingException ne) {
-            log.errorf("Failed to obtain JSSE security domain with name %s", securityDomain);
+            JacORBLogger.ROOT_LOGGER.failedToObtainJSSEDomain(securityDomain);
         }
         if (this.jsseSecurityDomain == null)
-            throw new ConfigurationException("Error configuring domain server socket factory: failed to lookup JSSE security domain");
+            throw JacORBMessages.MESSAGES.failedToLookupJSSEDomain();
 
         // check if mutual auth is requested or required.
         String optionName = PropertiesMap.JACORB_PROPS_MAP.get(JacORBSubsystemConstants.SECURITY_SERVER_SUPPORTS);
@@ -160,7 +159,8 @@ public class DomainServerSocketFactory implements ServerSocketFactory, Configura
      * <p>
      * Initializes the {@code SSLContext} if necessary.
      * </p>
-     *     * @throws IOException if an error occurs while initializing the {@code SSLContext}.
+     *
+     * @throws IOException if an error occurs while initializing the {@code SSLContext}.
      */
     private void initSSLContext() throws IOException {
         if (this.sslContext != null)

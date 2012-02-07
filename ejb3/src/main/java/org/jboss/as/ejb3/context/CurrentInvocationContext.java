@@ -44,6 +44,9 @@ public class CurrentInvocationContext {
 
     public static EJBContextImpl getEjbContext() {
         final InterceptorContext context = get();
+        if(context == null) {
+            throw MESSAGES.noEjbContextAvailable();
+        }
         final ComponentInstance component = context.getPrivateData(ComponentInstance.class);
         if(!(component instanceof EjbComponentInstance)) {
             throw MESSAGES.currentComponentNotAEjb(component);

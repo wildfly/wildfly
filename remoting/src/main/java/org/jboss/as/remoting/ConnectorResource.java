@@ -29,7 +29,11 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
+import org.xnio.Option;
+import org.xnio.OptionMap;
 
 /**
  *
@@ -47,6 +51,26 @@ public class ConnectorResource extends SimpleResourceDefinition {
                 RemotingExtension.getResourceDescriptionResolver(CONNECTOR),
                 ConnectorAdd.INSTANCE,
                 ConnectorRemove.INSTANCE);
+    }
+
+    protected static OptionMap getOptions(ModelNode properties) {
+        final OptionMap optionMap;
+        if (properties.isDefined() && properties.asInt() > 0) {
+            OptionMap.Builder builder = OptionMap.builder();
+            final ClassLoader loader = SecurityActions.getClassLoader(ConnectorResource.class);
+            for (Property property : properties.asPropertyList()) {
+                String name = property.getName();
+                if (!name.contains(".")){
+                    name = "org.xnio.Options."+name;
+                }
+                final Option option = Option.fromString(name, loader);
+                builder.set(option, option.parseValue(property.getValue().get(CommonAttributes.VALUE).asString(), loader));
+            }
+            optionMap = builder.getMap();
+        } else {
+            optionMap = OptionMap.EMPTY;
+        }
+        return optionMap;
     }
 
     @Override

@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -88,6 +89,7 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
                             result.add(ReplicatedCacheAdd.createOperation(cacheAddress, cache.getValue()));
 
                             addCacheConfigCommands(cache, cacheAddress, result);
+                            addSharedStateCacheConfigCommands(cache, cacheAddress, result);
                         }
                     // add commands for distributed caches
                     } else if (cacheTypeList.getName().equals(ModelKeys.DISTRIBUTED_CACHE)) {
@@ -97,6 +99,7 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
                             result.add(DistributedCacheAdd.createOperation(cacheAddress, cache.getValue()));
 
                             addCacheConfigCommands(cache, cacheAddress, result);
+                            addSharedStateCacheConfigCommands(cache, cacheAddress, result);
                         }
                     }
                 }
@@ -117,12 +120,12 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
     private void addCacheContainerConfigCommands(Property container, ModelNode address, ModelNode result) throws OperationFailedException {
 
         // add operation to create the transport for the container
-        if (container.getValue().hasDefined(ModelKeys.SINGLETON)) {
+        if (container.getValue().hasDefined(ModelKeys.TRANSPORT)) {
             // command to recreate the transport configuration
-            if (container.getValue().get(ModelKeys.SINGLETON, ModelKeys.TRANSPORT).isDefined()) {
-                ModelNode transport = container.getValue().get(ModelKeys.SINGLETON, ModelKeys.TRANSPORT);
+            if (container.getValue().get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME).isDefined()) {
+                ModelNode transport = container.getValue().get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
                 ModelNode transportAddress = address.clone() ;
-                transportAddress.add(ModelKeys.SINGLETON, ModelKeys.TRANSPORT) ;
+                transportAddress.add(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME) ;
                 result.add(TransportAdd.createOperation(transportAddress, transport));
             }
         }
@@ -138,49 +141,98 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
      */
     private void addCacheConfigCommands(Property cache, ModelNode address, ModelNode result) throws OperationFailedException {
 
-        if (cache.getValue().hasDefined(ModelKeys.SINGLETON)) {
-            // command to recreate the locking configuration
-            if (cache.getValue().get(ModelKeys.SINGLETON, ModelKeys.LOCKING).isDefined()) {
-                ModelNode locking = cache.getValue().get(ModelKeys.SINGLETON, ModelKeys.LOCKING);
-                ModelNode lockingAddress = address.clone();
-                lockingAddress.add(ModelKeys.SINGLETON, ModelKeys.LOCKING);
-                result.add(CacheConfigOperationHandlers.createOperation(CommonAttributes.LOCKING_ATTRIBUTES, lockingAddress, locking));
-            }
-            // command to recreate the transaction configuration
-            if (cache.getValue().get(ModelKeys.SINGLETON, ModelKeys.TRANSACTION).isDefined()) {
-                ModelNode transaction = cache.getValue().get(ModelKeys.SINGLETON, ModelKeys.TRANSACTION);
-                ModelNode transactionAddress = address.clone();
-                transactionAddress.add(ModelKeys.SINGLETON, ModelKeys.TRANSACTION);
-                result.add(CacheConfigOperationHandlers.createOperation(CommonAttributes.TRANSACTION_ATTRIBUTES, transactionAddress, transaction));
-            }
-            // command to recreate the eviction configuration
-            if (cache.getValue().get(ModelKeys.SINGLETON, ModelKeys.EVICTION).isDefined()) {
-                ModelNode eviction = cache.getValue().get(ModelKeys.SINGLETON, ModelKeys.EVICTION);
-                ModelNode evictionAddress = address.clone();
-                evictionAddress.add(ModelKeys.SINGLETON, ModelKeys.EVICTION);
-                result.add(CacheConfigOperationHandlers.createOperation(CommonAttributes.EVICTION_ATTRIBUTES, evictionAddress, eviction));
-            }
-            // command to recreate the expiration configuration
-            if (cache.getValue().get(ModelKeys.SINGLETON, ModelKeys.EXPIRATION).isDefined()) {
-                ModelNode expiration = cache.getValue().get(ModelKeys.SINGLETON, ModelKeys.EXPIRATION);
-                ModelNode expirationAddress = address.clone();
-                expirationAddress.add(ModelKeys.SINGLETON, ModelKeys.EXPIRATION);
-                result.add(CacheConfigOperationHandlers.createOperation(CommonAttributes.EXPIRATION_ATTRIBUTES, expirationAddress, expiration));
-            }
-            // command to recreate the state transfer configuration
-            if (cache.getValue().get(ModelKeys.SINGLETON, ModelKeys.STATE_TRANSFER).isDefined()) {
-                ModelNode stateTransfer = cache.getValue().get(ModelKeys.SINGLETON, ModelKeys.STATE_TRANSFER);
-                ModelNode stateTransferAddress = address.clone();
-                stateTransferAddress.add(ModelKeys.SINGLETON, ModelKeys.STATE_TRANSFER);
-                result.add(CacheConfigOperationHandlers.createOperation(CommonAttributes.STATE_TRANSFER_ATTRIBUTES, stateTransferAddress, stateTransfer));
-            }
-            // command to recreate the rehashing configuration
-            if (cache.getValue().get(ModelKeys.SINGLETON, ModelKeys.REHASHING).isDefined()) {
-                ModelNode rehashing = cache.getValue().get(ModelKeys.SINGLETON, ModelKeys.REHASHING);
-                ModelNode rehashingAddress = address.clone();
-                rehashingAddress.add(ModelKeys.SINGLETON, ModelKeys.REHASHING);
-                result.add(CacheConfigOperationHandlers.createOperation(CommonAttributes.REHASHING_ATTRIBUTES, rehashingAddress, rehashing));
-            }
+        // command to recreate the locking configuration
+        if (cache.getValue().get(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME).isDefined()) {
+            ModelNode locking = cache.getValue().get(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME);
+            ModelNode lockingAddress = address.clone();
+            lockingAddress.add(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME);
+            result.add(CacheConfigOperationHandlers.createOperation(CommonAttributes.LOCKING_ATTRIBUTES, lockingAddress, locking));
+        }
+        // command to recreate the transaction configuration
+        if (cache.getValue().get(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME).isDefined()) {
+            ModelNode transaction = cache.getValue().get(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME);
+            ModelNode transactionAddress = address.clone();
+            transactionAddress.add(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME);
+            result.add(CacheConfigOperationHandlers.createOperation(CommonAttributes.TRANSACTION_ATTRIBUTES, transactionAddress, transaction));
+        }
+        // command to recreate the eviction configuration
+        if (cache.getValue().get(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME).isDefined()) {
+            ModelNode eviction = cache.getValue().get(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME);
+            ModelNode evictionAddress = address.clone();
+            evictionAddress.add(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME);
+            result.add(CacheConfigOperationHandlers.createOperation(CommonAttributes.EVICTION_ATTRIBUTES, evictionAddress, eviction));
+        }
+        // command to recreate the expiration configuration
+        if (cache.getValue().get(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME).isDefined()) {
+            ModelNode expiration = cache.getValue().get(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME);
+            ModelNode expirationAddress = address.clone();
+            expirationAddress.add(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME);
+            result.add(CacheConfigOperationHandlers.createOperation(CommonAttributes.EXPIRATION_ATTRIBUTES, expirationAddress, expiration));
+        }
+
+        // command to recreate the cache store configuration
+        // we need to take account of properties here
+        if (cache.getValue().get(ModelKeys.STORE, ModelKeys.STORE_NAME).isDefined()) {
+            ModelNode store = cache.getValue().get(ModelKeys.STORE, ModelKeys.STORE_NAME);
+            ModelNode storeAddress = address.clone();
+            storeAddress.add(ModelKeys.STORE, ModelKeys.STORE_NAME);
+            result.add(CacheConfigOperationHandlers.createStoreOperation(CommonAttributes.COMMON_STORE_ATTRIBUTES, storeAddress, store,
+                    CommonAttributes.STORE_ATTRIBUTES));
+            addCacheStorePropertyCommands(store, storeAddress, result);
+        }
+        else if (cache.getValue().get(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME).isDefined()) {
+            ModelNode store = cache.getValue().get(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME);
+            ModelNode storeAddress = address.clone();
+            storeAddress.add(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME);
+            result.add(CacheConfigOperationHandlers.createStoreOperation(CommonAttributes.COMMON_STORE_ATTRIBUTES, storeAddress, store,
+                    CommonAttributes.FILE_STORE_ATTRIBUTES));
+            addCacheStorePropertyCommands(store, storeAddress, result);
+        }
+        else if (cache.getValue().get(ModelKeys.JDBC_STORE, ModelKeys.JDBC_STORE_NAME).isDefined()) {
+            ModelNode store = cache.getValue().get(ModelKeys.JDBC_STORE, ModelKeys.JDBC_STORE_NAME);
+            ModelNode storeAddress = address.clone();
+            storeAddress.add(ModelKeys.JDBC_STORE, ModelKeys.JDBC_STORE_NAME);
+            result.add(CacheConfigOperationHandlers.createStoreOperation(CommonAttributes.COMMON_STORE_ATTRIBUTES, storeAddress, store,
+                    CommonAttributes.JDBC_STORE_ATTRIBUTES));
+            addCacheStorePropertyCommands(store, storeAddress, result);
+        }
+        else if (cache.getValue().get(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME).isDefined()) {
+            ModelNode store = cache.getValue().get(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME);
+            ModelNode storeAddress = address.clone();
+            storeAddress.add(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME);
+            result.add(CacheConfigOperationHandlers.createStoreOperation(CommonAttributes.COMMON_STORE_ATTRIBUTES, storeAddress, store,
+                    CommonAttributes.REMOTE_STORE_ATTRIBUTES));
+            addCacheStorePropertyCommands(store, storeAddress, result);
+        }
+    }
+
+    /**
+     * Creates commands to recreate existing cache configuration elements
+     *
+     * @param cache  the cache Property containing the configuration elements
+     * @param address the cache address
+     * @param result  the list of operations
+     * @throws OperationFailedException
+     */
+    private void addSharedStateCacheConfigCommands(Property cache, ModelNode address, ModelNode result) throws OperationFailedException {
+
+        // command to recreate the state transfer configuration
+        if (cache.getValue().get(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME).isDefined()) {
+            ModelNode stateTransfer = cache.getValue().get(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME);
+            ModelNode stateTransferAddress = address.clone();
+            stateTransferAddress.add(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME);
+            result.add(CacheConfigOperationHandlers.createOperation(CommonAttributes.STATE_TRANSFER_ATTRIBUTES, stateTransferAddress, stateTransfer));
+        }
+    }
+
+    private void addCacheStorePropertyCommands(ModelNode store, ModelNode address, ModelNode result) throws OperationFailedException {
+
+        if (store.hasDefined(ModelKeys.PROPERTY)) {
+             for (Property property : store.get(ModelKeys.PROPERTY).asPropertyList()) {
+                 ModelNode propertyAddress = address.clone().add(ModelKeys.PROPERTY, property.getName());
+                 AttributeDefinition[] ATTRIBUTE = {CommonAttributes.VALUE} ;
+                 result.add(CacheConfigOperationHandlers.createOperation(ATTRIBUTE, propertyAddress, property.getValue()));
+             }
         }
     }
 }

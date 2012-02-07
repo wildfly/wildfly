@@ -40,7 +40,7 @@ public class RuntimeExpressionResolver extends ExpressionResolverImpl {
     protected void resolvePluggableExpression(ModelNode node) {
         String expression = node.asString();
         if (expression.length() > 3) {
-            expression = expression.substring(2, expression.length() -2);
+            expression = expression.substring(2, expression.length() -1);
             if (vaultReader != null && vaultReader.isVaultFormat(expression)) {
                 node.set(vaultReader.retrieveFromVault(expression));
             }

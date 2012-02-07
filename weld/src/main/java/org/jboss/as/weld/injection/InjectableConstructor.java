@@ -21,17 +21,18 @@
  */
 package org.jboss.as.weld.injection;
 
-import org.jboss.weld.manager.BeanManagerImpl;
-
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.AnnotatedConstructor;
-import javax.enterprise.inject.spi.AnnotatedParameter;
-import javax.enterprise.inject.spi.Bean;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.Set;
+
+import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.spi.AnnotatedConstructor;
+import javax.enterprise.inject.spi.AnnotatedParameter;
+import javax.enterprise.inject.spi.Bean;
+
+import org.jboss.weld.manager.BeanManagerImpl;
 
 /**
  * @author Stuart Douglas
@@ -46,6 +47,7 @@ public class InjectableConstructor {
 
     public InjectableConstructor(AnnotatedConstructor<?> constructor, BeanManagerImpl beanManager, Bean bean) {
         this.constructor = constructor.getJavaMember();
+        SecurityActions.setAccessible(this.constructor);
         this.parameterInjectionPoints = new ParameterInjectionPoint[constructor.getParameters().size()];
         this.beans = new Bean[parameterInjectionPoints.length];
         this.beanManager = beanManager;

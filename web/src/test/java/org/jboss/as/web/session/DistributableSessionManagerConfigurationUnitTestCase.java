@@ -22,9 +22,11 @@
 
 package org.jboss.as.web.session;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-import org.infinispan.manager.CacheContainer;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.javaee.spec.EmptyMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
@@ -47,7 +49,7 @@ public class DistributableSessionManagerConfigurationUnitTestCase {
 
     private static long testCount = System.currentTimeMillis();
 
-    private CacheContainer cacheContainer;
+    private EmbeddedCacheManager cacheContainer;
     private DistributableSessionManager<?> manager;
     private String tempDir;
 

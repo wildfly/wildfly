@@ -18,11 +18,9 @@ package org.jboss.as.arquillian.container.managed;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,10 +29,6 @@ import java.util.logging.Logger;
 
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.as.arquillian.container.CommonDeployableContainer;
-import org.jboss.sasl.util.UsernamePasswordHashUtil;
-
-import static org.jboss.as.arquillian.container.Authentication.PASSWORD;
-import static org.jboss.as.arquillian.container.Authentication.USERNAME;
 
 /**
  * JBossAsManagedContainer
@@ -43,6 +37,8 @@ import static org.jboss.as.arquillian.container.Authentication.USERNAME;
  * @since 17-Nov-2010
  */
 public final class ManagedDeployableContainer extends CommonDeployableContainer<ManagedContainerConfiguration> {
+
+    private static final String CONFIG_PATH = "/standalone/configuration/";
 
     private final Logger log = Logger.getLogger(ManagedDeployableContainer.class.getName());
     private Thread shutdownThread;
@@ -67,8 +63,8 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
     protected void startInternal() throws LifecycleException {
         ManagedContainerConfiguration config = getContainerConfiguration();
 
-        if(isServerRunning()) {
-            if(config.isAllowConnectingToRunningServer()) {
+        if (isServerRunning()) {
+            if (config.isAllowConnectingToRunningServer()) {
                 return;
             } else {
                 failDueToRunning();
@@ -77,25 +73,24 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
 
         try {
             final String jbossHomeDir = config.getJbossHome();
-            final String modulePath;
-            if(config.getModulePath() != null && !config.getModulePath().isEmpty()) {
-                modulePath = config.getModulePath();
-            } else {
-               modulePath = jbossHomeDir + File.separatorChar + "modules";
+            String modulesPath = config.getModulePath();
+            if (modulesPath == null || modulesPath.isEmpty()) {
+                modulesPath = jbossHomeDir + File.separatorChar + "modules";
             }
+            File modulesDir = new File(modulesPath);
+            if (modulesDir.isDirectory() == false)
+                throw new IllegalStateException("Cannot find: " + modulesDir);
+
+            String bundlesPath = modulesDir.getParent() + File.separator + "bundles";
+            File bundlesDir = new File(bundlesPath);
+            if (bundlesDir.isDirectory() == false)
+                throw new IllegalStateException("Cannot find: " + bundlesDir);
+
             final String additionalJavaOpts = config.getJavaVmArguments();
 
             File modulesJar = new File(jbossHomeDir + File.separatorChar + "jboss-modules.jar");
             if (!modulesJar.exists())
                 throw new IllegalStateException("Cannot find: " + modulesJar);
-
-            // No point backing up the file in a test scenario, just write what we need.
-            File usersFile = new File(jbossHomeDir + "/standalone/configuration/mgmt-users.properties");
-            FileOutputStream fos = new FileOutputStream(usersFile);
-            PrintWriter pw = new PrintWriter(fos);
-            pw.println(USERNAME + "=" + new UsernamePasswordHashUtil().generateHashedHexURP(USERNAME, "ManagementRealm", PASSWORD.toCharArray()));
-            pw.close();
-            fos.close();
 
             List<String> cmd = new ArrayList<String>();
             String javaExec = config.getJavaHome() + File.separatorChar + "bin" + File.separatorChar + "java";
@@ -109,24 +104,21 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
                 }
             }
 
-            if(config.isEnableAssertions()) {
+            if (config.isEnableAssertions()) {
                 cmd.add("-ea");
             }
 
             cmd.add("-Djboss.home.dir=" + jbossHomeDir);
             cmd.add("-Dorg.jboss.boot.log.file=" + jbossHomeDir + "/standalone/log/boot.log");
-            cmd.add("-Dlogging.configuration=file:" + jbossHomeDir + "/standalone/configuration/logging.properties");
-            cmd.add("-Djboss.modules.dir=" + modulePath);
+            cmd.add("-Dlogging.configuration=file:" + jbossHomeDir + CONFIG_PATH + "logging.properties");
+            cmd.add("-Djboss.modules.dir=" + modulesDir.getCanonicalPath());
+            cmd.add("-Djboss.bundles.dir=" + bundlesDir.getCanonicalPath());
             cmd.add("-jar");
             cmd.add(modulesJar.getAbsolutePath());
             cmd.add("-mp");
-            cmd.add(modulePath);
-            cmd.add("-logmodule");
-            cmd.add("org.jboss.logmanager");
+            cmd.add(modulesPath);
             cmd.add("-jaxpmodule");
             cmd.add("javax.xml.jaxp-provider");
-            cmd.add("-mbeanserverbuildermodule");
-            cmd.add("org.jboss.as.jmx");
             cmd.add("org.jboss.as.standalone");
             cmd.add("-server-config");
             cmd.add(config.getServerConfig());
@@ -163,7 +155,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
                         break;
                     Thread.sleep(sleep);
                     timeout -= sleep;
-                    sleep = Math.max(sleep/2, 100);
+                    sleep = Math.max(sleep / 2, 100);
                 }
             }
             if (!serverAvailable) {

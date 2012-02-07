@@ -36,6 +36,9 @@ import java.util.concurrent.ThreadFactory;
 
 import javax.management.MBeanServer;
 
+import com.sun.source.tree.ConditionalExpressionTree;
+import com.sun.tools.internal.ws.processor.model.Operation;
+import com.sun.tools.internal.xjc.model.Model;
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.ProtocolConfiguration;
 import org.jboss.as.clustering.jgroups.ProtocolDefaults;
@@ -43,11 +46,13 @@ import org.jboss.as.clustering.jgroups.ProtocolStackConfiguration;
 import org.jboss.as.clustering.jgroups.TransportConfiguration;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
@@ -65,7 +70,9 @@ import org.jboss.threads.JBossExecutors;
 /**
  * @author Paul Ferraro
  */
-public class ProtocolStackAdd extends AbstractAddStepHandler implements DescriptionProvider {
+public class ProtocolStackAdd extends AbstractAddStepHandler {
+
+    public static final ProtocolStackAdd INSTANCE = new ProtocolStackAdd();
 
     static ModelNode createOperation(ModelNode address, ModelNode existing) {
         ModelNode operation = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
@@ -74,29 +81,40 @@ public class ProtocolStackAdd extends AbstractAddStepHandler implements Descript
     }
 
     private static void populate(ModelNode source, ModelNode target) {
-        target.get(ModelKeys.TRANSPORT).set(source.require(ModelKeys.TRANSPORT));
-        if (source.hasDefined(ModelKeys.PROTOCOL)) {
-            ModelNode protocols = target.get(ModelKeys.PROTOCOL);
-            for (ModelNode protocol : source.get(ModelKeys.PROTOCOL).asList()) {
-                protocols.add(protocol);
-            }
-        }
+        // nothing to do
     }
 
     @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return JGroupsDescriptions.getProtocolStackAddDescription(locale);
-    }
-
     protected void populateModel(ModelNode operation, ModelNode model) {
         populate(operation, model);
     }
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    @Override
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
+            throws OperationFailedException {
+
+        // Because we use child resources in a read-only manner to configure the protocol stack, replace the local model with the full model
+        model = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
+
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
-        ModelNode transport = operation.get(ModelKeys.TRANSPORT);
-        Transport transportConfig = new Transport(transport.require(ModelKeys.TYPE).asString());
+
+        // pick up the transport here and its values
+        ModelNode transport = model.get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
+
+        ModelNode resolvedValue = null ;
+        final String type = ((resolvedValue = CommonAttributes.TYPE.resolveModelAttribute(context, transport)).isDefined()) ? resolvedValue.asString() : null ;
+        final boolean  shared = CommonAttributes.SHARED.resolveModelAttribute(context, transport).asBoolean();
+        final String machine = ((resolvedValue = CommonAttributes.MACHINE.resolveModelAttribute(context, transport)).isDefined()) ? resolvedValue.asString() : null ;
+        final String rack = ((resolvedValue = CommonAttributes.RACK.resolveModelAttribute(context, transport)).isDefined()) ? resolvedValue.asString() : null ;
+        final String site = ((resolvedValue = CommonAttributes.SITE.resolveModelAttribute(context, transport)).isDefined()) ? resolvedValue.asString() : null ;
+        final String timerExecutor = ((resolvedValue = CommonAttributes.TIMER_EXECUTOR.resolveModelAttribute(context, transport)).isDefined()) ? resolvedValue.asString() : null ;
+        final String threadFactory = ((resolvedValue = CommonAttributes.THREAD_FACTORY.resolveModelAttribute(context, transport)).isDefined()) ? resolvedValue.asString() : null ;
+        final String diagnosticsSocketBinding = ((resolvedValue = CommonAttributes.DIAGNOSTICS_SOCKET_BINDING.resolveModelAttribute(context, transport)).isDefined()) ? resolvedValue.asString() : null ;
+        final String defaultExecutor = ((resolvedValue = CommonAttributes.DEFAULT_EXECUTOR.resolveModelAttribute(context, transport)).isDefined()) ? resolvedValue.asString() : null ;
+        final String oobExecutor = ((resolvedValue = CommonAttributes.OOB_EXECUTOR.resolveModelAttribute(context, transport)).isDefined()) ? resolvedValue.asString() : null ;
+
+        Transport transportConfig = new Transport(type);
         ProtocolStack stackConfig = new ProtocolStack(name, transportConfig);
 
         ServiceBuilder<ChannelFactory> builder = context.getServiceTarget()
@@ -105,22 +123,39 @@ public class ProtocolStackAdd extends AbstractAddStepHandler implements Descript
                 .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, stackConfig.getMBeanServerInjector())
                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, stackConfig.getEnvironmentInjector())
                 ;
-        if (transport.hasDefined(ModelKeys.SHARED)) {
-            transportConfig.setShared(transport.get(ModelKeys.SHARED).asBoolean());
+
+        transportConfig.setShared(shared);
+        if (machine != null) {
+            transportConfig.setMachineId(machine);
         }
-        build(builder, transport, transportConfig);
-        addSocketBindingDependency(builder, transport, ModelKeys.DIAGNOSTICS_SOCKET_BINDING, transportConfig.getDiagnosticsSocketBindingInjector());
-        addExecutorDependency(builder, transport, ModelKeys.DEFAULT_EXECUTOR, transportConfig.getDefaultExecutorInjector());
-        addExecutorDependency(builder, transport, ModelKeys.OOB_EXECUTOR, transportConfig.getOOBExecutorInjector());
-        if (transport.hasDefined(ModelKeys.TIMER_EXECUTOR)) {
-            builder.addDependency(ThreadsServices.executorName(transport.get(ModelKeys.TIMER_EXECUTOR).asString()), ScheduledExecutorService.class, transportConfig.getTimerExecutorInjector());
+        if (rack != null) {
+            transportConfig.setRackId(rack);
         }
-        if (transport.hasDefined(ModelKeys.THREAD_FACTORY)) {
-            builder.addDependency(ThreadsServices.threadFactoryName(transport.get(ModelKeys.THREAD_FACTORY).asString()), ThreadFactory.class, transportConfig.getThreadFactoryInjector());
+        if (site != null) {
+            transportConfig.setSiteId(site);
         }
-        for (ModelNode protocol : operation.get(ModelKeys.PROTOCOL).asList()) {
-            Protocol protocolConfig = new Protocol(protocol.require(ModelKeys.TYPE).asString());
-            build(builder, protocol, protocolConfig);
+        build(builder, context, transport, transportConfig);
+
+        addSocketBindingDependency(builder, diagnosticsSocketBinding, transportConfig.getDiagnosticsSocketBindingInjector());
+        addExecutorDependency(builder, defaultExecutor, transportConfig.getDefaultExecutorInjector());
+        addExecutorDependency(builder, oobExecutor, transportConfig.getOOBExecutorInjector());
+        if (timerExecutor != null) {
+            builder.addDependency(ThreadsServices.executorName(timerExecutor), ScheduledExecutorService.class, transportConfig.getTimerExecutorInjector());
+        }
+        if (threadFactory != null) {
+            builder.addDependency(ThreadsServices.threadFactoryName(threadFactory), ThreadFactory.class, transportConfig.getThreadFactoryInjector());
+        }
+
+        // pick up the protocols here as a List<Property> where property is <name, ModelNode>
+        // we need to preserve the order of the protocols as maintained by PROTOCOLS
+        List<Property>  orderedProtocols =  getOrderedProtocolPropertyList(model) ;
+        for (Property protocol : orderedProtocols) {
+
+            ModelNode typeModelNode = null ;
+            final String theType = ((typeModelNode = CommonAttributes.TYPE.resolveModelAttribute(context, protocol.getValue())).isDefined()) ? typeModelNode.asString() : null ;
+
+            Protocol protocolConfig = new Protocol(theType);
+            build(builder, context, protocol.getValue(), protocolConfig);
             stackConfig.getProtocols().add(protocolConfig);
         }
         builder.setInitialMode(ServiceController.Mode.ON_DEMAND);
@@ -128,28 +163,54 @@ public class ProtocolStackAdd extends AbstractAddStepHandler implements Descript
         newControllers.add(builder.install());
     }
 
-    private void build(ServiceBuilder<ChannelFactory> builder, ModelNode protocol, Protocol protocolConfig) {
-        this.addSocketBindingDependency(builder, protocol, ModelKeys.SOCKET_BINDING, protocolConfig.getSocketBindingInjector());
+    public static List<Property> getOrderedProtocolPropertyList(ModelNode stack) {
+        ModelNode orderedProtocols = new ModelNode();
+        List<ModelNode> protocolOrdering = stack.get(ModelKeys.PROTOCOLS).asList();
+        ModelNode unorderedProtocols = stack.get(ModelKeys.PROTOCOL) ;
+        for (ModelNode protocolName : protocolOrdering) {
+            ModelNode protocolModel = unorderedProtocols.get(protocolName.asString());
+            orderedProtocols.add(protocolName.asString(), protocolModel) ;
+        }
+        return orderedProtocols.asPropertyList();
+    }
+
+    private void build(ServiceBuilder<ChannelFactory> builder, OperationContext context, ModelNode protocol, Protocol protocolConfig)
+            throws OperationFailedException {
+
+        ModelNode resolvedValue = null ;
+        final String socketBinding = ((resolvedValue = CommonAttributes.SOCKET_BINDING.resolveModelAttribute(context, protocol)).isDefined()) ? resolvedValue.asString() : null ;
+        this.addSocketBindingDependency(builder, socketBinding, protocolConfig.getSocketBindingInjector());
+
         Map<String, String> properties = protocolConfig.getProperties();
+
+        // properties are a child resource of protocol
         if (protocol.hasDefined(ModelKeys.PROPERTY)) {
             for (Property property : protocol.get(ModelKeys.PROPERTY).asPropertyList()) {
-                properties.put(property.getName(), property.getValue().asString());
+                // the format of the property elements
+                //  "property" => {
+                //       "relative-to" => {"value" => "fred"},
+                //   }
+                String propertyName = property.getName();
+                Property complexValue = property.getValue().asProperty();
+                String propertyValue = complexValue.getValue().asString();
+                properties.put(propertyName, propertyValue);
             }
+       }
+    }
+
+    private void addSocketBindingDependency(ServiceBuilder<ChannelFactory> builder, String socketBinding, Injector<SocketBinding> injector) {
+        if (socketBinding != null) {
+            builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(socketBinding), SocketBinding.class, injector);
         }
     }
 
-    private void addSocketBindingDependency(ServiceBuilder<ChannelFactory> builder, ModelNode model, String key, Injector<SocketBinding> injector) {
-        if (model.hasDefined(key)) {
-            builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(model.get(key).asString()), SocketBinding.class, injector);
+    private void addExecutorDependency(ServiceBuilder<ChannelFactory> builder, String executor, Injector<Executor> injector) {
+        if (executor != null) {
+            builder.addDependency(ThreadsServices.executorName(executor), Executor.class, injector);
         }
     }
 
-    private void addExecutorDependency(ServiceBuilder<ChannelFactory> builder, ModelNode model, String key, Injector<Executor> injector) {
-        if (model.hasDefined(key)) {
-            builder.addDependency(ThreadsServices.executorName(model.get(key).asString()), Executor.class, injector);
-        }
-    }
-
+    @Override
     protected boolean requiresRuntimeVerification() {
         return false;
     }
@@ -218,6 +279,9 @@ public class ProtocolStackAdd extends AbstractAddStepHandler implements Descript
         private final InjectedValue<ScheduledExecutorService> timerExecutor = new InjectedValue<ScheduledExecutorService>();
         private final InjectedValue<ThreadFactory> threadFactory = new InjectedValue<ThreadFactory>();
         private boolean shared = true;
+        private String machineId;
+        private String rackId;
+        private String siteId;
 
         Transport(String name) {
             super(name);
@@ -250,6 +314,39 @@ public class ProtocolStackAdd extends AbstractAddStepHandler implements Descript
         @Override
         public boolean isShared() {
             return this.shared;
+        }
+
+
+        @Override
+        public String getMachineId() {
+            return machineId;
+        }
+
+        public void setMachineId(String machineId) {
+            this.machineId = machineId;
+        }
+
+        @Override
+        public String getRackId() {
+            return rackId;
+        }
+
+        public void setRackId(String rackId) {
+            this.rackId = rackId;
+        }
+
+        @Override
+        public String getSiteId() {
+            return siteId;
+        }
+
+        public void setSiteId(String siteId) {
+            this.siteId = siteId;
+        }
+
+        @Override
+        public boolean hasTopology() {
+            return (machineId!=null || rackId!=null || siteId!=null);
         }
 
         @Override

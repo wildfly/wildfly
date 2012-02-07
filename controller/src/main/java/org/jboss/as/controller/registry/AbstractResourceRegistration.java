@@ -33,16 +33,17 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.jboss.as.controller.ControllerMessages;
-import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
+import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -73,7 +74,7 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
 
     @Override
     public boolean isAllowsOverride() {
-        return !isRemote() && parent != null && !PathElement.WILDCARD_VALUE.equals(valueString);
+        return !isRemote() && parent != null && PathElement.WILDCARD_VALUE.equals(valueString);
     }
 
     @Override
@@ -126,7 +127,12 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
     /** {@inheritDoc} */
     @Override
     public void registerOperationHandler(final String operationName, final OperationStepHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited) {
-        registerOperationHandler(operationName, handler, descriptionProvider, inherited, OperationEntry.EntryType.PUBLIC);
+        registerOperationHandler(operationName, handler, descriptionProvider, inherited, EntryType.PUBLIC);
+    }
+
+    @Override
+    public void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, EnumSet<Flag> flags) {
+        registerOperationHandler(operationName, handler, descriptionProvider, inherited, EntryType.PUBLIC, flags);
     }
 
     /** {@inheritDoc} */

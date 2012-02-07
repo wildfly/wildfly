@@ -22,16 +22,12 @@
 
 package org.jboss.as.server.deployment.annotation;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.logging.Logger;
 
 /**
  * Deployment unit processor responsible for creating and attaching an annotation index for a resource root
@@ -40,8 +36,6 @@ import org.jboss.logging.Logger;
  * @author Stuart Douglas
  */
 public class AnnotationIndexProcessor implements DeploymentUnitProcessor {
-
-    private static final Logger logger = Logger.getLogger(AnnotationIndexProcessor.class);
 
     /**
      * Process this deployment for annotations.  This will use an annotation indexer to create an index of all annotations
@@ -52,7 +46,6 @@ public class AnnotationIndexProcessor implements DeploymentUnitProcessor {
      *
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final List<ResourceRoot> allResourceRoots = new ArrayList<ResourceRoot>();
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         for (ResourceRoot resourceRoot : DeploymentUtils.allResourceRoots(deploymentUnit)) {
             ResourceRootIndexer.indexResourceRoot(resourceRoot);

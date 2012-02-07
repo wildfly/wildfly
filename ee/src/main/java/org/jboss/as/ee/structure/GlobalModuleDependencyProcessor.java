@@ -58,7 +58,7 @@ public class GlobalModuleDependencyProcessor implements DeploymentUnitProcessor 
                 final String name = module.get(GlobalModulesDefinition.NAME).asString();
                 String slot = module.hasDefined(GlobalModulesDefinition.SLOT) ? module.get(GlobalModulesDefinition.SLOT).asString() : GlobalModulesDefinition.DEFAULT_SLOT;
                 final ModuleIdentifier identifier = ModuleIdentifier.create(name, slot);
-                moduleSpecification.addSystemDependency(new ModuleDependency(Module.getBootModuleLoader(), identifier, false, false, true));
+                moduleSpecification.addSystemDependency(new ModuleDependency(Module.getBootModuleLoader(), identifier, false, false, true, false));
             }
         }
     }

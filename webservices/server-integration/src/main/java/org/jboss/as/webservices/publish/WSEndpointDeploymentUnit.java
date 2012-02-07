@@ -1,3 +1,24 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.as.webservices.publish;
 
 import java.util.Map;
@@ -13,12 +34,13 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
 
 public class WSEndpointDeploymentUnit extends SimpleAttachable implements DeploymentUnit {
 
     private String deploymentName;
 
-    public WSEndpointDeploymentUnit(ClassLoader loader, String context, Map<String,String> urlPatternToClassName) {
+    public WSEndpointDeploymentUnit(ClassLoader loader, String context, Map<String,String> urlPatternToClassName, WebservicesMetaData metadata) {
         this.deploymentName = context + ".deployment";
 
         JBossWebMetaData jbossWebMetaData = new JBossWebMetaData();
@@ -27,9 +49,10 @@ public class WSEndpointDeploymentUnit extends SimpleAttachable implements Deploy
         for (String urlPattern : urlPatternToClassName.keySet()) {
             addEndpoint(jbossWebMetaData, jaxwsDeployment, urlPatternToClassName.get(urlPattern), urlPattern);
         }
-        this.putAttachment(WSAttachmentKeys.JBOSSWEB_METADATA_KEY, jbossWebMetaData);
-        this.putAttachment(WSAttachmentKeys.JAXWS_ENDPOINTS_KEY, jaxwsDeployment);
         this.putAttachment(WSAttachmentKeys.CLASSLOADER_KEY, loader);
+        this.putAttachment(WSAttachmentKeys.JAXWS_ENDPOINTS_KEY, jaxwsDeployment);
+        this.putAttachment(WSAttachmentKeys.JBOSSWEB_METADATA_KEY, jbossWebMetaData);
+        this.putAttachment(WSAttachmentKeys.WEBSERVICES_METADATA_KEY, metadata);
     }
 
     private void addEndpoint(JBossWebMetaData jbossWebMetaData, JAXWSDeployment jaxwsDeployment, String className, String urlPattern) {

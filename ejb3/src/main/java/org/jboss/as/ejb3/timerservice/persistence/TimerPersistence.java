@@ -33,6 +33,13 @@ public interface TimerPersistence {
      *
      * @param timerEntity
      */
+    void addTimer(TimerEntity timerEntity);
+
+    /**
+     * Called when a timer is being persisted
+     *
+     * @param timerEntity
+     */
     void persistTimer(TimerEntity timerEntity);
 
     /**

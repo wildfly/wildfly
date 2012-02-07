@@ -29,9 +29,6 @@ import javax.ejb.Singleton;
 import javax.ejb.Stateful;
 import javax.ejb.Stateless;
 
-import org.jboss.as.ee.component.Attachments;
-import org.jboss.as.ee.component.ComponentDescription;
-import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
@@ -56,6 +53,8 @@ import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.metadata.ejb.spec.SessionType;
 import org.jboss.msc.service.ServiceName;
 
+import static org.jboss.as.ejb3.deployment.processors.AbstractDeploymentUnitProcessor.getEjbJarDescription;
+
 /**
  * User: jpai
  */
@@ -67,14 +66,8 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
     private static final DotName STATEFUL_ANNOTATION = DotName.createSimple(Stateful.class.getName());
     private static final DotName SINGLETON_ANNOTATION = DotName.createSimple(Singleton.class.getName());
 
-    /**
-     * If this is an appclient we want to make the components as not installable, so we can still look up which EJB's are in
-     * the deployment, but do not actuall install them
-     */
-    private final boolean appclient;
-
     public SessionBeanComponentDescriptionFactory(final boolean appclient) {
-        this.appclient = appclient;
+        super(appclient);
     }
 
     /**
@@ -108,7 +101,8 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
 
     @Override
     protected void processBeanMetaData(final DeploymentUnit deploymentUnit, final EnterpriseBeanMetaData enterpriseBeanMetaData) throws DeploymentUnitProcessingException {
-        if (enterpriseBeanMetaData instanceof SessionBeanMetaData) {
+        if (enterpriseBeanMetaData.isSession()) {
+            assert enterpriseBeanMetaData instanceof SessionBeanMetaData : enterpriseBeanMetaData + " is not a SessionBeanMetaData";
             processSessionBeanMetaData(deploymentUnit, (SessionBeanMetaData) enterpriseBeanMetaData);
         }
     }
@@ -134,41 +128,33 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
             final String ejbName = sessionBeanClassInfo.name().local();
             final AnnotationValue nameValue = sessionBeanAnnotation.value("name");
             final String beanName = nameValue == null || nameValue.asString().isEmpty() ? ejbName : nameValue.asString();
-            final EnterpriseBeanMetaData beanMetaData = getEnterpriseBeanMetaData(deploymentUnit, beanName);
+            final SessionBeanMetaData beanMetaData = getEnterpriseBeanMetaData(deploymentUnit, beanName, SessionBeanMetaData.class);
             final SessionBeanComponentDescription.SessionBeanType sessionBeanType;
             final String beanClassName;
-            if (beanMetaData != null && beanMetaData instanceof SessionBeanMetaData) {
-                sessionBeanType = override(annotatedSessionBeanType, descriptionOf(((SessionBeanMetaData) beanMetaData).getSessionType()));
-            } else {
-                sessionBeanType = annotatedSessionBeanType;
-            }
             if (beanMetaData != null) {
                 beanClassName = override(sessionBeanClassInfo.name().toString(), beanMetaData.getEjbClass());
+                sessionBeanType = override(annotatedSessionBeanType, descriptionOf(((SessionBeanMetaData) beanMetaData).getSessionType()));
             } else {
                 beanClassName = sessionBeanClassInfo.name().toString();
+                sessionBeanType = annotatedSessionBeanType;
             }
 
             final SessionBeanComponentDescription sessionBeanDescription;
             switch (sessionBeanType) {
                 case STATELESS:
-                    sessionBeanDescription = new StatelessComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnitServiceName);
+                    sessionBeanDescription = new StatelessComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnitServiceName, beanMetaData);
                     break;
                 case STATEFUL:
-                    sessionBeanDescription = new StatefulComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnitServiceName);
+                    sessionBeanDescription = new StatefulComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnitServiceName, beanMetaData);
                     break;
                 case SINGLETON:
-                    sessionBeanDescription = new SingletonComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnitServiceName);
+                    sessionBeanDescription = new SingletonComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnitServiceName, beanMetaData);
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown session bean type: " + sessionBeanType);
             }
 
-            if (appclient) {
-                deploymentUnit.addToAttachmentList(Attachments.ADDITIONAL_RESOLVABLE_COMPONENTS, sessionBeanDescription);
-            } else {
-                // Add this component description to module description
-                ejbJarDescription.getEEModuleDescription().addComponent(sessionBeanDescription);
-            }
+            addComponent(deploymentUnit, sessionBeanDescription);
         }
 
         EjbDeploymentMarker.mark(deploymentUnit);
@@ -218,70 +204,60 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
 
     private void processSessionBeanMetaData(final DeploymentUnit deploymentUnit, final SessionBeanMetaData sessionBean) throws DeploymentUnitProcessingException {
         final EjbJarDescription ejbJarDescription = getEjbJarDescription(deploymentUnit);
-        final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-        final List<ComponentDescription> additionalComponents = deploymentUnit.getAttachmentList(Attachments.ADDITIONAL_RESOLVABLE_COMPONENTS);
+        final CompositeIndex compositeIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
 
         final String beanName = sessionBean.getName();
-        // the important bit is to skip already processed EJBs via annotations
-        if (ejbJarDescription.hasComponent(beanName)) {
-            final ComponentDescription description = eeModuleDescription.getComponentByName(beanName);
-            if (description instanceof SessionBeanComponentDescription) {
-                ((SessionBeanComponentDescription) description).setDescriptorData(sessionBean);
-            } else {
-                throw new DeploymentUnitProcessingException("Session bean with name " + beanName + " referenced in ejb-jar.xml could not be created, as existing non session bean component with same name already exists: " + description);
-            }
-            return;
-        }
-
-        if (appclient) {
-            for (final ComponentDescription component : additionalComponents) {
-                if (component.getComponentName().equals(beanName)) {
-                    if (component instanceof SessionBeanComponentDescription) {
-                        ((SessionBeanComponentDescription) component).setDescriptorData(sessionBean);
-                    } else {
-                        throw new DeploymentUnitProcessingException("Session bean with name " + beanName + " referenced in ejb-jar.xml could not be created, as existing non session bean component with same name already exists: " + component);
-                    }
-                    return;
-                }
-            }
-        }
-        final SessionType sessionType = sessionBean.getSessionType();
+        SessionType sessionType = sessionBean.getSessionType();
 
         if (sessionType == null && sessionBean instanceof GenericBeanMetaData) {
             final GenericBeanMetaData bean = (GenericBeanMetaData) sessionBean;
             if (bean.getEjbType() == EjbType.SESSION) {
-                throw EjbMessages.MESSAGES.sessionTypeNotSpecified(beanName);
+                sessionType = determineSessionType(sessionBean.getEjbClass(), compositeIndex);
+                if (sessionType == null) {
+                    throw EjbMessages.MESSAGES.sessionTypeNotSpecified(beanName);
+                }
             } else {
                 //it is not a session bean, so we ignore it
                 return;
             }
-        } else if(sessionType == null) {
-            throw EjbMessages.MESSAGES.sessionTypeNotSpecified(beanName);
+        } else if (sessionType == null) {
+            sessionType = determineSessionType(sessionBean.getEjbClass(), compositeIndex);
+            if (sessionType == null) {
+                throw EjbMessages.MESSAGES.sessionTypeNotSpecified(beanName);
+            }
         }
 
         final String beanClassName = sessionBean.getEjbClass();
         final SessionBeanComponentDescription sessionBeanDescription;
         switch (sessionType) {
             case Stateless:
-                sessionBeanDescription = new StatelessComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName());
+                sessionBeanDescription = new StatelessComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName(), sessionBean);
                 break;
             case Stateful:
-                sessionBeanDescription = new StatefulComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName());
+                sessionBeanDescription = new StatefulComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName(), sessionBean);
                 break;
             case Singleton:
-                sessionBeanDescription = new SingletonComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName());
+                sessionBeanDescription = new SingletonComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName(), sessionBean);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown session bean type: " + sessionType);
         }
-        if (appclient) {
-            deploymentUnit.addToAttachmentList(Attachments.ADDITIONAL_RESOLVABLE_COMPONENTS, sessionBeanDescription);
+        addComponent(deploymentUnit, sessionBeanDescription);
+    }
 
-        } else {
-            // Add this component description to module description
-            ejbJarDescription.getEEModuleDescription().addComponent(sessionBeanDescription);
+    private SessionType determineSessionType(final String ejbClass, final CompositeIndex compositeIndex) {
+        if(ejbClass == null) {
+            return null;
         }
-        sessionBeanDescription.setDescriptorData(sessionBean);
+        final ClassInfo info = compositeIndex.getClassByName(DotName.createSimple(ejbClass));
+        if(info.annotations().get(STATEFUL_ANNOTATION) != null) {
+            return SessionType.Stateful;
+        } else if(info.annotations().get(STATELESS_ANNOTATION) != null) {
+            return SessionType.Stateless;
+        } else if(info.annotations().get(SINGLETON_ANNOTATION) != null) {
+            return SessionType.Singleton;
+        }
+        return null;
     }
 
 }

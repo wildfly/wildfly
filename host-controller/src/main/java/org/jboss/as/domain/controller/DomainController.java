@@ -23,6 +23,7 @@
 package org.jboss.as.domain.controller;
 
 import org.jboss.as.controller.ProxyController;
+import org.jboss.as.repository.HostFileRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
@@ -57,6 +58,14 @@ public interface DomainController {
      * @throws SlaveRegistrationException if there is a problem registering the host
      */
     void registerRemoteHost(final ProxyController hostControllerClient) throws SlaveRegistrationException;
+
+    /**
+     * Check if a Host Controller is already registered with this domain controller.
+     *
+     * @param id the name of the host controller
+     * @return <code>true</code> if there is such a host controller registered, <code>false</code> otherwise
+     */
+    boolean isHostRegistered(String id);
 
     /**
      * Unregisters a previously registered Host Controller.
@@ -94,7 +103,7 @@ public interface DomainController {
      *
      * @return the file repository
      */
-    FileRepository getLocalFileRepository();
+    HostFileRepository getLocalFileRepository();
 
     /**
      * Gets the file repository backing the master domain controller
@@ -105,10 +114,17 @@ public interface DomainController {
      *          {@link LocalHostControllerInfo#isMasterDomainController()} method would return {@code true}
      *
      */
-    FileRepository getRemoteFileRepository();
+    HostFileRepository getRemoteFileRepository();
 
     /**
      * Stops this host controller
      */
     void stopLocalHost();
+
+    /**
+     * Stop this host controller with a specific exit code.
+     *
+     * @param exitCode the exit code passed to the ProcessController
+     */
+    void stopLocalHost(int exitCode);
 }

@@ -21,39 +21,6 @@
  */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
-import java.util.List;
-import java.util.Map;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.connector.pool.PoolOperations;
-import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
-import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.parsing.ParseUtils;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.controller.registry.AttributeAccess.Storage;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.jboss.jca.common.api.metadata.common.CommonConnDef;
-import org.jboss.jca.common.api.metadata.common.Recovery;
-import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
-import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
-import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
 import static org.jboss.as.connector.ConnectorLogger.SUBSYSTEM_RA_LOGGER;
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
@@ -96,6 +63,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_C
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WRAP_XA_RESOURCE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
+import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.ACTIVATE_RA_DESC;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.ADD_ADMIN_OBJECT_DESC;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.ADD_CONFIG_PROPERTIES_DESC;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.ADD_CONNECTION_DEFINITION_DESC;
@@ -120,6 +88,42 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.connector.pool.PoolOperations;
+import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
+import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.controller.registry.AttributeAccess.Storage;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.OperationEntry.Flag;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
+import org.jboss.jca.common.api.metadata.common.CommonConnDef;
+import org.jboss.jca.common.api.metadata.common.Recovery;
+import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
+import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
+import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
 /**
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  * @author <a href="mailto:jeff.zhang@jboss.org">Jeff Zhang</a>
@@ -127,6 +131,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 public class ResourceAdaptersExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = RESOURCEADAPTERS_NAME;
+    private static final EnumSet<Flag> RUNTIME_ONLY_FLAG = EnumSet.of(Flag.RUNTIME_ONLY);
 
     @Override
     public void initialize(final ExtensionContext context) {
@@ -134,7 +139,7 @@ public class ResourceAdaptersExtension implements Extension {
         // Register the remoting subsystem
         final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
 
-        ReloadRequiredWriteAttributeHandler reloadRequiredWriteAttributeHandler = new ReloadRequiredWriteAttributeHandler();
+        ReloadRequiredWriteAttributeHandler disabledRequiredWriteAttributeHandler = new  ReloadRequiredWriteAttributeHandler();
 
 
         registration.registerXMLElementWriter(ResourceAdapterSubsystemParser.INSTANCE);
@@ -149,9 +154,11 @@ public class ResourceAdaptersExtension implements Extension {
                 RESOURCEADAPTER_DESC);
         resourceadapter.registerOperationHandler(ADD, RaAdd.INSTANCE, ADD_RESOURCEADAPTER_DESC, false);
         resourceadapter.registerOperationHandler(REMOVE, RaRemove.INSTANCE, REMOVE_RESOURCEADAPTER_DESC, false);
+        resourceadapter.registerOperationHandler("activate", RaActivate.INSTANCE, ACTIVATE_RA_DESC, false);
+
         for (final String attribute : ResourceAdaptersSubsystemProviders.RESOURCEADAPTER_ATTRIBUTE) {
             resourceadapter.registerReadWriteAttribute(attribute, null,
-                    reloadRequiredWriteAttributeHandler, Storage.CONFIGURATION);
+                    disabledRequiredWriteAttributeHandler, Storage.CONFIGURATION);
         }
 
         final ManagementResourceRegistration configAdapter = resourceadapter.registerSubModel(PathElement.pathElement(CONFIG_PROPERTIES.getName()), CONFIG_PROPERTIES_DESC);
@@ -167,7 +174,7 @@ public class ResourceAdaptersExtension implements Extension {
         configCF.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, REMOVE_CONFIG_PROPERTIES_DESC, false);
         for (final SimpleAttributeDefinition attribute : ResourceAdaptersSubsystemProviders.CONNECTIONDEFINITIONS_NODEATTRIBUTE) {
             connectionDefinition.registerReadWriteAttribute(attribute.getName(), null,
-                    reloadRequiredWriteAttributeHandler, Storage.CONFIGURATION);
+                    disabledRequiredWriteAttributeHandler, Storage.CONFIGURATION);
         }
 
         final ManagementResourceRegistration adminObject = resourceadapter.registerSubModel(PathElement.pathElement(ADMIN_OBJECTS_NAME), ADMIN_OBJECT_DESC);
@@ -179,16 +186,16 @@ public class ResourceAdaptersExtension implements Extension {
         configAO.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, REMOVE_CONFIG_PROPERTIES_DESC, false);
         for (final SimpleAttributeDefinition attribute : ResourceAdaptersSubsystemProviders.ADMIN_OBJECTS_NODEATTRIBUTE) {
             adminObject.registerReadWriteAttribute(attribute.getName(), null,
-                    reloadRequiredWriteAttributeHandler, Storage.CONFIGURATION);
+                    disabledRequiredWriteAttributeHandler, Storage.CONFIGURATION);
         }
 
         if (context.isRuntimeOnlyRegistrationValid()) {
             connectionDefinition.registerOperationHandler("flush-idle-connection-in-pool",
-                    PoolOperations.FlushIdleConnectionInPool.RA_INSTANCE, FLUSH_IDLE_CONNECTION_DESC, false);
+                    PoolOperations.FlushIdleConnectionInPool.RA_INSTANCE, FLUSH_IDLE_CONNECTION_DESC, false, RUNTIME_ONLY_FLAG);
             connectionDefinition.registerOperationHandler("flush-all-connection-in-pool",
-                    PoolOperations.FlushAllConnectionInPool.RA_INSTANCE, FLUSH_ALL_CONNECTION_DESC, false);
+                    PoolOperations.FlushAllConnectionInPool.RA_INSTANCE, FLUSH_ALL_CONNECTION_DESC, false, RUNTIME_ONLY_FLAG);
             connectionDefinition.registerOperationHandler("test-connection-in-pool", PoolOperations.TestConnectionInPool.RA_INSTANCE,
-                    TEST_CONNECTION_DESC, false);
+                    TEST_CONNECTION_DESC, false, RUNTIME_ONLY_FLAG);
         }
 
     }
@@ -226,8 +233,17 @@ public class ResourceAdaptersExtension implements Extension {
 
         private void writeRaElement(XMLExtendedStreamWriter streamWriter, ModelNode ra) throws XMLStreamException {
             streamWriter.writeStartElement(ResourceAdapters.Tag.RESOURCE_ADAPTER.getLocalName());
+            if (ra.hasDefined(ARCHIVE.getName())) {
+                streamWriter.writeStartElement(ARCHIVE.getXmlName());
+                String archive = ra.get(ARCHIVE.getName()).asString();
+                if (archive.contains(ConnectorServices.RA_SERVICE_NAME_SEPARATOR)) {
+                    streamWriter.writeCharacters(archive.substring(0, archive.indexOf(ConnectorServices.RA_SERVICE_NAME_SEPARATOR)));
+                } else {
+                    streamWriter.writeCharacters(archive);
+                }
 
-            ARCHIVE.marshallAsElement(ra, streamWriter);
+                streamWriter.writeEndElement();
+            }
             BOOTSTRAPCONTEXT.marshallAsElement(ra, streamWriter);
 
             if (ra.hasDefined(BEANVALIDATIONGROUPS.getName())) {

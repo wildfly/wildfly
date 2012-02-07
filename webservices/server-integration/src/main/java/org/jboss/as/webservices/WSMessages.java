@@ -27,6 +27,7 @@ import java.net.URL;
 
 import javax.xml.ws.WebServiceException;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.logging.Cause;
@@ -149,4 +150,22 @@ public interface WSMessages {
 
     @Message(id = 15536, value = "@WebServiceRef attribute 'type' is required fo class level annotations.")
     DeploymentUnitProcessingException requiredServiceRefType();
+
+    @Message(id = 15585, value = "Endpoint config %s doesn't exist")
+    OperationFailedException missingEndpointConfig(String configName);
+
+    @Message(id = 15586, value = "Attributes %s, %s and %s are mutually exclusive")
+    OperationFailedException mutuallyExclusiveHandlerChainAttributes(String attr1, String attr2, String attr3);
+
+    @Message(id = 15587, value = "Unsupported handler chain type: %s. Supported types are either %s or %s")
+    OperationFailedException wrongHandlerChainType(String unknownChainType, String knownChainType1, String knownChainType2);
+
+    @Message(id = 15588, value = "Cannot add new handler chain of type %s with id %s. This id is already used in config %s for another chain.")
+    OperationFailedException multipleHandlerChainsWithSameId(String chainType, String handlerChainId, String configId);
+
+    @Message(id = 15589, value = "Endpoint config %s: %s handler chain with id %s doesn't exist")
+    OperationFailedException missingHandlerChain(String configName, String handlerChainType, String handlerChainId);
+
+    @Message(id = 15590, value = "Endpoint config %s, %s handler chain %s: doesn't contain handler with name %s")
+    OperationFailedException missingHandler(String configName, String handlerChainType, String handlerChainId, String handlerName);
 }

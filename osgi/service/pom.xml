@@ -79,20 +79,12 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.jboss.osgi.deployment</groupId>
-            <artifactId>jbosgi-deployment</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.jboss.osgi.framework</groupId>
             <artifactId>jbosgi-framework-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.osgi.resolver</groupId>
-            <artifactId>jbosgi-resolver-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.osgi.vfs</groupId>
-            <artifactId>jbosgi-vfs</artifactId>
+            <groupId>org.jboss.osgi.repository</groupId>
+            <artifactId>jbosgi-repository-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.osgi</groupId>
@@ -100,19 +92,7 @@
         </dependency>
         <dependency>
             <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.compendium</artifactId>
-        </dependency>
-
-        <!-- Provided Dependencies -->
-        <dependency>
-            <groupId>org.jboss.osgi.resolver</groupId>
-            <artifactId>jbosgi-resolver-felix</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.osgi.vfs</groupId>
-            <artifactId>jbosgi-vfs30</artifactId>
-            <scope>provided</scope>
+            <artifactId>org.osgi.enterprise</artifactId>
         </dependency>
 
         <!-- Test Dependencies -->

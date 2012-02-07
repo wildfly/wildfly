@@ -24,7 +24,8 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.server.deployment.repository.api.ContentRepository;
+import org.jboss.as.repository.ContentRepository;
+import org.jboss.as.server.ServerMessages;
 import org.jboss.dmr.ModelNode;
 
 import java.io.IOException;
@@ -71,9 +72,9 @@ public class DeploymentUploadURLHandler
             URL url = new URL(urlSpec);
             return url.openStream();
         } catch (MalformedURLException e) {
-            throw new RuntimeException(urlSpec + " is not a valid URL", e);
+            throw ServerMessages.MESSAGES.invalidDeploymentURL(urlSpec, e);
         } catch (IOException e) {
-            throw new RuntimeException("Error obtaining input stream from URL " + urlSpec, e);
+            throw ServerMessages.MESSAGES.problemOpeningStreamFromDeploymentURL(urlSpec, e);
         }
     }
 

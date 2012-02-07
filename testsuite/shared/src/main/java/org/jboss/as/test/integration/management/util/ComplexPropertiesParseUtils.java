@@ -36,13 +36,13 @@ public class ComplexPropertiesParseUtils {
      * @param indiName
      */
     public static  Properties commonDsProperties(String jndiName){
-    	Properties params=new Properties();
-    	//attributes
-    	params.put("use-java-context","true");
-        params.put("spy","false");
-        params.put("use-ccm","true");
-    	params.put("jndi-name", jndiName);
-    	//common elements
+        Properties params = new Properties();
+        //attributes
+        params.put("use-java-context", "true");
+        params.put("spy", "false");
+        params.put("use-ccm", "true");
+        params.put("jndi-name", jndiName);
+        //common elements
         params.put("driver-name","h2");
         params.put("new-connection-sql","select 1");
         params.put("transaction-isolation","TRANSACTION_READ_COMMITTED");
@@ -81,15 +81,15 @@ public class ComplexPropertiesParseUtils {
         params.put("prepared-statements-cache-size","30");
         params.put("share-prepared-statements","true");
 
-    	return params;
+        return params;
     }
     /**
      * Returns properties for complex XA datasource
      * @param indiName
      */
     public static  Properties xaDsProperties(String jndiName){
-    	Properties params=commonDsProperties(jndiName);
-    	//attributes
+        Properties params=commonDsProperties(jndiName);
+        //attributes
     
         //common
         params.put("xa-datasource-class","org.jboss.as.connector.subsystems.datasources.ModifiableXaDataSource");
@@ -109,14 +109,14 @@ public class ComplexPropertiesParseUtils {
         params.put("recovery-security-domain","HsqlDbRealm");
 
 
-    	return params;
+        return params;
     }
     /**
      * Returns properties for non XA datasource
      * @param jndiName
      */
     public static Properties nonXaDsProperties(String jndiName){
-    	Properties params=commonDsProperties(jndiName);    	//attributes
+        Properties params=commonDsProperties(jndiName);    	//attributes
         params.put("jta","false");
         //common
         params.put("driver-class","org.hsqldb.jdbcDriver");
@@ -130,73 +130,73 @@ public class ComplexPropertiesParseUtils {
     
      */
     public static  Properties raCommonProperties(){
-    	Properties params=new Properties();
-    	 params.put("archive","some.rar");
-         params.put("transaction-support","XATransaction");
-         params.put("bootstrap-context","someContext");
-         
-    	return params;
+        Properties params = new Properties();
+        params.put("archive", "some.rar");
+        params.put("transaction-support", "XATransaction");
+        params.put("bootstrap-context", "someContext");
+
+        return params;
     }
     /**
      * Returns properties for RA connection-definition element
      
      */
     public static  Properties raConnectionProperties(){
-    	Properties params=new Properties();
-    	//attributes
-    	params.put("use-java-context","false");
-        params.put("class-name","Class1");
-        params.put("use-ccm","true");
-    	params.put("jndi-name", "java:jboss/name1");
-    	params.put("enabled","false");
+        Properties params = new Properties();
+        //attributes
+        params.put("use-java-context", "false");
+        params.put("class-name", "Class1");
+        params.put("use-ccm", "true");
+        params.put("jndi-name", "java:jboss/name1");
+        params.put("enabled", "false");
         //pool
-        params.put("min-pool-size","1");
-        params.put("max-pool-size","5");
-        params.put("pool-prefill","true");
-        params.put("pool-use-strict-min","true");
-        params.put("flush-strategy","IdleConnections");
+        params.put("min-pool-size", "1");
+        params.put("max-pool-size", "5");
+        params.put("pool-prefill", "true");
+        params.put("pool-use-strict-min", "true");
+        params.put("flush-strategy", "IdleConnections");
         //xa-pool
-        params.put("same-rm-override","true");
-        params.put("interleaving","true");
-        params.put("no-tx-separate-pool","true");
-        params.put("pad-xid","true");
-        params.put("wrap-xa-resource","true");
+        params.put("same-rm-override", "true");
+        params.put("interleaving", "true");
+        params.put("no-tx-separate-pool", "true");
+        params.put("pad-xid", "true");
+        params.put("wrap-xa-resource", "true");
         //security
-        params.put("application","true");
-        params.put("security-domain-and-application","HsqlDbRealm1");
-        params.put("security-domain","HsqlDbRealm");
+        params.put("application", "true");
+        params.put("security-domain-and-application", "HsqlDbRealm1");
+        params.put("security-domain", "HsqlDbRealm");
         //validation
-        params.put("background-validation","true");
-        params.put("background-validation-millis","5000");
-        params.put("use-fast-fail","true");
+        params.put("background-validation", "true");
+        params.put("background-validation-millis", "5000");
+        params.put("use-fast-fail", "true");
         //time-out
-        params.put("blocking-timeout-wait-millis","5000");
-        params.put("idle-timeout-minutes","4");
-        params.put("allocation-retry","2");
-        params.put("allocation-retry-wait-millis","3000");
-        params.put("xa-resource-timeout","300");
+        params.put("blocking-timeout-wait-millis", "5000");
+        params.put("idle-timeout-minutes", "4");
+        params.put("allocation-retry", "2");
+        params.put("allocation-retry-wait-millis", "3000");
+        params.put("xa-resource-timeout", "300");
         //recovery
-        params.put("no-recovery","false");
-        params.put("recovery-plugin-class-name","someClass2");
-        params.put("recovery-username","sa");
-        params.put("recovery-password","sa-pass");
-        params.put("recovery-security-domain","HsqlDbRealm");
+        params.put("no-recovery", "false");
+        params.put("recovery-plugin-class-name", "someClass2");
+        params.put("recovery-username", "sa");
+        params.put("recovery-password", "sa-pass");
+        params.put("recovery-security-domain", "HsqlDbRealm");
 
-    	return params;
+        return params;
     }
     /**
      * Returns properties for RA admin-object element
      
      */
     public static  Properties raAdminProperties(){
-    	Properties params=new Properties();
-    	//attributes
-    	params.put("use-java-context","false");
-        params.put("class-name","Class3");
-    	params.put("jndi-name", "java:jboss/Name3");
-    	params.put("enabled","true");
+        Properties params = new Properties();
+        //attributes
+        params.put("use-java-context", "false");
+        params.put("class-name", "Class3");
+        params.put("jndi-name", "java:jboss/Name3");
+        params.put("enabled", "true");
 
-    	return params;
+        return params;
     }
 
     /**
@@ -205,12 +205,12 @@ public class ComplexPropertiesParseUtils {
      * @param params
      */
     public static void setOperationParams(ModelNode operation,Properties params){
-    	String str;
-    	Enumeration e = params.propertyNames();
+        String str;
+        Enumeration e = params.propertyNames();
 
         while (e.hasMoreElements()) {
-        	str=(String)e.nextElement();
-        	operation.get(str).set(params.getProperty(str));
+            str = (String) e.nextElement();
+            operation.get(str).set(params.getProperty(str));
         }
     }
     /**
@@ -218,22 +218,12 @@ public class ComplexPropertiesParseUtils {
      * TODO: not implemented jet in DMR
      */
     public static void addExtensionProperties(ModelNode operation){
-    	/*
-
-        operation.get("reauth-plugin-properties","Property").set("A");
-        operation.get("valid-connection-checker-properties","Property").set("B");
-        operation.get("stale-connect,roperties","Property").set("C");
-        operation.get("exception-sorter-properties","Property").set("D");
-       */
-        /*final ModelNode sourcePropertiesAddress = address.clone();
-        sourcePropertiesAddress.add("reauth-plugin-properties", "Property");
-        sourcePropertiesAddress.protect();
-        final ModelNode sourcePropertyOperation = new ModelNode();
-        sourcePropertyOperation.get(OP).set("add");
-        sourcePropertyOperation.get(OP_ADDR).set(sourcePropertiesAddress);
-        sourcePropertyOperation.get("value").set("A");
-
-        execute(sourcePropertyOperation);*/
+      
+        
+        operation.get("reauth-plugin-properties","name").set("Property1");
+        operation.get("valid-connection-checker-properties","name").set("Property2");
+        operation.get("stale-connection-checker-properties","name").set("Property3");
+        operation.get("exception-sorter-properties","name").set("Property4");
 
     }
     /**
@@ -243,18 +233,18 @@ public class ComplexPropertiesParseUtils {
      * @returns boolean whether the node is ok
      */
     public static boolean checkModelParams(ModelNode node,Properties params){
-    	
-    	if (node==null) return false;
-    	String str, par;
+
+        if (node==null)  return false;
+        String str, par;
         Enumeration e = params.propertyNames();
 
         while (e.hasMoreElements()) {
-        	str=(String)e.nextElement();
-        	par=params.getProperty(str);
-        	if (node.get(str)==null) return false;
-        	else{
-        		if (!node.get(str).asString().equals(par)) return false;
-        	}
+                str=(String)e.nextElement();
+                par=params.getProperty(str);
+                if (node.get(str)==null)  return false;
+                else{
+                        if (!node.get(str).asString().equals(par)) return false;
+                }
         }
         return true;
     }

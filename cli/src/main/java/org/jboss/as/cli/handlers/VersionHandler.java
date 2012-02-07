@@ -54,7 +54,7 @@ public class VersionHandler implements CommandHandler {
      * @see org.jboss.as.cli.CommandHandler#isBatchMode()
      */
     @Override
-    public boolean isBatchMode() {
+    public boolean isBatchMode(CommandContext ctx) {
         return false;
     }
 
@@ -99,7 +99,7 @@ public class VersionHandler implements CommandHandler {
                 }
                 buf.append('\n');
             } catch (IOException e) {
-                ctx.printLine("Failed to get the AS release info: " + e.getLocalizedMessage());
+                ctx.error("Failed to get the AS release info: " + e.getLocalizedMessage());
                 e.printStackTrace();
             }
         }

@@ -85,12 +85,12 @@ public class UserLdapCallbackHandler implements Service<UserLdapCallbackHandler>
             throw MESSAGES.oneOfRequired(USERNAME_ATTRIBUTE, ADVANCED_FILTER);
         }
 
-        if (userLdap.has(RECURSIVE)) {
+        if (userLdap.hasDefined(RECURSIVE)) {
             recursive = userLdap.require(RECURSIVE).asBoolean();
         } else {
             recursive = false;
         }
-        if (userLdap.has(USER_DN)) {
+        if (userLdap.hasDefined(USER_DN)) {
             userDn = userLdap.require(USER_DN).asString();
         } else {
             userDn = DEFAULT_USER_DN;
@@ -141,8 +141,7 @@ public class UserLdapCallbackHandler implements Service<UserLdapCallbackHandler>
             String authenticationId = acb.getAuthenticationID();
             String authorizationId = acb.getAuthorizationID();
 
-            // TODO - Remove "" check once SASL-3 is resolved.
-            acb.setAuthorized("".equals(authorizationId) || authenticationId.equals(authorizationId));
+            acb.setAuthorized(authenticationId.equals(authorizationId));
 
             return;
         }

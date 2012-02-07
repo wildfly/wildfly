@@ -24,6 +24,8 @@ package org.jboss.as.naming.deployment;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.jboss.as.naming.service.NamingService;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -41,6 +43,10 @@ public class JndiNamingDependencySetupProcessor implements DeploymentUnitProcess
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         deploymentUnit.putAttachment(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES, Collections.newSetFromMap(new ConcurrentHashMap<ServiceName, Boolean>()));
+
+        //this will always be up but we need to make sure the naming service is
+        //not shut down before the deployment is undeployed when the container is shut down
+        phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, NamingService.SERVICE_NAME);
     }
 
     @Override

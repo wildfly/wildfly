@@ -35,6 +35,9 @@ import java.util.concurrent.TimeUnit;
 @Stateless
 public class AnnotationTimerServiceBean {
 
+    private static int TIMER_TIMEOUT_TIME_MS = 100;
+    // has to be greater than timeout time
+    private static int TIMER_CALL_WAITING_MS = 2000;
     private static final CountDownLatch latch = new CountDownLatch(1);
 
     private static String cdiMessage = null;
@@ -46,7 +49,7 @@ public class AnnotationTimerServiceBean {
     private TimerService timerService;
 
     public void createTimer() {
-        timerService.createTimer(100, null);
+        timerService.createTimer(TIMER_TIMEOUT_TIME_MS, null);
     }
 
     @Timeout
@@ -57,7 +60,7 @@ public class AnnotationTimerServiceBean {
 
     public static String awaitTimerCall() {
         try {
-            latch.await(2, TimeUnit.SECONDS);
+            latch.await(TIMER_CALL_WAITING_MS, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

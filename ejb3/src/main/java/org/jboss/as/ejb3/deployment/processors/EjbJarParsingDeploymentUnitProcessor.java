@@ -36,9 +36,12 @@ import javax.xml.stream.XMLStreamReader;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
+import org.jboss.as.ejb3.cache.EJBBoundCacheParser;
+import org.jboss.as.ejb3.clustering.EJBBoundClusteringMetaDataParser;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
+import org.jboss.as.ejb3.pool.EJBBoundPoolParser;
 import org.jboss.as.ejb3.resourceadapterbinding.parser.EJBBoundResourceAdapterBindingMetaDataParser;
 import org.jboss.as.ejb3.security.parser.EJBBoundSecurityMetaDataParser;
 import org.jboss.as.ejb3.security.parser.SecurityRoleMetaDataParser;
@@ -134,6 +137,11 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
 
         // attach the EjbJarMetaData to the deployment unit
         deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA, ejbJarMetaData);
+
+        // if the jboss-ejb3.xml has a distinct-name configured then attach it to the deployment unit
+        if (jbossMetaData != null && jbossMetaData.getDistinctName() != null) {
+            deploymentUnit.putAttachment(org.jboss.as.ee.structure.Attachments.DISTINCT_NAME, jbossMetaData.getDistinctName());
+        }
 
         if (ejbJarMetaData.getModuleName() != null) {
             eeModuleDescription.setModuleName(ejbJarMetaData.getModuleName());
@@ -264,11 +272,14 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
             XMLStreamReader reader = getXMLStreamReader(stream, descriptor, dtdInfo);
 
             Map<String, AbstractMetaDataParser<?>> parsers = new HashMap<String, AbstractMetaDataParser<?>>();
+            parsers.put(EJBBoundClusteringMetaDataParser.NAMESPACE_URI, new EJBBoundClusteringMetaDataParser());
             parsers.put("urn:security", new EJBBoundSecurityMetaDataParser());
             parsers.put("urn:security-role", new SecurityRoleMetaDataParser());
             parsers.put("urn:resource-adapter-binding", new EJBBoundResourceAdapterBindingMetaDataParser());
             parsers.put("urn:iiop", new IIOPMetaDataParser());
             parsers.put("urn:trans-timeout", new TransactionTimeoutMetaDataParser());
+            parsers.put(EJBBoundPoolParser.NAMESPACE_URI, new EJBBoundPoolParser());
+            parsers.put(EJBBoundCacheParser.NAMESPACE_URI, new EJBBoundCacheParser());
             final JBossEjb3MetaDataParser parser = new JBossEjb3MetaDataParser(parsers);
             final EjbJarMetaData ejbJarMetaData = parser.parse(reader, dtdInfo);
             return ejbJarMetaData;

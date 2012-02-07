@@ -172,4 +172,11 @@ public class HelloWorldManagedConnectionFactory implements ManagedConnectionFact
 
     }
 
+    public boolean equals(Object o) {
+        return super.equals(o);
+    }
+
+    public int hashCode() {
+        return super.hashCode();
+    }
 }

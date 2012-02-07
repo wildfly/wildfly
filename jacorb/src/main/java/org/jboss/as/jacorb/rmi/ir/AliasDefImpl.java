@@ -21,16 +21,16 @@
  */
 package org.jboss.as.jacorb.rmi.ir;
 
-import org.omg.CORBA.TypeCode;
-import org.omg.CORBA.TypeCodePackage.BadKind;
-import org.omg.CORBA.IRObject;
-import org.omg.CORBA.IDLType;
-import org.omg.CORBA.IDLTypeHelper;
-import org.omg.CORBA.DefinitionKind;
+import org.jboss.as.jacorb.JacORBMessages;
 import org.omg.CORBA.AliasDef;
 import org.omg.CORBA.AliasDefOperations;
 import org.omg.CORBA.AliasDefPOATie;
-import org.omg.CORBA.BAD_INV_ORDER;
+import org.omg.CORBA.DefinitionKind;
+import org.omg.CORBA.IDLType;
+import org.omg.CORBA.IDLTypeHelper;
+import org.omg.CORBA.IRObject;
+import org.omg.CORBA.TypeCode;
+import org.omg.CORBA.TypeCodePackage.BadKind;
 
 /**
  * AliasDef IR object.
@@ -62,8 +62,7 @@ class AliasDefImpl extends TypedefDefImpl implements AliasDefOperations {
             original_type_def = IDLTypeImpl.getIDLType(type().content_type(),
                     repository);
         } catch (BadKind ex) {
-            throw new RuntimeException("Bad kind " + type().kind().value() +
-                    " for TypeCode.content_type()");
+            throw JacORBMessages.MESSAGES.badKindForTypeCode(type().kind().value());
         }
 
         getReference();
@@ -74,7 +73,7 @@ class AliasDefImpl extends TypedefDefImpl implements AliasDefOperations {
     }
 
     public void original_type_def(IDLType arg) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     /**

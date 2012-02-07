@@ -37,6 +37,9 @@ import java.io.IOException;
 import java.util.List;
 
 /**
+ * Test the subsystem parser
+ *
+ * @author Thomas.Diesler@jboss.com
  * @author David Bosschaert
  */
 public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {

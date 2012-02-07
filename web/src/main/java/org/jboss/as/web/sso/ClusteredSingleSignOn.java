@@ -15,6 +15,8 @@
  */
 package org.jboss.as.web.sso;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 import java.io.IOException;
 import java.security.Principal;
 import java.util.Map;
@@ -41,8 +43,7 @@ import org.jboss.as.clustering.web.sso.FullyQualifiedSessionId;
 import org.jboss.as.clustering.web.sso.SSOClusterManager;
 import org.jboss.as.clustering.web.sso.SSOCredentials;
 import org.jboss.as.clustering.web.sso.SSOLocalManager;
-import org.jboss.logging.Logger;
-import org.jboss.netty.handler.codec.http.HttpRequest;
+import org.jboss.as.web.WebLogger;
 
 /**
  * A <strong>Valve</strong> that supports a "single sign on" user experience, where the security identity of a user who
@@ -65,8 +66,6 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
     public static final int DEFAULT_PROCESS_EXPIRES_INTERVAL = 60;
     /** By default we let SSOs without active sessions live for 30 mins */
     public static final int DEFAULT_MAX_EMPTY_LIFE = 1800;
-    /** for use when there is no container logger to use **/
-    private static final Logger log = Logger.getLogger(ClusteredSingleSignOn.class);
 
     // Override the superclass value
     static {
@@ -192,7 +191,7 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
     public void start() throws LifecycleException {
         // Validate and update our current component state
         if (started) {
-            throw new LifecycleException(sm.getString("authenticator.alreadyStarted"));
+            throw new LifecycleException(MESSAGES.valveAlreadyStarted());
         }
 
         lifecycle.fireLifecycleEvent(START_EVENT, null);
@@ -209,7 +208,7 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
     public void stop() throws LifecycleException {
         // Validate and update our current component state
         if (!started) {
-            throw new LifecycleException(sm.getString("authenticator.notStarted"));
+            throw new LifecycleException(MESSAGES.valveNotStarted());
         }
 
         lifecycle.fireLifecycleEvent(STOP_EVENT, null);
@@ -236,14 +235,14 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
 
         // Look up the single session id associated with this session (if any)
         Session session = event.getSession();
-        log.tracef("Process session destroyed on %s", session);
+        WebLogger.WEB_SSO_LOGGER.tracef("Process session destroyed on %s", session);
 
         String ssoId = null;
         synchronized (reverse) {
             ssoId = reverse.get(session);
         }
         if (ssoId == null) {
-            log.tracef("ignoring as SSO is already closed for session %s", session);
+            WebLogger.WEB_SSO_LOGGER.tracef("ignoring as SSO is already closed for session %s", session);
             return;
         }
 
@@ -255,7 +254,7 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
         boolean timedOut;
         boolean stopped = false;
         if ((timedOut = isSessionTimedOut(session)) || (stopped = isManagerStopped(session))) {
-            log.tracef("remove session %s from SSO %s, isSessionTimedOut=%s, isManagerStopped=%s", session, ssoId, timedOut, stopped);
+            WebLogger.WEB_SSO_LOGGER.tracef("remove session %s from SSO %s, isSessionTimedOut=%s, isManagerStopped=%s", session, ssoId, timedOut, stopped);
 
             removeSession(ssoId, session);
 
@@ -263,7 +262,7 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
             // to do our cleanup of expired sessions
             processExpires();
         } else {
-            log.tracef("user logged out of SSO %s", ssoId);
+            WebLogger.WEB_SSO_LOGGER.tracef("user logged out of SSO %s", ssoId);
             // The session was logged out.
             logout(ssoId);
         }
@@ -289,7 +288,7 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
             if (removed) {
                 source.removeLifecycleListener(this);
 
-                log.tracef("ClusteredSSO: removed stopped manager %s", source);
+                WebLogger.WEB_SSO_LOGGER.tracef("ClusteredSSO: removed stopped manager %s", source);
             }
 
             // TODO consider getting the sessions and removing any from our sso's
@@ -316,9 +315,9 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
         request.removeNote(Constants.REQ_SSOID_NOTE);
 
         // Has a valid user already been authenticated?
-        log.tracef("Process request for '%s'", request.getRequestURI());
+        WebLogger.WEB_SSO_LOGGER.tracef("Process request for '%s'", request.getRequestURI());
         if (request.getUserPrincipal() != null) {
-            log.tracef("Principal '%s' has already been authenticated", request.getUserPrincipal().getName());
+            WebLogger.WEB_SSO_LOGGER.tracef("Principal '%s' has already been authenticated", request.getUserPrincipal().getName());
             getNext().invoke(request, response);
             return;
         }
@@ -336,21 +335,21 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
             }
         }
         if (cookie == null) {
-            log.trace("SSO cookie is not present");
+            WebLogger.WEB_SSO_LOGGER.trace("SSO cookie is not present");
             getNext().invoke(request, response);
             return;
         }
 
         // Look up the cached Principal associated with this cookie value
         String ssoId = cookie.getValue();
-        log.tracef("Checking for cached principal for %s", ssoId);
+        WebLogger.WEB_SSO_LOGGER.tracef("Checking for cached principal for %s", ssoId);
         SingleSignOnEntry entry = getSingleSignOnEntry(cookie.getValue());
         if (entry != null && isValid(ssoId, entry)) {
             Principal ssoPrinc = entry.getPrincipal();
             // have to deal with the fact that the entry may not have an
             // associated Principal. SSO entries retrieved via a lookup from a
             // cluster will not have a Principal, as Principal is not Serializable
-            log.tracef("Found cached principal '%s' with auth type '%s'", (ssoPrinc == null ? "NULL" : ssoPrinc.getName()), entry.getAuthType());
+            WebLogger.WEB_SSO_LOGGER.tracef("Found cached principal '%s' with auth type '%s'", (ssoPrinc == null ? "NULL" : ssoPrinc.getName()), entry.getAuthType());
             request.setNote(Constants.REQ_SSOID_NOTE, cookie.getValue());
             // Only set security elements if per-request reauthentication is
             // not required AND the SSO entry had a Principal.
@@ -359,7 +358,7 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
                 request.setUserPrincipal(ssoPrinc);
             }
         } else {
-            log.tracef("No cached principal found, erasing SSO cookie");
+            WebLogger.WEB_SSO_LOGGER.tracef("No cached principal found, erasing SSO cookie");
             cookie.setMaxAge(0);
             response.addCookie(cookie);
         }
@@ -380,7 +379,7 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
      */
     @Override
     public void associate(String ssoId, Session session) {
-        log.tracef("Associate sso id %s with session %s", ssoId, session);
+        WebLogger.WEB_SSO_LOGGER.tracef("Associate sso id %s with session %s", ssoId, session);
 
         SingleSignOnEntry sso = getSingleSignOnEntry(ssoId);
         boolean added = false;
@@ -428,16 +427,16 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
         if (ssoClusterManager != null) {
             if (removed) {
                 ssoClusterManager.removeSession(ssoId, getFullyQualifiedSessionId(session));
-                log.tracef("deregister will notify cluster of removed session %s sso id %s", session, ssoId);
+                WebLogger.WEB_SSO_LOGGER.tracef("deregister will notify cluster of removed session %s sso id %s", session, ssoId);
             } else {
-                log.tracef("deregister didn't find session %s sso id %s cluster notification not sent", session, ssoId);
+                WebLogger.WEB_SSO_LOGGER.tracef("deregister didn't find session %s sso id %s cluster notification not sent", session, ssoId);
             }
         }
 
         // see if this was the last session on this node,
         // if remove sso entry from our local cache
         if (sso.getSessionCount() == 0) {
-            log.tracef("deregister detected zero sessions for sso id %s", ssoId);
+            WebLogger.WEB_SSO_LOGGER.tracef("deregister detected zero sessions for sso id %s", ssoId);
 
             synchronized (cache) {
                 sso = (SingleSignOnEntry) cache.remove(ssoId);
@@ -452,7 +451,7 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
      */
     @Override
     public void deregister(String ssoId) {
-        log.tracef("Deregistering sso id '%s'", ssoId);
+        WebLogger.WEB_SSO_LOGGER.tracef("Deregistering sso id '%s'", ssoId);
 
         // It's possible we don't have the SSO locally but it's in
         // the emptySSOs map; if so remove it
@@ -469,7 +468,7 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
 
         // Expire any associated sessions
         for (Session session: sso.findSessions()) {
-            log.tracef(" Invalidating session %s", session);
+            WebLogger.WEB_SSO_LOGGER.tracef(" Invalidating session %s", session);
             // Remove from reverse cache first to avoid recursion
             synchronized (reverse) {
                 reverse.remove(session);
@@ -591,12 +590,12 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
     protected void removeSession(String ssoId, Session session) {
         // Get a reference to the SingleSignOn
         SingleSignOnEntry entry = getSingleSignOnEntry(ssoId);
-        log.tracef("Removing session %s from sso id %s, %s", session, ssoId, (entry != null ? "found SSO entry" : "SSO entry not found"));
+        WebLogger.WEB_SSO_LOGGER.tracef("Removing session %s from sso id %s, %s", session, ssoId, (entry != null ? "found SSO entry" : "SSO entry not found"));
         if (entry == null) return;
 
         // Remove the inactive session from SingleSignOnEntry
         boolean removed = entry.removeSession2(session);
-        log.tracef("Removing Session %s, session found = %s", session, removed);
+        WebLogger.WEB_SSO_LOGGER.tracef("Removing Session %s, session found = %s", session, removed);
 
         // If we changed anything, notify any cluster
         if (removed) {
@@ -663,7 +662,7 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
      * @param password the password (if any) used for the authentication
      */
     void registerLocal(String ssoId, Principal principal, String authType, String username, String password) {
-        log.tracef("Registering sso id '%s' for user '%s' with auth type '%s'", ssoId, principal.getName(), authType);
+        WebLogger.WEB_SSO_LOGGER.tracef("Registering sso id '%s' for user '%s' with auth type '%s'", ssoId, principal.getName(), authType);
 
         synchronized (cache) {
             cache.put(ssoId, new SingleSignOnEntry(principal, authType, username, password));
@@ -688,13 +687,13 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
         // Only update if the entry is missing information
         if (sso != null) {
             if (sso.getCanReauthenticate() == false) {
-                log.tracef("Update sso id %s to auth type %s", ssoId, authType);
+                WebLogger.WEB_SSO_LOGGER.tracef("Update sso id %s to auth type %s", ssoId, authType);
 
                 synchronized (sso) {
                     shouldBroadcast = sso.updateCredentials2(principal, authType, username, password);
                 }
             } else if (sso.getPrincipal() == null && principal != null) {
-                log.tracef("Update sso id %s with principal %s", ssoId, principal.getName());
+                WebLogger.WEB_SSO_LOGGER.tracef("Update sso id %s with principal %s", ssoId, principal.getName());
 
                 synchronized (sso) {
                     sso.setPrincipal(principal);
@@ -713,7 +712,7 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
         SingleSignOnEntry sso = localLookup(ssoId);
         // Only update if the entry is missing information
         if (sso != null && sso.getCanReauthenticate() == false) {
-            log.tracef("Update sso id %s to auth type %s", ssoId, credentials.getAuthType());
+            WebLogger.WEB_SSO_LOGGER.tracef("Update sso id %s to auth type %s", ssoId, credentials.getAuthType());
 
             synchronized (sso) {
                 // Use the existing principal
@@ -731,8 +730,8 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
     public void notifySSOEmpty(String ssoId) {
         Object obj = emptySSOs.put(ssoId, new Long(System.currentTimeMillis()));
 
-        if (obj == null && log.isTraceEnabled()) {
-            log.tracef("Notified that SSO %s is empty", ssoId);
+        if (obj == null) {
+            WebLogger.WEB_SSO_LOGGER.tracef("Notified that SSO %s is empty", ssoId);
         }
     }
 
@@ -743,8 +742,8 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
     public void notifySSONotEmpty(String ssoId) {
         Object obj = emptySSOs.remove(ssoId);
 
-        if (obj != null && log.isTraceEnabled()) {
-            log.tracef("Notified that SSO %s is no longer empty", ssoId);
+        if (obj != null) {
+            WebLogger.WEB_SSO_LOGGER.tracef("Notified that SSO %s is no longer empty", ssoId);
         }
     }
 
@@ -767,7 +766,7 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
         for (Map.Entry<String, Long> entry: emptySSOs.entrySet()) {
             if ((now - ((Long) entry.getValue()).longValue()) > maxEmptyLife) {
                 String ssoId = (String) entry.getKey();
-                log.tracef("Invalidating expired SSO %s", ssoId);
+                WebLogger.WEB_SSO_LOGGER.tracef("Invalidating expired SSO %s", ssoId);
 
                 logout(ssoId);
             }
@@ -781,7 +780,7 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
             if (expired != null && (System.currentTimeMillis() - expired.longValue()) > maxEmptyLife) {
                 valid = false;
 
-                log.tracef("Invalidating expired SSO %s", ssoId);
+                WebLogger.WEB_SSO_LOGGER.tracef("Invalidating expired SSO %s", ssoId);
 
                 logout(ssoId);
             }

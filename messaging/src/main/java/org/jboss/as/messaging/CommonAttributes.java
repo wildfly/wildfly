@@ -24,12 +24,14 @@ package org.jboss.as.messaging;
 
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.config.impl.FileConfiguration;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.messaging.jms.ConnectionFactoryTypeValidator;
 import org.jboss.as.messaging.jms.JndiEntriesAttribute;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -117,6 +119,9 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition CONFIRMATION_WINDOW_SIZE = new SimpleAttributeDefinition("confirmation-window-size",
             new ModelNode().set(HornetQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE), ModelType.INT,  true, MeasurementUnit.BYTES);
+
+    SimpleAttributeDefinition BRIDGE_CONFIRMATION_WINDOW_SIZE = new SimpleAttributeDefinition("confirmation-window-size",
+            new ModelNode().set(FileConfiguration.DEFAULT_CONFIRMATION_WINDOW_SIZE), ModelType.INT,  true, MeasurementUnit.BYTES);
 
     JndiEntriesAttribute CONNECTION_ENTRIES = JndiEntriesAttribute.CONNECTION_FACTORY;
 
@@ -328,8 +333,11 @@ public interface CommonAttributes {
     SimpleAttributeDefinition PASSWORD = new SimpleAttributeDefinition("password",
             new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD),  ModelType.STRING, true);
 
+    SimpleAttributeDefinition PAGE_MAX_CACHE_SIZE = new SimpleAttributeDefinition("page-max-cache-size",
+            new ModelNode(AddressSettings.DEFAULT_PAGE_MAX_CACHE), ModelType.INT, true);
+
     SimpleAttributeDefinition PAGE_SIZE_BYTES_NODE_NAME = new SimpleAttributeDefinition("page-size-bytes",
-            new ModelNode().set(AddressSettings.DEFAULT_PAGE_SIZE), ModelType.LONG, true);
+            new ModelNode(AddressSettings.DEFAULT_PAGE_SIZE), ModelType.LONG, true);
 
     SimpleAttributeDefinition PATH = new SimpleAttributeDefinition("path", ModelType.STRING, false);
 
@@ -346,6 +354,10 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition PERSIST_ID_CACHE = new SimpleAttributeDefinition("persist-id-cache",
             new ModelNode().set(ConfigurationImpl.DEFAULT_PERSIST_ID_CACHE), ModelType.BOOLEAN,  true, AttributeAccess.Flag.RESTART_ALL_SERVICES);
+
+    SimpleAttributeDefinition PCF_USER = new SimpleAttributeDefinition("user", "user", null, ModelType.STRING, true, true, null);
+
+    SimpleAttributeDefinition PCF_PASSWORD = new SimpleAttributeDefinition("password", "password", null, ModelType.STRING, true, true, null);
 
     SimpleAttributeDefinition PRE_ACK = new SimpleAttributeDefinition("pre-acknowledge",
             new ModelNode().set(HornetQClient.DEFAULT_PRE_ACKNOWLEDGE), ModelType.BOOLEAN,  true);
@@ -447,6 +459,9 @@ public interface CommonAttributes {
     SimpleAttributeDefinition TYPE = new SimpleAttributeDefinition("type", "type",
             null, ModelType.STRING,  true, false, MeasurementUnit.NONE, GroupingHandlerTypeValidator.INSTANCE);
 
+    SimpleAttributeDefinition CONNECTION_FACTORY_TYPE = new SimpleAttributeDefinition("factory-type", "factory-type",
+            null, ModelType.STRING,  true, false, MeasurementUnit.NONE, ConnectionFactoryTypeValidator.INSTANCE);
+
     SimpleAttributeDefinition USER = new SimpleAttributeDefinition("user",
             new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_USER), ModelType.STRING, true);
 
@@ -478,7 +493,6 @@ public interface CommonAttributes {
     String CLUSTER_CONNECTION = "cluster-connection";
     String CLUSTER_CONNECTIONS = "cluster-connections";
     String CONNECTION_FACTORY ="connection-factory";
-    String CONNECTION_LOAD_BALANCING_CLASS_NAME = "connection-load-balancing-policy-class-name";
     String CONNECTOR ="connector";
     String CONNECTORS ="connectors";
     String CONNECTOR_NAME ="connector-name";
@@ -501,6 +515,7 @@ public interface CommonAttributes {
     String ENTRY ="entry";
     String FACTORY_TYPE = "factory-type";
     String FILE_DEPLOYMENT_ENABLED ="file-deployment-enabled";
+    String GENERIC_FACTORY = "GENERIC";
     String GROUPING_HANDLER ="grouping-handler";
     String ID ="id";
     String INITIAL_MESSAGE_PACKET_SIZE = "initial-message-packet-size";
@@ -534,7 +549,7 @@ public interface CommonAttributes {
     String NO_TX = "NoTransaction";
     String NUMBER_OF_BYTES_PER_PAGE = "number-of-bytes-per-page";
     String NUMBER_OF_PAGES = "number-of-pages";
-    String PAGE_MAX_CACHE_SIZE = "page-max-cache-size";
+
     String PAGING_DIRECTORY ="paging-directory";
     String PARAM ="param";
     String PARAMS ="param";
@@ -553,7 +568,9 @@ public interface CommonAttributes {
     String SCHEDULED_COUNT = "scheduled-count";
     String SECURITY_SETTING ="security-setting";
     String SECURITY_SETTINGS ="security-settings";
+    String TOPIC_FACTORY = "TOPIC";
     String HORNETQ_SERVER = "hornetq-server";
+    String QUEUE_FACTORY = "QUEUE";
     String STARTED = "started";
     String STATIC_CONNECTORS = "static-connectors";
     String STRING ="string";
@@ -566,6 +583,9 @@ public interface CommonAttributes {
     String VERSION = "version";
     String XA = "xa";
     String XA_TX = "XATransaction";
+    String XA_GENERIC_FACTORY = "XA_GENERIC";
+    String XA_QUEUE_FACTORY = "XA_QUEUE";
+    String XA_TOPIC_FACTORY = "XA_TOPIC";
 
     AttributeDefinition[] SIMPLE_ROOT_RESOURCE_ATTRIBUTES = {
         CLUSTERED, PERSISTENCE_ENABLED, SCHEDULED_THREAD_POOL_MAX_SIZE,
@@ -602,13 +622,13 @@ public interface CommonAttributes {
     AttributeDefinition[] BRIDGE_ATTRIBUTES = {
             QUEUE_NAME, BRIDGE_FORWARDING_ADDRESS, HA, FILTER, TRANSFORMER_CLASS_NAME,
             RETRY_INTERVAL, RETRY_INTERVAL_MULTIPLIER, BRIDGE_RECONNECT_ATTEMPTS, FAILOVER_ON_SERVER_SHUTDOWN,
-            BRIDGE_USE_DUPLICATE_DETECTION, CONFIRMATION_WINDOW_SIZE, USER, PASSWORD, ConnectorRefsAttribute.BRIDGE_CONNECTORS,
+            BRIDGE_USE_DUPLICATE_DETECTION, BRIDGE_CONFIRMATION_WINDOW_SIZE, USER, PASSWORD, ConnectorRefsAttribute.BRIDGE_CONNECTORS,
             DISCOVERY_GROUP_NAME
     };
 
     AttributeDefinition[] CLUSTER_CONNECTION_ATTRIBUTES = {
         CLUSTER_CONNECTION_ADDRESS,  CONNECTOR_REF, RETRY_INTERVAL, CLUSTER_CONNECTION_USE_DUPLICATE_DETECTION,
-        FORWARD_WHEN_NO_CONSUMERS,  MAX_HOPS, CONFIRMATION_WINDOW_SIZE, ConnectorRefsAttribute.CLUSTER_CONNECTION_CONNECTORS,
+        FORWARD_WHEN_NO_CONSUMERS,  MAX_HOPS, BRIDGE_CONFIRMATION_WINDOW_SIZE, ConnectorRefsAttribute.CLUSTER_CONNECTION_CONNECTORS,
         DISCOVERY_GROUP_NAME, ALLOW_DIRECT_CONNECTIONS_ONLY
     };
 

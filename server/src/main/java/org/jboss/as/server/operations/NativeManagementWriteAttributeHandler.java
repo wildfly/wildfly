@@ -61,6 +61,7 @@ public class NativeManagementWriteAttributeHandler extends AbstractWriteAttribut
                             NativeManagementResourceDefinition.SOCKET_BINDING.getName()));
                     throw new OperationFailedException(failure);
                 }
+                context.completeStep();
             }
         }, OperationContext.Stage.MODEL);
 

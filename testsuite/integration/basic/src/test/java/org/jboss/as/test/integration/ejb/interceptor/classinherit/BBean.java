@@ -31,7 +31,7 @@ import javax.interceptor.Interceptors;
  */
 @Stateless
 @Remote(B.class)
-@Interceptors({ Intercept.class })
+@Interceptors({ InterceptB.class })
 public class BBean extends ABean implements B {
     public String getOtherMessage() {
         return "The Other Message";

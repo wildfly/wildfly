@@ -37,7 +37,6 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.as.server.deployment.reflect.ProxyMetadataSource;
-import org.jboss.as.server.deployment.repository.api.ServerDeploymentRepository;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.jandex.Index;
@@ -151,7 +150,7 @@ public final class Attachments {
     /**
      * The server deployment repository
      */
-    public static final AttachmentKey<ServerDeploymentRepository> SERVER_DEPLOYMENT_REPOSITORY = AttachmentKey.create(ServerDeploymentRepository.class);
+    public static final AttachmentKey<DeploymentMountProvider> SERVER_DEPLOYMENT_REPOSITORY = AttachmentKey.create(DeploymentMountProvider.class);
 
     /**
      * An annotation index for a (@link ResourceRoot). This is attached to the {@link ResourceRoot}s of the deployment that contain

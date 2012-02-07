@@ -469,6 +469,7 @@ enum CommandLineArgument {
     };
 
     private static String USAGE;
+    static final String NEW_LINE = String.format("%n");
 
     /**
      * The command line argument.
@@ -497,10 +498,10 @@ enum CommandLineArgument {
         segmentInstructions(instructions(), instructions);
         StringBuilder sb = new StringBuilder(String.format("    %-35s %s", argumentExample(), instructions.get(0)));
         for (int i = 1; i < instructions.size(); i++) {
-            sb.append("\n");
+            sb.append(NEW_LINE);
             sb.append(String.format("%-40s%s", " ", instructions.get(i)));
         }
-        sb.append('\n');
+        sb.append(NEW_LINE);
         return sb.toString();
     }
 
@@ -526,9 +527,9 @@ enum CommandLineArgument {
     public static String usage() {
         if (USAGE == null) {
             final StringBuilder sb = new StringBuilder();
-            sb.append(MESSAGES.argUsage()).append("\n");
+            sb.append(MESSAGES.argUsage()).append(NEW_LINE);
             for (CommandLineArgument arg : CommandLineArgument.values()) {
-                sb.append(arg.toString()).append("\n");
+                sb.append(arg.toString()).append(NEW_LINE);
             }
             USAGE = sb.toString();
         }

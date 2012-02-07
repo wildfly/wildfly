@@ -22,15 +22,6 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.interceptors.InvocationType;
@@ -38,9 +29,11 @@ import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.interceptors.AsyncInvocationTask;
 import org.jboss.as.ejb3.component.interceptors.CancellationFlag;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
+import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.security.remoting.RemotingContext;
+import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.EJBLocator;
 import org.jboss.ejb.client.EntityEJBLocator;
 import org.jboss.ejb.client.SessionID;
@@ -54,6 +47,15 @@ import org.jboss.marshalling.Unmarshaller;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.MessageInputStream;
 import org.xnio.IoUtils;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
 
 
 /**
@@ -211,6 +213,14 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
                     }
                     // write out the (successful) method invocation result to the channel output stream
                     try {
+                        // attach any weak affinity if available
+                        if (locator instanceof StatefulEJBLocator && componentView.getComponent() instanceof StatefulSessionComponent) {
+                            final StatefulSessionComponent statefulSessionComponent = (StatefulSessionComponent) componentView.getComponent();
+                            final Affinity weakAffinity = MethodInvocationMessageHandler.this.getWeakAffinity(statefulSessionComponent, (StatefulEJBLocator) locator);
+                            if (weakAffinity != null) {
+                                attachments.put(Affinity.WEAK_AFFINITY_CONTEXT_KEY, weakAffinity);
+                            }
+                        }
                         writeMethodInvocationResponse(channel, invocationId, result, attachments);
                     } catch (IOException ioe) {
                         logger.error("Could not write method invocation result for method " + invokedMethod + " on bean named " + beanName
@@ -228,6 +238,11 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
         executorService.submit(runnable);
 
 
+    }
+
+    private Affinity getWeakAffinity(final StatefulSessionComponent statefulSessionComponent, final StatefulEJBLocator statefulEJBLocator) {
+        final SessionID sessionID = statefulEJBLocator.getSessionId();
+        return statefulSessionComponent.getCache().getWeakAffinity(sessionID);
     }
 
     private Object invokeMethod(final ComponentView componentView, final Method method, final Object[] args, final EJBLocator ejbLocator, final Map<String, Object> attachments) throws Throwable {

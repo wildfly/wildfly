@@ -21,6 +21,10 @@
  */
 package org.jboss.as.test.integration.ejb.timerservice.persistence;
 
+import javax.ejb.TimerHandle;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -29,9 +33,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 /**
  * Two phase test for timer serialization. This test case creates a persistent timer, and the second phase restores it.
@@ -62,6 +63,23 @@ public class TimerServicePersistenceFirstTestCase {
         Assert.assertTrue(SimpleTimerServiceBean.awaitTimerCall());
     }
 
+    @Test
+    public void createAndCancelTimerService() throws NamingException {
+        InitialContext ctx = new InitialContext();
+        CancelledTimerServiceBean bean = (CancelledTimerServiceBean)ctx.lookup("java:module/" + CancelledTimerServiceBean.class.getSimpleName());
+        TimerHandle handle = bean.createTimer();
+        Assert.assertTrue(CancelledTimerServiceBean.awaitTimerCall());
+        Assert.assertEquals("info", handle.getTimer().getInfo());
+        handle.getTimer().cancel();
+    }
+
+    @Test
+    public void createNonPersistentTimer() throws NamingException {
+        InitialContext ctx = new InitialContext();
+        NonPersistentTimerServiceBean bean = (NonPersistentTimerServiceBean)ctx.lookup("java:module/" + NonPersistentTimerServiceBean.class.getSimpleName());
+        bean.createTimer();
+        Assert.assertTrue(NonPersistentTimerServiceBean.quickAwaitTimerCall());
+    }
 
 
 }

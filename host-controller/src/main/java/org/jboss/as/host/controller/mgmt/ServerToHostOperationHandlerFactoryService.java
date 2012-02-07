@@ -22,28 +22,41 @@
 
 package org.jboss.as.host.controller.mgmt;
 
-import static org.jboss.as.process.protocol.ProtocolUtils.expectHeader;
 import static org.jboss.as.host.controller.HostControllerLogger.CONTROLLER_MANAGEMENT_LOGGER;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
+import static org.jboss.as.process.protocol.ProtocolUtils.expectHeader;
 
 import java.io.DataInput;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.concurrent.ExecutorService;
 
+import org.jboss.as.controller.HashUtil;
+import org.jboss.as.host.controller.ServerInventory;
+import org.jboss.as.protocol.ProtocolLogger;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.mgmt.ActiveOperation;
+import org.jboss.as.protocol.mgmt.ActiveOperation.ResultHandler;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
-import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
+import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
 import org.jboss.as.protocol.mgmt.ManagementProtocolHeader;
+import org.jboss.as.protocol.mgmt.ManagementRequestContext;
+import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
+import org.jboss.as.protocol.mgmt.ManagementRequestHandlerFactory;
 import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.as.protocol.mgmt.ProtocolUtils;
+import org.jboss.as.protocol.mgmt.RequestProcessingException;
 import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
-import org.jboss.as.host.controller.ServerInventory;
+import org.jboss.as.repository.DeploymentFileRepository;
+import org.jboss.as.repository.RemoteFileRequestAndHandler.RootFileReader;
 import org.jboss.as.server.mgmt.domain.DomainServerProtocol;
 import org.jboss.as.server.mgmt.domain.HostControllerServerClient;
+import org.jboss.as.server.mgmt.domain.ServerToHostRemoteFileRequestAndHandler;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -52,7 +65,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.Channel;
-import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.HandleableCloseable;
 import org.jboss.remoting3.MessageOutputStream;
 
@@ -69,16 +81,18 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("management", "server", "to", "host", "controller");
 
     private final ExecutorService executorService;
-    private final InjectedValue<ServerInventory> callback = new InjectedValue<ServerInventory>();
+    private final InjectedValue<ServerInventory> serverInventory = new InjectedValue<ServerInventory>();
+    private final DeploymentFileRepository deploymentFileRepository;
 
-    private ServerToHostOperationHandlerFactoryService(final ExecutorService executorService) {
+    private ServerToHostOperationHandlerFactoryService(final ExecutorService executorService, final DeploymentFileRepository deploymentFileRepository) {
         this.executorService = executorService;
+        this.deploymentFileRepository = deploymentFileRepository;
     }
 
-    public static void install(final ServiceTarget serviceTarget, final ServiceName serverInventoryName, final ExecutorService executorService) {
-        final ServerToHostOperationHandlerFactoryService serverToHost = new ServerToHostOperationHandlerFactoryService(executorService);
+    public static void install(final ServiceTarget serviceTarget, final ServiceName serverInventoryName, final ExecutorService executorService, final DeploymentFileRepository deploymentFileRepository) {
+        final ServerToHostOperationHandlerFactoryService serverToHost = new ServerToHostOperationHandlerFactoryService(executorService, deploymentFileRepository);
         serviceTarget.addService(ServerToHostOperationHandlerFactoryService.SERVICE_NAME, serverToHost)
-            .addDependency(serverInventoryName, ServerInventory.class, serverToHost.callback)
+            .addDependency(serverInventoryName, ServerInventory.class, serverToHost.serverInventory)
             .install();
     }
 
@@ -102,18 +116,40 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
 
     @Override
     public HandleableCloseable.Key startReceiving(final Channel channel) {
-        final Channel.Receiver receiver = new InitialMessageHandler(executorService);
+        final Channel.Receiver receiver = new InitialMessageHandler();
         channel.receiveMessage(receiver);
         return null;
     }
 
-    private class InitialMessageHandler extends ManagementChannelReceiver {
+    /**
+     * The handler factor for a registered server.
+     */
+    private class ServerHandlerFactory implements ManagementRequestHandlerFactory {
 
-        private final ExecutorService executorService;
-
-        private InitialMessageHandler(ExecutorService executorService) {
-            this.executorService = executorService;
+        private final String serverProcessName;
+        private ServerHandlerFactory(String serverProcessName) {
+            this.serverProcessName = serverProcessName;
         }
+
+        @Override
+        public ManagementRequestHandler<?, ?> resolveHandler(RequestHandlerChain handlers, ManagementRequestHeader header) {
+            byte operationId = header.getOperationId();
+            switch (operationId) {
+                case DomainServerProtocol.GET_FILE_REQUEST:
+                    handlers.registerActiveOperation(header.getBatchId(), null);
+                    return new GetFileOperation();
+                case DomainServerProtocol.SERVER_STARTED_REQUEST:
+                    handlers.registerActiveOperation(header.getBatchId(), serverInventory.getValue());
+                    return new ServerStartedHandler(serverProcessName);
+            }
+            return handlers.resolveNext();
+        }
+    }
+
+    /**
+     * The initial message handler only handles the registration request.
+     */
+    private class InitialMessageHandler extends ManagementChannelReceiver {
 
         @Override
         public void handleMessage(final Channel channel, final DataInput input, final ManagementProtocolHeader header) throws IOException {
@@ -128,34 +164,51 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
         }
 
         public void handleMessage(final Channel channel, final DataInput input, final ManagementRequestHeader header) throws IOException {
+            final ServerInventory inventory = serverInventory.getValue();
             final byte type = header.getOperationId();
+            // Handle the server registration request
             if (type == DomainServerProtocol.REGISTER_REQUEST) {
                 expectHeader(input, DomainServerProtocol.PARAM_SERVER_NAME);
                 final String serverName = input.readUTF();
-
-                CONTROLLER_MANAGEMENT_LOGGER.serverRegistered(serverName, channel);
-                executorService.execute(new Runnable() {
+                final Runnable task = new Runnable() {
                     @Override
                     public void run() {
-                        final Channel mgmtChannel = channel;
-                        ServerToHostOperationHandlerFactoryService.this.callback.getValue().serverRegistered(serverName, mgmtChannel, new ServerInventory.ProxyCreatedCallback() {
-                            @Override
-                            public void proxyOperationHandlerCreated(final ManagementMessageHandler handler) {
-                                channel.addCloseHandler(new CloseHandler<Channel>() {
-                                    @Override
-                                    public void handleClose(Channel closed, IOException exception) {
-                                        handler.shutdownNow();
-                                    }
-                                });
-                                final Channel.Receiver receiver = ManagementChannelReceiver.createDelegating(handler);
-                                mgmtChannel.receiveMessage(receiver);
-                                // Send the response once the server is fully registered
-                                safeWriteResponse(channel, header, null);
-                            }
-                        });
+                        CONTROLLER_MANAGEMENT_LOGGER.serverRegistered(serverName, channel);
+                        // Create the server mgmt handler
+                        final ManagementChannelHandler handler = new ManagementChannelHandler(channel, executorService, new ServerHandlerFactory(serverName));
+                        // Register the communication channel
+                        inventory.serverCommunicationRegistered(serverName, handler);
+                        // Send the response once the server is fully registered
+                        safeWriteResponse(channel, header, null);
+                        // Onto the next message
+                        channel.receiveMessage(handler.getReceiver());
                     }
-                });
-
+                };
+                executorService.execute(task);
+            // Handle the server reconnect request
+            } else if(type == DomainServerProtocol.SERVER_RECONNECT_REQUEST) {
+                expectHeader(input, DomainServerProtocol.PARAM_SERVER_NAME);
+                final String serverName = input.readUTF();
+                final Runnable task = new Runnable() {
+                    @Override
+                    public void run() {
+                        CONTROLLER_MANAGEMENT_LOGGER.serverRegistered(serverName, channel);
+                        // Create the server mgmt handler
+                        final ManagementChannelHandler handler = new ManagementChannelHandler(channel, executorService, new ServerHandlerFactory(serverName));
+                        // Check if the server is still in sync with the domain model
+                        final byte param;
+                        if(inventory.serverReconnected(serverName, handler)) {
+                            param = DomainServerProtocol.PARAM_OK;
+                        } else {
+                            param = DomainServerProtocol.PARAM_RESTART_REQUIRED;
+                        }
+                        // Notify the server whether configuration is still in sync or it requires a reload
+                        safeWriteResponse(channel, header, param);
+                        // Onto the next message
+                        channel.receiveMessage(handler.getReceiver());
+                    }
+                };
+                executorService.execute(task);
             } else {
                 safeWriteResponse(channel, header, MESSAGES.unrecognizedType(type));
                 channel.close();
@@ -164,7 +217,51 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
 
         @Override
         protected Channel.Receiver next() {
-            return null; // next is proxyOperationHandlerCreated
+            return null;
+        }
+    }
+
+    private class GetFileOperation implements ManagementRequestHandler<ModelNode, Void> {
+
+        @Override
+        public void handleRequest(DataInput input, ResultHandler<ModelNode> resultHandler, ManagementRequestContext<Void> context)
+                throws IOException {
+            final RootFileReader reader = new RootFileReader() {
+                public File readRootFile(byte rootId, String filePath) throws RequestProcessingException {
+                    byte[] hash = HashUtil.hexStringToByteArray(filePath);
+                    return deploymentFileRepository.getDeploymentRoot(hash);
+                }
+            };
+            ServerToHostRemoteFileRequestAndHandler.INSTANCE.handleRequest(input, reader, context);
+        }
+    }
+
+    private class ServerStartedHandler implements ManagementRequestHandler<Void, ServerInventory> {
+
+        private final String serverProcessName;
+        private ServerStartedHandler(String serverProcessName) {
+            this.serverProcessName = serverProcessName;
+        }
+
+        @Override
+        public void handleRequest(final DataInput input, final ResultHandler<Void> resultHandler, final ManagementRequestContext<ServerInventory> context) throws IOException {
+            final byte param = input.readByte(); // Started / Failed PARAM_OK
+            final String message = input.readUTF(); // Server started/failed message
+            context.executeAsync(new ManagementRequestContext.AsyncTask<ServerInventory>() {
+                @Override
+                public void execute(ManagementRequestContext<ServerInventory> serverInventoryManagementRequestContext) throws Exception {
+                    try {
+                        final ServerInventory inventory = context.getAttachment();
+                        if(param == DomainServerProtocol.PARAM_OK) {
+                            inventory.serverStarted(serverProcessName);
+                        } else {
+                            inventory.serverStartFailed(serverProcessName);
+                        }
+                    } finally {
+                        resultHandler.done(null);
+                    }
+                }
+            });
         }
     }
 
@@ -173,7 +270,7 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
             try {
                 writeResponse(channel, (ManagementRequestHeader) header, error);
             } catch(IOException ioe) {
-               ioe.printStackTrace();
+                ProtocolLogger.ROOT_LOGGER.tracef(ioe, "failed to write error response for %s on channel: %s", header, channel);
             }
         }
     }
@@ -183,6 +280,30 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
         final MessageOutputStream output = channel.writeMessage();
         try {
             writeHeader(response, output);
+            output.write(ManagementProtocol.RESPONSE_END);
+            output.close();
+        } finally {
+            StreamUtils.safeClose(output);
+        }
+    }
+
+    protected static void safeWriteResponse(final Channel channel, final ManagementProtocolHeader header, byte param) {
+        if(header.getType() == ManagementProtocol.TYPE_REQUEST) {
+            try {
+                writeResponse(channel, (ManagementRequestHeader) header, param);
+            } catch(IOException ioe) {
+                ProtocolLogger.ROOT_LOGGER.tracef(ioe, "failed to write error response for %s on channel: %s", header, channel);
+            }
+        }
+    }
+
+    protected static void writeResponse(final Channel channel, final ManagementRequestHeader header, final byte param) throws IOException {
+        final ManagementResponseHeader response = ManagementResponseHeader.create(header);
+        final MessageOutputStream output = channel.writeMessage();
+        try {
+            writeHeader(response, output);
+            output.write(param);
+            output.write(ManagementProtocol.RESPONSE_END);
             output.close();
         } finally {
             StreamUtils.safeClose(output);

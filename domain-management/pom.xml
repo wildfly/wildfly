@@ -87,11 +87,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.remoting3</groupId>
-            <artifactId>jboss-remoting</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-controller</artifactId>
         </dependency>

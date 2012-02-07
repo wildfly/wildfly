@@ -35,7 +35,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 /**
- * Tests that an @Timout method is called when a timer is created programatically.
+ * Tests that an @Timeout method is called when a timer is created programatically.
  *
  * @author Stuart Douglas
  */

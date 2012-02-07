@@ -22,6 +22,7 @@
 
 package org.jboss.as.web;
 
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -32,6 +33,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
+import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
@@ -70,7 +72,6 @@ public class WebExtension implements Extension {
     /** {@inheritDoc} */
     @Override
     public void initialize(ExtensionContext context) {
-        log.debugf("Activating Web Extension");
 
         final boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
 
@@ -79,6 +80,8 @@ public class WebExtension implements Extension {
         registration.registerOperationHandler(ADD, WebSubsystemAdd.INSTANCE, WebSubsystemAdd.INSTANCE, false);
         registration.registerOperationHandler(DESCRIBE, WebSubsystemDescribe.INSTANCE, WebSubsystemDescribe.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         registration.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, WebSubsystemDescriptionProviders.SUBSYSTEM_REMOVE, false);
+        registration.registerReadWriteAttribute(Constants.DEFAULT_VIRTUAL_SERVER, null, new ReloadRequiredWriteAttributeHandler(new ModelTypeValidator(ModelType.STRING)), Storage.CONFIGURATION);
+        registration.registerReadWriteAttribute(Constants.NATIVE, null, new ReloadRequiredWriteAttributeHandler(new ModelTypeValidator(ModelType.BOOLEAN)), Storage.CONFIGURATION);
         subsystem.registerXMLElementWriter(WebSubsystemParser.getInstance());
 
         // connectors
@@ -125,8 +128,9 @@ public class WebExtension implements Extension {
         hosts.registerOperationHandler(ADD, WebVirtualHostAdd.INSTANCE, WebVirtualHostAdd.INSTANCE, false);
         hosts.registerOperationHandler(REMOVE, WebVirtualHostRemove.INSTANCE, WebVirtualHostRemove.INSTANCE, false);
         hosts.registerReadWriteAttribute(Constants.ALIAS, null, new WriteAttributeHandlers. ListValidatatingHandler(new StringLengthValidator(1, false), true), Storage.CONFIGURATION);
-        hosts.registerReadWriteAttribute(Constants.ENABLE_WELCOME_ROOT, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN, true), Storage.CONFIGURATION);
-        hosts.registerReadWriteAttribute(Constants.DEFAULT_WEB_MODULE, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
+        // They excluded each other...
+        hosts.registerReadWriteAttribute(Constants.ENABLE_WELCOME_ROOT, null, WriteEnableWelcomeRoot.INSTANCE, Storage.CONFIGURATION);
+        hosts.registerReadWriteAttribute(Constants.DEFAULT_WEB_MODULE, null, WriteDefaultWebModule.INSTANCE, Storage.CONFIGURATION);
 
         // access-log.
         final ManagementResourceRegistration accesslog = hosts.registerSubModel(accesslogPath, WebSubsystemDescriptionProviders.ACCESS_LOG);

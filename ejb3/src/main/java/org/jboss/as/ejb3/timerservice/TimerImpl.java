@@ -213,7 +213,7 @@ public class TimerImpl implements Timer {
             this.cancelTimeout();
         }
         // persist changes
-        timerService.persistTimer(this);
+        timerService.persistTimer(this, false);
     }
 
     /**
@@ -501,7 +501,7 @@ public class TimerImpl implements Timer {
         ROOT_LOGGER.debug("expireTimer: " + this);
         setTimerState(TimerState.EXPIRED);
         // remove from timerservice
-        timerService.persistTimer(this);
+        timerService.persistTimer(this, false);
         // Cancel any scheduled timer task for this timer
         this.cancelTimeout();
     }
@@ -545,10 +545,12 @@ public class TimerImpl implements Timer {
 
     /**
      * Creates and schedules a {@link TimerTask} for the next timeout of this timer
+     *
+     * @param newTimer <code>true</code> if this is a new timer being scheduled, and not a re-schedule due to a timeout
      */
-    public void scheduleTimeout() {
+    public void scheduleTimeout(boolean newTimer) {
         // just delegate to timerservice, for it to do the actual scheduling
-        this.timerService.scheduleTimeout(this);
+        this.timerService.scheduleTimeout(this, newTimer);
     }
 
     /**

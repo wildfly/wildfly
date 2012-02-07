@@ -32,15 +32,18 @@ public enum EJB3SubsystemXMLAttribute {
 
     ALIASES("aliases"),
 
-    BACKING_CACHE("backing-cache"),
+    BEAN_CACHE("bean-cache"),
 
+    CACHE_CONTAINER("cache-container"),
     CACHE_REF("cache-ref"),
+    CLIENT_MAPPINGS_CACHE("client-mappings-cache"),
     CLUSTERED_CACHE_REF("clustered-cache-ref"),
     CONNECTOR_REF("connector-ref"),
     CORE_THREADS("core-threads"),
 
     DEFAULT_ACCESS_TIMEOUT("default-access-timeout"),
 
+    ENABLED("enabled"),
     ENABLE_BY_DEFAULT("enable-by-default"),
 
     GROUPS_PATH("groups-path"),
@@ -58,6 +61,7 @@ public enum EJB3SubsystemXMLAttribute {
 
     NAME("name"),
 
+    PASS_BY_VALUE("pass-by-value"),
     PASSIVATE_EVENTS_ON_REPLICATE("passivate-events-on-replicate"),
     PASSIVATION_STORE_REF("passivation-store-ref"),
     PATH("path"),

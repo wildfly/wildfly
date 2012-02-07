@@ -44,6 +44,10 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-clustering-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-clustering-jgroups</artifactId>
         </dependency>
         <dependency>

@@ -199,7 +199,7 @@ public class UndeployHandler extends BatchModeCommandHandler {
         try {
             request = buildRequest(ctx);
         } catch (OperationFormatException e) {
-            ctx.printLine(e.getLocalizedMessage());
+            ctx.error(e.getLocalizedMessage());
             return;
         }
 
@@ -207,11 +207,11 @@ public class UndeployHandler extends BatchModeCommandHandler {
         try {
             result = client.execute(request);
         } catch (Exception e) {
-            ctx.printLine("Undeploy failed: " + e.getLocalizedMessage());
+            ctx.error("Undeploy failed: " + e.getLocalizedMessage());
             return;
         }
         if (!Util.isSuccess(result)) {
-            ctx.printLine("Undeploy failed: " + Util.getFailureDescription(result));
+            ctx.error("Undeploy failed: " + Util.getFailureDescription(result));
             return;
         }
     }
@@ -220,9 +220,9 @@ public class UndeployHandler extends BatchModeCommandHandler {
     public ModelNode buildRequest(CommandContext ctx) throws OperationFormatException {
 
         ModelNode composite = new ModelNode();
-        composite.get("operation").set("composite");
-        composite.get("address").setEmptyList();
-        ModelNode steps = composite.get("steps");
+        composite.get(Util.OPERATION).set(Util.COMPOSITE);
+        composite.get(Util.ADDRESS).setEmptyList();
+        ModelNode steps = composite.get(Util.STEPS);
 
         final ParsedCommandLine args = ctx.getParsedCommandLine();
         final String name = this.name.getValue(args);

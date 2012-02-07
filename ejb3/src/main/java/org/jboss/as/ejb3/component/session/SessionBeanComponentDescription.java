@@ -126,8 +126,9 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
      * @param ejbJarDescription  the module description
      */
     public SessionBeanComponentDescription(final String componentName, final String componentClassName,
-                                           final EjbJarDescription ejbJarDescription, final ServiceName deploymentUnitServiceName) {
-        super(componentName, componentClassName, ejbJarDescription, deploymentUnitServiceName);
+                                           final EjbJarDescription ejbJarDescription, final ServiceName deploymentUnitServiceName,
+                                           final SessionBeanMetaData descriptorData) {
+        super(componentName, componentClassName, ejbJarDescription, deploymentUnitServiceName, descriptorData);
     }
 
     /**
@@ -404,6 +405,11 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
             }
         });
 
+    }
+
+    @Override
+    public boolean isSession() {
+        return true;
     }
 
     @Override

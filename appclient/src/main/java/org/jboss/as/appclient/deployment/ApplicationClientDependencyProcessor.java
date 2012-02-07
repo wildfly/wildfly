@@ -63,7 +63,7 @@ public class ApplicationClientDependencyProcessor implements DeploymentUnitProce
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader loader = deploymentUnit.getAttachment(Attachments.SERVICE_MODULE_LOADER);
 
-        moduleSpecification.addSystemDependency(new ModuleDependency(loader, CORBA_ID, false, true, true));
+        moduleSpecification.addSystemDependency(new ModuleDependency(loader, CORBA_ID, false, true, true, false));
 
         final Set<ModuleIdentifier> moduleIdentifiers = new HashSet<ModuleIdentifier>();
         final DeploymentUnit top = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();

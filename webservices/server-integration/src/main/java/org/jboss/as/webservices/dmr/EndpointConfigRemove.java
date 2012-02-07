@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,14 +22,13 @@
 package org.jboss.as.webservices.dmr;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.webservices.dmr.PackageUtils.getServerConfig;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.wsf.spi.management.ServerConfig;
 import org.jboss.wsf.spi.metadata.config.EndpointConfig;
 
@@ -38,20 +37,21 @@ import org.jboss.wsf.spi.metadata.config.EndpointConfig;
  *
  * @author <a href="ema@redhat.com">Jim Ma</a>
  */
-public class EndpointConfigRemove extends AbstractRemoveStepHandler {
+final class EndpointConfigRemove extends AbstractRemoveStepHandler {
 
     static final EndpointConfigRemove INSTANCE = new EndpointConfigRemove();
 
+    private EndpointConfigRemove() {
+        // forbidden instantiation
+    }
+
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-
-        ServiceController<?> configService = context.getServiceRegistry(true).getService(WSServices.CONFIG_SERVICE);
-        if (configService != null) {
-
+        final ServerConfig config = getServerConfig(context);
+        if (config != null) {
             final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             final String name = address.getLastElement().getValue();
 
-            ServerConfig config = (ServerConfig) configService.getValue();
             EndpointConfig target = null;
             for (EndpointConfig epConfig : config.getEndpointConfigs()) {
                 if (epConfig.getConfigName().equals(name)) {
@@ -60,6 +60,7 @@ public class EndpointConfigRemove extends AbstractRemoveStepHandler {
             }
             if (target != null) {
                 config.getEndpointConfigs().remove(target);
+                context.restartRequired();
             }
         }
     }

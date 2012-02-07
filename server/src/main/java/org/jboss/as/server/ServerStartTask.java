@@ -33,9 +33,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
-import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.persistence.AbstractConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
@@ -53,19 +53,22 @@ import org.jboss.threads.AsyncFuture;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Mike M. Clark
+ * @author Emanuel Muckenhuber
  */
 public final class ServerStartTask implements ServerTask, Serializable, ObjectInputValidation {
 
-    private static final long serialVersionUID = -8505496119636153918L;
+    private static final long serialVersionUID = -1037124182656400874L;
 
     private final String serverName;
     private final int portOffset;
+    private final String hostControllerName;
+    private final String home;
     private final List<ServiceActivator> startServices;
     private final List<ModelNode> updates;
-    private final ServerEnvironment providedEnvironment;
+    private final Properties properties = new Properties();
 
-
-    public ServerStartTask(final String hostControllerName, final String serverName, final int portOffset, final List<ServiceActivator> startServices, final List<ModelNode> updates) {
+    public ServerStartTask(final String hostControllerName, final String serverName, final int portOffset,
+                           final List<ServiceActivator> startServices, final List<ModelNode> updates) {
         if (serverName == null || serverName.length() == 0) {
             throw new IllegalArgumentException("Server name \"" + serverName + "\" is invalid; cannot be null or blank");
         }
@@ -77,21 +80,24 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         this.startServices = startServices;
         this.updates = updates;
 
-        final Properties properties = new Properties();
-        properties.setProperty(ServerEnvironment.SERVER_NAME, serverName);
-        String home = SecurityActions.getSystemProperty("jboss.home.dir");
-        properties.setProperty(ServerEnvironment.HOME_DIR, home);
-        properties.setProperty(ServerEnvironment.SERVER_DEPLOY_DIR, SecurityActions.getSystemProperty("jboss.domain.deployment.dir"));
-        properties.setProperty(ServerEnvironment.SERVER_BASE_DIR, SecurityActions.getSystemProperty("jboss.domain.servers.dir") + File.separatorChar + serverName);
-        properties.setProperty(ServerEnvironment.CONTROLLER_TEMP_DIR, SecurityActions.getSystemProperty("jboss.domain.temp.dir"));
+        this.hostControllerName = hostControllerName;
 
-        ProductConfig productConfig = new ProductConfig(Module.getBootModuleLoader(), home);
-        providedEnvironment = new ServerEnvironment(hostControllerName, properties, SecurityActions.getSystemEnvironment(), null, ServerEnvironment.LaunchType.DOMAIN, RunningMode.NORMAL, productConfig);
+        this.home = SecurityActions.getSystemProperty("jboss.home.dir");
+        String serverBaseDir = SecurityActions.getSystemProperty("jboss.domain.servers.dir") + File.separatorChar + serverName;
+        properties.setProperty(ServerEnvironment.SERVER_NAME, serverName);
+        properties.setProperty(ServerEnvironment.HOME_DIR, home);
+        properties.setProperty(ServerEnvironment.SERVER_BASE_DIR, serverBaseDir);
+        properties.setProperty(ServerEnvironment.CONTROLLER_TEMP_DIR, SecurityActions.getSystemProperty("jboss.domain.temp.dir"));
+        properties.setProperty(ServerEnvironment.DOMAIN_BASE_DIR, SecurityActions.getSystemProperty(ServerEnvironment.DOMAIN_BASE_DIR));
+        properties.setProperty(ServerEnvironment.DOMAIN_CONFIG_DIR, SecurityActions.getSystemProperty(ServerEnvironment.DOMAIN_CONFIG_DIR));
     }
 
     @Override
     public AsyncFuture<ServiceContainer> run(final List<ServiceActivator> runServices) {
         final Bootstrap bootstrap = Bootstrap.Factory.newInstance();
+        final ProductConfig productConfig = new ProductConfig(Module.getBootModuleLoader(), home);
+        // Create server environment on the server, so that the system properties are getting initialized on the right side
+        final ServerEnvironment providedEnvironment = new ServerEnvironment(hostControllerName, properties, SecurityActions.getSystemEnvironment(), null, ServerEnvironment.LaunchType.DOMAIN, RunningMode.NORMAL, productConfig);
         final Bootstrap.Configuration configuration = new Bootstrap.Configuration(providedEnvironment);
         final ExtensionRegistry extensionRegistry = configuration.getExtensionRegistry();
         final Bootstrap.ConfigurationPersisterFactory configurationPersisterFactory = new Bootstrap.ConfigurationPersisterFactory() {
@@ -132,6 +138,9 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
     public void validateObject() throws InvalidObjectException {
         if (serverName == null) {
             throw new InvalidObjectException("serverName is null");
+        }
+        if(hostControllerName == null) {
+            throw new InvalidObjectException("hostControllerName is null");
         }
         if (portOffset < 0) {
             throw new InvalidObjectException("portOffset is out of range");

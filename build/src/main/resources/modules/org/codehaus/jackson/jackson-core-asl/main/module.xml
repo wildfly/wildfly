@@ -22,11 +22,15 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 <module xmlns="urn:jboss:module:1.1" name="org.codehaus.jackson.jackson-core-asl">
-  <resources>
-    <!-- Insert resources here -->
-  </resources>
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
 
-  <dependencies>
-      <module name="javax.api" />
-  </dependencies>
+    <resources>
+        <!-- Insert resources here -->
+    </resources>
+
+    <dependencies>
+        <module name="javax.api"/>
+    </dependencies>
 </module>

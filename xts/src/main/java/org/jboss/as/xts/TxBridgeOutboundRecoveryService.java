@@ -58,7 +58,7 @@ public class TxBridgeOutboundRecoveryService extends AbstractService<OutboundBri
             try {
                 service.start();
             } catch (Exception e) {
-                throw new StartException("TxBridge outbound recovery service start failed", e);
+                throw XtsAsMessages.MESSAGES.txBridgeOutboundRecoveryServiceFailedToStart();
             }
             outboundBridgeRecoveryManager = service;
         } finally {

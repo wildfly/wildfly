@@ -22,11 +22,16 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="org.python.jython.standalone">
-  <resources>
-    <!-- Insert resources here -->
-  </resources>
-  
-  <dependencies>
-  </dependencies>
+<module xmlns="urn:jboss:module:1.1" name="org.python.jython.standalone">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <!-- Insert resources here -->
+    </resources>
+
+    <dependencies>
+        <module name="javax.api"/>
+    </dependencies>
 </module>

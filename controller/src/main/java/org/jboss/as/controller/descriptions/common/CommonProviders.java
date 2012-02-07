@@ -177,13 +177,6 @@ public final class CommonProviders {
         }
     };
 
-    public static final DescriptionProvider VALIDATE_ADDRESS_PROVIDER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return CommonDescriptions.getValidateAddressOperation(locale);
-        }
-    };
-
     /**
      * Provider for a sub-resource that exposes the MSC ServiceContainer.
      */

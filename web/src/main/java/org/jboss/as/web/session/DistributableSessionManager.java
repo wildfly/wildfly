@@ -21,6 +21,8 @@
  */
 package org.jboss.as.web.session;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.AbstractMap;
@@ -63,6 +65,7 @@ import org.jboss.as.clustering.web.LocalDistributableSessionManager;
 import org.jboss.as.clustering.web.OutgoingAttributeGranularitySessionData;
 import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.as.clustering.web.OutgoingSessionGranularitySessionData;
+import org.jboss.as.web.WebLogger;
 import org.jboss.as.web.session.notification.ClusteredSessionNotificationCapability;
 import org.jboss.as.web.session.notification.ClusteredSessionNotificationCause;
 import org.jboss.as.web.session.notification.ClusteredSessionNotificationPolicy;
@@ -74,7 +77,6 @@ import org.jboss.metadata.web.jboss.ReplicationConfig;
 import org.jboss.metadata.web.jboss.ReplicationGranularity;
 import org.jboss.metadata.web.jboss.ReplicationTrigger;
 import org.jboss.metadata.web.jboss.SnapshotMode;
-import org.jboss.util.loading.ContextClassLoaderSwitcher;
 
 /**
  * @author Paul Ferraro
@@ -83,13 +85,12 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
     private static final String info = "DistributableSessionManager/1.0";
 
     private static final int TOTAL_PERMITS = Integer.MAX_VALUE;
-    @SuppressWarnings("unchecked")
-    private static ContextClassLoaderSwitcher switcher = (ContextClassLoaderSwitcher) AccessController.doPrivileged(ContextClassLoaderSwitcher.INSTANTIATOR);
 
     private final String name;
+    private final String hostName;
+    private final String contextName;
     private final DistributedCacheManager<O> distributedCacheManager;
 
-    private ClassLoader tcl;
     private SnapshotManager snapshotManager;
 
     private final ReplicationConfig replicationConfig;
@@ -126,7 +127,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
     /** Sessions that have been created but not yet loaded. Used to ensure concurrent threads trying to load the same session */
     private final ConcurrentMap<String, ClusteredSession<O>> embryonicSessions = new ConcurrentHashMap<String, ClusteredSession<O>>();
 
-    public DistributableSessionManager(DistributedCacheManagerFactory factory, Container host, JBossWebMetaData metaData) throws ClusteringNotSupportedException {
+    public DistributableSessionManager(DistributedCacheManagerFactory factory, Context context, JBossWebMetaData metaData) throws ClusteringNotSupportedException {
         super(metaData);
 
         PassivationConfig passivationConfig = metaData.getPassivationConfig();
@@ -141,7 +142,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
         this.replicationConfig = (config != null) ? config : new ReplicationConfig();
 
         if (this.replicationConfig.getReplicationGranularity() == ReplicationGranularity.FIELD) {
-            throw new IllegalArgumentException("FIELD replication-granularity is no longer supported");
+            this.replicationConfig.setReplicationGranularity(ReplicationGranularity.SESSION);
         }
 
         Integer interval = this.replicationConfig.getMaxUnreplicatedInterval();
@@ -149,9 +150,21 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
 
         this.notificationPolicy = this.createClusteredSessionNotificationPolicy();
 
-        String hostName = host.getName();
-        this.name = String.format("//%s/%s", (hostName == null) ? "localhost" : hostName, metaData.getContextRoot());
+        String host = context.getParent().getName();
+        this.hostName = (host == null) ? "localhost" : host;
+        this.contextName = context.getName();
+        this.name = String.format("//%s/%s", this.hostName, this.contextName);
         this.distributedCacheManager = factory.getDistributedCacheManager(this);
+    }
+
+    @Override
+    public String getHostName() {
+        return this.hostName;
+    }
+
+    @Override
+    public String getContextName() {
+        return this.contextName;
     }
 
     @Override
@@ -161,6 +174,8 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
 
     @Override
     public synchronized void start() throws LifecycleException {
+        if (this.started) return;
+
         // Identify ourself more clearly
         this.log = Logger.getLogger(getClass().getName() + "." + getContainer().getName().replaceAll("/", ""));
 
@@ -171,8 +186,6 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
         // Start the DistributedCacheManager
         // Will need to pass the classloader that is associated with this
         // web app so de-serialization will work correctly.
-        this.tcl = super.getContainer().getLoader().getClassLoader();
-
         try {
             this.distributedCacheManager.start();
 
@@ -187,8 +200,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
 
             log.debug("start(): DistributedCacheManager started");
         } catch (Exception e) {
-            log.error("Unable to start manager.", e);
-            throw new LifecycleException(e);
+            throw new LifecycleException(MESSAGES.failToStartManager(), e);
         }
 
         Container container = this.getContainer();
@@ -258,13 +270,13 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
                 if (interval > 0) {
                     return new IntervalSnapshotManager(this, ctxPath, interval);
                 }
-                log.warn("Snapshot mode set to 'interval' but snapshotInterval is < 1 or was not specified, using 'instant'");
+                WebLogger.WEB_SESSION_LOGGER.invalidSnapshotInterval();
             }
             case INSTANT: {
                 return new InstantSnapshotManager(this, ctxPath);
             }
             default: {
-                throw new IllegalStateException();
+                throw MESSAGES.invalidSnapshotMode();
             }
         }
     }
@@ -290,7 +302,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
                 try {
                     IncomingDistributableSessionData sessionData = this.distributedCacheManager.getSessionData(realId, owner, false);
                     if (sessionData == null) {
-                        log.debug("Metadata unavailable for unloaded session " + realId);
+                        log.debugf("Metadata unavailable for unloaded session %s", realId);
                         continue;
                     }
                     ts = sessionData.getTimestamp();
@@ -377,7 +389,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
-            throw new RuntimeException(String.format("Failed to instantiate %s %s", ClusteredSessionNotificationPolicy.class.getName(), policyClass), e);
+            throw MESSAGES.failToCreateSessionNotificationPolicy(ClusteredSessionNotificationPolicy.class.getName(), policyClass, e);
         }
     }
 
@@ -432,9 +444,6 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
 
         this.distributedCacheManager.stop();
 
-        // Don't leak the classloader
-        this.tcl = null;
-
         this.snapshotManager.stop();
         this.snapshotManager = null;
 
@@ -473,7 +482,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
                     ses.expire(notify, localCall, localOnly, ClusteredSessionNotificationCause.UNDEPLOY);
                 }
             } catch (Throwable t) {
-                log.warnf(t, "clearSessions(): Caught exception expiring or passivating session %s", ses.getIdInternal());
+                log.warn(MESSAGES.errorPassivatingSession(ses.getIdInternal()), t);
             } finally {
                 // Guard against leaking memory if anything is holding a
                 // ref to the session by clearing its internal state
@@ -580,7 +589,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
                 // Catalina api does not specify what happens
                 // but we will throw a runtime exception for now.
                 String msgEnd = (sessionId == null) ? "" : " id " + sessionId;
-                throw new IllegalStateException("createSession(): number of " + "active sessions exceeds the maximum limit: " + maxActiveAllowed + " when trying to create session" + msgEnd);
+                throw MESSAGES.tooManyActiveSessions(maxActiveAllowed, msgEnd);
             }
         }
 
@@ -659,7 +668,6 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
         String realId = this.parse(id).getKey();
         // Find it from the local store first
         ClusteredSession<O> session = cast(this.sessions.get(realId));
-
         // If we didn't find it locally, only check the distributed cache
         // if we haven't previously handled this session id on this request.
         // If we handled it previously but it's no longer local, that means
@@ -1042,7 +1050,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
 
     @Override
     public ClassLoader getApplicationClassLoader() {
-        return this.tcl;
+        return this.getContainer().getLoader().getClassLoader();
     }
 
     @Override
@@ -1080,9 +1088,6 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
                                        // we have already removed session
             boolean localOnly = true; // Don't pass attr removals to cache
 
-            // Ensure the correct TCL is in place
-            // BES 2008/11/27 Why?
-            ContextClassLoaderSwitcher.SwitchContext context = switcher.getSwitchContext(this.tcl);
             try {
                 // Don't track this invalidation is if it were from a request
                 SessionInvalidationTracker.suspend();
@@ -1093,8 +1098,6 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
 
                 // Remove any stats for this session
                 this.getReplicationStatistics().removeStats(realId);
-
-                context.reset();
             }
         }
     }
@@ -1105,7 +1108,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
         if (session != null) {
             session.sessionAttributesDirty();
         } else {
-            log.warn("Received local attribute notification for " + realId + " but session is not locally active");
+            log.warn(MESSAGES.notificationForInactiveSession(realId));
         }
     }
 
@@ -1228,7 +1231,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
                         // JBAS-7397 clean up
                         bruteForceCleanup(realId, e);
                     } else {
-                        log.errorf(e, "processExpirationPassivation(): failed handling %s with exception: %s", realId, e);
+                        log.error(MESSAGES.failToPassivateLoad(realId), e);
                     }
 
                 }
@@ -1283,7 +1286,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
                         // JBAS-7397
                         bruteForceCleanup(realId, e);
                     } else {
-                        log.errorf(e, "processExpirationPassivation(): failed handling unloaded session %s", realId);
+                        log.error(MESSAGES.failToPassivateUnloaded(realId), e);
                     }
                 }
             }
@@ -1313,7 +1316,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
                             break;
                         }
                     } catch (Exception e) {
-                        log.errorf(e, "processExpirationPassivation(): failed passivating %ssession %s", passivationCheck.isUnloaded() ? "unloaded " : "", passivationCheck.getRealId());
+                        log.error(MESSAGES.failToPassivate(passivationCheck.isUnloaded() ? "unloaded " : "", passivationCheck.getRealId()), e);
                     }
                 }
             }
@@ -1460,11 +1463,11 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
     }
 
     private void bruteForceCleanup(String realId, Exception ex) {
-        log.warnf("Standard expiration of session %s failed; switching to a brute force cleanup. Problem is ", realId, ex.getLocalizedMessage());
+        log.warn(MESSAGES.bruteForceCleanup(realId, ex.getLocalizedMessage()));
         try {
             this.distributedCacheManager.removeSessionLocal(realId, null);
         } catch (Exception e) {
-            log.errorf(e, "processExpirationPassivation(): Caught exception during brute force cleanup of unloaded session %s  Session will be removed from Manager but may still exist in distributed cache", realId);
+            log.error(MESSAGES.failToBruteForceCleanup(realId), e);
         } finally {
             // Get rid of our refs even if distributed store fails
             unloadedSessions.remove(realId);
@@ -1514,10 +1517,10 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
             } catch (RuntimeException e) {
                 exception = e;
             } catch (Exception e) {
-                exception = new RuntimeException("JBossCacheManager.processSessionRepl(): failed to replicate session.", e);
+                exception = MESSAGES.failedSessionReplication(e);
             }
             if (exception != null) {
-                log.error("Caught exception rolling back transaction", exception);
+                log.error(MESSAGES.exceptionRollingBackTransaction(), exception);
                 throw exception;
             }
         } finally {
@@ -1531,7 +1534,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
     private ClusteredSession<O> cast(Session session) {
         if (session == null) return null;
         if (!(session instanceof ClusteredSession)) {
-            throw new IllegalArgumentException(String.format("Expected clustered session, but got a %s", session.getClass().getName()));
+            throw MESSAGES.invalidSession(getClass().getName());
         }
         return (ClusteredSession<O>) session;
     }
@@ -1542,8 +1545,8 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
         private final ClusteredSession<O> session;
 
         private PassivationCheck(String realId, OwnedSessionUpdate osu) {
-            assert osu != null : "osu is null";
-            assert realId != null : "realId is null";
+            assert osu != null : MESSAGES.nullOsu();
+            assert realId != null : MESSAGES.nullSessionId();
 
             this.realId = realId;
             this.osu = osu;
@@ -1551,7 +1554,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
         }
 
         private PassivationCheck(ClusteredSession<O> session) {
-            assert session != null : "session is null";
+            assert session != null : MESSAGES.nullSession();
 
             this.realId = session.getRealId();
             this.session = session;

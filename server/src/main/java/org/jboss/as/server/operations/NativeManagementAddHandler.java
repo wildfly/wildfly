@@ -22,12 +22,14 @@
 
 package org.jboss.as.server.operations;
 
+import org.jboss.as.remoting.management.ManagementChannelRegistryService;
 import static org.jboss.as.server.mgmt.NativeManagementResourceDefinition.ATTRIBUTE_DEFINITIONS;
 import static org.jboss.as.server.mgmt.NativeManagementResourceDefinition.INTERFACE;
 import static org.jboss.as.server.mgmt.NativeManagementResourceDefinition.NATIVE_PORT;
 import static org.jboss.as.server.mgmt.NativeManagementResourceDefinition.SECURITY_REALM;
 import static org.jboss.as.server.mgmt.NativeManagementResourceDefinition.SOCKET_BINDING;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -43,10 +45,11 @@ import org.jboss.as.remoting.EndpointService;
 import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.ServerLogger;
+import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -79,7 +82,6 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler {
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
                                   ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
         final ServiceName endpointName = ManagementRemotingServices.MANAGEMENT_ENDPOINT;
@@ -87,6 +89,7 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler {
         ManagementRemotingServices.installRemotingEndpoint(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT, hostName, EndpointService.EndpointType.MANAGEMENT, verificationHandler, newControllers);
         installNativeManagementConnector(context, model, endpointName, serviceTarget, verificationHandler, newControllers);
 
+        ManagementChannelRegistryService.addService(serviceTarget);
         ManagementRemotingServices.installManagementChannelServices(serviceTarget,
                 endpointName,
                 new ModelControllerClientOperationHandlerFactoryService(),
@@ -101,11 +104,11 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler {
         final String attributeName = definition.getName();
         final boolean has = operation.has(attributeName);
         if(! has && definition.isRequired(operation)) {
-            throw new OperationFailedException(new ModelNode().set(String.format("%s is required", attributeName)));
+            throw ServerMessages.MESSAGES.attributeIsRequired(attributeName);
         }
         if(has) {
             if(! definition.isAllowed(operation)) {
-                throw new OperationFailedException(new ModelNode().set(String.format("%s is not allowed when [%s] are present", attributeName, definition.getAlternatives())));
+                throw ServerMessages.MESSAGES.attributeNotAllowedWhenAlternativeIsPresent(attributeName, Arrays.asList(definition.getAlternatives()));
             }
             definition.validateAndSet(operation, subModel);
         } else {
@@ -120,13 +123,13 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler {
         final String attributeName = definition.getName();
         final boolean has = subModel.has(attributeName);
         if(! has && definition.isRequired(subModel)) {
-            throw new OperationFailedException(new ModelNode().set(String.format("%s is required", attributeName)));
+            throw ServerMessages.MESSAGES.attributeIsRequired(attributeName);
         }
         ModelNode result;
         if(has) {
             if(! definition.isAllowed(subModel)) {
                 if (subModel.hasDefined(attributeName)) {
-                    throw new OperationFailedException(new ModelNode().set(String.format("%s is not allowed when [%s] are present", attributeName, definition.getAlternatives())));
+                    throw ServerMessages.MESSAGES.attributeNotAllowedWhenAlternativeIsPresent(attributeName, Arrays.asList(definition.getAlternatives()));
                 } else {
                     // create the undefined node
                     result = new ModelNode();
@@ -164,7 +167,7 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler {
         if (realmNode.isDefined()) {
             realmSvcName = SecurityRealmService.BASE_SERVICE_NAME.append(realmNode.asString());
         } else {
-            Logger.getLogger("org.jboss.as").warn("No security realm defined for native management service, all access will be unrestricted.");
+            ServerLogger.ROOT_LOGGER.nativeManagementInterfaceIsUnsecured();
         }
 
         ServiceName tmpDirPath = ServiceName.JBOSS.append("server", "path", "jboss.server.temp.dir");

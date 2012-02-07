@@ -27,13 +27,9 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.descriptions.common.ManagementDescription;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -43,15 +39,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class PropertiesAuthenticationResourceDefinition extends SimpleResourceDefinition {
-
-    public static final SimpleAttributeDefinition PATH = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PATH, ModelType.STRING, false)
-            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, false))
-            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
-
-    public static final SimpleAttributeDefinition RELATIVE_TO = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.RELATIVE_TO, ModelType.STRING, true)
-            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
-            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
+public class PropertiesAuthenticationResourceDefinition extends PropertiesFileResourceDefinition {
 
     public static final SimpleAttributeDefinition PLAIN_TEXT = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PLAIN_TEXT, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode(false)).setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
@@ -66,8 +54,9 @@ public class PropertiesAuthenticationResourceDefinition extends SimpleResourceDe
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        SecurityRealmChildWriteAttributeHandler handler = new SecurityRealmChildWriteAttributeHandler(ATTRIBUTE_DEFINITIONS);
-        handler.registerAttributes(resourceRegistration);
+    protected AttributeDefinition[] getAttributeDefinitions() {
+        return ATTRIBUTE_DEFINITIONS;
     }
+
+
 }

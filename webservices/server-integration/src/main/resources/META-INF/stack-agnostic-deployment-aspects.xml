@@ -52,11 +52,6 @@
     <property name="provides" class="java.lang.String">EndpointName</property>
   </deploymentAspect>
 
-  <deploymentAspect class="org.jboss.ws.common.deployment.EndpointRegistryDeploymentAspect">
-    <property name="requires" class="java.lang.String">EndpointName, EndpointAddress</property>
-    <property name="provides" class="java.lang.String">RegisteredEndpoint</property>
-  </deploymentAspect>
-
   <deploymentAspect class="org.jboss.ws.common.deployment.URLPatternDeploymentAspect">
     <property name="requires" class="java.lang.String">ContextRoot, ContainerMetaData</property>
     <property name="provides" class="java.lang.String">URLPattern</property>
@@ -78,7 +73,6 @@
   </deploymentAspect>
 
   <deploymentAspect class="org.jboss.as.webservices.deployers.EndpointRecordProcessorDeploymentAspect">
-    <property name="requires" class="java.lang.String">RegisteredEndpoint</property>
     <property name="provides" class="java.lang.String">EndpointRecordProcessors</property>
   </deploymentAspect>
 

@@ -142,8 +142,8 @@
             <xs:element name="properties" type="properties" minOccurs="0"/>
         </xs:all>
         <xs:attribute name="name" use="required" type="xs:string"/>
-        <xs:attribute name="allow-core-timeout" use="optional" type="xs:boolean"/>
-        <xs:attribute name="blocking" use="optional" type="xs:boolean"/>
+        <xs:attribute name="allow-core-timeout" use="optional" type="xs:boolean" default="false"/>
+        <xs:attribute name="blocking" use="optional" type="xs:boolean" default="false"/>
     </xs:complexType>
 
     <xs:complexType name="queueless-thread-pool">
@@ -175,7 +175,7 @@
             <xs:element name="properties" type="properties" minOccurs="0"/>
         </xs:all>
         <xs:attribute name="name" use="required" type="xs:string"/>
-        <xs:attribute name="blocking" use="optional" type="xs:boolean"/>
+        <xs:attribute name="blocking" use="optional" type="xs:boolean" default="false"/>
     </xs:complexType>
 
     <xs:complexType name="scheduled-thread-pool">
@@ -269,7 +269,7 @@
                 An amount of time.  Comprised of a time value and a unit value.
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="time" type="xs:integer" use="required"/>
+        <xs:attribute name="time" type="xs:long" use="required"/>
         <xs:attribute name="unit" type="time-unit-name" use="required"/>
     </xs:complexType>
 

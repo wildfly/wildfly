@@ -57,7 +57,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -66,14 +65,16 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.extension.ExtensionResource;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.domain.controller.operations.coordination.DomainServerUtils;
+import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.management.client.content.ManagedDMRContentTypeResource;
-import org.jboss.as.server.deployment.repository.api.ContentRepository;
+import org.jboss.as.repository.ContentRepository;
+import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.server.operations.ServerRestartRequiredHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -90,20 +91,23 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
     public static final String OPERATION_NAME = "apply-remote-domain-model";
 
     private final Set<String> appliedExensions = new HashSet<String>();
-    private final FileRepository fileRepository;
+    private final HostFileRepository fileRepository;
     private final ContentRepository contentRepository;
     private final ExtensionRegistry extensionRegistry;
+    private final IgnoredDomainResourceRegistry ignoredResourceRegistry;
 
     private final LocalHostControllerInfo localHostInfo;
 
     public ApplyRemoteMasterDomainModelHandler(final ExtensionRegistry extensionRegistry,
-                                               final FileRepository fileRepository,
+                                               final HostFileRepository fileRepository,
                                                final ContentRepository contentRepository,
-                                               final LocalHostControllerInfo localHostInfo) {
+                                               final LocalHostControllerInfo localHostInfo,
+                                               final IgnoredDomainResourceRegistry ignoredResourceRegistry) {
         this.extensionRegistry = extensionRegistry;
         this.fileRepository = fileRepository;
         this.contentRepository = contentRepository;
         this.localHostInfo = localHostInfo;
+        this.ignoredResourceRegistry = ignoredResourceRegistry;
     }
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -122,7 +126,12 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
         clearDomain(rootResource);
 
         for (final ModelNode resourceDescription : domainModel.asList()) {
+
             final PathAddress resourceAddress = PathAddress.pathAddress(resourceDescription.require("domain-resource-address"));
+            if (ignoredResourceRegistry.isResourceExcluded(resourceAddress)) {
+                continue;
+            }
+
             final Resource resource = getResource(resourceAddress, rootResource, context);
             if (resourceAddress.size() == 1 && resourceAddress.getElement(0).getKey().equals(EXTENSION)) {
                 final String module = resourceAddress.getElement(0).getValue();
@@ -180,12 +189,13 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
         }
 
         if (!context.isBooting()) {
-            final ModelNode endRoot = Resource.Tools.readModel(context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS));
+            final Resource domainRootResource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
+            final ModelNode endRoot = Resource.Tools.readModel(domainRootResource);
             final Set<ServerIdentity> affectedServers = new HashSet<ServerIdentity>();
             final ModelNode hostModel = endRoot.require(HOST).asPropertyList().iterator().next().getValue();
             final ModelNode existingHostModel = startRoot.require(HOST).asPropertyList().iterator().next().getValue();
 
-            final Map<String, ProxyController> serverProxies = getServerProxies(context);
+            final Map<String, ProxyController> serverProxies = DomainServerUtils.getServerProxies(localHostInfo.getLocalHostName(), domainRootResource, context.getResourceRegistration());
 
             final ModelNode startExtensions = startRoot.get(EXTENSION);
             final ModelNode finishExtensions = endRoot.get(EXTENSION);
@@ -332,19 +342,6 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
             }
         }
         context.completeStep();
-    }
-
-    private Map<String, ProxyController> getServerProxies(OperationContext context) {
-        final Set<String> serverNames = context.readResource(PathAddress.pathAddress(PathElement.pathElement(HOST, localHostInfo.getLocalHostName()))).getChildrenNames(SERVER_CONFIG);
-        final Map<String, ProxyController> proxies = new HashMap<String, ProxyController>();
-        for(String serverName : serverNames) {
-            final PathAddress serverAddress = PathAddress.pathAddress(PathElement.pathElement(HOST, localHostInfo.getLocalHostName()), PathElement.pathElement(SERVER, serverName));
-            final ProxyController proxyController = context.getResourceRegistration().getProxyController(serverAddress);
-            if(proxyController != null) {
-                proxies.put(serverName, proxyController);
-            }
-        }
-        return proxies;
     }
 
     protected void initializeExtension(String module) {

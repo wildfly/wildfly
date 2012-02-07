@@ -22,23 +22,28 @@
 package org.jboss.as.controller.remote;
 
 import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CALLER_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
 
 import java.io.DataInput;
 import java.io.IOException;
-import java.util.concurrent.ExecutorService;
+
+import javax.security.auth.Subject;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
+import org.jboss.as.protocol.mgmt.ManagementChannelAssociation;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
-import org.jboss.as.protocol.mgmt.ManagementProtocolHeader;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
+import org.jboss.as.protocol.mgmt.ManagementRequestHandlerFactory;
 import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.as.protocol.mgmt.ProtocolUtils;
@@ -48,37 +53,39 @@ import org.jboss.dmr.ModelNode;
  * Operation handlers for the remote implementation of {@link org.jboss.as.controller.client.ModelControllerClient}
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author Emanuel Muckenhuber
  */
-public class ModelControllerClientOperationHandler extends AbstractModelControllerOperationHandler<ModelNode, Void> {
+public class ModelControllerClientOperationHandler implements ManagementRequestHandlerFactory {
 
     private final ModelController controller;
 
-    public ModelControllerClientOperationHandler(final ModelController controller, final ExecutorService executorService) {
-        super(executorService);
+    private final ManagementChannelAssociation channelAssociation;
+    private final Subject subject;
+
+    public ModelControllerClientOperationHandler(final ModelController controller,
+            final ManagementChannelAssociation channelAssociation) {
+        this(controller, channelAssociation, null);
+    }
+
+    public ModelControllerClientOperationHandler(final ModelController controller,
+            final ManagementChannelAssociation channelAssociation, final Subject subject) {
         this.controller = controller;
+        this.channelAssociation = channelAssociation;
+        this.subject = subject;
     }
 
     @Override
-    protected ManagementRequestHeader validateRequest(ManagementProtocolHeader header) throws IOException {
-        final ManagementRequestHeader request =  super.validateRequest(header);
-        if(request.getOperationId() == ModelControllerProtocol.EXECUTE_ASYNC_CLIENT_REQUEST
-                || request.getOperationId() == ModelControllerProtocol.EXECUTE_CLIENT_REQUEST) {
-            // Initialize a new request context
-            super.registerActiveOperation(request.getBatchId(), null);
-        }
-        return request;
-    }
-
-    @Override
-    protected ManagementRequestHandler<ModelNode, Void> getRequestHandler(byte operationType) {
-        switch(operationType) {
+    public ManagementRequestHandler<?, ?> resolveHandler(final RequestHandlerChain handlers, final ManagementRequestHeader header) {
+        switch (header.getOperationId()) {
             case ModelControllerProtocol.EXECUTE_ASYNC_CLIENT_REQUEST:
             case ModelControllerProtocol.EXECUTE_CLIENT_REQUEST:
+                // initialize the operation ctx before executing the request handler
+                handlers.registerActiveOperation(header.getBatchId(), null);
                 return new ExecuteRequestHandler();
             case ModelControllerProtocol.CANCEL_ASYNC_REQUEST:
                 return new CancelAsyncRequestHandler();
         }
-        return super.getRequestHandler(operationType);
+        return handlers.resolveNext();
     }
 
     class ExecuteRequestHandler implements ManagementRequestHandler<ModelNode, Void> {
@@ -95,7 +102,13 @@ public class ModelControllerClientOperationHandler extends AbstractModelControll
                 @Override
                 public void execute(final ManagementRequestContext<Void> context) throws Exception {
                     final ManagementResponseHeader response = ManagementResponseHeader.create(context.getRequestHeader());
-                    final ModelNode result = doExecute(operation, attachmentsLength, context);
+                    final ModelNode result;
+                    SecurityActions.setSecurityContextSubject(subject);
+                    try {
+                        result = doExecute(operation, attachmentsLength, context);
+                    } finally {
+                        SecurityActions.clearSubjectSecurityContext();
+                    }
 
                     final FlushableDataOutput output = context.writeMessage(response);
                     try {
@@ -112,15 +125,20 @@ public class ModelControllerClientOperationHandler extends AbstractModelControll
         }
 
         protected ModelNode doExecute(final ModelNode operation, final int attachmentsLength, final ManagementRequestContext<Void> context) {
+            //Add a header to show that this operation comes from a user. If this is a host controller and the operation needs propagating to the
+            //servers it will be removed by the domain ops responsible for propagation to the servers.
+            operation.get(OPERATION_HEADERS, CALLER_TYPE).set(USER);
+
             final ManagementRequestHeader header = ManagementRequestHeader.class.cast(context.getRequestHeader());
             final int batchId = header.getBatchId();
             final ModelNode result = new ModelNode();
-            final AbstractModelControllerOperationHandler.OperationAttachmentsProxy attachmentsProxy = new AbstractModelControllerOperationHandler.OperationAttachmentsProxy(context.getChannel(), batchId, attachmentsLength);
+            final OperationMessageHandlerProxy messageHandlerProxy = new OperationMessageHandlerProxy(channelAssociation, batchId);
+            final OperationAttachmentsProxy attachmentsProxy = OperationAttachmentsProxy.create(channelAssociation, batchId, attachmentsLength);
             try {
                 ROOT_LOGGER.tracef("Executing client request %d(%d)", batchId, header.getRequestId());
                 result.set(controller.execute(
                         operation,
-                        new AbstractModelControllerOperationHandler.OperationMessageHandlerProxy(context.getChannel(), batchId),
+                        messageHandlerProxy,
                         ModelController.OperationTransactionControl.COMMIT,
                         attachmentsProxy));
             } catch (Exception e) {
@@ -137,7 +155,7 @@ public class ModelControllerClientOperationHandler extends AbstractModelControll
 
     }
 
-    private class CancelAsyncRequestHandler implements ManagementRequestHandler<ModelNode, Void> {
+    private static class CancelAsyncRequestHandler implements ManagementRequestHandler<ModelNode, Void> {
 
         @Override
         public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<ModelNode> resultHandler, final ManagementRequestContext<Void> context) throws IOException {

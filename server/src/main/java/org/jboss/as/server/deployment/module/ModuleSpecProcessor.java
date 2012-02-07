@@ -27,6 +27,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.jboss.as.server.ServerLogger;
+import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -36,7 +38,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.moduleservice.ModuleLoadService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
-import org.jboss.logging.Logger;
 import org.jboss.modules.DependencySpec;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleSpec;
@@ -61,7 +62,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
 
     private static final AttachmentKey<Boolean> MARKER = AttachmentKey.create(Boolean.class);
 
-    private static final Logger logger = Logger.getLogger("org.jboss.as.server.deployment.module");
+    private static final ServerLogger logger = ServerLogger.DEPLOYMENT_LOGGER;
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -97,8 +98,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
 
         final ModuleIdentifier moduleIdentifier = deploymentUnit.getAttachment(Attachments.MODULE_IDENTIFIER);
         if (moduleIdentifier == null) {
-            throw new DeploymentUnitProcessingException("No Module Identifier attached to deployment "
-                    + deploymentUnit.getName());
+            throw ServerMessages.MESSAGES.noModuleIdentifier(deploymentUnit.getName());
         }
 
         // create the module servce and set it to attach to the deployment in the next phase
@@ -165,15 +165,15 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
             addResourceRoot(specBuilder, resourceRoot);
         }
 
-        createDependencies(phaseContext, specBuilder, dependencies, moduleSpecification.isRequiresTransitiveDependencies());
-        createDependencies(phaseContext, specBuilder, userDependencies, moduleSpecification.isRequiresTransitiveDependencies());
+        createDependencies(specBuilder, dependencies, moduleSpecification.isRequiresTransitiveDependencies());
+        createDependencies(specBuilder, userDependencies, moduleSpecification.isRequiresTransitiveDependencies());
 
         if (moduleSpecification.isLocalLast()) {
-            createDependencies(phaseContext, specBuilder, localDependencies, moduleSpecification.isRequiresTransitiveDependencies());
+            createDependencies(specBuilder, localDependencies, moduleSpecification.isRequiresTransitiveDependencies());
             specBuilder.addDependency(DependencySpec.createLocalDependencySpec());
         } else {
             specBuilder.addDependency(DependencySpec.createLocalDependencySpec());
-            createDependencies(phaseContext, specBuilder, localDependencies, moduleSpecification.isRequiresTransitiveDependencies());
+            createDependencies(specBuilder, localDependencies, moduleSpecification.isRequiresTransitiveDependencies());
         }
 
         final DelegatingClassFileTransformer delegatingClassFileTransformer = new DelegatingClassFileTransformer();
@@ -206,7 +206,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    private void createDependencies(final DeploymentPhaseContext phaseContext, final ModuleSpec.Builder specBuilder, final List<ModuleDependency> apiDependencies, final boolean requireTransitive) {
+    private void createDependencies(final ModuleSpec.Builder specBuilder, final List<ModuleDependency> apiDependencies, final boolean requireTransitive) {
         if (apiDependencies != null) {
             for (final ModuleDependency dependency : apiDependencies) {
                 final boolean export = requireTransitive ? true : dependency.isExport();
@@ -242,12 +242,6 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
                         .getModuleLoader(), dependency.getIdentifier(), dependency.isOptional());
                 specBuilder.addDependency(depSpec);
                 logger.debug("Adding dependency " + dependency + " to module " + specBuilder.getIdentifier());
-
-                final String depName = dependency.getIdentifier().getName();
-                if (depName.startsWith(ServiceModuleLoader.MODULE_PREFIX)) {
-                    phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, ServiceModuleLoader
-                            .moduleSpecServiceName(dependency.getIdentifier()));
-                }
             }
         }
     }
@@ -267,8 +261,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
                         .getRootName(), resource.getRoot(), resource.isUsePhysicalCodeSource()), filterBuilder.create()));
             }
         } catch (IOException e) {
-            throw new DeploymentUnitProcessingException("Failed to create VFSResourceLoader for root ["
-                    + resource.getRootName() + "]", e);
+            throw ServerMessages.MESSAGES.failedToCreateVFSResourceLoader(resource.getRootName(), e);
         }
     }
 

@@ -43,7 +43,7 @@ public class RemotingContext {
         connection.set(null);
     }
 
-    static Connection getConnection() {
+    public static Connection getConnection() {
         return connection.get();
     }
 

@@ -34,11 +34,11 @@ import org.jboss.as.cmp.bridge.EntityBridge;
  * @version $Revision: 81030 $
  */
 public final class Catalog {
-    private final Map entityByAbstractSchemaName = new HashMap();
-    private final Map entityByEJBName = new HashMap();
-    private final Map entityByInterface = new HashMap();
+    private final Map<String, EntityBridge>  entityByAbstractSchemaName = new HashMap<String, EntityBridge> ();
+    private final Map<String, EntityBridge> entityByEJBName = new HashMap<String, EntityBridge> ();
+    private final Map<Class<?>, EntityBridge> entityByInterface = new HashMap<Class<?>, EntityBridge>();
 
-    public void addEntity(EntityBridge entityBridge) {
+    public synchronized void addEntity(EntityBridge entityBridge) {
         entityByAbstractSchemaName.put(
                 entityBridge.getAbstractSchemaName(),
                 entityBridge);
@@ -58,15 +58,15 @@ public final class Catalog {
 
     public EntityBridge getEntityByAbstractSchemaName(
             String abstractSchemaName) {
-        return (EntityBridge) entityByAbstractSchemaName.get(abstractSchemaName);
+        return entityByAbstractSchemaName.get(abstractSchemaName);
     }
 
     public EntityBridge getEntityByInterface(Class intf) {
-        return (EntityBridge) entityByInterface.get(intf);
+        return entityByInterface.get(intf);
     }
 
     public EntityBridge getEntityByEJBName(String ejbName) {
-        return (EntityBridge) entityByEJBName.get(ejbName);
+        return entityByEJBName.get(ejbName);
     }
 
     public int getEntityCount() {

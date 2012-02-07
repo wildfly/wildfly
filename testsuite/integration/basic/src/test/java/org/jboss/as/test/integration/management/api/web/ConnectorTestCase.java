@@ -52,7 +52,9 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.http.util.HttpClientUtils;
 import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.as.test.integration.management.Connector;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.cli.GlobalOpsTestCase;
 import org.jboss.as.test.integration.management.util.WebUtil;
@@ -77,42 +79,6 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
     private final File keyPEMFile = new File(System.getProperty("java.io.tmpdir"), "newkey.pem");
     private final File certPEMFile = new File(System.getProperty("java.io.tmpdir"), "newcert.pem");
     private boolean isNative = false;
-
-    public enum Connector {
-
-        HTTP("http", "http", "HTTP/1.1", false), HTTPS("http", "https", "HTTP/1.1", true), AJP("ajp", "http", "AJP/1.3", false), HTTPJIO(
-                "http", "http", "org.apache.coyote.http11.Http11Protocol", false), HTTPSJIO("http", "https",
-                "org.apache.coyote.http11.Http11Protocol", true), AJPJIO("ajp", "http", "org.apache.coyote.ajp.AjpProtocol",
-                false), HTTPNATIVE("http", "http", "org.apache.coyote.http11.Http11AprProtocol", false), HTTPSNATIVE("http",
-                "https", "org.apache.coyote.http11.Http11AprProtocol", true);
-        private final String name;
-        private final String scheme;
-        private final String protocol;
-        private final boolean secure;
-
-        private Connector(String name, String scheme, String protocol, boolean secure) {
-            this.name = name;
-            this.scheme = scheme;
-            this.protocol = protocol;
-            this.secure = secure;
-        }
-
-        final String getName() {
-            return name;
-        }
-
-        final String getScheme() {
-            return scheme;
-        }
-
-        final String getProtrocol() {
-            return protocol;
-        }
-
-        final boolean isSecure() {
-            return secure;
-        }
-    }
 
     @ArquillianResource
     URL url;
@@ -190,7 +156,7 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
 
         // check that the connector is live
         String cURL = "https://" + url.getHost() + ":8181";
-        HttpClient httpClient = wrapClient(new DefaultHttpClient());
+        HttpClient httpClient = HttpClientUtils.wrapHttpsClient(new DefaultHttpClient());
         HttpGet get = new HttpGet(cURL);
 
         HttpResponse hr = httpClient.execute(get);
@@ -214,7 +180,7 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
             addConnector(Connector.HTTPSNATIVE);
             // check that the connector is live
             String cURL = "https://" + url.getHost() + ":8181";
-            HttpClient httpClient = wrapClient(new DefaultHttpClient());
+            HttpClient httpClient = HttpClientUtils.wrapHttpsClient(new DefaultHttpClient());
             HttpGet get = new HttpGet(cURL);
 
             HttpResponse hr = httpClient.execute(get);
@@ -368,31 +334,4 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
         return connNames;
     }
 
-    public static HttpClient wrapClient(HttpClient base) {
-        try {
-            SSLContext ctx = SSLContext.getInstance("TLS");
-            X509TrustManager tm = new X509TrustManager() {
-
-                public void checkClientTrusted(X509Certificate[] xcs, String string) throws CertificateException {
-                }
-
-                public void checkServerTrusted(X509Certificate[] xcs, String string) throws CertificateException {
-                }
-
-                public X509Certificate[] getAcceptedIssuers() {
-                    return null;
-                }
-            };
-            ctx.init(null, new TrustManager[] { tm }, null);
-            SSLSocketFactory ssf = new SSLSocketFactory(ctx);
-            ssf.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-            ClientConnectionManager ccm = base.getConnectionManager();
-            SchemeRegistry sr = ccm.getSchemeRegistry();
-            sr.register(new Scheme("https", ssf, 443));
-            return new DefaultHttpClient(ccm, base.getParams());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return null;
-        }
-    }
 }

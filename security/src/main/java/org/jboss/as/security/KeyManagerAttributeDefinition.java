@@ -64,7 +64,7 @@ public class KeyManagerAttributeDefinition extends AttributeDefinition {
         try {
             fieldValidator.validateParameter(name, node);
         } catch (OperationFailedException e) {
-            throw new XMLStreamException(e.getFailureDescription().toString(), reader.getLocation());
+            throw SecurityMessages.MESSAGES.xmlStreamException(e.getFailureDescription().toString(), reader.getLocation());
         }
         return node;
     }
@@ -114,16 +114,16 @@ public class KeyManagerAttributeDefinition extends AttributeDefinition {
 
     @Override
     public ModelNode addResourceAttributeDescription(ResourceBundle bundle, String prefix, ModelNode resourceDescription) {
-       throw new UnsupportedOperationException("Use the ResourceDescriptionResolver variant");
+       throw SecurityMessages.MESSAGES.unsupportedOperationExceptionUseResourceDesc();
     }
 
     @Override
     public ModelNode addOperationParameterDescription(ResourceBundle bundle, String prefix, ModelNode operationDescription) {
-       throw new UnsupportedOperationException("Use the ResourceDescriptionResolver variant");
+       throw SecurityMessages.MESSAGES.unsupportedOperationExceptionUseResourceDesc();
     }
 
     @Override
     public void marshallAsElement(ModelNode resourceModel, XMLStreamWriter writer) throws XMLStreamException {
-        throw new UnsupportedOperationException();
+        throw SecurityMessages.MESSAGES.unsupportedOperation();
     }
 }

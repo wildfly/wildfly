@@ -48,7 +48,12 @@ class GenericOutboundConnectionResourceDefinition extends AbstractOutboundConnec
 
     private GenericOutboundConnectionResourceDefinition() {
         super(ADDRESS, RemotingExtension.getResourceDescriptionResolver(CommonAttributes.OUTBOUND_CONNECTION),
-                GenericOutboundConnectionAdd.INSTANCE, OutboundConnectionRemoveHandler.INSTANCE);
+                GenericOutboundConnectionAdd.INSTANCE, GenericOutboundConnectionRemoveHandler.INSTANCE);
+    }
+
+    @Override
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerSubModel(new PropertyResource(CommonAttributes.OUTBOUND_CONNECTION));
     }
 
     @Override

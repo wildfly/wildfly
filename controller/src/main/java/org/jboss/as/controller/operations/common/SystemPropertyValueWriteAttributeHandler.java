@@ -28,7 +28,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.dmr.ModelNode;
 
@@ -39,30 +38,55 @@ import org.jboss.dmr.ModelNode;
  */
 public class SystemPropertyValueWriteAttributeHandler extends WriteAttributeHandlers.WriteAttributeOperationHandler {
 
-    public static final SystemPropertyValueWriteAttributeHandler INSTANCE = new SystemPropertyValueWriteAttributeHandler();
+    public static final SystemPropertyValueWriteAttributeHandler INSTANCE = new SystemPropertyValueWriteAttributeHandler(null);
 
-    private SystemPropertyValueWriteAttributeHandler() {
+    private final ProcessEnvironment processEnvironment;
+
+    public SystemPropertyValueWriteAttributeHandler(ProcessEnvironment processEnvironment) {
+        this.processEnvironment = processEnvironment;
     }
 
     protected void modelChanged(final OperationContext context, final ModelNode operation, final String attributeName,
                                 final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
 
-        if (context.getType() == OperationContext.Type.SERVER) {
+
+        final String name = PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement().getValue();
+        final String value = newValue.isDefined() ? newValue.asString() : null;
+        final boolean applyToRuntime = processEnvironment != null && processEnvironment.isRuntimeSystemPropertyUpdateAllowed(name, value, context.isBooting());
+        final boolean reload = !applyToRuntime && context.getProcessType().isServer();
+
+        if (applyToRuntime) {
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) {
-                    final String propertyName = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
-                    final String propertyValue = newValue.isDefined() ? newValue.asString() : null;
-                    SecurityActions.setSystemProperty(propertyName, propertyValue);
+                    SecurityActions.setSystemProperty(name, value);
+                    if (processEnvironment != null) {
+                        processEnvironment.systemPropertyUpdated(name, value);
+                    }
                     if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-                        if (currentValue.isDefined()) {
-                            SecurityActions.setSystemProperty(propertyName, currentValue.asString());
+                        final String oldValue = currentValue.isDefined() ? currentValue.asString() : null;
+                        if (oldValue != null) {
+                            SecurityActions.setSystemProperty(name, oldValue);
                         } else {
-                            SecurityActions.clearSystemProperty(propertyName);
+                            SecurityActions.clearSystemProperty(name);
+                        }
+                        if (processEnvironment != null) {
+                            processEnvironment.systemPropertyUpdated(name, oldValue);
                         }
                     }
                 }
             }, OperationContext.Stage.RUNTIME);
+
+        } else if (reload) {
+            context.reloadRequired();
         }
-        context.completeStep();
+
+        context.completeStep(new OperationContext.RollbackHandler() {
+            @Override
+            public void handleRollback(OperationContext context, ModelNode operation) {
+                if (reload) {
+                    context.revertReloadRequired();
+                }
+            }
+        });
     }
 }

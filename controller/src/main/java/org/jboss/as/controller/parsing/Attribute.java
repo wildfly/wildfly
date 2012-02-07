@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * An enumeration of all the recognized XML attributes, by local name.
+ * An enumeration of all the recognized core configuration XML attributes, by local name.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
@@ -46,6 +46,7 @@ public enum Attribute {
     CODE("code"),
     CONNECTION("connection"),
     CONNECTOR("connector"),
+    CONSOLE_ENABLED("console-enabled"),
     DEFAULT_INTERFACE("default-interface"),
     DEBUG_ENABLED("debug-enabled"),
     DEBUG_OPTIONS("debug-options"),
@@ -84,10 +85,7 @@ public enum Attribute {
     RECURSIVE("recursive"),
     REF("ref"),
     RELATIVE_TO("relative-to"),
-    REPOSITORY("repository"),
     RUNTIME_NAME("runtime-name"),
-    SCAN_ENABLED("scan-enabled"),
-    SCAN_INTERVAL("scan-interval"),
     SEARCH_CREDENTIAL("search-credential"),
     SEARCH_DN("search-dn"),
     SECURE_PORT("secure-port"),
@@ -105,7 +103,8 @@ public enum Attribute {
     USER_DN("user-dn"),
     USERNAME("username"),
     USERNAME_ATTRIBUTE("username-attribute"),
-    VALUE("value")
+    VALUE("value"),
+    WILDCARD("wildcard")
     ;
 
     private final String name;

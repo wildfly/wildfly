@@ -28,13 +28,16 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 /**
  * @author David Bosschaert
  */
+//@Ignore("[AS7-3556] Replace mocked subsystem model tests with functional tests")
 public class ActivationWriteHandlerTestCase {
+
     @Test
     public void testHandlerLazy() throws Exception {
         ModelNode targetNode = new ModelNode();

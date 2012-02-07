@@ -23,6 +23,9 @@
   -->
 
 <module xmlns="urn:jboss:module:1.1" name="org.jboss.as.security">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
 
     <resources>
         <!-- Insert resources here -->
@@ -36,6 +39,7 @@
         <module name="org.infinispan"/>
         <module name="org.jboss.as.clustering.infinispan"/>
         <module name="org.jboss.as.controller"/>
+        <module name="org.jboss.as.domain-management"/>
         <module name="org.jboss.as.ee"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.naming"/>

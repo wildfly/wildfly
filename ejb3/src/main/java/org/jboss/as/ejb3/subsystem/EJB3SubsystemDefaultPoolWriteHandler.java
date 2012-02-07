@@ -50,6 +50,10 @@ public class EJB3SubsystemDefaultPoolWriteHandler extends AbstractWriteAttribute
             new EJB3SubsystemDefaultPoolWriteHandler(PoolConfigService.DEFAULT_SLSB_POOL_CONFIG_SERVICE_NAME,
                     EJB3SubsystemRootResourceDefinition.DEFAULT_SLSB_INSTANCE_POOL);
 
+    public static final EJB3SubsystemDefaultPoolWriteHandler ENTITY_BEAN_POOL =
+            new EJB3SubsystemDefaultPoolWriteHandler(PoolConfigService.DEFAULT_ENTITY_POOL_CONFIG_SERVICE_NAME,
+                    EJB3SubsystemRootResourceDefinition.DEFAULT_ENTITY_BEAN_INSTANCE_POOL);
+
     private final ServiceName poolConfigServiceName;
     private final AttributeDefinition poolAttribute;
 

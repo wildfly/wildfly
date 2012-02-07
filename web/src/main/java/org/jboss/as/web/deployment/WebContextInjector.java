@@ -21,6 +21,8 @@
  */
 package org.jboss.as.web.deployment;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 import org.apache.catalina.Context;
 import org.jboss.as.web.VirtualHost;
 import org.jboss.msc.inject.InjectionException;
@@ -52,7 +54,7 @@ class WebContextInjector implements Injector<VirtualHost> {
         // Check if this is the default webapp for the host
         if (("/" + host.getHost().getDefaultWebapp()).equals(context.getPath())) {
             if (host.hasWelcomeRoot())
-                throw new IllegalStateException("Root contexts can not be deployed when the virtual host configuration has the welcome root enabled, disable it and redeploy");
+                throw MESSAGES.conflictOnDefaultWebapp();
             context.setPath("");
         }
         // Add the context to host

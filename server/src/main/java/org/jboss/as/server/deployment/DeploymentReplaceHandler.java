@@ -28,6 +28,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PAT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLACE_DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_REPLACE;
+
+import org.jboss.as.repository.ContentRepository;
+import org.jboss.as.repository.DeploymentFileRepository;
 import org.jboss.as.server.ServerMessages;
 import static org.jboss.as.server.deployment.AbstractDeploymentHandler.createFailureException;
 import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getContents;
@@ -46,7 +49,6 @@ import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -64,13 +66,22 @@ public class DeploymentReplaceHandler implements OperationStepHandler, Descripti
     private final ParametersValidator unmanagedContentValidator = new ParametersValidator();
     private final ParametersValidator managedContentValidator = new ParametersValidator();
 
-    public DeploymentReplaceHandler(ContentRepository contentRepository) {
+    protected DeploymentReplaceHandler(ContentRepository contentRepository) {
+        assert contentRepository != null : "Null contentRepository";
         this.contentRepository = contentRepository;
         this.validator.registerValidator(NAME, new StringLengthValidator(1));
         this.validator.registerValidator(TO_REPLACE, new StringLengthValidator(1));
         this.managedContentValidator.registerValidator(HASH, new ModelTypeValidator(ModelType.BYTES));
         this.unmanagedContentValidator.registerValidator(ARCHIVE, new ModelTypeValidator(ModelType.BOOLEAN));
         this.unmanagedContentValidator.registerValidator(PATH, new StringLengthValidator(1));
+    }
+
+    public static DeploymentReplaceHandler createForStandalone(ContentRepository contentRepository) {
+        return new DeploymentReplaceHandler(contentRepository);
+    }
+
+    public static DeploymentReplaceHandler createForDomainServer(ContentRepository contentRepository, DeploymentFileRepository remoteFileRepository) {
+        return new DomainServerDeploymentReplaceHandler(contentRepository, remoteFileRepository);
     }
 
     @Override
@@ -115,9 +126,7 @@ public class DeploymentReplaceHandler implements OperationStepHandler, Descripti
             if (contentItemNode.hasDefined(HASH)) {
                 managedContentValidator.validate(contentItemNode);
                 byte[] hash = contentItemNode.require(HASH).asBytes();
-                if (!contentRepository.hasContent(hash)) {
-                    ServerMessages.MESSAGES.noSuchDeploymentContent(HashUtil.bytesToHexString(hash));
-                }
+                addFromHash(hash);
             } else {
                 unmanagedContentValidator.validate(contentItemNode);
             }
@@ -144,6 +153,26 @@ public class DeploymentReplaceHandler implements OperationStepHandler, Descripti
         DeploymentHandlerUtil.replace(context, replaceNode, runtimeName, name, replacedName, contents);
 
         context.completeStep();
+    }
+
+    protected void addFromHash(byte[] hash) throws OperationFailedException {
+        if (!contentRepository.hasContent(hash)) {
+            throw ServerMessages.MESSAGES.noSuchDeploymentContent(HashUtil.bytesToHexString(hash));
+        }
+    }
+
+    private static class DomainServerDeploymentReplaceHandler extends DeploymentReplaceHandler {
+        final DeploymentFileRepository remoteFileRepository;
+        public DomainServerDeploymentReplaceHandler(final ContentRepository contentRepository, final DeploymentFileRepository remoteFileRepository) {
+            super(contentRepository);
+            assert remoteFileRepository != null : "Null remoteFileRepository";
+            this.remoteFileRepository = remoteFileRepository;
+        }
+
+        protected void addFromHash(byte[] hash) throws OperationFailedException {
+            remoteFileRepository.getDeploymentFiles(hash);
+            super.addFromHash(hash);
+        }
     }
 
 }

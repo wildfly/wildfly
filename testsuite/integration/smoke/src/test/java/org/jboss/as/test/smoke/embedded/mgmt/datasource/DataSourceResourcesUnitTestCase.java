@@ -22,28 +22,18 @@
 
 package org.jboss.as.test.smoke.embedded.mgmt.datasource;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import junit.framework.Assert;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.test.integration.management.util.MgmtOperationException;
+import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
@@ -59,7 +49,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class DataSourceResourcesUnitTestCase  extends AbstractMgmtTestBase{
+public class DataSourceResourcesUnitTestCase  extends DsMgmtTestBase{
 
     @Deployment
     public static Archive<?> getDeployment() {
@@ -68,12 +58,12 @@ public class DataSourceResourcesUnitTestCase  extends AbstractMgmtTestBase{
     }
 
     @AfterClass
-    public static void tearDown()  throws IOException {
+    public static void tearDown()  throws Exception {
     	closeModelControllerClient();
     }
 
     @Test
-    public void testReadChildrenResources() throws IOException, MgmtOperationException {
+    public void testReadChildrenResources() throws Exception {
 
         final ModelNode address = new ModelNode();
         address.add("subsystem", "datasources");
@@ -88,15 +78,15 @@ public class DataSourceResourcesUnitTestCase  extends AbstractMgmtTestBase{
         final Map<String, ModelNode> children = getChildren(result);
         Assert.assertFalse(children.isEmpty());
         for (final Entry<String, ModelNode> child : children.entrySet()) {
-            Assert.assertTrue(child.getKey() != null);
-            Assert.assertTrue(child.getValue().hasDefined("connection-url"));
-            Assert.assertTrue(child.getValue().hasDefined("jndi-name"));
-            Assert.assertTrue(child.getValue().hasDefined("driver-name"));
+            Assert.assertNotNull("Default datasource not found",child.getKey());
+            Assert.assertTrue("Default datasource have no connection URL",child.getValue().hasDefined("connection-url"));
+            Assert.assertTrue("Default datasource have no JNDI name",child.getValue().hasDefined("jndi-name"));
+            Assert.assertTrue("Default datasource have no driver",child.getValue().hasDefined("driver-name"));
         }
     }
 
     @Test
-    public void testReadResourceResources() throws IOException, MgmtOperationException {
+    public void testReadResourceResources() throws Exception {
 
         final ModelNode address = new ModelNode();
         address.add("subsystem", "datasources");
@@ -114,11 +104,11 @@ public class DataSourceResourcesUnitTestCase  extends AbstractMgmtTestBase{
 
         HashSet<String> keys = new HashSet<String>();
         for (final Entry<String, ModelNode> child : children.entrySet()) {
-            Assert.assertTrue(child.getKey() != null);
+            Assert.assertNotNull("Default driver description have no attributes",child.getKey());
             keys.add(child.getKey());
         }
-        Assert.assertTrue(keys.contains("driver-xa-datasource-class-name"));
-        Assert.assertTrue(keys.contains("module-slot"));
-        Assert.assertTrue(keys.contains("driver-name"));
+        Assert.assertTrue("Default driver description have no xa-datasource-class attribute",keys.contains("driver-xa-datasource-class-name"));
+        Assert.assertTrue("Default driver description have no module-slot attribute",keys.contains("module-slot"));
+        Assert.assertTrue("Default driver description have no driver-name attribute",keys.contains("driver-name"));
     }
 }

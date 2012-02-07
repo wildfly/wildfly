@@ -33,6 +33,8 @@
                 <path name="com/sun/script/javascript"/>
                 <path name="com/sun/jndi/dns"/>
                 <path name="com/sun/jndi/ldap"/>
+                <path name="com/sun/jndi/url"/>
+                <path name="com/sun/jndi/url/dns"/>
                 <path name="com/sun/security/auth"/>
                 <path name="com/sun/security/auth/login"/>
                 <path name="com/sun/security/auth/module"/>
@@ -40,6 +42,8 @@
                 <path name="sun/io"/>
                 <path name="sun/nio"/>
                 <path name="sun/nio/ch"/>
+                <path name="sun/security"/>
+                <path name="sun/security/krb5"/>
                 <path name="sun/util"/>
                 <path name="sun/util/calendar"/>
                 <path name="sun/security/provider"/>

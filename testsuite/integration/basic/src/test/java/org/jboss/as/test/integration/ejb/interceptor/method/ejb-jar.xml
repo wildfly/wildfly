@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ejb-jar xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd"
+         version="3.0">
+
+   <interceptors>
+     <interceptor>
+     	<!-- AroundInvoke override definition -->
+        <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.method.AroundInvokeInterceptor</interceptor-class>
+		<around-invoke>
+			<method-name>interceptDD</method-name>
+		</around-invoke>
+     </interceptor>
+   </interceptors>       
+       
+       
+   <assembly-descriptor>
+      <interceptor-binding>
+         <ejb-name>ClassifiedBean</ejb-name>
+         <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.method.TopSecretInterceptor</interceptor-class>
+         <method>
+         	<method-name>overloadedMethod</method-name>
+         	<method-params>
+         		<method-param>java.lang.String</method-param>
+         	</method-params>
+         </method>
+      </interceptor-binding>
+   </assembly-descriptor>
+   
+</ejb-jar>

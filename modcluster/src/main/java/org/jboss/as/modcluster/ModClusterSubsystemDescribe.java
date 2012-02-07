@@ -28,6 +28,8 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.registry.Resource;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -43,7 +45,7 @@ class ModClusterSubsystemDescribe implements OperationStepHandler, DescriptionPr
     /** {@inheritDoc} */
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement());
-        final ModelNode subModel = context.readModel(PathAddress.EMPTY_ADDRESS);
+        final ModelNode subModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
 
         final ModelNode subsystemAdd = new ModelNode();
         subsystemAdd.get(OP).set(ADD);

@@ -49,10 +49,12 @@ public class ModelDescriptionConstants {
     public static final String ARCHIVE = "archive";
     public static final String ATTRIBUTES = "attributes";
     public static final String AUTHENTICATION = "authentication";
+    public static final String AUTHORIZATION = "authorization";
     public static final String AUTO_START = "auto-start";
     public static final String BASE_DN = "base-dn";
     public static final String BOOT_TIME = "boot-time";
     public static final String BYTES = "bytes";
+    public static final String CALLER_TYPE = "caller-type";
     public static final String CANCELLED = "cancelled";
     public static final String CHILD_TYPE = "child-type";
     public static final String CHILDREN = "children";
@@ -62,6 +64,7 @@ public class ModelDescriptionConstants {
     public static final String CONCURRENT_GROUPS = "concurrent-groups";
     public static final String CONNECTION = "connection";
     public static final String CONNECTIONS = "connections";
+    public static final String CONSOLE_ENABLED = "console-enabled";
     public static final String CONTENT = "content";
     public static final String CORE_SERVICE = "core-service";
     public static final String CPU_AFFINITY = "cpu-affinity";
@@ -96,11 +99,14 @@ public class ModelDescriptionConstants {
     public static final String HASH = "hash";
     public static final String HEAD_COMMENT_ALLOWED = "head-comment-allowed";
     public static final String HOST = "host";
+    public static final String HOST_CONTROLLER = "host-controller";
     public static final String HOST_FAILURE_DESCRIPTION = "host-failure-description";
     public static final String HOST_FAILURE_DESCRIPTIONS = "host-failure-descriptions";
     public static final String HOST_STATE = "host-state";
     public static final String HTTP_INTERFACE = "http-interface";
     public static final String IGNORED = "ignored-by-unaffected-host-controller";
+    public static final String IGNORED_RESOURCES = "ignored-resources";
+    public static final String IGNORED_RESOURCE_TYPE = "ignored-resource-type";
     public static final String IN_SERIES = "in-series";
     public static final String INCLUDE = "include";
     public static final String INCLUDES = "includes";
@@ -111,9 +117,9 @@ public class ModelDescriptionConstants {
     public static final String INITIAL_CONTEXT_FACTORY = "initial-context-factory";
     public static final String INPUT_STREAM_INDEX = "input-stream-index";
     public static final String INTERFACE = "interface";
+    public static final String JAAS = "jaas";
     public static final String JVM = "jvm";
     public static final String JVM_TYPE = "type";
-    public static final String KEYSTORE = "keystore";
     public static final String LDAP = "ldap";
     public static final String LDAP_CONNECTION = "ldap-connection";
     public static final String LOCAL = "local";
@@ -168,6 +174,7 @@ public class ModelDescriptionConstants {
     public static final String PORT = "port";
     public static final String PORT_OFFSET = "port-offset";
     public static final String PRIORITY = "priority";
+    public static final String PROBLEM = "problem";
     public static final String PROCESS_TYPE = "process-type";
     public static final String PROCESS_STATE = "process-state";
     public static final String PRODUCT_NAME = "product-name";
@@ -278,11 +285,13 @@ public class ModelDescriptionConstants {
     public static final String USERNAME_ATTRIBUTE = "username-attribute";
     public static final String USERS = "users";
     public static final String VALIDATE_OPERATION = "validate-operation";
+    public static final String VALID = "valid";
     public static final String VALUE = "value";
     public static final String VALUE_TYPE = "value-type";
     public static final String VAULT = "vault";
     public static final String VAULT_OPTION = "vault-option";
     public static final String VAULT_OPTIONS = "vault-options";
+    public static final String WILDCARD = "wildcard";
     public static final String WRITE_ATTRIBUTE_OPERATION = "write-attribute";
 
     private ModelDescriptionConstants() {

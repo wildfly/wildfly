@@ -36,6 +36,8 @@ import org.jboss.remoting3.Endpoint;
 import org.xnio.IoFuture;
 import org.xnio.OptionMap;
 
+import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
+
 /**
  * A {@link LocalOutboundConnectionService} manages a local remoting connection (i.e. a connection created with local:// URI scheme).
  *
@@ -65,7 +67,7 @@ public class LocalOutboundConnectionService extends AbstractOutboundConnectionSe
             // if nothing really wants to create a connection out of it.
             uri = this.getConnectionURI();
         } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
+            throw MESSAGES.couldNotConnect(e);
         }
         final Endpoint endpoint = this.endpointInjectedValue.getValue();
         return endpoint.connect(uri, this.connectionCreationOptions, getCallbackHandler());

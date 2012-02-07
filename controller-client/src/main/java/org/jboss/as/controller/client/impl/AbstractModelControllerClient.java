@@ -25,7 +25,6 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -36,18 +35,18 @@ import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
-import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
+import org.jboss.as.protocol.mgmt.ManagementChannelAssociation;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
+import org.jboss.as.protocol.mgmt.ManagementRequestHandlerFactory;
 import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import static org.jboss.as.protocol.mgmt.ProtocolUtils.expectHeader;
 import org.jboss.dmr.ModelNode;
-import org.jboss.remoting3.Channel;
 import org.jboss.threads.AsyncFuture;
 
 
@@ -55,7 +54,7 @@ import org.jboss.threads.AsyncFuture;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public abstract class AbstractModelControllerClient extends AbstractMessageHandler<ModelNode, AbstractModelControllerClient.OperationExecutionContext> implements ModelControllerClient {
+public abstract class AbstractModelControllerClient implements ModelControllerClient, ManagementRequestHandlerFactory {
 
     private static ManagementRequestHandler<ModelNode, OperationExecutionContext> MESSAGE_HANDLER = new HandleReportRequestHandler();
     private static ManagementRequestHandler<ModelNode, OperationExecutionContext> GET_INPUT_STREAM = new ReadAttachmentInputStreamRequestHandler();
@@ -69,17 +68,13 @@ public abstract class AbstractModelControllerClient extends AbstractMessageHandl
 
     };
 
-    protected AbstractModelControllerClient(final ExecutorService executorService) {
-        super(executorService);
-    }
-
     /**
-     * Get the send channel.
+     * Get the mgmt channel association.
      *
-     * @return the channel
+     * @return the channel association
      * @throws IOException
      */
-    protected abstract Channel getChannel() throws IOException;
+    protected abstract ManagementChannelAssociation getChannelAssociation() throws IOException;
 
     @Override
     public ModelNode execute(final ModelNode operation) throws IOException {
@@ -120,13 +115,14 @@ public abstract class AbstractModelControllerClient extends AbstractMessageHandl
     }
 
     @Override
-    protected ManagementRequestHandler<ModelNode, OperationExecutionContext> getRequestHandler(byte operationType) {
+    public ManagementRequestHandler<?, ?> resolveHandler(RequestHandlerChain handlers, ManagementRequestHeader header) {
+        final byte operationType = header.getOperationId();
         if (operationType == ModelControllerProtocol.HANDLE_REPORT_REQUEST) {
             return MESSAGE_HANDLER;
         } else if (operationType == ModelControllerProtocol.GET_INPUTSTREAM_REQUEST) {
             return GET_INPUT_STREAM;
         }
-        return super.getRequestHandler(operationType);
+        return handlers.resolveNext();
     }
 
     /**
@@ -149,6 +145,7 @@ public abstract class AbstractModelControllerClient extends AbstractMessageHandl
      *
      * @param executionContext the execution context
      * @return the future result
+     * @throws IOException
      */
     private AsyncFuture<ModelNode> execute(final OperationExecutionContext executionContext) throws IOException {
         return executeRequest(new AbstractManagementRequest<ModelNode, OperationExecutionContext>() {
@@ -252,8 +249,8 @@ public abstract class AbstractModelControllerClient extends AbstractMessageHandl
     }
 
     protected AsyncFuture<ModelNode> executeRequest(final ManagementRequest<ModelNode, OperationExecutionContext> request, final OperationExecutionContext attachment) throws IOException {
-        final ActiveOperation<ModelNode, OperationExecutionContext> support = super.registerActiveOperation(attachment, attachment);
-        return new DelegatingCancellableAsyncFuture(super.executeRequest(request, getChannel(), support), support.getOperationId());
+        final ActiveOperation<ModelNode, OperationExecutionContext> support = getChannelAssociation().executeRequest(request, attachment);
+        return new DelegatingCancellableAsyncFuture(support.getResult(), support.getOperationId());
     }
 
     static class OperationExecutionContext implements ActiveOperation.CompletedCallback<ModelNode> {
@@ -384,10 +381,7 @@ public abstract class AbstractModelControllerClient extends AbstractMessageHandl
         @Override
         public void asyncCancel(boolean interruptionDesired) {
             try {
-                final ActiveOperation<ModelNode, OperationExecutionContext> support = AbstractModelControllerClient.this.getActiveOperation(batchId);
-                if(support != null) {
-                    AbstractModelControllerClient.this.executeRequest(new CancelAsyncRequest(), getChannel(), support);
-                }
+                getChannelAssociation().executeRequest(batchId, new CancelAsyncRequest());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -415,6 +409,5 @@ public abstract class AbstractModelControllerClient extends AbstractMessageHandl
             }
         }
     }
-
 
 }

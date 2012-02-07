@@ -39,6 +39,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.interfaces.InetAddressUtil;
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.process.ExitCodes;
 import org.jboss.as.process.protocol.StreamUtils;
@@ -384,7 +385,7 @@ public final class Main {
         }
 
         productConfig = new ProductConfig(Module.getBootModuleLoader(), SecurityActions.getSystemProperty(HostControllerEnvironment.HOME_DIR));
-        return new HostControllerEnvironment(hostSystemProperties, isRestart,  stdin, stdout, stderr, pmAddress, pmPort,
+        return new HostControllerEnvironment(hostSystemProperties, isRestart, pmAddress, pmPort,
                 pcSocketConfig.getBindAddress(), pcSocketConfig.getBindPort(), defaultJVM,
                 domainConfig, hostConfig, initialRunningMode, backupDomainFiles, cachedDc, productConfig);
     }
@@ -484,7 +485,7 @@ public final class Main {
                 bindAddress = InetAddress.getByName(defaultBindAddress);
             } catch (UnknownHostException e) {
                 try {
-                    bindAddress = InetAddress.getLocalHost();
+                    bindAddress = InetAddressUtil.getLocalHost();
                 } catch (UnknownHostException uhe) {
                     toCache = uhe;
                 }

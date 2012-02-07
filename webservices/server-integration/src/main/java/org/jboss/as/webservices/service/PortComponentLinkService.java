@@ -48,7 +48,6 @@ import org.jboss.wsf.spi.management.ServerConfig;
  * required to allow remote port-component-link resolution as per JSR-109 requirements.
  *
  * @author alessio.soldano@jboss.com
- * @since 02-Dec-2011
  */
 public final class PortComponentLinkService implements Service<WebAppController> {
 
@@ -94,25 +93,22 @@ public final class PortComponentLinkService implements Service<WebAppController>
         return serverConfigInjectorValue;
     }
 
-    public static ServiceBuilder<WebAppController> createServiceBuilder(final ServiceTarget serviceTarget,
-            final String hostName) {
+    public static ServiceBuilder<WebAppController> createServiceBuilder(final ServiceTarget serviceTarget, final String hostName) {
         final PortComponentLinkService service = new PortComponentLinkService();
         final ServiceBuilder<WebAppController> builder = serviceTarget.addService(service.getName(), service);
         builder.addDependency(DependencyType.REQUIRED, WSServices.REGISTRY_SERVICE);
-        builder.addDependency(DependencyType.REQUIRED, WSServices.CONFIG_SERVICE, ServerConfig.class,
-                service.getServerConfigInjector());
-        builder.addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName), VirtualHost.class,
-                service.getHostInjector());
+        builder.addDependency(DependencyType.REQUIRED, WSServices.CONFIG_SERVICE, ServerConfig.class, service.getServerConfigInjector());
+        builder.addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName), VirtualHost.class, service.getHostInjector());
         return builder;
     }
 
-    public static ServiceController<WebAppController> install(final ServiceTarget serviceTarget, final ServiceListener<Object>... listeners) {
-        return install(serviceTarget, DEFAULT_HOST_NAME, listeners);
+    public static ServiceController<WebAppController> install(final ServiceTarget serviceTarget, final ServiceListener<Object> listener) {
+        return install(serviceTarget, DEFAULT_HOST_NAME, listener);
     }
 
-    public static ServiceController<WebAppController> install(final ServiceTarget serviceTarget, final String hostName, final ServiceListener<Object>... listeners) {
+    public static ServiceController<WebAppController> install(final ServiceTarget serviceTarget, final String hostName, final ServiceListener<Object> listener) {
         ServiceBuilder<WebAppController> builder = createServiceBuilder(serviceTarget, hostName);
-        builder.addListener(listeners);
+        builder.addListener(listener);
         builder.setInitialMode(Mode.ON_DEMAND);
         return builder.install();
     }

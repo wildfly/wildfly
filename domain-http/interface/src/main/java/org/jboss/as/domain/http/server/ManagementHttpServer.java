@@ -31,8 +31,10 @@ import java.util.concurrent.Executor;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
+import javax.security.auth.callback.Callback;
 
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.domain.http.server.security.AuthenticationProvider;
 import org.jboss.as.domain.http.server.security.BasicAuthenticator;
 import org.jboss.as.domain.http.server.security.ClientCertAuthenticator;
 import org.jboss.as.domain.http.server.security.DigestAuthenticator;
@@ -45,6 +47,8 @@ import org.jboss.com.sun.net.httpserver.HttpsParameters;
 import org.jboss.com.sun.net.httpserver.HttpsServer;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.sasl.callback.DigestHashCallback;
+
+import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
 
 /**
  * The general HTTP server for handling management API requests.
@@ -111,19 +115,19 @@ public class ManagementHttpServer {
 
         if (securityRealm != null) {
             DomainCallbackHandler callbackHandler = securityRealm.getCallbackHandler();
-            Class[] supportedCallbacks = callbackHandler.getSupportedCallbacks();
+            Class<Callback>[] supportedCallbacks = callbackHandler.getSupportedCallbacks();
             if (DigestAuthenticator.requiredCallbacksSupported(supportedCallbacks)) {
-                auth = new DigestAuthenticator(callbackHandler, securityRealm.getName(), contains(DigestHashCallback.class,
+                auth = new DigestAuthenticator(new AuthenticationProvider(securityRealm), securityRealm.getName(), contains(DigestHashCallback.class,
                         supportedCallbacks));
             } else if (BasicAuthenticator.requiredCallbacksSupported(supportedCallbacks)) {
-                auth = new BasicAuthenticator(callbackHandler, securityRealm.getName());
+                auth = new BasicAuthenticator(new AuthenticationProvider(securityRealm), securityRealm.getName());
             }
 
             if (securityRealm.hasTrustStore()) {
                 // For this to return true we know we have a trust store to use to verify client certificates.
                 if (auth == null) {
                     certAuthMode = CertAuth.NEED;
-                    auth = new ClientCertAuthenticator(securityRealm.getName());
+                    auth = new ClientCertAuthenticator(new AuthenticationProvider(securityRealm), securityRealm.getName());
                 } else {
                     // We have the possibility to use Client Cert but also Username/Password authentication so don't
                     // need to force clients into presenting a Cert.
@@ -170,11 +174,11 @@ public class ManagementHttpServer {
         }
 
         ManagementHttpServer managementHttpServer = new ManagementHttpServer(httpServer, secureHttpServer, securityRealm);
-        ResourceHandler consoleHandler;
+        ResourceHandler consoleHandler = null;
         try {
             consoleHandler = consoleMode.createConsoleHandler(consoleSlot);
         } catch (ModuleLoadException e) {
-            throw new IOException("Unable to load resource handler", e);
+            HttpServerLogger.ROOT_LOGGER.consoleModuleNotFound(consoleSlot == null ? "main" : consoleSlot);
         }
         managementHttpServer.addHandler(new RootHandler(consoleHandler));
         managementHttpServer.addHandler(new DomainApiHandler(modelControllerClient, auth));

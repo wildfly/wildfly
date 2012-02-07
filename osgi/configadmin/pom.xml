@@ -35,7 +35,7 @@
     <artifactId>jboss-as-osgi-configadmin</artifactId>
     <packaging>bundle</packaging>
 
-    <name>JBoss Application Server: OSGi Config Admin</name>
+    <name>JBoss Application Server: OSGi ConfigurationAdmin</name>
 
     <dependencies>
         <dependency>

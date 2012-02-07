@@ -42,7 +42,7 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.remote.DefaultEjbClientContextService;
 import org.jboss.as.ejb3.remote.RemoteViewManagedReferenceFactory;
-import org.jboss.as.ejb3.remote.TCCLBasedEJBClientContextSelector;
+import org.jboss.as.ejb3.remote.TCCLEJBClientContextSelectorService;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -91,7 +91,7 @@ class JSR77ManagementSubsystemAdd extends AbstractAddStepHandler {
                     .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, managementEjbService.mbeanServerValue)
                     //TODO I think these are needed here since we don't go through EjbClientContextSetupProcessor
                     .addDependency(DefaultEjbClientContextService.DEFAULT_SERVICE_NAME, EJBClientContext.class, managementEjbService.ejbClientContextValue)
-                    .addDependency(TCCLBasedEJBClientContextSelector.TCCL_BASED_EJB_CLIENT_CONTEXT_SELECTOR_SERVICE_NAME, TCCLBasedEJBClientContextSelector.class, managementEjbService.ejbClientContextSelectorValue)
+                    .addDependency(TCCLEJBClientContextSelectorService.TCCL_BASED_EJB_CLIENT_CONTEXT_SELECTOR_SERVICE_NAME, TCCLEJBClientContextSelectorService.class, managementEjbService.ejbClientContextSelectorValue)
                     .setInitialMode(Mode.ACTIVE)
                     .install();
 

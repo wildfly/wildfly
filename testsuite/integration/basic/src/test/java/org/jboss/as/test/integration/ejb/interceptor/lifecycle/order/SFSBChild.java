@@ -31,7 +31,7 @@ import org.junit.Assert;
  * @author Stuart Douglas
  */
 @Stateful
-@Interceptors({FirstInterceptor.class, InterceptorChild.class, LastInterceptor.class})
+@Interceptors({ FirstInterceptor.class, InterceptorChild.class, LastInterceptor.class })
 public class SFSBChild extends SFSBParent {
 
     public static boolean childPostConstructCalled = false;

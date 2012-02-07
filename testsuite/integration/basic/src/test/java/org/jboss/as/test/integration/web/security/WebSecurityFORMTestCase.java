@@ -62,7 +62,7 @@ public class WebSecurityFORMTestCase extends WebSecurityPasswordBasedBase {
             // create required security domains
             createSecurityDomain();
         } catch (Exception e) {
-            // ignore
+            throw new RuntimeException(e);
         }
 
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();

@@ -65,6 +65,10 @@ public class EarMetaDataParsingProcessor implements DeploymentUnitProcessor {
         if (earMetaData == null && jbossMetaData == null) {
             return;
         }
+        // the jboss-app.xml has a distinct-name configured then attach it to the deployment unit
+        if (jbossMetaData != null && jbossMetaData.getDistinctName() != null) {
+            deploymentUnit.putAttachment(Attachments.DISTINCT_NAME, jbossMetaData.getDistinctName());
+        }
         JBossAppMetaData merged;
         if (earMetaData != null) {
             merged = new JBossAppMetaData(earMetaData.getEarVersion());

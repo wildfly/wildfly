@@ -80,7 +80,7 @@ public class EntityBeanEjbCreateMethodInterceptorFactory implements InterceptorF
                 }
                 final EntityBeanComponent entityBeanComponent = (EntityBeanComponent) component;
                 //grab an unasociated entity bean from the pool
-                final EntityBeanComponentInstance instance = entityBeanComponent.getPool().get();
+                final EntityBeanComponentInstance instance = entityBeanComponent.acquireUnAssociatedInstance();
 
                 //call the ejbCreate method
                 final Object primaryKey = invokeEjbCreate(context, ejbCreate, instance, params);
@@ -95,9 +95,6 @@ public class EntityBeanEjbCreateMethodInterceptorFactory implements InterceptorF
                 boolean exception = false;
                 entityBeanComponent.getCache().create(instance);
 
-                //we reference the entity immedietly
-                //and release our reference once the create method or the current tx finishes
-                entityBeanComponent.getCache().reference(instance);
                 try {
 
                     invokeEjbPostCreate(context, ejbPostCreate, instance, params);
@@ -116,9 +113,6 @@ public class EntityBeanEjbCreateMethodInterceptorFactory implements InterceptorF
                             @Override
                             public void afterCompletion(final int status) {
                                 entityBeanComponent.getCache().release(instance, status == Status.STATUS_COMMITTED);
-                                if (status != Status.STATUS_COMMITTED) {
-                                    entityBeanComponent.getPool().release(instance);
-                                }
                             }
                         });
                         synchronizationRegistered = true;
@@ -126,6 +120,7 @@ public class EntityBeanEjbCreateMethodInterceptorFactory implements InterceptorF
                     return context.proceed();
                 } catch (Exception e) {
                     entityBeanComponent.getCache().release(instance, false);
+                    exception = true;
                     throw e;
                 } finally {
                     if (!synchronizationRegistered && !exception) {

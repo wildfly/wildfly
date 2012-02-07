@@ -7,10 +7,15 @@
         <data-store path="timer-service-data" relative-to="jboss.server.data.dir"/>
     </timer-service>
 
+    <!-- Disable pass-by-value for in-vm remote interface invocations on EJBs -->
+    <in-vm-remote-interface-invocation pass-by-value="false"/>
+
     <!-- EJB3 pools -->
     <pools>
         <bean-instance-pools>
             <strict-max-pool name="slsb-strict-max-pool" max-pool-size="20" instance-acquisition-timeout="5"
+                             instance-acquisition-timeout-unit="MINUTES"/>
+            <strict-max-pool name="entity-strict-max-pool" max-pool-size="20" instance-acquisition-timeout="5"
                              instance-acquisition-timeout-unit="MINUTES"/>
         </bean-instance-pools>
     </pools>
@@ -21,7 +26,7 @@
     </caches>
     <passivation-stores>
         <file-passivation-store name="file"/>
-        <cluster-passivation-store name="cluster" backing-cache="sfsb"/>
+        <cluster-passivation-store name="cluster" cache-container="sfsb" bean-cache="repl" client-mappings-cache="client-mappings"/>
     </passivation-stores>
 
     <!-- Session bean configurations -->
@@ -35,8 +40,15 @@
     </session-bean>
 
     <thread-pools>
-        <thread-pool name="default" max-threads="10" keepalive-time="100" />
+        <thread-pool name="default">
+            <max-threads count="10"/>
+            <keepalive-time time="100" unit="milliseconds"/>
+        </thread-pool>
     </thread-pools>
+    <entity-bean>
+        <optimistic-locking enabled="true" />
+        <bean-instance-pool-ref pool-name="entity-strict-max-pool"/>
+    </entity-bean>
 
     <iiop use-qualified-name="true" enable-by-default="true"/>
 </subsystem>

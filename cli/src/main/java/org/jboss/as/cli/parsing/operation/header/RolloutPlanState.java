@@ -51,7 +51,7 @@ public class RolloutPlanState extends DefaultParsingState {
             public void handle(ParsingContext ctx) throws CommandFormatException {
                 final String input = ctx.getInput();
                 if(input.startsWith("id", ctx.getLocation()) &&
-                        input.length() > ctx.getLocation() + 3 &&
+                        input.length() > ctx.getLocation() + 2 &&
                         (input.charAt(ctx.getLocation() + 2) == '=' || Character.isWhitespace(input.charAt(ctx.getLocation() + 2)))) {
                     ctx.enterState(props);
                 } else {

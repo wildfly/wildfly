@@ -47,16 +47,20 @@ import java.util.concurrent.Executor;
 
 import org.apache.catalina.connector.Connector;
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -135,7 +139,7 @@ class WebConnectorAdd extends AbstractAddStepHandler implements DescriptionProvi
         final String bindingRef = operation.require(SOCKET_BINDING).asString();
 
         final boolean enabled = operation.hasDefined(ENABLED) ? operation.get(ENABLED).asBoolean() : true;
-        final WebConnectorService service = new WebConnectorService(operation.require(PROTOCOL).asString(), operation.get(SCHEME).asString(), unmaskSslPassword(context, operation));
+        final WebConnectorService service = new WebConnectorService(operation.require(PROTOCOL).asString(), operation.get(SCHEME).asString());
         if (operation.hasDefined(SECURE)) service.setSecure(operation.get(SECURE).asBoolean());
         if (operation.hasDefined(ENABLE_LOOKUPS))
             service.setEnableLookups(operation.get(ENABLE_LOOKUPS).asBoolean());
@@ -152,7 +156,7 @@ class WebConnectorAdd extends AbstractAddStepHandler implements DescriptionProvi
         if (operation.hasDefined(VIRTUAL_SERVER))
             service.setVirtualServers(operation.get(VIRTUAL_SERVER).clone());
         if (operation.hasDefined(SSL)) {
-            service.setSsl(operation.get(SSL).clone());
+            service.setSsl(resolveExpressions(context,operation.get(SSL)));
         }
         final ServiceBuilder<Connector> serviceBuilder = context.getServiceTarget().addService(WebSubsystemServices.JBOSS_WEB_CONNECTOR.append(name), service)
                 .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getServer())
@@ -173,13 +177,15 @@ class WebConnectorAdd extends AbstractAddStepHandler implements DescriptionProvi
         return WebSubsystemDescriptions.getConnectorAdd(locale);
     }
 
-    private String unmaskSslPassword(OperationContext context, ModelNode connector) throws OperationFailedException {
-        if (!connector.hasDefined(SSL)) {
-            return null;
+    private ModelNode resolveExpressions(OperationContext context, ModelNode connector) throws OperationFailedException {
+        ModelNode result = connector.clone();
+        for (Property p :connector.asPropertyList()){
+            ModelNode node = p.getValue();
+            if (node.getType() == ModelType.EXPRESSION){
+                result.get(p.getName()).set(context.resolveExpressions(node));
+            }
         }
-        if (!connector.get(SSL).hasDefined(PASSWORD)) {
-            return null;
-        }
-        return context.resolveExpressions(connector.get(SSL, PASSWORD)).asString();
+        return result;
     }
+
 }

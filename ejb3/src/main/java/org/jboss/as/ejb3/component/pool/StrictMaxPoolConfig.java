@@ -86,7 +86,7 @@ public class StrictMaxPoolConfig extends PoolConfig {
     public String toString() {
         return "StrictMaxPoolConfig{" +
                 "name=" + this.poolName +
-                "maxPoolSize=" + maxPoolSize +
+                ", maxPoolSize=" + maxPoolSize +
                 ", timeoutUnit=" + timeoutUnit +
                 ", timeout=" + timeout +
                 '}';

@@ -91,4 +91,11 @@ public class SimpleResourceAdapter implements ResourceAdapter, Referenceable, Se
     public void setReference(Reference reference) {
     }
 
+    public boolean equals(Object o) {
+        return super.equals(o);
+    }
+
+    public int hashCode() {
+        return super.hashCode();
+    }
 }

@@ -26,18 +26,27 @@ package org.jboss.as.clustering.jgroups.subsystem;
  * @author Paul Ferraro
  */
 class ModelKeys {
+    static final String ADD_PROTOCOL = "add-protocol";
     static final String DEFAULT_EXECUTOR = "default-executor";
     static final String DEFAULT_STACK = "default-stack";
     static final String DIAGNOSTICS_SOCKET_BINDING = "diagnostics-socket-binding";
+    static final String MACHINE = "machine";
     static final String NAME = "name";
     static final String OOB_EXECUTOR = "oob-executor";
     static final String PROPERTY = "property";
+    static final String PROPERTIES = "properties";
     static final String PROTOCOL = "protocol";
+    static final String PROTOCOLS = "protocols";
+    static final String RACK = "rack";
+    static final String REMOVE_PROTOCOL = "remove-protocol";
     static final String SHARED = "shared";
+    static final String SITE = "site";
     static final String SOCKET_BINDING = "socket-binding";
     static final String STACK = "stack";
     static final String THREAD_FACTORY = "thread-factory";
     static final String TIMER_EXECUTOR = "timer-executor";
     static final String TRANSPORT = "transport";
+    static final String TRANSPORT_NAME = "TRANSPORT";
     static final String TYPE = "type";
+    static final String VALUE = "value";
 }

@@ -31,12 +31,13 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.infinispan.Cache;
+import org.infinispan.context.Flag;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import org.jboss.as.clustering.ClusterNode;
-import org.jboss.as.clustering.CoreGroupCommunicationServiceService;
 import org.jboss.as.clustering.GroupMembershipListener;
 import org.jboss.as.clustering.GroupMembershipNotifier;
+import org.jboss.as.clustering.impl.CoreGroupCommunicationService;
 import org.jboss.as.clustering.infinispan.atomic.AtomicMapCache;
 import org.jboss.as.clustering.infinispan.invoker.BatchOperation;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
@@ -60,7 +61,7 @@ public class ServiceProviderRegistryService implements ServiceProviderRegistry, 
     private static final short SCOPE_ID = 224;
 
     public static ServiceName getServiceName(String name) {
-        return CoreGroupCommunicationServiceService.getServiceName(name).append("registry");
+        return CoreGroupCommunicationService.getServiceName(name).append("registry");
     }
 
     @SuppressWarnings("rawtypes")
@@ -72,10 +73,10 @@ public class ServiceProviderRegistryService implements ServiceProviderRegistry, 
     private volatile Cache<String, Map<ClusterNode, Void>> cache;
 
     public ServiceBuilder<ServiceProviderRegistry> build(ServiceTarget target, String container) {
-        new CoreGroupCommunicationServiceService(SCOPE_ID).build(target, container).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        new CoreGroupCommunicationService(SCOPE_ID).build(target, container).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
         return target.addService(getServiceName(container), this)
             .addDependency(CacheService.getServiceName(container, null), Cache.class, this.cacheRef)
-            .addDependency(CoreGroupCommunicationServiceService.getServiceName(container), GroupMembershipNotifier.class, this.notifierRef)
+            .addDependency(CoreGroupCommunicationService.getServiceName(container), GroupMembershipNotifier.class, this.notifierRef)
         ;
     }
 
@@ -153,7 +154,7 @@ public class ServiceProviderRegistryService implements ServiceProviderRegistry, 
                 List<Map.Entry<String, Set<ClusterNode>>> entries = new ArrayList<Map.Entry<String, Set<ClusterNode>>>(cache.size());
                 // Remove dead nodes for each service
                 for (String key: cache.keySet()) {
-                    Map<ClusterNode, Void> map = cache.get(key);
+                    Map<ClusterNode, Void> map = cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL).get(key);
                     if (map != null) {
                         Set<ClusterNode> nodes = map.keySet();
                         if (nodes.removeAll(deadNodes)) {

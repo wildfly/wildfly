@@ -24,17 +24,19 @@ package org.jboss.as.controller.operations.validation;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
+import java.util.Map;
 
-import com.sun.tools.internal.xjc.reader.xmlschema.bindinfo.EnumMemberMode;
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * {@link org.jboss.as.controller.operations.validation.ParameterValidator} that validates the value is a string matching one of the {@link java.util.concurrent.TimeUnit} names.
+ * {@link org.jboss.as.controller.operations.validation.ParameterValidator} that validates the value is a string matching
+ * one of the {@link java.lang.Enum} types.
  *
  * @author Jason T. Greene
  * @author Brian Stansberry
@@ -43,6 +45,7 @@ public class EnumValidator<E extends Enum<E>> extends ModelTypeValidator impleme
 
     private final EnumSet<E> allowedValues;
     private final Class<E> enumType;
+    private final Map<String, E> toStringMap = new HashMap<String, E>();
 
     public EnumValidator(final Class<E> enumType, final boolean nullable, final E... allowed) {
         this(enumType, nullable, false, allowed);
@@ -52,6 +55,9 @@ public class EnumValidator<E extends Enum<E>> extends ModelTypeValidator impleme
         super(ModelType.STRING, nullable, allowExpressions);
         this.enumType = enumType;
         allowedValues = EnumSet.allOf(enumType);
+        for (E value : allowedValues) {
+            toStringMap.put(value.toString(), value);
+        }
     }
 
     public EnumValidator(final Class<E> enumType,  final boolean nullable, final boolean allowExpressions, final E... allowed) {
@@ -60,18 +66,33 @@ public class EnumValidator<E extends Enum<E>> extends ModelTypeValidator impleme
         allowedValues = EnumSet.noneOf(enumType);
         for (E value : allowed) {
             allowedValues.add(value);
+            toStringMap.put(value.toString(), value);
         }
     }
 
     @Override
     public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
         super.validateParameter(parameterName, value);
-        if (value.isDefined()) {
-            String tuString = value.asString();
-            E enumValue = Enum.valueOf(enumType, tuString.toUpperCase(Locale.ENGLISH));
+        ModelType type = value.getType();
+        if (type == ModelType.STRING || type == ModelType.EXPRESSION) {
+            String tuString = value.resolve().asString(); // Sorry, no support for resolving against vault!
+            E enumValue;
+            try {
+                enumValue = Enum.valueOf(enumType, tuString.toUpperCase(Locale.ENGLISH));
+            } catch (IllegalArgumentException e) {
+                // valueof failed - are we using the toString representation of the Enum type?
+                enumValue = toStringMap.get(tuString);
+            }
             if (enumValue == null || !allowedValues.contains(enumValue)) {
-                throw new OperationFailedException(new ModelNode().set(String.format("Invalid value %s for %s; legal values are %s",
-                        tuString, parameterName, allowedValues)));
+                throw ControllerMessages.MESSAGES.invalidEnumValue(tuString, parameterName, toStringMap.keySet());
+            }
+            // Hack to store the allowed value in the model, not the user input
+            if (type != ModelType.EXPRESSION) {
+                try {
+                    value.set(enumValue.toString());
+                } catch (Exception e) {
+                    // node must be protected.
+                }
             }
         }
     }
@@ -80,7 +101,7 @@ public class EnumValidator<E extends Enum<E>> extends ModelTypeValidator impleme
     public List<ModelNode> getAllowedValues() {
         List<ModelNode> result = new ArrayList<ModelNode>();
         for (E value : allowedValues) {
-            result.add(new ModelNode().set(value.name()));
+            result.add(new ModelNode().set(value.toString()));
         }
         return result;
     }

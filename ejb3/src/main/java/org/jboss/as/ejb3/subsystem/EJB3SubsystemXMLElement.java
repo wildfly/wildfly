@@ -39,9 +39,12 @@ public enum EJB3SubsystemXMLElement {
     BEAN_INSTANCE_POOLS("bean-instance-pools"),
     BEAN_INSTANCE_POOL_REF("bean-instance-pool-ref"),
 
+    ENTITY_BEAN("entity-bean"),
+
     DATA_STORE("data-store"),
 
     IIOP("iiop"),
+    IN_VM_REMOTE_INTERFACE_INVOCATION("in-vm-remote-interface-invocation"),
 
     MDB("mdb"),
 
@@ -49,6 +52,8 @@ public enum EJB3SubsystemXMLElement {
 
     CACHE("cache"),
     CACHES("caches"),
+
+    OPTIMISTIC_LOCKING("optimistic-locking"),
 
     PASSIVATION_STORES("passivation-stores"),
     CLUSTER_PASSIVATION_STORE("cluster-passivation-store"),

@@ -70,8 +70,8 @@ import java.util.concurrent.ExecutorService;
 import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.HashUtil;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.Attribute;
@@ -551,7 +551,7 @@ public class DomainXml extends CommonXml {
                 final Element element = Element.forName(reader.getLocalName());
                 switch (element) {
                     case JVM: {
-                        parseJvm(reader, groupAddress, expectedNs, list, new HashSet<String>());
+                        JvmXml.parseJvm(reader, groupAddress, expectedNs, list, new HashSet<String>());
                         break;
                     }
                     case SOCKET_BINDING_GROUP: {
@@ -809,7 +809,7 @@ public class DomainXml extends CommonXml {
         // JVM
         if(group.hasDefined(JVM)) {
             for(final Property jvm : group.get(JVM).asPropertyList()) {
-                writeJVMElement(writer, jvm.getName(), jvm.getValue());
+                JvmXml.writeJVMElement(writer, jvm.getName(), jvm.getValue());
                 break; // TODO just write the first !?
             }
         }

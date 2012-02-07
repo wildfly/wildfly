@@ -22,13 +22,10 @@
 
 package org.jboss.as.test.integration.ejb.ejb2.reference.annotation;
 
-import java.rmi.RemoteException;
-
 import javax.ejb.EJBLocalObject;
 
 /**
  * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>
  */
-public interface LocalSession30 extends EJBLocalObject, LocalSession30Business { 
-    public String access() throws RemoteException; // FIXME: AS7-3006 - LocalSession30Business - not needed put here access method - is inhereted from LocalSession30Business
+public interface LocalSession30 extends EJBLocalObject, LocalSession30Business {
 }

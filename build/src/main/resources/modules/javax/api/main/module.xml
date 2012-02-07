@@ -122,6 +122,7 @@
                 <path name="org/w3c/dom/stylesheets"/>
                 <path name="org/w3c/dom/traversal"/>
                 <path name="org/w3c/dom/ls"/>
+                <path name="org/w3c/dom/views"/>
                 <path name="org/w3c/dom/xpath"/>
                 <path name="org/xml/sax"/>
                 <path name="org/xml/sax/ext"/>

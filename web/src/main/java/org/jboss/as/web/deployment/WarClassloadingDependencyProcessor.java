@@ -30,6 +30,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
+import org.jboss.as.web.WebLogger;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -77,16 +78,16 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
         addJSFAPI(jsfVersion, moduleSpecification, moduleLoader);
 
         // Add module dependencies on Java EE apis
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAVAX_EE_API, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAVAX_EE_API, false, false, false, false));
 
         addJSFImpl(jsfVersion, moduleSpecification, moduleLoader);
 
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JSTL, false, false, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, BEAN_VALIDATION, false, false, true));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JSTL, false, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, BEAN_VALIDATION, false, false, true, false));
 
         // FIXME we need to revise the exports of the web module, so that we
         // don't export our internals
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JBOSS_WEB, false, false, true));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JBOSS_WEB, false, false, true, false));
 
     }
 
@@ -95,7 +96,7 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
 
         ModuleIdentifier jsfModule = JSF_API;
         if (jsfVersion.equals(JsfVersionMarker.JSF_1_2)) jsfModule = JSF_1_2_API;
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, jsfModule, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, jsfModule, false, false, false, false));
     }
 
     private void addJSFImpl(String jsfVersion, ModuleSpecification moduleSpecification, ModuleLoader moduleLoader) {
@@ -106,10 +107,10 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
         if (jsfVersion.equals(JsfVersionMarker.JSF_2_0)) jsfModule = JSF_IMPL;
         if (jsfModule == null) {
             jsfModule = JSF_IMPL;
-            logger.warn("Unkown JSF version " + jsfVersion + " " + JsfVersionMarker.JSF_2_0 + " will be used instead");
+            WebLogger.WEB_LOGGER.unknownJSFVersion(jsfVersion, JsfVersionMarker.JSF_2_0);
         }
 
-        ModuleDependency jsf = new ModuleDependency(moduleLoader, jsfModule, false, false, false);
+        ModuleDependency jsf = new ModuleDependency(moduleLoader, jsfModule, false, false, false, false);
         jsf.addImportFilter(PathFilters.getMetaInfFilter(), true);
         moduleSpecification.addSystemDependency(jsf);
     }

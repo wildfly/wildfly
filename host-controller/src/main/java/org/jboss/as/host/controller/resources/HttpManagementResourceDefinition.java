@@ -34,6 +34,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.host.controller.HostControllerEnvironment;
@@ -42,6 +43,7 @@ import org.jboss.as.host.controller.operations.HttpManagementAddHandler;
 import org.jboss.as.host.controller.operations.HttpManagementRemoveHandler;
 import org.jboss.as.host.controller.operations.HttpManagementWriteAttributeHandler;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -72,8 +74,12 @@ public class HttpManagementResourceDefinition extends SimpleResourceDefinition {
     public static final SimpleAttributeDefinition HTTPS_PORT = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SECURE_PORT, ModelType.INT, true)
             .setAllowExpression(true).setValidator(new IntRangeValidator(0, 65535, true, true))
             .build();
+    public static final SimpleAttributeDefinition CONSOLE_ENABLED = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.CONSOLE_ENABLED, ModelType.BOOLEAN, true)
+                .setXmlName(Attribute.CONSOLE_ENABLED.getLocalName())
+                .setDefaultValue(new ModelNode(true))
+                .build();
 
-    public static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = new AttributeDefinition[] {INTERFACE, HTTP_PORT, HTTPS_PORT, SECURITY_REALM};
+    public static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = new AttributeDefinition[] {INTERFACE, HTTP_PORT, HTTPS_PORT, SECURITY_REALM,CONSOLE_ENABLED};
 
     public HttpManagementResourceDefinition(final LocalHostControllerInfoImpl hostControllerInfo,
                                              final HostControllerEnvironment environment) {

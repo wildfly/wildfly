@@ -21,8 +21,6 @@
  */
 package org.jboss.as.jacorb.rmi;
 
-import org.omg.CORBA.Any;
-
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.Externalizable;
@@ -43,6 +41,9 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
 
+import org.jboss.as.jacorb.JacORBMessages;
+import org.omg.CORBA.Any;
+
 /**
  * This is a RMI/IIOP metadata conversion utility class.
  * <p/>
@@ -54,15 +55,12 @@ import java.util.WeakHashMap;
  */
 public class Util {
 
-    private static final org.jboss.logging.Logger logger = org.jboss.logging.Logger.getLogger(Util.class);
-
     /**
      * Return the IDL type name for the given class.
      * Here we use the mapping for parameter types and return values.
      */
     public static String getTypeIDLName(Class cls)
             throws RMIIIOPViolationException {
-        logger.debug("getTypeIDLName " + cls);
 
         if (cls.isPrimitive())
             return PrimitiveAnalysis.getPrimitiveAnalysis(cls).getIDLName();
@@ -150,8 +148,6 @@ public class Util {
 
         // interface?
         if (cls.isInterface() && java.rmi.Remote.class.isAssignableFrom(cls)) {
-            logger.debug("Util.isValidRMIIIOP(): doing interface analysis on " +
-                    cls.getName());
             InterfaceAnalysis.getInterfaceAnalysis(cls);
             return true;
         }
@@ -160,8 +156,6 @@ public class Util {
         if (Throwable.class.isAssignableFrom(cls)) {
             if (Exception.class.isAssignableFrom(cls) &&
                     !RuntimeException.class.isAssignableFrom(cls)) {
-                logger.debug("Util.isValidRMIIIOP(): doing exception analysis on "
-                        + cls.getName());
                 ExceptionAnalysis.getExceptionAnalysis(cls);
             }
             return true;
@@ -172,8 +166,6 @@ public class Util {
             return true;
 
         // got to be value
-        logger.debug("Util.isValidRMIIIOP(): doing value analysis on " +
-                cls.getName());
         ValueAnalysis.getValueAnalysis(cls);
         return true;
     }
@@ -203,8 +195,7 @@ public class Util {
         else if (type == Double.class)
             any.insert_double(((Double) primitive).doubleValue());
         else
-            throw new IllegalArgumentException("Not a primitive type: " +
-                    type.getName());
+            throw JacORBMessages.MESSAGES.notAPrimitive(type.getName());
     }
 
     /**
@@ -214,14 +205,8 @@ public class Util {
      * dot.
      */
     public static String javaToIDLName(String name) {
-        if (name == null)
-            throw new IllegalArgumentException("Null name.");
-
-        if ("".equals(name))
-            throw new IllegalArgumentException("Empty name.");
-
-        if (name.indexOf('.') != -1)
-            throw new IllegalArgumentException("No qualified name allowed here.");
+        if (name == null || "".equals(name) || name.indexOf('.') != -1)
+            throw JacORBMessages.MESSAGES.nameCannotBeNullEmptyOrQualified();
 
         StringBuffer res = new StringBuffer(name.length());
 
@@ -253,7 +238,7 @@ public class Util {
      */
     public static String getIRIdentifierOfClass(Class cls) {
         if (cls.isPrimitive())
-            throw new IllegalArgumentException("Primitives have no IR IDs.");
+            throw JacORBMessages.MESSAGES.primitivesHaveNoIRIds();
 
         String result = (String) classIRIdentifierCache.get(cls);
         if (result != null)
@@ -466,7 +451,7 @@ public class Util {
             try {
                 dos.writeLong(getClassHashCode(superClass));
             } catch (IOException ex) {
-                throw new RuntimeException("Unexpected IOException: " + ex);
+                throw JacORBMessages.MESSAGES.unexpectedException(ex);
             }
         }
 
@@ -488,7 +473,7 @@ public class Util {
         try {
             dos.writeInt(hasWriteObject ? 2 : 1);
         } catch (IOException ex) {
-            throw new RuntimeException("Unexpected IOException: " + ex);
+            throw JacORBMessages.MESSAGES.unexpectedException(ex);
         }
 
         // Step 3
@@ -510,14 +495,14 @@ public class Util {
                 dos.writeUTF(getSignature(f.getType()));
             }
         } catch (IOException ex) {
-            throw new RuntimeException("Unexpected IOException: " + ex);
+            throw JacORBMessages.MESSAGES.unexpectedException(ex);
         }
 
         // Convert to byte[]
         try {
             dos.flush();
         } catch (IOException ex) {
-            throw new RuntimeException("Unexpected IOException: " + ex);
+            throw JacORBMessages.MESSAGES.unexpectedException(ex);
         }
         byte[] bytes = baos.toByteArray();
 
@@ -526,7 +511,7 @@ public class Util {
         try {
             digest = MessageDigest.getInstance("SHA");
         } catch (NoSuchAlgorithmException ex) {
-            throw new RuntimeException("No SHA MEssageDigest: " + ex);
+            throw JacORBMessages.MESSAGES.unavailableSHADigest(ex);
         }
         digest.update(bytes);
         byte[] sha = digest.digest();
@@ -568,7 +553,7 @@ public class Util {
                 return "S";
             if (cls == Boolean.TYPE)
                 return "Z";
-            throw new RuntimeException("Unknown primitive class.");
+            throw JacORBMessages.MESSAGES.unknownPrimitiveType(cls.getName());
         }
 
         return "L" + cls.getName().replace('.', '/') + ";";
@@ -612,7 +597,7 @@ public class Util {
             return "float";
         if (type == Double.TYPE)
             return "double";
-        throw new IllegalArgumentException("Not a primitive type.");
+        throw JacORBMessages.MESSAGES.notAPrimitive(type.getName());
     }
 
 

@@ -28,6 +28,7 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.security.Security;
 
+import org.jboss.as.security.SecurityMessages;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleIdentifier;
@@ -53,7 +54,7 @@ class SecurityActions {
                     }
                 });
             } catch (PrivilegedActionException pae) {
-                throw new ModuleLoadException(pae);
+                throw SecurityMessages.MESSAGES.moduleLoadException(pae);
             }
         } else {
             ModuleLoader loader = Module.getCallerModuleLoader();
@@ -119,11 +120,11 @@ class SecurityActions {
                                 e = ce;
                             }
                         }
-                        throw e != null ? e : new ClassNotFoundException(name);
+                        throw e != null ? e : SecurityMessages.MESSAGES.cnfe(name);
                     }
                 });
             } catch (PrivilegedActionException pae) {
-                throw new ClassNotFoundException(name, pae);
+                throw SecurityMessages.MESSAGES.cnfeThrow(name, pae);
             }
         } else {
             ClassLoader[] cls = new ClassLoader[] { SecurityActions.class.getClassLoader(), // PB classes (not always on TCCL [modular env])
@@ -141,7 +142,7 @@ class SecurityActions {
                     e = ce;
                 }
             }
-            throw e != null ? e : new ClassNotFoundException(name);
+            throw e != null ? e : SecurityMessages.MESSAGES.cnfe(name);
         }
     }
 }

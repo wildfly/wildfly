@@ -30,7 +30,7 @@ import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 
-import org.jboss.logging.Logger;
+import org.jboss.as.jacorb.JacORBMessages;
 import org.jboss.security.JSSESecurityDomain;
 
 /**
@@ -40,27 +40,22 @@ import org.jboss.security.JSSESecurityDomain;
  */
 class Util {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.jacorb");
-
     static SSLContext forDomain(JSSESecurityDomain securityDomain) throws IOException {
         SSLContext sslCtx = null;
         try {
             sslCtx = SSLContext.getInstance("TLS");
             KeyManager[] keyManagers = securityDomain.getKeyManagers();
             if (keyManagers == null)
-                throw new IOException("KeyManager[] is null for security domain: " + securityDomain.getSecurityDomain());
+                throw JacORBMessages.MESSAGES.errorObtainingKeyManagers(securityDomain.getSecurityDomain());
             TrustManager[] trustManagers = securityDomain.getTrustManagers();
             sslCtx.init(keyManagers, trustManagers, null);
             return sslCtx;
         } catch (NoSuchAlgorithmException e) {
-            log.error("Failed to get SSLContext for TLS algorithm", e);
-            throw new IOException("Failed to get SSLContext for TLS algorithm");
+            throw JacORBMessages.MESSAGES.failedToGetSSLContext(e);
         } catch (KeyManagementException e) {
-            log.error("Failed to init SSLContext", e);
-            throw new IOException("Failed to init SSLContext");
+            throw JacORBMessages.MESSAGES.failedToGetSSLContext(e);
         } catch (SecurityException e) {
-            log.error("Failed to init SSLContext", e);
-            throw new IOException("Failed to init SSLContext");
+            throw JacORBMessages.MESSAGES.failedToGetSSLContext(e);
         }
     }
 }

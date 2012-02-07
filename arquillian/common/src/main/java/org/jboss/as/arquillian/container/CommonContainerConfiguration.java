@@ -33,6 +33,9 @@ public class CommonContainerConfiguration implements ContainerConfiguration {
     private InetAddress managementAddress;
     private int managementPort;
 
+    private String username;
+    private String password;
+
     public CommonContainerConfiguration() {
         managementAddress = getInetAddress("127.0.0.1");
         managementPort = 9999;
@@ -62,7 +65,26 @@ public class CommonContainerConfiguration implements ContainerConfiguration {
         }
     }
 
+    public String getUsername() {
+        return username;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
     @Override
     public void validate() throws ConfigurationException {
+        if (username != null && password == null) {
+            throw new ConfigurationException("username has been set, but no password given");
+        }
     }
 }

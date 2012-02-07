@@ -23,6 +23,9 @@
   -->
 
 <module xmlns="urn:jboss:module:1.1" name="org.jboss.as.clustering.singleton">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
 
     <resources>
         <!-- Insert resources here -->
@@ -30,6 +33,7 @@
 
     <dependencies>
         <module name="org.jboss.as.clustering.api"/>
+        <module name="org.jboss.as.clustering.common"/>
         <module name="org.jboss.as.clustering.impl"/>
         <module name="org.jboss.as.clustering.service"/>
         <module name="org.jboss.logging"/>

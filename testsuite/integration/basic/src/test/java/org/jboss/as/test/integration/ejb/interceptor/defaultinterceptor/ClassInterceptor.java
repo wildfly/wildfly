@@ -30,11 +30,10 @@ import javax.interceptor.InvocationContext;
 public class ClassInterceptor {
     public static final String MESSAGE = "ClassInterceptor ";
 
-
     @AroundInvoke
     public Object aroundInvoke(final InvocationContext context) throws Exception {
         if (context.getMethod().getReturnType().equals(String.class)) {
-            return  MESSAGE + context.proceed().toString();
+            return MESSAGE + context.proceed().toString();
         }
         return context.proceed();
     }

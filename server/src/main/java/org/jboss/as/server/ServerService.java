@@ -48,8 +48,10 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.platform.mbean.PlatformMBeanConstants;
 import org.jboss.as.platform.mbean.RootPlatformMBeanResource;
+import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
 import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentMountProvider;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -64,6 +66,7 @@ import org.jboss.as.server.deployment.module.ClassFileTransformerProcessor;
 import org.jboss.as.server.deployment.module.DeploymentRootExplodedMountProcessor;
 import org.jboss.as.server.deployment.module.DeploymentRootMountProcessor;
 import org.jboss.as.server.deployment.module.DeploymentVisibilityProcessor;
+import org.jboss.as.server.deployment.module.DriverDependenciesProcessor;
 import org.jboss.as.server.deployment.module.ManifestAttachmentProcessor;
 import org.jboss.as.server.deployment.module.ManifestClassPathProcessor;
 import org.jboss.as.server.deployment.module.ManifestDependencyProcessor;
@@ -79,10 +82,9 @@ import org.jboss.as.server.deployment.module.ServerDependenciesProcessor;
 import org.jboss.as.server.deployment.module.SubDeploymentDependencyProcessor;
 import org.jboss.as.server.deployment.module.descriptor.DeploymentStructureDescriptorParser;
 import org.jboss.as.server.deployment.reflect.InstallReflectionIndexProcessor;
-import org.jboss.as.server.deployment.repository.api.ContentRepository;
-import org.jboss.as.server.deployment.repository.api.ServerDeploymentRepository;
 import org.jboss.as.server.deployment.service.ServiceActivatorDependencyProcessor;
 import org.jboss.as.server.deployment.service.ServiceActivatorProcessor;
+import org.jboss.as.server.mgmt.domain.RemoteFileRepository;
 import org.jboss.as.server.moduleservice.ExtensionIndexService;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
@@ -105,7 +107,7 @@ import org.jboss.threads.JBossThreadFactory;
  */
 public final class ServerService extends AbstractControllerService {
 
-    private final InjectedValue<ServerDeploymentRepository> injectedDeploymentRepository = new InjectedValue<ServerDeploymentRepository>();
+    private final InjectedValue<DeploymentMountProvider> injectedDeploymentRepository = new InjectedValue<DeploymentMountProvider>();
     private final InjectedValue<ContentRepository> injectedContentRepository = new InjectedValue<ContentRepository>();
     private final InjectedValue<ServiceModuleLoader> injectedModuleLoader = new InjectedValue<ServiceModuleLoader>();
 
@@ -117,6 +119,7 @@ public final class ServerService extends AbstractControllerService {
     private volatile ExecutorService queuelessExecutor;
     private volatile ExtensibleConfigurationPersister extensibleConfigurationPersister;
     private final AbstractVaultReader vaultReader;
+    private final RemoteFileRepository remoteFileRepository;
 
     /**
      * Construct a new instance.
@@ -126,7 +129,7 @@ public final class ServerService extends AbstractControllerService {
      */
     ServerService(final Bootstrap.Configuration configuration, final ControlledProcessState processState,
                   final OperationStepHandler prepareStep, final BootstrapListener bootstrapListener,
-                  final RunningModeControl runningModeControl, final AbstractVaultReader vaultReader) {
+                  final RunningModeControl runningModeControl, final AbstractVaultReader vaultReader, final RemoteFileRepository remoteFileRepository) {
         super(getProcessType(configuration.getServerEnvironment()), runningModeControl, null, processState,
                 ServerDescriptionProviders.ROOT_PROVIDER, prepareStep, new RuntimeExpressionResolver(vaultReader));
         this.configuration = configuration;
@@ -134,6 +137,7 @@ public final class ServerService extends AbstractControllerService {
         this.processState = processState;
         this.runningModeControl = runningModeControl;
         this.vaultReader = vaultReader;
+        this.remoteFileRepository = remoteFileRepository;
     }
 
     static ProcessType getProcessType(ServerEnvironment serverEnvironment) {
@@ -161,10 +165,10 @@ public final class ServerService extends AbstractControllerService {
      */
     public static void addService(final ServiceTarget serviceTarget, final Bootstrap.Configuration configuration,
                                   final ControlledProcessState processState, final BootstrapListener bootstrapListener,
-                                  final RunningModeControl runningModeControl, final AbstractVaultReader vaultReader) {
-        ServerService service = new ServerService(configuration, processState, null, bootstrapListener, runningModeControl, vaultReader);
+                                  final RunningModeControl runningModeControl, final AbstractVaultReader vaultReader, final RemoteFileRepository remoteFileRepository) {
+        ServerService service = new ServerService(configuration, processState, null, bootstrapListener, runningModeControl, vaultReader, remoteFileRepository);
         ServiceBuilder<?> serviceBuilder = serviceTarget.addService(Services.JBOSS_SERVER_CONTROLLER, service);
-        serviceBuilder.addDependency(ServerDeploymentRepository.SERVICE_NAME,ServerDeploymentRepository.class, service.injectedDeploymentRepository);
+        serviceBuilder.addDependency(DeploymentMountProvider.SERVICE_NAME,DeploymentMountProvider.class, service.injectedDeploymentRepository);
         serviceBuilder.addDependency(ContentRepository.SERVICE_NAME, ContentRepository.class, service.injectedContentRepository);
         serviceBuilder.addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, service.injectedModuleLoader);
         serviceBuilder.addDependency(Services.JBOSS_EXTERNAL_MODULE_SERVICE, ExternalModuleService.class,
@@ -242,6 +246,7 @@ public final class ServerService extends AbstractControllerService {
         DeployerChainAddHandler.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_SUB_DEPLOYMENTS, new SubDeploymentDependencyProcessor());
         DeployerChainAddHandler.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_JDK, new ServerDependenciesProcessor());
         DeployerChainAddHandler.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_VISIBLE_MODULES, new DeploymentVisibilityProcessor());
+        DeployerChainAddHandler.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_DRIVERS, new DriverDependenciesProcessor());
         DeployerChainAddHandler.addDeploymentProcessor(Phase.CONFIGURE_MODULE, Phase.CONFIGURE_MODULE_SPEC, new ModuleSpecProcessor());
         DeployerChainAddHandler.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_INSTALL_EXTENSION, new ModuleExtensionNameProcessor());
         DeployerChainAddHandler.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_REFLECTION_INDEX, new InstallReflectionIndexProcessor());
@@ -270,6 +275,9 @@ public final class ServerService extends AbstractControllerService {
     public void stop(final StopContext context) {
         super.stop(context);
 
+        configuration.getExtensionRegistry().clear();
+        configuration.getServerEnvironment().resetProvidedProperties();
+
         if (queuelessExecutor != null) {
             context.asynchronous();
             Thread executorShutdown = new Thread(new Runnable() {
@@ -292,7 +300,7 @@ public final class ServerService extends AbstractControllerService {
         ServerControllerModelUtil.updateCoreModel(rootResource.getModel(), configuration.getServerEnvironment());
         ServerControllerModelUtil.initOperations(rootRegistration, injectedContentRepository.getValue(),
                 extensibleConfigurationPersister, configuration.getServerEnvironment(), processState,
-                runningModeControl, vaultReader, configuration.getExtensionRegistry(), queuelessExecutor != null);
+                runningModeControl, vaultReader, configuration.getExtensionRegistry(), queuelessExecutor != null, remoteFileRepository);
 
         // TODO maybe make creating of empty nodes part of the MNR description
         rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.MANAGEMENT), Resource.Factory.create());

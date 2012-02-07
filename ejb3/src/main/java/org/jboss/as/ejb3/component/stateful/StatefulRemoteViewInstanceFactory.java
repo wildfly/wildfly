@@ -21,8 +21,6 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
-import java.util.Map;
-
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.ViewInstanceFactory;
 import org.jboss.as.naming.ManagedReference;
@@ -31,6 +29,9 @@ import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.StatefulEJBLocator;
 import org.jboss.msc.value.ImmediateValue;
+
+import java.util.Map;
+
 /**
  * @author Stuart Douglas
  */
@@ -51,11 +52,15 @@ public class StatefulRemoteViewInstanceFactory implements ViewInstanceFactory {
     @Override
     public ManagedReference createViewInstance(final ComponentView componentView, final Map<Object, Object> contextData) throws Exception {
         SessionID sessionID = (SessionID) contextData.get(SessionID.class);
-        if(sessionID == null) {
-            sessionID = EJBClient.createSession(applicationName, moduleName, beanName, distinctName);
+        final StatefulEJBLocator statefulEJBLocator;
+        final StatefulSessionComponent statefulSessionComponent = (StatefulSessionComponent) componentView.getComponent();
+        if (sessionID == null) {
+            statefulEJBLocator = EJBClient.createSession(componentView.getViewClass(), applicationName, moduleName, beanName, distinctName);
+        } else {
+            statefulEJBLocator = new StatefulEJBLocator(componentView.getViewClass(), applicationName, moduleName, beanName, distinctName, sessionID, statefulSessionComponent.getCache().getStrictAffinity());
         }
-        Object value = EJBClient.createProxy(new StatefulEJBLocator(componentView.getViewClass(), applicationName, moduleName, beanName, distinctName, sessionID));
-        return new ValueManagedReference(new ImmediateValue(value));
+        final Object ejbProxy = EJBClient.createProxy(statefulEJBLocator);
+        return new ValueManagedReference(new ImmediateValue(ejbProxy));
     }
 
 

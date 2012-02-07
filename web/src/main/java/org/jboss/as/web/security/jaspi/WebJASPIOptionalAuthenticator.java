@@ -32,6 +32,8 @@ import org.jboss.security.ServerAuthenticationManager;
 import org.jboss.security.auth.message.GenericMessageInfo;
 import org.jboss.security.plugins.auth.JASPIServerAuthenticationManager;
 
+import org.jboss.as.web.WebLogger;
+
 import javax.security.auth.Subject;
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -76,13 +78,13 @@ public class WebJASPIOptionalAuthenticator extends ValveBase {
 
             boolean isValid = sam.isValid(messageInfo, new Subject(), messageLayer, appContext, cbh);
             if (isValid) {
-                log.debugf("JASPI validation for unprotected request context %s succeeded", request.getServletPath());
+                WebLogger.WEB_SECURITY_LOGGER.debugf("JASPI validation for unprotected request context %s succeeded", request.getServletPath());
                 sam.secureResponse(messageInfo, new Subject(),  messageLayer, appContext, cbh);
             }
             else {
                 // just log an error - this situation indicates a problem with the JASPI implementation but the call is
                 // safe to proceed to the unprotected resource.
-                log.errorf("JASPI validation for unprotected request context %s failed", request.getServletPath());
+                WebLogger.WEB_SECURITY_LOGGER.failJASPIValidation(request.getServletPath());
             }
         }
         super.getNext().invoke(request, response);

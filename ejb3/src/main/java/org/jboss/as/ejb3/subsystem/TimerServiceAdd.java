@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+
 import java.util.List;
 import java.util.Timer;
 
@@ -47,7 +49,6 @@ import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.as.txn.service.TransactionManagerService;
 import org.jboss.as.txn.service.TransactionSynchronizationRegistryService;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
@@ -55,7 +56,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 /**
  * Adds the timer service
  *
@@ -92,7 +92,7 @@ public class TimerServiceAdd extends AbstractBoottimeAddStepHandler {
         final String relativeTo = relativeToNode.isDefined() ? relativeToNode.asString() : null;
 
         final String threadPoolName = TimerServiceResourceDefinition.THREAD_POOL_NAME.resolveModelAttribute(context, model).asString();
-        final ServiceName threadPoolServiceName = EJB3ThreadPoolAdd.BASE_SERVICE_NAME.append(threadPoolName);
+        final ServiceName threadPoolServiceName = EJB3SubsystemModel.BASE_THREAD_POOL_SERVICE_NAME.append(threadPoolName);
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {

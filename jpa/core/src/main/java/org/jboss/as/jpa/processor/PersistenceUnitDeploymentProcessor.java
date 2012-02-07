@@ -49,7 +49,6 @@ import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
-import org.jboss.as.jpa.classloader.TempClassLoaderFactoryImpl;
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceProviderDeploymentHolder;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
@@ -69,6 +68,7 @@ import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentModelUtils;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -122,6 +122,12 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
 
     @Override
     public void undeploy(DeploymentUnit context) {
+        List<PersistenceAdaptorRemoval> removals = context.getAttachmentList(REMOVAL_KEY);
+        if (removals != null) {
+            for (PersistenceAdaptorRemoval removal : removals) {
+                removal.cleanup();
+            }
+        }
     }
 
     private void handleJarDeployment(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -245,8 +251,8 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
             for (PersistenceUnitMetadataHolder holder : puList) {
                 setAnnotationIndexes(holder, deploymentUnit);
                 for (PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
+
                     pu.setClassLoader(classLoader);
-                    pu.setTempClassLoaderFactory(new TempClassLoaderFactoryImpl(classLoader));
                     try {
                         final HashMap properties = new HashMap();
                         if (!ValidationMode.NONE.equals(pu.getValidationMode())) {
@@ -273,7 +279,9 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                             provider = lookupProvider(pu);
                         }
 
-                        final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(pu, adaptor, provider);
+                        final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(classLoader, pu, adaptor, provider);
+
+                        phaseContext.getDeploymentUnit().addToAttachmentList(REMOVAL_KEY, new PersistenceAdaptorRemoval(pu, adaptor));
 
                         // add persistence provider specific properties
                         adaptor.addProviderProperties(properties, pu);
@@ -611,6 +619,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
         public void uninject() {
             reference.release();
             reference = null;
+            dataSourceInjector.uninject();
         }
     }
 
@@ -684,4 +693,19 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
         }
     }
 
+    private static class PersistenceAdaptorRemoval {
+        final PersistenceUnitMetadata pu;
+        final PersistenceProviderAdaptor adaptor;
+
+        public PersistenceAdaptorRemoval(PersistenceUnitMetadata pu, PersistenceProviderAdaptor adaptor) {
+            this.pu = pu;
+            this.adaptor = adaptor;
+        }
+
+        private void cleanup() {
+            adaptor.cleanup(pu);
+        }
+    }
+
+    private static AttachmentKey<AttachmentList<PersistenceAdaptorRemoval>> REMOVAL_KEY = AttachmentKey.createList(PersistenceAdaptorRemoval.class);
 }

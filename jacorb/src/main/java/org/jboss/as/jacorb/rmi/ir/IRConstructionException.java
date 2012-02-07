@@ -28,7 +28,7 @@ package org.jboss.as.jacorb.rmi.ir;
  * @author <a href="mailto:osh@sparre.dk">Ole Husgaard</a>
  * @version $Revision: 81018 $
  */
-class IRConstructionException
+public class IRConstructionException
         extends Exception {
     // Constants -----------------------------------------------------
 

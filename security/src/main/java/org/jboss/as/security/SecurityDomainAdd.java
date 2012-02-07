@@ -360,13 +360,13 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         List<Property> stacks = node.get(LOGIN_MODULE_STACK).asPropertyList();
         for (Property stack : stacks) {
             String name = stack.getName();
-            List<ModelNode> nodes = stack.getValue().get(LOGIN_MODULES).asList();
+            ModelNode stackNode = stack.getValue();
 
             final LoginModuleStackHolder holder = new LoginModuleStackHolder(name, null);
             holders.put(name, holder);
             authenticationInfo.add(holder);
-            for (ModelNode login : nodes) {
-                processLoginModules(login, authenticationInfo, new LoginModuleContainer() {
+            if (stackNode.hasDefined(LOGIN_MODULES)) {
+                processLoginModules(stackNode.get(LOGIN_MODULES), authenticationInfo, new LoginModuleContainer() {
                     public void addAppConfigurationEntry(AppConfigurationEntry entry) {
                         holder.addAppConfigurationEntry(entry);
                     }
@@ -383,8 +383,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             AuthModuleEntry entry = new AuthModuleEntry(code, options, loginStackRef);
             if (loginStackRef != null) {
                 if (!holders.containsKey(loginStackRef)) {
-                    throw new IllegalArgumentException("auth-module references a login module stack that doesn't exist: "
-                            + loginStackRef);
+                    throw SecurityMessages.MESSAGES.loginModuleStackIllegalArgument(loginStackRef);
                 }
                 entry.setLoginModuleStackHolder(holders.get(loginStackRef));
             }
@@ -541,7 +540,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             try {
                 jsseSecurityDomain.setServiceAuthToken(value);
             } catch (Exception e) {
-                throw new IllegalArgumentException(e);
+                throw SecurityMessages.MESSAGES.runtimeException(e);
             }
         }
         if (node.hasDefined(CIPHER_SUITES)) {
@@ -582,7 +581,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             try {
                 config.setKeyStorePassword(value.asString());
             } catch (Exception e) {
-                throw new IllegalArgumentException(e);
+                throw SecurityMessages.MESSAGES.runtimeException(e);
             }
         }
         if (type != null) {
@@ -592,7 +591,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             try {
                 config.setKeyStoreURL(url.asString());
             } catch (IOException e) {
-                throw new IllegalArgumentException(e);
+                throw SecurityMessages.MESSAGES.runtimeException(e);
             }
         }
 

@@ -21,29 +21,29 @@
  */
 package org.jboss.as.jacorb.rmi.ir;
 
-import org.omg.CORBA.Repository;
-import org.omg.CORBA.RepositoryPOATie;
-import org.omg.CORBA.ORB;
-import org.omg.CORBA.IRObject;
-import org.omg.CORBA.DefinitionKind;
-import org.omg.CORBA.RepositoryOperations;
-import org.omg.CORBA.Contained;
-import org.omg.CORBA.ContainedHelper;
-import org.omg.CORBA.TypeCode;
-import org.omg.CORBA.PrimitiveDef;
-import org.omg.CORBA.StringDef;
-import org.omg.CORBA.WstringDef;
-import org.omg.CORBA.SequenceDef;
-import org.omg.CORBA.ArrayDef;
-import org.omg.CORBA.FixedDef;
-import org.omg.CORBA.BAD_INV_ORDER;
-import org.omg.PortableServer.POA;
-
-import java.util.Map;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
-import java.io.UnsupportedEncodingException;
+import org.jboss.as.jacorb.JacORBLogger;
+import org.jboss.as.jacorb.JacORBMessages;
+import org.omg.CORBA.ArrayDef;
+import org.omg.CORBA.Contained;
+import org.omg.CORBA.ContainedHelper;
+import org.omg.CORBA.DefinitionKind;
+import org.omg.CORBA.FixedDef;
+import org.omg.CORBA.IRObject;
+import org.omg.CORBA.ORB;
+import org.omg.CORBA.PrimitiveDef;
+import org.omg.CORBA.Repository;
+import org.omg.CORBA.RepositoryOperations;
+import org.omg.CORBA.RepositoryPOATie;
+import org.omg.CORBA.SequenceDef;
+import org.omg.CORBA.StringDef;
+import org.omg.CORBA.TypeCode;
+import org.omg.CORBA.WstringDef;
+import org.omg.PortableServer.POA;
 
 /**
  * An Interface Repository.
@@ -51,10 +51,6 @@ import java.io.UnsupportedEncodingException;
  * @author <a href="mailto:osh@sparre.dk">Ole Husgaard</a>
  */
 class RepositoryImpl extends ContainerImpl implements RepositoryOperations, LocalContainer {
-
-    private static final org.jboss.logging.Logger logger =
-            org.jboss.logging.Logger.getLogger(RepositoryImpl.class);
-
 
     public RepositoryImpl(ORB orb, POA poa, String name) {
         super(DefinitionKind.dk_Repository, null);
@@ -64,7 +60,7 @@ class RepositoryImpl extends ContainerImpl implements RepositoryOperations, Loca
         try {
             oid = (name).getBytes("UTF-8");
         } catch (UnsupportedEncodingException ex) {
-            throw new RuntimeException("UTF-8 encoding not supported.");
+            throw JacORBMessages.MESSAGES.unsupportedUTF8Encoding();
         }
         oidPrefix = name + ":";
         anonOidPrefix = oidPrefix + "anon";
@@ -97,7 +93,7 @@ class RepositoryImpl extends ContainerImpl implements RepositoryOperations, Loca
             try {
                 getPOA().deactivate_object(getAnonymousObjectId(i));
             } catch (org.omg.CORBA.UserException ex) {
-                logger.warn("Could not deactivate anonymous IR object", ex);
+                JacORBLogger.ROOT_LOGGER.warnCouldNotDeactivateAnonIRObject(ex);
             }
         }
 
@@ -108,7 +104,6 @@ class RepositoryImpl extends ContainerImpl implements RepositoryOperations, Loca
     // Repository implementation -------------------------------------
 
     public Contained lookup_id(java.lang.String search_id) {
-        logger.debug("RepositoryImpl.lookup_id(\"" + search_id + "\") entered.");
         LocalContained c = _lookup_id(search_id);
 
         if (c == null)
@@ -118,35 +113,33 @@ class RepositoryImpl extends ContainerImpl implements RepositoryOperations, Loca
     }
 
     public TypeCode get_canonical_typecode(org.omg.CORBA.TypeCode tc) {
-        logger.debug("RepositoryImpl.get_canonical_typecode() entered.");
         // TODO
         return null;
     }
 
     public PrimitiveDef get_primitive(org.omg.CORBA.PrimitiveKind kind) {
-        logger.debug("RepositoryImpl.get_primitive() entered.");
         // TODO
         return null;
     }
 
     public StringDef create_string(int bound) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public WstringDef create_wstring(int bound) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public SequenceDef create_sequence(int bound, org.omg.CORBA.IDLType element_type) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public ArrayDef create_array(int length, org.omg.CORBA.IDLType element_type) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public FixedDef create_fixed(short digits, short scale) {
-        throw new BAD_INV_ORDER("Cannot change RMI/IIOP mapping.");
+        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
 
@@ -191,22 +184,16 @@ class RepositoryImpl extends ContainerImpl implements RepositoryOperations, Loca
 
 
     LocalContained _lookup_id(java.lang.String search_id) {
-        logger.debug("RepositoryImpl._lookup_id(\"" + search_id +
-                "\") entered.");
         // mapping of arrays are special
         if (search_id.startsWith("RMI:["))
             return (ValueBoxDefImpl) sequenceIdMap.get(search_id);
 
         // convert id
         String name = scopedName(search_id);
-        logger.debug("RepositoryImpl._lookup_id(): scopedName=\"" +
-                scopedName(search_id) + "\"");
 
         // look it up if converted id not null
         //return (name == null) ? null : _lookup(name);
         LocalContained ret = (name == null) ? null : _lookup(name);
-        logger.debug("RepositoryImpl._lookup_id(): returning " +
-                ((ret == null) ? "null" : "NOT null"));
         return ret;
     }
 
@@ -241,7 +228,7 @@ class RepositoryImpl extends ContainerImpl implements RepositoryOperations, Loca
         try {
             return s.getBytes("UTF-8");
         } catch (UnsupportedEncodingException ex) {
-            throw new RuntimeException("UTF-8 encoding not supported.");
+            throw JacORBMessages.MESSAGES.unsupportedUTF8Encoding();
         }
     }
 

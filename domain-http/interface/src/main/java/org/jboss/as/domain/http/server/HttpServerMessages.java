@@ -160,6 +160,14 @@ public interface HttpServerMessages {
     String realmReadinessFilter();
 
     /**
+     * The description for the {@link SubjectAssociationHandler}.
+     *
+     * @return the description.
+     */
+    @Message("Filter to ensure the Subject for the current request is associated.")
+    String subjectAssociationFilter();
+
+    /**
      * Creates an exception indicating that unexpected characters are being drop from the header.
      *
      * @param dropping the characters being dropped.

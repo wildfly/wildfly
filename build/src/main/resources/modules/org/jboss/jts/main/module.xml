@@ -23,6 +23,10 @@
   -->
 
 <module xmlns="urn:jboss:module:1.1" name="org.jboss.jts">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
     <resources>
         <!-- Insert resources here -->
     </resources>
@@ -37,5 +41,6 @@
         <module name="javax.transaction.api"/>
         <module name="javax.resource.api"/>
         <module name="org.hornetq"/>
+        <module name="org.jacorb"/>
     </dependencies>
 </module>

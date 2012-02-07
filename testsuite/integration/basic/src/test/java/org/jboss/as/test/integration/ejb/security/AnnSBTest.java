@@ -45,18 +45,17 @@ import javax.security.auth.login.LoginContext;
  */
 public abstract class AnnSBTest extends SecurityTest {
 
-   public static Archive<JavaArchive> testAppDeployment(final Logger LOG, final String MODULE, final Class SB_TO_TEST ) {
+    public static Archive<JavaArchive> testAppDeployment(final Logger LOG, final String MODULE, final Class SB_TO_TEST) {
 
-      // FIXME: change when there will be an option to deploy/call something before the first deployment
-      try {
-         // create required security domain
-         createSecurityDomain();
-      } catch (Exception e) {
-         LOG.warn("Problems during creation of security domain", e);
-      }
-      LOG.info("Security domain: ejb3-tests created");
-
-
+        // FIXME: change when there will be an option to deploy/call something before the first deployment
+        try {
+            // create required security domain
+            createSecurityDomain();
+            LOG.info("Security domain: ejb3-tests created");
+        } catch (Exception e) {
+            LOG.warn("Problems during creation of security domain", e);
+        }
+      
       // using JavaArchive doesn't work, because of a bug in Arquillian, it only deploys wars properly
       final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE + ".jar")
          .addClass(SB_TO_TEST)
@@ -97,19 +96,13 @@ public abstract class AnnSBTest extends SecurityTest {
       log.info("JNDI name=" + myContext);
 
       final Context ctx = Util.createNamingContext();
-      final SimpleAuthorizationRemote singleMethodsAnnOnlyBean = (SimpleAuthorizationRemote)
-         ctx.lookup(myContext);
+      final SimpleAuthorizationRemote singleMethodsAnnOnlyBean = (SimpleAuthorizationRemote) ctx.lookup(myContext);
+
+      String echoValue = singleMethodsAnnOnlyBean.defaultAccess("alohomora");
+      Assert.assertEquals(echoValue, "alohomora");
 
       try {
-         String echoValue = singleMethodsAnnOnlyBean.defaultAccess("alohomora");
-         Assert.assertEquals(echoValue, "alohomora");
-      } catch (EJBAccessException e) {
-         Assert.fail("Exception not expected");
-      }
-
-
-      try {
-         String echoValue = singleMethodsAnnOnlyBean.roleBasedAccessOne("alohomora");
+         echoValue = singleMethodsAnnOnlyBean.roleBasedAccessOne("alohomora");
          Assert.fail("Method cannot be successfully called without logged in user");
       } catch (Exception e) {
          // expected
@@ -117,7 +110,7 @@ public abstract class AnnSBTest extends SecurityTest {
       }
 
       try {
-         String echoValue = singleMethodsAnnOnlyBean.roleBasedAccessMore("alohomora");
+         echoValue = singleMethodsAnnOnlyBean.roleBasedAccessMore("alohomora");
          Assert.fail("Method cannot be successfully called without logged in user");
       } catch (Exception e) {
          // expected
@@ -125,14 +118,14 @@ public abstract class AnnSBTest extends SecurityTest {
       }
 
       try {
-         String echoValue = singleMethodsAnnOnlyBean.permitAll("alohomora");
+         echoValue = singleMethodsAnnOnlyBean.permitAll("alohomora");
          Assert.assertEquals(echoValue, "alohomora");
       } catch (Exception e) {
          Assert.fail("@PermitAll annotation must allow all users and no users to call the method");
       }
 
       try {
-         String echoValue = singleMethodsAnnOnlyBean.denyAll("alohomora");
+         echoValue = singleMethodsAnnOnlyBean.denyAll("alohomora");
          Assert.fail("@DenyAll annotation must allow all users and no users to call the method");
       } catch (Exception e) {
          // expected

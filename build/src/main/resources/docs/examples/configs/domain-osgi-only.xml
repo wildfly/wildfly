@@ -53,7 +53,7 @@
             <subsystem xmlns="urn:jboss:domain:jmx:1.1"/>
             <subsystem xmlns="urn:jboss:domain:osgi:1.2" activation="eager">
                 <capabilities>
-                    <capability name="org.osgi.compendium"/>
+                    <capability name="org.osgi.enterprise"/>
                 </capabilities>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:remoting:1.1"/>

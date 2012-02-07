@@ -36,7 +36,9 @@ import java.util.concurrent.TimeUnit;
 public class RollbackRetryBean {
 
     private static final CountDownLatch latch = new CountDownLatch(1);
-
+    private static int TIMER_TIMEOUT_TIME_MS = 100;
+    private static int TIMER_CALL_WAITING_S = 2;
+    
     private static int count = 0;
 
     @Resource
@@ -46,7 +48,7 @@ public class RollbackRetryBean {
     private EJBContext context;
 
     public void createTimer() {
-        timerService.createTimer(100, null);
+        timerService.createTimer(TIMER_TIMEOUT_TIME_MS, null);
     }
 
     @Timeout
@@ -63,7 +65,7 @@ public class RollbackRetryBean {
 
     public static boolean awaitTimerCall() {
         try {
-            latch.await(2, TimeUnit.SECONDS);
+            latch.await(TIMER_CALL_WAITING_S, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

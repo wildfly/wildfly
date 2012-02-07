@@ -26,7 +26,6 @@ import org.jboss.as.security.SecurityExtension;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
-import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 
@@ -45,12 +44,6 @@ public class SecurityDomainModelv1UnitTestCase extends AbstractSubsystemTest {
             @Override
             protected OperationContext.Type getType() {
                 return OperationContext.Type.MANAGEMENT;
-            }
-
-            @Override
-            protected ValidationConfiguration getModelValidationConfiguration() {
-                //TODO get rid of this method https://issues.jboss.org/browse/AS7-1763
-                return null;
             }
         };
 
@@ -79,12 +72,6 @@ public class SecurityDomainModelv1UnitTestCase extends AbstractSubsystemTest {
             @Override
             protected OperationContext.Type getType() {
                 return OperationContext.Type.MANAGEMENT;
-            }
-
-            @Override
-            protected ValidationConfiguration getModelValidationConfiguration() {
-                //TODO get rid of this method https://issues.jboss.org/browse/AS7-1763
-                return null;
             }
         };
 

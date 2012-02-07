@@ -34,14 +34,16 @@ import org.jboss.as.cli.Util;
  */
 public class DefaultFilenameTabCompleter extends FilenameTabCompleter {
 
-   public static final DefaultFilenameTabCompleter INSTANCE = new DefaultFilenameTabCompleter();
-
-   private static final EscapeSelector ESCAPE_SELECTOR = new EscapeSelector() {
+    private static final EscapeSelector ESCAPE_SELECTOR = new EscapeSelector() {
        @Override
        public boolean isEscape(char ch) {
            return ch == '\\' || ch == ' ' || ch == '"';
        }
    };
+
+   public DefaultFilenameTabCompleter(CommandContext ctx) {
+       super(ctx);
+   }
 
    /* (non-Javadoc)
     * @see org.jboss.as.cli.CommandLineCompleter#complete(org.jboss.as.cli.CommandContext,

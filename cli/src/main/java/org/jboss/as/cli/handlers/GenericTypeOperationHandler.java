@@ -80,11 +80,12 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
     private Map<String, Map<String, CommandArgument>> propsByOp;
 
     private Map<String, ArgumentValueConverter> propConverters;
+    private Map<String, CommandLineCompleter> valueCompleters;
 
     public GenericTypeOperationHandler(CommandContext ctx, String nodeType, String idProperty) {
         this(ctx, nodeType, idProperty, Arrays.asList("read-attribute", "read-children-names", "read-children-resources",
                 "read-children-types", "read-operation-description", "read-operation-names",
-                "read-resource-description", "validate-address", "write-attribute"));
+                "read-resource-description", "validate-address", "write-attribute", "undefine-attribute"));
     }
 
     public GenericTypeOperationHandler(CommandContext ctx, String nodeType, String idProperty, List<String> excludeOperations) {
@@ -224,6 +225,13 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         propConverters.put(propertyName, converter);
     }
 
+    public void addValueCompleter(String propertyName, CommandLineCompleter completer) {
+        if(valueCompleters == null) {
+            valueCompleters = new HashMap<String, CommandLineCompleter>();
+        }
+        valueCompleters.put(propertyName, completer);
+    }
+
     @Override
     public Collection<CommandArgument> getArguments(CommandContext ctx) {
         ParsedCommandLine args = ctx.getParsedCommandLine();
@@ -254,12 +262,17 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                         if(propConverters != null) {
                             valueConverter = propConverters.get(prop.getName());
                         }
+                        if(valueCompleters != null) {
+                            valueCompleter = valueCompleters.get(prop.getName());
+                        }
                         if(valueConverter == null) {
                             valueConverter = ArgumentValueConverter.DEFAULT;
                             if(propDescr.has(Util.TYPE)) {
                                 type = propDescr.get(Util.TYPE).asType();
                                 if(ModelType.BOOLEAN == type) {
-                                    valueCompleter = SimpleTabCompleter.BOOLEAN;
+                                    if(valueCompleter == null) {
+                                        valueCompleter = SimpleTabCompleter.BOOLEAN;
+                                    }
                                 } else if(prop.getName().endsWith("properties")) { // TODO this is bad but can't rely on proper descriptions
                                     valueConverter = ArgumentValueConverter.PROPERTIES;
                                 } else if(ModelType.LIST == type) {
@@ -307,12 +320,17 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                         if(propConverters != null) {
                             valueConverter = propConverters.get(prop.getName());
                         }
+                        if(valueCompleters != null) {
+                            valueCompleter = valueCompleters.get(prop.getName());
+                        }
                         if(valueConverter == null) {
                             valueConverter = ArgumentValueConverter.DEFAULT;
                             if(propDescr.has(Util.TYPE)) {
                                 type = propDescr.get(Util.TYPE).asType();
                                 if(ModelType.BOOLEAN == type) {
-                                    valueCompleter = SimpleTabCompleter.BOOLEAN;
+                                    if(valueCompleter == null) {
+                                        valueCompleter = SimpleTabCompleter.BOOLEAN;
+                                    }
                                 } else if(prop.getName().endsWith("properties")) { // TODO this is bad but can't rely on proper descriptions
                                     valueConverter = ArgumentValueConverter.PROPERTIES;
                                 } else if(ModelType.LIST == type) {
@@ -362,7 +380,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
     protected void handleResponse(CommandContext ctx, ModelNode opResponse, boolean composite) {
         //System.out.println(opResponse);
         if (!Util.isSuccess(opResponse)) {
-            ctx.printLine(Util.getFailureDescription(opResponse));
+            ctx.error(Util.getFailureDescription(opResponse));
             return;
         }
         final StringBuilder buf = formatResponse(ctx, opResponse, composite, null);
@@ -381,7 +399,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
             try {
                 keys = result.keys();
             } catch(Exception e) {
-                ctx.printLine("Failed to get step results from a composite operation response " + opResponse);
+                ctx.error("Failed to get step results from a composite operation response " + opResponse);
                 e.printStackTrace();
                 return null;
             }
@@ -526,13 +544,13 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                 try {
                     printProperties(ctx, getNodeProperties(ctx));
                 } catch(Exception e) {
-                    ctx.printLine("Failed to obtain the list or properties: " + e.getLocalizedMessage());
+                    ctx.error("Failed to obtain the list or properties: " + e.getLocalizedMessage());
                     return;
                 }
                 return;
             }
         } catch (CommandFormatException e) {
-            ctx.printLine(e.getLocalizedMessage());
+            ctx.error(e.getLocalizedMessage());
             return;
         }
 
@@ -542,7 +560,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                 return;
             }
         } catch (CommandFormatException e) {
-            ctx.printLine(e.getLocalizedMessage());
+            ctx.error(e.getLocalizedMessage());
             return;
         }
 
@@ -554,14 +572,14 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
 
         try {
             ModelNode result = getOperationDescription(ctx, operationName);
-            if(!result.hasDefined("description")) {
-                ctx.printLine("Operation description is not available.");
+            if(!result.hasDefined(Util.DESCRIPTION)) {
+                ctx.error("Operation description is not available.");
                 return;
             }
 
             final StringBuilder buf = new StringBuilder();
             buf.append("\nDESCRIPTION:\n\n");
-            buf.append(result.get("description").asString());
+            buf.append(result.get(Util.DESCRIPTION).asString());
             ctx.printLine(buf.toString());
 
             if(result.hasDefined(Util.REQUEST_PROPERTIES)) {
@@ -669,6 +687,14 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         }
         buf.append("<command> ").append(name.getFullName()).append("=<value> (--<parameter>=<value>)*");
 
+        if(ctx.isDomainMode()) {
+            buf.append('\n');
+            for(int i = 0; i <= commandName.length(); ++i) {
+                buf.append(' ');
+            }
+            buf.append("[--headers={operation_header (;operation_header)*}]");
+        }
+
         buf.append("\n\nDESCRIPTION\n\n");
         buf.append("The command is used to manage resources of type " + this.nodeType + ".");
 
@@ -687,12 +713,12 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
             try {
                 result = ctx.getModelControllerClient().execute(request);
                 if(!result.hasDefined(Util.RESULT)) {
-                    ctx.printLine("Node description is not available.");
+                    ctx.error("Node description is not available.");
                     return;
                 }
                 result = result.get(Util.RESULT);
                 if(!result.hasDefined(Util.DESCRIPTION)) {
-                    ctx.printLine("Node description is not available.");
+                    ctx.error("Node description is not available.");
                     return;
                 }
             } catch (Exception e) {
@@ -736,6 +762,11 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         buf.append("\n               For a complete list of available parameter names of a specific <command>,");
         buf.append("\n               their types and descriptions, execute ").append(commandName).append(" <command> --help.");
 
+        if(ctx.isDomainMode()) {
+            buf.append("\n\n--headers    - a list of operation headers separated by a semicolon. For the list of supported");
+            buf.append("\n               headers, please, refer to the domain management documentation or use tab-completion.");
+        }
+
         ctx.printLine(buf.toString());
     }
 
@@ -747,8 +778,8 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         request.get(Util.OPERATION).set(Util.READ_OPERATION_NAMES);
         try {
             ModelNode result = ctx.getModelControllerClient().execute(request);
-            if(!result.hasDefined("result")) {
-                ctx.printLine("Operation names aren't available.");
+            if(!result.hasDefined(Util.RESULT)) {
+                ctx.error("Operation names aren't available.");
                 return;
             }
             final List<String> list = Util.getList(result);
@@ -803,7 +834,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         if(isDependsOnProfile() && ctx.isDomainMode()) {
             final String profileName = profile.getValue(ctx.getParsedCommandLine());
             if(profileName == null) {
-                ctx.printLine("--profile argument is required to get the node description.");
+                ctx.error("WARNING: --profile argument is required for the complete description.");
                 return null;
             }
             address.add(Util.PROFILE, profileName);

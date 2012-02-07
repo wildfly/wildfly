@@ -191,9 +191,12 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      * @param componentName      the component name
      * @param componentClassName the component instance class name
      * @param ejbJarDescription  the module
+     * @param deploymentUnitServiceName
+     * @param descriptorData     the optional descriptor metadata
      */
-    public EJBComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbJarDescription, final ServiceName deploymentUnitServiceName) {
+    public EJBComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbJarDescription, final ServiceName deploymentUnitServiceName, final EnterpriseBeanMetaData descriptorData) {
         super(componentName, componentClassName, ejbJarDescription.getEEModuleDescription(), deploymentUnitServiceName);
+        this.descriptorData = descriptorData;
         if (ejbJarDescription.isWar()) {
             setNamingMode(ComponentNamingMode.USE_MODULE);
         } else {
@@ -244,6 +247,8 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             }
         });
     }
+
+
 
     public void addLocalHome(final String localHome) {
         final EjbHomeViewDescription view = new EjbHomeViewDescription(this, localHome, MethodIntf.LOCAL_HOME);
@@ -439,7 +444,15 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         });
     }
 
+    public boolean isEntity() {
+        return false;
+    }
+
     public boolean isMessageDriven() {
+        return false;
+    }
+
+    public boolean isSession() {
         return false;
     }
 
@@ -621,10 +634,6 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     public EnterpriseBeanMetaData getDescriptorData() {
         return descriptorData;
-    }
-
-    public void setDescriptorData(final EnterpriseBeanMetaData descriptorData) {
-        this.descriptorData = descriptorData;
     }
 
     public Method getTimeoutMethod() {

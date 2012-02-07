@@ -26,7 +26,6 @@ import org.dom4j.io.SAXReader;
 import org.jboss.as.ee.deployment.spi.configurations.WarConfiguration;
 import org.jboss.as.ee.deployment.spi.status.DeploymentStatusImpl;
 import org.jboss.as.ee.deployment.spi.status.ProgressObjectImpl;
-import org.jboss.util.NotImplementedException;
 import org.jboss.util.xml.JBossEntityResolver;
 
 import javax.enterprise.deploy.model.DeployableObject;

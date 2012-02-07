@@ -39,6 +39,7 @@ import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 import org.jboss.as.ejb3.component.entity.WrappedRemoteException;
+import org.jboss.as.ejb3.component.entity.interceptors.InternalInvocationMarker;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -111,6 +112,8 @@ public class CmpEntityBeanComponentInstance extends EntityBeanComponentInstance 
         final JDBCEntityPersistenceStore store = getComponent().getStoreManager();
         try {
             store.passivateEntity(this.getEjbContext());
+            clearPrimaryKey();
+            setRemoved(false);
         } catch (RemoteException e) {
             throw new WrappedRemoteException(e);
         } catch (Exception e) {
@@ -124,13 +127,14 @@ public class CmpEntityBeanComponentInstance extends EntityBeanComponentInstance 
         interceptorContext.putPrivateData(Component.class, getComponent());
         interceptorContext.putPrivateData(ComponentInstance.class, this);
         interceptorContext.putPrivateData(CMRMessage.class, message);
+        interceptorContext.putPrivateData(InternalInvocationMarker.class, InternalInvocationMarker.INSTANCE);
 
         try {
             return relationshipInterceptor.processInvocation(interceptorContext);
         } catch (EJBException e) {
             throw e;
         } catch (Exception e) {
-            throw new EJBException("Failed to invoke relationship request");
+            throw new EJBException("Failed to invoke relationship request", e);
         }
     }
 }

@@ -55,39 +55,31 @@ public class BatchRunHandler extends CommandHandlerWithHelp {
     @Override
     protected void doHandle(CommandContext ctx) {
 
-        BatchManager batchManager = ctx.getBatchManager();
+        final BatchManager batchManager = ctx.getBatchManager();
         if(!batchManager.isBatchActive()) {
-            ctx.printLine("No active batch.");
+            ctx.error("No active batch.");
             return;
         }
 
-        Batch batch = batchManager.getActiveBatch();
+        final Batch batch = batchManager.getActiveBatch();
         List<BatchedCommand> currentBatch = batch.getCommands();
         if(currentBatch.isEmpty()) {
-            ctx.printLine("The batch is empty.");
+            ctx.error("The batch is empty.");
             batchManager.discardActiveBatch();
             return;
         }
 
-        ModelNode composite = new ModelNode();
-        composite.get("operation").set("composite");
-        composite.get("address").setEmptyList();
-        ModelNode steps = composite.get("steps");
-
-        for(BatchedCommand cmd : currentBatch) {
-            steps.add(cmd.getRequest());
-        }
-
+        final ModelNode composite = batch.toRequest();
         try {
             ModelNode result = ctx.getModelControllerClient().execute(composite);
             if(Util.isSuccess(result)) {
                 batchManager.discardActiveBatch();
                 ctx.printLine("The batch executed successfully.");
             } else {
-                ctx.printLine("Failed to execute batch: " + Util.getFailureDescription(result));
+                ctx.error("Failed to execute batch: " + Util.getFailureDescription(result));
             }
         } catch (Exception e) {
-            ctx.printLine("Failed to execute batch: " + e.getLocalizedMessage());
+            ctx.error("Failed to execute batch: " + e.getLocalizedMessage());
         }
     }
 }

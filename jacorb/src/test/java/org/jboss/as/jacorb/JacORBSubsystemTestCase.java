@@ -66,7 +66,7 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
         "        <connection retries=\"5\" retry-interval=\"500\" client-timeout=\"0\" server-timeout=\"0\" " +
         "            max-server-connections=\"500\" max-managed-buf-size=\"24\" outbuf-size=\"2048\" " +
         "            outbuf-cache-timeout=\"-1\"/>" +
-        "        <initializers security=\"on\" transactions=\"on\"/>" +
+        "        <initializers security=\"on\" transactions=\"spec\"/>" +
         "    </orb>" +
         "    <poa monitoring=\"off\" queue-wait=\"on\" queue-min=\"10\" queue-max=\"100\">" +
         "        <request-processors pool-size=\"10\" max-threads=\"32\"/>" +
@@ -74,9 +74,8 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
         "    <naming root-context=\"JBoss/Naming/root\" export-corbaloc=\"on\"/>" +
         "    <interop sun=\"on\" comet=\"off\" iona=\"off\" chunk-custom-rmi-valuetypes=\"on\" " +
         "        lax-boolean-encoding=\"off\" indirection-encoding-disable=\"off\" strict-check-on-tc-creation=\"off\"/>" +
-        "    <security support-ssl=\"off\" add-component-via-interceptor=\"on\" client-supports=\"60\"" +
-        "        client-requires=\"0\" server-supports=\"60\" server-requires=\"0\" use-domain-socket-factory=\"off\"" +
-        "        use-domain-server-socket-factory=\"off\"/>" +
+        "    <security support-ssl=\"off\" add-component-via-interceptor=\"on\" client-supports=\"MutualAuth\"" +
+        "        client-requires=\"None\" server-supports=\"MutualAuth\" server-requires=\"None\"/>" +
         "    <properties>" +
         "        <property name=\"some_property\" value=\"some_value\"/>" +
         "    </properties>" +
@@ -195,7 +194,8 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
         "        <request-processors pool-size=\"10\" max-threads=\"32\"/>" +
         "    </poa>" +
         "    <interop sun=\"on\" comet=\"off\" chunk-custom-rmi-valuetypes=\"on\"/>" +
-        "    <security support-ssl=\"off\" use-domain-socket-factory=\"off\" use-domain-server-socket-factory=\"off\"/>" +
+        "    <security support-ssl=\"off\" use-domain-socket-factory=\"off\" use-domain-server-socket-factory=\"off\"" +
+        "              client-supports=\"60\" client-requires=\"0\"/>" +
         "    <property key=\"a\" value=\"va\"/>" +
         "    <property key=\"b\" value=\"vb\"/>" +
         "    <initializers>security,transactions</initializers>" +

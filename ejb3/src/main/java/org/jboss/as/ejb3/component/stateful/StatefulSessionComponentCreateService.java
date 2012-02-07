@@ -91,8 +91,8 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         this.cache = componentDescription.getCache();
         this.marshallingConfiguration = new MarshallingConfiguration();
         this.marshallingConfiguration.setClassResolver(new SimpleClassResolver(componentConfiguration.getModuleClassLoder()));
-        this.marshallingConfiguration.setObjectResolver(new StatefulSessionBeanObjectResolver());
-        this.marshallingConfiguration.setClassTable(new StatefulSessionBeanClassTable(componentConfiguration.getComponentClass()));
+        this.marshallingConfiguration.setSerializabilityChecker(new StatefulSessionBeanSerializabilityChecker(componentConfiguration.getComponentClass()));
+        this.marshallingConfiguration.setClassTable(new StatefulSessionBeanClassTable());
         this.serializableInterceptorContextKeys = componentConfiguration.getInterceptorContextKeys();
     }
 

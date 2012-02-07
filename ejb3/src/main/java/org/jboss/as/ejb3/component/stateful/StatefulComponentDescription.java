@@ -60,6 +60,7 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.proxy.MethodIdentifier;
+import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.msc.service.ServiceName;
 
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
@@ -127,8 +128,8 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
      * @param ejbJarDescription  the module description
      */
     public StatefulComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbJarDescription,
-                                        final ServiceName deploymentUnitServiceName) {
-        super(componentName, componentClassName, ejbJarDescription, deploymentUnitServiceName);
+                                        final ServiceName deploymentUnitServiceName, final SessionBeanMetaData descriptorData) {
+        super(componentName, componentClassName, ejbJarDescription, deploymentUnitServiceName, descriptorData);
 
         addInitMethodInvokingInterceptor();
     }
@@ -253,7 +254,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
                 final DeploymentReflectionIndex index = context.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
                 ClassReflectionIndex<WriteReplaceInterface> classIndex = index.getClassIndex(WriteReplaceInterface.class);
                 for (Method method : classIndex.getMethods()) {
-                    configuration.addClientInterceptor(method, new WriteReplaceInterceptor.Factory(configuration.getViewServiceName().getCanonicalName()), InterceptorOrder.Client.WRITE_REPLACE);
+                    configuration.addClientInterceptor(method, new StatefulWriteReplaceInterceptor.Factory(configuration.getViewServiceName().getCanonicalName()), InterceptorOrder.Client.WRITE_REPLACE);
                 }
             }
         });

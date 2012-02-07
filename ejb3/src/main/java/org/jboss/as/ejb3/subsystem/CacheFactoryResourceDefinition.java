@@ -30,6 +30,7 @@ import javax.xml.stream.XMLStreamWriter;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -70,17 +71,15 @@ public class CacheFactoryResourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+        ReloadRequiredWriteAttributeHandler handler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
         for (AttributeDefinition attribute: ATTRIBUTES) {
-            resourceRegistration.registerReadOnlyAttribute(attribute,  null);
+            resourceRegistration.registerReadWriteAttribute(attribute,  null, handler);
         }
     }
 
     private static class StringListAttributeDefinition extends ListAttributeDefinition {
-        /**
-         * @param name
-         * @param allowNull
-         * @param elementValidator
-         */
+
+        /** {@inheritDoc} */
         StringListAttributeDefinition(String name, String xmlName, boolean allowNull) {
             super(name, xmlName, allowNull, 0, Integer.MAX_VALUE, new StringLengthValidator(1));
         }

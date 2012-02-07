@@ -80,7 +80,6 @@ public final class Main {
         String jbossHome = SecurityActions.getSystemProperty("jboss.home.dir", ".");
         String modulePath = null;
         String bootJar = null;
-        String logModule = "org.jboss.logmanager";
         String jaxpModule = "javax.xml.jaxp-provider";
         String bootModule = HOST_CONTROLLER_MODULE;
         final PCSocketConfig pcSocketConfig = new PCSocketConfig();
@@ -90,7 +89,6 @@ public final class Main {
         final List<String> javaOptions = new ArrayList<String>();
         final List<String> smOptions = new ArrayList<String>();
 
-        // logmodule is the same as mine or defaulted
         // target module is always SM
         // -mp is my module path
         // -jar is jboss-modules.jar in jboss-home
@@ -106,8 +104,6 @@ public final class Main {
                 modulePath = args[++i];
             } else if ("-jar".equals(arg)) {
                 bootJar = args[++i];
-            } else if ("-logmodule".equals(arg)) {
-                logModule = args[++i];
             } else if ("-jaxpmodule".equals(arg)) {
                 jaxpModule = args[++i];
             } else if ("--".equals(arg)) {
@@ -195,13 +191,12 @@ public final class Main {
 
         final List<String> initialCommand = new ArrayList<String>();
         initialCommand.add(jvmName);
+        initialCommand.add("-D[" + HOST_CONTROLLER_PROCESS_NAME + "]");
         initialCommand.addAll(javaOptions);
         initialCommand.add("-jar");
         initialCommand.add(bootJar);
         initialCommand.add("-mp");
         initialCommand.add(modulePath);
-        initialCommand.add("-logmodule");
-        initialCommand.add(logModule);
         initialCommand.add("-jaxpmodule");
         initialCommand.add(jaxpModule);
         initialCommand.add(bootModule);

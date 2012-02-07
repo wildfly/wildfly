@@ -34,7 +34,7 @@ public class InterceptorParent {
     public static boolean parentPostConstructCalled = false;
 
     @PostConstruct
-    public void parent(InvocationContext ctx) throws Exception{
+    public void parent(InvocationContext ctx) throws Exception {
         parentPostConstructCalled = true;
         Assert.assertFalse(InterceptorChild.childPostConstructCalled);
         Assert.assertTrue(FirstInterceptor.postConstructCalled);
@@ -43,6 +43,5 @@ public class InterceptorParent {
         Assert.assertFalse(SFSBChild.childPostConstructCalled);
         ctx.proceed();
     }
-
 
 }

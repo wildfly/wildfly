@@ -42,9 +42,11 @@ public class Util {
     public static final String ACCESS_TYPE = "access-type";
     public static final String ADD = "add";
     public static final String ADDRESS = "address";
+    public static final String ALLOW_RESOURCE_SERVICE_RESTART = "allow-resource-service-restart";
     public static final String ATTRIBUTES = "attributes";
     public static final String BYTES = "bytes";
     public static final String CHILDREN = "children";
+    public static final String CHILD_TYPE = "child-type";
     public static final String COMPOSITE = "composite";
     public static final String CONCURRENT_GROUPS = "concurrent-groups";
     public static final String CONTENT = "content";
@@ -52,15 +54,21 @@ public class Util {
     public static final String DEPLOYMENT = "deployment";
     public static final String DESCRIPTION = "description";
     public static final String DOMAIN_FAILURE_DESCRIPTION = "domain-failure-description";
+    public static final String DOMAIN_RESULTS = "domain-results";
+    public static final String ENABLED = "enabled";
     public static final String EXPRESSIONS_ALLOWED = "expressions-allowed";
-    public static final String HEAD_COMMENT_ALLOWED = "head-comment-allowed";
     public static final String FAILURE_DESCRIPTION = "failure-description";
     public static final String FULL_REPLACE_DEPLOYMENT = "full-replace-deployment";
+    public static final String FALSE = "false";
+    public static final String HEAD_COMMENT_ALLOWED = "head-comment-allowed";
+    public static final String ID = "id";
     public static final String IN_SERIES = "in-series";
     public static final String INCLUDE_DEFAULTS = "include-defaults";
     public static final String INCLUDE_RUNTIME = "include-runtime";
     public static final String INPUT_STREAM_INDEX = "input-stream-index";
     public static final String MANAGEMENT_CLIENT_CONTENT = "management-client-content";
+    public static final String MAX_FAILED_SERVERS = "max-failed-servers";
+    public static final String MAX_FAILURE_PERCENTAGE = "max-failure-percentage";
     public static final String MAX_OCCURS = "max-occurs";
     public static final String MIN_OCCURS = "min-occurs";
     public static final String NAME = "name";
@@ -69,6 +77,7 @@ public class Util {
     public static final String OPERATION_HEADERS = "operation-headers";
     public static final String OUTCOME = "outcome";
     public static final String PROFILE = "profile";
+    public static final String PERSISTENT = "persistent";
     public static final String READ_ATTRIBUTE = "read-attribute";
     public static final String READ_CHILDREN_NAMES = "read-children-names";
     public static final String READ_CHILDREN_TYPES = "read-children-types";
@@ -82,10 +91,14 @@ public class Util {
     public static final String REQUIRED = "required";
     public static final String RESTART_REQUIRED = "restart-required";
     public static final String RESULT = "result";
+    public static final String ROLLBACK_ACROSS_GROUPS = "rollback-across-groups";
+    public static final String ROLLBACK_ON_RUNTIME_FAILURE = "rollback-on-runtime-failure";
+    public static final String ROLLING_TO_SERVERS = "rolling-to-servers";
     public static final String ROLLOUT_PLAN = "rollout-plan";
     public static final String ROLLOUT_PLANS = "rollout-plans";
     public static final String RUNTIME_NAME = "runtime-name";
     public static final String SERVER_GROUP = "server-group";
+    public static final String STATUS = "status";
     public static final String STEP_1 = "step-1";
     public static final String STEP_2 = "step-2";
     public static final String STEP_3 = "step-3";
@@ -95,6 +108,7 @@ public class Util {
     public static final String TAIL_COMMENT_ALLOWED = "tail-comment-allowed";
     public static final String TRUE = "true";
     public static final String TYPE = "type";
+    public static final String VALID = "valid";
     public static final String VALIDATE_ADDRESS = "validate-address";
     public static final String VALUE = "value";
     public static final String VALUE_TYPE = "value-type";
@@ -237,9 +251,9 @@ public class Util {
             DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
             ModelNode request;
             try {
-                builder.setOperationName("read-children-names");
-                builder.addNode("server-group", serverGroup);
-                builder.addProperty("child-type", "deployment");
+                builder.setOperationName(Util.READ_CHILDREN_NAMES);
+                builder.addNode(Util.SERVER_GROUP, serverGroup);
+                builder.addProperty("child-type", Util.DEPLOYMENT);
                 request = builder.buildRequest();
             } catch (OperationFormatException e) {
                 throw new IllegalStateException("Failed to build operation", e);

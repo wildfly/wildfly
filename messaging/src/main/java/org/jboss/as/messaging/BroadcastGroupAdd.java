@@ -42,6 +42,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.interfaces.InetAddressUtil;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
@@ -104,15 +105,16 @@ public class BroadcastGroupAdd extends AbstractAddStepHandler implements Descrip
                 final String localAddress = localAddrNode.isDefined() ? localAddrNode.asString() : null;
                 final String groupAddress = CommonAttributes.GROUP_ADDRESS.resolveModelAttribute(context, model).asString();
                 final int groupPort = CommonAttributes.GROUP_PORT.resolveModelAttribute(context, model).asInt();
+                final int localBindPort = CommonAttributes.LOCAL_BIND_PORT.resolveModelAttribute(context, model).asInt();
 
                 try {
 
-                    final InetAddress inet = localAddress != null ? InetAddress.getByName(localAddress) : InetAddress.getLocalHost();
+                    final InetAddress inet = localAddress != null ? InetAddress.getByName(localAddress) : InetAddressUtil.getLocalHost();
                     final NetworkInterface intf = NetworkInterface.getByInetAddress(inet);
                     final NetworkInterfaceBinding b = new NetworkInterfaceBinding(Collections.singleton(intf), inet);
                     final InetAddress group = InetAddress.getByName(groupAddress);
 
-                    final SocketBinding socketBinding = new SocketBinding(name, -1, false, group, groupPort, b, null, null);
+                    final SocketBinding socketBinding = new SocketBinding(name, localBindPort, false, group, groupPort, b, null, null);
 
                     final GroupBindingService bindingService = new GroupBindingService();
                     target.addService(GroupBindingService.getBroadcastBaseServiceName(hqServiceName).append(name), bindingService)

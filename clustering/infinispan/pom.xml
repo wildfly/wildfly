@@ -96,6 +96,10 @@
             <artifactId>jboss-transaction-api_1.1_spec</artifactId>
         </dependency>
         <dependency>
+            <groupId>net.jcip</groupId>
+            <artifactId>jcip-annotations</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-clustering-common</artifactId>
             <version>${project.version}</version><!--$NO-MVN-MAN-VER$-->
@@ -105,6 +109,11 @@
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-subsystem-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.marshalling</groupId>
+            <artifactId>jboss-marshalling-river</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

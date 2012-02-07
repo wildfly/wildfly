@@ -41,18 +41,11 @@ public class EntityBeanInterceptors {
         @Override
         public Object processInvocation(final InterceptorContext context) throws Exception {
             final EntityBeanComponentInstance instance = (EntityBeanComponentInstance) context.getPrivateData(ComponentInstance.class);
-            return instance.getPrimaryKey();
-        }
-    });
-
-    /**
-     * Interceptor for {@link Object#hashCode()}
-     */
-    public static final InterceptorFactory HASH_CODE = new ImmediateInterceptorFactory(new Interceptor() {
-        @Override
-        public Object processInvocation(final InterceptorContext context) throws Exception {
-            final EntityBeanComponentInstance instance = (EntityBeanComponentInstance) context.getPrivateData(ComponentInstance.class);
-            return instance.getPrimaryKey().hashCode();
+            try {
+                return instance.getPrimaryKey();
+            } finally {
+                instance.getComponent().getCache().release(instance, true);
+            }
         }
     });
 

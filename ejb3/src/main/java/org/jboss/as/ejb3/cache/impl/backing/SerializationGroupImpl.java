@@ -54,7 +54,7 @@ public class SerializationGroupImpl<K extends Serializable, V extends Cacheable<
 
     private static final Logger log = Logger.getLogger(SerializationGroupImpl.class);
 
-    private final UUID id = UUID.randomUUID();
+    private final UUID id;
 
     /**
      * The actual underlying objects passed in via addMember(). We store them here so they aren't lost when they are cleared
@@ -82,6 +82,10 @@ public class SerializationGroupImpl<K extends Serializable, V extends Cacheable<
     private transient boolean groupModified;
 
     private transient ReentrantLock lock = new ReentrantLock();
+
+    public SerializationGroupImpl(UUID id) {
+        this.id = id;
+    }
 
     @Override
     public UUID getId() {

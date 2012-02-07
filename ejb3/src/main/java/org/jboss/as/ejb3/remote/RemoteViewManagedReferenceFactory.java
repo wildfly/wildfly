@@ -21,21 +21,21 @@
  */
 package org.jboss.as.ejb3.remote;
 
-import javax.ejb.EJBHome;
-import javax.ejb.EJBLocalHome;
-
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.EJBHomeLocator;
 import org.jboss.ejb.client.EJBLocator;
-import org.jboss.ejb.client.SessionID;
-import org.jboss.ejb.client.StatefulEJBLocator;
 import org.jboss.ejb.client.StatelessEJBLocator;
 import org.jboss.msc.value.ImmediateValue;
 
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import javax.ejb.EJBHome;
+import javax.ejb.EJBLocalHome;
+
+import static org.jboss.as.ejb3.EjbMessages.*;
+import org.jboss.msc.value.Value;
+
 
 /**
  * Managed reference factory for remote EJB views that are bound to java: JNDI locations
@@ -50,36 +50,46 @@ public class RemoteViewManagedReferenceFactory implements ManagedReferenceFactor
     private final String beanName;
     private final String viewClass;
     private final boolean stateful;
+    private final Value<ClassLoader> viewClassLoader;
 
     public RemoteViewManagedReferenceFactory(final String appName, final String moduleName, final String distinctName, final String beanName, final String viewClass, final boolean stateful) {
+        this(appName, moduleName, distinctName, beanName, viewClass, stateful, null);
+    }
+
+    public RemoteViewManagedReferenceFactory(final String appName, final String moduleName, final String distinctName, final String beanName, final String viewClass, final boolean stateful, final Value<ClassLoader> viewClassLoader) {
         this.appName = appName == null ? "" : appName;
         this.moduleName = moduleName;
         this.distinctName = distinctName;
         this.beanName = beanName;
         this.viewClass = viewClass;
         this.stateful = stateful;
+        this.viewClassLoader = viewClassLoader;
     }
 
     @Override
     public ManagedReference getReference() {
-        final ClassLoader tccl = SecurityActions.getContextClassLoader();
-        final Class<?> viewClass;
+        Class<?> viewClass;
         try {
-            viewClass = Class.forName(this.viewClass, false, tccl);
+            viewClass = Class.forName(this.viewClass, false, SecurityActions.getContextClassLoader());
         } catch (ClassNotFoundException e) {
-            throw MESSAGES.failToLoadViewClassEjb(beanName, e);
+            if(viewClassLoader == null) {
+                throw MESSAGES.failToLoadViewClassEjb(beanName, e);
+            }
+            try {
+                viewClass = Class.forName(this.viewClass, false, viewClassLoader.getValue());
+            } catch (ClassNotFoundException ce) {
+                throw MESSAGES.failToLoadViewClassEjb(beanName, ce);
+            }
         }
         EJBLocator ejbLocator = null;
         if (EJBHome.class.isAssignableFrom(viewClass) || EJBLocalHome.class.isAssignableFrom(viewClass)) {
             ejbLocator = new EJBHomeLocator(viewClass, appName, moduleName, beanName, distinctName);
         } else if (stateful) {
-            final SessionID sessionID;
             try {
-                sessionID = EJBClient.createSession(appName, moduleName, beanName, distinctName);
+                ejbLocator = EJBClient.createSession(viewClass, appName, moduleName, beanName, distinctName);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-            ejbLocator = new StatefulEJBLocator(viewClass, appName, moduleName, beanName, distinctName, sessionID);
         } else {
             ejbLocator = new StatelessEJBLocator(viewClass, appName, moduleName, beanName, distinctName);
         }

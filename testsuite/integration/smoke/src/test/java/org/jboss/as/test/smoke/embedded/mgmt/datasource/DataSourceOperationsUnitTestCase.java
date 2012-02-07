@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.smoke.embedded.mgmt.datasource;
 
-import java.io.IOException;
+
 import java.util.List;
 import java.util.Properties;
 
@@ -32,12 +32,13 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
 import junit.framework.Assert;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.connector.subsystems.datasources.ModifiableXaDataSource;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
 import org.jboss.as.test.smoke.embedded.demos.fakejndi.FakeJndi;
 import org.jboss.as.test.smoke.modular.utils.PollingUtils;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
@@ -48,6 +49,11 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.addExtensionProperties;
@@ -55,9 +61,6 @@ import static org.jboss.as.test.integration.management.util.ComplexPropertiesPar
 import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.nonXaDsProperties;
 import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.setOperationParams;
 import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.xaDsProperties;
-import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperationTestUtil.marshalAndReparseDsResources;
-import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperationTestUtil.testConnection;
-import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperationTestUtil.testConnectionXA;
 
 
 /**
@@ -69,7 +72,8 @@ import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperati
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
+
+public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase{
 
     @Deployment
     public static Archive<?> getDeployment() {
@@ -79,7 +83,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
     }
 
     @AfterClass
-    public static void tearDown() throws IOException{
+    public static void tearDown() throws Exception{
     	closeModelControllerClient();
     }
 
@@ -114,9 +118,9 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
         executeOperation(operation2);
 
-        testConnection("MyNewDs", getModelControllerClient());
+        testConnection("MyNewDs");
 
-        List<ModelNode> newList = marshalAndReparseDsResources("data-source",getModelControllerClient());
+        List<ModelNode> newList = marshalAndReparseDsResources("data-source");
 
         remove(address);
 
@@ -160,9 +164,9 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
         executeOperation(operation2);
 
-        testConnection("MyNewDs", getModelControllerClient());
+        testConnection("MyNewDs");
 
-        List<ModelNode> newList = marshalAndReparseDsResources("data-source",getModelControllerClient());
+        List<ModelNode> newList = marshalAndReparseDsResources("data-source");
 
         remove(address);
 
@@ -217,7 +221,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
         executeOperation(operation2);
 
-        List<ModelNode> newList = marshalAndReparseDsResources("data-source",getModelControllerClient());
+        List<ModelNode> newList = marshalAndReparseDsResources("data-source");
 
         remove(address);
 
@@ -338,7 +342,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
         executeOperation(operation2);
 
 
-        testConnectionXA(dsName, getModelControllerClient());
+        testConnectionXA(dsName);
 
         remove(address);
     }
@@ -390,14 +394,14 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
         executeOperation(operation2);
 
-        List<ModelNode> newList = marshalAndReparseDsResources("xa-data-source",getModelControllerClient());
+        List<ModelNode> newList = marshalAndReparseDsResources("xa-data-source");
 
         remove(address);
 
         Assert.assertNotNull("Reparsing failed:",newList);
 
         // remove from xml too
-        marshalAndReparseDsResources("xa-data-source",getModelControllerClient());
+        marshalAndReparseDsResources("xa-data-source");
 
         Assert.assertNotNull(findNodeWithProperty(newList,"jndi-name","java:jboss/datasources/" + jndiDsName));
 
@@ -406,11 +410,15 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
     /**
      * AS7-1201 test for en/diable xa datasources
      *
+     * DO NOT RE-ENABLE THIS TEST WITHOUT ACTUALLY FIXING THE PROBLEM
+     *
+     * It fails INTERMITTENTLY. This means that it is not enough to just run it once, decide it passes and submit it.
+     *
      * @throws Exception
      */
     @Test
     @Ignore("AS7-3173")
-    public void DisableAndReEnableXaDs() throws Exception {
+    public void disableAndReEnableXaDs() throws Exception {
         final String dsName = "XaDsNameDisEn";
         final String jndiDsName = "XaJndiDsNameDisEn";
 
@@ -438,6 +446,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
         enableOperation.get(OP_ADDR).set(address);
 
         final ModelNode disableOperation = new ModelNode();
+        disableOperation.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         disableOperation.get(OP).set("disable");
         disableOperation.get(OP_ADDR).set(address);
 
@@ -455,12 +464,12 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
         executeOperation(enableOperation);
 
-        testConnectionXA(dsName, getModelControllerClient());
+        testConnectionXA(dsName);
 
         executeOperation(disableOperation);
         executeOperation(enableOperation);
 
-        testConnectionXA(dsName, getModelControllerClient());
+        testConnectionXA(dsName);
 
         remove(address);
     }
@@ -477,12 +486,12 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
         operation.get(OP_ADDR).set(address);
 
         final ModelNode result = executeOperation(operation);
-
+        
         final ModelNode result2 = result.get(0);
-        Assert.assertTrue(result2 != null);
-        Assert.assertTrue(result2.hasDefined("driver-module-name"));
-        Assert.assertTrue(result2.hasDefined("module-slot"));
-        Assert.assertTrue(result2.hasDefined("driver-name"));
+        Assert.assertNotNull("There are no installed JDBC drivers",result2);
+        Assert.assertTrue("Module name of JDBC driver is udefined",result2.hasDefined("driver-module-name"));
+        Assert.assertTrue("Module slot of JDBC driver is udefined",result2.hasDefined("module-slot"));
+        Assert.assertTrue("Name of JDBC driver is udefined",result2.hasDefined("driver-name"));
     }
 
     /**
@@ -533,16 +542,16 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
 
 
-        List<ModelNode> newList = marshalAndReparseDsResources("xa-data-source",getModelControllerClient());
+        List<ModelNode> newList = marshalAndReparseDsResources("xa-data-source");
 
         remove(address);
 
         Assert.assertNotNull("Reparsing failed:",newList);
 
-        ModifiableXaDataSource jxaDS = null;
+        
 
         try{
-            jxaDS = lookup(getModelControllerClient(), xaDsJndi ,ModifiableXaDataSource .class);
+        	ModifiableXaDataSource jxaDS = lookup(getModelControllerClient(), xaDsJndi ,ModifiableXaDataSource .class);
 
             Assert.fail("found datasource after it was unbounded");
         }
@@ -590,7 +599,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
         executeOperation(datasourcePropertyOperation);
 
-        List<ModelNode> newList = marshalAndReparseDsResources("data-source",getModelControllerClient());
+        List<ModelNode> newList = marshalAndReparseDsResources("data-source");
 
         remove(address);
 
@@ -599,6 +608,13 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
         ModelNode rightChild=findNodeWithProperty(newList,"jndi-name",complexDsJndi);
 
         Assert.assertTrue("node:"+rightChild.asString()+";\nparams"+params,checkModelParams(rightChild, params));
+
+        Assert.assertEquals(rightChild.asString(),"Property2",rightChild.get("valid-connection-checker-properties","name").asString());
+        Assert.assertEquals(rightChild.asString(),"Property4",rightChild.get("exception-sorter-properties","name").asString());
+        Assert.assertEquals(rightChild.asString(),"Property3",rightChild.get("stale-connection-checker-properties","name").asString());
+        Assert.assertEquals(rightChild.asString(),"Property1",rightChild.get("reauth-plugin-properties","name").asString());
+
+        Assert.assertNotNull("connection-properties not propagated ",findNodeWithProperty(newList,"value","UTF-8"));
 
     }
     /**
@@ -624,10 +640,10 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
         Properties params=xaDsProperties(complexXaDsJndi);
         setOperationParams(operation, params);
         addExtensionProperties(operation);
+        operation.get("recovery-plugin-properties","name").set("Property5");
+        operation.get("recovery-plugin-properties","name1").set("Property6");
 
-        /* TODO: Properties for Extension type parameters not implemented in DRM
-         * operation.get("recovery-plugin-properties","Property").set("A");
-         */
+
         executeOperation(operation);
 
         final ModelNode xaDatasourcePropertiesAddress = address.clone();
@@ -640,7 +656,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
         executeOperation(xaDatasourcePropertyOperation);
 
-        List<ModelNode> newList = marshalAndReparseDsResources("xa-data-source",getModelControllerClient());
+        List<ModelNode> newList = marshalAndReparseDsResources("xa-data-source");
 
         remove(address);
 
@@ -650,8 +666,126 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
         Assert.assertTrue("node:"+rightChild.asString()+";\nparams"+params,checkModelParams(rightChild, params));
 
+        Assert.assertEquals(rightChild.asString(),"Property2",rightChild.get("valid-connection-checker-properties","name").asString());
+        Assert.assertEquals(rightChild.asString(),"Property4",rightChild.get("exception-sorter-properties","name").asString());
+        Assert.assertEquals(rightChild.asString(),"Property3",rightChild.get("stale-connection-checker-properties","name").asString());
+        Assert.assertEquals(rightChild.asString(),"Property1",rightChild.get("reauth-plugin-properties","name").asString());
+        Assert.assertEquals(rightChild.asString(),"Property5",rightChild.get("recovery-plugin-properties","name").asString());
+        Assert.assertEquals(rightChild.asString(),"Property6",rightChild.get("recovery-plugin-properties","name1").asString());
+
+        Assert.assertNotNull("xa-datasource-properties not propagated ",findNodeWithProperty(newList,"value","jdbc:h2:mem:test"));
     }
 
+    @Test
+    public void testXaDsWithSystemProperties() throws Exception {
+
+    	final ModelNode propAddress=new ModelNode();
+    	propAddress.add("system-property","sql.parameter");
+    	propAddress.protect();
+
+    	final ModelNode propOperation=new ModelNode();
+    	propOperation.get(OP).set("add");
+    	propOperation.get(OP_ADDR).set(propAddress);
+    	propOperation.get("value").set("sa");
+    	executeOperation(propOperation);
+
+        final String dsName = "XaDsName2";
+        final String jndiDsName = "XaJndiDsName2";
+
+        final ModelNode address = new ModelNode();
+        address.add("subsystem", "datasources");
+        address.add("xa-data-source", dsName);
+        address.protect();
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set("add");
+        operation.get(OP_ADDR).set(address);
+
+        operation.get("name").set(dsName);
+        operation.get("jndi-name").set("java:jboss/datasources/" + jndiDsName);
+
+
+        operation.get("driver-name").set("h2");
+        operation.get("pool-name").set(dsName + "_Pool");
+
+        operation.get("user-name").set("${sql.parameter}");
+        operation.get("password").set("${sql.parameter}");
+
+        executeOperation(operation);
+
+        final ModelNode xaDatasourcePropertiesAddress = address.clone();
+        xaDatasourcePropertiesAddress.add("xa-datasource-properties", "URL");
+        xaDatasourcePropertiesAddress.protect();
+        final ModelNode xaDatasourcePropertyOperation = new ModelNode();
+        xaDatasourcePropertyOperation.get(OP).set("add");
+        xaDatasourcePropertyOperation.get(OP_ADDR).set(xaDatasourcePropertiesAddress);
+        xaDatasourcePropertyOperation.get("value").set("jdbc:h2:mem:test");
+
+        executeOperation(xaDatasourcePropertyOperation);
+
+        final ModelNode operation2 = new ModelNode();
+        operation2.get(OP).set("enable");
+        operation2.get(OP_ADDR).set(address);
+
+        executeOperation(operation2);
+
+        testConnectionXA(dsName);
+
+        remove(address);
+        remove(propAddress);
+
+    }
+    /**
+     *  test case for AS7-3316 issue -  datasource with system properties
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testDsWithSystemProperties() throws Exception {
+    	final ModelNode propAddress=new ModelNode();
+    	propAddress.add("system-property","sql.parameter");
+    	propAddress.protect();
+
+    	final ModelNode propOperation=new ModelNode();
+    	propOperation.get(OP).set("add");
+    	propOperation.get(OP_ADDR).set(propAddress);
+    	propOperation.get("value").set("sa");
+    	executeOperation(propOperation);
+
+    	final ModelNode address = new ModelNode();
+        address.add("subsystem", "datasources");
+        address.add("data-source", "MyNewDs");
+        address.protect();
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set("add");
+        operation.get(OP_ADDR).set(address);
+
+        operation.get("name").set("MyNewDs");
+        operation.get("jndi-name").set("java:jboss/datasources/MyNewDs");
+
+
+        operation.get("driver-name").set("h2");
+        operation.get("pool-name").set("MyNewDs_Pool");
+
+        operation.get("connection-url").set("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
+        operation.get("user-name").set("${sql.parameter}");
+        operation.get("password").set("${sql.parameter}");
+
+        executeOperation(operation);
+
+        final ModelNode operation2 = new ModelNode();
+        operation2.get(OP).set("enable");
+        operation2.get(OP_ADDR).set(address);
+
+        executeOperation(operation2);
+
+        testConnection("MyNewDs");
+
+        remove(address);
+        remove(propAddress);
+
+    }
 
     private static <T> T lookup(ModelControllerClient client, String name, Class<T> expected) throws Exception {
         //TODO Don't do this FakeJndi stuff once we have remote JNDI working

@@ -170,7 +170,7 @@ public interface CommonAttributes {
             setAllowNull(true).
             build();
 
-    SimpleAttributeDefinition SUFFIX = SimpleAttributeDefinitionBuilder.create("suffix", ModelType.STRING, true).build();
+    SimpleAttributeDefinition SUFFIX = SimpleAttributeDefinitionBuilder.create("suffix", ModelType.STRING).build();
 
     SimpleAttributeDefinition TARGET = SimpleAttributeDefinitionBuilder.create("target", ModelType.STRING, true).
             setDefaultValue(new ModelNode().set(Target.SYSTEM_OUT.toString())).

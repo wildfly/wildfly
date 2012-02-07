@@ -19,11 +19,14 @@
 package org.jboss.as.cli.gui;
 
 import java.awt.event.ActionEvent;
+import java.util.Arrays;
+import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.JTree;
+import org.jboss.as.cli.gui.ManagementModelNode.UserObject;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -32,6 +35,10 @@ import org.jboss.dmr.ModelNode;
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
 public class OperationMenu extends JPopupMenu {
+    private static final String[] genericOps = {"add", "read-operation-description", "read-resource-description", "read-operation-names"};
+    private static final List<String> genericOpList = Arrays.asList(genericOps);
+    private static final String[] leafOps = {"write-attribute", "undefine-attribute"};
+    private static final List<String> leafOpList = Arrays.asList(leafOps);
 
     private CommandExecutor executor;
     private JTree invoker;
@@ -60,7 +67,12 @@ public class OperationMenu extends JPopupMenu {
 
             for (ModelNode name : opNames.get("result").asList()) {
                 String strName = name.asString();
-                if (node.isLeaf() && !strName.equals("write-attribute")) continue;
+
+                // filter operations
+                if (node.isGeneric() && !genericOpList.contains(strName)) continue;
+                if (node.isLeaf() && !leafOpList.contains(strName)) continue;
+                if (!node.isGeneric() && !node.isLeaf() && strName.equals("add")) continue;
+
                 ModelNode opDescription = getResourceDescription(addressPath, strName);
                 add(new OperationAction(node, strName, opDescription));
             }
@@ -108,6 +120,13 @@ public class OperationMenu extends JPopupMenu {
             ModelNode requestProperties = opDescription.get("result", "request-properties");
             if ((requestProperties == null) || (!requestProperties.isDefined()) || requestProperties.asList().isEmpty()) {
                 cmdText.setText(addressPath + ":" + opName);
+                cmdText.requestFocus();
+                return;
+            }
+
+            if (node.isLeaf() && opName.equals("undefine-attribute")) {
+                UserObject usrObj = (UserObject)node.getUserObject();
+                cmdText.setText(addressPath + ":" + opName + "(name=" + usrObj.getName() + ")");
                 cmdText.requestFocus();
                 return;
             }

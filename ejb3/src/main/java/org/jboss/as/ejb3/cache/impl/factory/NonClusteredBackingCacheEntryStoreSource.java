@@ -35,6 +35,7 @@ import org.jboss.as.ejb3.cache.spi.impl.AbstractBackingCacheEntryStoreSource;
 import org.jboss.as.ejb3.cache.spi.impl.FilePersistentObjectStore;
 import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
 import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
@@ -62,6 +63,7 @@ public class NonClusteredBackingCacheEntryStoreSource<K extends Serializable, V 
     public static final int DEFAULT_SUBDIRECTORY_COUNT = 100;
 
     private final InjectedValue<String> relativeTo = new InjectedValue<String>();
+    private final InjectedValue<ServerEnvironment> environment = new InjectedValue<ServerEnvironment>();
     private String sessionDirectoryName = DEFAULT_SESSION_DIRECTORY_NAME;
     private String groupDirectoryName = DEFAULT_GROUP_DIRECTORY_NAME;
     private String relativeToRef = DEFAULT_RELATIVE_TO;
@@ -71,7 +73,7 @@ public class NonClusteredBackingCacheEntryStoreSource<K extends Serializable, V 
     public <E extends SerializationGroup<K, V, G>> BackingCacheEntryStore<G, Cacheable<G>, E> createGroupIntegratedObjectStore(PassivationManager<G, E> passivationManager, StatefulTimeoutInfo timeout) {
         FilePersistentObjectStore<G, E> objectStore = new FilePersistentObjectStore<G, E>(passivationManager.getMarshallingConfiguration(), this.getStoragePath(null, this.groupDirectoryName), subdirectoryCount);
 
-        SimpleBackingCacheEntryStore<G, Cacheable<G>, E> store = new SimpleBackingCacheEntryStore<G, Cacheable<G>, E>(objectStore, timeout, this);
+        SimpleBackingCacheEntryStore<G, Cacheable<G>, E> store = new SimpleBackingCacheEntryStore<G, Cacheable<G>, E>(objectStore, this.environment.getValue(), timeout, this);
 
         return store;
     }
@@ -80,7 +82,7 @@ public class NonClusteredBackingCacheEntryStoreSource<K extends Serializable, V 
     public <E extends SerializationGroupMember<K, V, G>> BackingCacheEntryStore<K, V, E> createIntegratedObjectStore(String beanName, PassivationManager<K, E> passivationManager, StatefulTimeoutInfo timeout) {
         FilePersistentObjectStore<K, E> objectStore = new FilePersistentObjectStore<K, E>(passivationManager.getMarshallingConfiguration(), this.getStoragePath(beanName, this.sessionDirectoryName), subdirectoryCount);
 
-        SimpleBackingCacheEntryStore<K, V, E> store = new SimpleBackingCacheEntryStore<K, V, E>(objectStore, timeout, this);
+        SimpleBackingCacheEntryStore<K, V, E> store = new SimpleBackingCacheEntryStore<K, V, E>(objectStore, this.environment.getValue(), timeout, this);
 
         return store;
     }
@@ -88,6 +90,7 @@ public class NonClusteredBackingCacheEntryStoreSource<K extends Serializable, V 
     @Override
     public void addDependencies(ServiceTarget target, ServiceBuilder<?> builder) {
         builder.addDependency(AbstractPathService.pathNameOf(this.relativeToRef), String.class, this.relativeTo);
+        builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, this.environment);
     }
 
     private String getStoragePath(String beanName, String subDirectory) {

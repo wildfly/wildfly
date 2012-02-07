@@ -35,11 +35,11 @@ import javax.naming.Name;
 import javax.naming.NameClassPair;
 import javax.naming.NameParser;
 import javax.naming.NamingEnumeration;
-import javax.naming.OperationNotSupportedException;
 
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReference;
+import org.jboss.as.security.SecurityMessages;
 import org.jboss.as.security.plugins.DefaultAuthenticationCacheFactory;
 import org.jboss.as.security.plugins.JNDIBasedSecurityManagement;
 import org.jboss.as.security.plugins.SecurityDomainContext;
@@ -70,7 +70,7 @@ public class SecurityDomainJndiInjectable implements InvocationHandler, ManagedR
         try {
             loader = SecurityActions.getModuleClassLoader();
         } catch (ModuleLoadException e) {
-            throw new IllegalStateException("Unable to get module classloader", e);
+            throw SecurityMessages.MESSAGES.unableToGetModuleClassLoader(e);
         }
         Class<?>[] interfaces = { Context.class };
         return new ValueManagedReference(new ImmediateValue<Object>(Proxy.newProxyInstance(loader, interfaces, this)));
@@ -108,7 +108,7 @@ public class SecurityDomainJndiInjectable implements InvocationHandler, ManagedR
             return proxy;
         }
         if (!methodName.equals("lookup"))
-            throw new OperationNotSupportedException("Operation not supported: " + method);
+            throw SecurityMessages.MESSAGES.operationNotSupported(method);
         if (args[0] instanceof String)
             name = parser.parse((String) args[0]);
         else

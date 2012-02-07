@@ -122,4 +122,9 @@ public class DeploymentStatusImpl implements DeploymentStatus {
     public boolean isRunning() {
         return stateType == StateType.RUNNING;
     }
+
+    @Override
+    public String toString() {
+        return "DeploymentStatus[state=" + stateType +",command=" + commandType + ",action=" + actionType + ",message='" + message + "']";
+    }
 }

@@ -52,15 +52,25 @@ public class ServerGroupState extends DefaultParsingState {
         putHandler('}', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
         putHandler(';', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
         putHandler('(', new EnterStateCharacterHandler(propList));
+        setDefaultHandler(new CharacterHandler(){
+            @Override
+            public void handle(ParsingContext ctx) throws CommandFormatException {
+                final char ch = ctx.getCharacter();
+                if(ch == '(') {
+                    ctx.enterState(propList);
+                } else if(ch != ')') {
+                    ctx.leaveState();
+                }
+            }});
         setReturnHandler(new CharacterHandler(){
             @Override
             public void handle(ParsingContext ctx) throws CommandFormatException {
                 if(ctx.isEndOfContent()) {
                     return;
                 }
-                if(Character.isWhitespace(ctx.getCharacter())) {
+/*                if(Character.isWhitespace(ctx.getCharacter())) {
                     ctx.leaveState();
-                } else {
+                } else*/ {
                     getHandler(ctx.getCharacter()).handle(ctx);
                 }
             }});

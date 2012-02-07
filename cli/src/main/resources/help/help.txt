@@ -1,8 +1,8 @@
-Usage: jboss-admin.sh/jboss-admin.bat [--help] [--version] [--controller=host:port]
-                                      [--connect] [--file=file_path]
-                                      [--commands=command_or_operation1,command_or_operation2...]
-                                      [--command=command_or_operation]
-                                      [--user=username --password=password]
+Usage: jboss-cli.sh/jboss-cli.bat [--help] [--version] [--controller=host:port]
+                                  [--connect] [--file=file_path]
+                                  [--commands=command_or_operation1,command_or_operation2...]
+                                  [--command=command_or_operation]
+                                  [--user=username --password=password]
 
  --help (-h)          - prints (this) basic description of the command line utility.
  --version            - prints the version info of the JBoss AS release, JVM and system environment.
@@ -12,8 +12,8 @@ Usage: jboss-admin.sh/jboss-admin.bat [--help] [--version] [--controller=host:po
  --connect (-c)       - instructs the CLI to connect to the controller on start-up (to avoid issuing
                         a separate connect command later).
  --gui                - GUI built on top of the CLI, the only difference is that it brings up a GUI 
-                        instead of a command line. You have to at least pass the --connect parameter 
-                        to connect from the command line when you start jboss-admin.
+                        instead of a command line. In this mode, the CLI will automatically connect
+                        during start-up. You can optionally specify --controller, if necessary.
  --file               - specifies a path to a file which contains commands and operations (one per line)
                         that should be executed (in a non-interactive mode). The CLI will terminate the
                         session immediately after the last command has been executed or if some command
@@ -65,7 +65,7 @@ Tab-completion is supported for the commands, just press the tab key to start.
 
 Operation requests start with './' or '/' and follow the format:
 
-[node-type=node-name (, node-type=node-name)*] : operation-name ['('[name=value [, name=value]*]')']
+[node-type=node-name (, node-type=node-name)*] : operation-name ['('[name=value [, name=value]*]')'] [{header (;header)*}]
 
 e.g. /subsystem=web/connector=http:read-attribute(name=protocol)
 

@@ -22,10 +22,19 @@
 
 package org.jboss.as.jdr;
 
+import java.io.Console;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.security.AccessController;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.server.Services;
@@ -38,14 +47,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.JBossThreadFactory;
-
-import java.io.Console;
-import java.security.AccessController;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.net.URL;
-import java.net.HttpURLConnection;
 
 /**
  * Service that provides a {@link JdrReportCollector}.
@@ -95,7 +96,7 @@ public class JdrReportService implements JdrReportCollector, Service<JdrReportCo
         boolean must_auth = false;
 
         try {
-            URL managementApi = new URL("http://" + host + ":" + port + "/management");
+            URL managementApi = new URL("http://" + ProtocolUtils.formatPossibleIpv6Address(host) + ":" + port + "/management");
             HttpURLConnection conn = (HttpURLConnection) managementApi.openConnection();
             int code = conn.getResponseCode();
             if (code != 200) {
@@ -124,6 +125,8 @@ public class JdrReportService implements JdrReportCollector, Service<JdrReportCo
         interpreter.setJbossHomeDir(serverEnvironment.getHomeDir().getAbsolutePath());
         interpreter.setReportLocationDir(serverEnvironment.getServerTempDir().getAbsolutePath());
         interpreter.setControllerClient(controllerClient);
+        interpreter.setHostControllerName(serverEnvironment.getHostControllerName());
+        interpreter.setServerName(serverEnvironment.getServerName());
         return interpreter.collect();
     }
 

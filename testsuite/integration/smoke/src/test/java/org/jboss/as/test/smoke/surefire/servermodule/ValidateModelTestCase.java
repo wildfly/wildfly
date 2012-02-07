@@ -53,6 +53,7 @@ import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.operations.common.ValidateAddressOperationHandler;
 import org.jboss.as.platform.mbean.PlatformMBeanConstants;
 import org.jboss.as.remoting.RemotingExtension;
 import org.jboss.as.subsystem.test.ModelDescriptionValidator;
@@ -95,6 +96,7 @@ public class ValidateModelTestCase {
         final ModelNode ROOT_ADDR = new ModelNode().setEmptyList();
         //Exclude the operations where one of the reply properties is known to have {type=OBJECT,value-type=UNDEFINED}
         config.allowNullValueTypeForOperationParameter(ROOT_ADDR, VALIDATE_OPERATION, VALUE);
+        config.allowNullValueTypeForOperationParameter(ROOT_ADDR, ValidateAddressOperationHandler.OPERATION_NAME, VALUE);
 
         //Exclude the operations where reply-properties is known to have {type=OBJECT,value-type=UNDEFINED}
         config.allowNullValueTypeForOperationReplyProperties(ROOT_ADDR, READ_OPERATION_DESCRIPTION_OPERATION);

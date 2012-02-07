@@ -590,11 +590,19 @@ class DataSourcesSubsystemProviders {
             node.get(TAIL_COMMENT_ALLOWED).set(true);
 
             for (SimpleAttributeDefinition propertyType : DATASOURCE_ATTRIBUTE) {
-                node.get(ATTRIBUTES, propertyType.getName(), DESCRIPTION).set(bundle.getString(propertyType.getName()));
-                node.get(ATTRIBUTES, propertyType.getName(), TYPE).set(propertyType.getType());
-                node.get(ATTRIBUTES, propertyType.getName(), REQUIRED).set(! propertyType.isAllowNull());
-                if (propertyType.getDefaultValue() != null)
-                    node.get(ATTRIBUTES, propertyType.getName(), DEFAULT).set(propertyType.getDefaultValue().toString());
+                if (propertyType.getType() == ModelType.OBJECT) {
+                    node.get(ATTRIBUTES, propertyType.getName(), DESCRIPTION).set(bundle.getString(propertyType.getName()));
+                    node.get(ATTRIBUTES, propertyType.getName(), TYPE).set(propertyType.getType());
+                    node.get(ATTRIBUTES, propertyType.getName(), VALUE_TYPE).set(ModelType.STRING);
+                    node.get(ATTRIBUTES, propertyType.getName(), REQUIRED).set(false);
+                } else {
+                    node.get(ATTRIBUTES, propertyType.getName(), DESCRIPTION).set(bundle.getString(propertyType.getName()));
+
+                    node.get(ATTRIBUTES, propertyType.getName(), TYPE).set(propertyType.getType());
+                    node.get(ATTRIBUTES, propertyType.getName(), REQUIRED).set(!propertyType.isAllowNull());
+                    if (propertyType.getDefaultValue() != null)
+                        node.get(ATTRIBUTES, propertyType.getName(), DEFAULT).set(propertyType.getDefaultValue().toString());
+                }
             }
 
             for (SimpleAttributeDefinition propertyType : READONLY_DATASOURCE_ATTRIBUTE) {
@@ -620,12 +628,19 @@ class DataSourcesSubsystemProviders {
             operation.get(DESCRIPTION).set(bundle.getString("data-source.add"));
 
             for (SimpleAttributeDefinition propertyType : DATASOURCE_ATTRIBUTE) {
-                operation.get(REQUEST_PROPERTIES, propertyType.getName(), DESCRIPTION).set(
-                        bundle.getString(propertyType.getName()));
-                operation.get(REQUEST_PROPERTIES, propertyType.getName(), TYPE).set(propertyType.getType());
-                operation.get(REQUEST_PROPERTIES, propertyType.getName(), REQUIRED).set(!propertyType.isAllowNull());
-                if (propertyType.getDefaultValue() != null)
-                    operation.get(REQUEST_PROPERTIES, propertyType.getName(), DEFAULT).set(propertyType.getDefaultValue().toString());
+                if (propertyType.getType() == ModelType.OBJECT) {
+                    operation.get(REQUEST_PROPERTIES, propertyType.getName(), DESCRIPTION).set(bundle.getString(propertyType.getName()));
+                    operation.get(REQUEST_PROPERTIES, propertyType.getName(), TYPE).set(propertyType.getType());
+                    operation.get(REQUEST_PROPERTIES, propertyType.getName(), VALUE_TYPE).set(ModelType.STRING);
+                    operation.get(REQUEST_PROPERTIES, propertyType.getName(), REQUIRED).set(false);
+                } else {
+                    operation.get(REQUEST_PROPERTIES, propertyType.getName(), DESCRIPTION).set(
+                            bundle.getString(propertyType.getName()));
+                    operation.get(REQUEST_PROPERTIES, propertyType.getName(), TYPE).set(propertyType.getType());
+                    operation.get(REQUEST_PROPERTIES, propertyType.getName(), REQUIRED).set(!propertyType.isAllowNull());
+                    if (propertyType.getDefaultValue() != null)
+                        operation.get(REQUEST_PROPERTIES, propertyType.getName(), DEFAULT).set(propertyType.getDefaultValue().toString());
+                }
             }
             return operation;
         }
@@ -725,11 +740,19 @@ class DataSourcesSubsystemProviders {
             node.get(TAIL_COMMENT_ALLOWED).set(true);
 
             for (SimpleAttributeDefinition propertyType : XA_DATASOURCE_ATTRIBUTE) {
-                node.get(ATTRIBUTES, propertyType.getName(), DESCRIPTION).set(bundle.getString(propertyType.getName()));
-                node.get(ATTRIBUTES, propertyType.getName(), TYPE).set(propertyType.getType());
-                node.get(ATTRIBUTES, propertyType.getName(), REQUIRED).set(! propertyType.isAllowNull());
-                if (propertyType.getDefaultValue() != null)
-                    node.get(ATTRIBUTES, propertyType.getName(), DEFAULT).set(propertyType.getDefaultValue().toString());
+                if (propertyType.getType() == ModelType.OBJECT) {
+                    node.get(ATTRIBUTES, propertyType.getName(), DESCRIPTION).set(bundle.getString(propertyType.getName()));
+                    node.get(ATTRIBUTES, propertyType.getName(), TYPE).set(propertyType.getType());
+                    node.get(ATTRIBUTES, propertyType.getName(), VALUE_TYPE).set(ModelType.STRING);
+                    node.get(ATTRIBUTES, propertyType.getName(), REQUIRED).set(false);
+                } else {
+                    node.get(ATTRIBUTES, propertyType.getName(), DESCRIPTION).set(bundle.getString(propertyType.getName()));
+
+                    node.get(ATTRIBUTES, propertyType.getName(), TYPE).set(propertyType.getType());
+                    node.get(ATTRIBUTES, propertyType.getName(), REQUIRED).set(!propertyType.isAllowNull());
+                    if (propertyType.getDefaultValue() != null)
+                        node.get(ATTRIBUTES, propertyType.getName(), DEFAULT).set(propertyType.getDefaultValue().toString());
+                }
             }
 
             for (SimpleAttributeDefinition propertyType : READONLY_XA_DATASOURCE_ATTRIBUTE) {
@@ -753,12 +776,19 @@ class DataSourcesSubsystemProviders {
             operation.get(DESCRIPTION).set(bundle.getString("xa-data-source.add"));
 
             for (SimpleAttributeDefinition propertyType : XA_DATASOURCE_ATTRIBUTE) {
-                operation.get(REQUEST_PROPERTIES, propertyType.getName(), DESCRIPTION).set(
-                        bundle.getString(propertyType.getName()));
-                operation.get(REQUEST_PROPERTIES, propertyType.getName(), TYPE).set(propertyType.getType());
-                operation.get(REQUEST_PROPERTIES, propertyType.getName(), REQUIRED).set(! propertyType.isAllowNull());
-                if (propertyType.getDefaultValue() != null)
-                    operation.get(REQUEST_PROPERTIES, propertyType.getName(), DEFAULT).set(propertyType.getDefaultValue().toString());
+                if (propertyType.getType() == ModelType.OBJECT) {
+                    operation.get(REQUEST_PROPERTIES, propertyType.getName(), DESCRIPTION).set(bundle.getString(propertyType.getName()));
+                    operation.get(REQUEST_PROPERTIES, propertyType.getName(), TYPE).set(propertyType.getType());
+                    operation.get(REQUEST_PROPERTIES, propertyType.getName(), VALUE_TYPE).set(ModelType.STRING);
+                    operation.get(REQUEST_PROPERTIES, propertyType.getName(), REQUIRED).set(false);
+                } else {
+                    operation.get(REQUEST_PROPERTIES, propertyType.getName(), DESCRIPTION).set(
+                            bundle.getString(propertyType.getName()));
+                    operation.get(REQUEST_PROPERTIES, propertyType.getName(), TYPE).set(propertyType.getType());
+                    operation.get(REQUEST_PROPERTIES, propertyType.getName(), REQUIRED).set(!propertyType.isAllowNull());
+                    if (propertyType.getDefaultValue() != null)
+                        operation.get(REQUEST_PROPERTIES, propertyType.getName(), DEFAULT).set(propertyType.getDefaultValue().toString());
+                }
             }
             return operation;
         }

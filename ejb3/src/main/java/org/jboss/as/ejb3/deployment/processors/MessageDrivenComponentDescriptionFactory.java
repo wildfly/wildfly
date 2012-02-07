@@ -22,19 +22,16 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
-import static org.jboss.as.ejb3.deployment.processors.ViewInterfaces.getPotentialViewInterfaces;
-
-import javax.ejb.MessageDriven;
-import javax.jms.MessageListener;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
-import org.jboss.as.ee.component.Attachments;
-import org.jboss.as.ee.component.ComponentDescription;
+import javax.ejb.MessageDriven;
+import javax.jms.MessageListener;
+
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
-import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.ejb3.component.messagedriven.DefaultResourceAdapterService;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
@@ -59,6 +56,9 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 
+import static org.jboss.as.ejb3.deployment.processors.AbstractDeploymentUnitProcessor.getEjbJarDescription;
+import static org.jboss.as.ejb3.deployment.processors.ViewInterfaces.getPotentialViewInterfaces;
+
 /**
  * User: jpai
  */
@@ -68,23 +68,28 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
 
     private static final DotName MESSAGE_DRIVEN_ANNOTATION_NAME = DotName.createSimple(MessageDriven.class.getName());
 
+    public MessageDrivenComponentDescriptionFactory(final boolean appclient) {
+        super(appclient);
+    }
+
     @Override
     protected void processAnnotations(DeploymentUnit deploymentUnit, CompositeIndex compositeIndex) throws DeploymentUnitProcessingException {
         if (MetadataCompleteMarker.isMetadataComplete(deploymentUnit)) {
             return;
         }
 
-        processMessageBeans(deploymentUnit, compositeIndex.getAnnotations(MESSAGE_DRIVEN_ANNOTATION_NAME));
+        processMessageBeans(deploymentUnit, compositeIndex.getAnnotations(MESSAGE_DRIVEN_ANNOTATION_NAME), compositeIndex);
     }
 
     @Override
     protected void processBeanMetaData(final DeploymentUnit deploymentUnit, final EnterpriseBeanMetaData enterpriseBeanMetaData) throws DeploymentUnitProcessingException {
-        if (enterpriseBeanMetaData instanceof MessageDrivenBeanMetaData) {
+        if (enterpriseBeanMetaData.isMessageDriven()) {
+            assert enterpriseBeanMetaData instanceof MessageDrivenBeanMetaData : enterpriseBeanMetaData + " is not a MessageDrivenBeanMetaData";
             processMessageDrivenBeanMetaData(deploymentUnit, (MessageDrivenBeanMetaData) enterpriseBeanMetaData);
         }
     }
 
-    private void processMessageBeans(final DeploymentUnit deploymentUnit, final Collection<AnnotationInstance> messageBeanAnnotations) throws DeploymentUnitProcessingException {
+    private void processMessageBeans(final DeploymentUnit deploymentUnit, final Collection<AnnotationInstance> messageBeanAnnotations, final CompositeIndex compositeIndex) throws DeploymentUnitProcessingException {
         if (messageBeanAnnotations.isEmpty())
             return;
 
@@ -101,7 +106,7 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
             final String ejbName = beanClassInfo.name().local();
             final AnnotationValue nameValue = messageBeanAnnotation.value("name");
             final String beanName = nameValue == null || nameValue.asString().isEmpty() ? ejbName : nameValue.asString();
-            final EnterpriseBeanMetaData beanMetaData = getEnterpriseBeanMetaData(deploymentUnit, beanName, EnterpriseBeanMetaData.class);
+            final MessageDrivenBeanMetaData beanMetaData = getEnterpriseBeanMetaData(deploymentUnit, beanName, MessageDrivenBeanMetaData.class);
             final String beanClassName;
             final String messageListenerInterfaceName;
             final Properties activationConfigProperties = getActivationConfigProperties(messageBeanAnnotation);
@@ -139,29 +144,40 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
                 } else {
                     messagingType = null;
                 }
-                messageListenerInterfaceName = messagingType != null ? messagingType : getMessageListenerInterface(messageBeanAnnotation);
+                messageListenerInterfaceName = messagingType != null ? messagingType : getMessageListenerInterface(compositeIndex, messageBeanAnnotation);
 
             } else {
                 beanClassName = beanClassInfo.name().toString();
-                messageListenerInterfaceName = getMessageListenerInterface(messageBeanAnnotation);
+                messageListenerInterfaceName = getMessageListenerInterface(compositeIndex, messageBeanAnnotation);
             }
             final String defaultResourceAdapterName = this.getDefaultResourceAdapterName(deploymentUnit.getServiceRegistry());
-            final MessageDrivenComponentDescription beanDescription = new MessageDrivenComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnitServiceName, messageListenerInterfaceName, activationConfigProperties, defaultResourceAdapterName);
+            final MessageDrivenComponentDescription beanDescription = new MessageDrivenComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnitServiceName, messageListenerInterfaceName, activationConfigProperties, defaultResourceAdapterName, beanMetaData);
             beanDescription.setDeploymentDescriptorEnvironment(deploymentDescriptorEnvironment);
 
-            // Add this component description to module description
-            ejbJarDescription.getEEModuleDescription().addComponent(beanDescription);
+            addComponent(deploymentUnit, beanDescription);
         }
 
         EjbDeploymentMarker.mark(deploymentUnit);
     }
 
-    private String getMessageListenerInterface(final AnnotationInstance messageBeanAnnotation) throws DeploymentUnitProcessingException {
+    private String getMessageListenerInterface(final CompositeIndex compositeIndex, final AnnotationInstance messageBeanAnnotation) throws DeploymentUnitProcessingException {
         final AnnotationValue value = messageBeanAnnotation.value("messageListenerInterface");
         if (value != null)
             return value.asClass().name().toString();
         final ClassInfo beanClass = (ClassInfo) messageBeanAnnotation.target();
-        final Set<DotName> interfaces = getPotentialViewInterfaces(beanClass);
+        final Set<DotName> interfaces = new HashSet<DotName>(getPotentialViewInterfaces(beanClass));
+        // check super class(es) of the bean
+        DotName superClassDotName = beanClass.superName();
+        while (interfaces.isEmpty() && superClassDotName != null && !superClassDotName.toString().equals(Object.class.getName())) {
+            final ClassInfo superClass = compositeIndex.getClassByName(superClassDotName);
+            if (superClass == null) {
+                break;
+            }
+            interfaces.addAll(getPotentialViewInterfaces(superClass));
+            // move to next super class
+            superClassDotName = superClass.superName();
+        }
+
         if (interfaces.size() != 1)
             throw new DeploymentUnitProcessingException("EJB 3.1 FR 5.4.2 MessageDrivenBean " + beanClass + " does not implement 1 interface nor specifies message listener interface");
         return interfaces.iterator().next().toString();
@@ -217,20 +233,7 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
 
     private void processMessageDrivenBeanMetaData(final DeploymentUnit deploymentUnit, final MessageDrivenBeanMetaData mdb) throws DeploymentUnitProcessingException {
         final EjbJarDescription ejbJarDescription = getEjbJarDescription(deploymentUnit);
-        final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-
         final String beanName = mdb.getName();
-        // the important bit is to skip already processed EJBs via annotations
-        if (ejbJarDescription.hasComponent(beanName)) {
-            final ComponentDescription description = eeModuleDescription.getComponentByName(beanName);
-            if (description instanceof MessageDrivenComponentDescription) {
-                ((MessageDrivenComponentDescription) description).setDescriptorData(mdb);
-            } else {
-                throw new DeploymentUnitProcessingException("MDB with name " + beanName + " referenced in ejb-jar.xml could not be created, as existing non MDB component with same name already exists: " + description);
-            }
-            return;
-        }
-
         final String beanClassName = mdb.getEjbClass();
         String messageListenerInterface = mdb.getMessagingType();
         if (messageListenerInterface == null || messageListenerInterface.trim().isEmpty()) {
@@ -239,11 +242,9 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
         }
         final Properties activationConfigProps = getActivationConfigProperties(mdb.getActivationConfig());
         final String defaultResourceAdapterName = this.getDefaultResourceAdapterName(deploymentUnit.getServiceRegistry());
-        final MessageDrivenComponentDescription mdbComponentDescription = new MessageDrivenComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName(), messageListenerInterface, activationConfigProps, defaultResourceAdapterName);
-        // add it to the ejb jar description
-        ejbJarDescription.getEEModuleDescription().addComponent(mdbComponentDescription);
-        mdbComponentDescription.setDescriptorData(mdb);
+        final MessageDrivenComponentDescription mdbComponentDescription = new MessageDrivenComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName(), messageListenerInterface, activationConfigProps, defaultResourceAdapterName, mdb);
         mdbComponentDescription.setDeploymentDescriptorEnvironment(new DeploymentDescriptorEnvironment("java:comp/env/", mdb));
+        addComponent(deploymentUnit, mdbComponentDescription);
     }
 
     private Properties getActivationConfigProperties(final AnnotationInstance messageBeanAnnotation) {
@@ -265,6 +266,10 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
      * @return
      */
     private String getDefaultResourceAdapterName(final ServiceRegistry serviceRegistry) {
+        if (appclient) {
+            // we must report the MDB, but we can't use any MDB/JCA facilities
+            return "n/a";
+        }
         final ServiceController<DefaultResourceAdapterService> serviceController = (ServiceController<DefaultResourceAdapterService>) serviceRegistry.getRequiredService(DefaultResourceAdapterService.DEFAULT_RA_NAME_SERVICE_NAME);
         return serviceController.getValue().getDefaultResourceAdapterName();
     }

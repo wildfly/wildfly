@@ -4,7 +4,6 @@ import static org.jboss.as.messaging.MessagingLogger.ROOT_LOGGER;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -17,12 +16,14 @@ import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
+import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.inject.MapInjector;
 import org.jboss.msc.service.Service;
@@ -58,6 +59,7 @@ class HornetQService implements Service<HornetQServer> {
     private Map<String, OutboundSocketBinding> outboundSocketBindings = new HashMap<String, OutboundSocketBinding>();
     private Map<String, SocketBinding> groupBindings = new HashMap<String, SocketBinding>();
     private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
+    private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<SecurityDomainContext>();
 
     Injector<String> getPathInjector(String name) {
         return new MapInjector<String, String>(paths, name);
@@ -101,10 +103,6 @@ class HornetQService implements Service<HornetQServer> {
         configuration.setLargeMessagesDirectory(paths.get("largemessages"));
         configuration.setJournalDirectory(paths.get("journal"));
         configuration.setPagingDirectory(paths.get("paging"));
-
-        // FIXME securityEnabled be true? (true is the default) and we
-        // should use the constructor that takes a SecurityManager
-        configuration.setSecurityEnabled(false);
 
         try {
             // Update the acceptor/connector port/host values from the
@@ -180,8 +178,14 @@ class HornetQService implements Service<HornetQServer> {
                 }
             }
 
+            // security
+            HornetQSecurityManagerAS7 hornetQSecurityManagerAS7 = new HornetQSecurityManagerAS7(securityDomainContextValue.getValue());
+
             // Now start the server
-            server = new HornetQServerImpl(configuration, mbeanServer.getOptionalValue(), null);
+            server = new HornetQServerImpl(configuration, mbeanServer.getOptionalValue(), hornetQSecurityManagerAS7);
+            if (ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD.equals(server.getConfiguration().getClusterPassword())) {
+                server.getConfiguration().setClusterPassword(java.util.UUID.randomUUID().toString());
+            }
 
             // FIXME started by the JMSService
             // HornetQ expects the TCCL to be set to something that can find the
@@ -221,5 +225,9 @@ class HornetQService implements Service<HornetQServer> {
 
     public void setConfiguration(Configuration hqConfig) {
         this.configuration = hqConfig;
+    }
+
+    public Injector<SecurityDomainContext> getSecurityDomainContextInjector() {
+        return securityDomainContextValue;
     }
 }

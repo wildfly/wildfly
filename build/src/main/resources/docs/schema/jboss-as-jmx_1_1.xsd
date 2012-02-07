@@ -42,7 +42,14 @@
     </xs:complexType>
 
     <xs:complexType name="remotingConnectorRefType">
-
+        <xs:attribute name="use-management-endpoint" type="xs:boolean" default="true" use="optional" >
+            <xs:annotation>
+                <xs:documentation>
+                    If true then this connector will use the management endpoint, otherwise it will use the
+                    remoting subsystem endpoint.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
 </xs:schema>

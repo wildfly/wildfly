@@ -25,7 +25,6 @@ package org.jboss.as.jpa.container;
 import static org.jboss.as.jpa.JpaLogger.ROOT_LOGGER;
 import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.persistence.EntityManager;
@@ -45,12 +44,7 @@ import javax.persistence.metamodel.Metamodel;
  * @author Scott Marlow (forked from jboss-jpa)
  */
 public abstract class AbstractEntityManager implements EntityManager {
-    private final boolean isTraceEnabled = ROOT_LOGGER.isTraceEnabled();
-    private final Map<Class, Object> extensions = new HashMap<Class, Object>();
-
-    protected AbstractEntityManager(final String puScopedName, final boolean isExtendedPersistenceContext) {
-        setMetadata(puScopedName, isExtendedPersistenceContext);
-    }
+    private final transient boolean isTraceEnabled = ROOT_LOGGER.isTraceEnabled();
 
     protected abstract EntityManager getEntityManager();
 
@@ -68,38 +62,9 @@ public abstract class AbstractEntityManager implements EntityManager {
      */
     protected abstract boolean isInTx();
 
-    /**
-     * save metadata if not already set.
-     *
-     * @param puScopedName
-     * @param isExtendedPersistenceContext
-     */
-    private void setMetadata(
-        String puScopedName,
-        boolean isExtendedPersistenceContext) {
-        if (extensions.get(EntityManagerMetadata.class) == null) {
-            EntityManagerMetadata metadata = new EntityManagerMetadata();
-            metadata.setScopedPuName(puScopedName);
-            metadata.setTransactionScopedEntityManager(!isExtendedPersistenceContext);
-            addExtension(EntityManagerMetadata.class, metadata);
-        }
-    }
 
-
-    /**
-     * Add an extension for unwrap
-     *
-     * @param cls       is the Class that extension will be retrieved with on future calls to unwrap.
-     * @param extension is the extension object to be returned from unwrap.
-     */
-    protected void addExtension(Class cls, Object extension) {
-        extensions.put(cls, extension);
-    }
 
     public <T> T unwrap(Class<T> cls) {
-        Object x = extensions.get(cls);
-        if (x != null)
-            return (T) x;
         return getEntityManager().unwrap(cls);
     }
 

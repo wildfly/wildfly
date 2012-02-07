@@ -30,6 +30,7 @@ import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 
 import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * Date: 05.11.2011
@@ -61,4 +62,13 @@ public interface HttpServerLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 15101, value = "Unexpected error executing deployment upload request")
     void uploadError(@Cause Throwable cause);
+
+    /**
+    * A message indicating that admin console module could not be loaded
+    *
+    * @param slot name of the console slot
+    */
+    @LogMessage(level = WARN)
+    @Message(id = 15102, value = "Unable to load console module for slot %s, disabling console")
+    void consoleModuleNotFound(String slot);
 }

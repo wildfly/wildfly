@@ -27,6 +27,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
 
+import java.util.EnumSet;
+import java.util.List;
+
 import javax.xml.stream.XMLStreamConstants;
 
 import org.jboss.as.controller.Extension;
@@ -43,8 +46,10 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.staxmapper.XMLElementReader;
 
 /**
  * Domain extension used to initialize the mod_cluster subsystem element handlers.
@@ -56,17 +61,16 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
     public static final String SUBSYSTEM_NAME = "modcluster";
 
     private static final PathElement sslConfigurationPath = PathElement.pathElement(CommonAttributes.SSL, CommonAttributes.CONFIGURATION);
-    private static final PathElement  ConfigurationPath = PathElement.pathElement(CommonAttributes.MOD_CLUSTER_CONFIG);
-
-    final ModClusterSubsystemElementParser parser = new ModClusterSubsystemElementParser();
+    private static final PathElement configurationPath = PathElement.pathElement(CommonAttributes.MOD_CLUSTER_CONFIG);
 
     /** {@inheritDoc} */
     @Override
     public void initialize(ExtensionContext context) {
 
+        EnumSet<Flag> runtimeOnly = EnumSet.of(Flag.RUNTIME_ONLY);
         ROOT_LOGGER.debugf("Activating Mod_cluster Extension");
 
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, Namespace.CURRENT.getMajorVersion(), Namespace.CURRENT.getMinorVersion());
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(ModClusterSubsystemDescriptionProviders.SUBSYSTEM);
         registration.registerOperationHandler(ModelDescriptionConstants.ADD, ModClusterSubsystemAdd.INSTANCE, ModClusterSubsystemAdd.INSTANCE, false);
         registration.registerOperationHandler(ModelDescriptionConstants.REMOVE, ModClusterSubsystemRemove.INSTANCE, ModClusterSubsystemRemove.INSTANCE, false);
@@ -75,15 +79,17 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         // The following ops only affect the runtime and not the configuration, so don't register them on the Host Controller
         if (context.isRuntimeOnlyRegistrationValid()) {
             // Proxy related commands.
-            registration.registerOperationHandler("list-proxies", ModClusterListProxies.INSTANCE, ModClusterListProxies.INSTANCE, false);
-            registration.registerOperationHandler("read-proxies-info", ModClusterGetProxyInfo.INSTANCE, ModClusterGetProxyInfo.INSTANCE, false);
-            registration.registerOperationHandler("read-proxies-configuration", ModClusterGetProxyConfiguration.INSTANCE, ModClusterGetProxyConfiguration.INSTANCE, false);
+            registration.registerOperationHandler("list-proxies", ModClusterListProxies.INSTANCE, ModClusterListProxies.INSTANCE, false, runtimeOnly);
+            registration.registerOperationHandler("read-proxies-info", ModClusterGetProxyInfo.INSTANCE, ModClusterGetProxyInfo.INSTANCE, false, runtimeOnly);
+            registration.registerOperationHandler("read-proxies-configuration", ModClusterGetProxyConfiguration.INSTANCE, ModClusterGetProxyConfiguration.INSTANCE, false, runtimeOnly);
+
+            //These seem to be modifying the state so don't add the runtimeOnly stuff for now
             registration.registerOperationHandler("add-proxy", ModClusterAddProxy.INSTANCE, ModClusterAddProxy.INSTANCE, false);
             registration.registerOperationHandler("remove-proxy", ModClusterRemoveProxy.INSTANCE, ModClusterRemoveProxy.INSTANCE, false);
 
             // node related operations.
-            registration.registerOperationHandler("refresh", ModClusterRefresh.INSTANCE, ModClusterRefresh.INSTANCE, false);
-            registration.registerOperationHandler("reset", ModClusterReset.INSTANCE, ModClusterReset.INSTANCE, false);
+            registration.registerOperationHandler("refresh", ModClusterRefresh.INSTANCE, ModClusterRefresh.INSTANCE, false, runtimeOnly);
+            registration.registerOperationHandler("reset", ModClusterReset.INSTANCE, ModClusterReset.INSTANCE, false, runtimeOnly);
 
             // node (all contexts) related operations.
             registration.registerOperationHandler("enable", ModClusterEnable.INSTANCE, ModClusterEnable.INSTANCE, false);
@@ -96,7 +102,7 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
             registration.registerOperationHandler("stop-context", ModClusterStopContext.INSTANCE, ModClusterStopContext.INSTANCE, false);
         }
 
-        final ManagementResourceRegistration configuration = registration.registerSubModel(ConfigurationPath, ModClusterSubsystemDescriptionProviders.CONFIGURATION);
+        final ManagementResourceRegistration configuration = registration.registerSubModel(configurationPath, ModClusterSubsystemDescriptionProviders.CONFIGURATION);
         final ManagementResourceRegistration ssl = configuration.registerSubModel(sslConfigurationPath, ModClusterSubsystemDescriptionProviders.SSL);
 
         // Attributes. (standard)
@@ -142,12 +148,12 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         ssl.registerReadWriteAttribute(CommonAttributes.CA_REVOCATION_URL, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
 
         // Metric for the  dynamic-load-provider
-        registration.registerOperationHandler("add-metric", ModClusterAddMetric.INSTANCE, ModClusterAddMetric.INSTANCE, false);
-        registration.registerOperationHandler("add-custom-metric", ModClusterAddCustomMetric.INSTANCE, ModClusterAddCustomMetric.INSTANCE, false);
-        registration.registerOperationHandler("remove-metric", ModClusterRemoveMetric.INSTANCE, ModClusterRemoveMetric.INSTANCE, false);
-        registration.registerOperationHandler("remove-custom-metric", ModClusterRemoveCustomMetric.INSTANCE, ModClusterRemoveCustomMetric.INSTANCE, false);
+        configuration.registerOperationHandler("add-metric", ModClusterAddMetric.INSTANCE, ModClusterAddMetric.INSTANCE, false, runtimeOnly);
+        configuration.registerOperationHandler("add-custom-metric", ModClusterAddCustomMetric.INSTANCE, ModClusterAddCustomMetric.INSTANCE, false, runtimeOnly);
+        configuration.registerOperationHandler("remove-metric", ModClusterRemoveMetric.INSTANCE, ModClusterRemoveMetric.INSTANCE, false, runtimeOnly);
+        configuration.registerOperationHandler("remove-custom-metric", ModClusterRemoveCustomMetric.INSTANCE, ModClusterRemoveCustomMetric.INSTANCE, false, runtimeOnly);
 
-        subsystem.registerXMLElementWriter(parser);
+        subsystem.registerXMLElementWriter(new ModClusterSubsystemXMLWriter());
     }
 
     public static class WriteDynamicLoadProviderOperationHandler implements OperationStepHandler {
@@ -196,6 +202,11 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CURRENT.getUriString(), parser);
+        for (Namespace namespace: Namespace.values()) {
+            XMLElementReader<List<ModelNode>> reader = namespace.getXMLReader();
+            if (reader != null) {
+                context.setSubsystemXmlMapping(SUBSYSTEM_NAME, namespace.getUri(), namespace.getXMLReader());
+            }
+        }
     }
 }

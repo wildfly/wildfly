@@ -83,7 +83,7 @@ public class CoreQueueManagementTestCase {
                      new TransportConfiguration(NettyConnectorFactory.class.getName());
         ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(transportConfiguration);
         ClientSessionFactory factory =  locator.createSessionFactory();
-        session = factory.createSession();
+        session = factory.createSession("guest", "guest", false, true, true, false, 1);
         session.createQueue(getQueueName(), getQueueName(), false);
         session.createQueue(getOtherQueueName(), getOtherQueueName(), false);
     }
@@ -309,7 +309,7 @@ public class CoreQueueManagementTestCase {
                      new TransportConfiguration(NettyConnectorFactory.class.getName());
         ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(transportConfiguration);
         ClientSessionFactory factory =  locator.createSessionFactory();
-        consumerSession = factory.createSession();
+        consumerSession = factory.createSession("guest", "guest", false, false, false, false, 1);
         session.createConsumer(getQueueName());
 
         ModelNode result = execute(getQueueOperation("list-consumers-as-json"), true);

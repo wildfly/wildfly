@@ -22,13 +22,9 @@
 
 package org.jboss.as.protocol.mgmt;
 
-import org.jboss.as.protocol.StreamUtils;
-import org.jboss.remoting3.Channel;
-import org.jboss.remoting3.MessageOutputStream;
-
-import java.io.DataInput;
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
+
+import org.jboss.as.protocol.StreamUtils;
 
 /**
  * utility class for creating management requests.
@@ -46,7 +42,7 @@ public abstract class AbstractManagementRequest<T, A> implements ManagementReque
      * @param resultHandler the result handler
      * @param context the request context
      * @param output the data output
-     * @throws java.io.IOException
+     * @throws IOException
      */
     protected abstract void sendRequest(ActiveOperation.ResultHandler<T> resultHandler, ManagementRequestContext<A> context, FlushableDataOutput output) throws IOException;
 
@@ -65,12 +61,6 @@ public abstract class AbstractManagementRequest<T, A> implements ManagementReque
                 }
             }
         });
-    }
-
-    @Deprecated
-    public T executeForResult(final AbstractMessageHandler<T, A> handler, final Channel channel, final A attachment) throws ExecutionException, InterruptedException {
-        final ActiveOperation<T, A> support = handler.registerActiveOperation(attachment);
-        return handler.executeRequest(this, channel, support).get();
     }
 
 }

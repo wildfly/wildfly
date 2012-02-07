@@ -21,6 +21,9 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 <module xmlns="urn:jboss:module:1.1" name="org.jboss.as.ejb3">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
 
     <resources>
         <!-- Insert resources here -->
@@ -39,13 +42,17 @@
         <module name="javax.rmi.api"/>
         <module name="org.hibernate"/>
         <module name="org.jacorb"/>
+        <module name="org.jboss.as.clustering.api"/>
         <module name="org.jboss.as.clustering.ejb3.infinispan" services="import" optional="true"/>
+        <module name="org.jboss.as.clustering.infinispan"/>
+        <module name="org.jboss.as.clustering.registry"/>
         <module name="org.jboss.as.controller"/>
         <!-- So we can access its integration API -->
         <module name="org.jboss.as.connector"/>
         <module name="org.jboss.as.ee"/>
         <module name="org.jboss.as.jacorb"/>
         <module name="org.jboss.as.naming"/>
+        <module name="org.jboss.as.network"/>
         <module name="org.jboss.as.remoting"/>
         <module name="org.jboss.as.security"/>
         <module name="org.jboss.as.server"/>

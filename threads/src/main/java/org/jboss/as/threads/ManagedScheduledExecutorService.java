@@ -85,6 +85,10 @@ public class ManagedScheduledExecutorService extends ManagedExecutorService impl
         return executor.getLargestPoolSize();
     }
 
+    public int getPoolSize() {
+        return executor.getPoolSize();
+    }
+
     public long getTaskCount() {
         return executor.getTaskCount();
     }

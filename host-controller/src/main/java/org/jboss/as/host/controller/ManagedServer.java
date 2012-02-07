@@ -22,18 +22,36 @@
 
 package org.jboss.as.host.controller;
 
-import java.io.IOException;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.security.SecureRandom;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.ProxyOperationAddressTranslator;
+import org.jboss.as.controller.client.OperationAttachments;
+import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.client.helpers.domain.ServerStatus;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
+import org.jboss.as.controller.remote.RemoteProxyController;
+import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
 import org.jboss.as.process.ProcessControllerClient;
+import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
+import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
+import org.jboss.as.protocol.mgmt.ManagementRequestHandlerFactory;
+import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
+import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.as.server.ServerStartTask;
-import org.jboss.as.server.ServerState;
 import org.jboss.dmr.ModelNode;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
@@ -89,20 +107,27 @@ class ManagedServer {
         return serverProcessName.substring(SERVER_PROCESS_NAME_PREFIX.length());
     }
 
-    private final String hostControllerName;
+    private final byte[] authKey;
     private final String serverName;
     private final String serverProcessName;
-    private final Object lock = new Object();
-    private final ProcessControllerClient processControllerClient;
-    private final AtomicInteger respawnCount = new AtomicInteger();
-    private final InetSocketAddress managementSocket;
-    private final ManagedServerBootConfiguration bootConfiguration;
-    private final byte[] authKey;
-    private volatile ServerState state;
-    private volatile Channel serverManagementChannel;
+    private final String hostControllerName;
+    private final PathElement serverPath;
 
-    public ManagedServer(final String hostControllerName, final String serverName, final ProcessControllerClient processControllerClient,
-            final InetSocketAddress managementSocket, final ManagedServerBootConfiguration bootConfiguration) {
+    private final InetSocketAddress managementSocket;
+    private final ProcessControllerClient processControllerClient;
+    private final ManagedServer.ManagedServerBootConfiguration bootConfiguration;
+
+    private volatile RemoteProxyController proxyController;
+    private volatile int respawnCount;
+
+    private volatile InternalState requiredState = InternalState.STOPPED;
+    private volatile InternalState internalState = InternalState.STOPPED;
+
+    private static final AtomicIntegerFieldUpdater<ManagedServer> respawnCountUpdater = AtomicIntegerFieldUpdater.newUpdater(ManagedServer.class, "respawnCount");
+
+    ManagedServer(final String hostControllerName, final String serverName, final ProcessControllerClient processControllerClient,
+            final InetSocketAddress managementSocket, final ManagedServer.ManagedServerBootConfiguration bootConfiguration) {
+
         assert hostControllerName  != null : "hostControllerName is null";
         assert serverName  != null : "serverName is null";
         assert processControllerClient != null : "processControllerSlave is null";
@@ -116,97 +141,373 @@ class ManagedServer {
         this.bootConfiguration = bootConfiguration;
 
         final byte[] authKey = new byte[16];
-        // TODO: use a RNG with a secure seed
-        new Random().nextBytes(authKey);
+        new Random(new SecureRandom().nextLong()).nextBytes(authKey);
         this.authKey = authKey;
-
-        this.state = ServerState.STOPPED;
-    }
-
-    public String getServerName() {
-        return serverName;
-    }
-
-    public String getServerProcessName() {
-        return serverProcessName;
-    }
-
-    Channel getServerManagementChannel() {
-        return serverManagementChannel;
-    }
-
-    public ServerState getState() {
-        return state;
-    }
-
-    public void setState(ServerState state) {
-        this.state = state;
-    }
-
-    void setServerManagementChannel(Channel serverManagementChannel) {
-        this.serverManagementChannel = serverManagementChannel;
-    }
-
-    int incrementAndGetRespawnCount() {
-        return respawnCount.incrementAndGet();
-    }
-
-    void resetRespawnCount() {
-        respawnCount.set(0);
+        serverPath = PathElement.pathElement(RUNNING_SERVER, serverName);
     }
 
     byte[] getAuthKey() {
         return authKey;
     }
 
-    void createServerProcess() throws IOException {
-        synchronized(lock) {
-            final List<String> command = bootConfiguration.getServerLaunchCommand();
-            final Map<String, String> env = bootConfiguration.getServerLaunchEnvironment();
-            final HostControllerEnvironment environment = bootConfiguration.getHostControllerEnvironment();
-            // Add the process to the process controller
-            processControllerClient.addProcess(serverProcessName, authKey, command.toArray(new String[command.size()]), environment.getHomeDir().getAbsolutePath(), env);
-            this.state = ServerState.BOOTING;
+    public String getServerName() {
+        return serverName;
+    }
+
+    public ProxyController getProxyController() {
+        return proxyController;
+    }
+
+    /**
+     * Determine the current state the server is in.
+     *
+     * @return the server status
+     */
+    public ServerStatus getState() {
+        final InternalState requiredState = this.requiredState;
+        final InternalState state = internalState;
+        if(requiredState == InternalState.FAILED) {
+            return ServerStatus.FAILED;
+        }
+        switch (state) {
+            case STOPPED:
+                return ServerStatus.STOPPED;
+            case SERVER_STARTED:
+                return  ServerStatus.STARTED;
+            default: {
+                if(requiredState == InternalState.SERVER_STARTED) {
+                    return ServerStatus.STARTING;
+                } else {
+                    return ServerStatus.STOPPING;
+                }
+            }
         }
     }
 
-    void startServerProcess() throws IOException {
-        synchronized(lock) {
-            setState(ServerState.BOOTING);
+    /**
+     * Start a managed server.
+     */
+    protected synchronized void start() {
+        final InternalState required = this.requiredState;
+        // Ignore if the server is already started
+        if(required == InternalState.SERVER_STARTED) {
+            return;
+        }
+        // In case the server failed to start, try to start it again
+        if(required != InternalState.FAILED) {
+            final InternalState current = this.internalState;
+            if(current != required) {
+                // TODO this perhaps should wait?
+                throw new IllegalStateException();
+            }
+        }
+        this.requiredState = InternalState.SERVER_STARTED;
+        ROOT_LOGGER.startingServer(serverName);
+        resetRespawnCount();
+        transition();
+    }
 
-            final List<ModelNode> bootUpdates = bootConfiguration.getBootUpdates();
-
-            processControllerClient.startProcess(serverProcessName);
-            ServiceActivator hostControllerCommActivator = HostCommunicationServices.createServerCommuncationActivator(managementSocket, serverName, serverProcessName, authKey, bootConfiguration.isManagementSubsystemEndpoint());
-            ServerStartTask startTask = new ServerStartTask(hostControllerName, serverName, 0, Collections.<ServiceActivator>singletonList(hostControllerCommActivator), bootUpdates);
-            final Marshaller marshaller = MARSHALLER_FACTORY.createMarshaller(CONFIG);
-            final OutputStream os = processControllerClient.sendStdin(serverProcessName);
-            marshaller.start(Marshalling.createByteOutput(os));
-            marshaller.writeObject(startTask);
-            marshaller.finish();
-            marshaller.close();
-            os.close();
-
-            setState(ServerState.STARTING);
+    /**
+     * Stop a managed server.
+     */
+    protected synchronized void stop() {
+        final InternalState required = this.requiredState;
+        if(required != InternalState.STOPPED) {
+            this.requiredState = InternalState.STOPPED;
+            ROOT_LOGGER.stoppingServer(serverName);
+            // Transition, but don't wait for async notifications to complete
+            transition(false);
         }
     }
 
-    void reconnectServerProcess() throws IOException {
-        synchronized (lock){
-            processControllerClient.reconnectProcess(serverProcessName, managementSocket.getAddress().getHostName(), managementSocket.getPort(), bootConfiguration.isManagementSubsystemEndpoint(), authKey);
+    /**
+     * Try to reconnect to a started server.
+     */
+    protected synchronized void reconnectServerProcess() {
+        if(this.requiredState != InternalState.SERVER_STARTED) {
+            ROOT_LOGGER.reconnectingServer(serverName);
+            this.requiredState = InternalState.SERVER_STARTED;
+            internalSetState(new ReconnectTask(), InternalState.STOPPED, InternalState.SERVER_STARTING);
         }
     }
 
-    void stopServerProcess() throws IOException {
-        synchronized(lock) {
-            processControllerClient.stopProcess(serverProcessName);
+    /**
+     * Await a state.
+     *
+     * @param expected the expected state
+     * @return {@code true} if the state was reached, {@code false} otherwise
+     */
+    protected boolean awaitState(final InternalState expected) {
+        synchronized (this) {
+            final InternalState initialRequired = this.requiredState;
+            for(;;) {
+                final InternalState required = this.requiredState;
+                // Stop in case the server failed to reach the state
+                if(required == InternalState.FAILED) {
+                    return false;
+                // Stop in case the required state changed
+                } else if (initialRequired != required) {
+                    return false;
+                }
+                final InternalState current = this.internalState;
+                if(expected == current) {
+                    return true;
+                }
+                try {
+                    wait();
+                } catch(InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return false;
+                }
+            }
         }
     }
 
-    void removeServerProcess() throws IOException {
-        synchronized(lock) {
-            processControllerClient.removeProcess(serverProcessName);
+    /**
+     * Notification that the process was added
+     */
+    protected void processAdded() {
+        finishTransition(InternalState.PROCESS_ADDING, InternalState.PROCESS_ADDED);
+    }
+
+    /**
+     * Notification that the process was started.
+     */
+    protected void processStarted() {
+        finishTransition(InternalState.PROCESS_STARTING, InternalState.PROCESS_STARTED);
+    }
+
+    /**
+     *
+     * @param channelAssociation
+     * @return
+     */
+    protected synchronized RemoteProxyController channelRegistered(final ManagementChannelHandler channelAssociation) {
+        internalSetState(new TransitionTask() {
+            @Override
+            public void execute(final ManagedServer server) throws Exception {
+                server.proxyController = RemoteProxyController.create(channelAssociation,
+                        PathAddress.pathAddress(PathElement.pathElement(HOST, hostControllerName), serverPath),
+                        ProxyOperationAddressTranslator.SERVER);
+            }
+        // TODO we just check that we are in the correct state, perhaps introuce a new state
+        }, InternalState.SERVER_STARTING, InternalState.SERVER_STARTING);
+        return proxyController;
+    }
+
+    protected synchronized void serverStarted(final TransitionTask task) {
+        internalSetState(task, InternalState.SERVER_STARTING, InternalState.SERVER_STARTED);
+    }
+
+    protected synchronized void serverStartFailed() {
+        internalSetState(null, InternalState.SERVER_STARTING, InternalState.FAILED);
+    }
+
+    /**
+     * Unregister the mgmt channel.
+     */
+    protected synchronized void callbackUnregistered() {
+        this.proxyController = null;
+    }
+
+    /**
+     * Notification that the server process finished.
+     */
+    protected synchronized void processFinished() {
+        final InternalState required = this.requiredState;
+        final InternalState state = this.internalState;
+        // If the server was not stopped
+        if(required == InternalState.STOPPED && state == InternalState.PROCESS_STOPPING) {
+            finishTransition(InternalState.PROCESS_STOPPING, InternalState.PROCESS_STOPPED);
+        } else {
+            // In any case it's stopped now
+            this.internalState = InternalState.PROCESS_STOPPED;
+            if(respawnCountUpdater.incrementAndGet(this) >= 10) {
+                this.requiredState = InternalState.FAILED;
+                return;
+            }
+            this.internalState = required == InternalState.SERVER_STARTED ? InternalState.PROCESS_ADDED : InternalState.PROCESS_STOPPED;
+            ROOT_LOGGER.infof("respawning server: %s", serverName);
+            transition();
         }
+    }
+
+    /**
+     * Notification that the process got removed from the process controller.
+     */
+    protected void processRemoved() {
+        finishTransition(InternalState.PROCESS_REMOVING, InternalState.STOPPED);
+    }
+
+    private void transition() {
+        transition(true);
+    }
+
+    private synchronized void transition(boolean checkAsync) {
+        final InternalState required = this.requiredState;
+        final InternalState current = this.internalState;
+        // Check if we are waiting for a notification from the server
+        if(checkAsync && current.isAsync()) {
+            return;
+        }
+        final InternalState next = nextState(current, required);
+        if(next != null) {
+            final TransitionTask task = getTransitionTask(next);
+            internalSetState(task, current, next);
+        }
+    }
+
+    /**
+     * Notification that a state transition failed.
+     *
+     * @param state the failed transition
+     */
+    synchronized void transitionFailed(final InternalState state) {
+        final InternalState current = this.internalState;
+        if(state == current) {
+            // Revert transition and mark as failed
+            switch (current) {
+                case PROCESS_ADDING:
+                    this.internalState = InternalState.PROCESS_STOPPED;
+                    break;
+                case PROCESS_STARTED:
+                    internalSetState(getTransitionTask(InternalState.PROCESS_STOPPING), InternalState.PROCESS_STARTED, InternalState.PROCESS_ADDED);
+                    break;
+                case PROCESS_STARTING:
+                    this.internalState = InternalState.PROCESS_ADDED;
+                    break;
+                case SERVER_STARTING:
+                    this.internalState = InternalState.PROCESS_STARTED;
+                    break;
+            }
+            this.requiredState = InternalState.FAILED;
+            notifyAll();
+        }
+    }
+
+    /**
+     * Finish a state transition from a notification.
+     *
+     * @param current
+     * @param next
+     */
+    private synchronized void finishTransition(final InternalState current, final InternalState next) {
+        internalSetState(getTransitionTask(next), current, next);
+        transition();
+    }
+
+    private void internalSetState(final TransitionTask task, final InternalState current, final InternalState next) {
+        assert Thread.holdsLock(this); // Call under lock
+        final InternalState internalState = this.internalState;
+        if(internalState == current) {
+            try {
+                if(task != null) {
+                    task.execute(this);
+                }
+                this.internalState = next;
+            } catch (final Exception e) {
+                ROOT_LOGGER.debugf(e, "transition (%s > %s) failed for server \"%s\"", current, next, serverName);
+                transitionFailed(current);
+            } finally {
+                notifyAll();
+            }
+        }
+    }
+
+    private TransitionTask getTransitionTask(final InternalState next) {
+        switch (next) {
+            case PROCESS_ADDING: {
+                return new ProcessAddTask();
+            } case PROCESS_STARTING: {
+                return new ProcessStartTask();
+            } case SERVER_STARTING: {
+                return new SendStdInTask();
+            } case SERVER_STARTED: {
+                return new ServerStartedTask();
+            } case PROCESS_STOPPING: {
+                return new ServerStopTask();
+            } case PROCESS_REMOVING: {
+                return new ProcessRemoveTask();
+            } default: {
+                return null;
+            }
+        }
+    }
+
+    /**
+     * Reset the respawn count
+     *
+     * @return the respawn count
+     */
+    private int resetRespawnCount() {
+        return respawnCountUpdater.getAndSet(this, 0);
+    }
+
+    private static InternalState nextState(final InternalState state, final InternalState required) {
+        switch (state) {
+            case STOPPED: {
+                if(required == InternalState.SERVER_STARTED) {
+                    return InternalState.PROCESS_ADDING;
+                }
+                break;
+            } case PROCESS_ADDING: {
+                if(required == InternalState.SERVER_STARTED) {
+                    return InternalState.PROCESS_ADDED;
+                }
+                break;
+            } case PROCESS_ADDED: {
+                if(required == InternalState.SERVER_STARTED) {
+                    return InternalState.PROCESS_STARTING;
+                } else if( required == InternalState.STOPPED) {
+                    return InternalState.PROCESS_REMOVING;
+                }
+                break;
+            } case PROCESS_STARTING: {
+                if(required == InternalState.SERVER_STARTED) {
+                    return InternalState.PROCESS_STARTED;
+                }
+                break;
+            } case PROCESS_STARTED: {
+                if(required == InternalState.SERVER_STARTED) {
+                    return InternalState.SERVER_STARTING;
+                } else if( required == InternalState.STOPPED) {
+                    return InternalState.PROCESS_STOPPING;
+                }
+                break;
+            } case SERVER_STARTING: {
+                if(required == InternalState.SERVER_STARTED) {
+                    return InternalState.SERVER_STARTED;
+                } else if( required == InternalState.STOPPED) {
+                    return InternalState.PROCESS_STOPPING;
+                }
+                break;
+            } case SERVER_STARTED: {
+                if(required == InternalState.STOPPED) {
+                    return InternalState.PROCESS_STOPPING;
+                }
+                break;
+            } case PROCESS_STOPPING: {
+                if(required == InternalState.STOPPED) {
+                    return InternalState.PROCESS_STOPPED;
+                }
+                break;
+            } case PROCESS_STOPPED: {
+                if(required == InternalState.SERVER_STARTED) {
+                    return InternalState.SERVER_STARTING;
+                } else if( required == InternalState.STOPPED) {
+                    return InternalState.PROCESS_REMOVING;
+                }
+                break;
+            } case PROCESS_REMOVING: {
+                if(required == InternalState.STOPPED) {
+                    return InternalState.STOPPED;
+                }
+                break;
+            } default: {
+                return null;
+            }
+        }
+        return null;
     }
 
     /**
@@ -245,6 +546,131 @@ class ManagedServer {
          * Get whether the native management remoting connector should use the endpoint set up by
          */
         boolean isManagementSubsystemEndpoint();
+    }
+
+    static enum InternalState {
+
+        STOPPED,
+        PROCESS_ADDING(true),
+        PROCESS_ADDED,
+        PROCESS_STARTING(true),
+        PROCESS_STARTED,
+        SERVER_STARTING(true),
+        SERVER_STARTED,
+        PROCESS_STOPPING(true),
+        PROCESS_STOPPED,
+        PROCESS_REMOVING(true),
+
+        FAILED,
+        ;
+
+        /** State transition creates an async task. */
+        private final boolean async;
+
+        InternalState() {
+            this(false);
+        }
+
+        InternalState(boolean async) {
+            this.async = async;
+        }
+
+        public boolean isAsync() {
+            return async;
+        }
+    }
+
+    static interface TransitionTask {
+
+        void execute(ManagedServer server) throws Exception;
+
+    }
+
+
+    private class ProcessAddTask implements TransitionTask {
+
+        @Override
+        public void execute(ManagedServer server) throws Exception {
+            assert Thread.holdsLock(ManagedServer.this); // Call under lock
+            final List<String> command = bootConfiguration.getServerLaunchCommand();
+            final Map<String, String> env = bootConfiguration.getServerLaunchEnvironment();
+            final HostControllerEnvironment environment = bootConfiguration.getHostControllerEnvironment();
+            // Add the process to the process controller
+            processControllerClient.addProcess(serverProcessName, authKey, command.toArray(new String[command.size()]), environment.getHomeDir().getAbsolutePath(), env);
+        }
+
+    }
+
+    private class ProcessRemoveTask implements TransitionTask {
+        @Override
+        public void execute(ManagedServer server) throws Exception {
+            assert Thread.holdsLock(ManagedServer.this); // Call under lock
+            // Remove process
+            processControllerClient.removeProcess(serverProcessName);
+        }
+    }
+
+
+    private class ProcessStartTask implements TransitionTask {
+
+        @Override
+        public void execute(ManagedServer server) throws Exception {
+            assert Thread.holdsLock(ManagedServer.this); // Call under lock
+            // Start the process
+            processControllerClient.startProcess(serverProcessName);
+        }
+
+    }
+
+    private class SendStdInTask implements TransitionTask {
+
+        @Override
+        public void execute(ManagedServer server) throws Exception {
+            assert Thread.holdsLock(ManagedServer.this); // Call under lock
+            // Get the standalone boot updates
+            final List<ModelNode> bootUpdates = bootConfiguration.getBootUpdates();
+            // Send std.in
+            final ServiceActivator hostControllerCommActivator = HostCommunicationServices.createServerCommuncationActivator(managementSocket, serverName, serverProcessName, authKey, bootConfiguration.isManagementSubsystemEndpoint());
+            final ServerStartTask startTask = new ServerStartTask(hostControllerName, serverName, 0, Collections.<ServiceActivator>singletonList(hostControllerCommActivator), bootUpdates);
+            final Marshaller marshaller = MARSHALLER_FACTORY.createMarshaller(CONFIG);
+            final OutputStream os = processControllerClient.sendStdin(serverProcessName);
+            marshaller.start(Marshalling.createByteOutput(os));
+            marshaller.writeObject(startTask);
+            marshaller.finish();
+            marshaller.close();
+            os.close();
+        }
+    }
+
+    private class ServerStartedTask implements TransitionTask {
+
+        @Override
+        public void execute(ManagedServer server) throws Exception {
+            resetRespawnCount();
+        }
+
+    }
+
+    private class ServerStopTask implements TransitionTask {
+
+        @Override
+        public void execute(ManagedServer server) throws Exception {
+            assert Thread.holdsLock(ManagedServer.this); // Call under lock
+            // Stop process
+            processControllerClient.stopProcess(serverProcessName);
+        }
+    }
+
+    private class ReconnectTask implements TransitionTask {
+
+        @Override
+        public void execute(ManagedServer server) throws Exception {
+            assert Thread.holdsLock(ManagedServer.this); // Call under lock
+            // Reconnect
+            final String hostName = InetAddress.getByName(managementSocket.getHostName()).getHostName();
+            final int port = managementSocket.getPort();
+            processControllerClient.reconnectProcess(serverProcessName, ProtocolUtils.formatPossibleIpv6Address(hostName), port, bootConfiguration.isManagementSubsystemEndpoint(), authKey);
+        }
     }
 
 }

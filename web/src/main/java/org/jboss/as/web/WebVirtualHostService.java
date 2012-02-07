@@ -208,7 +208,6 @@ public class WebVirtualHostService implements Service<VirtualHost> {
 
     Valve createSsoValve(final Container container, final ModelNode element) throws StartException {
         final SingleSignOn ssoValve = element.hasDefined(Constants.CACHE_CONTAINER) ? new ClusteredSingleSignOn(this.ssoManager.getValue()) : new SingleSignOn();
-        System.out.println("Creating " + ssoValve.getClass().getName() + " sso valve");
         if (element.hasDefined(Constants.DOMAIN)) ssoValve.setCookieDomain(element.get(Constants.DOMAIN).asString());
         if (element.hasDefined(Constants.REAUTHENTICATE)) ssoValve.setRequireReauthentication(element.get(Constants.REAUTHENTICATE).asBoolean());
         return ssoValve;

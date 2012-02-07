@@ -29,6 +29,7 @@ interface CommonAttributes {
 
     String AUTO_DEPLOY_ZIPPED = "auto-deploy-zipped";
     String AUTO_DEPLOY_EXPLODED = "auto-deploy-exploded";
+    String AUTO_DEPLOY_XML = "auto-deploy-xml";
     String DEPLOYMENT_SCANNER = "deployment-scanner";
     String DEPLOYMENT_TIMEOUT = "deployment-timeout";
     String NAME = "name";

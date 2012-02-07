@@ -52,7 +52,7 @@ public enum Element {
     LOCAL_CACHE(ModelKeys.LOCAL_CACHE),
     LOCKING(ModelKeys.LOCKING),
     PROPERTY(ModelKeys.PROPERTY),
-    REHASHING(ModelKeys.REHASHING),
+    @Deprecated REHASHING("rehashing"),
     REMOTE_SERVER(ModelKeys.REMOTE_SERVER),
     REMOTE_STORE(ModelKeys.REMOTE_STORE),
     REPLICATED_CACHE(ModelKeys.REPLICATED_CACHE),

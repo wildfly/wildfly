@@ -31,6 +31,7 @@ import java.util.List;
 import javax.ejb.FinderException;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.as.cmp.jdbc.metadata.JDBCReadAheadMetaData;
+import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 import org.jboss.logging.Logger;
 
 /**
@@ -89,7 +90,13 @@ public final class JDBCCustomFinderQuery implements JDBCQueryCommand {
     public Collection execute(Method unused, Object[] args, CmpEntityBeanContext ctx, EntityProxyFactory factory) throws FinderException {
         try {
             // invoke implementation method on ejb instance
-            Object value = finderMethod.invoke(ctx.getComponent().getCache().get(ctx.getPrimaryKey()), args);
+            Object value;
+            final EntityBeanComponentInstance componentInstance = ctx.getComponent().getCache().get(ctx.getPrimaryKey());
+            try {
+                value = finderMethod.invoke(componentInstance, args);
+            } finally {
+                ctx.getComponent().getCache().release(componentInstance, true);
+            }
 
             // if expected return type is Collection, return as is
             // if expected return type is not Collection, wrap value in Collection

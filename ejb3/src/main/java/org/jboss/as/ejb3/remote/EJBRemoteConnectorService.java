@@ -21,15 +21,16 @@
  */
 package org.jboss.as.ejb3.remote;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.concurrent.ExecutorService;
-
+import org.jboss.as.clustering.registry.RegistryCollector;
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.remote.protocol.versionone.VersionOneProtocolChannelReceiver;
+import org.jboss.as.network.ClientMapping;
+import org.jboss.as.remoting.AbstractStreamServerService;
+import org.jboss.as.remoting.InjectedSocketBindingStreamServerService;
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.ejb.client.ConstantContextSelector;
+import org.jboss.ejb.client.EJBClientTransactionContext;
 import org.jboss.ejb.client.remoting.PackedInteger;
 import org.jboss.logging.Logger;
 import org.jboss.marshalling.MarshallerFactory;
@@ -37,6 +38,7 @@ import org.jboss.marshalling.Marshalling;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -52,6 +54,15 @@ import org.jboss.remoting3.ServiceRegistrationException;
 import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
@@ -64,38 +75,56 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "connector");
 
     private final InjectedValue<Endpoint> endpointValue = new InjectedValue<Endpoint>();
-
     private final InjectedValue<ExecutorService> executorService = new InjectedValue<ExecutorService>();
-
     private final InjectedValue<DeploymentRepository> deploymentRepositoryInjectedValue = new InjectedValue<DeploymentRepository>();
-
     private final InjectedValue<EJBRemoteTransactionsRepository> ejbRemoteTransactionsRepositoryInjectedValue = new InjectedValue<EJBRemoteTransactionsRepository>();
-
+    private final InjectedValue<RegistryCollector> clusterRegistryCollector = new InjectedValue<RegistryCollector>();
+    private final InjectedValue<ServerEnvironment> serverEnvironment = new InjectedValue<ServerEnvironment>();
+    private final InjectedValue<TransactionManager> txManager = new InjectedValue<TransactionManager>();
+    private final InjectedValue<TransactionSynchronizationRegistry> txSyncRegistry = new InjectedValue<TransactionSynchronizationRegistry>();
+    private final ServiceName remotingConnectorServiceName;
     private volatile Registration registration;
-
+    private volatile InjectedSocketBindingStreamServerService remotingServer;
     private final byte serverProtocolVersion;
-
     private final String[] supportedMarshallingStrategies;
 
-    public EJBRemoteConnectorService(final byte serverProtocolVersion, final String[] supportedMarshallingStrategies) {
+    public EJBRemoteConnectorService(final byte serverProtocolVersion, final String[] supportedMarshallingStrategies, final ServiceName remotingConnectorServiceName) {
         this.serverProtocolVersion = serverProtocolVersion;
         this.supportedMarshallingStrategies = supportedMarshallingStrategies;
+        this.remotingConnectorServiceName = remotingConnectorServiceName;
     }
 
     @Override
     public void start(StartContext context) throws StartException {
+        // get the remoting server (which allows remoting connector to connect to it) service
         final ServiceContainer serviceContainer = context.getController().getServiceContainer();
+        final ServiceController streamServerServiceController = serviceContainer.getRequiredService(this.remotingConnectorServiceName);
+        final AbstractStreamServerService streamServerService = (AbstractStreamServerService) streamServerServiceController.getService();
+        // we can only work off a remoting connector which is backed by a socketbinding
+        if (streamServerService instanceof InjectedSocketBindingStreamServerService) {
+            this.remotingServer = (InjectedSocketBindingStreamServerService) streamServerService;
+        }
+
+        // Register a EJB channel open listener
         final OpenListener channelOpenListener = new ChannelOpenListener(serviceContainer);
         try {
             registration = endpointValue.getValue().registerService(EJB_CHANNEL_NAME, channelOpenListener, OptionMap.EMPTY);
         } catch (ServiceRegistrationException e) {
             throw new StartException(e);
         }
+
+        // setup a EJBClientTransactionContext backed the transaction manager on this server.
+        // This will be used to propagate the transactions from this server to remote servers during EJB invocations
+        final EJBClientTransactionContext ejbClientTransactionContext = EJBClientTransactionContext.create(this.txManager.getValue(), this.txSyncRegistry.getValue());
+        EJBClientTransactionContext.setSelector(new ConstantContextSelector<EJBClientTransactionContext>(ejbClientTransactionContext));
     }
 
     @Override
     public void stop(StopContext context) {
+        this.remotingServer = null;
         registration.close();
+        // reset the EJBClientTransactionContext on this server
+        EJBClientTransactionContext.setSelector(new ConstantContextSelector<EJBClientTransactionContext>(null));
     }
 
     @Override
@@ -105,6 +134,14 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
     public InjectedValue<Endpoint> getEndpointInjector() {
         return endpointValue;
+    }
+
+    public Injector<TransactionManager> getTransactionManagerInjector() {
+        return this.txManager;
+    }
+
+    public Injector<TransactionSynchronizationRegistry> getTxSyncRegistryInjector() {
+        return this.txSyncRegistry;
     }
 
     private void sendVersionMessage(final Channel channel) throws IOException {
@@ -205,8 +242,18 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
                         final MarshallerFactory marshallerFactory = EJBRemoteConnectorService.this.getMarshallerFactory(clientMarshallingStrategy);
                         // enroll VersionOneProtocolChannelReceiver for handling subsequent messages on this channel
                         final DeploymentRepository deploymentRepository = EJBRemoteConnectorService.this.deploymentRepositoryInjectedValue.getValue();
+                        final RegistryCollector<String, List<ClientMapping>> clientMappingRegistryCollector = EJBRemoteConnectorService.this.clusterRegistryCollector.getValue();
+                        // populate the client-mapping cache which will be used for getting the client-mapping(s)
+                        // of each node's EJB remoting connector's socketbinding. The population the cache is done lazily
+                        // to handle the case where the cache service isn't started until the EJBs accessing that cache are
+                        // deployed. The populate method is smart enough to populate the cache only once even if invoked multiple
+                        // times
+                        //EJBRemoteConnectorService.this.populateClientMappingsCache(serviceContainer);
+                        // the registry will be available when the clustering subsytem is present, so get the value optionally
                         final VersionOneProtocolChannelReceiver receiver = new VersionOneProtocolChannelReceiver(channel, deploymentRepository,
-                                EJBRemoteConnectorService.this.ejbRemoteTransactionsRepositoryInjectedValue.getValue(), marshallerFactory, executorService.getValue());
+                                EJBRemoteConnectorService.this.ejbRemoteTransactionsRepositoryInjectedValue.getValue(), clientMappingRegistryCollector,
+                                marshallerFactory, executorService.getValue());
+                        // trigger the receiving
                         receiver.startReceiving();
                         break;
 
@@ -236,6 +283,14 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
     public Injector<EJBRemoteTransactionsRepository> getEJBRemoteTransactionsRepositoryInjector() {
         return this.ejbRemoteTransactionsRepositoryInjectedValue;
+    }
+
+    public Injector<RegistryCollector> getClusterRegistryCollectorInjector() {
+        return this.clusterRegistryCollector;
+    }
+
+    public Injector<ServerEnvironment> getServerEnvironmentInjector() {
+        return this.serverEnvironment;
     }
 
     private boolean isSupportedMarshallingStrategy(final String strategy) {

@@ -1,22 +1,5 @@
 package org.jboss.as.server.deployment.module.descriptor;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.Location;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.module.FilterSpecification;
@@ -35,8 +18,23 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 
-import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
-import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
+import javax.xml.namespace.QName;
+import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static javax.xml.stream.XMLStreamConstants.*;
 
 /**
  * @author Stuart Douglas
@@ -100,6 +98,8 @@ public class JBossDeploymentStructureParser11 implements XMLElementReader<ParseR
             elementsMap.put(new QName(NAMESPACE_1_1, "transformer"), Element.TRANSFORMER);
             elementsMap.put(new QName(NAMESPACE_1_1, "local-last"), Element.LOCAL_LAST);
             elementsMap.put(new QName(NAMESPACE_1_1, "module-alias"), Element.MODULE_ALIAS);
+            elementsMap.put(new QName(NAMESPACE_1_1, "system"), Element.SYSTEM);
+            elementsMap.put(new QName(NAMESPACE_1_1, "paths"), Element.PATHS);
             elements = elementsMap;
         }
 
@@ -591,7 +591,7 @@ public class JBossDeploymentStructureParser11 implements XMLElementReader<ParseR
         }
         final ModuleIdentifier identifier = ModuleIdentifier.create(name, slot);
         final ModuleDependency dependency = new ModuleDependency(moduleLoader, identifier, optional, export,
-                services == Disposition.IMPORT);
+                services == Disposition.IMPORT, true);
         if(annotations) {
             specBuilder.addAnnotationModule(identifier);
         }

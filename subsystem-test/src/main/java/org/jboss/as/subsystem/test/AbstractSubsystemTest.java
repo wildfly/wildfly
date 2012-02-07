@@ -26,7 +26,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
@@ -53,14 +52,13 @@ import javax.xml.stream.XMLStreamReader;
 
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
+
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.RunningMode;
-import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -70,10 +68,12 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.validation.OperationValidator;
@@ -96,7 +96,6 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.DeployerChainAddHandler;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
-import org.jboss.as.server.deployment.repository.impl.ContentRepositoryImpl;
 import org.jboss.as.server.operations.RootResourceHack;
 import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationFailure;
@@ -255,8 +254,7 @@ public abstract class AbstractSubsystemTest {
         StringConfigurationPersister persister = new StringConfigurationPersister(Collections.<ModelNode>emptyList(), testParser);
 
         ExtensionRegistry outputExtensionRegistry = new ExtensionRegistry(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.NORMAL));
-        outputExtensionRegistry.setProfileResourceRegistration(MOCK_RESOURCE_REG);
-        outputExtensionRegistry.setDeploymentsResourceRegistration(MOCK_RESOURCE_REG);
+        outputExtensionRegistry.setSubsystemParentResourceRegistrations(MOCK_RESOURCE_REG, MOCK_RESOURCE_REG);
         outputExtensionRegistry.setWriterRegistry(persister);
 
         Extension extension = mainExtension.getClass().newInstance();
@@ -665,6 +663,7 @@ public abstract class AbstractSubsystemTest {
 
         @Override
         public void writeContent(XMLExtendedStreamWriter writer, ModelMarshallingContext context) throws XMLStreamException {
+
             String defaultNamespace = writer.getNamespaceContext().getNamespaceURI(XMLConstants.DEFAULT_NS_PREFIX);
             try {
                 ModelNode subsystem = context.getModelNode().get(SUBSYSTEM, mainSubsystemName);
@@ -745,8 +744,7 @@ public abstract class AbstractSubsystemTest {
             //Hack to be able to access the registry for the jmx facade
             rootRegistration.registerOperationHandler(RootResourceHack.NAME, RootResourceHack.INSTANCE, RootResourceHack.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
-            extensionRegistry.setProfileResourceRegistration(rootRegistration);
-            extensionRegistry.setDeploymentsResourceRegistration(deployments);
+            extensionRegistry.setSubsystemParentResourceRegistrations(rootRegistration, deployments);
 
             controllerInitializer.initializeModel(rootResource, rootRegistration);
 
@@ -978,6 +976,12 @@ public abstract class AbstractSubsystemTest {
 
         @Override
         public void registerOperationHandler(String operationName, OperationStepHandler handler,
+                DescriptionProvider descriptionProvider, boolean inherited, EnumSet<Flag> flags) {
+        }
+
+
+        @Override
+        public void registerOperationHandler(String operationName, OperationStepHandler handler,
                 DescriptionProvider descriptionProvider, boolean inherited, EntryType entryType, EnumSet<Flag> flags) {
         }
 
@@ -1036,35 +1040,6 @@ public abstract class AbstractSubsystemTest {
         }
 
     };
-
-    private static class TestContentRepository extends ContentRepositoryImpl {
-
-        private TestContentRepository(File repoRoot) {
-            // FIXME TestContentRepository constructor
-            super(repoRoot);
-        }
-
-        public static TestContentRepository createTestContentRepository() {
-            File file = new File("target/content-repository");
-            if (file.exists()) {
-                cleanFiles(file);
-            }
-            file.mkdirs();
-            return new TestContentRepository(file);
-        }
-
-        private static void cleanFiles(File file) {
-            if (file.isDirectory()) {
-                for (String name : file.list()) {
-                    File current = new File(file, name);
-                    if (current.isDirectory()) {
-                        cleanFiles(current);
-                    }
-                }
-            }
-            file.delete();
-        }
-    }
 
     private static class RootResourceGrabber implements OperationStepHandler, DescriptionProvider {
         static String NAME = "grab-root-resource";

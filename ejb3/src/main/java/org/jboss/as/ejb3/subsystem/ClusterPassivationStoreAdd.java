@@ -45,8 +45,14 @@ public class ClusterPassivationStoreAdd extends PassivationStoreAdd {
         String name = model.require(EJB3SubsystemModel.NAME).asString();
         ClusteredBackingCacheEntryStoreSourceService<?, ?, ?> service = new ClusteredBackingCacheEntryStoreSourceService<Serializable, Cacheable<Serializable>, Serializable>(name);
         ClusteredBackingCacheEntryStoreConfig config = service.getValue();
-        if (model.hasDefined(EJB3SubsystemModel.BACKING_CACHE)) {
-            config.setBackingCache(model.get(EJB3SubsystemModel.BACKING_CACHE).asString());
+        if (model.hasDefined(EJB3SubsystemModel.CACHE_CONTAINER)) {
+            config.setCacheContainer(model.get(EJB3SubsystemModel.CACHE_CONTAINER).asString());
+        }
+        if (model.hasDefined(EJB3SubsystemModel.BEAN_CACHE)) {
+            config.setBeanCache(model.get(EJB3SubsystemModel.BEAN_CACHE).asString());
+        }
+        if (model.hasDefined(EJB3SubsystemModel.CLIENT_MAPPINGS_CACHE)) {
+            config.setClientMappingCache(model.get(EJB3SubsystemModel.CLIENT_MAPPINGS_CACHE).asString());
         }
         if (model.hasDefined(EJB3SubsystemModel.PASSIVATE_EVENTS_ON_REPLICATE)) {
             config.setPassivateEventsOnReplicate(model.get(EJB3SubsystemModel.PASSIVATE_EVENTS_ON_REPLICATE).asBoolean());

@@ -63,4 +63,12 @@ public class InjectedSocketBindingStreamServerService extends AbstractStreamServ
         socketBindingManager.getNamedRegistry().unregisterBinding(managedBinding);
     }
 
+    /**
+     * Returns the socket binding applicable for this {@link InjectedSocketBindingStreamServerService}
+     * @return
+     */
+    public SocketBinding getSocketBinding() {
+        return this.socketBindingValue.getValue();
+    }
+
 }

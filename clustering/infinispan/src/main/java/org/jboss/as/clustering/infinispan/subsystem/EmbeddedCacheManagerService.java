@@ -41,21 +41,17 @@ import org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.ExecutorProvider;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
+import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.Value;
 import org.jgroups.Channel;
+import org.jgroups.util.TopologyUUID;
 
 /**
  * @author Paul Ferraro
  */
 @Listener
-public class EmbeddedCacheManagerService implements Service<EmbeddedCacheManager> {
+public class EmbeddedCacheManagerService extends AsynchronousService<EmbeddedCacheManager> {
 
     private static final Logger log = Logger.getLogger(EmbeddedCacheManagerService.class.getPackage().getName());
     private static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(InfinispanExtension.SUBSYSTEM_NAME);
@@ -64,21 +60,9 @@ public class EmbeddedCacheManagerService implements Service<EmbeddedCacheManager
         return (name != null) ? SERVICE_NAME.append(name) : SERVICE_NAME;
     }
 
-    public static ServiceName getTransportServiceName(String name) {
-        return getServiceName(name).append("transport");
-    }
-
-    public static ServiceName getTransportRequiredServiceName(String name) {
-        return getTransportServiceName(name).append("required");
-    }
-
     interface TransportConfiguration {
         Long getLockTimeout();
-        String getSite();
-        String getRack();
-        String getMachine();
-
-        Value<Channel> getChannel();
+        Channel getChannel();
         Executor getExecutor();
     }
 
@@ -93,7 +77,6 @@ public class EmbeddedCacheManagerService implements Service<EmbeddedCacheManager
     private final String name;
     private final String defaultCache;
     private final Dependencies dependencies;
-
     private volatile EmbeddedCacheManager container;
 
     public EmbeddedCacheManagerService(String name, String defaultCache, Dependencies dependencies) {
@@ -111,41 +94,42 @@ public class EmbeddedCacheManagerService implements Service<EmbeddedCacheManager
         return this.container;
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.jboss.msc.service.Service#start(org.jboss.msc.service.StartContext)
-     */
     @Override
-    public void start(StartContext context) throws StartException {
+    protected void start() {
 
         GlobalConfigurationBuilder globalBuilder = new GlobalConfigurationBuilder();
         globalBuilder
             .shutdown().hookBehavior(ShutdownHookBehavior.DONT_REGISTER)
-            .transport().strictPeerToPeer(false)
         ;
 
         // set up transport only if transport is required by some cache in the cache manager
         TransportConfiguration transport = this.dependencies.getTransportConfiguration();
         TransportConfigurationBuilder transportBuilder = globalBuilder.transport();
 
-        // If our transport service is running, configure Infinispan to use it
-        if (context.getController().getServiceContainer().getRequiredService(getTransportServiceName(this.name)).getState() == ServiceController.State.UP) {
+        if (transport != null) {
             // See ISPN-1675
             // transportBuilder.transport(new ChannelTransport(transport.getChannel()));
             ChannelProvider.init(transportBuilder, transport.getChannel());
             Long timeout = transport.getLockTimeout();
-            transportBuilder.distributedSyncTimeout((timeout != null) ? timeout.longValue() : 60000);
-            String site = transport.getSite();
-            if (site != null) {
-                transportBuilder.siteId(site);
+            if (timeout != null) {
+                transportBuilder.distributedSyncTimeout(timeout.longValue());
             }
-            String rack = transport.getRack();
-            if (rack != null) {
-                transportBuilder.rackId(rack);
-            }
-            String machine = transport.getMachine();
-            if (machine != null) {
-                transportBuilder.machineId(machine);
+            // Topology is retrieved from the channel
+            Channel channel = transport.getChannel();
+            if(channel.getAddress() instanceof TopologyUUID) {
+                TopologyUUID topologyAddress = (TopologyUUID) channel.getAddress();
+                String site = topologyAddress.getSiteId();
+                if (site != null) {
+                    transportBuilder.siteId(site);
+                }
+                String rack = topologyAddress.getRackId();
+                if (rack != null) {
+                    transportBuilder.rackId(rack);
+                }
+                String machine = topologyAddress.getMachineId();
+                if (machine != null) {
+                    transportBuilder.machineId(machine);
+                }
             }
             transportBuilder.clusterName(this.name);
 
@@ -155,8 +139,6 @@ public class EmbeddedCacheManagerService implements Service<EmbeddedCacheManager
                 // globalBuilder.asyncTransportExecutor().factory(new ManagedExecutorFactory(executor));
                 ExecutorProvider.initTransportExecutor(globalBuilder, executor);
             }
-        } else {
-            transportBuilder.transport(null);
         }
 
         Executor listenerExecutor = this.dependencies.getListenerExecutor();
@@ -198,16 +180,13 @@ public class EmbeddedCacheManagerService implements Service<EmbeddedCacheManager
         log.debugf("%s cache container started", this.name);
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.jboss.msc.service.Service#stop(org.jboss.msc.service.StopContext)
-     */
     @Override
-    public void stop(StopContext context) {
-        this.container.stop();
-        this.container.removeListener(this);
-        log.debugf("%s cache container stopped", this.name);
-        this.container = null;
+    protected void stop() {
+        if ((this.container != null) && this.container.getStatus().allowInvocations()) {
+            this.container.stop();
+            this.container.removeListener(this);
+            log.debugf("%s cache container stopped", this.name);
+        }
     }
 
     @CacheStarted

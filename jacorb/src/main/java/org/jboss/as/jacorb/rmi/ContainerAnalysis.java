@@ -29,6 +29,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 
+import org.jboss.as.jacorb.JacORBMessages;
+
 /**
  * Common base class of ValueAnalysis and InterfaceAnalysis.
  * <p/>
@@ -163,18 +165,11 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
      */
     protected OperationAnalysis[] operations;
 
-
-    private static final org.jboss.logging.Logger logger = org.jboss.logging.Logger.getLogger(ContainerAnalysis.class);
-
-
     protected ContainerAnalysis(Class cls) {
         super(cls);
 
-        if (cls == java.lang.Object.class ||
-                cls == java.io.Serializable.class ||
-                cls == java.io.Externalizable.class)
-            throw new IllegalArgumentException("Cannot analyze special class: " +
-                    cls.getName());
+        if (cls == java.lang.Object.class || cls == java.io.Serializable.class || cls == java.io.Externalizable.class)
+            throw JacORBMessages.MESSAGES.cannotAnalyzeSpecialClass(cls.getName());
 
         this.cls = cls;
     }
@@ -195,7 +190,6 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
      * Return the interfaces.
      */
     public InterfaceAnalysis[] getInterfaces() {
-        logger.debug(cls + " Interface count: " + interfaces.length);
         return (InterfaceAnalysis[]) interfaces.clone();
     }
 
@@ -203,7 +197,6 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
      * Return the abstract base valuetypes.
      */
     public ValueAnalysis[] getAbstractBaseValuetypes() {
-        logger.debug(cls + " Abstract base valuetype count: " + abstractBaseValuetypes.length);
         return (ValueAnalysis[]) abstractBaseValuetypes.clone();
     }
 
@@ -211,7 +204,6 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
      * Return the attributes.
      */
     public AttributeAnalysis[] getAttributes() {
-        logger.debug(cls + " Attribute count: " + attributes.length);
         return (AttributeAnalysis[]) attributes.clone();
     }
 
@@ -219,7 +211,6 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
      * Return the constants.
      */
     public ConstantAnalysis[] getConstants() {
-        logger.debug(cls + " Constants count: " + constants.length);
         return (ConstantAnalysis[]) constants.clone();
     }
 
@@ -227,7 +218,6 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
      * Return the operations.
      */
     public OperationAnalysis[] getOperations() {
-        logger.debug(cls + " Operations count: " + operations.length);
         return (OperationAnalysis[]) operations.clone();
     }
 
@@ -348,7 +338,6 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
      * arrays.
      */
     protected void analyzeFields() {
-        logger.debug(cls + " analyzeFields");
 
         //fields = cls.getFields();
         fields = cls.getDeclaredFields();
@@ -362,17 +351,13 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
                     Modifier.isPublic(mods))
                 f_flags[i] |= F_CONSTANT;
         }
-
-        logger.debug(cls + " analyzeFields fields=" + fields.length);
     }
 
     /**
      * Analyze the interfaces of the class.
      * This will fill in the <code>interfaces</code> array.
      */
-    protected void analyzeInterfaces()
-            throws RMIIIOPViolationException {
-        logger.debug(cls + " analyzeInterfaces");
+    protected void analyzeInterfaces() throws RMIIIOPViolationException {
 
         Class[] intfs = cls.getInterfaces();
         ArrayList a = new ArrayList();
@@ -400,8 +385,6 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
 
         abstractBaseValuetypes = new ValueAnalysis[b.size()];
         abstractBaseValuetypes = (ValueAnalysis[]) b.toArray(abstractBaseValuetypes);
-
-        logger.debug(cls + " analyzeInterfaces interfaces=" + interfaces.length + " abstractBaseValueTypes=" + abstractBaseValuetypes.length);
     }
 
     /**
@@ -410,7 +393,6 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
      * arrays.
      */
     protected void analyzeMethods() {
-        logger.debug(cls + " analyzeMethods");
 
         // The dynamic stub and skeleton strategy generation mechanism
         // requires the inclusion of inherited methods in the analysis of
@@ -427,8 +409,6 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
         for (int i = 0; i < methods.length; ++i)
             mutators[i] = -1; // no mutator here
         for (int i = 0; i < methods.length; ++i) {
-            logger.debug("analyzeMethods(): method[" + i + "].getName()=\"" +
-                    methods[i].getName() + "\".");
 
             if (isAccessor(methods[i]) && (m_flags[i] & M_READ) == 0) {
                 String attrName = attributeReadName(methods[i].getName());
@@ -485,7 +465,6 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
                 m_flags[i] |= M_INHERITED;
         }
 
-        logger.debug(cls + " analyzeMethods methods=" + methods.length);
     }
 
     /**
@@ -498,7 +477,7 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
         else if (name.startsWith("is"))
             name = name.substring(2);
         else
-            throw new IllegalArgumentException("Not an accessor: " + name);
+            throw JacORBMessages.MESSAGES.notAnAccessor(name);
 
         return name;
     }
@@ -511,7 +490,7 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
         if (name.startsWith("set"))
             name = name.substring(3);
         else
-            throw new IllegalArgumentException("Not an accessor: " + name);
+            throw JacORBMessages.MESSAGES.notAnAccessor(name);
 
         return name;
     }
@@ -522,12 +501,10 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
      */
     protected void analyzeConstants()
             throws RMIIIOPViolationException {
-        logger.debug(cls + " analyzeConstants");
 
         ArrayList a = new ArrayList();
 
         for (int i = 0; i < fields.length; ++i) {
-            logger.debug("f_flags[" + i + "]=" + f_flags[i]);
             if ((f_flags[i] & F_CONSTANT) == 0)
                 continue;
 
@@ -537,11 +514,7 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
             if (!type.isPrimitive() && type != java.lang.String.class) {
                 // It is an RMI/IIOP violation for interfaces.
                 if (cls.isInterface())
-                    throw new RMIIIOPViolationException(
-                            "Field \"" + fields[i].getName() + "\" of interface \"" +
-                                    cls.getName() + "\" is a constant, but not of one " +
-                                    "of the primitive types, or String.", "1.2.3");
-
+                    throw JacORBMessages.MESSAGES.badRMIIIOPConstantType(fields[i].getName(), cls.getName(), "1.2.3");
                 continue;
             }
 
@@ -554,15 +527,11 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
                 throw new RuntimeException(ex.toString());
             }
 
-            logger.debug("Constant[" + i + "] name= " + name);
-            logger.debug("Constant[" + i + "] type= " + type.getName());
-            logger.debug("Constant[" + i + "] value= " + value);
             a.add(new ConstantAnalysis(name, type, value));
         }
 
         constants = new ConstantAnalysis[a.size()];
         constants = (ConstantAnalysis[]) a.toArray(constants);
-        logger.debug(cls + " analyzeConstants constant=" + a.size());
     }
 
     /**
@@ -570,12 +539,9 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
      * This will fill in the <code>attributes</code> array.
      */
     protected void analyzeAttributes() throws RMIIIOPViolationException {
-        logger.debug(cls + " analyzeAttributes");
-
         ArrayList a = new ArrayList();
 
         for (int i = 0; i < methods.length; ++i) {
-            logger.debug("m_flags[" + i + "]=" + m_flags[i]);
             //if ((m_flags[i]&M_INHERITED) != 0)
             //  continue;
 
@@ -583,7 +549,6 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
                 // Read method of an attribute.
                 String name = attributeReadName(methods[i].getName());
 
-                logger.debug("Attribute[" + i + "] name= " + name);
                 if ((m_flags[i] & M_READONLY) != 0)
                     a.add(new AttributeAnalysis(name, methods[i]));
                 else
@@ -595,7 +560,6 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
         attributes = new AttributeAnalysis[a.size()];
         attributes = (AttributeAnalysis[]) a.toArray(attributes);
 
-        logger.debug(cls + " analyzeAttributes attributes=" + a.size());
     }
 
     /**
@@ -606,9 +570,7 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
      */
     protected void analyzeOperations()
             throws RMIIIOPViolationException {
-        logger.debug(cls + " analyzeOperations");
         operations = new OperationAnalysis[0];
-        logger.debug(cls + " analyzeOperations operations=" + operations.length);
     }
 
     /**
@@ -769,7 +731,7 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
      */
     protected void calculateRepositoryId() {
         if (cls.isArray() || cls.isPrimitive())
-            throw new IllegalArgumentException("Not a class or interface.");
+            throw JacORBMessages.MESSAGES.notAnClassOrInterface(cls.getName());
 
         if (cls.isInterface() &&
                 org.omg.CORBA.Object.class.isAssignableFrom(cls) &&

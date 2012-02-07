@@ -22,9 +22,11 @@
 package org.jboss.as.cli.operation.impl;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -56,8 +58,9 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
     private static final int SEPARATOR_OPERATION_ARGUMENTS = 4;
     private static final int SEPARATOR_ARG_NAME_VALUE = 5;
     private static final int SEPARATOR_ARG = 6;
-    private static final int SEPARATOR_HEADERS_START = 7;
-    private static final int SEPARATOR_HEADER = 8;
+    private static final int SEPARATOR_ARG_LIST_END = 7;
+    private static final int SEPARATOR_HEADERS_START = 8;
+    private static final int SEPARATOR_HEADER = 9;
 
     private static final DefaultOperationRequestAddress EMPTY_ADDRESS = new DefaultOperationRequestAddress();
 
@@ -82,7 +85,8 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
 
     private String originalLine;
 
-    private List<ParsedOperationRequestHeader> headers;
+    private LinkedHashMap<String,ParsedOperationRequestHeader> headers;
+    private ParsedOperationRequestHeader lastHeader;
 
     public DefaultCallbackHandler() {
         this(true);
@@ -124,6 +128,12 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
         ParserUtil.parseOperationRequest(argsStr, this);
     }
 
+    public void parseHeaders(String argsStr) throws CommandFormatException {
+        reset();
+        this.originalLine = argsStr;
+        ParserUtil.parseHeaders(argsStr, this);
+    }
+
     public void reset() {
         operationComplete = false;
         operationName = null;
@@ -139,6 +149,7 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
         originalLine = null;
         headers = null;
         lastHeaderName = null;
+        lastHeader = null;
     }
 
     @Override
@@ -168,6 +179,11 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
     @Override
     public boolean endsOnPropertyListStart() {
         return separator == SEPARATOR_OPERATION_ARGUMENTS;
+    }
+
+    @Override
+    public boolean endsOnPropertyListEnd() {
+        return separator == SEPARATOR_ARG_LIST_END;
     }
 
     @Override
@@ -364,8 +380,7 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
 
     @Override
     public void propertyListEnd(int index) {
-        separator = SEPARATOR_NONE;
-        operationComplete = true;
+        separator = SEPARATOR_ARG_LIST_END;
         this.lastSeparatorIndex = index;
         this.lastPropName = null;
         this.lastPropValue = null;
@@ -384,10 +399,16 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
         this.lastSeparatorIndex = index;
         //this.lastPropName = null;
         //this.lastPropValue = null;
+        operationComplete = true;
     }
 
     public void headerSeparator(int index) {
         this.separator = SEPARATOR_HEADER;
+        this.lastSeparatorIndex = index;
+    }
+
+    public void headerNameValueSeparator(int index) {
+        this.separator = SEPARATOR_ARG_NAME_VALUE;
         this.lastSeparatorIndex = index;
     }
 
@@ -396,31 +417,32 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
         this.separator = SEPARATOR_NONE;
         lastChunkIndex = index;
         this.lastHeaderName = headerName;
+        lastHeader = null;
         if(headerName.equals("rollout")) {
-            if(headers == null) {
-                headers = new ArrayList<ParsedOperationRequestHeader>();
-            }
             return new RolloutPlanHeaderCallbackHandler(this);
         }
         return null;
     }
 
     @Override
-    public void header(String name, String value, int nameValueSeparator) throws CommandFormatException {
+    public void header(String name, String value, int valueIndex) throws CommandFormatException {
         if(headers == null) {
-            headers = new ArrayList<ParsedOperationRequestHeader>();
+            headers = new LinkedHashMap<String,ParsedOperationRequestHeader>();
         }
-        headers.add(new SimpleParsedOperationRequestHeader(name, value));
+        lastHeader = new SimpleParsedOperationRequestHeader(name, value);
+        headers.put(name, lastHeader);
         separator = SEPARATOR_NONE;
-        this.lastSeparatorIndex = nameValueSeparator;
+        this.lastSeparatorIndex = valueIndex -1;
+        this.lastChunkIndex = valueIndex;
         this.lastHeaderName = null;
     }
 
     public void header(ParsedOperationRequestHeader header) {
         if(headers == null) {
-            headers = new ArrayList<ParsedOperationRequestHeader>();
+            headers = new LinkedHashMap<String,ParsedOperationRequestHeader>();
         }
-        headers.add(header);
+        lastHeader = header;
+        headers.put(header.getName(), header);
         separator = SEPARATOR_NONE;
         this.lastHeaderName = null;
     }
@@ -431,13 +453,23 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
     }
 
     @Override
+    public boolean hasHeader(String name) {
+        return headers != null && headers.containsKey(name);
+    }
+
+    @Override
     public String getLastHeaderName() {
         return lastHeaderName;
     }
 
     @Override
-    public List<ParsedOperationRequestHeader> getHeaders() {
-        return headers == null ? Collections.<ParsedOperationRequestHeader>emptyList() : headers;
+    public Collection<ParsedOperationRequestHeader> getHeaders() {
+        return headers == null ? Collections.<ParsedOperationRequestHeader>emptyList() : headers.values();
+    }
+
+    @Override
+    public ParsedOperationRequestHeader getLastHeader() {
+        return lastHeader;
     }
 
     @Override
@@ -568,11 +600,10 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
 
         if(headers != null) {
             final ModelNode headersNode = request.get(Util.OPERATION_HEADERS);
-            for(ParsedOperationRequestHeader header : headers) {
+            for(ParsedOperationRequestHeader header : headers.values()) {
                 header.addTo(ctx, headersNode);
             }
         }
-
         return request;
     }
 

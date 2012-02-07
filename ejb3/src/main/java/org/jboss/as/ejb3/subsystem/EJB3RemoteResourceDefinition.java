@@ -56,6 +56,7 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
+
     private static final Map<String, AttributeDefinition> ATTRIBUTES;
 
     static {

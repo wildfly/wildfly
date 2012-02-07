@@ -1,9 +1,19 @@
 <subsystem xmlns="urn:jboss:domain:remoting:1.1">
     <connector name="test-connector" socket-binding="test"/>
 
-    <outbound-connections>
-        <remote-outbound-connection name="remote-conn1" outbound-socket-binding-ref="dummy-outbound-socket"/>
-        <local-outbound-connection name="local-conn1" outbound-socket-binding-ref="other-outbound-socket"/>
-    </outbound-connections>
+        <outbound-connections>
+            <remote-outbound-connection name="remote-conn1" outbound-socket-binding-ref="dummy-outbound-socket">
+                <properties>
+                    <property name="org.xnio.Options.SASL_POLICY_NOANONYMOUS" value="false"/>
+                    <property name="org.xnio.Options.SSL_ENABLED" value="false"/>
+                </properties>
+            </remote-outbound-connection>
+            <local-outbound-connection name="local-conn1" outbound-socket-binding-ref="other-outbound-socket">
+                <properties>
+                    <property name="org.xnio.Options.SASL_POLICY_NOANONYMOUS" value="false"/>
+                    <property name="org.xnio.Options.SSL_ENABLED" value="false"/>
+                </properties>
+            </local-outbound-connection>
+        </outbound-connections>
 </subsystem>
 

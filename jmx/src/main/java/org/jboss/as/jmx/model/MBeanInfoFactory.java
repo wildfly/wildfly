@@ -60,6 +60,7 @@ import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.operations.common.ValidateAddressOperationHandler;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
@@ -169,7 +170,7 @@ public class MBeanInfoFactory {
                         opName.equals(READ_CHILDREN_TYPES_OPERATION) || opName.equals(READ_CHILDREN_RESOURCES_OPERATION) ||
                         opName.equals(READ_OPERATION_NAMES_OPERATION) || opName.equals(READ_OPERATION_DESCRIPTION_OPERATION) ||
                         opName.equals(READ_RESOURCE_OPERATION) || opName.equals(READ_RESOURCE_OPERATION) ||
-                        opName.equals(WRITE_ATTRIBUTE_OPERATION) || opName.equals(GlobalOperationHandlers.VALIDATE_ADDRESS_OPERATION_NAME) ||
+                        opName.equals(WRITE_ATTRIBUTE_OPERATION) || opName.equals(ValidateAddressOperationHandler.OPERATION_NAME) ||
                         opName.equals(CompositeOperationHandler.NAME) || opName.equals(DeploymentUploadStreamAttachmentHandler.OPERATION_NAME) ||
                         opName.equals(RootResourceHack.NAME)) {
                     //Ignore some of the global operations which probably don't make much sense here

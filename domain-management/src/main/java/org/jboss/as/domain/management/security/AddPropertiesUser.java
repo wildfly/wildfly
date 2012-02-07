@@ -30,12 +30,14 @@ import java.io.Console;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
+import java.io.StringReader;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.LinkedList;
 import java.util.Properties;
 import java.util.Set;
 
@@ -53,7 +55,8 @@ public class AddPropertiesUser {
     private static final String DEFAULT_REALM = "ManagementRealm";
     private static final String NEW_LINE = "\n";
     private static final String SPACE = " ";
-    private static final String COMMENT = "#";
+    private static final Properties argsCliProps = new Properties();
+
     private Console theConsole = System.console();
 
     private List<File> propertiesFiles;
@@ -68,11 +71,23 @@ public class AddPropertiesUser {
     }
 
     private AddPropertiesUser(final String user, final char[] password, final String realm) {
-        if (theConsole == null) {
+        boolean silent = false;
+        Values values = new Values();
+
+        String valueSilent = argsCliProps.getProperty("silent");
+
+        if (valueSilent != null) {
+            silent = Boolean.valueOf(valueSilent);
+        }
+        if (silent) {
+            values.howInteractive = Interactiveness.SILENT;
+        } else {
+            values.howInteractive = Interactiveness.NON_INTERACTIVE;
+        }
+
+        if ((theConsole == null) && (values.isSilent() == false)) {
             throw MESSAGES.noConsoleAvailable();
         }
-        Values values = new Values();
-        values.nonInteractive = true;
         values.userName = user;
         values.password = password;
         values.realm = realm;
@@ -93,10 +108,36 @@ public class AddPropertiesUser {
      * @param args
      */
     public static void main(String[] args) {
-        if (args.length == 3) {
-            new AddPropertiesUser(args[0], args[1].toCharArray(), args[2]).run();
-        } else if (args.length == 2) {
-            new AddPropertiesUser(args[0], args[1].toCharArray()).run();
+
+        List<String> argsList = new LinkedList<String>();
+        String[] argsArray = null;
+        StringReader stringReader = null;
+
+        int realArgsLength;
+
+        if (args.length >= 1) {
+
+            for(String temp : args) {
+                if (temp.startsWith("--")) {
+                    try {
+                        stringReader = new StringReader(temp.substring(2));
+                        argsCliProps.load(stringReader);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } finally {
+                        safeClose(stringReader);
+                    }
+                } else {
+                   argsList.add(temp);
+                }
+            }
+        }
+        argsArray = argsList.toArray(new String[0]);
+        realArgsLength = argsArray.length;
+        if (realArgsLength == 3) {
+            new AddPropertiesUser(argsArray[0], argsArray[1].toCharArray(), argsArray[2]).run();
+        } else if (realArgsLength == 2) {
+            new AddPropertiesUser(argsArray[0], argsArray[1].toCharArray()).run();
         } else {
             new AddPropertiesUser().run();
         }
@@ -121,7 +162,7 @@ public class AddPropertiesUser {
         public State execute() {
             String jbossHome = System.getenv("JBOSS_HOME");
             if (jbossHome == null) {
-                return new ErrorState(MESSAGES.jbossHomeNotSet());
+                return new ErrorState(MESSAGES.jbossHomeNotSet(), null, values);
             }
 
             List<File> foundFiles = new ArrayList<File>(2);
@@ -135,7 +176,7 @@ public class AddPropertiesUser {
             }
 
             if (foundFiles.size() == 0) {
-                return new ErrorState(MESSAGES.mgmtUsersPropertiesNotFound());
+                return new ErrorState(MESSAGES.mgmtUsersPropertiesNotFound(), null, values);
             }
 
             propertiesFiles = foundFiles;
@@ -145,7 +186,7 @@ public class AddPropertiesUser {
                 try {
                     foundUsers.addAll(loadUserNames(current));
                 } catch (IOException e) {
-                    return new ErrorState(MESSAGES.unableToLoadUsers(current.getAbsolutePath(), e.getMessage()));
+                    return new ErrorState(MESSAGES.unableToLoadUsers(current.getAbsolutePath(), e.getMessage()), null, values);
                 }
             }
             knownUsers = foundUsers;
@@ -192,7 +233,7 @@ public class AddPropertiesUser {
 
         @Override
         public State execute() {
-            if (values.nonInteractive == false) {
+            if (values.isSilentOrNonInteractive() == false) {
                 theConsole.printf(NEW_LINE);
                 theConsole.printf(MESSAGES.enterNewUserDetails());
                 theConsole.printf(NEW_LINE);
@@ -274,7 +315,7 @@ public class AddPropertiesUser {
 
         @Override
         public State execute() {
-            State retryState = values.nonInteractive ? null : new PromptNewUserState(values);
+            State retryState = values.isSilentOrNonInteractive() ? null : new PromptNewUserState(values);
 
             if (Arrays.equals(values.userName.toCharArray(), values.password)) {
                 return new ErrorState(MESSAGES.usernamePasswordMatch(), retryState);
@@ -295,7 +336,7 @@ public class AddPropertiesUser {
             }
 
             State continuingState = new DuplicateUserCheckState(values);
-            if (weakUserName && values.nonInteractive == false) {
+            if (weakUserName && values.isSilentOrNonInteractive() == false) {
                 String message = MESSAGES.usernameEasyToGuess(values.userName);
                 String prompt = MESSAGES.sureToAddUser(values.userName);
                 State noState = new PromptNewUserState(values);
@@ -323,14 +364,14 @@ public class AddPropertiesUser {
         @Override
         public State execute() {
             if (knownUsers.contains(values.userName)) {
-                State continuing = values.nonInteractive ? null : new PromptNewUserState(values);
+                State continuing = values.isSilentOrNonInteractive() ? null : new PromptNewUserState(values);
 
-                return new ErrorState(MESSAGES.duplicateUser(values.userName), continuing);
+                return new ErrorState(MESSAGES.duplicateUser(values.userName), continuing, values);
             }
 
             State addState = new AddUser(values);
             final State continuingState;
-            if (values.nonInteractive) {
+            if (values.isSilentOrNonInteractive()) {
                 continuingState = addState;
             } else {
                 String message = MESSAGES.aboutToAddUser(values.userName, values.realm);
@@ -430,16 +471,18 @@ public class AddPropertiesUser {
                         values.password);
                 entry = values.userName + "=" + hash;
             } catch (NoSuchAlgorithmException e) {
-                return new ErrorState(e.getMessage());
+                return new ErrorState(e.getMessage(), null, values);
             }
 
             for (File current : propertiesFiles) {
                 try {
                     append(entry, current);
-                    theConsole.printf(MESSAGES.addedUser(values.userName, current.getCanonicalPath()));
-                    theConsole.printf(NEW_LINE);
+                    if (values.isSilent() == false) {
+                        theConsole.printf(MESSAGES.addedUser(values.userName, current.getCanonicalPath()));
+                        theConsole.printf(NEW_LINE);
+                    }
                 } catch (IOException e) {
-                    return new ErrorState(MESSAGES.unableToAddUser(current.getAbsolutePath(), e.getMessage()));
+                    return new ErrorState(MESSAGES.unableToAddUser(current.getAbsolutePath(), e.getMessage()), null, values);
                 }
             }
 
@@ -475,28 +518,34 @@ public class AddPropertiesUser {
 
         private final State nextState;
         private final String errorMessage;
+        private final Values values;
 
         private ErrorState(String errorMessage) {
-            this(errorMessage, null);
+            this(errorMessage, null, null);
         }
 
         private ErrorState(String errorMessage, State nextState) {
-            this.errorMessage = errorMessage;
-            this.nextState = nextState;
+            this(errorMessage, nextState, null);
         }
 
+        private ErrorState(String errorMessage, State nextState, Values values) {
+            this.errorMessage = errorMessage;
+            this.nextState = nextState;
+            this.values = values;
+        }
         @Override
         public State execute() {
-            theConsole.printf(NEW_LINE);
-            theConsole.printf(" * ");
-            theConsole.printf(MESSAGES.errorHeader());
-            theConsole.printf(" * ");
-            theConsole.printf(NEW_LINE);
+            if ((values == null) || (values != null) && (values.isSilent() == false)) {
+                theConsole.printf(NEW_LINE);
+                theConsole.printf(" * ");
+                theConsole.printf(MESSAGES.errorHeader());
+                theConsole.printf(" * ");
+                theConsole.printf(NEW_LINE);
 
-            theConsole.printf(errorMessage);
-            theConsole.printf(NEW_LINE);
-            theConsole.printf(NEW_LINE);
-
+                theConsole.printf(errorMessage);
+                theConsole.printf(NEW_LINE);
+                theConsole.printf(NEW_LINE);
+            }
             return nextState;
         }
 
@@ -512,12 +561,23 @@ public class AddPropertiesUser {
     }
 
     private class Values {
-        private boolean nonInteractive = false;
+        private Interactiveness howInteractive = Interactiveness.INTERACTIVE;
         private String realm;
         private String userName;
         private char[] password;
+
+        private boolean isSilentOrNonInteractive() {
+            return (howInteractive == Interactiveness.NON_INTERACTIVE) || isSilent();
+        }
+
+        private boolean isSilent() {
+            return (howInteractive == Interactiveness.SILENT);
+        }
     }
 
+    private enum Interactiveness {
+        SILENT, NON_INTERACTIVE, INTERACTIVE
+    }
     private interface State {
 
         State execute();

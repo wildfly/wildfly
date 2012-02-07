@@ -22,6 +22,8 @@
 
 package org.jboss.as.appclient.logging;
 
+import static org.jboss.logging.Logger.Level.ERROR;
+
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
@@ -29,10 +31,10 @@ import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 
-import static org.jboss.logging.Logger.Level.ERROR;
-
 /**
- * Date: 26.10.2011
+ * This module is using message IDs in the range 13200-13299. This file is using the subset 13200-13249 for
+ * logger messages. See http://community.jboss.org/docs/DOC-16810 for the full list of currently reserved
+ * JBAS message id blocks.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
@@ -51,7 +53,7 @@ public interface AppClientLogger extends BasicLogger {
      * @param t     the cause to use for the log message.
      */
     @LogMessage(level = ERROR)
-    @Message(id = 14400, value = "%s")
+    @Message(id = 13200, value = "%s")
     void caughtException(@Cause Throwable cause, Throwable t);
 
     /**
@@ -61,7 +63,7 @@ public interface AppClientLogger extends BasicLogger {
      * @param exceptionName the exception name thrown.
      */
     @LogMessage(level = ERROR)
-    @Message(id = 14401, value = "%s running app client main")
+    @Message(id = 13201, value = "%s running app client main")
     void exceptionRunningAppClient(@Cause Throwable cause, String exceptionName);
 
 
@@ -70,6 +72,6 @@ public interface AppClientLogger extends BasicLogger {
      * @param cause         the cause of the error.
      */
     @LogMessage(level = ERROR)
-    @Message(id = 14402, value = "Error closing connection")
+    @Message(id = 13202, value = "Error closing connection")
     void exceptionClosingConnection(@Cause Throwable cause);
 }

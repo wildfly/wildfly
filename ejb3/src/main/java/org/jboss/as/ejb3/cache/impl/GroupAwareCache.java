@@ -44,10 +44,10 @@ public class GroupAwareCache<K extends Serializable, V extends Cacheable<K>, G e
     private final boolean strictGroups;
 
     /**
-     * @param backingCache
+     * @param backingCacheEntryStoreSource The backing cache entry store source from which this cache was created
      * @param strictGroups
      */
-    public GroupAwareCache(GroupAwareBackingCache<K, V, G, M> groupedCache, boolean strictGroups) {
+    public GroupAwareCache(final GroupAwareBackingCache<K, V, G, M> groupedCache, boolean strictGroups) {
         super(groupedCache, strictGroups);
         this.groupedCache = groupedCache;
         this.strictGroups = strictGroups;
@@ -100,5 +100,4 @@ public class GroupAwareCache<K extends Serializable, V extends Cacheable<K>, G e
             }
         }
     }
-
 }

@@ -29,6 +29,7 @@ import static org.jboss.as.messaging.CommonAttributes.LVQ;
 import static org.jboss.as.messaging.CommonAttributes.MAX_DELIVERY_ATTEMPTS;
 import static org.jboss.as.messaging.CommonAttributes.MAX_SIZE_BYTES_NODE_NAME;
 import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNTER_HISTORY_DAY_LIMIT;
+import static org.jboss.as.messaging.CommonAttributes.PAGE_MAX_CACHE_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.PAGE_SIZE_BYTES_NODE_NAME;
 import static org.jboss.as.messaging.CommonAttributes.REDELIVERY_DELAY;
 import static org.jboss.as.messaging.CommonAttributes.REDISTRIBUTION_DELAY;
@@ -67,7 +68,7 @@ class AddressSettingAdd extends AbstractAddStepHandler implements DescriptionPro
     static final SimpleAttributeDefinition[] ATTRIBUTES = new SimpleAttributeDefinition[] { ADDRESS_FULL_MESSAGE_POLICY,
                                      DEAD_LETTER_ADDRESS, LVQ, MAX_DELIVERY_ATTEMPTS, MAX_SIZE_BYTES_NODE_NAME,
                                      MESSAGE_COUNTER_HISTORY_DAY_LIMIT, EXPIRY_ADDRESS, REDELIVERY_DELAY,
-                                     REDISTRIBUTION_DELAY, PAGE_SIZE_BYTES_NODE_NAME, SEND_TO_DLA_ON_NO_ROUTE } ;
+                                     REDISTRIBUTION_DELAY, PAGE_MAX_CACHE_SIZE, PAGE_SIZE_BYTES_NODE_NAME, SEND_TO_DLA_ON_NO_ROUTE } ;
 
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
@@ -111,8 +112,11 @@ class AddressSettingAdd extends AbstractAddStepHandler implements DescriptionPro
     /**
      * Create a setting.
      *
+     * @param context the operation context
      * @param config the detyped config
      * @return the address settings
+     *
+     * @throws OperationFailedException if the model is invalid
      */
     static AddressSettings createSettings(final OperationContext context, final ModelNode config) throws OperationFailedException {
         final AddressSettings settings = new AddressSettings();
@@ -127,6 +131,7 @@ class AddressSettingAdd extends AbstractAddStepHandler implements DescriptionPro
         settings.setRedeliveryDelay(REDELIVERY_DELAY.resolveModelAttribute(context, config).asInt());
         settings.setRedistributionDelay(REDISTRIBUTION_DELAY.resolveModelAttribute(context, config).asLong());
         settings.setPageSizeBytes(PAGE_SIZE_BYTES_NODE_NAME.resolveModelAttribute(context, config).asLong());
+        settings.setPageCacheMaxSize(PAGE_MAX_CACHE_SIZE.resolveModelAttribute(context, config).asInt());
         settings.setSendToDLAOnNoRoute(SEND_TO_DLA_ON_NO_ROUTE.resolveModelAttribute(context, config).asBoolean());
         return settings;
     }

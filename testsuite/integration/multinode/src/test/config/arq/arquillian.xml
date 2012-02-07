@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<arquillian xmlns="http://www.jboss.org/arquillian-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.jboss.org/arquillian-1.0 http://jboss.org/schema/arquillian/arquillian-1.0.xsd">
+
+    <group qualifier="multinode">
+
+        <!-- The server than invokes the exposed EJB's via remote outbound connection -->
+        <container qualifier="multinode-client" default="true">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/jbossas-multinode-client</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-multinode-client -Djboss.node.name=multinode-client</property>
+                <property name="serverConfig">${jboss.server.config.file.name:standalone.xml}</property>
+            </configuration>
+        </container>
+
+        <!-- The server that exposes EJB's -->
+        <container qualifier="multinode-server" default="false">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/jbossas-multinode-server</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-multinode-server -Djboss.node.name=multinode-server</property>
+                <property name="serverConfig">${jboss.server.config.file.name:standalone.xml}</property>
+                <property name="managementPort">10099</property>
+            </configuration>
+        </container>
+    </group>
+
+</arquillian>

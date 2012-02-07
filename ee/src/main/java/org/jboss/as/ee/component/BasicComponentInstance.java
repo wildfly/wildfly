@@ -108,8 +108,9 @@ public class BasicComponentInstance implements ComponentInstance {
     /**
      * {@inheritDoc}
      */
-    public void destroy() {
+    public final void destroy() {
         if (doneUpdater.compareAndSet(this, 0, 1)) try {
+            preDestroy();
             final ManagedReference reference = instanceReference.get();
             if (reference != null) {
                 final InterceptorContext interceptorContext = prepareInterceptorContext();
@@ -124,15 +125,19 @@ public class BasicComponentInstance implements ComponentInstance {
         }
     }
 
+    /**
+     * Method that sub classes can use to override destroy logic.
+     *
+     */
+    protected void preDestroy() {
+
+    }
+
     protected InterceptorContext prepareInterceptorContext() {
         final InterceptorContext interceptorContext = new InterceptorContext();
         interceptorContext.putPrivateData(Component.class, component);
         interceptorContext.putPrivateData(ComponentInstance.class, this);
         interceptorContext.setContextData(new HashMap<String, Object>());
         return interceptorContext;
-    }
-
-    protected void finalize() {
-        destroy();
     }
 }

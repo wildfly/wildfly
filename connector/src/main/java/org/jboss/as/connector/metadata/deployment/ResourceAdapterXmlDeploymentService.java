@@ -96,12 +96,14 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
 
             raDeployer.setConfiguration(config.getValue());
 
-
             try {
                 WritableServiceBasedNamingStore.pushOwner(container.subTarget());
+                ClassLoader old = SecurityActions.getThreadContextClassLoader();
                 try {
+                    SecurityActions.setThreadContextClassLoader(module.getClassLoader());
                     raxmlDeployment = raDeployer.doDeploy();
                 } finally {
+                    SecurityActions.setThreadContextClassLoader(old);
                     WritableServiceBasedNamingStore.popOwner();
                 }
             } catch (Throwable t) {
@@ -116,9 +118,10 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
             ServiceName raServiceName = ConnectorServices.registerResourceAdapter(raName);
 
             context.getChildTarget()
-                .addService(raServiceName,
-                            new ResourceAdapterService(raName, raServiceName, value.getDeployment().getResourceAdapter())).setInitialMode(ServiceController.Mode.ACTIVE)
-               .install();
+                    .addService(raServiceName,
+                            new ResourceAdapterService(raName, raServiceName, value.getDeployment().getResourceAdapter()))
+                    .addDependency(deploymentServiceName)
+                    .setInitialMode(ServiceController.Mode.ACTIVE).install();
         } catch (Exception e) {
             throw new StartException(e);
         }

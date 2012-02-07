@@ -12,7 +12,7 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class DistributedCacheAdd extends ClusteredCacheAdd {
+public class DistributedCacheAdd extends SharedStateCacheAdd {
 
     static final DistributedCacheAdd INSTANCE = new DistributedCacheAdd();
 
@@ -52,9 +52,9 @@ public class DistributedCacheAdd extends ClusteredCacheAdd {
      * @return
      */
     @Override
-    void processModelNode(ModelNode cache, ConfigurationBuilder builder, List<Dependency<?>> dependencies) {
+    void processModelNode(String containerName, ModelNode cache, ConfigurationBuilder builder, List<Dependency<?>> dependencies) {
         // process the basic clustered configuration
-        super.processModelNode(cache, builder, dependencies);
+        super.processModelNode(containerName, cache, builder, dependencies);
 
         // process the additional distributed attributes and elements
         if (cache.hasDefined(ModelKeys.OWNERS)) {
@@ -69,21 +69,6 @@ public class DistributedCacheAdd extends ClusteredCacheAdd {
                 builder.clustering().l1().lifespan(lifespan);
             } else {
                 builder.clustering().l1().disable();
-            }
-        }
-
-        // rehashing is a child resource
-        if (cache.hasDefined(ModelKeys.SINGLETON) && cache.get(ModelKeys.SINGLETON, ModelKeys.REHASHING).isDefined()) {
-            ModelNode rehashing = cache.get(ModelKeys.SINGLETON, ModelKeys.REHASHING);
-
-            if (rehashing.hasDefined(ModelKeys.ENABLED)) {
-                builder.clustering().hash().rehashEnabled(rehashing.get(ModelKeys.ENABLED).asBoolean());
-            }
-            if (rehashing.hasDefined(ModelKeys.TIMEOUT)) {
-                builder.clustering().hash().rehashRpcTimeout(rehashing.get(ModelKeys.TIMEOUT).asLong());
-            }
-            if (rehashing.hasDefined(ModelKeys.WAIT)) {
-                builder.clustering().hash().rehashWait(rehashing.get(ModelKeys.WAIT).asLong());
             }
         }
     }

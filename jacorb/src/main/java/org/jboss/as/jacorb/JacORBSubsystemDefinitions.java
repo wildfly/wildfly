@@ -26,11 +26,24 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
 
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.MapAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
+import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.operations.validation.ParameterValidator;
+import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -48,6 +61,12 @@ class JacORBSubsystemDefinitions {
 
     private static final ModelNode DEFAULT_ENABLED_PROPERTY = new ModelNode().set("on");
 
+    private static final ParameterValidator SSL_CONFIG_VALIDATOR =
+            new EnumValidator<SSLConfigValue>(SSLConfigValue.class, true, false);
+
+    private static final ParameterValidator ON_OFF_VALIDATOR = new EnumValidator<AllowedValues>(
+            AllowedValues.class, true, false, AllowedValues.ON, AllowedValues.OFF);
+
     // orb attribute definitions.
     public static final SimpleAttributeDefinition ORB_NAME = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.NAME, ModelType.STRING, true)
@@ -58,30 +77,35 @@ class JacORBSubsystemDefinitions {
     public static final SimpleAttributeDefinition ORB_PRINT_VERSION = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.ORB_PRINT_VERSION, ModelType.STRING, true)
             .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
+            .setValidator(ON_OFF_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     public static final SimpleAttributeDefinition ORB_USE_IMR = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.ORB_USE_IMR, ModelType.STRING, true)
             .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
+            .setValidator(ON_OFF_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     public static final SimpleAttributeDefinition ORB_USE_BOM = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.ORB_USE_BOM, ModelType.STRING, true)
             .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
+            .setValidator(ON_OFF_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     public static final SimpleAttributeDefinition ORB_CACHE_TYPECODES = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.ORB_CACHE_TYPECODES, ModelType.STRING, true)
             .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
+            .setValidator(ON_OFF_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     public static final SimpleAttributeDefinition ORB_CACHE_POA_NAMES = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.ORB_CACHE_POA_NAMES, ModelType.STRING, true)
             .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
+            .setValidator(ON_OFF_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
@@ -153,12 +177,14 @@ class JacORBSubsystemDefinitions {
     public static final SimpleAttributeDefinition ORB_INIT_SECURITY = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.ORB_INIT_SECURITY, ModelType.STRING, true)
             .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
+            .setValidator(ON_OFF_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     public static final SimpleAttributeDefinition ORB_INIT_TX = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.ORB_INIT_TRANSACTIONS, ModelType.STRING, true)
             .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
+            .setValidator(new EnumValidator<AllowedValues>(AllowedValues.class, true, false))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
@@ -166,12 +192,14 @@ class JacORBSubsystemDefinitions {
     public static final SimpleAttributeDefinition POA_MONITORING = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.POA_MONITORING, ModelType.STRING, true)
             .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
+            .setValidator(ON_OFF_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     public static final SimpleAttributeDefinition POA_QUEUE_WAIT = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.POA_QUEUE_WAIT, ModelType.STRING, true)
             .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
+            .setValidator(ON_OFF_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
@@ -214,6 +242,7 @@ class JacORBSubsystemDefinitions {
     public static final SimpleAttributeDefinition NAMING_EXPORT_CORBALOC = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.NAMING_EXPORT_CORBALOC, ModelType.STRING, true)
             .setDefaultValue(DEFAULT_ENABLED_PROPERTY)
+            .setValidator(ON_OFF_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
@@ -221,42 +250,49 @@ class JacORBSubsystemDefinitions {
     public static final SimpleAttributeDefinition INTEROP_SUN = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.INTEROP_SUN, ModelType.STRING, true)
             .setDefaultValue(DEFAULT_ENABLED_PROPERTY)
+            .setValidator(ON_OFF_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     public static final SimpleAttributeDefinition INTEROP_COMET = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.INTEROP_COMET, ModelType.STRING, true)
             .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
+            .setValidator(ON_OFF_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     public static final SimpleAttributeDefinition INTEROP_IONA = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.INTEROP_IONA, ModelType.STRING, true)
             .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
+            .setValidator(ON_OFF_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     public static final SimpleAttributeDefinition INTEROP_CHUNK_RMI_VALUETYPES = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.INTEROP_CHUNK_RMI_VALUETYPES, ModelType.STRING, true)
             .setDefaultValue(DEFAULT_ENABLED_PROPERTY)
+            .setValidator(ON_OFF_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     public static final SimpleAttributeDefinition INTEROP_LAX_BOOLEAN_ENCODING = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.INTEROP_LAX_BOOLEAN_ENCODING, ModelType.STRING, true)
             .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
+            .setValidator(ON_OFF_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     public static final SimpleAttributeDefinition INTEROP_INDIRECT_ENCODING_DISABLE = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.INTEROP_INDIRECTION_ENCODING_DISABLE, ModelType.STRING, true)
             .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
+            .setValidator(ON_OFF_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     public static final SimpleAttributeDefinition INTEROP_STRICT_CHECK_ON_TC_CREATION = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.INTEROP_STRICT_CHECK_ON_TC_CREATION, ModelType.STRING, true)
             .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
+            .setValidator(ON_OFF_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
@@ -264,6 +300,7 @@ class JacORBSubsystemDefinitions {
     public static final SimpleAttributeDefinition SECURITY_SUPPORT_SSL = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.SECURITY_SUPPORT_SSL, ModelType.STRING, true)
             .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
+            .setValidator(ON_OFF_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
@@ -275,48 +312,42 @@ class JacORBSubsystemDefinitions {
     public static final SimpleAttributeDefinition SECURITY_ADD_COMPONENT_INTERCEPTOR = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.SECURITY_ADD_COMP_VIA_INTERCEPTOR, ModelType.STRING, true)
             .setDefaultValue(DEFAULT_ENABLED_PROPERTY)
+            .setValidator(ON_OFF_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     public static final SimpleAttributeDefinition SECURITY_CLIENT_SUPPORTS = new SimpleAttributeDefinitionBuilder(
-            JacORBSubsystemConstants.SECURITY_CLIENT_SUPPORTS, ModelType.INT, true)
-            .setDefaultValue(new ModelNode().set(60))
-            .setValidator(new IntRangeValidator(0, 60, true, false))
+            JacORBSubsystemConstants.SECURITY_CLIENT_SUPPORTS, ModelType.STRING, true)
+            .setDefaultValue(new ModelNode().set(SSLConfigValue.MUTUALAUTH.toString()))
+            .setValidator(SSL_CONFIG_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     public static final SimpleAttributeDefinition SECURITY_CLIENT_REQUIRES = new SimpleAttributeDefinitionBuilder(
-            JacORBSubsystemConstants.SECURITY_CLIENT_REQUIRES, ModelType.INT, true)
-            .setDefaultValue(new ModelNode().set(0))
-            .setValidator(new IntRangeValidator(0, 60, true, false))
+            JacORBSubsystemConstants.SECURITY_CLIENT_REQUIRES, ModelType.STRING, true)
+            .setDefaultValue(new ModelNode().set(SSLConfigValue.NONE.toString()))
+            .setValidator(SSL_CONFIG_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     public static final SimpleAttributeDefinition SECURITY_SERVER_SUPPORTS = new SimpleAttributeDefinitionBuilder(
-            JacORBSubsystemConstants.SECURITY_SERVER_SUPPORTS, ModelType.INT, true)
-            .setDefaultValue(new ModelNode().set(60))
-            .setValidator(new IntRangeValidator(0, 60, true, false))
+            JacORBSubsystemConstants.SECURITY_SERVER_SUPPORTS, ModelType.STRING, true)
+            .setDefaultValue(new ModelNode().set(SSLConfigValue.MUTUALAUTH.toString()))
+            .setValidator(SSL_CONFIG_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     public static final SimpleAttributeDefinition SECURITY_SERVER_REQUIRES = new SimpleAttributeDefinitionBuilder(
-            JacORBSubsystemConstants.SECURITY_SERVER_REQUIRES, ModelType.INT, true)
-            .setDefaultValue(new ModelNode().set(0))
-            .setValidator(new IntRangeValidator(0, 60, true, false))
+            JacORBSubsystemConstants.SECURITY_SERVER_REQUIRES, ModelType.STRING, true)
+            .setDefaultValue(new ModelNode().set(SSLConfigValue.NONE.toString()))
+            .setValidator(SSL_CONFIG_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
-    public static final SimpleAttributeDefinition SECURITY_USE_DOMAIN_SF = new SimpleAttributeDefinitionBuilder(
-            JacORBSubsystemConstants.SECURITY_USE_DOMAIN_SF, ModelType.STRING, true)
-            .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
+    public static final PropertiesAttributeDefinition PROPERTIES =
+            new PropertiesAttributeDefinition(JacORBSubsystemConstants.PROPERTIES,
+                    JacORBSubsystemConstants.PROPERTIES, true);
 
-    public static final SimpleAttributeDefinition SECURITY_USE_DOMAIN_SSF = new SimpleAttributeDefinitionBuilder(
-            JacORBSubsystemConstants.SECURITY_USE_DOMAIN_SSF, ModelType.STRING, true)
-            .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
 
     // list that contains the orb attribute definitions.
     static final List<SimpleAttributeDefinition> ORB_ATTRIBUTES = Arrays.asList(ORB_NAME, ORB_PRINT_VERSION,
@@ -350,17 +381,19 @@ class JacORBSubsystemDefinitions {
     // list that contains the security attribute definitions.
     static final List<SimpleAttributeDefinition> SECURITY_ATTRIBUTES = Arrays.asList(SECURITY_SUPPORT_SSL,
             SECURITY_SECURITY_DOMAIN, SECURITY_ADD_COMPONENT_INTERCEPTOR, SECURITY_CLIENT_SUPPORTS,
-            SECURITY_CLIENT_REQUIRES, SECURITY_SERVER_SUPPORTS, SECURITY_SERVER_REQUIRES, SECURITY_USE_DOMAIN_SF,
-            SECURITY_USE_DOMAIN_SSF);
+            SECURITY_CLIENT_REQUIRES, SECURITY_SERVER_SUPPORTS, SECURITY_SERVER_REQUIRES);
+
+    static final List<SimpleAttributeDefinition> SSL_CONFIG_ATTRIBUTES = Arrays.asList(SECURITY_CLIENT_SUPPORTS,
+            SECURITY_CLIENT_REQUIRES, SECURITY_SERVER_SUPPORTS, SECURITY_SERVER_REQUIRES);
 
     // list that contains all attribute definitions.
-    static final List<SimpleAttributeDefinition> SUBSYSTEM_ATTRIBUTES;
+    static final List<AttributeDefinition> SUBSYSTEM_ATTRIBUTES;
 
     // utility map that keys all definitions by their names.
-    static final Map<String, SimpleAttributeDefinition> ATTRIBUTES_BY_NAME;
+    static final Map<String, AttributeDefinition> ATTRIBUTES_BY_NAME;
 
     static {
-        SUBSYSTEM_ATTRIBUTES = new ArrayList<SimpleAttributeDefinition>();
+        SUBSYSTEM_ATTRIBUTES = new ArrayList<AttributeDefinition>();
         SUBSYSTEM_ATTRIBUTES.addAll(ORB_ATTRIBUTES);
         SUBSYSTEM_ATTRIBUTES.addAll(ORB_CONN_ATTRIBUTES);
         SUBSYSTEM_ATTRIBUTES.addAll(ORB_INIT_ATTRIBUTES);
@@ -369,10 +402,12 @@ class JacORBSubsystemDefinitions {
         SUBSYSTEM_ATTRIBUTES.addAll(NAMING_ATTRIBUTES);
         SUBSYSTEM_ATTRIBUTES.addAll(INTEROP_ATTRIBUTES);
         SUBSYSTEM_ATTRIBUTES.addAll(SECURITY_ATTRIBUTES);
+        SUBSYSTEM_ATTRIBUTES.add(PROPERTIES);
 
-        Map<String, SimpleAttributeDefinition> map = new HashMap<String, SimpleAttributeDefinition>();
-        for (SimpleAttributeDefinition attribute : SUBSYSTEM_ATTRIBUTES)
+        Map<String, AttributeDefinition> map = new HashMap<String, AttributeDefinition>();
+        for (AttributeDefinition attribute : SUBSYSTEM_ATTRIBUTES) {
             map.put(attribute.getName(), attribute);
+        }
         ATTRIBUTES_BY_NAME = map;
     }
 
@@ -384,7 +419,48 @@ class JacORBSubsystemDefinitions {
      * @param attributeNAme a {@code String} representing the attribute name.
      * @return the corresponding attribute definition or {@code null} if no definition was found with that name.
      */
-    public static SimpleAttributeDefinition valueOf(String attributeNAme) {
+    public static AttributeDefinition valueOf(String attributeNAme) {
         return ATTRIBUTES_BY_NAME.get(attributeNAme);
+    }
+
+
+    /**
+     * @see org.jboss.as.remoting.AbstractOutboundConnectionResourceDefinition.PropertiesAttributeDefinition
+     */
+    //todo has to be moved to some better place same as org.jboss.as.remoting.AbstractOutboundConnectionResourceDefinition.PropertiesAttributeDefinition
+    private static class PropertiesAttributeDefinition extends MapAttributeDefinition {
+
+        public PropertiesAttributeDefinition(final String name, final String xmlName, boolean allowNull) {
+            super(name, xmlName, allowNull, 0, Integer.MAX_VALUE, new ModelTypeValidator(ModelType.STRING));
+        }
+
+        @Override
+        protected void addValueTypeDescription(ModelNode node, ResourceBundle bundle) {
+            node.get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
+        }
+
+        @Override
+        protected void addAttributeValueTypeDescription(ModelNode node, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
+            node.get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
+        }
+
+        @Override
+        protected void addOperationParameterValueTypeDescription(ModelNode node, String operationName, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
+            node.get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
+        }
+
+        @Override
+        public void marshallAsElement(ModelNode resourceModel, XMLStreamWriter writer) throws XMLStreamException {
+            if (!isMarshallable(resourceModel)) { return; }
+
+            resourceModel = resourceModel.get(getName());
+            writer.writeStartElement(getName());
+            for (ModelNode property : resourceModel.asList()) {
+                writer.writeEmptyElement(getXmlName());
+                writer.writeAttribute(Attribute.NAME.getLocalName(), property.asProperty().getName());
+                writer.writeAttribute(Attribute.VALUE.getLocalName(), property.asProperty().getValue().asString());
+            }
+            writer.writeEndElement();
+        }
     }
 }

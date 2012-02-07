@@ -88,6 +88,11 @@
         </dependency>
 
         <dependency>
+	        <groupId>org.jboss.as</groupId>
+	        <artifactId>jboss-as-domain-management</artifactId>
+        </dependency>
+        
+        <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-server</artifactId>
         </dependency>
@@ -123,7 +128,12 @@
 
         <dependency>
             <groupId>org.jboss.security</groupId>
-            <artifactId>jboss-negotiation</artifactId>
+            <artifactId>jboss-negotiation-extras</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.security</groupId>
+            <artifactId>jboss-negotiation-spnego</artifactId>
         </dependency>
 
         <dependency>

@@ -37,10 +37,23 @@ import org.jboss.dmr.ModelType;
 public class ClusterPassivationStoreResourceDefinition extends PassivationStoreResourceDefinition {
 
     public static final SimpleAttributeDefinition MAX_SIZE = MAX_SIZE_BUILDER.setDefaultValue(new ModelNode().set(ClusteredBackingCacheEntryStoreConfig.DEFAULT_MAX_SIZE)).build();
-    public static final SimpleAttributeDefinition BACKING_CACHE =
-            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.BACKING_CACHE, ModelType.STRING, true)
-                    .setXmlName(EJB3SubsystemXMLAttribute.BACKING_CACHE.getLocalName())
-                    .setDefaultValue(new ModelNode().set(ClusteredBackingCacheEntryStoreConfig.DEFAULT_BACKING_CACHE))
+    public static final SimpleAttributeDefinition CACHE_CONTAINER =
+            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.CACHE_CONTAINER, ModelType.STRING, true)
+                    .setXmlName(EJB3SubsystemXMLAttribute.CACHE_CONTAINER.getLocalName())
+                    .setDefaultValue(new ModelNode().set(ClusteredBackingCacheEntryStoreConfig.DEFAULT_CACHE_CONTAINER))
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
+                    .build();
+    public static final SimpleAttributeDefinition BEAN_CACHE =
+            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.BEAN_CACHE, ModelType.STRING, true)
+                    .setXmlName(EJB3SubsystemXMLAttribute.BEAN_CACHE.getLocalName())
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
+                    .build();
+    public static final SimpleAttributeDefinition CLIENT_MAPPINGS_CACHE =
+            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.CLIENT_MAPPINGS_CACHE, ModelType.STRING, true)
+                    .setXmlName(EJB3SubsystemXMLAttribute.CLIENT_MAPPINGS_CACHE.getLocalName())
+                    .setDefaultValue(new ModelNode().set(ClusteredBackingCacheEntryStoreConfig.DEFAULT_CLIENT_MAPPING_CACHE))
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_NONE)
                     .build();
@@ -52,7 +65,7 @@ public class ClusterPassivationStoreResourceDefinition extends PassivationStoreR
                     .setFlags(AttributeAccess.Flag.RESTART_NONE)
                     .build();
 
-    private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { IDLE_TIMEOUT, IDLE_TIMEOUT_UNIT, MAX_SIZE, BACKING_CACHE, PASSIVATE_EVENTS_ON_REPLICATE };
+    private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { IDLE_TIMEOUT, IDLE_TIMEOUT_UNIT, MAX_SIZE, CACHE_CONTAINER, BEAN_CACHE, CLIENT_MAPPINGS_CACHE, PASSIVATE_EVENTS_ON_REPLICATE };
 
     private static final ClusterPassivationStoreAdd ADD_HANDLER = new ClusterPassivationStoreAdd(ATTRIBUTES);
     private static final ClusterPassivationStoreRemove REMOVE_HANDLER = new ClusterPassivationStoreRemove(ADD_HANDLER);

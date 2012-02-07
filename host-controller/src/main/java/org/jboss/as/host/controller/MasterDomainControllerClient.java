@@ -5,8 +5,10 @@ package org.jboss.as.host.controller;
 
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.domain.controller.DomainController;
-import org.jboss.as.domain.controller.FileRepository;
+import org.jboss.as.repository.HostFileRepository;
 import org.jboss.msc.service.ServiceName;
+
+import java.io.IOException;
 
 /**
  * Client for interacting with the master {@link DomainController} on a remote host.
@@ -21,9 +23,9 @@ public interface MasterDomainControllerClient extends ModelControllerClient {
     /**
      * Register with the remote domain controller
      *
-     * @throws IllegalStateException if there was a problem talking to the remote host
+     * @throws IOException if there was a problem talking to the remote host
      */
-    void register();
+    void register() throws IOException;
 
     /**
      * Unregister with the remote domain controller.
@@ -31,10 +33,10 @@ public interface MasterDomainControllerClient extends ModelControllerClient {
     void unregister();
 
     /**
-     * Gets a {@link FileRepository} capable of retrieving files from the
+     * Gets a {@link HostFileRepository} capable of retrieving files from the
      * master domain controller.
      *
      * @return the file repository
      */
-    FileRepository getRemoteFileRepository();
+    HostFileRepository getRemoteFileRepository();
 }

@@ -433,9 +433,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             switch (element) {
                 case AUTHENTICATION: {
                     if (visited.contains(Element.AUTHENTICATION_JASPI))
-                        throw new XMLStreamException(
-                                "A security domain can have either an <authentication> or <authentication-jaspi> element, not both",
-                                reader.getLocation());
+                        throw SecurityMessages.MESSAGES.xmlStreamExceptionAuth(reader.getLocation());
                     parseAuthentication(list, address, reader);
                     break;
                 }
@@ -461,9 +459,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                 }
                 case AUTHENTICATION_JASPI: {
                     if (visited.contains(Element.AUTHENTICATION))
-                        throw new XMLStreamException(
-                                "A security domain can have either an <authentication> or <authentication-jaspi> element, not both",
-                                reader.getLocation());
+                        throw SecurityMessages.MESSAGES.xmlStreamExceptionAuth(reader.getLocation());
                     parseAuthenticationJaspi(list, address, reader);
                     break;
                 }
@@ -902,8 +898,8 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
         }
 
         if (visited.size() == 0) {
-            throw new XMLStreamException("Missing required attribute: either " + Attribute.KEYSTORE_PASSWORD.getLocalName()
-                    + " or " + Attribute.TRUSTSTORE_PASSWORD.getLocalName() + " must be present", reader.getLocation());
+            throw SecurityMessages.MESSAGES.xmlStreamExceptionMissingAttribute(Attribute.KEYSTORE_PASSWORD.getLocalName(),
+                    Attribute.TRUSTSTORE_PASSWORD.getLocalName(), reader.getLocation());
         }
 
         parseProperties(Element.PROPERTY.getLocalName(), reader, op.get(ADDITIONAL_PROPERTIES));

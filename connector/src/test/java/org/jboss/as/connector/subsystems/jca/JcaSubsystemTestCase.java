@@ -44,16 +44,16 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
             "    <archive-validation enabled=\"false\" />" +
             "    <bean-validation enabled=\"false\" />" +
             "    <default-workmanager>" +
-            "        <short-running-threads blocking=\"true\">" +
-            "                <core-threads count=\"10\" per-cpu=\"20\"/>" +
-            "                <queue-length count=\"10\" per-cpu=\"20\"/>" +
-            "                <max-threads count=\"10\" per-cpu=\"20\"/>" +
+            "        <short-running-threads>" +
+            "                <core-threads count=\"10\"/>" +
+            "                <queue-length count=\"30\"/>" +
+            "                <max-threads count=\"30\"/>" +
             "                <keepalive-time time=\"10\" unit=\"seconds\"/>" +
             "        </short-running-threads>" +
-            "        <long-running-threads blocking=\"true\">" +
-            "                <core-threads count=\"10\" per-cpu=\"20\"/>" +
-            "                <queue-length count=\"10\" per-cpu=\"20\"/>" +
-            "                <max-threads count=\"10\" per-cpu=\"20\"/>" +
+            "        <long-running-threads>" +
+            "                <core-threads count=\"15\"/>" +
+            "                <queue-length count=\"10\"/>" +
+            "                <max-threads count=\"25\"/>" +
             "                <keepalive-time time=\"10\" unit=\"seconds\"/>" +
             "        </long-running-threads>" +
             "    </default-workmanager>" +

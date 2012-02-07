@@ -22,13 +22,13 @@
 
 package org.jboss.as.test.clustering.unmanaged.ejb3.stateful.bean;
 
-import javax.ejb.Remote;
+import javax.ejb.Local;
 
 /**
  * @author Paul Ferraro
  *
  */
-@Remote
+@Local
 public interface Stateful {
     int increment();
 }

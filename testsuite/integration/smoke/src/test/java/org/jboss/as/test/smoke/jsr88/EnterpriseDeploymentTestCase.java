@@ -27,17 +27,13 @@ import org.jboss.as.ee.deployment.spi.DeploymentManagerImpl;
 import org.jboss.as.ee.deployment.spi.DeploymentMetaData;
 import org.jboss.as.ee.deployment.spi.JarUtils;
 import org.jboss.as.ee.deployment.spi.factories.DeploymentFactoryImpl;
-import org.jboss.as.test.smoke.embedded.deployment.Echo;
-import org.jboss.as.test.smoke.embedded.deployment.EchoBean;
-import org.jboss.as.test.smoke.embedded.deployment.EchoHome;
-import org.jboss.as.test.smoke.embedded.deployment.SampleServlet;
+import org.jboss.as.test.http.Authentication;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.util.UnreachableStatementException;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -67,8 +63,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.jar.JarOutputStream;
 
-import static org.jboss.as.arquillian.container.Authentication.PASSWORD;
-import static org.jboss.as.arquillian.container.Authentication.USERNAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -84,8 +78,8 @@ import static org.junit.Assert.fail;
 @RunAsClient
 @RunWith(Arquillian.class)
 public class EnterpriseDeploymentTestCase {
-    private static final long TIMEOUT = 10000;
 
+    private static final long TIMEOUT = 10000;
     private static final String WAR_JBOSS_FILE = "WEB-INF/jboss-web.xml";
     private static final String JAR_JBOSS_FILE = "META-INF/jboss.xml";
     private static final String EAR_JBOSS_FILE = "META-INF/jboss-app.xml";
@@ -167,7 +161,7 @@ public class EnterpriseDeploymentTestCase {
     @Test
     public void testListAvailableModules() throws Exception {
         String uri = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7&serverHost=127.0.0.1&serverPort=9999";
-        DeploymentManager manager = getDeploymentManager(uri, USERNAME, PASSWORD);
+        DeploymentManager manager = getDeploymentManager(uri, Authentication.USERNAME, Authentication.PASSWORD);
         Target[] targets = manager.getTargets();
         TargetModuleID[] modules = manager.getAvailableModules(ModuleType.EAR, targets);
         assertNull(modules);
@@ -239,7 +233,7 @@ public class EnterpriseDeploymentTestCase {
     @Test
     public void testListAvailableModulesWrongHost() throws Exception {
         String uri = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7&serverHost=wrongHost";
-        DeploymentManager manager = getDeploymentManager(uri, USERNAME, PASSWORD);
+        DeploymentManager manager = getDeploymentManager(uri, Authentication.USERNAME, Authentication.PASSWORD);
         Target[] targets = manager.getTargets();
         try {
             manager.getAvailableModules(ModuleType.EAR, targets);
@@ -252,7 +246,7 @@ public class EnterpriseDeploymentTestCase {
     @Test
     public void testListAvailableModulesWrongPort() throws Exception {
         String uri = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7&serverPort=9876";
-        DeploymentManager manager = getDeploymentManager(uri, USERNAME, PASSWORD);
+        DeploymentManager manager = getDeploymentManager(uri, Authentication.USERNAME, Authentication.PASSWORD);
         Target[] targets = manager.getTargets();
         try {
             manager.getAvailableModules(ModuleType.EAR, targets);
@@ -263,7 +257,7 @@ public class EnterpriseDeploymentTestCase {
     }
 
     private DeploymentManager getDeploymentManager() throws Exception {
-        return getDeploymentManager(USERNAME, PASSWORD);
+        return getDeploymentManager(Authentication.USERNAME, Authentication.PASSWORD);
     }
 
     private DeploymentManager getDeploymentManager(String username, String password) throws Exception {
@@ -341,81 +335,62 @@ public class EnterpriseDeploymentTestCase {
     }
 
     private InputStream createDeploymentPlan(String deploymentFile) throws Exception {
-        String[] strs = null;
 
-        String jbossFile = getJBossFile(deploymentFile);
-        File jbossDescriptor = getResourceFile("deployment/" + jbossFile);
-        assertTrue(jbossDescriptor.exists());
+        String jbossDescriptorName = null;
+        if (deploymentFile.endsWith(".war"))
+            jbossDescriptorName = WAR_JBOSS_FILE;
+        else if (deploymentFile.endsWith(".jar"))
+            jbossDescriptorName = JAR_JBOSS_FILE;
+        else if (deploymentFile.endsWith(".ear"))
+            jbossDescriptorName = EAR_JBOSS_FILE;
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        JarOutputStream jos = new JarOutputStream(baos);
-        JarUtils.addJarEntry(jos, "!/" + jbossFile, new FileInputStream(jbossDescriptor));
+        JarOutputStream plan = new JarOutputStream(baos);
+
+        URL descriptorURL = getClass().getClassLoader().getResource("jsr88/" + jbossDescriptorName);
+        File jbossDescriptorFile = new File(descriptorURL.getPath());
+        JarUtils.addJarEntry(plan, "!/" + jbossDescriptorName, new FileInputStream(jbossDescriptorFile));
 
         // Setup deployment plan meta data with propriatary descriptor
         DeploymentMetaData metaData = new DeploymentMetaData(deploymentFile);
 
-        strs = jbossFile.split("/");
+        String[] strs = jbossDescriptorName.split("/");
         metaData.addEntry(deploymentFile, strs[strs.length - 1]);
 
         // Add the meta data to the deployment plan
         String metaStr = metaData.toXMLString();
+        JarUtils.addJarEntry(plan, DeploymentMetaData.ENTRY_NAME, new ByteArrayInputStream(metaStr.getBytes()));
 
-        JarUtils.addJarEntry(jos, DeploymentMetaData.ENTRY_NAME, new ByteArrayInputStream(metaStr.getBytes()));
-        jos.flush();
-        jos.close();
+        plan.flush();
+        plan.close();
 
         return new ByteArrayInputStream(baos.toByteArray());
-    }
-
-    private String getJBossFile(String deploymentFile) {
-        if (deploymentFile.endsWith(".war"))
-            return WAR_JBOSS_FILE;
-        else if (deploymentFile.endsWith(".jar"))
-            return JAR_JBOSS_FILE;
-        else if (deploymentFile.endsWith(".ear"))
-            return EAR_JBOSS_FILE;
-        else
-            fail("Wrong J2EE Module found...");
-        throw new UnreachableStatementException();
-    }
-
-    private File getResourceFile(String resource) {
-        File file = new File(resource);
-        if (file.exists())
-            return file;
-
-        String testResourcesDir = System.getProperty("jbossas.ts.submodule.dir") + "/target/test-classes";
-        file = new File(testResourcesDir + "/" + resource);
-        if (file.exists())
-            return file;
-
-        throw new IllegalArgumentException("Cannot obtain '" + testResourcesDir + "/" + resource + "'");
     }
 
     private Archive<?> getWebArchive() {
         WebArchive archive = ShrinkWrap.create(WebArchive.class, "deployment-web.war");
         archive.addClasses(SampleServlet.class);
-        archive.setWebXML("deployment/WEB-INF/web.xml");
+        archive.setWebXML("jsr88/WEB-INF/web.xml");
         return archive;
     }
 
     private Archive<?> getBadWebArchive() {
         WebArchive archive = ShrinkWrap.create(WebArchive.class, "deployment-bad-web.war");
         archive.addClasses(SampleServlet.class);
-        archive.setWebXML("deployment/WEB-INF/badweb.xml");
+        archive.setWebXML("jsr88/WEB-INF/badweb.xml");
         return archive;
     }
 
     private Archive<?> getEjbArchive() {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "deployment-ejb.jar");
         archive.addClasses(Echo.class, EchoHome.class, EchoBean.class);
-        archive.addAsManifestResource("deployment/META-INF/ejb-jar.xml", "ejb-jar.xml");
+        archive.addAsManifestResource("jsr88/META-INF/ejb-jar.xml", "ejb-jar.xml");
         return archive;
     }
 
     private Archive<?> getEarArchive() {
         EnterpriseArchive archive = ShrinkWrap.create(EnterpriseArchive.class, "deployment-app.ear");
-        archive.setApplicationXML("deployment/META-INF/application.xml");
+        archive.setApplicationXML("jsr88/META-INF/application.xml");
         archive.add(getWebArchive(), "/", ZipExporter.class);
         archive.add(getEjbArchive(), "/", ZipExporter.class);
         return archive;

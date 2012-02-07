@@ -22,6 +22,8 @@
 package org.jboss.as.appclient.service;
 
 import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
@@ -34,6 +36,7 @@ import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.server.deployment.SetupAction;
+import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -93,7 +96,7 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
                     try {
                         try {
                             SecurityActions.setContextClassLoader(classLoader);
-                            EJBClientContext.setSelector(lazyConnectionContextSelector);
+                            AccessController.doPrivileged(new SetSelectorAction(lazyConnectionContextSelector));
                             applicationClientDeploymentServiceInjectedValue.getValue().getDeploymentCompleteLatch().await();
                             NamespaceContextSelector.setDefault(namespaceContextSelectorInjectedValue);
 
@@ -160,5 +163,20 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
 
     public InjectedValue<Component> getApplicationClientComponent() {
         return applicationClientComponent;
+    }
+
+
+    private static final class SetSelectorAction implements PrivilegedAction<ContextSelector<EJBClientContext>> {
+
+        private final ContextSelector<EJBClientContext> selector;
+
+        private SetSelectorAction(final ContextSelector<EJBClientContext> selector) {
+            this.selector = selector;
+        }
+
+        @Override
+        public ContextSelector<EJBClientContext> run() {
+            return EJBClientContext.setSelector(selector);
+        }
     }
 }

@@ -75,7 +75,6 @@
    <xsd:complexType name="featureType">
       <xsd:sequence>
          <xsd:element name="feature-name" type="xsd:string"/>
-         <xsd:element name="feature-data" type="xsd:anyType" minOccurs="0"/>
       </xsd:sequence>
    </xsd:complexType>
 

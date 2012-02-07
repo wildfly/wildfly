@@ -46,7 +46,6 @@ public class PostConstructOrderTestCase {
         return war;
     }
 
-
     @Test
     public void testPostConstructMethodOrder() throws NamingException {
         InitialContext ctx = new InitialContext();

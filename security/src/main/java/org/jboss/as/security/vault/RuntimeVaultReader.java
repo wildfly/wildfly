@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
+import org.jboss.as.security.SecurityMessages;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.as.server.services.security.VaultReaderException;
 import org.jboss.security.vault.SecurityVault;
@@ -70,17 +71,17 @@ public class RuntimeVaultReader extends AbstractVaultReader {
         } catch (PrivilegedActionException e) {
             Throwable t = e.getCause();
             if (t instanceof SecurityVaultException) {
-                throw new VaultReaderException(t);
+                throw SecurityMessages.MESSAGES.vaultReaderException(t);
             }
             if (t instanceof RuntimeException) {
-                throw (RuntimeException)t;
+                throw SecurityMessages.MESSAGES.runtimeException(t);
             }
-            throw new RuntimeException(t);
+            throw SecurityMessages.MESSAGES.runtimeException(t);
         }
         try {
             vault.init(vaultOptions);
         } catch (SecurityVaultException e) {
-            throw new VaultReaderException(e);
+            throw SecurityMessages.MESSAGES.vaultReaderException(e);
         }
         this.vault = vault;
     }
@@ -94,13 +95,13 @@ public class RuntimeVaultReader extends AbstractVaultReader {
         if (isVaultFormat(password)) {
 
             if (vault == null) {
-                throw new SecurityException("Vault is not initialized");
+                throw SecurityMessages.MESSAGES.vaultNotInitializedException();
             }
 
             try {
                 return getValueAsString(password);
             } catch (SecurityVaultException e) {
-                throw new SecurityException(e);
+                throw SecurityMessages.MESSAGES.securityException(e);
             }
 
         }

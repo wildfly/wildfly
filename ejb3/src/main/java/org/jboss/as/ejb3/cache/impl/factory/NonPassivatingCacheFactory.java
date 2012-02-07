@@ -34,6 +34,7 @@ import org.jboss.as.ejb3.cache.impl.SimpleCache;
 import org.jboss.as.ejb3.cache.impl.backing.NonPassivatingBackingCacheEntry;
 import org.jboss.as.ejb3.cache.impl.backing.NonPassivatingBackingCacheImpl;
 import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
+import org.jboss.as.server.ServerEnvironment;
 
 /**
  * {@link CacheFactory} implementation that will return a non-group-aware cache that doesn't support passivation.
@@ -46,9 +47,15 @@ import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
  */
 public class NonPassivatingCacheFactory<K extends Serializable, V extends Cacheable<K>> implements CacheFactory<K, V> {
 
+    private final ServerEnvironment environment;
+
+    public NonPassivatingCacheFactory(ServerEnvironment environment) {
+        this.environment = environment;
+    }
+
     @Override
     public Cache<K, V> createCache(String beanName, StatefulObjectFactory<V> factory, PassivationManager<K, V> passivationManager, StatefulTimeoutInfo timeout) {
-        NonPassivatingBackingCacheImpl<K, V> backingCache = new NonPassivatingBackingCacheImpl<K, V>(factory, Executors.defaultThreadFactory(), timeout);
+        NonPassivatingBackingCacheImpl<K, V> backingCache = new NonPassivatingBackingCacheImpl<K, V>(factory, Executors.defaultThreadFactory(), timeout, this.environment);
         return new SimpleCache<K, V, NonPassivatingBackingCacheEntry<K, V>>(backingCache, false);
     }
 }

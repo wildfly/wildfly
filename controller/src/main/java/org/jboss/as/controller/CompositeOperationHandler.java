@@ -35,6 +35,7 @@ import java.util.Map;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 
@@ -100,6 +101,7 @@ public final class CompositeOperationHandler implements OperationStepHandler, De
     @Override
     public ModelNode getModelDescription(Locale locale) {
         //Since this instance should have EntryType.PRIVATE, there is no need for a description
-        return new ModelNode();
+        //return new ModelNode();
+        return CommonDescriptions.getCompositeOperation(locale);
     }
 }

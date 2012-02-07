@@ -24,17 +24,13 @@ import java.util.Map;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.security.Constants.CODE;
 import static org.jboss.as.security.Constants.FLAG;
 import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
-import static org.jboss.as.test.integration.security.loginmodules.common.Utils.applyUpdates;
+import static org.jboss.as.test.integration.security.common.Utils.applyUpdates;
 
 /**
  * Created by IntelliJ IDEA.

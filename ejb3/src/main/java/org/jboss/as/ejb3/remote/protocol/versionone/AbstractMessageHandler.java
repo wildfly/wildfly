@@ -22,6 +22,19 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
+import org.jboss.ejb.client.remoting.PackedInteger;
+import org.jboss.ejb.client.remoting.ProtocolV1ClassTable;
+import org.jboss.ejb.client.remoting.ProtocolV1ObjectTable;
+import org.jboss.marshalling.ByteInput;
+import org.jboss.marshalling.ByteOutput;
+import org.jboss.marshalling.ClassResolver;
+import org.jboss.marshalling.Marshaller;
+import org.jboss.marshalling.MarshallerFactory;
+import org.jboss.marshalling.Marshalling;
+import org.jboss.marshalling.MarshallingConfiguration;
+import org.jboss.marshalling.Unmarshaller;
+import org.jboss.remoting3.Channel;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
@@ -33,17 +46,6 @@ import java.io.ObjectOutput;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.jboss.ejb.client.remoting.PackedInteger;
-import org.jboss.marshalling.ByteInput;
-import org.jboss.marshalling.ByteOutput;
-import org.jboss.marshalling.ClassResolver;
-import org.jboss.marshalling.Marshaller;
-import org.jboss.marshalling.MarshallerFactory;
-import org.jboss.marshalling.Marshalling;
-import org.jboss.marshalling.MarshallingConfiguration;
-import org.jboss.marshalling.Unmarshaller;
-import org.jboss.remoting3.Channel;
 
 
 /**
@@ -60,7 +62,7 @@ abstract class AbstractMessageHandler implements MessageHandler {
     protected Map<String, Object> readAttachments(final ObjectInput input) throws IOException, ClassNotFoundException {
         final int numAttachments = input.readByte();
         if (numAttachments == 0) {
-            return null;
+            return new HashMap<String, Object>();
         }
         final Map<String, Object> attachments = new HashMap<String, Object>(numAttachments);
         for (int i = 0; i < numAttachments; i++) {
@@ -125,20 +127,23 @@ abstract class AbstractMessageHandler implements MessageHandler {
     protected void writeNoSuchEJBFailureMessage(final Channel channel, final short invocationId, final String appName, final String moduleName,
                                                 final String distinctname, final String beanName, final String viewClassName) throws IOException {
         final StringBuffer sb = new StringBuffer("No such EJB[");
-        sb.append("appname=").append(appName).append(", ");
-        sb.append("modulename=").append(moduleName).append(", ");
-        sb.append("distinctname=").append(distinctname).append(", ");
-        sb.append("beanname=").append(beanName).append(", ");
-        sb.append("viewclassname=").append(viewClassName).append("]");
+        sb.append("appname=").append(appName).append(",");
+        sb.append("modulename=").append(moduleName).append(",");
+        sb.append("distinctname=").append(distinctname).append(",");
+        sb.append("beanname=").append(beanName);
+        if (viewClassName != null) {
+            sb.append(",").append("viewclassname=").append(viewClassName);
+        }
+        sb.append("]");
         this.writeInvocationFailure(channel, HEADER_NO_SUCH_EJB_FAILURE, invocationId, sb.toString());
     }
 
     protected void writeSessionNotActiveFailureMessage(final Channel channel, final short invocationId, final String appName, final String moduleName,
                                                        final String distinctname, final String beanName) throws IOException {
         final StringBuffer sb = new StringBuffer("Session not active for EJB[");
-        sb.append("appname=").append(appName).append(", ");
-        sb.append("modulename=").append(moduleName).append(", ");
-        sb.append("distinctname=").append(distinctname).append(", ");
+        sb.append("appname=").append(appName).append(",");
+        sb.append("modulename=").append(moduleName).append(",");
+        sb.append("distinctname=").append(distinctname).append(",");
         sb.append("beanname=").append(beanName).append("]");
         this.writeInvocationFailure(channel, HEADER_SESSION_NOT_ACTIVE_FAILURE, invocationId, sb.toString());
     }
@@ -157,10 +162,10 @@ abstract class AbstractMessageHandler implements MessageHandler {
             }
         }
         sb.append(") on EJB[");
-        sb.append("appname=").append(appName).append(", ");
-        sb.append("modulename=").append(moduleName).append(", ");
-        sb.append("distinctname=").append(distinctname).append(", ");
-        sb.append("beanname=").append(beanName).append(", ");
+        sb.append("appname=").append(appName).append(",");
+        sb.append("modulename=").append(moduleName).append(",");
+        sb.append("distinctname=").append(distinctname).append(",");
+        sb.append("beanname=").append(beanName).append(",");
         sb.append("viewclassname=").append(viewClassName).append("]");
         this.writeInvocationFailure(channel, HEADER_NO_SUCH_EJB_METHOD_FAILURE, invocationId, sb.toString());
     }

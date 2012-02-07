@@ -1,6 +1,6 @@
 @echo off
 rem -------------------------------------------------------------------------
-rem Ass User script for Windows
+rem Add User script for Windows
 rem -------------------------------------------------------------------------
 rem
 rem A simple utility for adding new users to the properties file used 
@@ -18,10 +18,20 @@ if "%OS%" == "Windows_NT" (
 )
 
 pushd %DIRNAME%..
-if "x%JBOSS_HOME%" == "x" (
-  set "JBOSS_HOME=%CD%"
-)
+set "RESOLVED_JBOSS_HOME=%CD%"
 popd
+
+if "x%JBOSS_HOME%" == "x" (
+  set "JBOSS_HOME=%RESOLVED_JBOSS_HOME%" 
+)
+
+pushd "%JBOSS_HOME%"
+set "SANITIZED_JBOSS_HOME=%CD%"
+popd
+
+if "%RESOLVED_JBOSS_HOME%" NEQ "%SANITIZED_JBOSS_HOME%" (
+    echo WARNING JBOSS_HOME may be pointing to a different installation - unpredictable results may occur.
+)
 
 set DIRNAME=
 

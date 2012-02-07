@@ -16,15 +16,14 @@
  */
 package org.jboss.as.arquillian.container;
 
+import java.io.IOException;
+
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.RealmCallback;
-import java.io.IOException;
-import java.net.Authenticator;
-import java.net.PasswordAuthentication;
 
 /**
  * Factory to supply an Authenticator or CallbackHandler for use during tests.
@@ -33,8 +32,8 @@ import java.net.PasswordAuthentication;
  */
 public class Authentication {
 
-    public static final String USERNAME = "testUser";
-    public static final String PASSWORD = "test_user_password";
+    public static String username = "";
+    public static String password = "";
 
     public static CallbackHandler getCallbackHandler() {
         return new CallbackHandler() {
@@ -43,10 +42,10 @@ public class Authentication {
                 for (Callback current : callbacks) {
                     if (current instanceof NameCallback) {
                         NameCallback ncb = (NameCallback) current;
-                        ncb.setName(USERNAME);
+                        ncb.setName(username);
                     } else if (current instanceof PasswordCallback) {
                         PasswordCallback pcb = (PasswordCallback) current;
-                        pcb.setPassword(PASSWORD.toCharArray());
+                        pcb.setPassword(password.toCharArray());
                     } else if (current instanceof RealmCallback) {
                         RealmCallback rcb = (RealmCallback) current;
                         rcb.setText(rcb.getDefaultText());
@@ -57,16 +56,5 @@ public class Authentication {
             }
         };
     }
-
-    public static Authenticator getAuthenticator() {
-        return new Authenticator() {
-
-            @Override
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(USERNAME, PASSWORD.toCharArray());
-            }
-        };
-    }
-
 
 }

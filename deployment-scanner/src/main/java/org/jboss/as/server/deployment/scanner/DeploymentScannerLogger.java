@@ -22,15 +22,15 @@
 
 package org.jboss.as.server.deployment.scanner;
 
+import java.io.File;
+import java.util.Set;
+
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
-
-import java.io.File;
-import java.util.Set;
 
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
@@ -222,4 +222,15 @@ public interface DeploymentScannerLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 15014, value = "Re-attempting failed deployment %s")
     void reattemptingFailedDeployment(String deploymentName);
+
+    /**
+     * Logs an error message indicating a failure checking whether the xml file, represented by the {@code fileName}
+     * parameter, was a complete xml file.
+     *
+     * @param cause    the cause of the error.
+     * @param fileName the file name.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 15015, value = "Failed checking whether %s was a complete XML")
+    void failedCheckingXMLFile(@Cause Throwable cause, String fileName);
 }

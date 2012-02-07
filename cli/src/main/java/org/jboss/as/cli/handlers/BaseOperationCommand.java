@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.jboss.as.cli.ArgumentValueConverter;
 import org.jboss.as.cli.CliEvent;
 import org.jboss.as.cli.CliEventListener;
 import org.jboss.as.cli.CommandArgument;
@@ -34,12 +35,14 @@ import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.OperationCommand;
 import org.jboss.as.cli.Util;
+import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.RequestParameterArgument;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.CommandLineParser;
 import org.jboss.as.cli.operation.OperationRequestAddress.Node;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
+import org.jboss.as.cli.operation.impl.HeadersCompleter;
 import org.jboss.as.cli.parsing.ParserUtil;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
@@ -56,6 +59,8 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
     private boolean dependsOnProfile;
     private Boolean addressAvailable;
     private String requiredType;
+
+    protected ArgumentWithValue headers = new ArgumentWithValue(this, HeadersCompleter.INSTANCE, ArgumentValueConverter.HEADERS, "--headers");
 
     public BaseOperationCommand(CommandContext ctx, String command, boolean connectionRequired) {
         super(command, connectionRequired);
@@ -182,29 +187,40 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
         try {
             request = buildRequest(ctx);
         } catch (CommandFormatException e1) {
-            ctx.printLine(e1.getLocalizedMessage());
+            ctx.error(e1.getLocalizedMessage());
             return;
         }
 
         if(request == null) {
-            ctx.printLine("Operation request wasn't built.");
+            ctx.error("Operation request wasn't built.");
             return;
         }
+        addHeaders(ctx, request);
 
         ModelControllerClient client = ctx.getModelControllerClient();
         final ModelNode response;
         try {
             response = client.execute(request);
         } catch (Exception e) {
-            ctx.printLine("Failed to perform operation: " + e.getLocalizedMessage());
+            ctx.error("Failed to perform operation: " + e.getLocalizedMessage());
             return;
         }
         handleResponse(ctx, response, Util.COMPOSITE.equals(request.get(Util.OPERATION).asString()));
     }
 
+    protected void addHeaders(CommandContext ctx, ModelNode request) throws CommandFormatException {
+        if(!headers.isPresent(ctx.getParsedCommandLine())) {
+            return;
+        }
+        final String headersValue = headers.getValue(ctx.getParsedCommandLine());
+        final ModelNode headersNode = headers.getValueConverter().fromString(headersValue);
+        final ModelNode opHeaders = request.get(Util.OPERATION_HEADERS);
+        opHeaders.set(headersNode);
+    }
+
     protected void handleResponse(CommandContext ctx, ModelNode response, boolean composite) {
         if (!Util.isSuccess(response)) {
-            ctx.printLine(Util.getFailureDescription(response));
+            ctx.error(Util.getFailureDescription(response));
             return;
         }
     }

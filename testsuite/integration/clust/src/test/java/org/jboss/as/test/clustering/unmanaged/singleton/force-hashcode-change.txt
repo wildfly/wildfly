@@ -1,1 +1,0 @@
-Workaround AS7-2779 until Aslak fixes it.

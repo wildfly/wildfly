@@ -36,6 +36,7 @@ import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.buf.CharChunk;
 import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.http.MimeHeaders;
+import org.jboss.as.web.WebLogger;
 import org.jboss.logging.Logger;
 
 import javax.security.auth.Subject;
@@ -63,8 +64,6 @@ import java.util.Locale;
  */
 @SuppressWarnings("unused")
 public class HTTPFormServerAuthModule extends WebServerAuthModule {
-
-    private static Logger log = Logger.getLogger("org.jboss.as.web.security");
 
     protected Context context;
 
@@ -122,11 +121,11 @@ public class HTTPFormServerAuthModule extends WebServerAuthModule {
         // have we authenticated this user before but have caching disabled?
         if (!cache) {
             session = request.getSessionInternal(true);
-            log.debugf("Checking for reauthenticate in session %s", session.getIdInternal());
+            WebLogger.WEB_SECURITY_LOGGER.debugf("Checking for reauthenticate in session %s", session.getIdInternal());
             String username = (String) session.getNote(Constants.SESS_USERNAME_NOTE);
             String password = (String) session.getNote(Constants.SESS_PASSWORD_NOTE);
             if ((username != null) && (password != null)) {
-                log.debugf("Reauthenticating username '%s'", username);
+                WebLogger.WEB_SECURITY_LOGGER.debugf("Reauthenticating username '%s'", username);
                 principal = context.getRealm().authenticate(username, password);
                 if (principal != null) {
                     session.setNote(Constants.FORM_PRINCIPAL_NOTE, principal);
@@ -135,14 +134,14 @@ public class HTTPFormServerAuthModule extends WebServerAuthModule {
                         return AuthStatus.SUCCESS;
                     }
                 }
-                log.tracef("Reauthentication failed, proceed normally");
+                WebLogger.WEB_SECURITY_LOGGER.tracef("Reauthentication failed, proceed normally");
             }
         }
 
         // is this the re-submit of the original request URI after successful authentication?  If so, forward the *original* request instead.
         if (matchRequest(request)) {
             session = request.getSessionInternal(true);
-            log.tracef("Restore request from session '%s'", session.getIdInternal());
+            WebLogger.WEB_SECURITY_LOGGER.tracef("Restore request from session '%s'", session.getIdInternal());
             principal = (Principal) session.getNote(Constants.FORM_PRINCIPAL_NOTE);
 
             registerWithCallbackHandler(principal,
@@ -155,15 +154,15 @@ public class HTTPFormServerAuthModule extends WebServerAuthModule {
                 session.removeNote(Constants.SESS_PASSWORD_NOTE);
             }
             if (restoreRequest(request, session)) {
-                log.tracef("Proceed to restored request");
+                WebLogger.WEB_SECURITY_LOGGER.tracef("Proceed to restored request");
                 return (AuthStatus.SUCCESS);
             } else {
-                log.tracef("Restore of original request failed");
+                WebLogger.WEB_SECURITY_LOGGER.tracef("Restore of original request failed");
 
                 try {
                     response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                 } catch (IOException e) {
-                    log.errorf("Caught Exception: %s", e.getLocalizedMessage());
+                 // Ignore IOException here (client disconnect)
                 }
                 return AuthStatus.FAILURE;
             }
@@ -182,15 +181,15 @@ public class HTTPFormServerAuthModule extends WebServerAuthModule {
         // no - save this request and redirect to the form login page.
         if (!loginAction) {
             session = request.getSessionInternal(true);
-            log.tracef("Save request in session '%s'", session.getIdInternal());
+            WebLogger.WEB_SECURITY_LOGGER.tracef("Save request in session '%s'", session.getIdInternal());
             try {
                 saveRequest(request, session);
             } catch (IOException ioe) {
-                log.tracef("Request body too big to save during authentication");
+                WebLogger.WEB_SECURITY_LOGGER.tracef("Request body too big to save during authentication");
                 try {
                     response.sendError(HttpServletResponse.SC_FORBIDDEN, sm.getString("authenticator.requestBodyTooBig"));
                 } catch (IOException e) {
-                    log.errorf("Caught Exception in Form authentication: %s", e.getLocalizedMessage());
+                 // Ignore IOException here (client disconnect)
                     throw new AuthException(e.getLocalizedMessage());
                 }
                 return (AuthStatus.FAILURE);
@@ -206,28 +205,28 @@ public class HTTPFormServerAuthModule extends WebServerAuthModule {
             try {
                 request.setCharacterEncoding(characterEncoding);
             } catch (UnsupportedEncodingException e) {
-                log.errorf("Caught Exception: %s", e.getLocalizedMessage());
+                WebLogger.WEB_SECURITY_LOGGER.unsupportedEncoding(e.getLocalizedMessage());
             }
         }
         String username = request.getParameter(Constants.FORM_USERNAME);
         String password = request.getParameter(Constants.FORM_PASSWORD);
 
-        log.tracef("Authenticating username '%s'", username);
+        WebLogger.WEB_SECURITY_LOGGER.tracef("Authenticating username '%s'", username);
         principal = realm.authenticate(username, password);
         if (principal == null) {
             forwardToErrorPage(request, response, config);
             return (AuthStatus.FAILURE);
         }
 
-        log.tracef("Authentication of '%s' was successful", username);
+        WebLogger.WEB_SECURITY_LOGGER.tracef("Authentication of '%s' was successful", username);
         if (session == null)
             session = request.getSessionInternal(false);
         if (session == null) {
-            log.tracef("User took so long to log on the session expired");
+            WebLogger.WEB_SECURITY_LOGGER.tracef("User took so long to log on the session expired");
             try {
                 response.sendError(HttpServletResponse.SC_REQUEST_TIMEOUT, sm.getString("authenticator.sessionExpired"));
             } catch (IOException e) {
-                log.errorf("Caught Exception: %s", e.getLocalizedMessage());
+             // Ignore IOException here (client disconnect)
             }
             return (AuthStatus.FAILURE);
         }
@@ -241,14 +240,14 @@ public class HTTPFormServerAuthModule extends WebServerAuthModule {
 
         // redirect the user to the original request URI (which will cause the original request to be restored).
         requestURI = savedRequestURL(session);
-        log.tracef("Redirecting to original '%s'", requestURI);
+        WebLogger.WEB_SECURITY_LOGGER.tracef("Redirecting to original '%s'", requestURI);
         try {
             if (requestURI == null)
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, sm.getString("authenticator.formlogin"));
             else
                 response.sendRedirect(response.encodeRedirectURL(requestURI));
         } catch (IOException ioe) {
-            log.errorf("Caught Exception: %s", ioe.getLocalizedMessage());
+         // Ignore IOException here (client disconnect)
         }
         return (AuthStatus.FAILURE);
     }
@@ -457,7 +456,7 @@ public class HTTPFormServerAuthModule extends WebServerAuthModule {
             disp.forward(request.getRequest(), response.getResponse());
             response.finishResponse();
         } catch (Throwable t) {
-            log.warnf("Unexpected error forwarding to login page: %s", t.getLocalizedMessage());
+            WebLogger.WEB_SECURITY_LOGGER.errorForwardingToLoginPage(t.getLocalizedMessage());
         }
     }
 
@@ -476,7 +475,7 @@ public class HTTPFormServerAuthModule extends WebServerAuthModule {
         try {
             disp.forward(request.getRequest(), response.getResponse());
         } catch (Throwable t) {
-            log.warnf("Unexpected error forwarding to error page: %s", t.getLocalizedMessage());
+            WebLogger.WEB_SECURITY_LOGGER.errorForwardingToErrorPage(t.getLocalizedMessage());
         }
     }
 }

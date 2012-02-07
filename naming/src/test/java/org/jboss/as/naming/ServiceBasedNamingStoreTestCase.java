@@ -22,8 +22,6 @@
 
 package org.jboss.as.naming;
 
-import com.sun.xml.internal.rngom.nc.NameClass;
-
 import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;

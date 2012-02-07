@@ -22,14 +22,13 @@
 
 package org.jboss.as.jpa.service;
 
-import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
-
 import java.util.Map;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.spi.PersistenceProvider;
 import javax.sql.DataSource;
 
+import org.jboss.as.jpa.classloader.TempClassLoaderFactoryImpl;
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.as.jpa.spi.PersistenceUnitService;
@@ -42,6 +41,8 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+
+import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
 
 /**
  * Persistence Unit service that is created for each deployed persistence unit that will be referenced by the
@@ -62,19 +63,22 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
     private final PersistenceProviderAdaptor persistenceProviderAdaptor;
     private final PersistenceProvider persistenceProvider;
     private final PersistenceUnitMetadata pu;
+    private final ClassLoader classLoader;
 
     private volatile EntityManagerFactory entityManagerFactory;
 
-    public PersistenceUnitServiceImpl(final PersistenceUnitMetadata pu, final PersistenceProviderAdaptor persistenceProviderAdaptor, final PersistenceProvider persistenceProvider) {
+    public PersistenceUnitServiceImpl(final ClassLoader classLoader, final PersistenceUnitMetadata pu, final PersistenceProviderAdaptor persistenceProviderAdaptor, final PersistenceProvider persistenceProvider) {
         this.pu = pu;
         this.persistenceProviderAdaptor = persistenceProviderAdaptor;
         this.persistenceProvider = persistenceProvider;
+        this.classLoader = classLoader;
     }
 
     @Override
     public void start(StartContext context) throws StartException {
         try {
             JPA_LOGGER.startingService("Persistence Unit", pu.getScopedPersistenceUnitName());
+            pu.setTempClassLoaderFactory(new TempClassLoaderFactoryImpl(classLoader));
             pu.setJtaDataSource(jtaDataSource.getOptionalValue());
             pu.setNonJtaDataSource(nonJtaDataSource.getOptionalValue());
             WritableServiceBasedNamingStore.pushOwner(context.getController().getServiceContainer().subTarget());
@@ -94,6 +98,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                 entityManagerFactory.close();
             } finally {
                 entityManagerFactory = null;
+                pu.setTempClassLoaderFactory(null);
                 WritableServiceBasedNamingStore.popOwner();
             }
         }
@@ -160,9 +165,9 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                 persistenceProviderAdaptor.afterCreateContainerEntityManagerFactory(pu);
             } finally {
                 pu.setAnnotationIndex(null);    // close reference to Annotation Index (only needed during call to createContainerEntityManagerFactory)
-                pu.setTempClassLoaderFactory(null);    // close reference to temp classloader factory (only needed during call to createEntityManagerFactory)
+                //This is needed if the datasource is restarted
+                //pu.setTempClassLoaderFactory(null);    // close reference to temp classloader factory (only needed during call to createEntityManagerFactory)
             }
         }
     }
-
 }

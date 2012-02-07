@@ -193,7 +193,7 @@ public interface OperationContext {
      *
      * @return the operation context type
      *
-     * @deprecated Use {@link OperationContext#getProcessType()} and {@link OperationContext#getRunningMode()}
+     * @deprecated Use {@link OperationContext#getProcessType()} and {@link OperationContext#getRunningMode()} or for the most common usage, {@link OperationContext#isNormalServer()}
      */
     @Deprecated
     @SuppressWarnings("deprecation")
@@ -205,6 +205,17 @@ public interface OperationContext {
      * @return whether the controller is currently booting
      */
     boolean isBooting();
+
+    /**
+     * Convenience method to check if the {@link #getProcessType() process type} is {@link ProcessType#isServer() a server type}
+     * and the {@link #getRunningMode() running mode} is {@link RunningMode#NORMAL}. The typical usage would
+     * be for handlers that are only meant to execute on a normally running server, not on a host controller
+     * or on a {@link RunningMode#ADMIN_ONLY} server.
+     *
+     * @return {@code true} if the {@link #getProcessType() process type} is {@link ProcessType#isServer() a server type}
+     *         and the {@link #getRunningMode() running mode} is {@link RunningMode#NORMAL}.
+     */
+    boolean isNormalServer();
 
     /**
      * Determine whether the current operation is bound to be rolled back.
@@ -287,7 +298,9 @@ public interface OperationContext {
 
     /**
      * Get the service registry.  If the step is not a runtime operation handler step, an exception will be thrown.  The
-     * returned registry must not be used to remove services.
+     * returned registry must not be used to remove services, if an attempt is made to call {@code ServiceController.setMode(REMOVE)}
+     * on a {@code ServiceController} returned from this registry an {@code IllegalStateException} will be thrown. To
+     * remove a service call {@link removeService(ServiceName name)}.
      *
      * @param modify {@code true} if the operation may be modifying a service, {@code false} otherwise
      * @return the service registry
@@ -518,6 +531,49 @@ public interface OperationContext {
     ModelNode resolveExpressions(ModelNode node) throws OperationFailedException;
 
     /**
+     * Retrieves an object that has been attached to this context.
+     *
+     * @param key the key to the attachment.
+     * @param <T> the value type of the attachment.
+     *
+     * @return the attachment if found otherwise {@code null}.
+     */
+    <T> T getAttachment(AttachmentKey<T> key);
+
+    /**
+     * Attaches an arbitrary object to this context.
+     *
+     * @param key   they attachment key used to ensure uniqueness and used for retrieval of the value.
+     * @param value the value to store.
+     * @param <T>   the value type of the attachment.
+     *
+     * @return the previous value associated with the key or {@code null} if there was no previous value.
+     */
+    <T> T attach(AttachmentKey<T> key, T value);
+
+    /**
+     * Attaches an arbitrary object to this context only if the object was not already attached. If a value has already
+     * been attached with the key provided, the current value associated with the key is returned.
+     *
+     * @param key   they attachment key used to ensure uniqueness and used for retrieval of the value.
+     * @param value the value to store.
+     * @param <T>   the value type of the attachment.
+     *
+     * @return the previous value associated with the key or {@code null} if there was no previous value.
+     */
+    <T> T attachIfAbsent(AttachmentKey<T> key, T value);
+
+    /**
+     * Detaches or removes the value from this context.
+     *
+     * @param key the key to the attachment.
+     * @param <T> the value type of the attachment.
+     *
+     * @return the attachment if found otherwise {@code null}.
+     */
+    <T> T detach(AttachmentKey<T> key);
+
+    /**
      * The stage at which a step should apply.
      */
     enum Stage {
@@ -658,5 +714,48 @@ public interface OperationContext {
          *                 that registered this rollback handler.
          */
         void handleRollback(OperationContext context, ModelNode operation);
+    }
+
+    /**
+     * An attachment key instance.
+     *
+     * @param <T> the attachment value type
+     */
+    @SuppressWarnings("UnusedDeclaration")
+    public static final class AttachmentKey<T> {
+        private final Class<T> valueClass;
+
+        /**
+         * Construct a new instance.
+         *
+         * @param valueClass the value type.
+         */
+        private AttachmentKey(final Class<T> valueClass) {
+            this.valueClass = valueClass;
+        }
+
+        /**
+         * Cast the value to the type of this attachment key.
+         *
+         * @param value the value
+         *
+         * @return the cast value
+         */
+        public T cast(final Object value) {
+            return valueClass.cast(value);
+        }
+
+        /**
+         * Construct a new simple attachment key.
+         *
+         * @param valueClass the value class
+         * @param <T>        the attachment type
+         *
+         * @return the new instance
+         */
+        @SuppressWarnings("unchecked")
+        public static <T> AttachmentKey<T> create(final Class<? super T> valueClass) {
+            return new AttachmentKey(valueClass);
+        }
     }
 }

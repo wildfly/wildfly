@@ -31,8 +31,7 @@ import java.util.Map;
 
 import org.jacorb.naming.BindingIteratorImpl;
 import org.jacorb.naming.Name;
-import org.jboss.logging.Logger;
-import org.jboss.logging.Logger.Level;
+import org.jboss.as.jacorb.JacORBLogger;
 import org.omg.CORBA.INTERNAL;
 import org.omg.CORBA.ORB;
 import org.omg.CosNaming.Binding;
@@ -64,11 +63,6 @@ import org.omg.PortableServer.POA;
 public class CorbaNamingContext extends NamingContextExtPOA implements Serializable {
 
     private static final long serialVersionUID = 132820915998903191L;
-
-    /**
-     * the logger used by the naming service implementation.
-     */
-    private static final Logger log = Logger.getLogger("org.jboss.as.jacorb");
 
     /**
      * static references to the running ORB and root POA.
@@ -180,7 +174,7 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
             if ((this.names.put(n, obj)) != null)
                 throw new CannotProceed(_this(), n.components());
 
-            log.debugf("Bound name: " + n.toString());
+            JacORBLogger.ROOT_LOGGER.debugBoundName(n.toString());
         } else {
             NameComponent[] ncx = new NameComponent[]{nb};
             org.omg.CORBA.Object context = this.resolve(ctx.components());
@@ -225,7 +219,7 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
             if ((this.contexts.put(n, obj)) != null)
                 throw new CannotProceed(_this(), n.components());
 
-            log.debugf("Bound context: " + n.toString());
+            JacORBLogger.ROOT_LOGGER.debugBoundContext(n.toString());
         } else {
             NameComponent[] ncx = new NameComponent[]{nb};
             org.omg.CORBA.Object context = this.resolve(ctx.components());
@@ -307,7 +301,7 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
                 byte[] oid = rootPoa.activate_object(new BindingIteratorImpl(rest));
                 o = rootPoa.id_to_reference(oid);
             } catch (Exception e) {
-                log.error("unexpected exception", e);
+                JacORBLogger.ROOT_LOGGER.logInternalError(e);
                 throw new INTERNAL(e.toString());
             }
 
@@ -337,7 +331,7 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
             return NamingContextExtHelper.narrow(this.poa.create_reference_with_id(oid.getBytes(),
                     "IDL:omg.org/CosNaming/NamingContextExt:1.0"));
         } catch (Exception e) {
-            log.error("Cannot create CORBA naming context", e);
+            JacORBLogger.ROOT_LOGGER.failedToCreateNamingContext(e);
             return null;
         }
     }
@@ -368,7 +362,7 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
 
             // do the rebinding in this context
             this.names.put(n, obj);
-            log.debugf("re-Bound name: " + n.toString());
+            JacORBLogger.ROOT_LOGGER.debugBoundName(n.toString());
         } else {
             // rebind in the correct context
             NameComponent[] ncx = new NameComponent[]{nb};
@@ -414,7 +408,7 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
             }
 
             this.contexts.put(n, obj);
-            log.debugf("Re-Bound context: " + n.baseNameComponent().id);
+            JacORBLogger.ROOT_LOGGER.debugBoundContext(n.baseNameComponent().id);
         } else {
             // rebind in the correct context
             NameComponent[] ncx = new NameComponent[]{nb};
@@ -484,7 +478,7 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
             if (this.names.containsKey(n)) {
                 org.omg.CORBA.Object ref = (org.omg.CORBA.Object) this.names.remove(n);
                 ref._release();
-                log.debugf("Unbound: " + n.toString());
+                JacORBLogger.ROOT_LOGGER.debugUnboundObject(n.toString());
             } else if (this.contexts.containsKey(n)) {
                 org.omg.CORBA.Object ref = (org.omg.CORBA.Object) this.contexts.remove(n);
                 ref._release();
@@ -493,10 +487,9 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
                 if (oid != null)
                     contextImpls.remove(oid);
 
-                log.debugf("Unbound: " + n.toString());
+                JacORBLogger.ROOT_LOGGER.debugUnboundObject(n.toString());
             } else {
-                if (log.isEnabled(Level.WARN))
-                    log.warnf("Unbind failed for " + n.toString());
+                JacORBLogger.ROOT_LOGGER.failedToUnbindObject(n.toString());
                 throw new NotFound(NotFoundReason.not_context, n.components());
             }
         } else {
@@ -551,7 +544,6 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
 
         for (Name key : this.names.keySet()) {
             if (isDead(((org.omg.CORBA.Object) this.names.get(key)))) {
-                log.debugf("Removing name " + key.baseNameComponent().id);
                 this.names.remove(key);
             }
         }
@@ -559,7 +551,6 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
         for (Name key : this.contexts.keySet()) {
             org.omg.CORBA.Object object = (org.omg.CORBA.Object) this.contexts.get(key);
             if (isDead(object)) {
-                log.debugf("Removing context " + key.baseNameComponent().id);
                 this.contexts.remove(key);
                 String oid = this.getObjectOID(object);
                 if (oid != null)
@@ -583,7 +574,7 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
             if (oidBytes != null)
                 oid = new String(oidBytes);
         } catch (Exception e) {
-            log.debugf("Unable to obtain oid from object", e);
+            JacORBLogger.ROOT_LOGGER.failedToObtainIdFromObject(e);
         }
         return oid;
     }

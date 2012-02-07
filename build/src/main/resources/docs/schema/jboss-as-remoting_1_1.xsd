@@ -300,7 +300,7 @@
 
     <xs:complexType name="base-outbound-connectionType">
         <xs:all>
-            <xs:element name="connection-creation-options" type="xnio-optionsType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="properties" type="properties" minOccurs="0"/>
         </xs:all>
         <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>

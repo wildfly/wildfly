@@ -22,19 +22,28 @@
 
 package org.jboss.as.server.deployment.scanner;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.server.deployment.scanner.DeploymentScannerDefinition.ALL_ATTRIBUTES;
+import static org.jboss.as.server.deployment.scanner.DeploymentScannerDefinition.AUTO_DEPLOY_EXPLODED;
+import static org.jboss.as.server.deployment.scanner.DeploymentScannerDefinition.AUTO_DEPLOY_XML;
+import static org.jboss.as.server.deployment.scanner.DeploymentScannerDefinition.AUTO_DEPLOY_ZIPPED;
+import static org.jboss.as.server.deployment.scanner.DeploymentScannerDefinition.DEPLOYMENT_TIMEOUT;
+import static org.jboss.as.server.deployment.scanner.DeploymentScannerDefinition.RELATIVE_TO;
+import static org.jboss.as.server.deployment.scanner.DeploymentScannerDefinition.SCAN_ENABLED;
+import static org.jboss.as.server.deployment.scanner.DeploymentScannerDefinition.SCAN_INTERVAL;
 
 /**
  * Operation adding a new {@link DeploymentScannerService}.
@@ -42,56 +51,34 @@ import org.jboss.msc.service.ServiceTarget;
  * @author John E. Bailey
  * @author Emanuel Muckenhuber
  */
-class DeploymentScannerAdd extends AbstractAddStepHandler implements DescriptionProvider {
-
-    static final String OPERATION_NAME = ModelDescriptionConstants.ADD;
-
+class DeploymentScannerAdd extends AbstractAddStepHandler {
     static final DeploymentScannerAdd INSTANCE = new DeploymentScannerAdd();
 
     private DeploymentScannerAdd() {
         //
     }
 
-    protected void populateModel(ModelNode operation, ModelNode model) {
-        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final String name = address.getLastElement().getValue();
-        final String path = operation.require(CommonAttributes.PATH).asString();
-        final Boolean enabled = operation.hasDefined(CommonAttributes.SCAN_ENABLED) ? operation.get(CommonAttributes.SCAN_ENABLED).asBoolean() : true;
-        final Integer interval = operation.hasDefined(CommonAttributes.SCAN_INTERVAL) ? operation.get(CommonAttributes.SCAN_INTERVAL).asInt() : 5000;
-        final String relativeTo = operation.hasDefined(CommonAttributes.RELATIVE_TO) ? operation.get(CommonAttributes.RELATIVE_TO).asString() : null;
-        final Boolean autoDeployZip = operation.hasDefined(CommonAttributes.AUTO_DEPLOY_ZIPPED) ? operation.get(CommonAttributes.AUTO_DEPLOY_ZIPPED).asBoolean() : true;
-        final Boolean autoDeployExp = operation.hasDefined(CommonAttributes.AUTO_DEPLOY_EXPLODED) ? operation.get(CommonAttributes.AUTO_DEPLOY_EXPLODED).asBoolean() : false;
-        final Long deploymentTimeout = operation.hasDefined(CommonAttributes.DEPLOYMENT_TIMEOUT) ? operation.get(CommonAttributes.DEPLOYMENT_TIMEOUT).asLong() : 60L;
-
-        model.get(CommonAttributes.NAME).set(name);
-        model.get(CommonAttributes.PATH).set(path);
-        if (enabled != null) model.get(CommonAttributes.SCAN_ENABLED).set(enabled);
-        if (interval != null) model.get(CommonAttributes.SCAN_INTERVAL).set(interval);
-        if (autoDeployZip != null) model.get(CommonAttributes.AUTO_DEPLOY_ZIPPED).set(autoDeployZip);
-        if (autoDeployExp != null) model.get(CommonAttributes.AUTO_DEPLOY_EXPLODED).set(autoDeployExp);
-        if (relativeTo != null) model.get(CommonAttributes.RELATIVE_TO).set(relativeTo);
-        if (deploymentTimeout != null) model.get(CommonAttributes.DEPLOYMENT_TIMEOUT).set(deploymentTimeout);
-
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        for (SimpleAttributeDefinition atr : ALL_ATTRIBUTES) {
+            atr.validateAndSet(operation, model);
+        }
     }
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
-        final String path = operation.require(CommonAttributes.PATH).asString();
-        final Boolean enabled = operation.hasDefined(CommonAttributes.SCAN_ENABLED) ? operation.get(CommonAttributes.SCAN_ENABLED).asBoolean() : true;
-        final Integer interval = operation.hasDefined(CommonAttributes.SCAN_INTERVAL) ? operation.get(CommonAttributes.SCAN_INTERVAL).asInt() : 5000;
-        final String relativeTo = operation.hasDefined(CommonAttributes.RELATIVE_TO) ? operation.get(CommonAttributes.RELATIVE_TO).asString() : null;
-        final Boolean autoDeployZip = operation.hasDefined(CommonAttributes.AUTO_DEPLOY_ZIPPED) ? operation.get(CommonAttributes.AUTO_DEPLOY_ZIPPED).asBoolean() : true;
-        final Boolean autoDeployExp = operation.hasDefined(CommonAttributes.AUTO_DEPLOY_EXPLODED) ? operation.get(CommonAttributes.AUTO_DEPLOY_EXPLODED).asBoolean() : false;
-        final Long deploymentTimeout = operation.hasDefined(CommonAttributes.DEPLOYMENT_TIMEOUT) ? operation.get(CommonAttributes.DEPLOYMENT_TIMEOUT).asLong() : 60L;
-
+        final String path = DeploymentScannerDefinition.PATH.resolveModelAttribute(context, operation).asString();
+        final Boolean enabled = SCAN_ENABLED.resolveModelAttribute(context, operation).asBoolean();
+        final Integer interval = SCAN_INTERVAL.resolveModelAttribute(context, operation).asInt();
+        final String relativeTo = operation.hasDefined(CommonAttributes.RELATIVE_TO) ? RELATIVE_TO.resolveModelAttribute(context, operation).asString() : null;
+        final Boolean autoDeployZip = AUTO_DEPLOY_ZIPPED.resolveModelAttribute(context, operation).asBoolean();
+        final Boolean autoDeployExp = AUTO_DEPLOY_EXPLODED.resolveModelAttribute(context, operation).asBoolean();
+        final Boolean autoDeployXml = AUTO_DEPLOY_XML.resolveModelAttribute(context, operation).asBoolean();
+        final Long deploymentTimeout = DEPLOYMENT_TIMEOUT.resolveModelAttribute(context, operation).asLong();
         final ServiceTarget serviceTarget = context.getServiceTarget();
         DeploymentScannerService.addService(serviceTarget, name, relativeTo, path, interval, TimeUnit.MILLISECONDS,
-                autoDeployZip, autoDeployExp, enabled, deploymentTimeout, newControllers, verificationHandler);
+                autoDeployZip, autoDeployExp, autoDeployXml, enabled, deploymentTimeout, newControllers, verificationHandler);
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return DeploymentSubsystemDescriptions.getScannerAdd(locale);
-    }
+
 }

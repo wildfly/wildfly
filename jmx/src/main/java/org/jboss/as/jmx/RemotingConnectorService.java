@@ -5,6 +5,7 @@ import java.io.IOException;
 import javax.management.MBeanServer;
 
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -57,12 +58,16 @@ public class RemotingConnectorService implements Service<RemotingConnectorServer
         return server;
     }
 
-    public static ServiceController<?> addService(final ServiceTarget target, final ServiceVerificationHandler verificationHandler) {
+    public static ServiceController<?> addService(final ServiceTarget target, final ServiceVerificationHandler verificationHandler, final boolean useManagementEndpoint) {
 
         final RemotingConnectorService service = new RemotingConnectorService();
         final ServiceBuilder<RemotingConnectorServer> builder = target.addService(SERVICE_NAME, service);
         builder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.mBeanServer);
-        builder.addDependency(ManagementRemotingServices.MANAGEMENT_ENDPOINT, Endpoint.class, service.endpoint);
+        if(useManagementEndpoint) {
+            builder.addDependency(ManagementRemotingServices.MANAGEMENT_ENDPOINT, Endpoint.class, service.endpoint);
+        } else {
+            builder.addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, service.endpoint);
+        }
         if (verificationHandler != null) {
             builder.addListener(verificationHandler);
         }

@@ -21,7 +21,10 @@
  */
 package org.jboss.as.test.integration.ejb.timerservice.entity;
 
+import java.util.Collection;
+
 import javax.ejb.EJBLocalObject;
+import javax.ejb.Timer;
 
 /**
  *
@@ -29,11 +32,13 @@ import javax.ejb.EJBLocalObject;
  */
 public interface BMPLocalInterface extends EJBLocalObject {
 
+    String getMyField();
 
-    public String getMyField();
+    void setMyField(String field);
 
-    public void setMyField(String field);
-
-    public void setupTimer();
-
+    void setupTimer();
+    
+    void setupTimerDefined(int time);
+    
+    Collection<Timer> getTimers();
 }

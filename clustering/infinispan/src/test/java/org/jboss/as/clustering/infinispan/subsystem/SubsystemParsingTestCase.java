@@ -33,7 +33,7 @@ import org.junit.Test;
 @Ignore
 public class SubsystemParsingTestCase extends AbstractSubsystemTest {
 
-    static final String SUBSYSTEM_XML_FILE = "subsystem-infinispan.xml" ;
+    static final String SUBSYSTEM_XML_FILE = "subsystem-infinispan_1_1.xml" ;
 
     public SubsystemParsingTestCase() {
         super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension());

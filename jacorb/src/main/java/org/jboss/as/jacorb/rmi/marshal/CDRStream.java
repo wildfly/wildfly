@@ -21,17 +21,19 @@
  */
 package org.jboss.as.jacorb.rmi.marshal;
 
-import org.jboss.as.jacorb.rmi.RmiIdlUtil;
-import org.omg.CORBA.portable.IDLEntity;
-import org.omg.CORBA_2_3.portable.InputStream;
-import org.omg.CORBA_2_3.portable.OutputStream;
-
-import javax.rmi.CORBA.Util;
-import javax.rmi.PortableRemoteObject;
 import java.io.Externalizable;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+
+import javax.rmi.CORBA.Util;
+import javax.rmi.PortableRemoteObject;
+
+import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.rmi.RmiIdlUtil;
+import org.omg.CORBA.portable.IDLEntity;
+import org.omg.CORBA_2_3.portable.InputStream;
+import org.omg.CORBA_2_3.portable.OutputStream;
 
 /**
  * Utility class with static methods to:
@@ -161,8 +163,7 @@ public class CDRStream {
                             true,
                             cl));
                 } catch (ClassNotFoundException e) {
-                    throw new RuntimeException("Error loading class "
-                            + s.substring(1) + ": " + e);
+                    throw JacORBMessages.MESSAGES.errorLoadingClass(s.substring(1), e);
                 }
             case 'M':
                 return CorbaObjectReader.instance;
@@ -170,8 +171,7 @@ public class CDRStream {
                 try {
                     return new IdlInterfaceReader(cl.loadClass(s.substring(1)));
                 } catch (ClassNotFoundException e) {
-                    throw new RuntimeException("Error loading class "
-                            + s.substring(1) + ": " + e);
+                    throw JacORBMessages.MESSAGES.errorLoadingClass(s.substring(1), e);
                 }
             case 'O':
                 return ObjectReader.instance;
@@ -179,8 +179,7 @@ public class CDRStream {
                 try {
                     return new RemoteReader(cl.loadClass(s.substring(1)));
                 } catch (ClassNotFoundException e) {
-                    throw new RuntimeException("Error loading class "
-                            + s.substring(1) + ": " + e);
+                    throw JacORBMessages.MESSAGES.errorLoadingClass(s.substring(1), e);
                 }
             case 'S':
                 return ShortReader.instance;
@@ -228,8 +227,7 @@ public class CDRStream {
                             true,
                             cl));
                 } catch (ClassNotFoundException e) {
-                    throw new RuntimeException("Error loading class "
-                            + s.substring(1) + ": " + e);
+                    throw JacORBMessages.MESSAGES.errorLoadingClass(s.substring(1), e);
                 }
             case 'M':
                 return CorbaObjectWriter.instance;
@@ -237,8 +235,7 @@ public class CDRStream {
                 try {
                     return new IdlInterfaceWriter(cl.loadClass(s.substring(1)));
                 } catch (ClassNotFoundException e) {
-                    throw new RuntimeException("Error loading class "
-                            + s.substring(1) + ": " + e);
+                    throw JacORBMessages.MESSAGES.errorLoadingClass(s.substring(1), e);
                 }
             case 'O':
                 return ObjectWriter.instance;
@@ -606,11 +603,9 @@ public class CDRStream {
                         clz.getClassLoader().loadClass(helperClassName);
                 readMethod = helperClass.getMethod("read", paramTypes);
             } catch (ClassNotFoundException e) {
-                throw new RuntimeException("Error loading class "
-                        + helperClassName + ": " + e);
+                throw JacORBMessages.MESSAGES.errorLoadingClass(helperClassName, e);
             } catch (NoSuchMethodException e) {
-                throw new RuntimeException("No read method in helper class "
-                        + helperClassName + ": " + e);
+                throw JacORBMessages.MESSAGES.noReadMethodInHelper(helperClassName, e);
             }
         }
 
@@ -618,10 +613,9 @@ public class CDRStream {
             try {
                 return readMethod.invoke(null, new Object[]{in});
             } catch (IllegalAccessException e) {
-                throw new RuntimeException("Internal error: " + e);
+                throw JacORBMessages.MESSAGES.unexpectedException(e);
             } catch (InvocationTargetException e) {
-                throw new RuntimeException("Exception unmarshaling CORBA object: "
-                        + e.getTargetException());
+                throw JacORBMessages.MESSAGES.errorUnmarshaling(org.omg.CORBA.Object.class, e.getTargetException());
             }
         }
     }
@@ -913,11 +907,9 @@ public class CDRStream {
                 };
                 writeMethod = helperClass.getMethod("write", paramTypes);
             } catch (ClassNotFoundException e) {
-                throw new RuntimeException("Error loading class "
-                        + helperClassName + ": " + e);
+                throw JacORBMessages.MESSAGES.errorLoadingClass(helperClassName, e);
             } catch (NoSuchMethodException e) {
-                throw new RuntimeException("No write method in helper class "
-                        + helperClassName + ": " + e);
+                throw JacORBMessages.MESSAGES.noWriteMethodInHelper(helperClassName, e);
             }
         }
 
@@ -925,10 +917,9 @@ public class CDRStream {
             try {
                 writeMethod.invoke(null, new Object[]{out, obj});
             } catch (IllegalAccessException e) {
-                throw new RuntimeException("Internal error: " + e);
+                throw JacORBMessages.MESSAGES.unexpectedException(e);
             } catch (InvocationTargetException e) {
-                throw new RuntimeException("Exception marshaling CORBA object: "
-                        + e.getTargetException());
+                throw JacORBMessages.MESSAGES.errorMarshaling(org.omg.CORBA.Object.class, e.getTargetException());
             }
         }
     }

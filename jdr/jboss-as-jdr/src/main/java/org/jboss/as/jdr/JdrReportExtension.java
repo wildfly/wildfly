@@ -22,11 +22,19 @@
 
 package org.jboss.as.jdr;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
+import java.util.EnumSet;
+import java.util.Locale;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -35,12 +43,8 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.dmr.ModelNode;
-
-import java.util.Locale;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-import static org.jboss.as.threads.ThreadsDescriptionUtil.pathAddress;
 
 /**
  * Extension for triggering, requesting, generating and accessing JDR reports.
@@ -67,7 +71,7 @@ public class JdrReportExtension implements Extension {
         root.registerOperationHandler(JdrReportSubsystemRemove.OPERATION_NAME, JdrReportSubsystemRemove.INSTANCE, JdrReportSubsystemRemove.INSTANCE);
 
         if (context.isRuntimeOnlyRegistrationValid()) {
-            root.registerOperationHandler(JdrReportRequestHandler.OPERATION_NAME, JdrReportRequestHandler.INSTANCE, JdrReportRequestHandler.INSTANCE);
+            root.registerOperationHandler(JdrReportRequestHandler.OPERATION_NAME, JdrReportRequestHandler.INSTANCE, JdrReportRequestHandler.INSTANCE, EnumSet.of(Flag.RUNTIME_ONLY));
         }
         subsystemRegistration.registerXMLElementWriter(JdrReportSubsystemParser.INSTANCE);
     }
@@ -92,5 +96,9 @@ public class JdrReportExtension implements Extension {
         public ModelNode getModelDescription(Locale locale) {
             return CommonDescriptions.getSubsystemDescribeOperation(locale);
         }
+    }
+
+    private static ModelNode pathAddress(PathElement... elements) {
+        return PathAddress.pathAddress(elements).toModelNode();
     }
 }

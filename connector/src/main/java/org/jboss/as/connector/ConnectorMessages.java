@@ -23,6 +23,7 @@
 package org.jboss.as.connector;
 
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.dmr.ModelNode;
@@ -412,4 +413,63 @@ public interface ConnectorMessages {
     @Message(id = 10463, value = "%s cannot be null or empty")
     IllegalArgumentException stringParamCannotBeNullOrEmpty(final String paramName);
 
+    @Message(id = 10464, value = "Exception deploying datasource %s")
+    DeploymentUnitProcessingException exceptionDeployingDatasource(@Cause Throwable cause, String datasource);
+
+    /**
+     * No datasource exists at the deployment address
+     *
+     */
+    @Message(id = 10465, value = "No DataSource exists at address %s")
+    String noDataSourceRegisteredForAddress(PathAddress address);
+
+    /**
+     * Creates an exception indicating unknown attribute
+     *
+     * @return an {@link IllegalStateException} for the error.
+     */
+    @Message(id = 10466, value = "Unknown attribute %s")
+    IllegalStateException unknownAttribute(String attributeName);
+
+
+    /**
+     * Creates an exception indicating unknown operation
+     *
+     * @return an {@link IllegalStateException} for the error.
+     */
+    @Message(id = 10467, value = "Unknown operation %s")
+    IllegalStateException unknownOperation(String attributeName);
+
+    /**
+     * A message indicating the driver is not installed
+     *
+     * @param driverName the driver name.
+     * @return the message.
+     */
+    @Message(id = 10468, value = "Driver named \"%s\" is not installed.")
+    String driverNotPresent(String driverName);
+
+    /**
+     * A message indicating that at least on xa-datasource-property is required
+     * @return the message.
+     */
+    @Message(id = 10469, value = "At least one xa-datasource-property is required for an xa-datasource")
+    OperationFailedException xaDataSourcePropertiesNotPresent();
+
+    /**
+     * A message indicating that jndi-name is missing and it's a required attribute
+     *
+     * @return the message.
+     */
+    @Message(id = 10470, value = "Jndi name is required")
+    OperationFailedException jndiNameRequired();
+
+
+    /**
+     * A message indicating that jndi-name has an invalid format
+     *
+     * @return the message.
+     */
+    @Message(id = 10471, value = "Jndi name have to start with java:/ or java:jboss/")
+    OperationFailedException jndiNameInvalidFormat();
 }

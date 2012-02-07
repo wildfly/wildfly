@@ -166,7 +166,7 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
         final ParsedCommandLine args = ctx.getParsedCommandLine();
         final String action = this.action.getValue(args);
         if(action == null) {
-            ctx.printLine("Command is missing.");
+            ctx.error("Command is missing.");
             return;
         }
 
@@ -185,7 +185,7 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
             }
 
             if(cmdRegistry.getCommandHandler(cmdName) != null) {
-                ctx.printLine("Command '" + cmdName + "' already registered.");
+                ctx.error("Command '" + cmdName + "' already registered.");
                 return;
             }
             cmdRegistry.registerHandler(new GenericTypeOperationHandler(ctx, nodePath, propName), cmdName);
@@ -196,14 +196,14 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
             final String cmdName = this.commandName.getValue(args, true);
             CommandHandler handler = cmdRegistry.getCommandHandler(cmdName);
             if(!(handler instanceof GenericTypeOperationHandler)) {
-                ctx.printLine("Command '" + cmdName + "' is not a generic type command.");
+                ctx.error("Command '" + cmdName + "' is not a generic type command.");
                 return;
             }
             cmdRegistry.remove(cmdName);
             return;
         }
 
-        ctx.printLine("Unexpected action: " + action);
+        ctx.error("Unexpected action: " + action);
     }
 
     protected List<String> getExistingCommands() {
@@ -281,13 +281,13 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
         try {
             ParserUtil.parseOperationRequest(typePath, callback);
         } catch (CommandFormatException e) {
-            ctx.printLine("Failed to validate input: " + e.getLocalizedMessage());
+            ctx.error("Failed to validate input: " + e.getLocalizedMessage());
             return false;
         }
 
         OperationRequestAddress typeAddress = callback.getAddress();
         if(!typeAddress.endsOnType()) {
-            ctx.printLine("Node path '" + typePath + "' doesn't appear to end on a type.");
+            ctx.error("Node path '" + typePath + "' doesn't appear to end on a type.");
             return false;
         }
 
@@ -302,11 +302,11 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
         try {
             result = ctx.getModelControllerClient().execute(request);
         } catch (IOException e) {
-            ctx.printLine("Failed to validate input: " + e.getLocalizedMessage());
+            ctx.error("Failed to validate input: " + e.getLocalizedMessage());
             return false;
         }
         if(!result.hasDefined(Util.RESULT)) {
-            ctx.printLine("Failed to validate input: operation response doesn't contain result info.");
+            ctx.error("Failed to validate input: operation response doesn't contain result info.");
             return false;
         }
 
@@ -318,7 +318,7 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
             }
         }
         if(!pathValid) {
-            ctx.printLine("Type '" + typeName + "' not found amoung child types of '" + ctx.getPrefixFormatter().format(typeAddress) + "'");
+            ctx.error("Type '" + typeName + "' not found amoung child types of '" + ctx.getPrefixFormatter().format(typeAddress) + "'");
             return false;
         }
 
@@ -328,16 +328,16 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
         try {
             result = ctx.getModelControllerClient().execute(request);
         } catch (IOException e) {
-            ctx.printLine(e.getLocalizedMessage());
+            ctx.error(e.getLocalizedMessage());
             return false;
         }
         if(!result.hasDefined(Util.RESULT)) {
-            ctx.printLine("Failed to validate input: operation response doesn't contain result info.");
+            ctx.error("Failed to validate input: operation response doesn't contain result info.");
             return false;
         }
         result = result.get(Util.RESULT);
         if(!result.hasDefined("attributes")) {
-            ctx.printLine("Failed to validate input: description of attributes is missing for " + typePath);
+            ctx.error("Failed to validate input: description of attributes is missing for " + typePath);
             return false;
         }
 
@@ -348,14 +348,14 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
                     if(value.has(Util.ACCESS_TYPE) && Util.READ_ONLY.equals(value.get(Util.ACCESS_TYPE).asString())) {
                         return true;
                     }
-                    ctx.printLine("Property " + propertyName + " is not read-only.");
+                    ctx.error("Property " + propertyName + " is not read-only.");
                     return false;
                 }
             }
         } else {
             return true;
         }
-        ctx.printLine("Property '" + propertyName + "' wasn't found among the properties of " + typePath);
+        ctx.error("Property '" + propertyName + "' wasn't found among the properties of " + typePath);
         return false;
     }
 }

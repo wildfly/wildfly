@@ -22,15 +22,20 @@
 
 package org.jboss.as.threads;
 
-import java.util.EnumSet;
+import static org.jboss.as.threads.CommonAttributes.KEEPALIVE_TIME;
+import static org.jboss.as.threads.CommonAttributes.TIME;
+import static org.jboss.as.threads.CommonAttributes.UNIT;
+
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -43,22 +48,19 @@ import org.jboss.msc.service.ServiceController;
  */
 public abstract class ThreadsWriteAttributeOperationHandler extends AbstractWriteAttributeHandler<Boolean> {
 
-//    private static final Logger log = Logger.getLogger("org.jboss.as.threads");
-
-    private static final EnumSet<AttributeAccess.Flag> RESTART_NONE = EnumSet.of(AttributeAccess.Flag.RESTART_NONE);
-    private static final EnumSet<AttributeAccess.Flag> RESTART_ALL = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
-
     protected final AttributeDefinition[] attributes;
     protected final Map<String, AttributeDefinition> runtimeAttributes = new HashMap<String, AttributeDefinition>();
 
     /**
      * Creates a handler that doesn't validate values.
+     * @param attributes all persistent attributes of the
+     * @param runtimeAttributes attributes whose updated value can immediately be applied to the runtime
      */
-    public ThreadsWriteAttributeOperationHandler(AttributeDefinition[] attrs, AttributeDefinition[] rwAttrs) {
-        super(attrs);
-        this.attributes = attrs;
-        for(AttributeDefinition attr : rwAttrs) {
-            runtimeAttributes.put(attr.getName(), attr);
+    public ThreadsWriteAttributeOperationHandler(AttributeDefinition[] attributes, AttributeDefinition[] runtimeAttributes) {
+        super(attributes);
+        this.attributes = attributes;
+        for(AttributeDefinition attr : runtimeAttributes) {
+            this.runtimeAttributes.put(attr.getName(), attr);
         }
     }
 
@@ -84,7 +86,8 @@ public abstract class ThreadsWriteAttributeOperationHandler extends AbstractWrit
                 return true;
             } else {
                 // Actually apply the update
-                applyOperation(context, operation, attributeName, service);
+                final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+                applyOperation(context, model, attributeName, service, false);
                 handbackHolder.setHandback(Boolean.TRUE);
                 return false;
             }
@@ -100,22 +103,40 @@ public abstract class ThreadsWriteAttributeOperationHandler extends AbstractWrit
             final ServiceController<?> service = getService(context, operation);
             if (service != null && service.getState() == ServiceController.State.UP) {
                 // Create and execute a write-attribute operation that uses the valueToRestore
-                ModelNode revertOp = operation.clone();
-                revertOp.get(attributeName).set(valueToRestore);
-                applyOperation(context, revertOp, attributeName, service);
+                ModelNode revertModel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().clone();
+                revertModel.get(attributeName).set(valueToRestore);
+                applyOperation(context, revertModel, attributeName, service, true);
             }
         }
     }
 
     public void registerAttributes(final ManagementResourceRegistration registry) {
         for(AttributeDefinition attribute : attributes) {
-            String attrName = attribute.getName();
-            EnumSet<AttributeAccess.Flag> flags = runtimeAttributes.containsKey(attrName) ? RESTART_NONE : RESTART_ALL;
-            registry.registerReadWriteAttribute(attrName, null, this, flags);
+            registry.registerReadWriteAttribute(attribute, null, this);
         }
     }
 
-    protected abstract ServiceController<?> getService(final OperationContext context, final ModelNode operation) throws OperationFailedException;
+    protected abstract ServiceController<?> getService(final OperationContext context, final ModelNode model) throws OperationFailedException;
 
-    protected abstract void applyOperation(final OperationContext context, ModelNode operation, String attributeName, ServiceController<?> service);
+    protected abstract void applyOperation(final OperationContext context, ModelNode operation, String attributeName,
+                                           ServiceController<?> service, boolean forRollback) throws OperationFailedException;
+
+
+    static TimeSpec getTimeSpec(OperationContext context, ModelNode model, TimeUnit defaultUnit) throws OperationFailedException {
+        ModelNode value = PoolAttributeDefinitions.KEEPALIVE_TIME.resolveModelAttribute(context, model);
+        if (!value.hasDefined(TIME)) {
+            throw ThreadsMessages.MESSAGES.missingTimeSpecTime(TIME, KEEPALIVE_TIME);
+        }
+        final TimeUnit unit;
+        if (!value.hasDefined(UNIT)) {
+            unit = defaultUnit;
+        } else {
+            try {
+            unit = Enum.valueOf(TimeUnit.class, value.get(UNIT).asString());
+            } catch(IllegalArgumentException e) {
+                throw ThreadsMessages.MESSAGES.failedToParseUnit(UNIT, Arrays.asList(TimeUnit.values()));
+            }
+        }
+        return new TimeSpec(unit, value.get(TIME).asLong());
+    }
 }

@@ -31,6 +31,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.mgmt.HttpManagementResourceDefinition;
 import org.jboss.dmr.ModelNode;
 
@@ -60,12 +61,12 @@ public class HttpManagementWriteAttributeHandler extends AbstractWriteAttributeH
                         && (model.hasDefined(HttpManagementResourceDefinition.SOCKET_BINDING.getName())
                         || model.hasDefined(HttpManagementResourceDefinition.SECURE_SOCKET_BINDING.getName())
                 )) {
-                    final ModelNode failure = new ModelNode().set(String.format("%s cannot be defined when either %s or %s is also defined",
+                    throw ServerMessages.MESSAGES.illegalCombinationOfHttpManagementInterfaceConfigurations(
                             INTERFACE.getName(),
                             HttpManagementResourceDefinition.SOCKET_BINDING.getName(),
-                            HttpManagementResourceDefinition.SECURE_SOCKET_BINDING.getName()));
-                    throw new OperationFailedException(failure);
+                            HttpManagementResourceDefinition.SECURE_SOCKET_BINDING.getName());
                 }
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
         }, OperationContext.Stage.MODEL);
 

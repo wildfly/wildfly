@@ -41,6 +41,7 @@ import static org.jboss.as.domain.http.server.Constants.OPTIONS;
 import static org.jboss.as.domain.http.server.Constants.ORIGIN;
 import static org.jboss.as.domain.http.server.Constants.POST;
 import static org.jboss.as.domain.http.server.Constants.TEXT_HTML;
+import static org.jboss.as.domain.http.server.Constants.UNSUPPORTED_MEDIA_TYPE;
 import static org.jboss.as.domain.http.server.Constants.US_ASCII;
 import static org.jboss.as.domain.http.server.Constants.UTF_8;
 import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
@@ -57,6 +58,7 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
@@ -66,9 +68,12 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.domain.http.server.multipart.BoundaryDelimitedInputStream;
 import org.jboss.as.domain.http.server.multipart.MimeHeaderParser;
+import org.jboss.as.domain.http.server.security.SubjectAssociationHandler;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.security.DomainCallbackHandler;
+import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.com.sun.net.httpserver.Authenticator;
+import org.jboss.com.sun.net.httpserver.Filter;
 import org.jboss.com.sun.net.httpserver.Headers;
 import org.jboss.com.sun.net.httpserver.HttpContext;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
@@ -124,7 +129,7 @@ class DomainApiHandler implements ManagementHttpHandler {
         this.authenticator = authenticator;
     }
 
-    public void handle(HttpExchange http) throws IOException {
+    private void doHandle(HttpExchange http) throws IOException {
         /**
          *  Request Verification - before the request is handled a set of checks are performed for
          *  CSRF and XSS
@@ -152,7 +157,7 @@ class DomainApiHandler implements ManagementHttpHandler {
             String origin = headers.getFirst(ORIGIN);
             String host = headers.getFirst(HOST);
             String protocol = http.getHttpContext().getServer() instanceof HttpServer ? HTTP : HTTPS;
-            String allowedOrigin = protocol + "://" + host;
+            String allowedOrigin = protocol + "://" + ProtocolUtils.formatPossibleIpv6Address(host);
 
             // This will reject multi-origin Origin headers due to the exact match.
             if (origin.equals(allowedOrigin) == false) {
@@ -181,7 +186,11 @@ class DomainApiHandler implements ManagementHttpHandler {
             String contentType = extractContentType(headers.getFirst(CONTENT_TYPE));
             if (!(APPLICATION_JSON.equals(contentType) || APPLICATION_DMR_ENCODED.equals(contentType))) {
                 drain(http);
-                http.sendResponseHeaders(FORBIDDEN, -1);
+                // RFC 2616: 14.11 Content-Encoding
+                // If the content-coding of an entity in a request message is not
+                // acceptable to the origin server, the server SHOULD respond with a
+                // status code of 415 (Unsupported Media Type).
+                sendResponse(http, UNSUPPORTED_MEDIA_TYPE, contentType + "\n");
 
                 return;
             }
@@ -192,8 +201,22 @@ class DomainApiHandler implements ManagementHttpHandler {
         processRequest(http);
     }
 
+    @Override
+    public void handle(HttpExchange exchange) throws IOException {
+        // make sure we send something back
+        try {
+            doHandle(exchange);
+        } catch (Exception e) {
+            sendResponse(exchange, INTERNAL_SERVER_ERROR, e.getMessage() + "\n");
+        }
+    }
+
     private void drain(HttpExchange exchange) throws IOException {
-        exchange.getRequestBody().close();
+        try {
+            exchange.getRequestBody().close();
+        } catch (IOException e) {
+            // ignore
+        }
     }
 
     private String extractContentType(final String fullContentType) {
@@ -226,8 +249,7 @@ class DomainApiHandler implements ManagementHttpHandler {
         } catch (Throwable t) {
             // TODO Consider draining input stream
             ROOT_LOGGER.uploadError(t);
-            http.sendResponseHeaders(INTERNAL_SERVER_ERROR, -1);
-
+            sendError(http,false,t);
             return;
         }
 
@@ -262,10 +284,9 @@ class DomainApiHandler implements ManagementHttpHandler {
 
         try {
             dmr = isGet ? convertGetRequest(request) : convertPostRequest(http.getRequestBody(), encode);
-        } catch (IllegalArgumentException iae) {
+        } catch (Exception iae) {
             ROOT_LOGGER.debugf("Unable to construct ModelNode '%s'", iae.getMessage());
-            http.sendResponseHeaders(INTERNAL_SERVER_ERROR, -1);
-
+            sendError(http,isGet,iae);
             return;
         }
 
@@ -273,8 +294,7 @@ class DomainApiHandler implements ManagementHttpHandler {
             response = modelController.execute(new OperationBuilder(dmr).build());
         } catch (Throwable t) {
             ROOT_LOGGER.modelRequestError(t);
-            http.sendResponseHeaders(INTERNAL_SERVER_ERROR, -1);
-
+            sendError(http,isGet,t);
             return;
         }
 
@@ -284,6 +304,23 @@ class DomainApiHandler implements ManagementHttpHandler {
 
         boolean pretty = dmr.hasDefined("json.pretty") && dmr.get("json.pretty").asBoolean();
         writeResponse(http, isGet, pretty, response, status, encode);
+    }
+
+    private void sendError(final HttpExchange http, boolean isGet, Throwable t) throws IOException {
+        ModelNode response = new ModelNode();
+        response.set(t.getMessage());
+        writeResponse(http, isGet, true, response, INTERNAL_SERVER_ERROR, false);
+    }
+
+    private void sendResponse(final HttpExchange exchange, final int responseCode, final String body) throws IOException {
+        exchange.sendResponseHeaders(responseCode, 0);
+        final PrintWriter out = new PrintWriter(exchange.getResponseBody());
+        try {
+            out.print(body);
+            out.flush();
+        } finally {
+            safeClose(out);
+        }
     }
 
      private void writeResponse(final HttpExchange http, boolean isGet, boolean pretty, ModelNode response, int status,
@@ -506,14 +543,17 @@ class DomainApiHandler implements ManagementHttpHandler {
     }
 
     public void start(HttpServer httpServer, SecurityRealm securityRealm) {
-        HttpContext context = httpServer.createContext(DOMAIN_API_CONTEXT, this);
+        // The SubjectAssociationHandler wraps all calls to this HttpHandler to ensure the Subject has been associated
+        // with the security context.
+        HttpContext context = httpServer.createContext(DOMAIN_API_CONTEXT, new SubjectAssociationHandler(this));
         // Once there is a trust store we can no longer rely on users being defined so skip
         // any redirects.
         if (authenticator != null) {
             context.setAuthenticator(authenticator);
+            List<Filter> filters = context.getFilters();
             if (securityRealm.hasTrustStore() == false) {
                 DomainCallbackHandler callbackHandler = securityRealm.getCallbackHandler();
-                context.getFilters().add(new RealmReadinessFilter(callbackHandler, ErrorHandler.getRealmRedirect()));
+                filters.add(new RealmReadinessFilter(callbackHandler, ErrorHandler.getRealmRedirect()));
             }
         }
     }

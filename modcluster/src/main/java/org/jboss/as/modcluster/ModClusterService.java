@@ -26,16 +26,13 @@ import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.util.Enumeration;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
-
-import org.apache.tomcat.util.modeler.Registry;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jboss.as.web.WebServer;
@@ -46,14 +43,6 @@ import org.jboss.modcluster.load.LoadBalanceFactorProvider;
 import org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProvider;
 import org.jboss.modcluster.load.impl.SimpleLoadBalanceFactorProvider;
 import org.jboss.modcluster.load.metric.LoadMetric;
-import org.jboss.modcluster.load.metric.impl.ActiveSessionsLoadMetric;
-import org.jboss.modcluster.load.metric.impl.AverageSystemLoadMetric;
-import org.jboss.modcluster.load.metric.impl.BusyConnectorsLoadMetric;
-import org.jboss.modcluster.load.metric.impl.HeapMemoryUsageLoadMetric;
-import org.jboss.modcluster.load.metric.impl.ReceiveTrafficLoadMetric;
-import org.jboss.modcluster.load.metric.impl.RequestCountLoadMetric;
-import org.jboss.modcluster.load.metric.impl.SendTrafficLoadMetric;
-import org.jboss.modcluster.load.metric.impl.SystemMemoryUsageLoadMetric;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -97,22 +86,13 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         config = new ModClusterConfig();
         // Set the configuration.
 
-        // Check that Advertise could work.
-        boolean defaultavert = false;
-        try {
-            for (Enumeration<NetworkInterface> ni = NetworkInterface.getNetworkInterfaces(); ni.hasMoreElements();) {
-                NetworkInterface intf = ni.nextElement();
-                if (intf.isUp() && intf.supportsMulticast())
-                    defaultavert = true;
-             }
-        } catch (SocketException e) {
-            // Ignore it.
-        }
-
-
         // Set some defaults...
         if (!modelconf.hasDefined(CommonAttributes.PROXY_LIST)) {
-            config.setAdvertise(defaultavert);
+            try {
+                config.setAdvertise(this.isMulticastEnabled(Collections.list(NetworkInterface.getNetworkInterfaces())));
+            } catch (SocketException e) {
+                // Ignore
+            }
         }
         config.setAdvertisePort(23364);
         config.setAdvertiseGroupAddress("224.0.1.105");
@@ -120,6 +100,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         config.setAutoEnableContexts(true);
         config.setStopContextTimeout(10);
         config.setSocketTimeout(20000);
+        config.setExcludedContexts("ROOT,invoker,jbossws,juddi,console");
 
         // Read node to set configuration.
         if (modelconf.hasDefined(CommonAttributes.ADVERTISE_SOCKET)) {
@@ -129,8 +110,9 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
                 config.setAdvertisePort(binding.getMulticastPort());
                 config.setAdvertiseGroupAddress(binding.getMulticastSocketAddress().getHostName());
                 config.setAdvertiseInterface(binding.getSocketAddress().getAddress().getHostAddress());
-                if (!defaultavert)
+                if (!this.isMulticastEnabled(binding.getNetworkInterfaceBinding().getNetworkInterfaces())) {
                     ROOT_LOGGER.multicastInterfaceNotAvailable();
+                }
                 config.setAdvertise(true);
             }
         }
@@ -170,12 +152,12 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         if (modelconf.hasDefined(CommonAttributes.AUTO_ENABLE_CONTEXTS))
             config.setAutoEnableContexts(modelconf.get(CommonAttributes.AUTO_ENABLE_CONTEXTS).asBoolean());
         if (modelconf.hasDefined(CommonAttributes.STOP_CONTEXT_TIMEOUT)) {
-            config.setStopContextTimeout(modelconf.get(CommonAttributes.SOCKET_TIMEOUT).asInt());
+            config.setStopContextTimeout(modelconf.get(CommonAttributes.STOP_CONTEXT_TIMEOUT).asInt());
             config.setStopContextTimeoutUnit(TimeUnit.SECONDS);
         }
         if (modelconf.hasDefined(CommonAttributes.SOCKET_TIMEOUT)) {
             // the default value is 20000 = 20 seconds.
-            config.setSocketTimeout(modelconf.get(CommonAttributes.SOCKET_TIMEOUT).asInt()*1000);
+            config.setSocketTimeout(modelconf.get(CommonAttributes.SOCKET_TIMEOUT).asInt() * 1000);
         }
 
         if (modelconf.hasDefined(CommonAttributes.STICKY_SESSION))
@@ -247,6 +229,19 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         adapter.start();
     }
 
+    private boolean isMulticastEnabled(Collection<NetworkInterface> ifaces) {
+        for (NetworkInterface iface: ifaces) {
+            try {
+                if (iface.isUp() && iface.supportsMulticast()) {
+                    return true;
+                }
+            } catch (SocketException e) {
+                // Ignore
+            }
+        }
+        return false;
+    }
+
     /** {@inheritDoc} */
     @Override
     public synchronized void stop(StopContext context) {
@@ -261,10 +256,6 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         return this;
     }
 
-    MBeanServer getMBeanServer() {
-        return Registry.getRegistry(null, null).getMBeanServer();
-    }
-
     private void addLoadMetrics(Set<LoadMetric> metrics, ModelNode nodes) {
         for (ModelNode node: nodes.asList()) {
             double capacity = node.get(CommonAttributes.CAPACITY).asDouble(LoadMetric.DEFAULT_CAPACITY);
@@ -272,34 +263,12 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
             Class<? extends LoadMetric> loadMetricClass = null;
             if (node.hasDefined(CommonAttributes.TYPE)) {
                 String type = node.get(CommonAttributes.TYPE).asString();
-                //  SourcedLoadMetric
-                if (type.equals("cpu"))
-                    loadMetricClass = AverageSystemLoadMetric.class;
-                if (type.equals("mem"))
-                    loadMetricClass = SystemMemoryUsageLoadMetric.class;
-                if (type.equals("heap"))
-                    loadMetricClass = HeapMemoryUsageLoadMetric.class;
-
-                // MBeanAttributeLoadMetric...
-                if (type.equals("sessions"))
-                    loadMetricClass = ActiveSessionsLoadMetric.class;
-                if (type.equals("receive-traffic"))
-                    loadMetricClass = ReceiveTrafficLoadMetric.class;
-                if (type.equals("send-traffic"))
-                    loadMetricClass = SendTrafficLoadMetric.class;
-                if (type.equals("requests"))
-                    loadMetricClass = RequestCountLoadMetric.class;
-
-                // MBeanAttributeRatioLoadMetric
-                // TODO: possible to do that?
-                // if (type.equals("connection-pool"))
-                //    loadMetricClass = ConnectionPoolUsageLoadMetric.class;
-                if (type.equals("busyness"))
-                    loadMetricClass = BusyConnectorsLoadMetric.class;
+                LoadMetricEnum metric = LoadMetricEnum.forType(type);
+                loadMetricClass = (metric != null) ? metric.getLoadMetricClass() : null;
             } else {
                 String className = node.get(CommonAttributes.CLASS).asString();
                 try {
-                    loadMetricClass = (Class<? extends LoadMetric>) this.getClass().getClassLoader().loadClass(className);
+                    loadMetricClass = this.getClass().getClassLoader().loadClass(className).asSubclass(LoadMetric.class);
                 } catch (ClassNotFoundException e) {
                     ROOT_LOGGER.errorAddingMetrics(e);
                 }
@@ -330,21 +299,6 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
 
     public Injector<SocketBindingManager> getBindingManager() {
         return bindingManager;
-    }
-
-    Registry getRegistry() {
-        return Registry.getRegistry(null, null);
-    }
-    void registerObject(MBeanServer mbeanServer, String name, Object obj, String classname) {
-        if (mbeanServer != null) {
-            ObjectName objectName;
-            try {
-                objectName = new ObjectName(name);
-                getRegistry().registerComponent(obj, objectName, classname);
-            } catch (Exception e) {
-                return;
-            }
-        }
     }
 
     @Override

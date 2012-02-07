@@ -84,7 +84,7 @@ public class EntityBeanHomeFinderInterceptorFactory implements InterceptorFactor
             public Object processInvocation(final InterceptorContext context) throws Exception {
 
                 //grab a bean from the pool to invoke the finder method on
-                final EntityBeanComponentInstance instance = component.getPool().get();
+                final EntityBeanComponentInstance instance = component.acquireUnAssociatedInstance();
                 final Object result;
                 final InvocationType invocationType = context.getPrivateData(InvocationType.class);
                 try {
@@ -92,7 +92,7 @@ public class EntityBeanHomeFinderInterceptorFactory implements InterceptorFactor
                     result = invokeFind(context, instance);
                     return prepareResults(context, result, component);
                 } finally {
-                    component.getPool().release(instance);
+                    component.releaseEntityBeanInstance(instance);
                     context.putPrivateData(InvocationType.class, invocationType);
                 }
             }

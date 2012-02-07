@@ -44,7 +44,7 @@ public final class XTSServices {
     }
 
     public static <T> T notNull(T value) {
-        if (value == null) throw new IllegalStateException("Service not started");
+        if (value == null) throw XtsAsMessages.MESSAGES.xtsServiceIsNotStarted();
         return value;
     }
 

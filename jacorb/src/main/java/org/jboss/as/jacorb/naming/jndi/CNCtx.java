@@ -35,10 +35,8 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 import javax.naming.CannotProceedException;
-import javax.naming.CommunicationException;
 import javax.naming.CompositeName;
 import javax.naming.ConfigurationException;
-import javax.naming.InvalidNameException;
 import javax.naming.Name;
 import javax.naming.NameNotFoundException;
 import javax.naming.NameParser;
@@ -51,6 +49,8 @@ import javax.naming.Reference;
 import javax.naming.spi.NamingManager;
 import javax.naming.spi.ResolveResult;
 
+import org.jboss.as.jacorb.JacORBLogger;
+import org.jboss.as.jacorb.JacORBMessages;
 import org.jboss.as.jacorb.service.CorbaORBService;
 import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.ORB;
@@ -76,8 +76,6 @@ import org.omg.CosNaming.NamingContextPackage.NotFoundReason;
 
 public class CNCtx implements javax.naming.Context {
 
-    private static final boolean debug = false;
-
     ORB _orb;                   // used by ExceptionMapper and RMI/IIOP factory
     public NamingContext _nc;   // public for accessing underlying NamingContext
     private NameComponent[] _name = null;
@@ -87,11 +85,6 @@ public class CNCtx implements javax.naming.Context {
 
     private static final String FED_PROP = "com.sun.jndi.cosnaming.federation";
     boolean federation = false;
-
-    // Reference counter for tracking _orb references
-    org.jboss.as.jacorb.naming.jndi.OrbReuseTracker orbTracker = null;
-    int enumCount;
-    boolean isCloseCalled = false;
 
     /**
      * Create a CNCtx object. Gets the initial naming
@@ -124,10 +117,7 @@ public class CNCtx implements javax.naming.Context {
             env = (Hashtable) env.clone();
         }
         ctx._env = env;
-        String rest = ctx.initUsingUrl(
-                env != null ?
-                        (org.omg.CORBA.ORB) env.get("java.naming.corba.orb")
-                        : null,
+        String rest = ctx.initUsingUrl(env != null ? (org.omg.CORBA.ORB) env.get("java.naming.corba.orb") : null,
                 url, env);
 
         // rest is the INS name
@@ -143,23 +133,15 @@ public class CNCtx implements javax.naming.Context {
      * apis given a COS Naming Context object.
      *
      * @param orb     The ORB used by this context
-     * @param tracker The ORB reuse tracker for tracking references to the
-     *                orb object
      * @param nctx    The COS NamingContext object associated with this context
      * @param name    The name of this context relative to the root
+     * @throws ConfigurationException if both the ORB and naming context are null.
      */
 
-    CNCtx(ORB orb, org.jboss.as.jacorb.naming.jndi.OrbReuseTracker tracker, NamingContext nctx, Hashtable env,
-          NameComponent[] name)
-            throws NamingException {
+    CNCtx(ORB orb, NamingContext nctx, Hashtable env, NameComponent[] name) throws NamingException {
         if (orb == null || nctx == null)
-            throw new ConfigurationException(
-                    "Must supply ORB or NamingContext");
+            throw JacORBMessages.MESSAGES.errorConstructingCNCtx();
         _orb = orb;
-        orbTracker = tracker;
-        if (orbTracker != null) {
-            orbTracker.incRefCount();
-        }
         _nc = nctx;
         _env = env;
         _name = name;
@@ -193,10 +175,7 @@ public class CNCtx implements javax.naming.Context {
      * IOR and corbaloc URLs can be passed directly to ORB.string_to_object()
      */
     private static boolean isCorbaUrl(String url) {
-        return url.startsWith("iiop://")
-                || url.startsWith("iiopname://")
-                || url.startsWith("corbaname:")
-                ;
+        return url.startsWith("iiop://") || url.startsWith("iiopname://") || url.startsWith("corbaname:");
     }
 
     /**
@@ -265,12 +244,10 @@ public class CNCtx implements javax.naming.Context {
                     org.omg.CORBA.Object obj = _nc.resolve(_name);
                     _nc = NamingContextHelper.narrow(obj);
                     if (_nc == null) {
-                        throw new ConfigurationException(insName +
-                                " does not name a NamingContext");
+                        throw JacORBMessages.MESSAGES.notANamingContext(insName);
                     }
                 } catch (org.omg.CORBA.BAD_PARAM e) {
-                    throw new ConfigurationException(insName +
-                            " does not name a NamingContext");
+                    throw JacORBMessages.MESSAGES.notANamingContext(insName);
                 } catch (Exception e) {
                     throw org.jboss.as.jacorb.naming.jndi.ExceptionMapper.mapException(e, this, _name);
                 }
@@ -281,9 +258,7 @@ public class CNCtx implements javax.naming.Context {
 
                 // No ORB instance specified; create one using env and defaults
                 inOrb = CorbaORBService.getCurrent();
-                if (debug) {
-                    System.err.println("Getting default ORB: " + inOrb + env);
-                }
+                JacORBLogger.ROOT_LOGGER.debugGetDefaultORB(inOrb);
             }
             setOrbAndRootContext(inOrb, (String) null);
         }
@@ -317,23 +292,12 @@ public class CNCtx implements javax.naming.Context {
                 try {
                     if (defOrb != null) {
                         try {
-                            String tmpUrl = "corbaloc:iiop:" + addr.host
-                                    + ":" + addr.port + "/NameService";
-                            if (debug) {
-                                System.err.println("Using url: " + tmpUrl);
-                            }
-                            org.omg.CORBA.Object rootCtx =
-                                    defOrb.string_to_object(tmpUrl);
+                            String tmpUrl = "corbaloc:iiop:" + addr.host + ":" + addr.port + "/NameService";
+                            org.omg.CORBA.Object rootCtx = defOrb.string_to_object(tmpUrl);
                             setOrbAndRootContext(defOrb, rootCtx);
                             return parsedUrl.getStringName();
                         } catch (Exception e) {
                         } // keep going
-                    }
-
-                    // Get ORB
-                    if (debug) {
-                        System.err.println("Getting ORB for " + addr.host
-                                + " and port " + addr.port);
                     }
 
                     // Get ORB
@@ -351,7 +315,7 @@ public class CNCtx implements javax.naming.Context {
             if (savedException != null) {
                 throw savedException;
             } else {
-                throw new ConfigurationException("Problem with URL: " + url);
+                throw JacORBMessages.MESSAGES.invalidURLOrIOR(url);
             }
         } catch (MalformedURLException e) {
             throw new ConfigurationException(e.getMessage());
@@ -388,45 +352,32 @@ public class CNCtx implements javax.naming.Context {
         try {
             org.omg.CORBA.Object ncRef;
             if (ncIor != null) {
-                if (debug) {
-                    System.err.println("Passing to string_to_object: " + ncIor);
-                }
                 ncRef = _orb.string_to_object(ncIor);
             } else {
                 ncRef = _orb.resolve_initial_references("NameService");
             }
-            if (debug) {
-                System.err.println("Naming Context Ref: " + ncRef);
-            }
             _nc = NamingContextHelper.narrow(ncRef);
             if (_nc == null) {
                 if (ncIor != null) {
-                    throw new ConfigurationException(
-                            "Cannot convert IOR to a NamingContext: " + ncIor);
+                    throw JacORBMessages.MESSAGES.errorConvertingIORToNamingCtx(ncIor);
                 } else {
-                    throw new ConfigurationException(
-                            "ORB.resolve_initial_references(\"NameService\") does not return a NamingContext");
+                    throw JacORBMessages.MESSAGES.errorResolvingNSInitRef();
                 }
             }
         } catch (org.omg.CORBA.ORBPackage.InvalidName in) {
-            NamingException ne =
-                    new ConfigurationException(
-                            "COS Name Service not registered with ORB under the name 'NameService'");
+            NamingException ne = JacORBMessages.MESSAGES.cosNamingNotRegisteredCorrectly();
             ne.setRootCause(in);
             throw ne;
         } catch (org.omg.CORBA.COMM_FAILURE e) {
-            NamingException ne =
-                    new CommunicationException("Cannot connect to ORB");
+            NamingException ne = JacORBMessages.MESSAGES.errorConnectingToORB();
             ne.setRootCause(e);
             throw ne;
         } catch (org.omg.CORBA.BAD_PARAM e) {
-            NamingException ne = new ConfigurationException(
-                    "Invalid URL or IOR: " + ncIor);
+            NamingException ne = JacORBMessages.MESSAGES.invalidURLOrIOR(ncIor);
             ne.setRootCause(e);
             throw ne;
         } catch (org.omg.CORBA.INV_OBJREF e) {
-            NamingException ne = new ConfigurationException(
-                    "Invalid object reference: " + ncIor);
+            NamingException ne = JacORBMessages.MESSAGES.invalidObjectReference(ncIor);
             ne.setRootCause(e);
             throw ne;
         }
@@ -438,12 +389,10 @@ public class CNCtx implements javax.naming.Context {
         try {
             _nc = NamingContextHelper.narrow(ncRef);
             if (_nc == null) {
-                throw new ConfigurationException(
-                        "Cannot convert object reference to NamingContext: " + ncRef);
+                throw JacORBMessages.MESSAGES.errorConvertingIORToNamingCtx(ncRef.toString());
             }
         } catch (org.omg.CORBA.COMM_FAILURE e) {
-            NamingException ne =
-                    new CommunicationException("Cannot connect to ORB");
+             NamingException ne = JacORBMessages.MESSAGES.errorConnectingToORB();
             ne.setRootCause(e);
             throw ne;
         }
@@ -458,8 +407,7 @@ public class CNCtx implements javax.naming.Context {
                 URL u = new URL(url);
                 in = u.openStream();
                 if (in != null) {
-                    BufferedReader bufin =
-                            new BufferedReader(new InputStreamReader(in, "8859_1"));
+                    BufferedReader bufin = new BufferedReader(new InputStreamReader(in, "8859_1"));
                     String str;
                     while ((str = bufin.readLine()) != null) {
                         if (str.startsWith("IOR:")) {
@@ -468,8 +416,7 @@ public class CNCtx implements javax.naming.Context {
                     }
                 }
             } catch (IOException e) {
-                NamingException ne =
-                        new ConfigurationException("Invalid URL: " + url);
+                NamingException ne = JacORBMessages.MESSAGES.invalidURLOrIOR(url);
                 ne.setRootCause(e);
                 throw ne;
             } finally {
@@ -478,13 +425,12 @@ public class CNCtx implements javax.naming.Context {
                         in.close();
                     }
                 } catch (IOException e) {
-                    NamingException ne =
-                            new ConfigurationException("Invalid URL: " + url);
+                    NamingException ne = JacORBMessages.MESSAGES.invalidURLOrIOR(url);
                     ne.setRootCause(e);
                     throw ne;
                 }
             }
-            throw new ConfigurationException(url + " does not contain an IOR");
+            throw JacORBMessages.MESSAGES.urlDoesNotContainIOR(url);
         }
     }
 
@@ -506,11 +452,9 @@ public class CNCtx implements javax.naming.Context {
         try {
             org.omg.CORBA.Object obj = _nc.resolve(path);
             try {
-                NamingContext nc =
-                        NamingContextHelper.narrow(obj);
+                NamingContext nc = NamingContextHelper.narrow(obj);
                 if (nc != null) {
-                    return new CNCtx(_orb, orbTracker, nc, _env,
-                            makeFullName(path));
+                    return new CNCtx(_orb, nc, _env, makeFullName(path));
                 } else {
                     return obj;
                 }
@@ -533,9 +477,6 @@ public class CNCtx implements javax.naming.Context {
      * @throws NamingException See callResolve.
      */
     public java.lang.Object lookup(String name) throws NamingException {
-        if (debug) {
-            System.out.println("Looking up: " + name);
-        }
         return lookup(new CompositeName(name));
     }
 
@@ -552,8 +493,7 @@ public class CNCtx implements javax.naming.Context {
     public java.lang.Object lookup(Name name)
             throws NamingException {
         if (_nc == null)
-            throw new ConfigurationException(
-                    "Context does not have a corresponding NamingContext");
+            throw JacORBMessages.MESSAGES.notANamingContext(name.toString());
         if (name.size() == 0)
             return this; // %%% should clone() so that env can be changed
         NameComponent[] path = org.jboss.as.jacorb.naming.jndi.CNNameParser.nameToCosName(name);
@@ -566,8 +506,7 @@ public class CNCtx implements javax.naming.Context {
             } catch (NamingException e) {
                 throw e;
             } catch (Exception e) {
-                NamingException ne = new NamingException(
-                        "problem generating object using object factory");
+                NamingException ne = JacORBMessages.MESSAGES.errorGeneratingObjectViaFactory();
                 ne.setRootCause(e);
                 throw ne;
             }
@@ -597,8 +536,7 @@ public class CNCtx implements javax.naming.Context {
     private void callBindOrRebind(NameComponent[] pth, Name name,
                                   java.lang.Object obj, boolean rebind) throws NamingException {
         if (_nc == null)
-            throw new ConfigurationException(
-                    "Context does not have a corresponding NamingContext");
+            throw JacORBMessages.MESSAGES.notANamingContext(name.toString());
         try {
             // Call state factories to convert
             obj = NamingManager.getStateToBind(obj, name, this, _env);
@@ -609,8 +547,7 @@ public class CNCtx implements javax.naming.Context {
             }
 
             if (obj instanceof org.omg.CosNaming.NamingContext) {
-                NamingContext nobj =
-                        NamingContextHelper.narrow((org.omg.CORBA.Object) obj);
+                NamingContext nobj = NamingContextHelper.narrow((org.omg.CORBA.Object) obj);
                 if (rebind)
                     _nc.rebind_context(pth, nobj);
                 else
@@ -622,8 +559,7 @@ public class CNCtx implements javax.naming.Context {
                 else
                     _nc.bind(pth, (org.omg.CORBA.Object) obj);
             } else
-                throw new IllegalArgumentException(
-                        "Only instances of org.omg.CORBA.Object can be bound");
+                throw JacORBMessages.MESSAGES.notACorbaObject();
         } catch (BAD_PARAM e) {
             // probably narrow() failed?
             NamingException ne = new NotContextException(name.toString());
@@ -647,12 +583,9 @@ public class CNCtx implements javax.naming.Context {
     public void bind(Name name, java.lang.Object obj)
             throws NamingException {
         if (name.size() == 0) {
-            throw new InvalidNameException("Name is empty");
+            throw JacORBMessages.MESSAGES.invalidEmptyName();
         }
 
-        if (debug) {
-            System.out.println("Bind: " + name);
-        }
         NameComponent[] path = org.jboss.as.jacorb.naming.jndi.CNNameParser.nameToCosName(name);
 
         try {
@@ -663,9 +596,7 @@ public class CNCtx implements javax.naming.Context {
         }
     }
 
-    private static javax.naming.Context
-    getContinuationContext(CannotProceedException cpe)
-            throws NamingException {
+    private static javax.naming.Context getContinuationContext(CannotProceedException cpe) throws NamingException {
         try {
             return NamingManager.getContinuationContext(cpe);
         } catch (CannotProceedException e) {
@@ -674,10 +605,8 @@ public class CNCtx implements javax.naming.Context {
                 Reference ref = (Reference) resObj;
                 RefAddr addr = ref.get("nns");
                 if (addr.getContent() instanceof javax.naming.Context) {
-                    NamingException ne = new NameNotFoundException(
-                            "No object reference bound for specified name");
+                    NamingException ne = JacORBMessages.MESSAGES.noReferenceFound();
                     ne.setRootCause(cpe.getRootCause());
-                    ne.setRemainingName(cpe.getRemainingName());
                     throw ne;
                 }
             }
@@ -712,7 +641,7 @@ public class CNCtx implements javax.naming.Context {
     public void rebind(Name name, java.lang.Object obj)
             throws NamingException {
         if (name.size() == 0) {
-            throw new InvalidNameException("Name is empty");
+            throw JacORBMessages.MESSAGES.invalidEmptyName();
         }
         NameComponent[] path = org.jboss.as.jacorb.naming.jndi.CNNameParser.nameToCosName(name);
         try {
@@ -749,8 +678,7 @@ public class CNCtx implements javax.naming.Context {
      */
     private void callUnbind(NameComponent[] path) throws NamingException {
         if (_nc == null)
-            throw new ConfigurationException(
-                    "Context does not have a corresponding NamingContext");
+            throw JacORBMessages.MESSAGES.notANamingContext(path.toString());
         try {
             _nc.unbind(path);
         } catch (NotFound e) {
@@ -807,7 +735,7 @@ public class CNCtx implements javax.naming.Context {
     public void unbind(Name name)
             throws NamingException {
         if (name.size() == 0)
-            throw new InvalidNameException("Name is empty");
+            throw JacORBMessages.MESSAGES.invalidEmptyName();
         NameComponent[] path = org.jboss.as.jacorb.naming.jndi.CNNameParser.nameToCosName(name);
         try {
             callUnbind(path);
@@ -843,10 +771,9 @@ public class CNCtx implements javax.naming.Context {
     public void rename(Name oldName, Name newName)
             throws NamingException {
         if (_nc == null)
-            throw new ConfigurationException(
-                    "Context does not have a corresponding NamingContext");
+            throw JacORBMessages.MESSAGES.notANamingContext(oldName.toString());
         if (oldName.size() == 0 || newName.size() == 0)
-            throw new InvalidNameException("One or both names empty");
+            throw JacORBMessages.MESSAGES.invalidEmptyName();
         java.lang.Object obj = lookup(oldName);
         bind(newName, obj);
         unbind(oldName);
@@ -902,8 +829,7 @@ public class CNCtx implements javax.naming.Context {
     public NamingEnumeration listBindings(Name name)
             throws NamingException {
         if (_nc == null)
-            throw new ConfigurationException(
-                    "Context does not have a corresponding NamingContext");
+            throw JacORBMessages.MESSAGES.notANamingContext(name.toString());
         if (name.size() > 0) {
             try {
                 java.lang.Object obj = lookup(name);
@@ -934,8 +860,7 @@ public class CNCtx implements javax.naming.Context {
     private void callDestroy(NamingContext nc)
             throws NamingException {
         if (_nc == null)
-            throw new ConfigurationException(
-                    "Context does not have a corresponding NamingContext");
+            throw JacORBMessages.MESSAGES.notANamingContext(nc.toString());
         try {
             nc.destroy();
         } catch (Exception e) {
@@ -966,8 +891,7 @@ public class CNCtx implements javax.naming.Context {
     public void destroySubcontext(Name name)
             throws NamingException {
         if (_nc == null)
-            throw new ConfigurationException(
-                    "Context does not have a corresponding NamingContext");
+            throw JacORBMessages.MESSAGES.notANamingContext(name.toString());
         NamingContext the_nc = _nc;
         NameComponent[] path = org.jboss.as.jacorb.naming.jndi.CNNameParser.nameToCosName(name);
         if (name.size() > 0) {
@@ -1014,12 +938,10 @@ public class CNCtx implements javax.naming.Context {
     private javax.naming.Context callBindNewContext(NameComponent[] path)
             throws NamingException {
         if (_nc == null)
-            throw new ConfigurationException(
-                    "Context does not have a corresponding NamingContext");
+            throw JacORBMessages.MESSAGES.notANamingContext(path.toString());
         try {
             NamingContext nctx = _nc.bind_new_context(path);
-            return new CNCtx(_orb, orbTracker, nctx, _env,
-                    makeFullName(path));
+            return new CNCtx(_orb, nctx, _env, makeFullName(path));
         } catch (Exception e) {
             throw org.jboss.as.jacorb.naming.jndi.ExceptionMapper.mapException(e, this, path);
         }
@@ -1049,7 +971,7 @@ public class CNCtx implements javax.naming.Context {
     public javax.naming.Context createSubcontext(Name name)
             throws NamingException {
         if (name.size() == 0)
-            throw new InvalidNameException("Name is empty");
+            throw JacORBMessages.MESSAGES.invalidEmptyName();
         NameComponent[] path = org.jboss.as.jacorb.naming.jndi.CNNameParser.nameToCosName(name);
         try {
             return callBindNewContext(path);
@@ -1084,7 +1006,7 @@ public class CNCtx implements javax.naming.Context {
     /**
      * Allow access to the name parser object.
      *
-     * @param String JNDI name, is ignored since there is only one Name
+     * @param name, is ignored since there is only one Name
      *               Parser object.
      * @return NameParser object
      * @throws NamingException --
@@ -1096,7 +1018,7 @@ public class CNCtx implements javax.naming.Context {
     /**
      * Allow access to the name parser object.
      *
-     * @param Name JNDI name, is ignored since there is only one Name
+     * @param name JNDI name, is ignored since there is only one Name
      *             Parser object.
      * @return NameParser object
      * @throws NamingException --
@@ -1133,7 +1055,7 @@ public class CNCtx implements javax.naming.Context {
      * Record change but do not reinitialize ORB.
      *
      * @param propName The property name.
-     * @param propVal  The ORB.
+     * @param propValue  The ORB.
      * @return the previous value of this property if any.
      */
     public java.lang.Object addToEnvironment(String propName,
@@ -1160,40 +1082,7 @@ public class CNCtx implements javax.naming.Context {
         return null;
     }
 
-    public synchronized void incEnumCount() {
-        if (orbTracker == null) {
-            return;
-        }
-        enumCount++;
-        if (debug) {
-            System.out.println("incEnumCount, new count:" + enumCount);
-        }
-    }
-
-    public synchronized void decEnumCount()
-            throws NamingException {
-        if (orbTracker == null) {
-            return;
-        }
-        enumCount--;
-        if (debug) {
-            System.out.println("decEnumCount, new count:" + enumCount +
-                    "    isCloseCalled:" + isCloseCalled);
-        }
-        if ((enumCount == 0) && isCloseCalled) {
-            close();
-        }
-    }
-
     public synchronized void close() throws NamingException {
-        if (orbTracker == null) {
-            return;
-        }
-        if (enumCount > 0) {
-            isCloseCalled = true;
-            return;
-        }
-        orbTracker.decRefCount();
     }
 
     protected void finalize() {

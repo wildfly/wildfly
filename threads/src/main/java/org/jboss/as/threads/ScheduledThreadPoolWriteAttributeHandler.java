@@ -33,55 +33,35 @@ import org.jboss.msc.service.ServiceName;
 
 
 /**
+ * Handles attribute writes for a scheduled thread pool.
  *
  * @author Alexey Loubyansky
  */
 public class ScheduledThreadPoolWriteAttributeHandler extends ThreadsWriteAttributeOperationHandler {
 
-    public static final ScheduledThreadPoolWriteAttributeHandler INSTANCE = new ScheduledThreadPoolWriteAttributeHandler();
+    private final ServiceName serviceNameBase;
 
-    private ScheduledThreadPoolWriteAttributeHandler() {
+    public ScheduledThreadPoolWriteAttributeHandler(ServiceName serviceNameBase) {
         super(ScheduledThreadPoolAdd.ATTRIBUTES, ScheduledThreadPoolAdd.RW_ATTRIBUTES);
+        this.serviceNameBase = serviceNameBase;
     }
 
     @Override
-    protected void applyOperation(final OperationContext context, ModelNode operation, String attributeName, ServiceController<?> service) {
-
-        throw new IllegalArgumentException("Unexpected attribute '" + attributeName + "'");
-        //final UnboundedQueueThreadPoolService pool =  (UnboundedQueueThreadPoolService) service.getService();
+    protected void applyOperation(final OperationContext context, ModelNode operation, String attributeName,
+                                  ServiceController<?> service, boolean forRollback) {
+        if (!forRollback) {
+            // Programming bug. Throw a RuntimeException, not OFE, as this is not a client error
+            throw ThreadsMessages.MESSAGES.unsupportedScheduledThreadPoolAttribute(attributeName);
+        }
     }
 
-/*    protected int getScaledCount(String attributeName, final ModelNode value) {
-        if (!value.hasDefined(COUNT)) {
-            throw new IllegalArgumentException("Missing '" + COUNT + "' for '" + attributeName + "'");
-        }
-        if (!value.hasDefined(PER_CPU)) {
-            throw new IllegalArgumentException("Missing '" + PER_CPU + "' for '" + attributeName + "'");
-        }
-
-        final BigDecimal count;
-        try {
-            count = value.get(COUNT).asBigDecimal();
-        } catch(NumberFormatException e) {
-            throw new IllegalArgumentException("Failed to parse '" + COUNT + "' as java.math.BigDecimal", e);
-        }
-        final BigDecimal perCpu;
-        try {
-            perCpu = value.get(PER_CPU).asBigDecimal();
-        } catch(NumberFormatException e) {
-            throw new IllegalArgumentException("Failed to parse '" + PER_CPU + "' as java.math.BigDecimal", e);
-        }
-
-        return new ScaledCount(count, perCpu).getScaledCount();
-    }
-*/
     @Override
-    protected ServiceController<?> getService(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-        final String name = Util.getNameFromAddress(operation.require(OP_ADDR));
-        final ServiceName serviceName = ThreadsServices.executorName(name);
+    protected ServiceController<?> getService(final OperationContext context, final ModelNode model) throws OperationFailedException {
+        final String name = Util.getNameFromAddress(model.require(OP_ADDR));
+        final ServiceName serviceName = serviceNameBase.append(name);
         ServiceController<?> controller = context.getServiceRegistry(true).getService(serviceName);
         if(controller == null) {
-            throw new OperationFailedException(new ModelNode().set("Service " + serviceName + " not found."));
+            throw ThreadsMessages.MESSAGES.scheduledThreadPoolServiceNotFound(serviceName);
         }
         return controller;
     }

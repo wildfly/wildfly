@@ -69,7 +69,7 @@
                     <dependency>
                         <groupId>org.apache.ant</groupId>
                         <artifactId>ant-apache-bsf</artifactId>
-                        <version>${version.org.apache.ant.bsf}</version>
+                        <version>${version.org.apache.ant}</version>
                     </dependency>
                     <dependency>
                         <groupId>rhino</groupId>
@@ -106,7 +106,7 @@
 
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-configadmin</artifactId>
+            <artifactId>jboss-as-domain-http-error-context</artifactId>
         </dependency>
 
         <dependency>
@@ -163,7 +163,6 @@
             <groupId>org.jboss.msc</groupId>
             <artifactId>jboss-msc</artifactId>
         </dependency>
-
     </dependencies>
 
     <profiles>
@@ -335,6 +334,11 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>net.jcip</groupId>
+                    <artifactId>jcip-annotations</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>net.sourceforge.cssparser</groupId>
                     <artifactId>cssparser</artifactId>
                 </dependency>
@@ -501,11 +505,6 @@
 
                 <dependency>
                     <groupId>org.apache.cxf.xjcplugins</groupId>
-                    <artifactId>cxf-xjc-bug671</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.apache.cxf.xjcplugins</groupId>
                     <artifactId>cxf-xjc-dv</artifactId>
                 </dependency>
 
@@ -517,6 +516,11 @@
                 <dependency>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>org.apache.felix.configadmin</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.apache.felix</groupId>
+                    <artifactId>org.apache.felix.log</artifactId>
                 </dependency>
 
                 <dependency>
@@ -572,25 +576,26 @@
                 <dependency>
                     <groupId>org.codehaus.jackson</groupId>
                     <artifactId>jackson-core-asl</artifactId>
-                    <version>${version.org.codehaus.jackson}</version>
                 </dependency>
 
                 <dependency>
                     <groupId>org.codehaus.jackson</groupId>
                     <artifactId>jackson-mapper-asl</artifactId>
-                    <version>${version.org.codehaus.jackson}</version>
                 </dependency>
 
                 <dependency>
                     <groupId>org.codehaus.jackson</groupId>
                     <artifactId>jackson-jaxrs</artifactId>
-                    <version>${version.org.codehaus.jackson}</version>
                 </dependency>
 
                 <dependency>
                     <groupId>org.codehaus.jackson</groupId>
                     <artifactId>jackson-xc</artifactId>
-                    <version>${version.org.codehaus.jackson}</version>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.codehaus.jettison</groupId>
+                    <artifactId>jettison</artifactId>
                 </dependency>
 
                 <dependency>
@@ -679,6 +684,21 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.jboss</groupId>
+                    <artifactId>jboss-common-core</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss</groupId>
+                    <artifactId>jboss-iiop-client</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss</groupId>
+                    <artifactId>jboss-vfs</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-appclient</artifactId>
                 </dependency>
@@ -686,6 +706,11 @@
                 <dependency>
                     <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-cli</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-client-all</artifactId>
                 </dependency>
 
                 <dependency>
@@ -750,6 +775,11 @@
 
                 <dependency>
                     <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-configadmin</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-console</artifactId>
                     <classifier>resources</classifier>
                 </dependency>
@@ -761,12 +791,32 @@
 
                 <dependency>
                     <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-deployment-scanner</artifactId>
+                    <artifactId>jboss-as-controller</artifactId>
                 </dependency>
 
                 <dependency>
                     <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-domain-http-error-context</artifactId>
+                    <artifactId>jboss-as-controller-client</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-domain-http-interface</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-domain-management</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-deployment-repository</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-deployment-scanner</artifactId>
                 </dependency>
 
                 <dependency>
@@ -782,6 +832,11 @@
                 <dependency>
                     <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-ejb3</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-embedded</artifactId>
                 </dependency>
 
                 <dependency>
@@ -841,7 +896,7 @@
 
                 <dependency>
                     <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-pojo</artifactId>
+                    <artifactId>jboss-as-network</artifactId>
                 </dependency>
 
                 <dependency>
@@ -852,6 +907,31 @@
                 <dependency>
                     <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-osgi-service</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-platform-mbean</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-pojo</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-process-controller</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-protocol</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-remoting</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1099,13 +1179,33 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.osgi.deployment</groupId>
-                    <artifactId>jbosgi-deployment</artifactId>
+                    <groupId>org.jboss.osgi.framework</groupId>
+                    <artifactId>jbosgi-framework-core</artifactId>
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.osgi.framework</groupId>
-                    <artifactId>jbosgi-framework-core</artifactId>
+                    <groupId>org.jboss.osgi.http</groupId>
+                    <artifactId>jbosgi-http-api</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.osgi.logging</groupId>
+                    <artifactId>jboss-osgi-logging</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.osgi.metadata</groupId>
+                    <artifactId>jbosgi-metadata</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.osgi.repository</groupId>
+                    <artifactId>jbosgi-repository-api</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.osgi.repository</groupId>
+                    <artifactId>jbosgi-repository-core</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1134,18 +1234,18 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.osgi.vfs</groupId>
-                    <artifactId>jbosgi-vfs</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.jboss.osgi.vfs</groupId>
-                    <artifactId>jbosgi-vfs30</artifactId>
+                    <groupId>org.jboss.remoting3</groupId>
+                    <artifactId>jboss-remoting</artifactId>
                 </dependency>
 
                 <dependency>
                     <groupId>org.jboss.remoting3</groupId>
                     <artifactId>remoting-jmx</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss</groupId>
+                    <artifactId>jboss-remote-naming</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1180,6 +1280,11 @@
 
                 <dependency>
                     <groupId>org.jboss.resteasy</groupId>
+                    <artifactId>resteasy-jettison-provider</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.resteasy</groupId>
                     <artifactId>resteasy-jsapi</artifactId>
                 </dependency>
 
@@ -1189,13 +1294,43 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.jboss.resteasy</groupId>
+                    <artifactId>resteasy-yaml-provider</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.sasl</groupId>
+                    <artifactId>jboss-sasl</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.jboss.seam.integration</groupId>
                     <artifactId>jboss-seam-int-jbossas</artifactId>
                 </dependency>
 
                 <dependency>
                     <groupId>org.jboss.security</groupId>
-                    <artifactId>jboss-negotiation</artifactId>
+                    <artifactId>jboss-negotiation-common</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.security</groupId>
+                    <artifactId>jboss-negotiation-extras</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.security</groupId>
+                    <artifactId>jboss-negotiation-net</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.security</groupId>
+                    <artifactId>jboss-negotiation-ntlm</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.security</groupId>
+                    <artifactId>jboss-negotiation-spnego</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1334,6 +1469,16 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.jboss.stdio</groupId>
+                    <artifactId>jboss-stdio</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.threads</groupId>
+                    <artifactId>jboss-threads</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.jboss.web</groupId>
                     <artifactId>jasper-jdt</artifactId>
                 </dependency>
@@ -1425,6 +1570,16 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.jboss.xnio</groupId>
+                    <artifactId>xnio-api</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.xnio</groupId>
+                    <artifactId>xnio-nio</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.jboss</groupId>
                     <artifactId>jbossxb</artifactId>
                 </dependency>
@@ -1446,7 +1601,7 @@
 
                 <dependency>
                     <groupId>org.osgi</groupId>
-                    <artifactId>org.osgi.compendium</artifactId>
+                    <artifactId>org.osgi.enterprise</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1480,6 +1635,21 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.picketbox</groupId>
+                    <artifactId>picketbox</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.picketbox</groupId>
+                    <artifactId>picketbox-commons</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.picketbox</groupId>
+                    <artifactId>picketbox-infinispan</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.python</groupId>
                     <artifactId>jython-standalone</artifactId>
                 </dependency>
@@ -1505,18 +1675,8 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.picketbox</groupId>
-                    <artifactId>picketbox</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.picketbox</groupId>
-                    <artifactId>picketbox-commons</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.picketbox</groupId>
-                    <artifactId>picketbox-infinispan</artifactId>
+                    <groupId>org.yaml</groupId>
+                    <artifactId>snakeyaml</artifactId>
                 </dependency>
 
                 <dependency>

@@ -26,21 +26,24 @@ package org.jboss.as.server.mgmt.domain;
  * @author John Bailey
  */
 public interface DomainServerProtocol {
-    int SERVER_TO_HOST_CONTROLLER_OPERATION = Byte.MAX_VALUE; // TODO: Correct
-    int REGISTER_REQUEST = 0x00;
-    int PARAM_SERVER_NAME = 0x01;
+
+    byte REGISTER_REQUEST = 0x00;
+    byte SERVER_STARTED_REQUEST = 0x02;
+    byte SERVER_RECONNECT_REQUEST = 0x03;
 
 
-//    int SERVER_MODEL_UPDATES_REQUEST = 0x10;
-//    int PARAM_ALLOW_ROLLBACK = 0x28;
-//    int PARAM_SERVER_MODEL_UPDATE_COUNT = 0x29;
-//    int PARAM_SERVER_MODEL_UPDATE = 0x30;
-//    int PARAM_SERVER_MODEL_UPDATE_RESPONSE_COUNT = 0x31;
-//    int PARAM_SERVER_MODEL_UPDATE_RESPONSE = 0x32;
-//    int SERVER_MODEL_UPDATES_RESPONSE = 0x15;
-
-    int GET_SERVER_MODEL_REQUEST = 0x20;
-    int RETURN_SERVER_MODEL = 0x21;
-    int GET_SERVER_MODEL_RESPONSE = 0x22;
-
+    byte PARAM_SERVER_NAME = 0x01;
+    byte PARAM_OK = 0x21;
+    byte PARAM_ERROR = 0x22;
+    byte PARAM_RESTART_REQUIRED = 0x22;
+    byte GET_FILE_REQUEST = 0x24;
+    byte PARAM_FILE_PATH = 0x25;
+    byte PARAM_ROOT_ID_FILE = 0x26;
+    byte PARAM_ROOT_ID_CONFIGURATION = 0x27;
+    byte PARAM_ROOT_ID_DEPLOYMENT = 0x28;
+    byte PARAM_NUM_FILES = 0x29;
+    byte FILE_START = 0x30;
+    byte PARAM_FILE_SIZE = 0x31;
+    byte FILE_END = 0x32;
+    byte PARAM_ROOT_ID = 0x33;
 }

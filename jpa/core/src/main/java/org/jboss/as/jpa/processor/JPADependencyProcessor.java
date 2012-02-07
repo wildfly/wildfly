@@ -36,6 +36,7 @@ import java.util.jar.JarFile;
 
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
+import org.jboss.as.jpa.config.PersistenceUnitsInApplication;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -45,7 +46,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
-import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
@@ -96,7 +96,7 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
 
     private void addDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
                                ModuleIdentifier moduleIdentifier) {
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, false, false));
     }
 
     @Override
@@ -111,16 +111,22 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
 
         int defaultProviderCount = 0;
         Set<String> moduleDependencies = new HashSet<String>();
-        for (ResourceRoot resourceRoot : DeploymentUtils.allResourceRoots(deploymentUnit)) {
-            PersistenceUnitMetadataHolder holder = resourceRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
+
+        // get the number of persistence units that use the default persistence provider module.
+        // Dependencies for other persistence provider will be added to the passed
+        // 'moduleDependencies' collection.  Each persistence provider module that is found, will be injected into the
+        // passed moduleSpecification (for the current deployment unit).
+        PersistenceUnitsInApplication persistenceUnitsInApplication = DeploymentUtils.getTopDeploymentUnit(deploymentUnit).getAttachment(PersistenceUnitsInApplication.PERSISTENCE_UNITS_IN_APPLICATION);
+        for (PersistenceUnitMetadataHolder holder: persistenceUnitsInApplication.getPersistenceUnitHolders()) {
             defaultProviderCount += loadPersistenceUnits(moduleLoader, deploymentUnit, moduleDependencies, holder);
         }
+
         // add dependencies for the default persistence provider module
         if (defaultProviderCount > 0) {
             moduleDependencies.add(Configuration.PROVIDER_MODULE_DEFAULT);
-            ROOT_LOGGER.debugf("added (default provider) %s dependency to application deployment (since %d PU(s) didn't specify %s",
-                Configuration.PROVIDER_MODULE_DEFAULT, defaultProviderCount, Configuration.PROVIDER_MODULE + ")");
-            //only inject envers module as long as org.hibernate is injected.
+            ROOT_LOGGER.debugf("added (default provider) %s dependency to %s (since %d PU(s) didn't specify %s",
+                Configuration.PROVIDER_MODULE_DEFAULT, deploymentUnit.getName(),defaultProviderCount, Configuration.PROVIDER_MODULE + ")");
+            // only inject default envers for default Hibernate module
             addDependency(moduleSpecification, moduleLoader, HIBERNATE_ENVERS_ID);
         }
 

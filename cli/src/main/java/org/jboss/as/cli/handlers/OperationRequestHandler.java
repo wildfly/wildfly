@@ -46,7 +46,7 @@ import org.jboss.dmr.ModelNode;
 public class OperationRequestHandler implements CommandHandler, OperationCommand {
 
     @Override
-    public boolean isBatchMode() {
+    public boolean isBatchMode(CommandContext ctx) {
         return true;
     }
 
@@ -58,7 +58,7 @@ public class OperationRequestHandler implements CommandHandler, OperationCommand
 
         ModelControllerClient client = ctx.getModelControllerClient();
         if(client == null) {
-            ctx.printLine("You are disconnected at the moment." +
+            ctx.error("You are disconnected at the moment." +
                     " Type 'connect' to connect to the server" +
                     " or 'help' for the list of supported commands.");
             return;
@@ -66,14 +66,14 @@ public class OperationRequestHandler implements CommandHandler, OperationCommand
 
         ModelNode request = (ModelNode) ctx.get("OP_REQ");
         if(request == null) {
-            ctx.printLine("Parsed request isn't available.");
+            ctx.error("Parsed request isn't available.");
             return;
         }
 
         try {
             validateRequest(ctx, request);
         } catch(CommandFormatException e) {
-            ctx.printLine(e.getLocalizedMessage());
+            ctx.error(e.getLocalizedMessage());
             return;
         }
 
@@ -81,11 +81,11 @@ public class OperationRequestHandler implements CommandHandler, OperationCommand
             ModelNode result = client.execute(request);
             ctx.printLine(result.toString());
         } catch(NoSuchElementException e) {
-            ctx.printLine("ModelNode request is incomplete: " + e.getMessage());
+            ctx.error("ModelNode request is incomplete: " + e.getMessage());
         } catch (CancellationException e) {
-            ctx.printLine("The result couldn't be retrieved (perhaps the task was cancelled: " + e.getLocalizedMessage());
+            ctx.error("The result couldn't be retrieved (perhaps the task was cancelled: " + e.getLocalizedMessage());
         } catch (IOException e) {
-            ctx.printLine("Communication error: " + e.getLocalizedMessage());
+            ctx.error("Communication error: " + e.getLocalizedMessage());
             ctx.disconnectController();
         } catch (RuntimeException e) {
             throw e;

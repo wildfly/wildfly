@@ -78,10 +78,10 @@ public class ServerGroupListState extends DefaultParsingState {
                 case ',':
                     ctx.enterState(gs);
                     break;
-                case '}':
-                case ';':
-                    ctx.leaveState();
-                    break;
+//                case '}':
+//                case ';':
+//                    ctx.leaveState();
+//                    break;
                 default:
                     ctx.leaveState();
                 }

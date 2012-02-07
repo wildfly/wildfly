@@ -103,7 +103,7 @@ public class ReadAttributeHandler extends BaseOperationCommand {
                         e.printStackTrace();
                     }
                 } catch (CommandFormatException e) {
-                    ctx.printLine(e.getLocalizedMessage());
+                    ctx.error(e.getLocalizedMessage());
                     return Collections.emptyList();
                 }
                 return Collections.emptyList();
@@ -150,7 +150,7 @@ public class ReadAttributeHandler extends BaseOperationCommand {
 
     protected void handleResponse(CommandContext ctx, ModelNode response, boolean composite) {
         if (!Util.isSuccess(response)) {
-            ctx.printLine(Util.getFailureDescription(response));
+            ctx.error(Util.getFailureDescription(response));
             return;
         }
         if(!response.hasDefined(Util.RESULT)) {
@@ -174,7 +174,7 @@ public class ReadAttributeHandler extends BaseOperationCommand {
                     }
                     table.addLine(new String[]{"value", valueBuf.toString()});
                 } else {
-                    ctx.printLine("Failed to get resource description: " + response);
+                    ctx.error("Failed to get resource description: " + response);
                 }
             }
 
@@ -187,23 +187,23 @@ public class ReadAttributeHandler extends BaseOperationCommand {
                             ModelNode attributes = descrResult.get(Util.ATTRIBUTES);
                             final String name = this.name.getValue(ctx.getParsedCommandLine());
                             if(name == null) {
-                                ctx.printLine("Attribute name is not available in handleResponse.");
+                                ctx.error("Attribute name is not available in handleResponse.");
                             } else if(attributes.hasDefined(name)) {
                                 final ModelNode descr = attributes.get(name);
                                 for(String prop : descr.keys()) {
                                     table.addLine(new String[]{prop, descr.get(prop).asString()});
                                 }
                             } else {
-                                ctx.printLine("Attribute description is not available.");
+                                ctx.error("Attribute description is not available.");
                             }
                         } else {
-                            ctx.printLine("The resource doesn't provide attribute descriptions.");
+                            ctx.error("The resource doesn't provide attribute descriptions.");
                         }
                     } else {
-                        ctx.printLine("Result is not available for read-resource-description request: " + response);
+                        ctx.error("Result is not available for read-resource-description request: " + response);
                     }
                 } else {
-                    ctx.printLine("Failed to get resource description: " + response);
+                    ctx.error("Failed to get resource description: " + response);
                 }
             }
             ctx.printLine(table.toString(true));
@@ -225,7 +225,7 @@ public class ReadAttributeHandler extends BaseOperationCommand {
             try {
                 keys = result.keys();
             } catch(Exception e) {
-                ctx.printLine("Failed to get step results from a composite operation response " + opResponse);
+                ctx.error("Failed to get step results from a composite operation response " + opResponse);
                 e.printStackTrace();
                 return null;
             }

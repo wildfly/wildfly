@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+    version="3.0">  
+
+  <servlet>
+    <servlet-name>TG_DD_servlet</servlet-name>
+    <description>Test servlet</description>
+    <servlet-class>org.jboss.as.test.integration.web.security.tg.TransportGuaranteeServlet</servlet-class>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+
+  <servlet-mapping>
+      <servlet-name>TG_DD_servlet</servlet-name>
+      <url-pattern>/tg/srv/*</url-pattern>
+  </servlet-mapping>
+
+  <security-constraint>
+    <web-resource-collection>
+        <web-resource-name>sec</web-resource-name>
+        <url-pattern>/tg/*</url-pattern>
+        <http-method>GET</http-method>
+        <http-method>POST</http-method>
+    </web-resource-collection>
+    <auth-constraint>
+        <role-name>gooduser</role-name>
+    </auth-constraint>
+    <user-data-constraint>
+        <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+    </user-data-constraint>
+  </security-constraint>
+
+  <login-config>
+    <auth-method>BASIC</auth-method>
+    <realm-name>WebSecurityBasic</realm-name>
+  </login-config>
+  
+  <security-role>
+    <role-name>gooduser</role-name>
+  </security-role>
+  
+</web-app>

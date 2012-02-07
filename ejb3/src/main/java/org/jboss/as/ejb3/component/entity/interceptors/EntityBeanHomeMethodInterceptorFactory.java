@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.component.entity.interceptors;
 
+import java.lang.reflect.Method;
+
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.interceptors.InvocationType;
@@ -30,8 +32,6 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
-
-import java.lang.reflect.Method;
 
 /**
  * Interceptor that hooks up home business methods for entity beans
@@ -58,7 +58,7 @@ public class EntityBeanHomeMethodInterceptorFactory implements InterceptorFactor
             public Object processInvocation(final InterceptorContext context) throws Exception {
 
                 //grab a bean from the pool to invoke the business method on
-                final EntityBeanComponentInstance instance = component.getPool().get();
+                final EntityBeanComponentInstance instance = component.acquireUnAssociatedInstance();
                 final Object result;
                 final InvocationType invocationType = context.getPrivateData(InvocationType.class);
                 try {
@@ -77,10 +77,9 @@ public class EntityBeanHomeMethodInterceptorFactory implements InterceptorFactor
                     }
                 } finally {
                     context.putPrivateData(InvocationType.class, invocationType);
-                    component.getPool().release(instance);
+                    component.releaseEntityBeanInstance(instance);
                 }
             }
-
         };
     }
 }

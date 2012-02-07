@@ -24,6 +24,7 @@ package org.jboss.as.controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -1425,7 +1426,7 @@ public interface ControllerMessages {
      * @return a {@link CancellationException} for the error.
      */
     @Message("Operation cancelled asynchronously")
-    CancellationException operationCancelledAsynchronously();
+    OperationCancellationException operationCancelledAsynchronously();
 
     /**
      * A message indicating the operation handler failed.
@@ -2353,4 +2354,52 @@ public interface ControllerMessages {
      */
     @Message(id = 14835, value = "The '%s' attribute of the '%s' parameter can not be converted to an integer in the description of the operation at %s: %s")
     String invalidDescriptionMinMaxLengthForParameterHasWrongType(String minOrMaxLength, String paramName, PathAddress address, ModelNode description);
+
+    /**
+     * Creates an exception indicating the {@code value} for the {@code name} must be a valid port number.
+     *
+     * @param name     the name for the value that must be a port number.
+     * @param value    the invalid value.
+     * @param location the location of the error.
+     *
+     * @return a {@link XMLStreamException} for the error.
+     */
+    @Message(id = 14836, value = "Illegal '%s' value %s -- must be a valid port number")
+    XMLStreamException invalidPort(String name, String value, @Param Location location);
+
+    @Message(id = 14837, value = "Cannot resolve the localhost address to create a UUID-based name for this process")
+    RuntimeException cannotResolveProcessUUID(@Cause UnknownHostException cause);
+
+    /**
+     * Creates an exception indicating a user tried calling ServiceController.setMode(REMOVE) from an operation handler.
+     *
+     * @return a {@link XMLStreamException} for the error.
+     */
+    @Message(id = 14838, value = "Do not call ServiceController.setMode(REMOVE), use OperationContext.removeService() instead.")
+    IllegalStateException useOperationContextRemoveService();
+
+    /**
+     * Creates an exception indicating that the value of the specified parameter does not match any of the allowed
+     * values.
+     *
+     * @param value the parameter value.
+     * @param parameterName the parameter name.
+     * @param allowedValues a set containing the allowed values.
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 14839, value="Invalid value %s for %s; legal values are %s")
+    OperationFailedException invalidEnumValue(String value, String parameterName, Set<?> allowedValues);
+
+    /*
+     * Creates an exception indicating a user tried to directly update the configuration model of a managed domain
+     * server rather, bypassing the Host Controller.
+     *
+     * @param operation the name of the operation
+     * @param address the address of the operation
+     *
+     * @return a {@link OperationFailedRuntimeException} for the error.
+     */
+    @Message(id = 14840, value = "Operation '%s' targetted at resource '%s' was directly invoked by a user. " +
+            "User operations are not permitted to directly update the persistent configuration of a server in a managed domain.")
+    OperationFailedRuntimeException modelUpdateNotAuthorized(String operation, PathAddress address);
 }

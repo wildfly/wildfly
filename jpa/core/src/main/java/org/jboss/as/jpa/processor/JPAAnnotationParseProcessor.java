@@ -22,8 +22,6 @@
 
 package org.jboss.as.jpa.processor;
 
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +43,6 @@ import org.jboss.as.ee.component.LookupInjectionSource;
 import org.jboss.as.ee.component.MethodInjectionTarget;
 import org.jboss.as.ee.component.ResourceInjectionConfiguration;
 import org.jboss.as.jpa.container.PersistenceUnitSearch;
-import org.jboss.as.jpa.container.SFSBXPCMap;
 import org.jboss.as.jpa.injectors.PersistenceContextInjectionSource;
 import org.jboss.as.jpa.injectors.PersistenceUnitInjectionSource;
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
@@ -63,6 +60,8 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.msc.service.ServiceName;
+
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
 /**
  * Handle PersistenceContext and PersistenceUnit annotations.
@@ -245,7 +244,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
                 properties = null;
             }
 
-            return new PersistenceContextInjectionSource(type, properties, puServiceName, deploymentUnit, scopedPuName, injectionTypeName, SFSBXPCMap.getXpcMap(deploymentUnit), pu);
+            return new PersistenceContextInjectionSource(type, properties, puServiceName, deploymentUnit, scopedPuName, injectionTypeName, pu);
         } else {
             return new PersistenceUnitInjectionSource(puServiceName, deploymentUnit, injectionTypeName, pu);
         }

@@ -23,12 +23,13 @@ package org.jboss.as.threads;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
 public class CommonAttributes {
     public static final String ACTIVE_COUNT = "active-count";
     public static final String ALLOW_CORE_TIMEOUT = "allow-core-timeout";
     public static final String BLOCKING = "blocking";
+    public static final String BLOCKING_BOUNDED_QUEUE_THREAD_POOL = "blocking-bounded-queue-thread-pool";
+    public static final String BLOCKING_QUEUELESS_THREAD_POOL = "blocking-queueless-thread-pool";
     public static final String BOUNDED_QUEUE_THREAD_POOL = "bounded-queue-thread-pool";
     public static final String COMPLETED_TASK_COUNT = "completed-task-count";
     public static final String CORE_THREADS = "core-threads";
@@ -36,7 +37,6 @@ public class CommonAttributes {
     public static final String CURRENT_THREAD_COUNT = "current-thread-count";
     public static final String PER_CPU = "per-cpu";
     public static final String HANDOFF_EXECUTOR = "handoff-executor";
-    public static final String LARGEST_POOL_SIZE = "largest-pool-size";
     public static final String LARGEST_THREAD_COUNT = "largest-thread-count";
     public static final String NAME = "name";
     public static final String GROUP_NAME = "group-name";
@@ -54,7 +54,6 @@ public class CommonAttributes {
     public static final String TIME = "time";
     public static final String THREAD_FACTORY = "thread-factory";
     public static final String THREAD_NAME_PATTERN = "thread-name-pattern";
-    public static final String THREAD_POOL = "thread-pool";
     public static final String UNBOUNDED_QUEUE_THREAD_POOL = "unbounded-queue-thread-pool";
     public static final String UNIT = "unit";
     public static final String VALUE = "value";

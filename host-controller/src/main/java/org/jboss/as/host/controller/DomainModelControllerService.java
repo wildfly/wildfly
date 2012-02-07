@@ -38,7 +38,6 @@ import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import java.io.IOException;
 import java.security.AccessController;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -59,27 +58,22 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ProxyController;
-import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.remote.RemoteProxyController;
-import org.jboss.as.domain.controller.DomainContentRepository;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainModelUtil;
-import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.SlaveRegistrationException;
-import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
 import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
 import org.jboss.as.domain.controller.operations.coordination.PrepareStepHandler;
 import org.jboss.as.host.controller.RemoteDomainConnectionService.RemoteFileRepository;
+import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.host.controller.mgmt.MasterDomainControllerOperationHandlerService;
 import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandlerFactoryService;
 import org.jboss.as.host.controller.operations.HttpManagementAddHandler;
@@ -90,11 +84,16 @@ import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.process.ExitCodes;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.process.ProcessInfo;
+import org.jboss.as.process.ProcessMessageHandler;
+import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.remoting.EndpointService;
+import org.jboss.as.remoting.management.ManagementChannelRegistryService;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
+import org.jboss.as.repository.ContentRepository;
+import org.jboss.as.repository.HostFileRepository;
+import org.jboss.as.repository.LocalFileRepository;
 import org.jboss.as.server.BootstrapListener;
 import org.jboss.as.server.RuntimeExpressionResolver;
-import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -104,8 +103,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.remoting3.Channel;
-import org.jboss.remoting3.CloseHandler;
 import org.jboss.threads.JBossThreadFactory;
 
 /**
@@ -113,7 +110,7 @@ import org.jboss.threads.JBossThreadFactory;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DomainModelControllerService extends AbstractControllerService implements DomainController, UnregisteredHostChannelRegistry {
+public class DomainModelControllerService extends AbstractControllerService implements DomainController {
 
     public static final ServiceName SERVICE_NAME = HostControllerService.HC_SERVICE_NAME.append("model", "controller");
 
@@ -121,7 +118,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private final HostControllerEnvironment environment;
     private final HostRunningModeControl runningModeControl;
     private final LocalHostControllerInfoImpl hostControllerInfo;
-    private final FileRepository localFileRepository;
+    private final HostFileRepository localFileRepository;
     private final RemoteFileRepository remoteFileRepository;
     private final InjectedValue<ProcessControllerConnectionService> injectedProcessControllerConnection = new InjectedValue<ProcessControllerConnectionService>();
     private final Map<String, ProxyController> hostProxies;
@@ -130,8 +127,6 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private final BootstrapListener bootstrapListener;
     private ManagementResourceRegistration modelNodeRegistration;
 
-    private final Map<String, Channel> unregisteredHostChannels = new HashMap<String, Channel>();
-    private final Map<String, ProxyCreatedCallback> proxyCreatedCallbacks = new HashMap<String, ProxyCreatedCallback>();
     // TODO look into using the controller executor
     final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("proxy-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
     private final ExecutorService proxyExecutor = Executors.newCachedThreadPool(threadFactory);
@@ -139,6 +134,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private final ContentRepository contentRepository;
     private final ExtensionRegistry extensionRegistry;
     private final ControlledProcessState processState;
+    private final IgnoredDomainResourceRegistry ignoredRegistry;
 
     private volatile ServerInventory serverInventory;
 
@@ -150,13 +146,16 @@ public class DomainModelControllerService extends AbstractControllerService impl
                                                             final BootstrapListener bootstrapListener) {
         final Map<String, ProxyController> hostProxies = new ConcurrentHashMap<String, ProxyController>();
         final Map<String, ProxyController> serverProxies = new ConcurrentHashMap<String, ProxyController>();
-        final LocalHostControllerInfoImpl hostControllerInfo = new LocalHostControllerInfoImpl(processState);
+        final LocalHostControllerInfoImpl hostControllerInfo = new LocalHostControllerInfoImpl(processState, environment);
         final AbstractVaultReader vaultReader = service(AbstractVaultReader.class);
         ROOT_LOGGER.debugf("Using VaultReader %s", vaultReader);
-        final ContentRepository contentRepository = new DomainContentRepository(environment.getDomainDeploymentDir());
-        final PrepareStepHandler prepareStepHandler = new PrepareStepHandler(hostControllerInfo, contentRepository, hostProxies, serverProxies);
+        final ContentRepository contentRepository = ContentRepository.Factory.create(environment.getDomainContentDir());
+        IgnoredDomainResourceRegistry ignoredRegistry = new IgnoredDomainResourceRegistry(hostControllerInfo);
+        final PrepareStepHandler prepareStepHandler = new PrepareStepHandler(hostControllerInfo, contentRepository,
+                hostProxies, serverProxies, ignoredRegistry);
         DomainModelControllerService service = new DomainModelControllerService(environment, runningModeControl, processState,
-                hostControllerInfo, contentRepository, hostProxies, serverProxies, prepareStepHandler, vaultReader, bootstrapListener);
+                hostControllerInfo, contentRepository, hostProxies, serverProxies, prepareStepHandler, vaultReader,
+                ignoredRegistry, bootstrapListener);
         return serviceTarget.addService(SERVICE_NAME, service)
                 .addDependency(HostControllerService.HC_EXECUTOR_SERVICE_NAME, ExecutorService.class, service.getExecutorServiceInjector())
                 .addDependency(ProcessControllerConnectionService.SERVICE_NAME, ProcessControllerConnectionService.class, service.injectedProcessControllerConnection)
@@ -173,6 +172,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
                                          final Map<String, ProxyController> serverProxies,
                                          final PrepareStepHandler prepareStepHandler,
                                          final AbstractVaultReader vaultReader,
+                                         final IgnoredDomainResourceRegistry ignoredRegistry,
                                          final BootstrapListener bootstrapListener) {
         super(ProcessType.HOST_CONTROLLER, runningModeControl, null, processState,
                 DomainDescriptionProviders.ROOT_PROVIDER, prepareStepHandler, new RuntimeExpressionResolver(vaultReader));
@@ -180,13 +180,15 @@ public class DomainModelControllerService extends AbstractControllerService impl
         this.runningModeControl = runningModeControl;
         this.processState = processState;
         this.hostControllerInfo = hostControllerInfo;
-        this.localFileRepository = new LocalFileRepository(environment);
+        this.localFileRepository = new LocalFileRepository(environment.getDomainBaseDir(), environment.getDomainContentDir(), environment.getDomainConfigurationDir());
+
         this.remoteFileRepository = new RemoteFileRepository(localFileRepository);
         this.contentRepository = contentRepository;
         this.hostProxies = hostProxies;
         this.serverProxies = serverProxies;
         this.prepareStepHandler = prepareStepHandler;
         this.vaultReader = vaultReader;
+        this.ignoredRegistry = ignoredRegistry;
         this.bootstrapListener = bootstrapListener;
         this.extensionRegistry = new ExtensionRegistry(ProcessType.HOST_CONTROLLER, runningModeControl);
     }
@@ -214,13 +216,15 @@ public class DomainModelControllerService extends AbstractControllerService impl
         }
         modelNodeRegistration.registerProxyController(pe, hostControllerClient);
         hostProxies.put(pe.getValue(), hostControllerClient);
+    }
 
-        DOMAIN_LOGGER.registeredRemoteSlaveHost(pe.getValue());
+    @Override
+    public boolean isHostRegistered(String id) {
+        return hostControllerInfo.getLocalHostName().equals(id) || hostProxies.containsKey(id);
     }
 
     @Override
     public void unregisterRemoteHost(String id) {
-        unregisteredHostChannels.remove(id);
         if (hostProxies.remove(id) != null) {
             DOMAIN_LOGGER.unregisteredRemoteSlaveHost(id);
         }
@@ -267,12 +271,12 @@ public class DomainModelControllerService extends AbstractControllerService impl
     }
 
     @Override
-    public FileRepository getLocalFileRepository() {
+    public HostFileRepository getLocalFileRepository() {
         return localFileRepository;
     }
 
     @Override
-    public FileRepository getRemoteFileRepository() {
+    public HostFileRepository getRemoteFileRepository() {
         if (hostControllerInfo.isMasterDomainController()) {
             throw MESSAGES.cannotAccessRemoteFileRepository();
         }
@@ -293,7 +297,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         DomainModelUtil.updateCoreModel(rootResource, environment);
         HostModelUtil.createHostRegistry(rootRegistration, hostControllerConfigurationPersister, environment, runningModeControl,
                 localFileRepository, hostControllerInfo, new DelegatingServerInventory(), remoteFileRepository, contentRepository,
-                this, this, extensionRegistry,vaultReader, processState);
+                this, extensionRegistry,vaultReader, ignoredRegistry, processState);
         this.modelNodeRegistration = rootRegistration;
     }
 
@@ -308,13 +312,14 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
             final RunningMode currentRunningMode = runningModeControl.getRunningMode();
 
-            // Now we know our management interface configuration. Install the server inventory
-            Future<ServerInventory> inventoryFuture = ServerInventoryService.install(serviceTarget, this, runningModeControl, environment,
-                    hostControllerInfo.getNativeManagementInterface(), hostControllerInfo.getNativeManagementPort());
-
             // Install the core remoting endpoint and listener
             ManagementRemotingServices.installRemotingEndpoint(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
                     hostControllerInfo.getLocalHostName(), EndpointService.EndpointType.MANAGEMENT, null, null);
+
+            // Now we know our management interface configuration. Install the server inventory
+            ManagementChannelRegistryService.addService(serviceTarget);
+            Future<ServerInventory> inventoryFuture = ServerInventoryService.install(serviceTarget, this, runningModeControl, environment,
+                    hostControllerInfo.getNativeManagementInterface(), hostControllerInfo.getNativeManagementPort());
 
             if (!hostControllerInfo.isMasterDomainController() && !environment.isUseCachedDc()) {
                 serverInventory = getFuture(inventoryFuture);
@@ -322,17 +327,20 @@ public class DomainModelControllerService extends AbstractControllerService impl
                 if (hostControllerInfo.getRemoteDomainControllerHost() != null) {
                     Future<MasterDomainControllerClient> clientFuture = RemoteDomainConnectionService.install(serviceTarget,
                             getValue(),
-                            hostControllerInfo.getLocalHostName(),
-                            hostControllerInfo.getRemoteDomainControllerHost(),
-                            hostControllerInfo.getRemoteDomainControllertPort(),
+                            hostControllerInfo,
+                            environment.getProductConfig(),
                             hostControllerInfo.getRemoteDomainControllerSecurityRealm(),
                             remoteFileRepository);
                     MasterDomainControllerClient masterDomainControllerClient = getFuture(clientFuture);
                     //Registers us with the master and gets down the master copy of the domain model to our DC
                     //TODO make sure that the RDCS checks env.isUseCachedDC, and if true falls through to that
+                    // BES 2012/02/04 Comment ^^^ implies the semantic is to use isUseCachedDC as a fallback to
+                    // a failure to connect as opposed to being an instruction to not connect at all. I believe
+                    // the current impl is the latter. Don't change this without a discussion first, as the
+                    // current semantic is a reasonable one.
                     try {
                         masterDomainControllerClient.register();
-                    } catch (IllegalStateException e) {
+                    } catch (Exception e) {
                         //We could not connect to the host
                         ROOT_LOGGER.cannotConnectToMaster(e);
                         System.exit(ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE);
@@ -351,7 +359,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
                 super.boot(domainPersister.load());
 
                 ManagementRemotingServices.installManagementChannelServices(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
-                        new MasterDomainControllerOperationHandlerService(this, this),
+                        new MasterDomainControllerOperationHandlerService(this),
                         DomainModelControllerService.SERVICE_NAME, ManagementRemotingServices.DOMAIN_CHANNEL, null, null);
                 serverInventory = getFuture(inventoryFuture);
             }
@@ -359,7 +367,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
             // TODO look into adding some of these services in the handlers, but ON-DEMAND.
             // Then here just add some simple service that demands them
 
-            ServerToHostOperationHandlerFactoryService.install(serviceTarget, ServerInventoryService.SERVICE_NAME, proxyExecutor);
+            ServerToHostOperationHandlerFactoryService.install(serviceTarget, ServerInventoryService.SERVICE_NAME, proxyExecutor, localFileRepository);
 
             NativeManagementAddHandler.installNativeManagementServices(serviceTarget, hostControllerInfo, null, null);
 
@@ -404,73 +412,50 @@ public class DomainModelControllerService extends AbstractControllerService impl
     @Override
     public void stop(StopContext context) {
         serverInventory = null;
+        extensionRegistry.clear();
         super.stop(context);
     }
 
 
     @Override
     public void stopLocalHost() {
+        stopLocalHost(0);
+    }
+
+    @Override
+    public void stopLocalHost(int exitCode) {
         final ProcessControllerClient client = injectedProcessControllerConnection.getValue().getClient();
         try {
-            client.shutdown();
+            client.shutdown(exitCode);
         } catch (IOException e) {
             throw MESSAGES.errorClosingDownHost(e);
         }
     }
 
-    @Override
-    public synchronized void registerChannel(final String hostName, final Channel channel, final ProxyCreatedCallback callback) {
-
-        /* Disable this as part of the REM3-121 workarounds
-        PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(HOST, hostName));
-        if (modelNodeRegistration.getProxyController(addr) != null) {
-            throw new IllegalArgumentException("There is already a registered slave named '" + hostName + "'");
-        }
-        */
-        if (unregisteredHostChannels.containsKey(hostName)) {
-            throw MESSAGES.hostNameAlreadyConnected(hostName);
-        }
-        unregisteredHostChannels.put(hostName, channel);
-        proxyCreatedCallbacks.put(hostName, callback);
-        channel.addCloseHandler(new CloseHandler<Channel>() {
-            public void handleClose(final Channel closed, final IOException exception) {
-                unregisteredHostChannels.remove(hostName);
-                proxyCreatedCallbacks.remove(hostName);
-            }
-        });
-    }
-
-    @Override
-    public synchronized ProxyController popChannelAndCreateProxy(final String hostName) {
-        final Channel channel = unregisteredHostChannels.remove(hostName);
-        if (channel == null) {
-            throw MESSAGES.noChannelForHost(hostName);
-        }
-        channel.addCloseHandler(new CloseHandler<Channel>() {
-            public void handleClose(final Channel closed, final IOException exception) {
-                unregisterRemoteHost(hostName);
-            }
-        });
-        final PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.HOST, hostName));
-        RemoteProxyController proxy = RemoteProxyController.create(proxyExecutor, addr, ProxyOperationAddressTranslator.HOST, channel);
-        ProxyCreatedCallback callback = proxyCreatedCallbacks.remove(hostName);
-        if (callback != null) {
-            callback.proxyCreated(proxy);
-        }
-        return proxy;
-    }
-
     private class DelegatingServerInventory implements ServerInventory {
-        public void serverRegistered(String serverProcessName, Channel channel, ProxyCreatedCallback callback) {
-            serverInventory.serverRegistered(serverProcessName, channel, callback);
+        public void serverCommunicationRegistered(String serverProcessName, ManagementChannelHandler channelHandler) {
+            serverInventory.serverCommunicationRegistered(serverProcessName, channelHandler);
+        }
+
+        public boolean serverReconnected(String serverProcessName, ManagementChannelHandler channelHandler) {
+            return serverInventory.serverReconnected(serverProcessName, channelHandler);
+        }
+
+        public void serverProcessAdded(String serverProcessName) {
+            serverInventory.serverProcessAdded(serverProcessName);
         }
 
         public void serverStartFailed(String serverProcessName) {
             serverInventory.serverStartFailed(serverProcessName);
         }
 
-        public void serverStopped(String serverProcessName) {
-            serverInventory.serverStopped(serverProcessName);
+        @Override
+        public void serverStarted(String serverProcessName) {
+            serverInventory.serverStarted(serverProcessName);
+        }
+
+        public void serverProcessStopped(String serverProcessName) {
+            serverInventory.serverProcessStopped(serverProcessName);
         }
 
         public String getServerProcessName(String serverName) {
@@ -497,10 +482,6 @@ public class DomainModelControllerService extends AbstractControllerService impl
             return serverInventory.determineServerStatus(serverName);
         }
 
-        public int hashCode() {
-            return serverInventory.hashCode();
-        }
-
         public ServerStatus startServer(String serverName, ModelNode domainModel) {
             return serverInventory.startServer(serverName, domainModel);
         }
@@ -521,17 +502,29 @@ public class DomainModelControllerService extends AbstractControllerService impl
             return serverInventory.getServerCallbackHandler();
         }
 
-        public boolean equals(Object obj) {
-            return serverInventory.equals(obj);
-        }
-
-        public String toString() {
-            return serverInventory.toString();
-        }
-
         @Override
         public void stopServers(int gracefulTimeout) {
             serverInventory.stopServers(gracefulTimeout);
+        }
+
+        @Override
+        public void connectionFinished() {
+            serverInventory.connectionFinished();
+        }
+
+        @Override
+        public void serverProcessStarted(String processName) {
+            serverInventory.serverProcessStarted(processName);
+        }
+
+        @Override
+        public void serverProcessRemoved(String processName) {
+            serverInventory.serverProcessRemoved(processName);
+        }
+
+        @Override
+        public void operationFailed(String processName, ProcessMessageHandler.OperationType type) {
+            serverInventory.operationFailed(processName, type);
         }
     }
 

@@ -22,13 +22,17 @@
 
 package org.jboss.as.web.session;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import java.util.Random;
 
 import org.apache.catalina.Manager;
 import org.apache.catalina.Session;
-import org.infinispan.manager.CacheContainer;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.junit.After;
@@ -46,7 +50,7 @@ public class StoppedManagerUnitTestCase {
 
     private static long testCount = System.currentTimeMillis();
 
-    private CacheContainer cacheContainer;
+    private EmbeddedCacheManager cacheContainer;
     private DistributableSessionManager<?> manager;
     private boolean stopManager = false;
 
@@ -77,6 +81,7 @@ public class StoppedManagerUnitTestCase {
 
         JBossWebMetaData webMetaData = SessionTestUtil.createWebMetaData(100);
         cacheContainer = SessionTestUtil.createCacheContainer(true, null, false, false);
+        cacheContainer.start();
         manager = SessionTestUtil.createManager(webMetaData, "test" + testCount, 30, cacheContainer, null);
         manager.start();
         stopManager = true;

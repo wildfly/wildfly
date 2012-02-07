@@ -44,9 +44,15 @@ public class ClusterPassivationStoreWriteHandler extends PassivationStoreWriteHa
 
     @Override
     protected void apply(ClusteredBackingCacheEntryStoreConfig config, OperationContext context, String attributeName, ModelNode model) throws OperationFailedException {
-        if (ClusterPassivationStoreResourceDefinition.BACKING_CACHE.getName().equals(attributeName)) {
-            String cache = ClusterPassivationStoreResourceDefinition.BACKING_CACHE.resolveModelAttribute(context, model).asString();
-            config.setBackingCache(cache);
+        if (ClusterPassivationStoreResourceDefinition.CACHE_CONTAINER.getName().equals(attributeName)) {
+            String container = ClusterPassivationStoreResourceDefinition.CACHE_CONTAINER.resolveModelAttribute(context, model).asString();
+            config.setCacheContainer(container);
+        } else if (ClusterPassivationStoreResourceDefinition.BEAN_CACHE.getName().equals(attributeName)) {
+            String cache = ClusterPassivationStoreResourceDefinition.BEAN_CACHE.resolveModelAttribute(context, model).asString();
+            config.setBeanCache(cache);
+        } else if (ClusterPassivationStoreResourceDefinition.CLIENT_MAPPINGS_CACHE.getName().equals(attributeName)) {
+            String cache = ClusterPassivationStoreResourceDefinition.CLIENT_MAPPINGS_CACHE.resolveModelAttribute(context, model).asString();
+            config.setClientMappingCache(cache);
         } else if (ClusterPassivationStoreResourceDefinition.PASSIVATE_EVENTS_ON_REPLICATE.getName().equals(attributeName)) {
             boolean passivateEventsOnReplicate = ClusterPassivationStoreResourceDefinition.PASSIVATE_EVENTS_ON_REPLICATE.resolveModelAttribute(context, model).asBoolean();
             config.setPassivateEventsOnReplicate(passivateEventsOnReplicate);

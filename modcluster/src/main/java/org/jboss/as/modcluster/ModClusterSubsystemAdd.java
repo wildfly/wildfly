@@ -104,7 +104,8 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler implements Descripti
 
             //Get the unmasked password
             // Add mod_cluster service
-            final ModClusterService service = new ModClusterService(unmaskPassword(context, model), node.clone());
+            final ModelNode resolved = context.resolveExpressions(node.clone());
+            final ModClusterService service = new ModClusterService(unmaskPassword(context, model), resolved);
             final ServiceBuilder<ModCluster> serviceBuilder = context.getServiceTarget().addService(ModClusterService.NAME, service)
                     // .addListener(new ResultHandler.ServiceStartListener(resultHandler))
                     .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getWebServer())

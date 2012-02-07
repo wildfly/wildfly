@@ -22,7 +22,6 @@
 
 package org.jboss.as.web.session;
 
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 /**
@@ -31,13 +30,14 @@ import java.net.UnknownHostException;
  * @author Brian Stansberry
  */
 public class JGroupsSystemPropertySupport {
+    private String preferIPv4 = System.getProperty("java.net.preferIPv4Stack");
     private String bind_addr = System.getProperty("jgroups.bind_addr");
     private String mcast_addr = System.getProperty("jgroups.udp.mcast_addr");
     private String mcast_port = System.getProperty("jgroups.udp.mcast_port");
 
     public void setUpProperties() throws UnknownHostException {
-        System.setProperty("jgroups.bind_addr",
-                System.getProperty("jbosstest.cluster.node1", InetAddress.getLocalHost().getHostAddress()));
+        System.setProperty("java.net.preferIPv4Stack", "true");
+        System.setProperty("jgroups.bind_addr","127.0.0.1");
         String udpGroup = System.getProperty("jbosstest.udpGroup", "233.54.54.54");
         if (udpGroup.trim().length() == 0)
             udpGroup = "233.54.54.54";
@@ -46,17 +46,17 @@ public class JGroupsSystemPropertySupport {
     }
 
     public void restoreProperties() {
-        if (bind_addr == null)
-            System.clearProperty("jgroups.bind_addr");
-        else
-            System.setProperty("jgroups.bind_addr", bind_addr);
-        if (mcast_addr == null)
-            System.clearProperty("jgroups.udp.mcast_addr");
-        else
-            System.setProperty("jgroups.udp.mcast_addr", mcast_addr);
-        if (mcast_port == null)
-            System.clearProperty("jgroups.udp.mcast_port");
-        else
-            System.setProperty("jgroups.udp.mcast_port", mcast_port);
+        this.reset(preferIPv4, "java.net.preferIPv4Stack");
+        this.reset(bind_addr, "jgroups.bind_addr");
+        this.reset(mcast_addr, "jgroups.mcast_addr");
+        this.reset(mcast_port, "jgroups.mcast_port");
+    }
+        
+    private void reset(String original, String property) {
+        if (original != null) {
+            System.setProperty(property, original);
+        } else {
+            System.clearProperty(property);
+        }
     }
 }

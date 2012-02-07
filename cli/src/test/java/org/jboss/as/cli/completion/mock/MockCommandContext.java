@@ -21,6 +21,7 @@
  */
 package org.jboss.as.cli.completion.mock;
 
+import java.io.File;
 import java.util.Collection;
 
 import org.jboss.as.cli.CliConfig;
@@ -29,6 +30,7 @@ import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandHistory;
 import org.jboss.as.cli.CommandLineCompleter;
+import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.batch.BatchedCommand;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
@@ -58,6 +60,10 @@ public class MockCommandContext implements CommandContext {
     private OperationCandidatesProvider operationCandidatesProvider;
 
     private DefaultCallbackHandler parsedCmd = new DefaultCallbackHandler();
+
+    private int exitCode;
+
+    private File curDir = new File("");
 
     public void parseCommandLine(String buffer) throws CommandFormatException {
         try {
@@ -268,5 +274,39 @@ public class MockCommandContext implements CommandContext {
     @Override
     public CliConfig getConfig() {
         return config;
+    }
+
+    @Override
+    public void error(String message, int code) {
+        exitCode = code;
+        printLine(message);
+    }
+
+    @Override
+    public void error(String message) {
+        error(message, 1);
+    }
+
+    @Override
+    public int getExitCode() {
+        return exitCode;
+    }
+
+    @Override
+    public void handle(String line) throws CommandLineException {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public File getCurrentDir() {
+        return curDir;
+    }
+
+    @Override
+    public void setCurrentDir(File dir) {
+        if(dir == null) {
+            throw new IllegalArgumentException("dir is null");
+        }
+        this.curDir = dir;
     }
 }

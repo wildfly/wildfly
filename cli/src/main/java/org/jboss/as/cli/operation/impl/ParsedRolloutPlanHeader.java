@@ -23,8 +23,10 @@ package org.jboss.as.cli.operation.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
@@ -40,12 +42,26 @@ public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
 
     private static final String HEADER_NAME = "rollout";
 
+    private static final int SEPARATOR_GROUP_SEQUENCE = 1;
+    private static final int SEPARATOR_GROUP_CONCURRENT = 2;
+    private static final int SEPARATOR_PROPERTY = 3;
+    private static final int SEPARATOR_PROPERTY_LIST_START = 4;
+    private static final int SEPARATOR_PROPERTY_LIST_END = 5;
+    private static final int SEPARATOR_PLAN_ID_VALUE = 6;
+
     private final String planId;
     private String planRef;
     private List<RolloutPlanGroup> groups;
     private Map<String,String> props;
 
-    private RolloutPlanGroup lastGroup;
+    private SingleRolloutPlanGroup lastGroup;
+    private String lastPropertyName;
+    private String lastPropertyValue;
+    private int lastChunkIndex;
+    private int separator = -1;
+    private int lastSeparatorIndex = -1;
+
+    private Set<String> mentionedGroups;
 
     public ParsedRolloutPlanHeader() {
         this(null);
@@ -71,7 +87,7 @@ public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
         return planRef;
     }
 
-    public void setPlanRef(String planRef) {
+    public void setPlanRef(int index, String planRef) {
         if(planRef == null || planRef.isEmpty()) {
             throw new IllegalArgumentException("Plan ref is null or empty.");
         }
@@ -79,9 +95,20 @@ public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
             throw new IllegalStateException("Plan ref can't be specified when groups are specified.");
         }
         this.planRef = planRef;
+        lastChunkIndex = index;
+        separator = -1;
     }
 
-    public void addGroup(RolloutPlanGroup group) {
+    public boolean endsOnPlanIdValueSeparator() {
+        return separator == SEPARATOR_PLAN_ID_VALUE;
+    }
+
+    public void planIdValueSeparator(int index) {
+        lastSeparatorIndex = index;
+        separator = SEPARATOR_PLAN_ID_VALUE;
+    }
+
+    public void addGroup(SingleRolloutPlanGroup group) {
         if(group == null) {
             throw new IllegalArgumentException("group is null");
         }
@@ -93,9 +120,14 @@ public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
         }
         groups.add(group);
         this.lastGroup = group;
+        separator = -1;
+        if(mentionedGroups == null) {
+            mentionedGroups = new HashSet<String>();
+        }
+        mentionedGroups.add(group.getGroupName());
     }
 
-    public void addConcurrentGroup(RolloutPlanGroup group) {
+    public void addConcurrentGroup(SingleRolloutPlanGroup group) {
         if(group == null) {
             throw new IllegalArgumentException("group is null");
         }
@@ -116,10 +148,19 @@ public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
             groups.set(lastIndex, concurrent);
         }
         this.lastGroup = group;
+        this.separator = -1;
+        if(mentionedGroups == null) {
+            mentionedGroups = new HashSet<String>();
+        }
+        mentionedGroups.add(group.getGroupName());
+    }
+
+    public boolean containsGroup(String name) {
+        return mentionedGroups == null ? false : mentionedGroups.contains(name);
     }
 
     // TODO perhaps add a list of allowed properties and their values
-    public void addProperty(String name, String value) {
+    public void addProperty(String name, String value, int valueIndex) {
         if(name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Invalid property name: " + name);
         }
@@ -132,10 +173,92 @@ public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
         props.put(name, value);
 
         this.lastGroup = null;
+        this.separator = -1;
+        this.lastPropertyName = name;
+        this.lastPropertyValue = value;
+        this.lastChunkIndex = valueIndex;
+    }
+
+    public void addProperty(String name, int index) {
+        if(name == null || name.isEmpty()) {
+            throw new IllegalArgumentException("Invalid property name: " + name);
+        }
+        if(props == null) {
+            props = new HashMap<String,String>();
+        }
+        props.put(name, Util.TRUE);
+
+        this.lastGroup = null;
+        this.separator = -1;
+        this.lastPropertyName = name;
+        this.lastChunkIndex = index;
     }
 
     public String getProperty(String name) {
         return props == null ? null : props.get(name);
+    }
+
+    public boolean hasProperties() {
+        return props != null;
+    }
+
+    public void groupSequenceSeparator(int index) {
+        separator = SEPARATOR_GROUP_SEQUENCE;
+        lastSeparatorIndex = index;
+    }
+
+    public void groupConcurrentSeparator(int index) {
+        separator = SEPARATOR_GROUP_CONCURRENT;
+        lastSeparatorIndex = index;
+    }
+
+    public void propertySeparator(int index) {
+        separator = SEPARATOR_PROPERTY;
+        lastSeparatorIndex = index;
+    }
+
+    public boolean endsOnGroupSeparator() {
+        return separator == SEPARATOR_GROUP_SEQUENCE || separator == SEPARATOR_GROUP_CONCURRENT;
+    }
+
+    public boolean endsOnPropertySeparator() {
+        return separator == SEPARATOR_PROPERTY;
+    }
+
+    public boolean endsOnPropertyListStart() {
+        return separator == SEPARATOR_PROPERTY_LIST_START;
+    }
+
+    public boolean endsOnPropertyListEnd() {
+        return separator == SEPARATOR_PROPERTY_LIST_END;
+    }
+
+    public int getLastSeparatorIndex() {
+        return lastSeparatorIndex;
+    }
+
+    public int getLastChunkIndex() {
+        return lastChunkIndex;
+    }
+
+    public String getLastPropertyName() {
+        return lastPropertyName;
+    }
+
+    public String getLastPropertyValue() {
+        return lastPropertyValue;
+    }
+
+    public void propertyListStart(int index) {
+        this.lastSeparatorIndex = index;
+        separator = SEPARATOR_PROPERTY_LIST_START;
+    }
+
+    public void propertyListEnd(int index) {
+        this.lastSeparatorIndex = index;
+        separator = SEPARATOR_PROPERTY_LIST_END;
+        this.lastPropertyName = null;
+        this.lastPropertyValue = null;
     }
 
     /* (non-Javadoc)
@@ -168,7 +291,7 @@ public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
         }
     }
 
-    public RolloutPlanGroup getLastGroup() {
+    public SingleRolloutPlanGroup getLastGroup() {
         return lastGroup;
     }
 

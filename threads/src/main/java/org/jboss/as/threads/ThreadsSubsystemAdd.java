@@ -22,15 +22,14 @@
 
 package org.jboss.as.threads;
 
-import java.util.Locale;
-import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.threads.CommonAttributes.BOUNDED_QUEUE_THREAD_POOL;
 import static org.jboss.as.threads.CommonAttributes.QUEUELESS_THREAD_POOL;
 import static org.jboss.as.threads.CommonAttributes.SCHEDULED_THREAD_POOL;
 import static org.jboss.as.threads.CommonAttributes.THREAD_FACTORY;
 import static org.jboss.as.threads.CommonAttributes.UNBOUNDED_QUEUE_THREAD_POOL;
+
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -38,9 +37,8 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
-class ThreadsSubsystemAdd extends AbstractAddStepHandler implements DescriptionProvider {
+class ThreadsSubsystemAdd extends AbstractAddStepHandler {
 
     static final ThreadsSubsystemAdd INSTANCE = new ThreadsSubsystemAdd();
 
@@ -54,10 +52,5 @@ class ThreadsSubsystemAdd extends AbstractAddStepHandler implements DescriptionP
 
     protected boolean requiresRuntime(OperationContext context) {
         return false;
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return ThreadsSubsystemProviders.SUBSYSTEM_ADD_DESC.getModelDescription(locale);
     }
 }

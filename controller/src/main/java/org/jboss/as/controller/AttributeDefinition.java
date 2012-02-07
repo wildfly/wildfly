@@ -504,6 +504,11 @@ public abstract class AttributeDefinition {
         }
 
         @Override
+        public final boolean isNormalServer() {
+            return false;
+        }
+
+        @Override
         public boolean isRuntimeAffected() {
             return false;
         }
@@ -661,6 +666,26 @@ public abstract class AttributeDefinition {
         @Override
         public ModelNode resolveExpressions(ModelNode node) throws OperationFailedException {
             return ExpressionResolver.DEFAULT.resolveExpressions(node);
+        }
+
+        @Override
+        public <T> T getAttachment(final AttachmentKey<T> key) {
+            return null;
+        }
+
+        @Override
+        public <T> T attach(final AttachmentKey<T> key, final T value) {
+            return null;
+        }
+
+        @Override
+        public <T> T attachIfAbsent(final AttachmentKey<T> key, final T value) {
+            return null;
+        }
+
+        @Override
+        public <T> T detach(final AttachmentKey<T> key) {
+            return null;
         }
 
         @Override

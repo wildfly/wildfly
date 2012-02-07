@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.web.impl;
 
-import org.jboss.as.clustering.ClusteringApiMessages;
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
@@ -34,7 +33,7 @@ import org.jboss.logging.Messages;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @MessageBundle(projectCode = "JBAS")
-interface ClusteringWebMessages extends ClusteringApiMessages {
+interface ClusteringWebMessages {
 
     /**
      * The messages.
@@ -50,7 +49,7 @@ interface ClusteringWebMessages extends ClusteringApiMessages {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 10385, value = "%s: Caught Exception ending batch: ")
+    @Message(id = 10310, value = "%s: Caught Exception ending batch: ")
     RuntimeException caughtExceptionEndingBatch(@Cause Throwable cause, String methodName);
 
     /**
@@ -62,7 +61,7 @@ interface ClusteringWebMessages extends ClusteringApiMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 10386, value = "%s does not implement %s")
+    @Message(id = 10311, value = "%s does not implement %s")
     IllegalArgumentException interfaceNotImplemented(Object value, String interfaceName);
 
     /**
@@ -70,6 +69,6 @@ interface ClusteringWebMessages extends ClusteringApiMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 10387, value = "Not configured to provide session attributes")
+    @Message(id = 10312, value = "Not configured to provide session attributes")
     IllegalStateException sessionAttributesNotConfigured();
 }

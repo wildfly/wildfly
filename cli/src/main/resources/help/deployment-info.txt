@@ -1,0 +1,50 @@
+SYNOPSIS
+
+    deployment-info --name=deployment_name [--headers={operation_header (;operation_header)*}]
+
+DESCRIPTION
+
+    Displays information about the deployment.
+    In the standalone mode it displays the following properties
+
+    - NAME - unique identifier of the deployment. Must be unique across all deployments;
+
+    - RUNTIME-NAME - name by which the deployment should be known within a server's runtime.
+                     This would be equivalent to the file name of a deployment file,
+                     and would form the basis for such things as default JEEdition application
+                     and module names. This would typically be the same as 'name',
+                     but in some cases users may wish to have two deployments with the same
+                     'runtime-name' (e.g. two versions of \"foo.war\") both available in
+                     the deployment content repository, in which case the deployments
+                     would need to have distinct 'name' values but would have the same 'runtime-name'.
+
+    - PERSISTENT   - indicates whether the existence of the deployment should be recorded
+                     in the persistent server configuration. Only relevant to a standalone
+                     mode server. Default is 'true'. A deployment managed by a deployment scanner
+                     would have this set to 'false' to ensure the deployment is only deployed
+                     at server start if the scanner again detects the deployment.
+
+    - ENABLED - boolean indicating whether the deployment content is currently deployed
+                in the runtime (or should be deployed in the runtime the next time the server starts.)
+    
+    - STATUS - the current runtime status of a deployment. Possible status modes are
+               OK, FAILED, and STOPPED.
+               FAILED indicates a dependency is missing or a service could not start.
+               STOPPED indicates that the deployment was manually stopped.
+
+    In the domain mode, the name and the runtime name (as in the standalone mode) are followed
+    by a table with headers SERVER-GROUP and STATE, the STATE could contain the following values:
+    
+    added     - the deployment has been added to the server group but it's not enabled;
+    enabled   - the deployment has been added and enabled for the server group
+                (this is the expected state of a deployment when it is deployed to
+                a server group with the CLI deploy command);
+    not added - the server group is not referencing the deployment.
+
+
+ARGUMENTS
+
+ --name              - the name of the deployment.
+
+ --headers           - a list of operation headers separated by a semicolon. For the list of supported
+                       headers, please, refer to the domain management documentation or use tab-completion.

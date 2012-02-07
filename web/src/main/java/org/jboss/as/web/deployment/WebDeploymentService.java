@@ -21,8 +21,12 @@
  */
 package org.jboss.as.web.deployment;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.servlet.ServletContext;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
@@ -30,8 +34,8 @@ import org.apache.catalina.Realm;
 import org.apache.catalina.core.StandardContext;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.web.ThreadSetupBindingListener;
+import org.jboss.as.web.WebLogger;
 import org.jboss.as.web.deployment.jsf.JsfInjectionProvider;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -45,44 +49,52 @@ import org.jboss.msc.value.InjectedValue;
  */
 class WebDeploymentService implements Service<Context> {
 
-    private static final Logger log = Logger.getLogger("org.jboss.web");
     private final StandardContext context;
     private final InjectedValue<Realm> realm = new InjectedValue<Realm>();
     private final WebInjectionContainer injectionContainer;
     private final List<SetupAction> setupActions;
+    final List<ServletContextAttribute> attributes;
 
-    public WebDeploymentService(final StandardContext context, final WebInjectionContainer injectionContainer, final List<SetupAction> setupActions) {
+    public WebDeploymentService(final StandardContext context, final WebInjectionContainer injectionContainer, final List<SetupAction> setupActions, final List<ServletContextAttribute> attributes) {
         this.context = context;
         this.injectionContainer = injectionContainer;
         this.setupActions = setupActions;
+        this.attributes = attributes;
     }
 
     /**
      * {@inheritDoc}
      */
     public synchronized void start(StartContext startContext) throws StartException {
+        if (attributes != null) {
+            final ServletContext context = this.context.getServletContext();
+            for (ServletContextAttribute attribute : attributes) {
+                context.setAttribute(attribute.getName(), attribute.getValue());
+            }
+        }
+
         context.setRealm(realm.getValue());
 
         JsfInjectionProvider.getInjectionContainer().set(injectionContainer);
         final List<SetupAction> actions = new ArrayList<SetupAction>();
         actions.addAll(setupActions);
+        context.setInstanceManager(injectionContainer);
         context.setThreadBindingListener(new ThreadSetupBindingListener(actions));
         try {
             try {
                 context.create();
             } catch (Exception e) {
-                throw new StartException("failed to create context", e);
+                throw new StartException(MESSAGES.createContextFailed(), e);
             }
             try {
                 context.start();
             } catch (LifecycleException e) {
-                throw new StartException("failed to start context", e);
+                throw new StartException(MESSAGES.startContextFailed(), e);
             }
             if (context.getState() != 1) {
-                throw new StartException("failed to start context");
+                throw new StartException(MESSAGES.startContextFailed());
             }
-            log.info("registering web context: " + context.getName());
-
+            WebLogger.WEB_LOGGER.registerWebapp(context.getName());
         } finally {
             JsfInjectionProvider.getInjectionContainer().set(null);
         }
@@ -95,12 +107,12 @@ class WebDeploymentService implements Service<Context> {
         try {
             context.stop();
         } catch (LifecycleException e) {
-            log.error("exception while stopping context", e);
+            WebLogger.WEB_LOGGER.stopContextFailed(e);
         }
         try {
             context.destroy();
         } catch (Exception e) {
-            log.error("exception while destroying context", e);
+            WebLogger.WEB_LOGGER.destroyContextFailed(e);
         }
     }
 

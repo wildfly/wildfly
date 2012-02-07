@@ -31,12 +31,15 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED_RESOURCES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED_RESOURCE_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -68,7 +71,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -80,11 +82,13 @@ import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.domain.management.parsing.ManagementXml;
+import org.jboss.as.host.controller.HostControllerMessages;
+import org.jboss.as.host.controller.ignored.IgnoredDomainTypeResourceDefinition;
 import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
 import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
-import org.jboss.modules.ModuleLoader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -96,8 +100,10 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  */
 public class HostXml extends CommonXml implements ManagementXml.Delegate {
 
-    public HostXml(final ModuleLoader loader, ExecutorService executorService) {
-        super();
+    private final String defaultHostControllerName;
+
+    public HostXml(String defaultHostControllerName) {
+        this.defaultHostControllerName = defaultHostControllerName;
     }
 
     @Override
@@ -152,19 +158,24 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
             writeNewLine(writer);
         }
 
-        if (modelNode.hasDefined(CORE_SERVICE) && modelNode.get(CORE_SERVICE).hasDefined(VAULT)) {
+        boolean hasCoreServices = modelNode.hasDefined(CORE_SERVICE);
+        if (hasCoreServices && modelNode.get(CORE_SERVICE).hasDefined(VAULT)) {
             writeVault(writer, modelNode.get(CORE_SERVICE, VAULT));
             writeNewLine(writer);
         }
 
-        if (modelNode.hasDefined(CORE_SERVICE) && modelNode.get(CORE_SERVICE).hasDefined(MANAGEMENT)) {
+        if (hasCoreServices && modelNode.get(CORE_SERVICE).hasDefined(MANAGEMENT)) {
             ManagementXml managementXml = new ManagementXml(this);
             managementXml.writeManagement(writer, modelNode.get(CORE_SERVICE, MANAGEMENT), true);
             writeNewLine(writer);
         }
 
         if (modelNode.hasDefined(DOMAIN_CONTROLLER)) {
-            writeDomainController(writer, modelNode.get(DOMAIN_CONTROLLER));
+            ModelNode ignoredResources = null;
+            if (hasCoreServices && modelNode.get(CORE_SERVICE).hasDefined(IGNORED_RESOURCES)) {
+                ignoredResources = modelNode.get(CORE_SERVICE, IGNORED_RESOURCES);
+            }
+            writeDomainController(writer, modelNode.get(DOMAIN_CONTROLLER), ignoredResources);
             writeNewLine(writer);
         }
 
@@ -175,7 +186,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
         if (modelNode.hasDefined(JVM)) {
             writer.writeStartElement(Element.JVMS.getLocalName());
             for (final Property jvm : modelNode.get(JVM).asPropertyList()) {
-                writeJVMElement(writer, jvm.getName(), jvm.getValue());
+                JvmXml.writeJVMElement(writer, jvm.getName(), jvm.getValue());
             }
             writer.writeEndElement();
             writeNewLine(writer);
@@ -237,10 +248,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
             }
         }
 
-        if (hostName == null) {
-            hostName = getDefaultName();
-        }
-        // The follownig also updates the address parameter so this address can be used for future operations
+        // The following also updates the address parameter so this address can be used for future operations
         // in the context of this host.
         addLocalHost(address, list, hostName);
         // The namespace operations were created before the host name was known, the address can now be updated
@@ -285,6 +293,9 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
         if (element == Element.SERVERS) {
             parseServers(reader, address, DOMAIN_1_0, list);
             element = nextElement(reader, DOMAIN_1_0);
+        }
+        if (element != null) {
+            throw unexpectedElement(reader);
         }
 
     }
@@ -335,10 +346,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
             }
         }
 
-        if (hostName == null) {
-            hostName = getDefaultName();
-        }
-        // The follownig also updates the address parameter so this address can be used for future operations
+        // The following also updates the address parameter so this address can be used for future operations
         // in the context of this host.
         addLocalHost(address, list, hostName);
         // The namespace operations were created before the host name was known, the address can now be updated
@@ -567,6 +575,12 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
                         }
                         break;
                     }
+                    case CONSOLE_ENABLED:{
+                        if (http){
+                            org.jboss.as.server.mgmt.HttpManagementResourceDefinition.CONSOLE_ENABLED.parseAndSetParameter(value,addOp,reader);
+                        }
+                        break;
+                    }
                     default:
                         throw unexpectedAttribute(reader, i);
                 }
@@ -670,13 +684,15 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
      */
     private void addLocalHost(final ModelNode address, final List<ModelNode> operationList, final String hostName) {
         // All further operations should modify the newly added host so the address passed in is updated.
-        address.add(HOST, hostName);
+        address.add(HOST, hostName != null ? hostName : defaultHostControllerName);
 
         final ModelNode host = new ModelNode();
         host.get(OP).set("add-host");
         host.get(OP_ADDR).set(address.clone());
 
-        host.get(NAME).set(hostName);
+        if (hostName != null) {
+            host.get(NAME).set(hostName);
+        }
 
         operationList.add(host);
     }
@@ -713,7 +729,15 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
                         throw MESSAGES.childAlreadyDeclared(Element.LOCAL.getLocalName(),
                                 Element.DOMAIN_CONTROLLER.getLocalName(), reader.getLocation());
                     }
-                    parseRemoteDomainController(reader, address, list);
+                    switch (expectedNs) {
+                        case DOMAIN_1_0:
+                            parseRemoteDomainController1_0(reader, address, list);
+                            break;
+                        default:
+                            parseRemoteDomainController1_1(reader, address, expectedNs, list);
+                            break;
+                    }
+
                     hasRemote = true;
                     break;
                 }
@@ -734,11 +758,37 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
         }
     }
 
-    private void parseRemoteDomainController(final XMLExtendedStreamReader reader, final ModelNode address,
+    private void parseRemoteDomainController1_0(final XMLExtendedStreamReader reader, final ModelNode address,
+            final List<ModelNode> list) throws XMLStreamException {
+        parseRemoteDomainControllerAttributes(reader, address, list);
+        requireNoContent(reader);
+    }
+
+    private void parseRemoteDomainController1_1(final XMLExtendedStreamReader reader, final ModelNode address,
+            Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+
+        parseRemoteDomainControllerAttributes(reader, address, list);
+
+        Set<String> types = new HashSet<String>();
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case IGNORED_RESOURCE: {
+                    parseIgnoredResoure(reader, address, expectedNs, list, types);
+                    break;
+                }
+                default:
+                    throw unexpectedElement(reader);
+            }
+        }
+    }
+
+    private void parseRemoteDomainControllerAttributes(final XMLExtendedStreamReader reader, final ModelNode address,
             final List<ModelNode> list) throws XMLStreamException {
         // Handle attributes
         String host = null;
-        Integer port = null;
+        ModelNode port = null;
         String securityRealm = null;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -753,9 +803,16 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
                         break;
                     }
                     case PORT: {
-                        port = Integer.valueOf(value);
-                        if (port.intValue() < 1) {
-                            throw MESSAGES.invalidValueGreaterThan(attribute.getLocalName(), port, 0, reader.getLocation());
+                        port = parsePossibleExpression(value);
+                        if(port.getType() != ModelType.EXPRESSION) {
+                            try {
+                                Integer portNo = Integer.valueOf(value);
+                                if (portNo.intValue() < 1) {
+                                    throw MESSAGES.invalidPort(attribute.getLocalName(), value, reader.getLocation());
+                                }
+                            }catch(NumberFormatException e) {
+                                throw MESSAGES.invalidPort(attribute.getLocalName(), value, reader.getLocation());
+                            }
                         }
                         break;
                     }
@@ -784,8 +841,63 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
             update.get(SECURITY_REALM).set(securityRealm);
         }
         list.add(update);
+    }
 
-        reader.discardRemainder();
+    private void parseIgnoredResoure(final XMLExtendedStreamReader reader, final ModelNode address,
+            Namespace expectedNs, final List<ModelNode> list, final Set<String> foundTypes) throws XMLStreamException {
+
+        ModelNode op = new ModelNode();
+        op.get(OP).set(ADD);
+
+        String type = null;
+
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            }
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case TYPE: {
+                    if (!foundTypes.add(value)) {
+                        throw HostControllerMessages.MESSAGES.duplicateIgnoredResourceType(Element.IGNORED_RESOURCE.getLocalName(), value, reader.getLocation());
+                    }
+                    type = value;
+                    break;
+                }
+                case WILDCARD: {
+                    IgnoredDomainTypeResourceDefinition.WILDCARD.parseAndSetParameter(value, op, reader);
+                    break;
+                }
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+
+        if (type == null) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.TYPE.getLocalName()));
+        }
+
+        ModelNode addr = op.get(OP_ADDR).set(address);
+        addr.add(CORE_SERVICE, IGNORED_RESOURCES);
+        addr.add(IGNORED_RESOURCE_TYPE, type);
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case INSTANCE: {
+                    String name = ParseUtils.readStringAttributeElement(reader, NAME);
+                    IgnoredDomainTypeResourceDefinition.NAMES.parseAndAddParameterElement(name, op, reader);
+                    break;
+                }
+                default:
+                    throw unexpectedElement(reader);
+            }
+        }
+
+        list.add(op);
     }
 
     private void parseJvms(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list)
@@ -800,7 +912,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case JVM:
-                    parseJvm(reader, address, expectedNs, list, names);
+                    JvmXml.parseJvm(reader, address, expectedNs, list, names);
                     break;
                 default:
                     throw unexpectedElement(reader);
@@ -866,7 +978,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
                         throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
                     }
 
-                    parseJvm(reader, serverAddress, expectedNs, list, new HashSet<String>(), true);
+                    JvmXml.parseJvm(reader, serverAddress, expectedNs, list, new HashSet<String>(), true);
                     sawJvm = true;
                     break;
                 }
@@ -916,7 +1028,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
                         throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
                     }
 
-                    parseJvm(reader, serverAddress, expectedNs, list, new HashSet<String>(), true);
+                    JvmXml.parseJvm(reader, serverAddress, expectedNs, list, new HashSet<String>(), true);
                     sawJvm = true;
                     break;
                 }
@@ -1067,6 +1179,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
 
         writer.writeStartElement(Element.HTTP_INTERFACE.getLocalName());
         HttpManagementResourceDefinition.SECURITY_REALM.marshallAsAttribute(protocol, writer);
+        HttpManagementResourceDefinition.CONSOLE_ENABLED.marshallAsAttribute(protocol, writer);
 
         writer.writeEmptyElement(Element.SOCKET.getLocalName());
         HttpManagementResourceDefinition.INTERFACE.marshallAsAttribute(protocol, writer);
@@ -1076,7 +1189,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
         writer.writeEndElement();
     }
 
-    private void writeDomainController(final XMLExtendedStreamWriter writer, final ModelNode modelNode)
+    private void writeDomainController(final XMLExtendedStreamWriter writer, final ModelNode modelNode, ModelNode ignoredResources)
             throws XMLStreamException {
         writer.writeStartElement(Element.DOMAIN_CONTROLLER.getLocalName());
         if (modelNode.hasDefined(LOCAL)) {
@@ -1093,9 +1206,38 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
             if (remote.hasDefined(SECURITY_REALM)) {
                 writeAttribute(writer, Attribute.SECURITY_REALM, remote.require(SECURITY_REALM).asString());
             }
+            if (ignoredResources != null) {
+                writeIgnoredResources(writer, ignoredResources);
+            }
             writer.writeEndElement();
         }
         writer.writeEndElement();
+    }
+
+    private void writeIgnoredResources(XMLExtendedStreamWriter writer, ModelNode modelNode) throws XMLStreamException {
+        for (Property property : modelNode.asPropertyList()) {
+
+            ModelNode ignored = property.getValue();
+
+            ModelNode names = ignored.hasDefined(NAMES) ? ignored.get(NAMES) : null;
+            boolean hasNames = names != null && names.asInt() > 0;
+            if (hasNames) {
+                writer.writeStartElement(Element.IGNORED_RESOURCE.getLocalName());
+            } else {
+                writer.writeEmptyElement(Element.IGNORED_RESOURCE.getLocalName());
+            }
+
+            writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
+            IgnoredDomainTypeResourceDefinition.WILDCARD.marshallAsAttribute(ignored, writer);
+
+            if (hasNames) {
+                for (ModelNode name : names.asList()) {
+                    writer.writeEmptyElement(Element.INSTANCE.getLocalName());
+                    writer.writeAttribute(Attribute.NAME.getLocalName(), name.asString());
+                }
+                writer.writeEndElement();
+            }
+        }
     }
 
     private void writeServers(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
@@ -1124,7 +1266,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
             }
             if (server.hasDefined(JVM)) {
                 for (final Property jvm : server.get(JVM).asPropertyList()) {
-                    writeJVMElement(writer, jvm.getName(), jvm.getValue());
+                    JvmXml.writeJVMElement(writer, jvm.getName(), jvm.getValue());
                     break; // TODO just write the first !?
                 }
             }

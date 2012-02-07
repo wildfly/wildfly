@@ -3,22 +3,22 @@ package org.jboss.as.connector.pool;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.resource.spi.IllegalStateException;
-
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.subsystems.datasources.Util;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.core.api.connectionmanager.pool.Pool;
 import org.jboss.jca.core.api.management.Connector;
 import org.jboss.jca.core.api.management.DataSource;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.msc.service.ServiceController;
+
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 public abstract class PoolOperations implements OperationStepHandler {
 
@@ -32,7 +32,13 @@ public abstract class PoolOperations implements OperationStepHandler {
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        final String jndiName = Util.getJndiName(context.readModel(PathAddress.EMPTY_ADDRESS));
+        final String jndiName;
+        if(address.getElement(0).getKey().equals(ModelDescriptionConstants.DEPLOYMENT)) {
+            //if this is a datasource that was deployed in a -ds.xml file
+            jndiName = address.getLastElement().getValue();
+        } else {
+            jndiName = Util.getJndiName(context.readModel(PathAddress.EMPTY_ADDRESS));
+        }
 
         if (context.getType() == OperationContext.Type.SERVER) {
             context.addStep(new OperationStepHandler() {
@@ -43,7 +49,7 @@ public abstract class PoolOperations implements OperationStepHandler {
                         ModelNode operationResult = null;
                         try {
                             final ManagementRepository repository = (ManagementRepository) managementRepoService.getValue();
-                            List<Pool> pools = matcher.match(jndiName, repository);
+                            final List<Pool> pools = matcher.match(jndiName, repository);
 
                             if (pools.isEmpty()) {
                                 throw MESSAGES.failedToMatchPool(jndiName);

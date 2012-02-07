@@ -44,9 +44,16 @@ if $cygwin ; then
 fi
 
 # Setup JBOSS_HOME
+RESOLVED_JBOSS_HOME=`cd "$DIRNAME/.."; pwd`
 if [ "x$JBOSS_HOME" = "x" ]; then
     # get the full path (without any relative bits)
-    JBOSS_HOME=`cd "$DIRNAME/.."; pwd`
+    JBOSS_HOME=$RESOLVED_JBOSS_HOME
+else
+ SANITIZED_JBOSS_HOME=`cd "$JBOSS_HOME"; pwd`
+ if [ "$RESOLVED_JBOSS_HOME" != "$SANITIZED_JBOSS_HOME" ]; then
+   echo "WARNING JBOSS_HOME may be pointing to a different installation - unpredictable results may occur."
+   echo ""
+ fi
 fi
 export JBOSS_HOME
 
@@ -59,41 +66,86 @@ if [ "x$JAVA" = "x" ]; then
     fi
 fi
 
-# Check for -d32/-d64 in JAVA_OPTS
-JVM_OPTVERSION="-version"
-JVM_D64_OPTION=`echo $JAVA_OPTS | $GREP "\-d64"`
-JVM_D32_OPTION=`echo $JAVA_OPTS | $GREP "\-d32"`
-test "x$JVM_D64_OPTION" != "x" && JVM_OPTVERSION="-d64 $JVM_OPTVERSION"
-test "x$JVM_D32_OPTION" != "x" && JVM_OPTVERSION="-d32 $JVM_OPTVERSION"
+if [ "$PRESERVE_JAVA_OPTS" != "true" ]; then
+    # Check for -d32/-d64 in JAVA_OPTS
+    JVM_D64_OPTION=`echo $JAVA_OPTS | $GREP "\-d64"`
+    JVM_D32_OPTION=`echo $JAVA_OPTS | $GREP "\-d32"`
 
-# If -server not set in JAVA_OPTS, set it, if supported
-SERVER_SET=`echo $JAVA_OPTS | $GREP "\-server"`
-if [ "x$SERVER_SET" = "x" ]; then
+    # Check If server or client is specified
+    SERVER_SET=`echo $JAVA_OPTS | $GREP "\-server"`
+    CLIENT_SET=`echo $JAVA_OPTS | $GREP "\-client"`
 
-    # Check for SUN(tm) JVM w/ HotSpot support
-    if [ "x$HAS_HOTSPOT" = "x" ]; then
-        HAS_HOTSPOT=`"$JAVA" $JVM_OPTVERSION -version 2>&1 | $GREP -i HotSpot`
+    if [ "x$JVM_D32_OPTION" != "x" ]; then
+        JVM_OPTVERSION="-d32"
+    elif [ "x$JVM_D64_OPTION" != "x" ]; then
+        JVM_OPTVERSION="-d64"
+    elif $darwin && [ "x$SERVER_SET" = "x" ]; then
+        # Use 32-bit on Mac, unless server has been specified or the user opts are incompatible
+        "$JAVA" -d32 $JAVA_OPTS -version > /dev/null 2>&1 && PREPEND_JAVA_OPTS="-d32" && JVM_OPTVERSION="-d32"
     fi
 
-    # Check for OpenJDK JVM w/server support
-    if [ "x$HAS_OPENJDK_" = "x" ]; then
-        HAS_OPENJDK=`"$JAVA" $JVM_OPTVERSION 2>&1 | $GREP -i OpenJDK`
-    fi
-
-    # Enable -server if we have Hotspot or OpenJDK, unless we can't
-    if [ "x$HAS_HOTSPOT" != "x" -o "x$HAS_OPENJDK" != "x" ]; then
-        # MacOS does not support -server flag
-        if [ "$darwin" != "true" ]; then
-            JAVA_OPTS="-server $JAVA_OPTS"
-            JVM_OPTVERSION="-server $JVM_OPTVERSION"
+    CLIENT_VM=false
+    if [ "x$CLIENT_SET" != "x" ]; then
+        CLIENT_VM=true
+    elif [ "x$SERVER_SET" = "x" ]; then
+        if $darwin && [ "$JVM_OPTVERSION" = "-d32" ]; then
+            # Prefer client for Macs, since they are primarily used for development
+            CLIENT_VM=true
+            PREPEND_JAVA_OPTS="$PREPEND_JAVA_OPTS -client"
+        else
+            PREPEND_JAVA_OPTS="$PREPEND_JAVA_OPTS -server"
         fi
     fi
-else
-    JVM_OPTVERSION="-server $JVM_OPTVERSION"
+
+    if [ $CLIENT_VM = false ]; then
+        NO_COMPRESSED_OOPS=`echo $JAVA_OPTS | $GREP "\-XX:\-UseCompressedOops"`
+        if [ "x$NO_COMPRESSED_OOPS" = "x" ]; then
+            "$JAVA" $JVM_OPTVERSION -server -XX:+UseCompressedOops -version >/dev/null 2>&1 && PREPEND_JAVA_OPTS="$PREPEND_JAVA_OPTS -XX:+UseCompressedOops"
+        fi
+
+        NO_TIERED_COMPILATION=`echo $JAVA_OPTS | $GREP "\-XX:\-TieredCompilation"`
+        if [ "x$NO_TIERED_COMPILATION" = "x" ]; then
+            "$JAVA" $JVM_OPTVERSION -server -XX:+TieredCompilation -version >/dev/null 2>&1 && PREPEND_JAVA_OPTS="$PREPEND_JAVA_OPTS -XX:+TieredCompilation"
+        fi
+    fi
+
+    JAVA_OPTS="$PREPEND_JAVA_OPTS $JAVA_OPTS"
 fi
 
 if [ "x$JBOSS_MODULEPATH" = "x" ]; then
     JBOSS_MODULEPATH="$JBOSS_HOME/modules"
+fi
+
+if $linux; then
+    # consolidate the server and command line opts
+    SERVER_OPTS="$JAVA_OPTS $@"
+    # process the standalone options
+    for var in $SERVER_OPTS
+    do
+       case $var in
+         -Djboss.server.base.dir=*)
+              JBOSS_BASE_DIR=`readlink -m ${var#*=}`
+              ;;
+         -Djboss.server.log.dir=*)
+              JBOSS_LOG_DIR=`readlink -m ${var#*=}`
+              ;;
+         -Djboss.server.config.dir=*)
+              JBOSS_CONFIG_DIR=`readlink -m ${var#*=}`
+              ;;
+       esac
+    done
+fi
+# determine the default base dir, if not set
+if [ "x$JBOSS_BASE_DIR" = "x" ]; then
+   JBOSS_BASE_DIR="$JBOSS_HOME/standalone"
+fi
+# determine the default log dir, if not set
+if [ "x$JBOSS_LOG_DIR" = "x" ]; then
+   JBOSS_LOG_DIR="$JBOSS_BASE_DIR/log"
+fi
+# determine the default configuration dir, if not set
+if [ "x$JBOSS_CONFIG_DIR" = "x" ]; then
+   JBOSS_CONFIG_DIR="$JBOSS_BASE_DIR/configuration"
 fi
 
 # For Cygwin, switch paths to Windows format before running java
@@ -122,28 +174,24 @@ echo ""
 while true; do
    if [ "x$LAUNCH_JBOSS_IN_BACKGROUND" = "x" ]; then
       # Execute the JVM in the foreground
-      eval \"$JAVA\" $JAVA_OPTS \
-         \"-Dorg.jboss.boot.log.file=$JBOSS_HOME/standalone/log/boot.log\" \
-         \"-Dlogging.configuration=file:$JBOSS_HOME/standalone/configuration/logging.properties\" \
+      eval \"$JAVA\" -D\"[Standalone]\" $JAVA_OPTS \
+         \"-Dorg.jboss.boot.log.file=$JBOSS_LOG_DIR/boot.log\" \
+         \"-Dlogging.configuration=file:$JBOSS_CONFIG_DIR/logging.properties\" \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"${JBOSS_MODULEPATH}\" \
-         -logmodule "org.jboss.logmanager" \
          -jaxpmodule "javax.xml.jaxp-provider" \
-         -mbeanserverbuildermodule "org.jboss.as.jmx" \
          org.jboss.as.standalone \
          -Djboss.home.dir=\"$JBOSS_HOME\" \
          "$@"
       JBOSS_STATUS=$?
    else
       # Execute the JVM in the background
-      eval \"$JAVA\" $JAVA_OPTS \
-         \"-Dorg.jboss.boot.log.file=$JBOSS_HOME/standalone/log/boot.log\" \
-         \"-Dlogging.configuration=file:$JBOSS_HOME/standalone/configuration/logging.properties\" \
+      eval \"$JAVA\" -D\"[Standalone]\" $JAVA_OPTS \
+         \"-Dorg.jboss.boot.log.file=$JBOSS_LOG_DIR/boot.log\" \
+         \"-Dlogging.configuration=file:$JBOSS_CONFIG_DIR/logging.properties\" \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"${JBOSS_MODULEPATH}\" \
-         -logmodule "org.jboss.logmanager" \
          -jaxpmodule "javax.xml.jaxp-provider" \
-         -mbeanserverbuildermodule "org.jboss.as.jmx" \
          org.jboss.as.standalone \
          -Djboss.home.dir=\"$JBOSS_HOME\" \
          "$@" "&"
@@ -179,7 +227,7 @@ while true; do
       fi
       if [ "x$JBOSS_PIDFILE" != "x" ]; then
             grep "$JBOSS_PID" $JBOSS_PIDFILE && rm $JBOSS_PIDFILE
-      fi 
+      fi
    fi
    if [ "$JBOSS_STATUS" -eq 10 ]; then
       echo "Restarting JBoss..."

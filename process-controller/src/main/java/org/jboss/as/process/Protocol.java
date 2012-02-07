@@ -52,4 +52,5 @@ public final class Protocol {
     public static final int PROCESS_REMOVED = 0x13;
     public static final int PROCESS_INVENTORY = 0x14;
     public static final int PROCESS_RECONNECTED = 0x15;
+    public static final int OPERATION_FAILED = 0x16;
 }

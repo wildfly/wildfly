@@ -31,18 +31,10 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
-import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.clustering.cluster.web.ClusteredWebTestCase;
-import org.jboss.as.test.clustering.single.web.SimpleServlet;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -55,7 +47,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class ClusteredWebFailoverTestCase {
+public abstract class ClusteredWebFailoverTestCase {
 
     /** Constants **/
     public static final long GRACE_TIME_TO_MEMBERSHIP_CHANGE = 5000;
@@ -73,28 +65,6 @@ public class ClusteredWebFailoverTestCase {
     public static void printSysProps() {
         Properties sysprops = System.getProperties();
         System.out.println("System properties:\n" + sysprops);
-    }
-
-    @Deployment(name = DEPLOYMENT1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER1)
-    public static Archive<?> deployment0() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
-        war.addClass(SimpleServlet.class);
-        // Take web.xml from the managed test.
-        war.setWebXML(ClusteredWebTestCase.class.getPackage(), "web.xml");
-        System.out.println(war.toString(true));
-        return war;
-    }
-
-    @Deployment(name = DEPLOYMENT2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER2)
-    public static Archive<?> deployment1() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
-        war.addClass(SimpleServlet.class);
-        war.setWebXML(ClusteredWebTestCase.class.getPackage(), "web.xml");
-        war.addAsWebInfResource(EmptyAsset.INSTANCE, "force-hashcode-change.txt");
-        System.out.println(war.toString(true));
-        return war;
     }
 
     

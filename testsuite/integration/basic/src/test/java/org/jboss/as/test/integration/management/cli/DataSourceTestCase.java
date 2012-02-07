@@ -66,26 +66,26 @@ public class DataSourceTestCase extends AbstractCliTestBase {
     @AfterClass
     public static void after() throws Exception {
         AbstractCliTestBase.closeCLI();
-    }   
-    
+    }
+
     @Test
     public void testDataSource() throws Exception {
-        testAddDataSource();       
+        testAddDataSource();
         testModifyDataSource();
         testRemoveDataSource();
     }
 
     @Test
-    public void testXaDataSource() throws Exception {        
+    public void testXaDataSource() throws Exception {
         testAddXaDataSource();
         testModifyXaDataSource();
-        testRemoveXaDataSource();         
+        testRemoveXaDataSource();
     }
 
     private void testAddDataSource() throws Exception {
 
         // add data source
-        cli.sendLine("data-source add --jndi-name=java:jboss/datasources/TestDS --driver-name=h2 --connection-url=jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
+        cli.sendLine("data-source add --jndi-name=java:jboss/datasources/TestDS --name=java:jboss/datasources/TestDS --driver-name=h2 --connection-url=jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
 
         // check the data source is listed
         cli.sendLine("cd /subsystem=datasources/data-source");
@@ -101,7 +101,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
     private void testRemoveDataSource() throws Exception {
 
         // remove data source
-        cli.sendLine("data-source remove --jndi-name=java:jboss/datasources/TestDS");
+        cli.sendLine("data-source remove --name=java:jboss/datasources/TestDS");
 
         //check the data source is not listed
         cli.sendLine("cd /subsystem=datasources/data-source");
@@ -112,7 +112,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
     }
 
     private void testModifyDataSource() throws Exception {
-        StringBuilder cmd = new StringBuilder("data-source --jndi-name=java:jboss/datasources/TestDS");
+        StringBuilder cmd = new StringBuilder("data-source --name=java:jboss/datasources/TestDS");
         for (String[] props : DS_PROPS) {
             cmd.append(" --");
             cmd.append(props[0]);
@@ -122,7 +122,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
         cli.sendLine(cmd.toString());
 
         // check that datasource was modified
-        cli.sendLine("/subsystem=datasources/data-source=java\\:jboss\\/datasources\\/TestDS:read-resource(recursive=true)");       
+        cli.sendLine("/subsystem=datasources/data-source=java\\:jboss\\/datasources\\/TestDS:read-resource(recursive=true)");
         CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         assertTrue(result.isIsOutcomeSuccess());
         assertTrue(result.getResult() instanceof Map);
@@ -134,7 +134,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
     private void testAddXaDataSource() throws Exception {
 
         // add data source
-        cli.sendLine("xa-data-source add --jndi-name=java:jboss/datasources/TestXADS --driver-name=h2");
+        cli.sendLine("xa-data-source add --jndi-name=java:jboss/datasources/TestXADS --name=java:jboss/datasources/TestXADS --driver-name=h2");
 
         //check the data source is listed
         cli.sendLine("cd /subsystem=datasources/xa-data-source");
@@ -147,7 +147,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
     private void testRemoveXaDataSource() throws Exception {
 
         // remove data source
-        cli.sendLine("xa-data-source remove --jndi-name=java:jboss/datasources/TestXADS");
+        cli.sendLine("xa-data-source remove --name=java:jboss/datasources/TestXADS");
 
         //check the data source is not listed
         cli.sendLine("cd /subsystem=datasources/xa-data-source");
@@ -158,7 +158,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
     }
 
     private void testModifyXaDataSource() throws Exception {
-        StringBuilder cmd = new StringBuilder("xa-data-source --jndi-name=java:jboss/datasources/TestXADS");
+        StringBuilder cmd = new StringBuilder("xa-data-source --name=java:jboss/datasources/TestXADS");
         for (String[] props : DS_PROPS) {
             cmd.append(" --");
             cmd.append(props[0]);
@@ -166,9 +166,9 @@ public class DataSourceTestCase extends AbstractCliTestBase {
             cmd.append(props[1]);
         }
         cli.sendLine(cmd.toString());
-        
+
         // check that datasource was modified
-        cli.sendLine("/subsystem=datasources/xa-data-source=java\\:jboss\\/datasources\\/TestXADS:read-resource(recursive=true)");       
+        cli.sendLine("/subsystem=datasources/xa-data-source=java\\:jboss\\/datasources\\/TestXADS:read-resource(recursive=true)");
         CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         assertTrue(result.isIsOutcomeSuccess());
         assertTrue(result.getResult() instanceof Map);
