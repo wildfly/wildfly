@@ -75,10 +75,6 @@
             <artifactId>jboss-as-domain-management</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-network</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.jboss.com.sun.httpserver</groupId>
             <artifactId>httpserver</artifactId>
         </dependency>
