@@ -49,7 +49,7 @@
         </xs:sequence>
     </xs:complexType>
 
-    <xs:complexType name="sticky-sessionType" abstract="true">
+    <xs:complexType name="sticky-sessionType">
         <xs:attribute name="enable" type="xs:boolean" use="optional" default="true"/>
         <xs:attribute name="force" type="xs:boolean" use="optional" default="false"/>
         <xs:attribute name="remove" type="xs:boolean" use="optional" default="false"/>
@@ -58,7 +58,7 @@
     <!-- Example:
         <advertise enable="true" socket-binding"modcluster" security-key="secureKey"/>
     -->
-    <xs:complexType name="advertiseType" abstract="true">
+    <xs:complexType name="advertiseType">
         <xs:attribute name="enable" type="xs:boolean" use="optional" default="true"/>
         <!-- Get the actual advertiseGroupAddress / advertisePort from advertiseSocket -->
         <xs:attribute name="socket-binding" type="xs:string" use="optional"/>
@@ -68,9 +68,9 @@
     <!-- Example:
         <proxies url="prefix" node-timeout="-1" ping="10" socket-timeout="20" outbound-socket-bindings="modcluster-proxies"/>
     -->
-    <xs:complexType name="proxiesType" abstract="true">
+    <xs:complexType name="proxiesType">
         <xs:attribute name="url" type="xs:string" use="optional"/>
-        <xs:attribute name="outbound-socket-bindings" type="xs:list" use="optional">
+        <xs:attribute name="outbound-socket-bindings" type="outbound-socket-bindingsType" use="optional">
             <xs:annotation>
                 <xs:documentation>outbound-socket-binding groups for proxies.</xs:documentation>
             </xs:annotation>
@@ -130,10 +130,14 @@
         <xs:attribute name="balancer" type="xs:string" use="optional"/>
     </xs:complexType>
 
+    <xs:simpleType name='outbound-socket-bindingsType'>
+        <xs:list itemType='xs:string'/>
+    </xs:simpleType>
+
     <!-- Example:
         <contexts auto-enable="true" stop-timeout="20" excluded-contexts="ROOT"/>
     -->
-    <xs:complexType name="contextsType" abstract="true">
+    <xs:complexType name="contextsType">
         <xs:attribute name="auto-enable" type="xs:boolean" use="optional" default="true">
             <xs:annotation>
                 <xs:documentation>If false the contexts are registered as disabled in httpd, they need to be enabled via manually.</xs:documentation>
