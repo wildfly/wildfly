@@ -24,7 +24,6 @@
 <!-- This file supplies the internal configuration defaults per cache mode -->
 <infinispan xmlns="urn:infinispan:config:5.1">
     <default>
-        <transaction useSynchronization="true" transactionMode="TRANSACTIONAL"/>
         <locking lockAcquisitionTimeout="15000" useLockStriping="false" concurrencyLevel="1000"/>
         <storeAsBinary enabled="false"/>
         <clustering mode="local"></clustering>

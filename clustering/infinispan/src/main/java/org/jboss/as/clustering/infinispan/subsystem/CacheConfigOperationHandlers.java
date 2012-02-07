@@ -1,16 +1,22 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.*;
+import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.COMMON_STORE_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.EVICTION_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.EXPIRATION_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.FILE_STORE_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.JDBC_STORE_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.LOCKING_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.REMOTE_STORE_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.STATE_TRANSFER_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.STORE_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.TRANSACTION_ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Locale;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -23,13 +29,11 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
 /**
