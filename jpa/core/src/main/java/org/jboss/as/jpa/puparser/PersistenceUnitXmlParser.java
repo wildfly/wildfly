@@ -191,15 +191,15 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
             }
             switch (element) {
                 case CLASS:
-                    classes.add(reader.getElementText());
+                    classes.add(resolveSystemProperties(reader.getElementText()));
                     break;
 
                 case DESCRIPTION:
-                    final String description = reader.getElementText();
+                    final String description = resolveSystemProperties(reader.getElementText());
                     break;
 
                 case EXCLUDEUNLISTEDCLASSES:
-                    String text = reader.getElementText();
+                    String text = resolveSystemProperties(reader.getElementText());
                     if (text == null || text.isEmpty()) {
                         //the spec has examples where an empty
                         //exclude-unlisted-classes element has the same
@@ -211,20 +211,20 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
                     break;
 
                 case JARFILE:
-                    String file = reader.getElementText();
+                    String file = resolveSystemProperties(reader.getElementText());
                     jarfiles.add(file);
                     break;
 
                 case JTADATASOURCE:
-                    pu.setJtaDataSourceName(reader.getElementText());
+                    pu.setJtaDataSourceName(resolveSystemProperties(reader.getElementText()));
                     break;
 
                 case NONJTADATASOURCE:
-                    pu.setNonJtaDataSourceName(reader.getElementText());
+                    pu.setNonJtaDataSourceName(resolveSystemProperties(reader.getElementText()));
                     break;
 
                 case MAPPINGFILE:
-                    mappingFiles.add(reader.getElementText());
+                    mappingFiles.add(resolveSystemProperties(reader.getElementText()));
                     break;
 
                 case PROPERTIES:
@@ -232,16 +232,16 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
                     break;
 
                 case PROVIDER:
-                    pu.setPersistenceProviderClassName(reader.getElementText());
+                    pu.setPersistenceProviderClassName(resolveSystemProperties(reader.getElementText()));
                     break;
 
                 case SHAREDCACHEMODE:
-                    String cm = reader.getElementText();
+                    String cm = resolveSystemProperties(reader.getElementText());
                     pu.setSharedCacheMode(SharedCacheMode.valueOf(cm));
                     break;
 
                 case VALIDATIONMODE:
-                    String validationMode = reader.getElementText();
+                    String validationMode = resolveSystemProperties(reader.getElementText());
                     pu.setValidationMode(ValidationMode.valueOf(validationMode));
                     break;
 
@@ -279,7 +279,7 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
                                 name = attributeValue;
                                 break;
                             case VALUE:
-                                value = attributeValue;
+                                value = resolveSystemProperties(attributeValue);
                                 if (name != null && value != null) {
                                     properties.put(name, value);
                                 }
@@ -299,6 +299,36 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
         }
     }
 
+    public static String resolveSystemProperty(String text){
+        while (true){
+            int idx1 = text.indexOf("${");
+            int idx2 = text.indexOf("}");
+
+            if (idx1 == -1)
+                return text;
+
+            String name = text.substring(idx1 +2, idx2);
+            String value= System.getProperty(name);
+
+            if (value != null)
+                text = replaceString(text, "${"+ name +"}", value);
+            else
+                return text.substring(0, idx2 + 1) + resolveSystemProperty(text.substring(idx2 + 1));
+            }
+    }
+
+    private static String replaceString(String s, String pattern, String newPattern){
+        String r = "";
+
+        int i;
+
+        while ((i = s.indexOf(pattern)) != -1){
+            r += s.substring(0, i) + newPattern;
+            s = s.substring(i + pattern.length());
+        }
+
+        return r + s;
+    }
     /**
      * Simple test driver for parsing the specified persistence.xml file
      *
