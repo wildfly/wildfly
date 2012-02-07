@@ -41,8 +41,8 @@ import org.jboss.as.ejb3.cache.spi.BackingCacheEntry;
  * @author Paul Ferraro
  */
 public class CacheableTimestamp<K extends Serializable> implements Identifiable<K>, Comparable<CacheableTimestamp<K>> {
-    private K id;
-    private long lastUsed;
+    private final K id;
+    private final long lastUsed;
 
     public CacheableTimestamp(BackingCacheEntry<K, ?> entry) {
         this(entry.getId(), entry.getLastUsed());
@@ -71,7 +71,7 @@ public class CacheableTimestamp<K extends Serializable> implements Identifiable<
             return -1;
         else if (this.lastUsed > o.lastUsed)
             return 1;
-        return 0;
+        return id.toString().compareTo(o.id.toString());
     }
 
     @Override

@@ -23,15 +23,16 @@
 package org.jboss.as.ejb3.cache.impl.backing;
 
 import java.io.Serializable;
+import java.util.Set;
 
 import org.jboss.as.ejb3.cache.Cacheable;
 import org.jboss.as.ejb3.cache.PassivationManager;
 import org.jboss.as.ejb3.cache.spi.BackingCacheEntryFactory;
+import org.jboss.as.ejb3.cache.spi.BackingCacheEntryStore;
 import org.jboss.as.ejb3.cache.spi.BackingCacheEntryStoreConfig;
 import org.jboss.as.ejb3.cache.spi.GroupAwareBackingCache;
 import org.jboss.as.ejb3.cache.spi.GroupCompatibilityChecker;
 import org.jboss.as.ejb3.cache.spi.PassivatingBackingCache;
-import org.jboss.as.ejb3.cache.spi.BackingCacheEntryStore;
 import org.jboss.as.ejb3.cache.spi.ReplicationPassivationManager;
 import org.jboss.as.ejb3.cache.spi.SerializationGroup;
 import org.jboss.as.ejb3.cache.spi.SerializationGroupMember;
@@ -288,8 +289,8 @@ public class SerializationGroupMemberContainer<K extends Serializable, V extends
     }
 
     @Override
-    public void insert(SerializationGroupMember<K, V, G> entry) {
-        store.insert(entry);
+    public Set<K> insert(SerializationGroupMember<K, V, G> entry) {
+        return store.insert(entry);
     }
 
     @Override

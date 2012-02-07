@@ -23,6 +23,7 @@
 package org.jboss.as.ejb3.cache.spi;
 
 import java.io.Serializable;
+import java.util.Set;
 
 import org.jboss.as.ejb3.cache.AffinitySupport;
 import org.jboss.as.ejb3.cache.Cacheable;
@@ -45,12 +46,13 @@ public interface BackingCacheEntryStore<K extends Serializable, V extends Cachea
      * Put a new entry into the store. This operation should only be performed once per entry.
      *
      * @param entry the object to store. Cannot be <code>null</code>.
+     * @return A set of keys that need to be passivated, to keep the store below the max size
      *
      * @throws IllegalStateException if the store is already managing an entry with the same {@link Identifiable#getId() id}. It
      *         is not a requirement that the store throw this exception in this case, but it is permissible. This basically puts
      *         the onus on callers to ensure this operation is only performed once per entry.
      */
-    void insert(E entry);
+    Set<K> insert(E entry);
 
     /**
      * Gets the entry with the given id from the store.
