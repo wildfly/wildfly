@@ -710,6 +710,11 @@
 
                 <dependency>
                     <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-client-all</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-clustering-api</artifactId>
                 </dependency>
 
@@ -1307,11 +1312,11 @@
                     <groupId>org.jboss.security</groupId>
                     <artifactId>jboss-negotiation-common</artifactId>
                 </dependency>
-            
+
                 <dependency>
                     <groupId>org.jboss.security</groupId>
                     <artifactId>jboss-negotiation-extras</artifactId>
-                </dependency>            
+                </dependency>
 
                 <dependency>
                     <groupId>org.jboss.security</groupId>
