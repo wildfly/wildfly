@@ -40,7 +40,6 @@ import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 import org.jboss.logging.Param;
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 import org.jboss.vfs.VirtualFile;
@@ -354,6 +353,9 @@ public interface ServerMessages {
     @Message(id = 15846, value = "System property %s cannot be set after the server name has been set via the xml " +
             "configuration file or from a management client")
     OperationFailedException systemPropertyCannotOverrideServerName(String propertyName);
+
+    @Message(id = 15847, value = "Unable to initialise a basic SSLContext '%s'")
+    IOException unableToInitialiseSSLContext(String message);
 
     /*
      * WARNING!!! id 15849 is the last id in the available block for this class. Once the block
