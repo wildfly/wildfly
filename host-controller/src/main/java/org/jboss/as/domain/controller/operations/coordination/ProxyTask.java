@@ -97,6 +97,7 @@ class ProxyTask implements Callable<ModelNode> {
                 }
             };
 
+            // When this returns, one of the methods on proxyControl will have been called
             proxyController.execute(operation, messageHandler, proxyControl, new DelegatingOperationAttachments(context));
 
             ModelController.OperationTransaction remoteTransaction = null;
@@ -114,6 +115,7 @@ class ProxyTask implements Callable<ModelNode> {
                 remoteTransaction = txRef.get();
             }
 
+            // Publish the initial result to the operation step handler who triggered this task
             synchronized (uncommittedResultRef) {
                 uncommittedResultRef.set(result);
                 uncommittedResultRef.notifyAll();
@@ -141,6 +143,9 @@ class ProxyTask implements Callable<ModelNode> {
                         }
                     }
                 }
+
+                // All paths above result in commit() or rollback() being called. Those
+                // methods will not return until proxyControl is invoked setting the final result
             }
 
             return finalResultRef.get();

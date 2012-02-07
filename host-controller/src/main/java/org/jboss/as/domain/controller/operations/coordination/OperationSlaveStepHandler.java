@@ -85,7 +85,7 @@ public class OperationSlaveStepHandler {
 
         ServerOperationResolver resolver = new ServerOperationResolver(localHostControllerInfo.getLocalHostName(), serverProxies);
         ServerOperationsResolverHandler sorh = new ServerOperationsResolverHandler(
-                resolver, hostControllerExecutionSupport, originalAddress, originalRegistration, response, recordResponse);
+                resolver, hostControllerExecutionSupport, originalAddress, originalRegistration, response);
         context.addStep(sorh, OperationContext.Stage.DOMAIN);
     }
 

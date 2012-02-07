@@ -36,16 +36,16 @@ import org.jboss.dmr.ModelNode;
  * Thread-Safety: This class is immutable, but is intended to only have its
  * {@link #run()} method executed once.
  */
-class NewServerRestartTask extends AbstractServerUpdateTask {
+class ServerRestartTask extends AbstractServerUpdateTask {
 
-    private final NewServerOperationExecutor serverOperationExecutor;
+    private final ServerOperationExecutor serverOperationExecutor;
     private final long gracefulTimeout;
 
-    NewServerRestartTask(final NewServerOperationExecutor serverOperationExecutor,
-                         final ServerIdentity serverId,
-                         final ServerUpdatePolicy updatePolicy,
-                         final ServerUpdateResultHandler resultHandler,
-                         final long gracefulTimeout) {
+    ServerRestartTask(final ServerOperationExecutor serverOperationExecutor,
+                      final ServerIdentity serverId,
+                      final ServerUpdatePolicy updatePolicy,
+                      final ServerUpdateResultHandler resultHandler,
+                      final long gracefulTimeout) {
         super(serverId, updatePolicy, resultHandler);
         this.serverOperationExecutor = serverOperationExecutor;
         this.gracefulTimeout = gracefulTimeout;

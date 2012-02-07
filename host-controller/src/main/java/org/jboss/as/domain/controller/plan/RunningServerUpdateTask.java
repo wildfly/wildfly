@@ -37,9 +37,9 @@ import org.jboss.dmr.Property;
  * Thread-Safety: This class is immutable, but is intended to only have its
  * {@link #run()} method executed once.
  */
-class NewRunningServerUpdateTask extends AbstractServerUpdateTask {
+class RunningServerUpdateTask extends AbstractServerUpdateTask {
 
-    private final NewServerOperationExecutor serverOperationExecutor;
+    private final ServerOperationExecutor serverOperationExecutor;
     private final ModelNode serverUpdate;
 
     /**
@@ -51,11 +51,11 @@ class NewRunningServerUpdateTask extends AbstractServerUpdateTask {
      * @param updatePolicy the policy that controls whether the updates should be applied. Cannot be <code>null</code>
      * @param resultHandler handler for the result of the update. Cannot be <code>null</code>
      */
-    NewRunningServerUpdateTask(final NewServerOperationExecutor serverOperationExecutor,
-                               final ServerIdentity serverId,
-                               final ModelNode serverUpdate,
-                               final ServerUpdatePolicy updatePolicy,
-                               final ServerUpdateResultHandler resultHandler) {
+    RunningServerUpdateTask(final ServerOperationExecutor serverOperationExecutor,
+                            final ServerIdentity serverId,
+                            final ModelNode serverUpdate,
+                            final ServerUpdatePolicy updatePolicy,
+                            final ServerUpdateResultHandler resultHandler) {
         super(serverId, updatePolicy, resultHandler);
         this.serverOperationExecutor = serverOperationExecutor;
         this.serverUpdate = serverUpdate;

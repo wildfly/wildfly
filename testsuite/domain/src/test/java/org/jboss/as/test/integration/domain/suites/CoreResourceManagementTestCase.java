@@ -711,7 +711,10 @@ public class CoreResourceManagementTestCase {
         ModelNode snapshotOperation = new ModelNode();
         snapshotOperation.get(OP).set(SnapshotTakeHandler.OPERATION_NAME);
         snapshotOperation.get(OP_ADDR).set(addr);
-        final String snapshot = validateResponse(masterClient.execute(snapshotOperation)).get(DOMAIN_RESULTS).asString();
+        System.out.println(snapshotOperation);
+        ModelNode response = masterClient.execute(snapshotOperation);
+        System.out.println(response);
+        final String snapshot = validateResponse(response).get(DOMAIN_RESULTS).asString();
         Assert.assertNotNull(snapshot);
         Assert.assertFalse(snapshot.isEmpty());
 

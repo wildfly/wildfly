@@ -25,6 +25,7 @@ package org.jboss.as.test.integration.domain.suites;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_RESULTS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INET_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
@@ -35,6 +36,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PLA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
@@ -255,7 +257,6 @@ public class ManagementAccessTestCase {
         validateFailedResponse(response);
     }
 
-    @Ignore("AS7-2907")
     @Test
     public void testCompositeCrossHostReadAccess() throws IOException {
 
@@ -265,12 +266,14 @@ public class ManagementAccessTestCase {
         steps.add(getReadAttributeOperation(MASTER_INTERFACE_ADDRESS, INET_ADDRESS));
         steps.add(getReadAttributeOperation(SLAVE_ROOT_ADDRESS, NAME));
         steps.add(getReadAttributeOperation(SLAVE_INTERFACE_ADDRESS, INET_ADDRESS));
+        steps.add(getReadAttributeOperation(MAIN_RUNNING_SERVER_ADDRESS, NAME));
+        steps.add(getReadAttributeOperation(OTHER_RUNNING_SERVER_ADDRESS, NAME));
         masterRequest.protect();
 
         System.out.println(masterRequest);
         ModelNode response = masterClient.execute(masterRequest);
         System.out.println(response);
-        ModelNode returnVal = validateResponse(response);
+        ModelNode returnVal = validateResponse(response).get(DOMAIN_RESULTS);
         ModelNode name = validateResponse(returnVal.get("step-1"));
         Assert.assertEquals("master", name.asString());
         ModelNode inetAddress = validateResponse(returnVal.get("step-2"));
@@ -279,6 +282,10 @@ public class ManagementAccessTestCase {
         Assert.assertEquals("slave", name.asString());
         inetAddress = validateResponse(returnVal.get("step-4"));
         Assert.assertEquals(ModelType.EXPRESSION, inetAddress.getType());
+        name = validateResponse(returnVal.get("step-5"));
+        Assert.assertEquals("main-one", name.asString());
+        name = validateResponse(returnVal.get("step-6"));
+        Assert.assertEquals("other-two", name.asString());
 
         // Can't access the master via the slave
         response = slaveClient.execute(masterRequest);
