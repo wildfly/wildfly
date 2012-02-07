@@ -304,6 +304,15 @@ public class ServerInventoryImpl implements ServerInventory {
     }
 
     @Override
+    public boolean serverReconnected(String serverProcessName, ManagementChannelHandler channelHandler) {
+        // For now just reuse the existing register and started notification
+        serverCommunicationRegistered(serverProcessName, channelHandler);
+        serverStarted(serverProcessName);
+        // TODO propagate the restart-required flag to the reconnecting server
+        return true;
+    }
+
+    @Override
     public void serverProcessStopped(final String serverProcessName) {
         final String serverName = ManagedServer.getServerName(serverProcessName);
         final ManagedServer server = servers.get(serverName);

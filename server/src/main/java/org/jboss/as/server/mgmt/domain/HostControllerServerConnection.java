@@ -94,7 +94,7 @@ public class HostControllerServerConnection extends ManagementClientChannelStrat
      * @param callback the completed callback
      * @throws IOException
      */
-    public synchronized void reconnect(final URI connectionURI, final CallbackHandler callbackHandler, final ActiveOperation.CompletedCallback<Void> callback) throws IOException {
+    public synchronized void reconnect(final URI connectionURI, final CallbackHandler callbackHandler, final ActiveOperation.CompletedCallback<Boolean> callback) throws IOException {
         boolean ok = false;
         try {
             configuration.setUri(connectionURI);
@@ -182,6 +182,9 @@ public class HostControllerServerConnection extends ManagementClientChannelStrat
         }
     }
 
+    /**
+     * The server registration request.
+     */
     private class ServerRegisterRequest extends AbstractManagementRequest<Void, Void> {
 
         @Override
@@ -202,7 +205,11 @@ public class HostControllerServerConnection extends ManagementClientChannelStrat
 
     }
 
-    public class ServerReconnectRequest extends AbstractManagementRequest<Void, Void> {
+    /**
+     * The server reconnect request. Additionally to registering the server at the HC, the response will
+     * contain whether this server is still in sync or needs to be restarted.
+     */
+    public class ServerReconnectRequest extends AbstractManagementRequest<Boolean, Void> {
 
         @Override
         public byte getOperationType() {
@@ -210,14 +217,26 @@ public class HostControllerServerConnection extends ManagementClientChannelStrat
         }
 
         @Override
-        protected void sendRequest(ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<Void> voidManagementRequestContext, FlushableDataOutput output) throws IOException {
+        protected void sendRequest(final ActiveOperation.ResultHandler<Boolean> resultHandler, final ManagementRequestContext<Void> context, final FlushableDataOutput output) throws IOException {
             output.write(DomainServerProtocol.PARAM_SERVER_NAME);
             output.writeUTF(serverProcessName);
         }
 
         @Override
-        public void handleRequest(DataInput input, ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<Void> voidManagementRequestContext) throws IOException {
-            resultHandler.done(null);
+        public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<Boolean> resultHandler, final ManagementRequestContext<Void> context) throws IOException {
+            final byte param = input.readByte();
+            context.executeAsync(new ManagementRequestContext.AsyncTask<Void>() {
+                @Override
+                public void execute(ManagementRequestContext<Void> voidManagementRequestContext) throws Exception {
+                    if(param == DomainServerProtocol.PARAM_OK) {
+                        // Still in sync with the HC
+                        resultHandler.done(Boolean.TRUE);
+                    } else {
+                        // Out of sync, set restart-required
+                        resultHandler.done(Boolean.FALSE);
+                    }
+                }
+            });
         }
 
     }

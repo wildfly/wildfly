@@ -32,6 +32,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.client.OperationAttachments;
+import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
 import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.StreamUtils;
@@ -46,6 +49,8 @@ import org.jboss.as.server.ServerMessages;
 import org.jboss.as.repository.RemoteFileRequestAndHandler.CannotCreateLocalDirectoryException;
 import org.jboss.as.repository.RemoteFileRequestAndHandler.DidNotReadEntireFileException;
 import org.jboss.as.server.mgmt.domain.RemoteFileRepository.RemoteFileRepositoryExecutor;
+import org.jboss.as.server.operations.ServerRestartRequiredHandler;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -137,7 +142,7 @@ public class HostControllerServerClient implements Service<HostControllerServerC
                     remoteFileRepositoryValue.getValue().setRemoteFileRepositoryExecutor(new RemoteFileRepositoryExecutorImpl());
                     // We finished the registration process
                     context.complete();
-                    // TODO base this message on a proper started notification
+                    // TODO base the started message on some useful notification
                     started();
                 }
 
@@ -170,18 +175,40 @@ public class HostControllerServerClient implements Service<HostControllerServerC
      * @param port the remote port
      * @param authKey the authKey
      */
-    public synchronized void reconnect(final String host, final int port, final byte[] authKey) {
-        try {
-            final HostControllerServerConnection connection = this.connection;
-            if(connection == null) {
-                throw new IllegalStateException();
+    public synchronized void reconnect(final String host, final int port, final byte[] authKey) throws Exception {
+        final HostControllerServerConnection connection = this.connection;
+        final URI uri = new URI("remote://" + host + ":" + port);
+        final CallbackHandler callbackHandler = new ClientCallbackHandler(userName, authKey);
+        connection.reconnect(uri, callbackHandler, new ActiveOperation.CompletedCallback<Boolean>() {
+            @Override
+            public void completed(Boolean inSync) {
+                // If we're not in sync require a restart
+                if(! inSync) {
+                    requireRestart();
+                }
             }
-            final URI uri = new URI("remote://" + host + ":" + port);
-            final CallbackHandler callbackHandler = new ClientCallbackHandler(userName, authKey);
-            connection.reconnect(uri, callbackHandler, null);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+
+            @Override
+            public void failed(Exception e) {
+                //
+            }
+
+            @Override
+            public void cancelled() {
+                //
+            }
+        });
+    }
+
+    /**
+     * Set the restart required flag.
+     */
+    private synchronized void requireRestart() {
+        final ModelController controller = this.controller.getValue();
+        final ModelNode operation = new ModelNode();
+        operation.get(ModelDescriptionConstants.OP).set(ServerRestartRequiredHandler.OPERATION_NAME);
+        operation.get(ModelDescriptionConstants.OP_ADDR).setEmptyList();
+        controller.execute(operation, OperationMessageHandler.logging, ModelController.OperationTransactionControl.COMMIT, OperationAttachments.EMPTY);
     }
 
     /**
@@ -198,9 +225,6 @@ public class HostControllerServerClient implements Service<HostControllerServerC
      */
     public synchronized void started() {
         final ManagementChannelAssociation handler = this.handler;
-        if(handler == null) {
-            throw new IllegalStateException();
-        }
         try {
             handler.executeRequest(new ServerStartedRequest(), null);
         } catch (IOException e) {
@@ -227,6 +251,8 @@ public class HostControllerServerClient implements Service<HostControllerServerC
 
     public class ServerStartedRequest extends AbstractManagementRequest<Void, Void> {
 
+        private final String message = ""; // started / failed message
+
         @Override
         public byte getOperationType() {
             return DomainServerProtocol.SERVER_STARTED_REQUEST;
@@ -234,10 +260,9 @@ public class HostControllerServerClient implements Service<HostControllerServerC
 
         @Override
         protected void sendRequest(ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<Void> voidManagementRequestContext, FlushableDataOutput output) throws IOException {
-            output.write(DomainServerProtocol.PARAM_SERVER_NAME);
-            output.writeUTF(serverProcessName);
-            // TODO send some status information
-            // TODO just send a simple message, since don't wait for a response anyway
+            output.write(DomainServerProtocol.PARAM_OK); // TODO handle server start failed message
+            output.writeUTF(message);
+            // TODO update the API to better handle one-way messages
             resultHandler.done(null);
         }
 
