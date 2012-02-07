@@ -142,46 +142,64 @@ public class FormAuthUnitTestCase {
 
         final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
 
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
-        ModelNode op = new ModelNode();
+        try{
+        	final List<ModelNode> updates = new ArrayList<ModelNode>();
+        	ModelNode op = new ModelNode();
 
-        op.get(OP).set(ADD);
-        op.get(OP_ADDR).add(SUBSYSTEM, "security");
-        op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
-        updates.add(op);
+        	op.get(OP).set(ADD);
+        	op.get(OP_ADDR).add(SUBSYSTEM, "security");
+        	op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
+        	updates.add(op);
 
-        op = new ModelNode();
-        op.get(OP).set(ADD);
-        op.get(OP_ADDR).add(SUBSYSTEM, "security");
-        op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
-        op.get(OP_ADDR).add(AUTHENTICATION, Constants.CLASSIC);
+        	op = new ModelNode();
+        	op.get(OP).set(ADD);
+        	op.get(OP_ADDR).add(SUBSYSTEM, "security");
+        	op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
+        	op.get(OP_ADDR).add(AUTHENTICATION, Constants.CLASSIC);
 
-        ModelNode loginModule = op.get(Constants.LOGIN_MODULES).add();
-        loginModule.get(CODE).set("UsersRoles");
-        loginModule.get(FLAG).set("required");
-        op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        updates.add(op);
+        	ModelNode loginModule = op.get(Constants.LOGIN_MODULES).add();
+        	loginModule.get(CODE).set("UsersRoles");
+        	loginModule.get(FLAG).set("required");
+        	op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+        	updates.add(op);
 
-        try {
-            applyUpdates(updates, client);
+        	try {
+        		applyUpdates(updates, client);
+        	}
+        	catch (Exception e) {
+        		log.error(e);
+        		throw e;
+        	}
+        } finally {
+        	try {
+        		client.close();
+        	} catch (Exception e) {
+        		// ignore
+        		log.debug("Ignoring exception while closing model controller client", e);
+        	}
         }
-        catch (Exception e) {
-            log.error(e);
-            throw e;
-        }
+
         log.debug("end of the domain creation");
     }
     public static void removeSecurityDomain() throws Exception {
         final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
+        try{
+            ModelNode op = new ModelNode();
+            op.get(OP).set(REMOVE);
+            op.get(OP_ADDR).add(SUBSYSTEM, "security");
+            op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
+            // Don't rollback when the AS detects the war needs the module
+            op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
 
-        ModelNode op = new ModelNode();
-        op.get(OP).set(REMOVE);
-        op.get(OP_ADDR).add(SUBSYSTEM, "security");
-        op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
-        // Don't rollback when the AS detects the war needs the module
-        op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
-
-        applyUpdate(op, client, true);
+            applyUpdate(op, client, true);	
+        }finally {
+        	try {
+        		client.close();
+        	} catch (Exception e) {
+        		// ignore
+        		log.debug("Ignoring exception while closing model controller client", e);
+        	}
+        }
     }
 
     public static void applyUpdates(final List<ModelNode> updates, final ModelControllerClient client) throws Exception {
