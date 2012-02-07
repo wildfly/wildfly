@@ -38,6 +38,8 @@ import org.apache.http.util.EntityUtils;
 import org.h2.tools.Server;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.security.Constants;
 import org.jboss.as.test.integration.security.loginmodules.common.Coding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.util.Base64;
@@ -50,7 +52,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.net.InetAddress;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -58,10 +62,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static junit.framework.Assert.assertNotNull;
+import static org.jboss.as.security.Constants.FLAG;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -367,6 +373,53 @@ public class Utils {
          return propsFile;
       } catch (IOException e) {
          throw new RuntimeException("Temporary file could not be created or writen to!", e);
+      }
+   }
+
+   private static ModelControllerClient getModelControllerClient(String modelControllerHost, int modelControllerPort) throws UnknownHostException {
+      return ModelControllerClient.Factory.create(InetAddress.getByName(modelControllerHost), modelControllerPort,
+         org.jboss.as.arquillian.container.Authentication.getCallbackHandler());
+   }
+   
+   public static void createSecurityDomain(String securityDomainName, String modelControllerHost, int modelControllerPort,
+                                    Class loginModuleClass, Map<String,String> moduleOptionsCache) {
+
+      final ModelControllerClient client;
+      try {
+         client = getModelControllerClient(modelControllerHost, modelControllerPort);
+      } catch (UnknownHostException ex){
+         throw new RuntimeException("Unknown host : " + modelControllerHost + ":" + modelControllerPort, ex);
+      }
+      List<ModelNode> updates = new ArrayList<ModelNode>();
+      ModelNode op = new ModelNode();
+
+      op.get(OP).set(ADD);
+      op.get(OP_ADDR).add(SUBSYSTEM, "security");
+      op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomainName);
+      updates.add(op);
+
+      op = new ModelNode();
+      op.get(OP).set(ADD);
+      op.get(OP_ADDR).add(SUBSYSTEM, "security");
+      op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomainName);
+      op.get(OP_ADDR).add(Constants.AUTHENTICATION, Constants.CLASSIC);
+
+      ModelNode loginModule = op.get(Constants.LOGIN_MODULES).add();
+      loginModule.get(ModelDescriptionConstants.CODE).set(loginModuleClass.getName());
+      loginModule.get(FLAG).set("required");
+      op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+
+      ModelNode moduleOptions = loginModule.get("module-options");
+      for (Map.Entry<String, String> entry : moduleOptionsCache.entrySet()) {
+         moduleOptions.get(entry.getKey()).set(entry.getValue());
+      }
+
+      updates.add(op);
+
+      try {
+         applyUpdates(updates, client);
+      } catch (Exception ex) {
+         throw new RuntimeException(ex);
       }
    }
 }
