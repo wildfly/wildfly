@@ -107,4 +107,10 @@ public class JGroupsSubsystemProviders {
             return JGroupsDescriptions.getProtocolPropertyRemoveDescription(locale);
         }
     };
+    static final DescriptionProvider EXPORT_NATIVE_CONFIGURATION = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return JGroupsDescriptions.getExportNativeConfigurationDescription(locale);
+        }
+    };
 }
