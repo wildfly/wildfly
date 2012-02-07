@@ -216,6 +216,7 @@ public class JGroupsDescriptions {
         ResourceBundle resources = getResources(locale);
         final ModelNode op = createOperationDescription(ModelKeys.EXPORT_NATIVE_CONFIGURATION, resources, "jgroups.stack.export-native-configuration");
         op.get(REQUEST_PROPERTIES).setEmptyObject();
+        op.get(REPLY_PROPERTIES, TYPE).set(ModelType.STRING);
         return op;
     }
 

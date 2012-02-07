@@ -78,9 +78,11 @@ public class JGroupsExtension implements Extension {
         // register the add-protocol and remove-protocol handlers
         stacks.registerOperationHandler(ModelKeys.ADD_PROTOCOL, StackConfigOperationHandlers.PROTOCOL_ADD, JGroupsSubsystemProviders.PROTOCOL_ADD);
         stacks.registerOperationHandler(ModelKeys.REMOVE_PROTOCOL, StackConfigOperationHandlers.PROTOCOL_REMOVE, JGroupsSubsystemProviders.PROTOCOL_REMOVE);
-
-        final EnumSet<OperationEntry.Flag> readOnly = EnumSet.of(OperationEntry.Flag.READ_ONLY);
-        stacks.registerOperationHandler(ModelKeys.EXPORT_NATIVE_CONFIGURATION, StackConfigOperationHandlers.EXPORT_NATIVE_CONFIGURATION, JGroupsSubsystemProviders.EXPORT_NATIVE_CONFIGURATION, readOnly);
+        // register the export operation
+        if (context.isRuntimeOnlyRegistrationValid()) {
+            final EnumSet<OperationEntry.Flag> readOnly = EnumSet.of(OperationEntry.Flag.READ_ONLY);
+            stacks.registerOperationHandler(ModelKeys.EXPORT_NATIVE_CONFIGURATION, StackConfigOperationHandlers.EXPORT_NATIVE_CONFIGURATION, JGroupsSubsystemProviders.EXPORT_NATIVE_CONFIGURATION, readOnly);
+        }
 
         // register the transport=TRANSPORT handlers
         final ManagementResourceRegistration transport = stacks.registerSubModel(transportPath, JGroupsSubsystemProviders.TRANSPORT);
