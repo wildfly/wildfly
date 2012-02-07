@@ -21,7 +21,13 @@
  */
 package org.jboss.as.security;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CODE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -148,6 +154,10 @@ public class LoginModulesAttributeDefinition extends ListAttributeDefinition {
 
         for (ModuleFlag value : ModuleFlag.values())
             flag.get(ALLOWED).add(value.toString());
+
+        final ModelNode module = valueType.get(Constants.MODULE);
+        module.get(TYPE).set(ModelType.STRING);
+        module.get(NILLABLE).set(false);
 
         final ModelNode moduleOptions = valueType.get(Constants.MODULE_OPTIONS);
         moduleOptions.get(DESCRIPTION);  // placeholder
