@@ -37,7 +37,7 @@ interface CommonAttributes {
     String PROXY_URL = "proxy-url";
     String ADVERTISE = "advertise";
     String ADVERTISE_SECURITY_KEY = "advertise-security-key";
-    String EXCLUDED_CONTEXTS = "excluded-contexts";
+    String EXCLUDED_CONTEXTS = "excluded";
     String AUTO_ENABLE_CONTEXTS = "auto-enable-contexts";
     String STOP_CONTEXT_TIMEOUT = "stop-context-timeout";
     String SOCKET_TIMEOUT = "socket-timeout";
@@ -93,7 +93,7 @@ interface CommonAttributes {
     String SESSION_DRAINING_STRATEGY = "session-draining-strategy";
     String SOCKET_BINDING = "socket-binding";
     String SECURITY_KEY = "security-key";
-    String OUTBOUT_SOCKET_BINDINGS = "outbound-socket-bindings";
+    String OUTBOUND_SOCKET_BINDINGS = "outbound-socket-bindings";
     String LOAD_BALANCING_GROUP = "load-balancing-group";
     String AUTO_ENABLE = "auto-enable";
     String STOP_TIMEOUT = "stop-timeout";

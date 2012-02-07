@@ -29,17 +29,20 @@ import java.net.SocketException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jboss.as.web.WebServer;
 import org.jboss.dmr.ModelNode;
-import org.jboss.modcluster.container.catalina.CatalinaEventHandlerAdapter;
 import org.jboss.modcluster.config.impl.ModClusterConfig;
 import org.jboss.modcluster.config.impl.SessionDrainingStrategyEnum;
+import org.jboss.modcluster.container.catalina.CatalinaEventHandlerAdapter;
 import org.jboss.modcluster.load.LoadBalanceFactorProvider;
 import org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProvider;
 import org.jboss.modcluster.load.impl.SimpleLoadBalanceFactorProvider;
@@ -51,6 +54,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Value;
 
 /**
  * Service configuring and starting modcluster.
@@ -67,6 +71,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
     private CatalinaEventHandlerAdapter adapter;
     private LoadBalanceFactorProvider load;
 
+    private final List<Value<OutboundSocketBinding>> outboundSocketBindings = new LinkedList<Value<OutboundSocketBinding>>();
     private final InjectedValue<WebServer> webServer = new InjectedValue<WebServer>();
     private final InjectedValue<SocketBindingManager> bindingManager = new InjectedValue<SocketBindingManager>();
     private final InjectedValue<SocketBinding> binding = new InjectedValue<SocketBinding>();
@@ -161,9 +166,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
             config.setSocketTimeout(modelconf.get(CommonAttributes.SOCKET_TIMEOUT).asInt() * 1000);
         }
         if (modelconf.hasDefined(CommonAttributes.SESSION_DRAINING_STRATEGY)) {
-            // TODO: Please review.
-            config.setSessionDrainingStrategy(
-                    SessionDrainingStrategyEnum.valueOf(modelconf.get(CommonAttributes.AUTO_ENABLE_CONTEXTS).asString()));
+            config.setSessionDrainingStrategy(SessionDrainingStrategyEnum.valueOf(modelconf.get(CommonAttributes.SESSION_DRAINING_STRATEGY).asString()));
         }
 
         if (modelconf.hasDefined(CommonAttributes.STICKY_SESSION))
@@ -305,6 +308,12 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
 
     public Injector<SocketBindingManager> getBindingManager() {
         return bindingManager;
+    }
+
+    public Injector<OutboundSocketBinding> addOutboundSocketBinding() {
+        InjectedValue<OutboundSocketBinding> binding = new InjectedValue<OutboundSocketBinding>();
+        this.outboundSocketBindings.add(binding);
+        return binding;
     }
 
     @Override

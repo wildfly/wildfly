@@ -65,6 +65,7 @@ import static org.jboss.as.modcluster.CommonAttributes.REMOVE;
 // TODO: no * import please
 import static org.jboss.as.modcluster.CommonAttributes.*;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -169,7 +170,14 @@ public class ModClusterSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         writer.writeStartElement(Element.PROXIES.getLocalName());
 
         writeAttributeAs(writer, URL, PROXY_URL, config);
-        writeAttributeAs(writer, OUTBOUT_SOCKET_BINDINGS, PROXY_LIST, config);
+        if (config.hasDefined(PROXY_LIST)) {
+            List<ModelNode> proxyList = config.get(PROXY_LIST).asList();
+            List<String> proxies = new ArrayList<String>(proxyList.size());
+            for (ModelNode proxy: proxyList) {
+                proxies.add(proxy.asString());
+            }
+            writer.writeAttribute(OUTBOUND_SOCKET_BINDINGS, proxies);
+        }
         writeAttributeAs(writer, LOAD_BALANCING_GROUP, DOMAIN, config);
 
         writeAttribute(writer, PING, config);
@@ -192,7 +200,14 @@ public class ModClusterSubsystemXMLWriter implements XMLElementWriter<SubsystemM
 
         writeAttributeAs(writer, AUTO_ENABLE, AUTO_ENABLE_CONTEXTS, config);
         writeAttributeAs(writer, STOP_TIMEOUT, STOP_CONTEXT_TIMEOUT, config);
-        writeAttributeAs(writer, EXCLUDED_CONTEXTS, EXCLUDED_CONTEXTS, config);
+        if (config.hasDefined(EXCLUDED_CONTEXTS)) {
+            List<ModelNode> contexts = config.get(EXCLUDED_CONTEXTS).asList();
+            List<String> list = new ArrayList<String>(contexts.size());
+            for (ModelNode context: contexts) {
+                list.add(context.asString());
+            }
+            writer.writeAttribute(EXCLUDED_CONTEXTS, list);
+        }
         writeAttributeAs(writer, SESSION_DRAINING_STRATEGY, SESSION_DRAINING_STRATEGY, config);
 
         writer.writeEndElement();
