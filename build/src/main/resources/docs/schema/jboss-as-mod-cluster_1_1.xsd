@@ -50,19 +50,43 @@
     <xs:element name="dynamic-load-provider" type="dynamic-load-providerType" substitutionGroup="any-load-provider"/>
 
     <xs:complexType name="sticky-sessionType">
-        <xs:attribute name="enable" type="xs:boolean" use="optional" default="true"/>
-        <xs:attribute name="force" type="xs:boolean" use="optional" default="false"/>
-        <xs:attribute name="remove" type="xs:boolean" use="optional" default="false"/>
+        <xs:attribute name="enable" type="xs:boolean" use="optional" default="true">
+            <xs:annotation>
+                <xs:documentation>Indicates whether subsequent requests for a given session should be routed to the same node, if possible.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="force" type="xs:boolean" use="optional" default="false">
+            <xs:annotation>
+                <xs:documentation>Indicates whether the httpd proxy should return an error in the event that the balancer is unable to route a request to the node to which it is stuck. This property is ignored if stickySession is false.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="remove" type="xs:boolean" use="optional" default="false">
+            <xs:annotation>
+                <xs:documentation>Indicates whether the httpd proxy should remove session stickiness in the event that the balancer is unable to route a request to the node to which it is stuck. This property is ignored if stickySession is false.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <!-- Example:
         <advertise enable="true" socket-binding"modcluster" security-key="secureKey"/>
     -->
     <xs:complexType name="advertiseType">
-        <xs:attribute name="enable" type="xs:boolean" use="optional" default="true"/>
+        <xs:attribute name="enable" type="xs:boolean" use="optional" default="true">
+            <xs:annotation>
+                <xs:documentation>If enabled, httpd proxies will be auto-discovered via multicast announcements. This can be used either in concert or in place of a static proxyList.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
         <!-- Get the actual advertiseGroupAddress / advertisePort from advertiseSocket -->
-        <xs:attribute name="socket-binding" type="xs:string" use="optional"/>
-        <xs:attribute name="security-key" type="xs:string" use="optional"/>
+        <xs:attribute name="socket-binding" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>Defines address on which to listen for httpd proxy multicast advertisements.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="security-key" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>If specified, httpd proxy advertisements checksums will be verified using this value as a salt.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <!-- Example:
