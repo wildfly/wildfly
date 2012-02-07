@@ -26,7 +26,7 @@
 
     <property name="output.dir" value="target/jboss-as-${jboss.as.release.version}"/>
 
-    <target name="base" depends="clean-target, modules-minimalistic, copy-files, make-dirs"/>
+    <target name="base" depends="clean-target, modules-minimalistic, copy-files, make-dirs, copy-client"/>
 
     <target name="copy-files">
         <copy todir="${output.dir}">
@@ -102,6 +102,10 @@
             </patternset>
             <mapper type="flatten"/>
         </unzip>
+    </target>
+
+    <target name="copy-client">
+        <copy file="${org.jboss.as:jboss-as-client-all:jar}" tofile="${output.dir}/bin/client/jboss-client-${project.version}.jar"/>
     </target>
 
     <target name="minimalistic" depends="base, copy-standalone-minimalistic"/>

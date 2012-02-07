@@ -251,6 +251,7 @@
 
         <!-- Non-default plugin versions and configuration -->
         <version.javacc.plugin>2.5</version.javacc.plugin>
+        <version.shade.plugin>1.5</version.shade.plugin>
 
         <!-- Surefire args -->
         <surefire.jpda.args/>
@@ -463,6 +464,11 @@
                             </configuration>
                         </execution>
                     </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>${version.shade.plugin}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.jboss.maven.surefire.modular</groupId>
@@ -869,6 +875,12 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-client-all</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-ee</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -883,6 +895,13 @@
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-ejb3</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-ejb-client-bom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
             </dependency>
 
             <dependency>
@@ -925,6 +944,13 @@
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-jmx</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-jms-client-bom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
             </dependency>
 
             <dependency>
@@ -5916,6 +5942,7 @@
                 <module>cli</module>
                 <module>client/ejb</module>
                 <module>client/jms</module>
+                <module>client/shade</module>
                 <module>clustering</module>
                 <module>cmp</module>
                 <module>configadmin</module>
