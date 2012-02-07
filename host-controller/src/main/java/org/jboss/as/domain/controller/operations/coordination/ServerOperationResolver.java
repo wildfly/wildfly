@@ -670,7 +670,7 @@ public class ServerOperationResolver {
                 final String attr = operation.get(NAME).asString();
                 if (GROUP.equals(attr) || SOCKET_BINDING_GROUP.equals(attr) || SOCKET_BINDING_PORT_OFFSET.equals(attr)) {
                     final String serverName = address.getElement(0).getValue();
-                    final String group = host.get(address.getLastElement().getKey(), address.getLastElement().getValue(), GROUP).toString();
+                    final String group = host.get(address.getLastElement().getKey(), address.getLastElement().getValue(), GROUP).asString();
                     final ServerIdentity id = new ServerIdentity(localHostName, group, serverName);
                     result = getServerRestartRequiredOperations(Collections.singleton(id));
                     return result;

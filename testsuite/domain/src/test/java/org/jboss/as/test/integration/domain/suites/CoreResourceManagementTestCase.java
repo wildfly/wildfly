@@ -630,10 +630,9 @@ public class CoreResourceManagementTestCase {
         write.get(VALUE).set(original + 1);
         result = validateResponse(masterClient.execute(write));
 
-        //TODO investigate the extra quotes around main-server-group
-        final String mainServerGroup = "\"main-server-group\"";
+        final String mainServerGroup = "main-server-group";
         Assert.assertEquals(SUCCESS, result.get(SERVER_GROUPS, mainServerGroup, "main-one", RESPONSE, OUTCOME).asString());
-        ModelNode headers = result.get(SERVER_GROUPS, "\"main-server-group\"", "main-one", RESPONSE, RESPONSE_HEADERS);
+        ModelNode headers = result.get(SERVER_GROUPS, mainServerGroup, "main-one", RESPONSE, RESPONSE_HEADERS);
         Assert.assertEquals(RESTART_REQUIRED, headers.get(PROCESS_STATE).asString());
         Assert.assertTrue(RESTART_REQUIRED, headers.get(OPERATION_REQUIRES_RESTART).asBoolean());
 
@@ -711,9 +710,7 @@ public class CoreResourceManagementTestCase {
         ModelNode snapshotOperation = new ModelNode();
         snapshotOperation.get(OP).set(SnapshotTakeHandler.OPERATION_NAME);
         snapshotOperation.get(OP_ADDR).set(addr);
-        System.out.println(snapshotOperation);
         ModelNode response = masterClient.execute(snapshotOperation);
-        System.out.println(response);
         final String snapshot = validateResponse(response).get(DOMAIN_RESULTS).asString();
         Assert.assertNotNull(snapshot);
         Assert.assertFalse(snapshot.isEmpty());

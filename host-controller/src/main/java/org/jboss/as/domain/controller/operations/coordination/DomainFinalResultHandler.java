@@ -158,26 +158,6 @@ public class DomainFinalResultHandler implements OperationStepHandler {
         return true;
     }
 
-    private ModelNode getSingleHostResult(final ModelNode operation) {
-//        ModelNode singleHost = domainOperationContext.getCoordinatorResult();
-//        if (singleHost != null
-//                && (!singleHost.hasDefined(RESULT)
-//                    || (ModelType.STRING == singleHost.get(RESULT).getType()
-//                        && IGNORED.equals(singleHost.get(RESULT).asString())))) {
-//            singleHost = null;
-//        }
-//        if (singleHost == null) {
-//            for (ModelNode node : domainOperationContext.getHostControllerResults().values()) {
-//                if (node.hasDefined(RESULT) && !IGNORED.equals(node.get(RESULT).asString())) {
-//                    singleHost = node;
-//                    break;
-//                }
-//            }
-//        }
-        ModelNode singleHost = getDomainResults(operation);
-        return singleHost.get(RESULT);
-    }
-
     private ModelNode getDomainResults(final ModelNode operation, final String... stepLabels) {
         ResponseProvider provider = new ResponseProvider(operation, domainOperationContext.getLocalHostInfo().getLocalHostName());
         ModelNode result;
