@@ -123,15 +123,15 @@ class DataSourceModelNodeUtil {
     static ModifiableDataSource from(final OperationContext operationContext, final ModelNode dataSourceNode, final String dsName) throws OperationFailedException, ValidateException {
         final Map<String, String> connectionProperties= Collections.emptyMap();
 
-        final String connectionUrl = getStringIfSetOrGetDefault(operationContext, dataSourceNode, CONNECTION_URL, null);
-        final String driverClass = getStringIfSetOrGetDefault(operationContext, dataSourceNode, DRIVER_CLASS, null);
-        final String dataSourceClass = getStringIfSetOrGetDefault( operationContext, dataSourceNode, DATASOURCE_CLASS, null);
-        final String jndiName = getStringIfSetOrGetDefault(operationContext, dataSourceNode, JNDINAME, null);
-        final String driver = getStringIfSetOrGetDefault(operationContext, dataSourceNode, DATASOURCE_DRIVER, null);
-        final String newConnectionSql = getStringIfSetOrGetDefault(operationContext, dataSourceNode, NEW_CONNECTION_SQL, null);
+        final String connectionUrl = getStringIfSetOrGetDefault(dataSourceNode, CONNECTION_URL, null);
+        final String driverClass = getStringIfSetOrGetDefault(dataSourceNode, DRIVER_CLASS, null);
+        final String dataSourceClass = getStringIfSetOrGetDefault(dataSourceNode, DATASOURCE_CLASS, null);
+        final String jndiName = getStringIfSetOrGetDefault(dataSourceNode, JNDINAME, null);
+        final String driver = getStringIfSetOrGetDefault(dataSourceNode, DATASOURCE_DRIVER, null);
+        final String newConnectionSql = getStringIfSetOrGetDefault(dataSourceNode, NEW_CONNECTION_SQL, null);
         final String poolName = dsName;
-        final String urlDelimiter = getStringIfSetOrGetDefault(operationContext, dataSourceNode, URL_DELIMITER, null);
-        final String urlSelectorStrategyClassName = getStringIfSetOrGetDefault(operationContext, dataSourceNode,
+        final String urlDelimiter = getStringIfSetOrGetDefault(dataSourceNode, URL_DELIMITER, null);
+        final String urlSelectorStrategyClassName = getStringIfSetOrGetDefault(dataSourceNode,
                 URL_SELECTOR_STRATEGY_CLASS_NAME, null);
         final boolean useJavaContext = getBooleanIfSetOrGetDefault(dataSourceNode, USE_JAVA_CONTEXT, Defaults.USE_JAVA_CONTEXT);
         final boolean enabled = getBooleanIfSetOrGetDefault(dataSourceNode, ENABLED, Defaults.ENABLED);
@@ -145,12 +145,12 @@ class DataSourceModelNodeUtil {
 
         final CommonPool pool = new CommonPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy);
 
-        final String username = getStringIfSetOrGetDefault(operationContext, dataSourceNode, USERNAME, null);
+        final String username = getStringIfSetOrGetDefault(dataSourceNode, USERNAME, null);
 
-        final String password = getStringIfSetOrGetDefault(operationContext, dataSourceNode, PASSWORD, null);
-        final String securityDomain = getStringIfSetOrGetDefault(operationContext, dataSourceNode, SECURITY_DOMAIN, null);
+        final String password = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, PASSWORD, null);
+        final String securityDomain = getStringIfSetOrGetDefault(dataSourceNode, SECURITY_DOMAIN, null);
 
-        final Extension reauthPlugin = extractExtension(operationContext, dataSourceNode, REAUTHPLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES);
+        final Extension reauthPlugin = extractExtension(dataSourceNode, REAUTHPLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES);
 
         final DsSecurity security = new DsSecurityImpl(username, password, securityDomain, reauthPlugin);
 
@@ -172,12 +172,12 @@ class DataSourceModelNodeUtil {
                 allocationRetryWaitMillis, xaResourceTimeout, setTxQuertTimeout, queryTimeout, useTryLock);
         final TransactionIsolation transactionIsolation = dataSourceNode.hasDefined(TRANSACTION_ISOLATION.getName()) ? TransactionIsolation
                 .valueOf(dataSourceNode.get(TRANSACTION_ISOLATION.getName()).asString()) : null;
-        final String checkValidConnectionSql = getStringIfSetOrGetDefault(operationContext, dataSourceNode, CHECKVALIDCONNECTIONSQL, null);
+        final String checkValidConnectionSql = getStringIfSetOrGetDefault(dataSourceNode, CHECKVALIDCONNECTIONSQL, null);
 
-        final Extension exceptionSorter = extractExtension(operationContext, dataSourceNode, EXCEPTIONSORTERCLASSNAME, EXCEPTIONSORTER_PROPERTIES);
-        final Extension staleConnectionChecker = extractExtension(operationContext, dataSourceNode, STALECONNECTIONCHECKERCLASSNAME,
+        final Extension exceptionSorter = extractExtension(dataSourceNode, EXCEPTIONSORTERCLASSNAME, EXCEPTIONSORTER_PROPERTIES);
+        final Extension staleConnectionChecker = extractExtension(dataSourceNode, STALECONNECTIONCHECKERCLASSNAME,
                 STALECONNECTIONCHECKER_PROPERTIES);
-        final Extension validConnectionChecker = extractExtension(operationContext, dataSourceNode, VALIDCONNECTIONCHECKERCLASSNAME,
+        final Extension validConnectionChecker = extractExtension(dataSourceNode, VALIDCONNECTIONCHECKERCLASSNAME,
                 VALIDCONNECTIONCHECKER_PROPERTIES);
 
         Long backgroundValidationMillis = getLongIfSetOrGetDefault(dataSourceNode, BACKGROUNDVALIDATIONMILLIS, null);
@@ -199,13 +199,13 @@ class DataSourceModelNodeUtil {
         final Map<String, String> xaDataSourceProperty;
         xaDataSourceProperty = Collections.emptyMap();
 
-        final String xaDataSourceClass = getStringIfSetOrGetDefault(operationContext, dataSourceNode, XADATASOURCECLASS, null);
-        final String jndiName = getStringIfSetOrGetDefault(operationContext, dataSourceNode, JNDINAME, null);
-        final String module = getStringIfSetOrGetDefault(operationContext, dataSourceNode, DATASOURCE_DRIVER, null);
-        final String newConnectionSql = getStringIfSetOrGetDefault(operationContext, dataSourceNode, NEW_CONNECTION_SQL, null);
+        final String xaDataSourceClass = getStringIfSetOrGetDefault(dataSourceNode, XADATASOURCECLASS, null);
+        final String jndiName = getStringIfSetOrGetDefault(dataSourceNode, JNDINAME, null);
+        final String module = getStringIfSetOrGetDefault(dataSourceNode, DATASOURCE_DRIVER, null);
+        final String newConnectionSql = getStringIfSetOrGetDefault(dataSourceNode, NEW_CONNECTION_SQL, null);
         final String poolName = dsName;
-        final String urlDelimiter = getStringIfSetOrGetDefault(operationContext, dataSourceNode, URL_DELIMITER, null);
-        final String urlSelectorStrategyClassName = getStringIfSetOrGetDefault(operationContext, dataSourceNode,
+        final String urlDelimiter = getStringIfSetOrGetDefault(dataSourceNode, URL_DELIMITER, null);
+        final String urlSelectorStrategyClassName = getStringIfSetOrGetDefault(dataSourceNode,
                 URL_SELECTOR_STRATEGY_CLASS_NAME, null);
         final Boolean useJavaContext = getBooleanIfSetOrGetDefault(dataSourceNode, USE_JAVA_CONTEXT, Defaults.USE_JAVA_CONTEXT);
         final Boolean enabled = getBooleanIfSetOrGetDefault(dataSourceNode, ENABLED, Defaults.ENABLED);
@@ -224,11 +224,11 @@ class DataSourceModelNodeUtil {
         final CommonXaPool xaPool = new CommonXaPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy,
                 isSameRmOverride, interleaving, padXid, wrapXaDataSource, noTxSeparatePool);
 
-        final String username = getStringIfSetOrGetDefault(operationContext, dataSourceNode, USERNAME, null);
-        final String password = getStringIfSetOrGetDefault(operationContext, dataSourceNode, PASSWORD, null);
-        final String securityDomain = getStringIfSetOrGetDefault(operationContext, dataSourceNode, SECURITY_DOMAIN, null);
+        final String username = getStringIfSetOrGetDefault(dataSourceNode, USERNAME, null);
+        final String password = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, PASSWORD, null);
+        final String securityDomain = getStringIfSetOrGetDefault(dataSourceNode, SECURITY_DOMAIN, null);
 
-        final Extension reauthPlugin = extractExtension(operationContext, dataSourceNode, REAUTHPLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES);
+        final Extension reauthPlugin = extractExtension(dataSourceNode, REAUTHPLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES);
 
         final DsSecurity security = new DsSecurityImpl(username, password, securityDomain, reauthPlugin);
 
@@ -251,12 +251,12 @@ class DataSourceModelNodeUtil {
                 allocationRetryWaitMillis, xaResourceTimeout, setTxQuertTimeout, queryTimeout, useTryLock);
         final TransactionIsolation transactionIsolation = dataSourceNode.hasDefined(TRANSACTION_ISOLATION.getName()) ? TransactionIsolation
                 .valueOf(dataSourceNode.get(TRANSACTION_ISOLATION.getName()).asString()) : null;
-        final String checkValidConnectionSql = getStringIfSetOrGetDefault(operationContext, dataSourceNode, CHECKVALIDCONNECTIONSQL, null);
+        final String checkValidConnectionSql = getStringIfSetOrGetDefault(dataSourceNode, CHECKVALIDCONNECTIONSQL, null);
 
-        final Extension exceptionSorter = extractExtension(operationContext, dataSourceNode, EXCEPTIONSORTERCLASSNAME, EXCEPTIONSORTER_PROPERTIES);
-        final Extension staleConnectionChecker = extractExtension(operationContext, dataSourceNode, STALECONNECTIONCHECKERCLASSNAME,
+        final Extension exceptionSorter = extractExtension(dataSourceNode, EXCEPTIONSORTERCLASSNAME, EXCEPTIONSORTER_PROPERTIES);
+        final Extension staleConnectionChecker = extractExtension(dataSourceNode, STALECONNECTIONCHECKERCLASSNAME,
                 STALECONNECTIONCHECKER_PROPERTIES);
-        final Extension validConnectionChecker = extractExtension(operationContext, dataSourceNode, VALIDCONNECTIONCHECKERCLASSNAME,
+        final Extension validConnectionChecker = extractExtension(dataSourceNode, VALIDCONNECTIONCHECKERCLASSNAME,
                 VALIDCONNECTIONCHECKER_PROPERTIES);
 
         Long backgroundValidationMillis = getLongIfSetOrGetDefault(dataSourceNode, BACKGROUNDVALIDATIONMILLIS, null);
@@ -268,9 +268,9 @@ class DataSourceModelNodeUtil {
         final Validation validation = new ValidationImpl(backgroundValidation, backgroundValidationMillis, useFastFail,
                 validConnectionChecker, checkValidConnectionSql, validateOnMatch, staleConnectionChecker, exceptionSorter);
 
-        final String recoveryUsername = getStringIfSetOrGetDefault(operationContext, dataSourceNode, RECOVERY_USERNAME, null);
-        final String recoveryPassword = getStringIfSetOrGetDefault(operationContext, dataSourceNode, RECOVERY_PASSWORD, null);
-        final String recoverySecurityDomain = getStringIfSetOrGetDefault(operationContext, dataSourceNode, RECOVERY_SECURITY_DOMAIN, null);
+        final String recoveryUsername = getStringIfSetOrGetDefault(dataSourceNode, RECOVERY_USERNAME, null);
+        final String recoveryPassword = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, RECOVERY_PASSWORD, null);
+        final String recoverySecurityDomain = getStringIfSetOrGetDefault(dataSourceNode, RECOVERY_SECURITY_DOMAIN, null);
         Boolean noRecovery = getBooleanIfSetOrGetDefault(dataSourceNode, NO_RECOVERY, null);
 
         Recovery recovery = null;
@@ -280,7 +280,7 @@ class DataSourceModelNodeUtil {
             if ((recoveryUsername != null && recoveryPassword != null) || recoverySecurityDomain != null)
                credential = new CredentialImpl(recoveryUsername, recoveryPassword, recoverySecurityDomain);
 
-            Extension recoverPlugin = extractExtension(operationContext, dataSourceNode, RECOVERLUGIN_CLASSNAME, RECOVERLUGIN_PROPERTIES);
+            Extension recoverPlugin = extractExtension(dataSourceNode, RECOVERLUGIN_CLASSNAME, RECOVERLUGIN_PROPERTIES);
 
             if (noRecovery == null)
                 noRecovery = Boolean.FALSE;
@@ -360,31 +360,29 @@ class DataSourceModelNodeUtil {
         }
     }
 
-//    private static String getResolvedStringIfSetOrGetDefault(final OperationContext context, final ModelNode dataSourceNode, final SimpleAttributeDefinition key, final String defaultValue) throws OperationFailedException {
-//        if (dataSourceNode.hasDefined(key.getName())) {
-//            return context.resolveExpressions(dataSourceNode.get(key.getName())).asString();
-//        } else {
-//            return defaultValue;
-//        }
-//    }
-
-    private static String getStringIfSetOrGetDefault(final OperationContext context, final ModelNode dataSourceNode, final SimpleAttributeDefinition key, final String defaultValue) throws OperationFailedException {
+    private static String getResolvedStringIfSetOrGetDefault(final OperationContext context, final ModelNode dataSourceNode, final SimpleAttributeDefinition key, final String defaultValue) throws OperationFailedException {
         if (dataSourceNode.hasDefined(key.getName())) {
-            String returnValue = key.isAllowExpression() ?
-                    context.resolveExpressions(dataSourceNode.get(key.getName())).asString() :
-                    dataSourceNode.get(key.getName()).asString();
+            return context.resolveExpressions(dataSourceNode.get(key.getName())).asString();
+        } else {
+            return defaultValue;
+        }
+    }
+
+    private static String getStringIfSetOrGetDefault(final ModelNode dataSourceNode, final SimpleAttributeDefinition key, final String defaultValue) {
+        if (dataSourceNode.hasDefined(key.getName())) {
+            String returnValue = dataSourceNode.get(key.getName()).asString();
             return (returnValue != null && returnValue.trim().length() != 0) ? returnValue : null;
         } else {
             return defaultValue;
         }
     }
 
-    private static Extension extractExtension(final OperationContext context, final ModelNode dataSourceNode, final SimpleAttributeDefinition className, final SimpleAttributeDefinition propertyName)
-            throws ValidateException, OperationFailedException {
+    private static Extension extractExtension(final ModelNode dataSourceNode, final SimpleAttributeDefinition className, final SimpleAttributeDefinition propertyName)
+            throws ValidateException {
         if (dataSourceNode.hasDefined(className.getName())) {
             String exceptionSorterClassName = dataSourceNode.get(className.getName()).asString();
 
-            getStringIfSetOrGetDefault(context, dataSourceNode, className, null);
+            getStringIfSetOrGetDefault(dataSourceNode, className, null);
 
             Map<String, String> exceptionSorterProperty = null;
             if (dataSourceNode.hasDefined(propertyName.getName())) {
