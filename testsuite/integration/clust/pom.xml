@@ -117,7 +117,7 @@
                                 <configuration>
                                     <!-- Tests to execute. -->
                                     <includes>
-                                        <include>org/jboss/as/test/clustering/single/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/clustering/single/web/*TestCase.java</include>
                                     </includes>
 
                                     <!-- Parameters to test cases. -->
@@ -144,6 +144,82 @@
                                         <arquillian.launch>clustering-udp</arquillian.launch>
                                         <!-- Use combine.children="append" to pick up parent properties automatically. -->
                                         <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        
+        <profile>
+            <id>clustering.integration.tests.jdbc.cachestore.profile</id>
+            <activation>
+                <property>
+                    <name>!ts.noClustering</name>
+                </property>
+            </activation>
+            
+            <!--
+                Server configuration executions.
+            -->
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions combine.children="append">
+                            <execution>
+                                <id>build-clustering.server.jdbc.store.enabled</id>
+                                <phase>process-test-resources</phase>
+                                <goals><goal>run</goal></goals>
+                                <configuration>
+                                    <target>
+                                        <echo>In Maven: node0: ${node0}</echo>
+                                        <!-- Build the UDP server configs in target/ . -->
+                                        <ant antfile="${basedir}/../src/test/scripts/clustering-build.xml">
+                                            <property name="node0" value="${node0}"/> <!-- inheritAll="true" doesn't work. -->
+                                            <property name="cache.container.def" value="${basedir}/src/test/config/ispn/cache-container-with-jdbc-store.xml"/>
+                                            <target name="build-clustering-udp-jdbc-store"/>
+                                        </ant>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!--
+                       Surefire test executions.
+                    -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions combine.children="append">
+
+                            <!-- Disable default-test execution. -->
+                            <execution>
+                                <id>default-test</id>
+                                <goals><goal>test</goal></goals>
+                                <phase>none</phase>
+                            </execution>
+
+                            <!-- Single node clustering tests. -->
+                            <execution>
+                                <id>tests-clustering-single-node-jdbc-store.surefire</id>
+                                <phase>test</phase>
+                                <goals><goal>test</goal></goals>
+                                <configuration>
+                                    <!-- Tests to execute. -->
+                                    <includes>
+                                        <include>org/jboss/as/test/clustering/single/jdbcstore/*TestCase.java</include>
+                                    </includes>
+
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables>
+                                        <arquillian.launch>clustering-udp-single-jdbc-store</arquillian.launch>
+                                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
