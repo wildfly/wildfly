@@ -182,11 +182,20 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
         this.addSocketBindingDependency(builder, socketBinding, protocolConfig.getSocketBindingInjector());
 
         Map<String, String> properties = protocolConfig.getProperties();
-        if (protocol.hasDefined(ModelKeys.PROPERTIES)) {
-            for (Property property : protocol.get(ModelKeys.PROPERTIES).asPropertyList()) {
-                properties.put(property.getName(), property.getValue().asString());
+
+        // properties are a child resource of protocol
+        if (protocol.hasDefined(ModelKeys.PROPERTY)) {
+            for (Property property : protocol.get(ModelKeys.PROPERTY).asPropertyList()) {
+                // the format of the property elements
+                //  "property" => {
+                //       "relative-to" => {"value" => "fred"},
+                //   }
+                String propertyName = property.getName();
+                Property complexValue = property.getValue().asProperty();
+                String propertyValue = complexValue.getValue().asString();
+                properties.put(propertyName, propertyValue);
             }
-        }
+       }
     }
 
     private void addSocketBindingDependency(ServiceBuilder<ChannelFactory> builder, String socketBinding, Injector<SocketBinding> injector) {
