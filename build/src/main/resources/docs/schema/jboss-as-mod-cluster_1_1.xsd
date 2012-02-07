@@ -32,20 +32,21 @@
     <xs:complexType name="subsystemType">
         <xs:all minOccurs="0" maxOccurs="1">
             <!-- General config -->
-            <xs:element name="sticky-session" type="sticky-sessionType"/>
-            <xs:element name="advertise" type="advertiseType"/>
-            <xs:element name="proxies" type="proxiesType"/>
-            <xs:element name="contexts" type="contextsType"/>
+            <xs:element name="sticky-session" type="sticky-sessionType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="advertise" type="advertiseType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="proxies" type="proxiesType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="contexts" type="contextsType" minOccurs="0" maxOccurs="1"/>
 
             <!-- Simple load-provider or a dynamic one subsituted elements -->
-            <xs:element ref="any-load-provider"/>
+            <xs:element ref="any-load-provider" minOccurs="0" maxOccurs="1"/>
 
             <!-- SSL configuration -->
-            <xs:element name="ssl" type="sslType"/>
+            <xs:element name="ssl" type="sslType" minOccurs="0" maxOccurs="1"/>
         </xs:all>
     </xs:complexType>
 
     <!-- Load provider definitions -->
+    <xs:element name="any-load-provider" abstract="true" />
     <xs:element name="simple-load-provider" type="simple-load-providerType" substitutionGroup="any-load-provider"/>
     <xs:element name="dynamic-load-provider" type="dynamic-load-providerType" substitutionGroup="any-load-provider"/>
 
