@@ -437,6 +437,10 @@ public class DomainModelControllerService extends AbstractControllerService impl
             serverInventory.serverCommunicationRegistered(serverProcessName, channelHandler);
         }
 
+        public boolean serverReconnected(String serverProcessName, ManagementChannelHandler channelHandler) {
+            return serverInventory.serverReconnected(serverProcessName, channelHandler);
+        }
+
         public void serverProcessAdded(String serverProcessName) {
             serverInventory.serverProcessAdded(serverProcessName);
         }

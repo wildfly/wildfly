@@ -31,11 +31,11 @@ public interface DomainServerProtocol {
     byte SERVER_STARTED_REQUEST = 0x02;
     byte SERVER_RECONNECT_REQUEST = 0x03;
 
-//    byte GET_SERVER_MODEL_REQUEST = 0x20;
-//    byte RETURN_SERVER_MODEL = 0x21;
-//    byte GET_SERVER_MODEL_RESPONSE = 0x22;
 
     byte PARAM_SERVER_NAME = 0x01;
+    byte PARAM_OK = 0x21;
+    byte PARAM_ERROR = 0x22;
+    byte PARAM_RESTART_REQUIRED = 0x22;
     byte GET_FILE_REQUEST = 0x24;
     byte PARAM_FILE_PATH = 0x25;
     byte PARAM_ROOT_ID_FILE = 0x26;

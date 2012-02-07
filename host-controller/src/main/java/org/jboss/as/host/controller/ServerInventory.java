@@ -149,6 +149,18 @@ public interface ServerInventory {
     void serverCommunicationRegistered(String serverProcessName, ManagementChannelHandler channelHandler);
 
     /**
+     * Notification that a server has been reconnected.
+     *
+     * This will also check whether a server is still in sync with the current domain model, or there were updates
+     * while the server was disconnected.
+     *
+     * @param serverProcessName the name of the server process
+     * @param channelHandler mgmt channel handler for communication with the server
+     * @return {@code true} if the server is still in sync, {@code false} otherwise
+     */
+    boolean serverReconnected(String serverProcessName, ManagementChannelHandler channelHandler);
+
+    /**
      * Notification that the server is started.
      *
      * @param serverProcessName the name of the server process
