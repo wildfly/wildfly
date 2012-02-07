@@ -919,7 +919,15 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
      * @return the CanonicalFile form for the given name.
      */
     private File getFileFromPath(final String path) {
-        return (path != null) ? new File(path) : null;
+        File result = (path != null) ? new File(path) : null;
+        // AS7-1752 see if a non-existent relative path exists relative to the home dir
+        if (result != null && homeDir != null && !result.exists() && !result.isAbsolute()) {
+            File relative = new File(homeDir, path);
+            if (relative.exists()) {
+                result = relative;
+            }
+        }
+        return result;
     }
 
     private static final File[] NO_FILES = new File[0];

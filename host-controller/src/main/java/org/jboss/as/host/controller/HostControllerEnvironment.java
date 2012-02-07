@@ -659,7 +659,15 @@ public class HostControllerEnvironment extends ProcessEnvironment {
      * @return the CanonicalFile form for the given name.
      */
     private File getFileFromProperty(final String name) {
-       String value = hostSystemProperties.get(name);
-       return (value != null) ? new File(value) : null;
+        String value = hostSystemProperties.get(name);
+        File result = (value != null) ? new File(value) : null;
+        // AS7-1752 see if a non-existent relative path exists relative to the home dir
+        if (result != null && homeDir != null && !result.exists() && !result.isAbsolute()) {
+            File relative = new File(homeDir, value);
+            if (relative.exists()) {
+                result = relative;
+            }
+        }
+        return result;
     }
 }
