@@ -30,24 +30,24 @@
     <xs:element name="subsystem" type="subsystemType"/>
 
     <xs:complexType name="subsystemType">
-        <!-- TODO: workaround XSD to not force XSD but use choice inside -->
-        <xs:sequence>
+        <xs:all minOccurs="0" maxOccurs="1">
             <!-- General config -->
-            <xs:element name="sticky-session" type="sticky-sessionType" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="advertise" type="advertiseType" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="proxies" type="proxiesType" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="contexts" type="contextsType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="sticky-session" type="sticky-sessionType"/>
+            <xs:element name="advertise" type="advertiseType"/>
+            <xs:element name="proxies" type="proxiesType"/>
+            <xs:element name="contexts" type="contextsType"/>
 
-            <!-- Simple load-provider or a dynamic one -->
-            <xs:choice minOccurs="0" maxOccurs="1">
-                <xs:element name="simple-load-provider" type="simple-load-providerType"/>
-                <xs:element name="dynamic-load-provider" type="dynamic-load-providerType"/>
-            </xs:choice>
+            <!-- Simple load-provider or a dynamic one subsituted elements -->
+            <xs:element ref="any-load-provider"/>
 
             <!-- SSL configuration -->
-            <xs:element name="ssl" type="sslType" minOccurs="0" maxOccurs="1"/>
-        </xs:sequence>
+            <xs:element name="ssl" type="sslType"/>
+        </xs:all>
     </xs:complexType>
+
+    <!-- Load provider definitions -->
+    <xs:element name="simple-load-provider" type="simple-load-providerType" substitutionGroup="any-load-provider"/>
+    <xs:element name="dynamic-load-provider" type="dynamic-load-providerType" substitutionGroup="any-load-provider"/>
 
     <xs:complexType name="sticky-sessionType">
         <xs:attribute name="enable" type="xs:boolean" use="optional" default="true"/>
@@ -161,10 +161,6 @@
     </xs:complexType>
 
     <xs:simpleType name="excluded-contextsType">
-        <xs:list itemType="xs:string"/>
-    </xs:simpleType>
-
-    <xs:simpleType name="outbound-socket-bindingsType">
         <xs:list itemType="xs:string"/>
     </xs:simpleType>
 
