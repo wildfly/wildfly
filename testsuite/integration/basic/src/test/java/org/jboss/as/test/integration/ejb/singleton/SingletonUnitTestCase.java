@@ -60,24 +60,37 @@ public class SingletonUnitTestCase {
 
     @Test
     public void testSingletonBeanAccess() throws Exception {
-        AccountManager accountManager = (AccountManager) ctx.lookup("java:module/" + AccountManagerBean.class.getSimpleName());
+        AccountManagerBean accountManagerLocal = (AccountManagerBean) ctx.lookup("java:module/" 
+                + AccountManagerBean.class.getSimpleName() + "!" + AccountManagerBean.class.getName());
+        AccountManager accountManagerRemote = (AccountManager) ctx.lookup("java:module/" 
+                + AccountManagerBean.class.getSimpleName() + "!" + AccountManager.class.getName());
 
-        int initialBalance = accountManager.balance();
+        int initialBalance = accountManagerRemote.balance();
         Assert.assertEquals("Unexpected initial balance", 0, initialBalance);
 
         // credit
-        accountManager.credit(100);
+        accountManagerRemote.credit(100);
 
-        AccountManager anotherAccountManagerInstance = (AccountManager) ctx.lookup("java:module/"
-                + AccountManagerBean.class.getSimpleName());
-        int balanceAfterCredit = anotherAccountManagerInstance.balance();
+        AccountManager anotherAccountManagerRemoteInstance = (AccountManager) ctx.lookup("java:module/"
+                + AccountManagerBean.class.getSimpleName() + "!" + AccountManager.class.getName());
+        int balanceAfterCredit = anotherAccountManagerRemoteInstance.balance();
         Assert.assertEquals("Unexpected balance after credit", 100, balanceAfterCredit);
 
         // debit
-        anotherAccountManagerInstance.debit(50);
+        anotherAccountManagerRemoteInstance.debit(50);
+        
+        // checking whether singleton works after throwing exception in a business method
+        // EJB3.1 4.8.4
+        try {
+            accountManagerLocal.throwException();
+        } catch (Exception e) {
+            // it's supposed - OK
+        }
 
-        int balanceAfterDebit = accountManager.balance();
+        int balanceAfterDebit = accountManagerRemote.balance();
         Assert.assertEquals("Unexpected balance after debit", 50, balanceAfterDebit);
-
+        // testing singleton identity - EJB3.1 3.4.7.3
+        Assert.assertFalse(accountManagerRemote.equals(accountManagerLocal));
+        Assert.assertTrue(accountManagerRemote.equals(anotherAccountManagerRemoteInstance));
     }
 }
