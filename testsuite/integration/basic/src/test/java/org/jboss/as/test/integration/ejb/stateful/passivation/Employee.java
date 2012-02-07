@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,37 +22,37 @@
 
 package org.jboss.as.test.integration.ejb.stateful.passivation;
 
+import java.io.Serializable;
+
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
 /**
- * @author <a href="mailto:andrew.rubinger@jboss.org">ALR</a>
+ * Employee entity class
+ *
+ * @author Scott Marlow
  */
-public interface TestPassivationRemote {
-    String EXPECTED_RESULT = "true";
+@Entity
+public class Employee implements Serializable {
+    @Id
+    private int id;
 
-    /**
-     * Returns the expected result exposed as a static final variable by this interface
-     */
-    String returnTrueString();
+    private String name;
 
-    /**
-     * Returns whether or not this instance has been passivated
-     */
-    boolean hasBeenPassivated();
+    public String getName() {
+        return name;
+    }
 
-    /**
-     * Returns whether or not this instance has been activated
-     */
-    boolean hasBeenActivated();
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    /**
-     * returns true if the beans still share the same XPC
-     */
-    boolean isPersistenceContextSame();
+    public int getId() {
 
-    void addEntity(int id, String name);
+        return id;
+    }
 
-
-    /**
-     * Annotate for removing.
-     */
-    void remove();
+    public void setId(int id) {
+        this.id = id;
+    }
 }

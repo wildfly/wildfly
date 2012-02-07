@@ -69,6 +69,7 @@ public class PassivationSucceedsUnitTestCase {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "passivation-test.jar");
         jar.addPackage(PassivationSucceedsUnitTestCase.class.getPackage());
         jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF");
+        jar.addAsManifestResource(PassivationSucceedsUnitTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         log.info(jar.toString(true));
         return jar;
     }
@@ -133,16 +134,21 @@ public class PassivationSucceedsUnitTestCase {
         TestPassivationRemote remote1 = (TestPassivationRemote) ctx.lookup("java:module/" + TestPassivationBean.class.getSimpleName());
         Assert.assertEquals("Returned remote1 result was not expected", TestPassivationRemote.EXPECTED_RESULT,
                 remote1.returnTrueString());
+        remote1.addEntity(1,"Bob");
+        Assert.assertTrue(remote1.isPersistenceContextSame());
 
         TestPassivationRemote remote2 = (TestPassivationRemote) ctx.lookup("java:module/" + TestPassivationBean.class.getSimpleName());
         Assert.assertEquals("Returned remote2 result was not expected", TestPassivationRemote.EXPECTED_RESULT,
                 remote2.returnTrueString());
+        Assert.assertTrue(remote2.isPersistenceContextSame());
 
         //create another bean. This should force the other bean to passivate, as only one bean is allowed in the pool at a time
         ctx.lookup("java:module/" + TestPassivationBean.class.getSimpleName());
 
         Assert.assertTrue("@PrePassivate not called, check cache configuration and client sleep time", remote1.hasBeenPassivated());
         Assert.assertTrue("@PrePassivate not called, check cache configuration and client sleep time", remote2.hasBeenPassivated());
+        Assert.assertTrue(remote1.isPersistenceContextSame());
+        Assert.assertTrue(remote2.isPersistenceContextSame());
 
         remote1.remove();
         remote2.remove();
