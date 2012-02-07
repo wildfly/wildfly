@@ -212,6 +212,13 @@ public class JGroupsDescriptions {
         return op;
     }
 
+    static ModelNode getExportNativeConfigurationDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        final ModelNode op = createOperationDescription(ModelKeys.EXPORT_NATIVE_CONFIGURATION, resources, "jgroups.stack.export-native-configuration");
+        op.get(REQUEST_PROPERTIES).setEmptyObject();
+        return op;
+    }
+
 
     private static ResourceBundle getResources(Locale locale) {
         return ResourceBundle.getBundle(RESOURCE_NAME, (locale == null) ? Locale.getDefault() : locale);

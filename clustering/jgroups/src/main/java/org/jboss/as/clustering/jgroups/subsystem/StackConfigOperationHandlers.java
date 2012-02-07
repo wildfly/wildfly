@@ -1,21 +1,17 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-
-import static org.jboss.as.clustering.jgroups.subsystem.CommonAttributes.PROTOCOL;
 import static org.jboss.as.clustering.jgroups.subsystem.CommonAttributes.PROTOCOL_ATTRIBUTES;
 import static org.jboss.as.clustering.jgroups.subsystem.CommonAttributes.TRANSPORT_ATTRIBUTES;
 import static org.jboss.as.clustering.jgroups.subsystem.CommonAttributes.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Locale;
 
+import org.jboss.as.clustering.jgroups.ChannelFactory;
+import org.jboss.as.clustering.jgroups.JChannelFactory;
+import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -23,17 +19,17 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jgroups.conf.ProtocolConfiguration;
+import org.jgroups.conf.XmlConfigurator;
 
 /**
  * Common code for handling the following stack configuration elements
@@ -78,6 +74,8 @@ public class StackConfigOperationHandlers {
             context.completeStep();
         }
     };
+
+    static final OperationStepHandler EXPORT_NATIVE_CONFIGURATION = new ExportNativeConfiguration();
 
     /**
      * Helper class to process adding nested stack transport configuration element to the stack parent resource.
@@ -256,6 +254,67 @@ public class StackConfigOperationHandlers {
         };
     }
 
+
+    /**
+     * Operation implementation to export a native JGroups configuration.
+     */
+    private static class ExportNativeConfiguration extends AbstractRuntimeOnlyHandler {
+
+        ExportNativeConfiguration() {
+        }
+
+        @Override
+        protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
+
+            ChannelFactory factory = getChannelFactory(context, operation);
+            // need to check for null
+            if (factory == null) {
+                context.getFailureDescription().set("required service ChannelFactoryService is not started");
+                context.completeStep();
+                return;
+            }
+            // get and return the JGroups configuration as a String
+            String config = getNativeJGroupsConfiguration(factory);
+
+            context.getResult().set(config);
+            context.completeStep();
+        }
+
+        public ChannelFactory getChannelFactory(OperationContext context, ModelNode operation) {
+
+            PathAddress stackAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
+            String stackName = stackAddress.getLastElement().getValue();
+            ServiceName factoryServiceName = ChannelFactoryService.getServiceName(stackName);
+
+            // lookup the corresponding ChannelFactoryService
+            ServiceController<?> channelFactoryServiceController = context.getServiceRegistry(false).getService(factoryServiceName);
+
+            if (channelFactoryServiceController.getState() != ServiceController.State.UP) {
+                // need to start the controller and wait for it to start
+                return null ;
+            }
+            ChannelFactory factory = ChannelFactory.class.cast(channelFactoryServiceController.getValue());
+
+            return factory ;
+        }
+
+        private  String getNativeJGroupsConfiguration(ChannelFactory factory) {
+
+            // get the list of protocols from ChannelFactoryService
+            List<ProtocolConfiguration> protocols = ((JChannelFactory) factory).getProtocolStack();
+
+            // use a configurator to transform to XML
+            JGroupsXmlConfigurator configurator = new JGroupsXmlConfigurator(protocols);
+            return configurator.getProtocolStackString(true);
+        }
+    }
+
+    private static class JGroupsXmlConfigurator extends XmlConfigurator {
+
+        protected JGroupsXmlConfigurator(List<ProtocolConfiguration> protocols) {
+            super(protocols);
+        }
+    }
 
     interface SelfRegisteringAttributeHandler extends OperationStepHandler {
         void registerAttributes(final ManagementResourceRegistration registry);
