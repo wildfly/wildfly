@@ -62,13 +62,13 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                 writer.writeAttribute(Attribute.NAME.getLocalName(), containerName);
                 // AS7-3488 make default-cache a non required attribute
                 // this.writeRequired(writer, Attribute.DEFAULT_CACHE, container, ModelKeys.DEFAULT_CACHE);
-                this.writeOptional(writer, Attribute.DEFAULT_CACHE, container, ModelKeys.DEFAULT_CACHE);
                 this.writeAliases(writer, Attribute.ALIASES, container, ModelKeys.ALIASES);
-                this.writeOptional(writer, Attribute.JNDI_NAME, container, ModelKeys.JNDI_NAME);
-                this.writeOptional(writer, Attribute.START, container, ModelKeys.START);
-                this.writeOptional(writer, Attribute.LISTENER_EXECUTOR, container, ModelKeys.LISTENER_EXECUTOR);
+                this.writeOptional(writer, Attribute.DEFAULT_CACHE, container, ModelKeys.DEFAULT_CACHE);
                 this.writeOptional(writer, Attribute.EVICTION_EXECUTOR, container, ModelKeys.EVICTION_EXECUTOR);
+                this.writeOptional(writer, Attribute.JNDI_NAME, container, ModelKeys.JNDI_NAME);
+                this.writeOptional(writer, Attribute.LISTENER_EXECUTOR, container, ModelKeys.LISTENER_EXECUTOR);
                 this.writeOptional(writer, Attribute.REPLICATION_QUEUE_EXECUTOR, container, ModelKeys.REPLICATION_QUEUE_EXECUTOR);
+                this.writeOptional(writer, Attribute.START, container, ModelKeys.START);
 
                 if (container.hasDefined(ModelKeys.TRANSPORT)) {
                     writer.writeStartElement(Element.TRANSPORT.getLocalName());
@@ -102,13 +102,19 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                     if (mode.isClustered()) {
                         if (mode.isDistributed()) {
                             writer.writeStartElement(Element.DISTRIBUTED_CACHE.getLocalName());
+                            // write identifier before other attributes
+                            this.writeRequired(writer, Attribute.NAME, cache, ModelKeys.NAME);
                             this.writeOptional(writer, Attribute.OWNERS, cache, ModelKeys.OWNERS);
                             this.writeOptional(writer, Attribute.VIRTUAL_NODES, cache, ModelKeys.VIRTUAL_NODES);
                             this.writeOptional(writer, Attribute.L1_LIFESPAN, cache, ModelKeys.L1_LIFESPAN);
                         } else if (mode.isInvalidation()) {
                             writer.writeStartElement(Element.INVALIDATION_CACHE.getLocalName());
+                            // write identifier before other attributes
+                            this.writeRequired(writer, Attribute.NAME, cache, ModelKeys.NAME);
                         } else {
                             writer.writeStartElement(Element.REPLICATED_CACHE.getLocalName());
+                            // write identifier before other attributes
+                            this.writeRequired(writer, Attribute.NAME, cache, ModelKeys.NAME);
                         }
                         writer.writeAttribute(Attribute.MODE.getLocalName(), Mode.forCacheMode(mode).name());
                         this.writeOptional(writer, Attribute.QUEUE_SIZE, cache, ModelKeys.QUEUE_SIZE);
@@ -116,8 +122,9 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                         this.writeOptional(writer, Attribute.REMOTE_TIMEOUT, cache, ModelKeys.REMOTE_TIMEOUT);
                     } else {
                         writer.writeStartElement(Element.LOCAL_CACHE.getLocalName());
+                        // write identifier before other attributes
+                        this.writeRequired(writer, Attribute.NAME, cache, ModelKeys.NAME);
                     }
-                    this.writeRequired(writer, Attribute.NAME, cache, ModelKeys.NAME);
                     this.writeOptional(writer, Attribute.START, cache, ModelKeys.START);
                     this.writeOptional(writer, Attribute.BATCHING, cache, ModelKeys.BATCHING);
                     this.writeOptional(writer, Attribute.INDEXING, cache, ModelKeys.INDEXING);

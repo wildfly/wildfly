@@ -33,13 +33,13 @@
             </acceptors>
             <broadcast-groups>
                 <broadcast-group name="groupA">
-                    <broadcast-period>2500</broadcast-period>
-                    <connector-ref>netty</connector-ref>
-                    <connector-ref>netty-throughput</connector-ref>
                     <local-bind-address>localhost</local-bind-address>
                     <local-bind-port>12345</local-bind-port>
                     <group-address>224.0.1.105</group-address>
                     <group-port>23456</group-port>
+                    <broadcast-period>2500</broadcast-period>
+                    <connector-ref>netty</connector-ref>
+                    <connector-ref>netty-throughput</connector-ref>
                 </broadcast-group>
                 <broadcast-group name="groupB">
                     <group-address>224.0.1.105</group-address>
@@ -51,11 +51,11 @@
             </broadcast-groups>
             <discovery-groups>
                 <discovery-group name="groupC">
-                    <refresh-timeout>3500</refresh-timeout>
-                    <initial-wait-timeout>7500</initial-wait-timeout>
                     <local-bind-address>localhost</local-bind-address>
                     <group-address>224.0.1.105</group-address>
                     <group-port>45678</group-port>
+                    <refresh-timeout>3500</refresh-timeout>
+                    <initial-wait-timeout>7500</initial-wait-timeout>
                 </discovery-group>
                 <discovery-group name="groupD">
                     <group-address>224.0.1.105</group-address>

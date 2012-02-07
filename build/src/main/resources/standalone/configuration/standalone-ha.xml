@@ -95,7 +95,6 @@
                 <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true">
                     <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
                     <driver>h2</driver>
-                    <pool></pool>
                     <security>
                         <user-name>sa</user-name>
                         <password>sa</password>
@@ -163,10 +162,10 @@
                 <replicated-cache name="repl" mode="ASYNC" batching="true">
                     <file-store/>
                 </replicated-cache>
+                <replicated-cache name="sso" mode="SYNC" batching="true"/>
                 <distributed-cache name="dist" mode="ASYNC" batching="true">
                     <file-store/>
                 </distributed-cache>
-                <replicated-cache name="sso" mode="SYNC" batching="true"/>
             </cache-container>
             <cache-container name="ejb" aliases="sfsb sfsb-cache" default-cache="repl">
                 <transport lock-timeout="60000"/>
@@ -174,26 +173,26 @@
                     <eviction strategy="LRU"/>
                     <file-store/>
                 </replicated-cache>
+                <!-- Clustered cache used internally by EJB subsytem for managing the client-mapping(s) of
+                the socketbinding referenced by the EJB remoting connector -->
+                <replicated-cache name="remote-connector-client-mappings" mode="SYNC" batching="true"/>
                 <distributed-cache name="dist" mode="ASYNC" batching="true">
                     <eviction strategy="LRU"/>
                     <file-store/>
                 </distributed-cache>
-                <!-- Clustered cache used internally by EJB subsytem for managing the client-mapping(s) of
-                the socketbinding referenced by the EJB remoting connector -->
-                <replicated-cache name="remote-connector-client-mappings" mode="SYNC" batching="true"/>
             </cache-container>
             <cache-container name="hibernate" default-cache="local-query">
                 <transport lock-timeout="60000"/>
-                <invalidation-cache name="entity" mode="SYNC">
-                    <transaction mode="NON_XA"/>
-                    <eviction strategy="LRU" max-entries="10000"/>
-                    <expiration max-idle="100000"/>
-                </invalidation-cache>
                 <local-cache name="local-query">
                     <transaction mode="NONE"/>
                     <eviction strategy="LRU" max-entries="10000"/>
                     <expiration max-idle="100000"/>
                 </local-cache>
+                <invalidation-cache name="entity" mode="SYNC">
+                    <transaction mode="NON_XA"/>
+                    <eviction strategy="LRU" max-entries="10000"/>
+                    <expiration max-idle="100000"/>
+                </invalidation-cache>
                 <replicated-cache name="timestamps" mode="ASYNC">
                     <transaction mode="NONE"/>
                     <eviction strategy="NONE"/>
@@ -221,7 +220,7 @@
             </default-workmanager>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jdr:1.0"/>
-        <subsystem xmlns="urn:jboss:domain:jgroups:1.0" default-stack="udp">
+        <subsystem xmlns="urn:jboss:domain:jgroups:1.1" default-stack="udp">
             <stack name="udp">
                 <transport type="UDP" socket-binding="jgroups-udp" diagnostics-socket-binding="jgroups-diagnostics"/>
                 <protocol type="PING"/>
@@ -274,29 +273,29 @@
                 <journal-min-files>2</journal-min-files>
 
                 <connectors>
-                   <netty-connector name="netty" socket-binding="messaging"/>
-                   <netty-connector name="netty-throughput" socket-binding="messaging-throughput">
-                      <param key="batch-delay" value="50"/>
-                   </netty-connector>
-                   <in-vm-connector name="in-vm" server-id="0"/>
+                    <netty-connector name="netty" socket-binding="messaging"/>
+                    <netty-connector name="netty-throughput" socket-binding="messaging-throughput">
+                        <param key="batch-delay" value="50"/>
+                    </netty-connector>
+                    <in-vm-connector name="in-vm" server-id="0"/>
                 </connectors>
 
                 <acceptors>
-                   <netty-acceptor name="netty" socket-binding="messaging"/>
-                   <netty-acceptor name="netty-throughput" socket-binding="messaging-throughput">
-                      <param key="batch-delay" value="50"/>
-                      <param key="direct-deliver" value="false"/>
-                   </netty-acceptor>
-                   <in-vm-acceptor name="in-vm" server-id="0"/>
+                    <netty-acceptor name="netty" socket-binding="messaging"/>
+                    <netty-acceptor name="netty-throughput" socket-binding="messaging-throughput">
+                        <param key="batch-delay" value="50"/>
+                        <param key="direct-deliver" value="false"/>
+                    </netty-acceptor>
+                    <in-vm-acceptor name="in-vm" server-id="0"/>
                 </acceptors>
 
                 <security-settings>
-                   <security-setting match="#">
+                    <security-setting match="#">
                         <permission type="send" roles="guest"/>
                         <permission type="consume" roles="guest"/>
                         <permission type="createNonDurableQueue" roles="guest"/>
                         <permission type="deleteNonDurableQueue" roles="guest"/>
-                   </security-setting>
+                    </security-setting>
                 </security-settings>
 
                 <address-settings>
@@ -306,46 +305,46 @@
                         <expiry-address>jms.queue.ExpiryQueue</expiry-address>
                         <redelivery-delay>0</redelivery-delay>
                         <max-size-bytes>10485760</max-size-bytes>
-                        <message-counter-history-day-limit>10</message-counter-history-day-limit>
                         <address-full-policy>BLOCK</address-full-policy>
+                        <message-counter-history-day-limit>10</message-counter-history-day-limit>
                     </address-setting>
                 </address-settings>
 
                 <!--JMS Stuff-->
                 <jms-connection-factories>
-                  <connection-factory name="InVmConnectionFactory">
-                      <connectors>
-                          <connector-ref connector-name="in-vm"/>
-                      </connectors>
-                      <entries>
-                          <entry name="java:/ConnectionFactory"/>
-                      </entries>
-                  </connection-factory>
-                  <connection-factory name="RemoteConnectionFactory">
-                      <connectors>
-                          <connector-ref connector-name="netty"/>
-                      </connectors>
-                      <entries>
-                          <entry name="RemoteConnectionFactory"/>
-                      </entries>
-                  </connection-factory>
-                  <pooled-connection-factory name="hornetq-ra">
-                      <transaction mode="xa"/>
-                      <connectors>
-                          <connector-ref connector-name="in-vm"/>
-                      </connectors>
-                      <entries>
-                          <entry name="java:/JmsXA"/>
-                      </entries>
+                    <connection-factory name="InVmConnectionFactory">
+                        <connectors>
+                            <connector-ref connector-name="in-vm"/>
+                        </connectors>
+                        <entries>
+                            <entry name="java:/ConnectionFactory"/>
+                        </entries>
+                    </connection-factory>
+                    <connection-factory name="RemoteConnectionFactory">
+                        <connectors>
+                            <connector-ref connector-name="netty"/>
+                        </connectors>
+                        <entries>
+                            <entry name="RemoteConnectionFactory"/>
+                        </entries>
+                    </connection-factory>
+                    <pooled-connection-factory name="hornetq-ra">
+                        <transaction mode="xa"/>
+                        <connectors>
+                            <connector-ref connector-name="in-vm"/>
+                        </connectors>
+                        <entries>
+                            <entry name="java:/JmsXA"/>
+                        </entries>
                     </pooled-connection-factory>
                 </jms-connection-factories>
 
                 <jms-destinations>
                     <jms-queue name="testQueue">
-                       <entry name="queue/test"/>
+                        <entry name="queue/test"/>
                     </jms-queue>
                     <jms-topic name="testTopic">
-                       <entry name="topic/test"/>
+                        <entry name="topic/test"/>
                     </jms-topic>
                 </jms-destinations>
             </hornetq-server>
@@ -397,7 +396,7 @@
         <subsystem xmlns="urn:jboss:domain:transactions:1.1">
             <core-environment>
                 <process-id>
-                    <uuid />
+                    <uuid/>
                 </process-id>
             </core-environment>
             <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
@@ -406,8 +405,8 @@
         <subsystem xmlns="urn:jboss:domain:web:1.1" default-virtual-server="default-host">
             <connector name="http" protocol="HTTP/1.1" scheme="http" socket-binding="http"/>
             <virtual-server name="default-host" enable-welcome-root="true">
-               <alias name="localhost"/>
-               <alias name="example.com"/>
+                <alias name="localhost"/>
+                <alias name="example.com"/>
             </virtual-server>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:webservices:1.1">
@@ -458,4 +457,3 @@
         </outbound-socket-binding>
     </socket-binding-group>
 </server>
-

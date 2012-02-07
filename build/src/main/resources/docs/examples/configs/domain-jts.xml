@@ -82,7 +82,6 @@
                     <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true">
                         <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
                         <driver>h2</driver>
-                        <pool></pool>
                         <security>
                             <user-name>sa</user-name>
                             <password>sa</password>
@@ -154,7 +153,7 @@
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jacorb:1.1">
                 <orb>
-                    <initializers transactions="on" security="on"/>
+                    <initializers security="on" transactions="on"/>
                 </orb>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
@@ -227,8 +226,8 @@
                             <expiry-address>jms.queue.ExpiryQueue</expiry-address>
                             <redelivery-delay>0</redelivery-delay>
                             <max-size-bytes>10485760</max-size-bytes>
-                            <message-counter-history-day-limit>10</message-counter-history-day-limit>
                             <address-full-policy>BLOCK</address-full-policy>
+                            <message-counter-history-day-limit>10</message-counter-history-day-limit>
                         </address-setting>
                     </address-settings>
 
@@ -303,13 +302,12 @@
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:threads:1.1"/>
             <subsystem xmlns="urn:jboss:domain:transactions:1.1">
-                <recovery-environment socket-binding="txn-recovery-environment"
-                                      status-socket-binding="txn-status-manager"/>
                 <core-environment>
                     <process-id>
                         <uuid/>
                     </process-id>
                 </core-environment>
+                <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
                 <coordinator-environment default-timeout="300"/>
                 <jts/>
             </subsystem>
@@ -377,7 +375,6 @@
                     <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true">
                         <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
                         <driver>h2</driver>
-                        <pool></pool>
                         <security>
                             <user-name>sa</user-name>
                             <password>sa</password>
@@ -443,10 +440,10 @@
                     <replicated-cache name="repl" mode="ASYNC" batching="true">
                         <file-store/>
                     </replicated-cache>
+                    <replicated-cache name="sso" mode="SYNC" batching="true"/>
                     <distributed-cache name="dist" mode="ASYNC" batching="true">
                         <file-store/>
                     </distributed-cache>
-                    <replicated-cache name="sso" mode="SYNC" batching="true"/>
                 </cache-container>
                 <cache-container name="ejb" aliases="sfsb sfsb-cache" default-cache="repl">
                     <transport lock-timeout="60000"/>
@@ -458,14 +455,14 @@
                 </cache-container>
                 <cache-container name="hibernate" default-cache="local-query">
                     <transport lock-timeout="60000"/>
-                    <invalidation-cache name="entity" mode="SYNC">
-                        <eviction strategy="LRU" max-entries="10000"/>
-                        <expiration max-idle="100000"/>
-                    </invalidation-cache>
                     <local-cache name="local-query">
                         <eviction strategy="LRU" max-entries="10000"/>
                         <expiration max-idle="100000"/>
                     </local-cache>
+                    <invalidation-cache name="entity" mode="SYNC">
+                        <eviction strategy="LRU" max-entries="10000"/>
+                        <expiration max-idle="100000"/>
+                    </invalidation-cache>
                     <replicated-cache name="timestamps" mode="ASYNC">
                         <eviction strategy="NONE"/>
                     </replicated-cache>
@@ -492,7 +489,7 @@
                 </default-workmanager>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jdr:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:jgroups:1.0" default-stack="udp">
+            <subsystem xmlns="urn:jboss:domain:jgroups:1.1" default-stack="udp">
                 <stack name="udp">
                     <transport type="UDP" socket-binding="jgroups-udp" diagnostics-socket-binding="jgroups-diagnostics"/>
                     <protocol type="PING"/>
@@ -530,7 +527,7 @@
                 <show-model value="true"/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jpa:1.0">
-                 <jpa default-datasource=""/>
+                <jpa default-datasource=""/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:mail:1.0">
                 <mail-session jndi-name="java:jboss/mail/Default">
@@ -576,8 +573,8 @@
                             <expiry-address>jms.queue.ExpiryQueue</expiry-address>
                             <redelivery-delay>0</redelivery-delay>
                             <max-size-bytes>10485760</max-size-bytes>
-                            <message-counter-history-day-limit>10</message-counter-history-day-limit>
                             <address-full-policy>BLOCK</address-full-policy>
+                            <message-counter-history-day-limit>10</message-counter-history-day-limit>
                         </address-setting>
                     </address-settings>
 
@@ -653,17 +650,17 @@
                     </security-domain>
                 </security-domains>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:threads:1.0"/>
+            <subsystem xmlns="urn:jboss:domain:threads:1.1"/>
             <subsystem xmlns="urn:jboss:domain:transactions:1.1">
                 <core-environment>
                     <process-id>
-                        <uuid />
+                        <uuid/>
                     </process-id>
                 </core-environment>
                 <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
                 <coordinator-environment default-timeout="300"/>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:web:1.0" default-virtual-server="default-host">
+            <subsystem xmlns="urn:jboss:domain:web:1.1" default-virtual-server="default-host">
                 <connector name="http" protocol="HTTP/1.1" scheme="http" socket-binding="http"/>
                 <virtual-server name="default-host" enable-welcome-root="true">
                     <alias name="localhost"/>
@@ -729,7 +726,7 @@
             <socket-binding name="jmx-connector-server" interface="management" port="1091"/>
             <socket-binding name="messaging" port="5445"/>
             <socket-binding name="messaging-throughput" port="5455"/>
-            <socket-binding name="modcluster" port="0"  multicast-address="224.0.1.105" multicast-port="23364"/>
+            <socket-binding name="modcluster" port="0" multicast-address="224.0.1.105" multicast-port="23364"/>
             <socket-binding name="osgi-http" interface="management" port="8090"/>
             <socket-binding name="remoting" port="4447"/>
             <socket-binding name="txn-recovery-environment" port="4712"/>
@@ -743,13 +740,13 @@
     <server-groups>
         <server-group name="main-server-group" profile="default">
             <jvm name="default">
-               <heap size="64m" max-size="512m"/>
+                <heap size="64m" max-size="512m"/>
             </jvm>
             <socket-binding-group ref="standard-sockets"/>
         </server-group>
         <server-group name="other-server-group" profile="ha">
             <jvm name="default">
-               <heap size="64m" max-size="512m"/>
+                <heap size="64m" max-size="512m"/>
             </jvm>
             <socket-binding-group ref="ha-sockets"/>
         </server-group>

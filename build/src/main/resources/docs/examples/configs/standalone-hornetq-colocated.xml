@@ -91,7 +91,6 @@
                 <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true">
                     <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
                     <driver>h2</driver>
-                    <pool></pool>
                     <security>
                         <user-name>sa</user-name>
                         <password>sa</password>
@@ -104,7 +103,7 @@
                 </drivers>
             </datasources>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:deployment-scanner:1.0">
+        <subsystem xmlns="urn:jboss:domain:deployment-scanner:1.1">
             <deployment-scanner path="deployments" relative-to="jboss.server.base.dir" scan-interval="5000"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:ee:1.0"/>
@@ -163,14 +162,14 @@
                 </local-cache>
             </cache-container>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:jacorb:1.0">
+        <subsystem xmlns="urn:jboss:domain:jacorb:1.1">
             <orb name="JBoss" print-version="off" giop-minor-version="2">
                 <connection max-managed-buf-size="24" outbuf-cache-timeout="-1"/>
-                <naming root-context="JBoss/Naming/root" export-corbaloc="on"/>
             </orb>
             <poa monitoring="off" queue-wait="off">
                 <request-processors pool-size="2" max-threads="8"/>
             </poa>
+            <naming root-context="JBoss/Naming/root" export-corbaloc="on"/>
             <interop sun="on" chunk-custom-rmi-valuetypes="on" strict-check-on-tc-creation="off"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
@@ -206,12 +205,12 @@
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:messaging:1.1">
             <hornetq-server>
-   		        <clustered>true</clustered>
-                <shared-store>true</shared-store>
+                <clustered>true</clustered>
                 <persistence-enabled>true</persistence-enabled>
+                <shared-store>true</shared-store>
+                <journal-type>ASYNCIO</journal-type>
                 <journal-file-size>102400</journal-file-size>
                 <journal-min-files>2</journal-min-files>
-                <journal-type>ASYNCIO</journal-type>
 
                 <connectors>
                     <netty-connector name="netty" socket-binding="messaging"/>
@@ -230,30 +229,30 @@
                     <in-vm-acceptor name="in-vm" server-id="0"/>
                 </acceptors>
 
-               <broadcast-groups>
-                  <broadcast-group name="bg-group1">
-                     <group-address>231.7.7.7</group-address>
-                     <group-port>9876</group-port>
-                     <broadcast-period>5000</broadcast-period>
-                     <connector-ref>netty</connector-ref>
-                  </broadcast-group>
-               </broadcast-groups>
+                <broadcast-groups>
+                    <broadcast-group name="bg-group1">
+                        <group-address>231.7.7.7</group-address>
+                        <group-port>9876</group-port>
+                        <broadcast-period>5000</broadcast-period>
+                        <connector-ref>netty</connector-ref>
+                    </broadcast-group>
+                </broadcast-groups>
 
-               <discovery-groups>
-                  <discovery-group name="dg-group1">
-                     <group-address>231.7.7.7</group-address>
-                     <group-port>9876</group-port>
-                     <refresh-timeout>10000</refresh-timeout>
-                  </discovery-group>
-               </discovery-groups>
+                <discovery-groups>
+                    <discovery-group name="dg-group1">
+                        <group-address>231.7.7.7</group-address>
+                        <group-port>9876</group-port>
+                        <refresh-timeout>10000</refresh-timeout>
+                    </discovery-group>
+                </discovery-groups>
 
-               <cluster-connections>
-                  <cluster-connection name="my-cluster">
-                     <address>jms</address>
-                     <connector-ref>netty</connector-ref>
-                     <discovery-group-ref discovery-group-name="dg-group1"/>
-                  </cluster-connection>
-               </cluster-connections>
+                <cluster-connections>
+                    <cluster-connection name="my-cluster">
+                        <address>jms</address>
+                        <connector-ref>netty</connector-ref>
+                        <discovery-group-ref discovery-group-name="dg-group1"/>
+                    </cluster-connection>
+                </cluster-connections>
 
                 <security-settings>
                     <security-setting match="#">
@@ -271,8 +270,8 @@
                         <expiry-address>jms.queue.ExpiryQueue</expiry-address>
                         <redelivery-delay>0</redelivery-delay>
                         <max-size-bytes>10485760</max-size-bytes>
-                        <message-counter-history-day-limit>10</message-counter-history-day-limit>
                         <address-full-policy>BLOCK</address-full-policy>
+                        <message-counter-history-day-limit>10</message-counter-history-day-limit>
                     </address-setting>
                 </address-settings>
 
@@ -317,15 +316,15 @@
 
             <hornetq-server name="backup-server">
                 <clustered>true</clustered>
+                <persistence-enabled>true</persistence-enabled>
                 <backup>true</backup>
                 <shared-store>true</shared-store>
-                <persistence-enabled>true</persistence-enabled>
+                <journal-type>ASYNCIO</journal-type>
                 <journal-file-size>102400</journal-file-size>
                 <journal-min-files>2</journal-min-files>
-                <journal-type>ASYNCIO</journal-type>
-                <journal-directory path="messagingjournal2"/>
-                <bindings-directory path="messagingbindings2"/>
                 <paging-directory path="messagingpaging2"/>
+                <bindings-directory path="messagingbindings2"/>
+                <journal-directory path="messagingjournal2"/>
                 <large-messages-directory path="messaginglargemessages2"/>
 
                 <connectors>
@@ -388,7 +387,7 @@
             </security-domains>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:threads:1.1"/>
-        <subsystem xmlns="urn:jboss:domain:transactions:1.0">
+        <subsystem xmlns="urn:jboss:domain:transactions:1.1">
             <core-environment>
                 <process-id>
                     <uuid/>
