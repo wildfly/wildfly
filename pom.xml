@@ -4310,6 +4310,7 @@
                     </exclusion>
                 </exclusions>
                 <version>${version.org.jboss.osgi.http}</version>
+                <scope>provided</scope>
             </dependency>
 
             <dependency>
