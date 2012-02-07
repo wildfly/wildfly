@@ -45,6 +45,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
 import org.jboss.as.controller.remote.RemoteProxyController;
 import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
+
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
@@ -669,7 +671,7 @@ class ManagedServer {
             // Reconnect
             final String hostName = InetAddress.getByName(managementSocket.getHostName()).getHostName();
             final int port = managementSocket.getPort();
-            processControllerClient.reconnectProcess(serverProcessName, ProtocolUtils.formatPossibleIpv6Address(hostName), port, bootConfiguration.isManagementSubsystemEndpoint(), authKey);
+            processControllerClient.reconnectProcess(serverProcessName, NetworkUtils.formatPossibleIpv6Address(hostName), port, bootConfiguration.isManagementSubsystemEndpoint(), authKey);
         }
     }
 

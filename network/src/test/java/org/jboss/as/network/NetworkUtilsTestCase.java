@@ -19,7 +19,7 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.protocol.mgmt;
+package org.jboss.as.network;
 
 import junit.framework.Assert;
 
@@ -29,7 +29,7 @@ import org.junit.Test;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class ProtocolUtilsTestCase {
+public class NetworkUtilsTestCase {
 
     @Test
     public void testFormatIPv6Test() {
@@ -47,6 +47,6 @@ public class ProtocolUtilsTestCase {
     }
 
     private void checkEqualFormat(String expected, String input) {
-        Assert.assertEquals(expected, ProtocolUtils.formatPossibleIpv6Address(input));
+        Assert.assertEquals(expected, NetworkUtils.formatPossibleIpv6Address(input));
     }
 }

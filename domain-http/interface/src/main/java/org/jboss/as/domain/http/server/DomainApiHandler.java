@@ -71,7 +71,7 @@ import org.jboss.as.domain.http.server.multipart.MimeHeaderParser;
 import org.jboss.as.domain.http.server.security.SubjectAssociationHandler;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.security.DomainCallbackHandler;
-import org.jboss.as.protocol.mgmt.ProtocolUtils;
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.com.sun.net.httpserver.Authenticator;
 import org.jboss.com.sun.net.httpserver.Filter;
 import org.jboss.com.sun.net.httpserver.Headers;
@@ -157,7 +157,7 @@ class DomainApiHandler implements ManagementHttpHandler {
             String origin = headers.getFirst(ORIGIN);
             String host = headers.getFirst(HOST);
             String protocol = http.getHttpContext().getServer() instanceof HttpServer ? HTTP : HTTPS;
-            String allowedOrigin = protocol + "://" + ProtocolUtils.formatPossibleIpv6Address(host);
+            String allowedOrigin = protocol + "://" + NetworkUtils.formatPossibleIpv6Address(host);
 
             // This will reject multi-origin Origin headers due to the exact match.
             if (origin.equals(allowedOrigin) == false) {

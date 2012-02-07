@@ -202,7 +202,7 @@ public class ManagementClient {
             portOp.get(NAME).set("bound-port");
             final int port = executeForResult(portOp).asInt();
 
-            return URI.create(socketBinding + "://" + ProtocolUtils.formatPossibleIpv6Address(ip) + ":" + port);
+            return URI.create(socketBinding + "://" + NetworkUtils.formatPossibleIpv6Address(ip) + ":" + port);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -327,7 +327,7 @@ public class ManagementClient {
 
     private JMXServiceURL getRemoteJMXURL() {
         try {
-            return new JMXServiceURL("service:jmx:remoting-jmx://" + ProtocolUtils.formatPossibleIpv6Address(mgmtAddress) + ":" + mgmtPort);
+            return new JMXServiceURL("service:jmx:remoting-jmx://" + NetworkUtils.formatPossibleIpv6Address(mgmtAddress) + ":" + mgmtPort);
         } catch (Exception e) {
             throw new RuntimeException("Could not create JMXServiceURL:" + this, e);
         }

@@ -53,7 +53,7 @@ public final class MBeanServerConnectionProvider {
 
     public MBeanServerConnection getConnection() {
         String host = hostAddr.getHostAddress();
-        String urlString = System.getProperty("jmx.service.url", "service:jmx:rmi:///jndi/rmi://" + ProtocolUtils.formatPossibleIpv6Address(host) + ":" + port + "/jmxrmi");
+        String urlString = System.getProperty("jmx.service.url", "service:jmx:rmi:///jndi/rmi://" + NetworkUtils.formatPossibleIpv6Address(host) + ":" + port + "/jmxrmi");
         try {
             if (jmxConnector == null) {
                 log.debug("Connecting JMXConnector to: " + urlString);

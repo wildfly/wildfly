@@ -34,6 +34,7 @@ import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
@@ -96,7 +97,7 @@ public class JdrReportService implements JdrReportCollector, Service<JdrReportCo
         boolean must_auth = false;
 
         try {
-            URL managementApi = new URL("http://" + ProtocolUtils.formatPossibleIpv6Address(host) + ":" + port + "/management");
+            URL managementApi = new URL("http://" + NetworkUtils.formatPossibleIpv6Address(host) + ":" + port + "/management");
             HttpURLConnection conn = (HttpURLConnection) managementApi.openConnection();
             int code = conn.getResponseCode();
             if (code != 200) {
