@@ -23,7 +23,10 @@
 package org.jboss.as.ejb3.cache.impl.backing;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -51,7 +54,16 @@ import org.jboss.ejb.client.NodeAffinity;
  */
 public class SimpleBackingCacheEntryStore<K extends Serializable, V extends Cacheable<K>, E extends BackingCacheEntry<K, V>> extends AbstractBackingCacheEntryStore<K, V, E> {
     private final PersistentObjectStore<K, E> store;
-    private final Map<K, E> cache = new ConcurrentHashMap<K, E>();
+    private final Map<K, EntryHolder> cache = new ConcurrentHashMap<K, EntryHolder>();
+
+
+    /**
+     * SORTED SETS COMPARE FOR EQUALITY USING Comparable
+     * not equals()/hashCode()
+     * <p/>
+     * This means that when removing from this set you MUST use the timestamp that is stored in {@link #cache}, otherwise
+     * nothing will be removed.
+     */
     private final SortedSet<CacheableTimestamp<K>> entries = new ConcurrentSkipListSet<CacheableTimestamp<K>>();
     private final ServerEnvironment environment;
 
@@ -86,25 +98,44 @@ public class SimpleBackingCacheEntryStore<K extends Serializable, V extends Cach
 
     @Override
     public E get(K key, boolean lock) {
-        E entry = cache.get(key);
-        if (entry == null) {
-            entry = store.load(key);
-            if (entry != null) {
-                cache.put(key, entry);
-                this.add(entry);
+        EntryHolder holder = cache.get(key);
+        if (holder == null) {
+            E value = store.load(key);
+            if (value != null) {
+                CacheableTimestamp<K> timestamp = new CacheableTimestamp<K>(value);
+                cache.put(key, new EntryHolder(value, timestamp));
+                this.entries.add(timestamp);
             }
+            return value;
         }
-        return entry;
+        return holder.value;
     }
 
     @Override
-    public void insert(E entry) {
+    public Set<K> insert(E entry) {
         K key = entry.getId();
         if (cache.containsKey(key)) {
             throw EjbMessages.MESSAGES.duplicateCacheEntry(key);
         }
-        cache.put(key, entry);
-        this.add(entry);
+        CacheableTimestamp<K> timestamp = new CacheableTimestamp<K>(entry);
+        cache.put(key, new EntryHolder(entry, timestamp));
+        this.entries.add(timestamp);
+        final Set<K> toPassivate = new HashSet<K>();
+        int maxSize = this.getConfig().getMaxSize();
+        int thisSize = cache.size();
+        if (thisSize > maxSize) {
+            int remaining = thisSize - maxSize;
+            final Iterator<CacheableTimestamp<K>> iterator = this.entries.iterator();
+            while (remaining > 0 && iterator.hasNext()) {
+                // Passivate the oldest
+                final EntryHolder holder = this.cache.get(iterator.next().getId());
+                if (holder != null && !holder.value.getId().equals(timestamp.getId()) && !holder.value.isInUse()) {
+                    remaining--;
+                    toPassivate.add(holder.value.getId());
+                }
+            }
+        }
+        return toPassivate;
     }
 
     @Override
@@ -122,8 +153,10 @@ public class SimpleBackingCacheEntryStore<K extends Serializable, V extends Cach
         synchronized (entry) {
             K key = entry.getId();
             store.store(entry);
-            cache.remove(key);
-            this.remove(entry);
+            EntryHolder holder = cache.remove(key);
+            if (holder != null) {
+                this.remove(holder.timestamp);
+            }
         }
     }
 
@@ -131,38 +164,26 @@ public class SimpleBackingCacheEntryStore<K extends Serializable, V extends Cach
     public E remove(K id) {
         E entry = get(id, false);
         if (entry != null) {
-            cache.remove(id);
-            this.remove(entry);
+            EntryHolder holder = cache.remove(id);
+            if (holder != null) {
+                this.remove(holder.timestamp);
+            }
         }
         return entry;
     }
 
-    private void remove(E entry) {
-        this.entries.remove(new CacheableTimestamp<K>(entry));
+    private void remove(CacheableTimestamp<K> timestamp) {
+        this.entries.remove(timestamp);
     }
 
     private void update(E entry) {
         CacheableTimestamp<K> timestamp = new CacheableTimestamp<K>(entry);
-        this.entries.remove(timestamp);
-        this.add(timestamp);
-    }
-
-    private void add(E entry) {
-        CacheableTimestamp<K> timestamp = new CacheableTimestamp<K>(entry);
-        this.add(timestamp);
-    }
-
-    private void add(CacheableTimestamp<K> timestamp) {
-        this.entries.remove(timestamp);
-        this.entries.add(timestamp);
-        int maxSize = this.getConfig().getMaxSize();
-        while (this.entries.size() > maxSize) {
-            // Passivate the oldest
-            E entry = this.cache.get(this.entries.first().getId());
-            if (entry != null) {
-                this.passivate(entry);
-            }
+        final EntryHolder holder = cache.get(entry.getId());
+        if (holder != null) {
+            this.entries.remove(holder.timestamp);
         }
+        cache.put(entry.getId(), new EntryHolder(entry, timestamp));
+        this.entries.add(timestamp);
     }
 
     @Override
@@ -181,5 +202,15 @@ public class SimpleBackingCacheEntryStore<K extends Serializable, V extends Cach
             return ((BackingCacheEntryStore<?, ?, ?>) other).isClustered() == false;
         }
         return false;
+    }
+
+    private final class EntryHolder {
+        private final CacheableTimestamp<K> timestamp;
+        private final E value;
+
+        private EntryHolder(final E value, final CacheableTimestamp<K> timestamp) {
+            this.value = value;
+            this.timestamp = timestamp;
+        }
     }
 }

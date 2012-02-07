@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.cache.impl.backing;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -113,7 +114,14 @@ public class PassivatingBackingCacheImpl<K extends Serializable, V extends Cache
     @Override
     public E create() {
         E obj = entryFactory.createEntry(factory.createInstance());
-        store.insert(obj);
+        final Set<K> toPassivate = store.insert(obj);
+        for(K i : toPassivate) {
+            try {
+                passivate(i);
+            } catch (Exception e) {
+                EjbLogger.EJB3_LOGGER.debug("passivation failed", e);
+            }
+        }
         return obj;
     }
 

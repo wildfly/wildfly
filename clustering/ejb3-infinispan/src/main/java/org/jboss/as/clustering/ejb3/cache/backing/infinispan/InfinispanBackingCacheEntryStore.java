@@ -24,9 +24,11 @@ package org.jboss.as.clustering.ejb3.cache.backing.infinispan;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
@@ -140,7 +142,7 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
     }
 
     @Override
-    public void insert(E entry) {
+    public Set<K> insert(E entry) {
         K id = entry.getId();
         this.trace("insert(%s)", id);
         final MarshalledValue<K, C> key = this.marshalKey(id);
@@ -159,6 +161,7 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
         } finally {
             this.releaseSessionOwnership(key, false);
         }
+        return Collections.emptySet();
     }
 
     @Override
