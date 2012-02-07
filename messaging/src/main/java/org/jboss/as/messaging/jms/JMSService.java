@@ -71,7 +71,11 @@ public class JMSService implements Service<JMSServerManager> {
                 final ClassLoader loader = getClass().getClassLoader();
                 SecurityActions.setContextClassLoader(loader);
                 jmsServer.start();
-                hornetQServer.getValue().getRemotingService().allowInvmSecurityOverride(new HornetQPrincipal(HornetQDefaultCredentials.getUsername(), HornetQDefaultCredentials.getPassword()));
+
+                // FIXME - this check is a work-around for AS7-3658
+                if (!hornetQServer.getValue().getConfiguration().isBackup()) {
+                    hornetQServer.getValue().getRemotingService().allowInvmSecurityOverride(new HornetQPrincipal(HornetQDefaultCredentials.getUsername(), HornetQDefaultCredentials.getPassword()));
+                }
             } finally {
                 SecurityActions.setContextClassLoader(null);
             }
