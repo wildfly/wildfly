@@ -32,15 +32,22 @@ import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
+import org.jboss.as.server.ServerMessages;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.Connection;
 import org.xnio.OptionMap;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import javax.security.auth.callback.CallbackHandler;
 import java.io.DataInput;
 import java.io.IOException;
 import java.net.URI;
+import java.security.GeneralSecurityException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -148,7 +155,7 @@ public class HostControllerServerConnection extends ManagementClientChannelStrat
         try {
             // Connect
             final ProtocolChannelClient client = ProtocolChannelClient.create(configuration);
-            connection = client.connectSync(callbackHandler);
+            connection = client.connectSync(callbackHandler, null, getAcceptingSSLContext());
             connection.addCloseHandler(new CloseHandler<Connection>() {
                 @Override
                 public void handleClose(final Connection closed, final IOException exception) {
@@ -179,6 +186,36 @@ public class HostControllerServerConnection extends ManagementClientChannelStrat
                 StreamUtils.safeClose(channel);
                 StreamUtils.safeClose(connection);
             }
+        }
+    }
+
+    private static SSLContext getAcceptingSSLContext() throws IOException {
+        /*
+         * This connection is only a connection back to the local host controller.
+         *
+         * The HostController that started this process will have already provided the
+         * required information regarding the connection so quietly allow the SSL connection
+         * to be established.
+         */
+        try {
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            TrustManager[] trustManagers = new TrustManager[] { new X509TrustManager() {
+                public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
+                }
+
+                public void checkServerTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
+                }
+
+                public X509Certificate[] getAcceptedIssuers() {
+                    return null;
+                }
+            } };
+
+            sslContext.init(null, trustManagers, null);
+
+            return sslContext;
+        } catch (GeneralSecurityException e) {
+            throw ServerMessages.MESSAGES.unableToInitialiseSSLContext(e.getMessage());
         }
     }
 
