@@ -185,6 +185,47 @@
              </move>
         </sequential>
     </macrodef>
+    
+    
+    <!--
+        Add a new cache container to the Infinispan subsystem.
+        The container definition is loaded from a file.
+    -->  
+    <macrodef name="ts.config-as.add-cache-container" description="Add a cache container to the Infinispan subsystem">
+
+        <attribute name="name" default="jbossas"/>
+        <attribute name="output.dir" default="${project.build.directory}"/>
+        <attribute name="config.dir.name" default="standalone/configuration"/>
+        <attribute name="containerdef" default="cache-container.xml"/>
+        
+        <sequential>
+            <echo message="Adding a cache container to Infinispan subsystem for config @{name}"/>
+
+            <!-- Process *.xml to *.xml.mod. -->
+            <xslt destdir="@{output.dir}/@{name}/@{config.dir.name}"
+                  style="${jbossas.ts.integ.dir}/src/test/xslt/addCacheContainer.xsl"
+                  extension=".xml.mod"
+                  useImplicitFileset="false">
+                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
+                    <include name="**/standalone-ha.xml"/>
+                    <include name="**/standalone.xml"/>
+                    <include name="**/standalone-full.xml"/>
+                </fileset>
+                <param name="filename" expression="@{containerdef}"/>
+            </xslt>
+
+            <!-- Move processed files back. -->
+            <move todir="@{output.dir}/@{name}/@{config.dir.name}">
+               <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
+                   <include name="**/standalone-ha.xml.mod"/>
+                   <include name="**/standalone.xml.mod"/>
+                   <include name="**/standalone-full.xml.mod"/>
+               </fileset>
+               <mapper type="glob" from="*.mod" to="*"/>
+             </move>
+        </sequential>
+    </macrodef>
+    
 
 
 
