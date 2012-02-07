@@ -416,6 +416,15 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
             final LocalManagedConnectionFactory managedConnectionFactory = new LocalManagedConnectionFactory();
             managedConnectionFactory.setUserTransactionJndiName("java:comp/UserTransaction");
             managedConnectionFactory.setDriverClass(dataSourceConfig.getDriverClass());
+
+            if (dataSourceConfig.getUrlDelimiter() != null) {
+                try {
+                    managedConnectionFactory.setURLDelimiter(dataSourceConfig.getUrlDelimiter());
+                } catch (Exception e) {
+                    throw MESSAGES.failedToGetUrlDelimiter(e);
+                }
+            }
+
             if (dataSourceConfig.getDataSourceClass() != null) {
                 managedConnectionFactory.setDataSourceClass(dataSourceConfig.getDataSourceClass());
             }
