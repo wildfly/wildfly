@@ -115,19 +115,6 @@ public final class ProtocolUtils {
         return (byte) b;
     }
 
-    public static String formatPossibleIpv6Address(String address) {
-        if (address == null) {
-            return address;
-        }
-        if (!address.contains(":")) {
-            return address;
-        }
-        if (address.startsWith("[") && address.endsWith("]")) {
-            return address;
-        }
-        return "[" + address + "]";
-    }
-
     public static interface ResponseWriter {
 
         ResponseWriter EMPTY = new ResponseWriter() {

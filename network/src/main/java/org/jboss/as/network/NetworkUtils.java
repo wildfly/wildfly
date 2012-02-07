@@ -20,35 +20,16 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller.client.impl;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-
-import org.jboss.as.controller.client.ModelControllerClientConfiguration;
-import org.jboss.as.protocol.ProtocolChannelClient;
-import org.jboss.as.protocol.mgmt.ProtocolUtils;
+package org.jboss.as.network;
 
 /**
- * Transformation class of the model controller client configuration to the
- * underlying protocol configs.
+ * Utility methods related to networking.
  *
- * @author Emanuel Muckenhuber
+ * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-class ProtocolConfigurationFactory {
+public class NetworkUtils {
 
-    static ProtocolChannelClient.Configuration create(final ModelControllerClientConfiguration client) throws URISyntaxException {
-        final ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
-
-        configuration.setUri(new URI("remote://" + formatPossibleIpv6Address(client.getHost()) +  ":" + client.getPort()));
-        final long timeout = client.getConnectionTimeout();
-        if(timeout > 0) {
-            configuration.setConnectionTimeout(timeout);
-        }
-        return configuration;
-    }
-
-    private static String formatPossibleIpv6Address(String address) {
+    public static String formatPossibleIpv6Address(String address) {
         if (address == null) {
             return address;
         }
@@ -61,4 +42,8 @@ class ProtocolConfigurationFactory {
         return "[" + address + "]";
     }
 
+    // No instantiation
+    private NetworkUtils() {
+
+    }
 }

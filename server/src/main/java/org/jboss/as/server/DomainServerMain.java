@@ -34,6 +34,7 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.process.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.as.remoting.EndpointService;
@@ -187,7 +188,7 @@ public final class DomainServerMain {
 
         try {
             final int port = managementSocket.getPort();
-            final String host = ProtocolUtils.formatPossibleIpv6Address(InetAddress.getByName(managementSocket.getHostName()).getHostName());
+            final String host = NetworkUtils.formatPossibleIpv6Address(InetAddress.getByName(managementSocket.getHostName()).getHostName());
             final HostControllerServerClient client = new HostControllerServerClient(serverName, serverProcessName, host, port, authKey);
                     serviceTarget.addService(HostControllerServerClient.SERVICE_NAME, client)
                         .addDependency(endpointName, Endpoint.class, client.getEndpointInjector())
