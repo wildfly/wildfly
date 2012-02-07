@@ -96,12 +96,12 @@ public class NativeManagementWriteAttributeHandler extends AbstractWriteAttribut
     private void installNativeManagementService(final OperationContext context, final ModelNode subModel, final ServiceVerificationHandler verificationHandler) throws OperationFailedException {
 
         // Remove the old connector
-        final ModelNode portNode = NativeManagementResourceDefinition.NATIVE_PORT.resolveModelAttribute(context, subModel);
-        int port = portNode.isDefined() ? portNode.asInt() : 0;
+        final ModelNode socketBinding = NativeManagementResourceDefinition.SOCKET_BINDING.resolveModelAttribute(context, subModel);
+        if(socketBinding == null || !socketBinding.isDefined()) {
+            final ModelNode portNode = NativeManagementResourceDefinition.NATIVE_PORT.resolveModelAttribute(context, subModel);
+        }
         ManagementRemotingServices.removeConnectorServices(context, ManagementRemotingServices.MANAGEMENT_CONNECTOR);
-
         NativeManagementAddHandler.installNativeManagementConnector(context, subModel, ManagementRemotingServices.MANAGEMENT_ENDPOINT, context.getServiceTarget(), verificationHandler, null);
-
     }
 
 
