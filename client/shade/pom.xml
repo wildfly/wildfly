@@ -60,6 +60,11 @@
             <type>pom</type>
         </dependency>
 
+        <dependency>
+            <groupId>org.jboss.remoting3</groupId>
+            <artifactId>remoting-jmx</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>
