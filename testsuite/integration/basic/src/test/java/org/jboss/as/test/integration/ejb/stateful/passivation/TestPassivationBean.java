@@ -26,11 +26,15 @@ import java.util.Random;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.ejb.EJB;
 import javax.ejb.PostActivate;
 import javax.ejb.PrePassivate;
 import javax.ejb.Remote;
 import javax.ejb.Remove;
 import javax.ejb.Stateful;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceContextType;
 
 import org.jboss.ejb3.annotation.Cache;
 import org.jboss.logging.Logger;
@@ -43,7 +47,13 @@ import org.jboss.logging.Logger;
 @Cache("passivating")
 public class TestPassivationBean implements TestPassivationRemote {
     private static final Logger log = Logger.getLogger(TestPassivationBean.class);
-   
+
+    @PersistenceContext(type = PersistenceContextType.EXTENDED)
+    private EntityManager entityManager;
+
+    @EJB
+    private NestledBean nestledBean;
+
     private String identificator;
     private boolean beenPassivated = false;
     private boolean beenActivated = false;
@@ -69,18 +79,37 @@ public class TestPassivationBean implements TestPassivationRemote {
         return this.beenActivated;
     }
 
+    @Override
+    public boolean isPersistenceContextSame() {
+        Employee e2 = nestledBean.get(1);
+        Employee e1 = (Employee) entityManager.createQuery("select e from Employee e where e.id=:id")
+                .setParameter("id", 1)
+                .getSingleResult();
+        return e1 == e2;
+
+    }
+
+    @Override
+    public void addEntity(final int id, final String name) {
+        Employee e = new Employee();
+        e.setName(name);
+        e.setId(id);
+        entityManager.persist(e);
+        entityManager.flush();
+    }
+
     @PostConstruct
     public void postConstruct() {
         Random r = new Random();
         this.identificator = new Integer(r.nextInt(999)).toString();
         log.info("Bean [" +  this.identificator + "] created");
     }
-    
+
     @PreDestroy
     public void preDestroy() {
         log.info("Bean [" +  this.identificator + "] destroyed");
     }
-    
+
     @PrePassivate
     public void setPassivateFlag() {
         log.info(this.toString() + " PrePassivation [" +  this.identificator + "]");
@@ -92,7 +121,7 @@ public class TestPassivationBean implements TestPassivationRemote {
         log.info(this.toString() + " PostActivation [" + this.identificator + "]");
         this.beenActivated = true;
     }
-    
+
     @Remove
     public void remove() {
         log.info("Bean [" +  this.identificator + "] removing");
