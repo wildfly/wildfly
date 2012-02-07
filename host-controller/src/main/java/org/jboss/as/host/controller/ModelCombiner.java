@@ -19,6 +19,8 @@
 package org.jboss.as.host.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
@@ -31,7 +33,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HAS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP_CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_SUBSYSTEM_ENDPOINT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -44,8 +48,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
@@ -202,6 +208,8 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         addPaths(updates);
         addSystemProperties(updates);
         addVault(updates);
+        addManagementSecurityRealms(updates);
+        addManagementConnections(updates);
         addInterfaces(updates);
         addSocketBindings(updates, portOffSet, socketBindingRef);
         addSubsystems(updates);
@@ -399,16 +407,16 @@ class ModelCombiner implements ManagedServerBootConfiguration {
     }
 
     private void addVault(List<ModelNode> updates) {
-        if(hostModel.get(CORE_SERVICE).isDefined()){
-           addVault(updates,hostModel.get(CORE_SERVICE).get(VAULT));
+        if (hostModel.get(CORE_SERVICE).isDefined()) {
+            addVault(updates, hostModel.get(CORE_SERVICE).get(VAULT));
         }
     }
 
-    private void addVault(List<ModelNode> updates, ModelNode vaultNode){
-        if(vaultNode.isDefined()){
+    private void addVault(List<ModelNode> updates, ModelNode vaultNode) {
+        if (vaultNode.isDefined()) {
             ModelNode vault = new ModelNode();
-            ModelNode codeNode =vaultNode.get(Attribute.CODE.getLocalName());
-            if(codeNode.isDefined()){
+            ModelNode codeNode = vaultNode.get(Attribute.CODE.getLocalName());
+            if (codeNode.isDefined()) {
                 vault.get(Attribute.CODE.getLocalName()).set(codeNode.asString());
             }
             vault.get(OP).set(ADD);
@@ -417,10 +425,72 @@ class ModelCombiner implements ManagedServerBootConfiguration {
             vault.get(OP_ADDR).set(vaultAddress);
 
             ModelNode optionsNode = vaultNode.get(VAULT_OPTIONS);
-            if(optionsNode.isDefined()){
+            if (optionsNode.isDefined()) {
                 vault.get(VAULT_OPTIONS).set(optionsNode);
             }
             updates.add(vault);
+        }
+    }
+
+    private void addManagementSecurityRealms(List<ModelNode> updates) {
+        if (hostModel.get(CORE_SERVICE, MANAGEMENT, SECURITY_REALM).isDefined()) {
+            ModelNode securityRealms = hostModel.get(CORE_SERVICE, MANAGEMENT, SECURITY_REALM);
+            Set<String> keys = securityRealms.keys();
+            for (String current : keys) {
+                ModelNode addOp = new ModelNode();
+                ModelNode realmAddress = new ModelNode();
+                realmAddress.add(CORE_SERVICE, MANAGEMENT).add(SECURITY_REALM, current);
+                addOp.get(OP).set(ADD);
+                addOp.get(OP_ADDR).set(realmAddress);
+                updates.add(addOp);
+
+                ModelNode currentRealm = securityRealms.get(current);
+                if (currentRealm.hasDefined(SERVER_IDENTITY)) {
+                    addManagementComponentComponent(currentRealm, realmAddress, SERVER_IDENTITY, updates);
+                }
+                if (currentRealm.hasDefined(AUTHENTICATION)) {
+                    addManagementComponentComponent(currentRealm, realmAddress, AUTHENTICATION, updates);
+                }
+                if (currentRealm.hasDefined(AUTHORIZATION)) {
+                    addManagementComponentComponent(currentRealm, realmAddress, AUTHORIZATION, updates);
+                }
+            }
+        }
+    }
+
+    private void addManagementComponentComponent(ModelNode realm, ModelNode parentAddress, String key, List<ModelNode> updates) {
+        for (String currentComponent : realm.get(key).keys()) {
+            ModelNode addComponent = new ModelNode();
+            // First take the properties to pass over.
+            addComponent.set(realm.get(key, currentComponent));
+
+            // Now convert it to an operation by adding a name and address.
+            ModelNode identityAddress = parentAddress.clone().add(key, currentComponent);
+            addComponent.get(OP).set(ADD);
+            addComponent.get(OP_ADDR).set(identityAddress);
+
+            updates.add(addComponent);
+        }
+    }
+
+    private void addManagementConnections(List<ModelNode> updates) {
+        if (hostModel.get(CORE_SERVICE, MANAGEMENT, LDAP_CONNECTION).isDefined()) {
+            ModelNode baseAddress = new ModelNode();
+            baseAddress.add(CORE_SERVICE, MANAGEMENT);
+
+            ModelNode connections = hostModel.get(CORE_SERVICE, MANAGEMENT, LDAP_CONNECTION);
+            for (String connectionName : connections.keys()) {
+                ModelNode addConnection = new ModelNode();
+                // First take the properties to pass over.
+                addConnection.set(connections.get(connectionName));
+
+                // Now convert it to an operation by adding a name and address.
+                ModelNode identityAddress = baseAddress.clone().add(LDAP_CONNECTION, connectionName);
+                addConnection.get(OP).set(ADD);
+                addConnection.get(OP_ADDR).set(identityAddress);
+
+                updates.add(addConnection);
+            }
         }
     }
 
