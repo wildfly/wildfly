@@ -18,8 +18,7 @@ public class NestledBean {
     private EntityManager entityManager;
 
     public Employee get(int id) {
-        return (Employee) entityManager.createQuery("select e from Employee e where e.id=:id")
-                .setParameter("id", id)
+        return (Employee) entityManager.createQuery("select e from Employee e where e.id=:id").setParameter("id", id)
                 .getSingleResult();
     }
 }

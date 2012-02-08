@@ -50,7 +50,6 @@ public interface TestPassivationRemote {
 
     void addEntity(int id, String name);
 
-
     /**
      * Annotate for removing.
      */
