@@ -43,8 +43,18 @@ class RemoteOutboundConnnectionResourceDefinition extends AbstractOutboundConnec
             .setAllowExpression(true).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
 
-    static final RemoteOutboundConnnectionResourceDefinition INSTANCE = new RemoteOutboundConnnectionResourceDefinition();
+    public static final SimpleAttributeDefinition USERNAME = new SimpleAttributeDefinitionBuilder(CommonAttributes.USERNAME,
+            ModelType.STRING, true).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false)).build();
 
+    public static final SimpleAttributeDefinition SECURITY_REALM = new SimpleAttributeDefinitionBuilder(
+            CommonAttributes.SECURITY_REALM, ModelType.STRING, true).setValidator(
+            new StringLengthValidator(1, Integer.MAX_VALUE, true, false)).build();
+
+    public static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = {
+        OUTBOUND_SOCKET_BINDING_REF, USERNAME, SECURITY_REALM
+    };
+
+    static final RemoteOutboundConnnectionResourceDefinition INSTANCE = new RemoteOutboundConnnectionResourceDefinition();
 
     private RemoteOutboundConnnectionResourceDefinition() {
         super(ADDRESS, RemotingExtension.getResourceDescriptionResolver(CommonAttributes.REMOTE_OUTBOUND_CONNECTION),
@@ -60,6 +70,8 @@ class RemoteOutboundConnnectionResourceDefinition extends AbstractOutboundConnec
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         super.registerAttributes(resourceRegistration);
         resourceRegistration.registerReadWriteAttribute(OUTBOUND_SOCKET_BINDING_REF, null, RemoteOutboundConnectionWriteHandler.INSTANCE);
+        resourceRegistration.registerReadWriteAttribute(USERNAME, null, RemoteOutboundConnectionWriteHandler.INSTANCE);
+        resourceRegistration.registerReadWriteAttribute(SECURITY_REALM, null, RemoteOutboundConnectionWriteHandler.INSTANCE);
     }
 
     @Override

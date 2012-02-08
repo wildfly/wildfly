@@ -25,7 +25,9 @@ package org.jboss.as.test.integration.ejb.remote.common;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -33,6 +35,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.POR
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECRET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_REF;
@@ -232,12 +237,32 @@ public class EJBManagementUtil {
             final PathAddress address = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME),
                     PathElement.pathElement("remote-outbound-connection", connectionName));
             addRemoteOutboundConnection.get(OP_ADDR).set(address.toModelNode());
+            
+            
+            final ModelNode addPasswordRealm = new ModelNode();
+            addPasswordRealm.get(OP).set(ADD);
+            ModelNode realmAddress = new ModelNode();
+            realmAddress.add(CORE_SERVICE, MANAGEMENT);
+            realmAddress.add(SECURITY_REALM, "PasswordRealm");
+            addPasswordRealm.get(OP_ADDR).set(realmAddress);
+            
+            final ModelNode addServerIdentity = new ModelNode();
+            addServerIdentity.get(OP).set(ADD);
+            ModelNode secretAddress = realmAddress.clone().add(SERVER_IDENTITY, SECRET);
+            addServerIdentity.get(OP_ADDR).set(secretAddress);
+            addServerIdentity.get(VALUE).set("cGFzc3dvcmQx");                                    
 
             // set the other properties
             addRemoteOutboundConnection.get("outbound-socket-binding-ref").set(outboundSocketRef);
+            addRemoteOutboundConnection.get(SECURITY_REALM).set("PasswordRealm");
+            addRemoteOutboundConnection.get("username").set("user1");            
+            
             final ModelNode op = Util.getEmptyOperation(COMPOSITE, new ModelNode());
             final ModelNode steps = op.get(STEPS);
+            steps.add(addPasswordRealm);
+            steps.add(addServerIdentity);
             steps.add(addRemoteOutboundConnection);
+            
 
             // execute the add operation
             if (!connectionCreationOptions.isEmpty()) {
@@ -274,8 +299,20 @@ public class EJBManagementUtil {
                     PathElement.pathElement("remote-outbound-connection", connectionName));
             removeRemoteOutboundConnection.get(OP_ADDR).set(address.toModelNode());
 
+            final ModelNode removeRealm = new ModelNode();
+            removeRealm.get(OP).set(REMOVE);
+            ModelNode realmAddress = new ModelNode();
+            realmAddress.add(CORE_SERVICE, MANAGEMENT);
+            realmAddress.add(SECURITY_REALM, "PasswordRealm");
+            removeRealm.get(OP_ADDR).set(realmAddress);            
+            
+            final ModelNode op = Util.getEmptyOperation(COMPOSITE, new ModelNode());
+            final ModelNode steps = op.get(STEPS);
+            steps.add(removeRemoteOutboundConnection);
+            steps.add(removeRealm);
+            
             // execute the remove operation
-            execute(modelControllerClient, removeRemoteOutboundConnection);
+            execute(modelControllerClient, op);
 
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);

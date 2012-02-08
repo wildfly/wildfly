@@ -22,6 +22,8 @@
 
 package org.jboss.as.remoting;
 
+import org.jboss.as.domain.management.CallbackHandlerFactory;
+import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceName;
@@ -33,13 +35,20 @@ import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
 import org.xnio.IoFuture;
 import org.xnio.OptionMap;
+import org.xnio.Options;
+import org.xnio.Sequence;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import javax.net.ssl.SSLContext;
+import javax.security.auth.callback.CallbackHandler;
+
 import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
+import static org.xnio.Options.SASL_POLICY_NOANONYMOUS;
+import static org.xnio.Options.SASL_POLICY_NOPLAINTEXT;
 
 /**
  * A {@link RemoteOutboundConnectionService} manages a remoting connection created out of a remote:// URI scheme.
@@ -51,13 +60,17 @@ public class RemoteOutboundConnectionService extends AbstractOutboundConnectionS
     public static final ServiceName REMOTE_OUTBOUND_CONNECTION_BASE_SERVICE_NAME = RemotingServices.SUBSYSTEM_ENDPOINT.append("remote-outbound-connection");
 
     private static final String REMOTE_URI_SCHEME = "remote://";
+    private static final String JBOSS_LOCAL_USER = "JBOSS-LOCAL-USER";
 
     private final InjectedValue<OutboundSocketBinding> destinationOutboundSocketBindingInjectedValue = new InjectedValue<OutboundSocketBinding>();
+    private final InjectedValue<SecurityRealm> securityRealmInjectedValue = new InjectedValue<SecurityRealm>();
 
+    private final String username;
     private URI connectionURI;
 
-    public RemoteOutboundConnectionService(final String connectionName, final OptionMap connectionCreationOptions) {
+    public RemoteOutboundConnectionService(final String connectionName, final OptionMap connectionCreationOptions, final String username) {
         super(connectionName, connectionCreationOptions);
+        this.username = username;
     }
 
     @Override
@@ -91,11 +104,38 @@ public class RemoteOutboundConnectionService extends AbstractOutboundConnectionS
             throw MESSAGES.couldNotConnect(e);
         }
         final Endpoint endpoint = this.endpointInjectedValue.getValue();
-        return endpoint.connect(uri, this.connectionCreationOptions, getCallbackHandler());
+
+        final CallbackHandler callbackHandler;
+        final CallbackHandlerFactory cbhFactory;
+        SSLContext sslContext = null;
+        SecurityRealm realm = securityRealmInjectedValue.getOptionalValue();
+        if (realm != null && (cbhFactory = realm.getSecretCallbackHandlerFactory()) != null && username != null) {
+            callbackHandler = cbhFactory.getCallbackHandler(username);
+        } else {
+            callbackHandler = getCallbackHandler();
+        }
+
+        if (realm != null) {
+            sslContext = realm.getSSLContext();
+        }
+
+        OptionMap.Builder builder = OptionMap.builder();
+        builder.addAll(this.connectionCreationOptions);
+        builder.set(SASL_POLICY_NOANONYMOUS, Boolean.FALSE);
+        builder.set(SASL_POLICY_NOPLAINTEXT, Boolean.FALSE);
+        builder.set(Options.SASL_DISALLOWED_MECHANISMS, Sequence.of(JBOSS_LOCAL_USER));
+        builder.set(Options.SSL_ENABLED, true);
+        builder.set(Options.SSL_STARTTLS, true);
+
+        return endpoint.connect(uri, builder.getMap(), callbackHandler, sslContext);
     }
 
     Injector<OutboundSocketBinding> getDestinationOutboundSocketBindingInjector() {
         return this.destinationOutboundSocketBindingInjectedValue;
+    }
+
+    Injector<SecurityRealm> getSecurityRealmInjector() {
+        return securityRealmInjectedValue;
     }
 
     /**

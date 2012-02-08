@@ -56,6 +56,7 @@ interface CommonAttributes {
     String SUBSYSTEM = "subsystem";
     String THREAD_POOL = "thread-pool";
     String URI = "uri";
+    String USERNAME = "username";
     String VALUE = "value";
     String WORKER_READ_THREADS = "worker-read-threads";
     String WORKER_TASK_CORE_THREADS = "worker-task-core-threads";

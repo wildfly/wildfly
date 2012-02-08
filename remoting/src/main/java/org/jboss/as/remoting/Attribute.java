@@ -36,6 +36,7 @@ public enum Attribute {
     SECURITY_REALM(CommonAttributes.SECURITY_REALM),
     SOCKET_BINDING(CommonAttributes.SOCKET_BINDING),
     URI("uri"),
+    USERNAME("username"),
     VALUE(CommonAttributes.VALUE),
     WORKER_READ_THREADS("read-threads"),
     WORKER_TASK_CORE_THREADS("task-core-threads"),

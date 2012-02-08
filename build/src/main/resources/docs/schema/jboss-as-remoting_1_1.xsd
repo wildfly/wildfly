@@ -325,6 +325,8 @@
         <xs:complexContent>
             <xs:extension base="base-outbound-connectionType">
                 <xs:attribute name="outbound-socket-binding-ref" type="xs:string" use="required"/>
+                <xs:attribute name="username" type="xs:string" use="optional"/>
+                <xs:attribute name="security-realm" type="xs:string" use="optional"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>

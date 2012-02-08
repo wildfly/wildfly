@@ -41,7 +41,7 @@ class RemoteOutboundConnectionWriteHandler extends AbstractWriteAttributeHandler
     static final RemoteOutboundConnectionWriteHandler INSTANCE = new RemoteOutboundConnectionWriteHandler();
 
     private RemoteOutboundConnectionWriteHandler() {
-        super(RemoteOutboundConnnectionResourceDefinition.OUTBOUND_SOCKET_BINDING_REF);
+        super(RemoteOutboundConnnectionResourceDefinition.ATTRIBUTE_DEFINITIONS);
     }
 
     @Override

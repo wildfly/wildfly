@@ -92,11 +92,8 @@ public abstract class AbstractOutboundConnectionService<T extends AbstractOutbou
         return new AnonymousCallbackHandler();
     }
 
-    // TODO: This is temporary for now, till we decide about security related configurations
-    // for outbound connections, post Beta1
     private class AnonymousCallbackHandler implements CallbackHandler {
 
-        @Override
         public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
             for (Callback current : callbacks) {
                 if (current instanceof NameCallback) {

@@ -401,6 +401,8 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
         final int count = reader.getAttributeCount();
         String name = null;
         String outboundSocketBindingRef = null;
+        String username = null;
+        String securityRealm = null;
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
@@ -413,6 +415,14 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
                 }
                 case OUTBOUND_SOCKET_BINDING_REF: {
                     outboundSocketBindingRef = value;
+                    break;
+                }
+                case USERNAME: {
+                    username = value;
+                    break;
+                }
+                case SECURITY_REALM: {
+                    securityRealm = value;
                     break;
                 }
                 default:
@@ -551,6 +561,10 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
     }
 
     static ModelNode getConnectionAddOperation(final String connectionName, final String outboundSocketBindingRef, PathAddress address) {
+        return getConnectionAddOperation(connectionName, outboundSocketBindingRef, null, null, address);
+    }
+
+    static ModelNode getConnectionAddOperation(final String connectionName, final String outboundSocketBindingRef, final String userName, final String securityRealm, PathAddress address) {
         if (connectionName == null || connectionName.trim().isEmpty()) {
             throw MESSAGES.connectionNameEmpty();
         }
@@ -565,7 +579,13 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
         // set the other params
         addOperation.get(CommonAttributes.OUTBOUND_SOCKET_BINDING_REF).set(outboundSocketBindingRef);
         // optional connection creation options
+        if (userName != null) {
+            addOperation.get(CommonAttributes.USERNAME).set(userName);
+        }
 
+        if (securityRealm != null) {
+            addOperation.get(CommonAttributes.SECURITY_REALM).set(securityRealm);
+        }
 
         return addOperation;
     }
@@ -734,6 +754,14 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
 
         final String outboundSocketRef = model.get(OUTBOUND_SOCKET_BINDING_REF).asString();
         writer.writeAttribute(Attribute.OUTBOUND_SOCKET_BINDING_REF.getLocalName(), outboundSocketRef);
+
+        if (model.hasDefined(CommonAttributes.USERNAME)) {
+            writer.writeAttribute(Attribute.USERNAME.getLocalName(), model.require(CommonAttributes.USERNAME).asString());
+        }
+
+        if (model.hasDefined(CommonAttributes.SECURITY_REALM)) {
+            writer.writeAttribute(Attribute.SECURITY_REALM.getLocalName(), model.require(SECURITY_REALM).asString());
+        }
 
         // write the connection-creation-options if any
         if (model.hasDefined(PROPERTY)) {

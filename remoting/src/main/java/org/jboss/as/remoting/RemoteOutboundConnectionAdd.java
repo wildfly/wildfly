@@ -30,6 +30,8 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.domain.management.SecurityRealm;
+import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -54,6 +56,8 @@ class RemoteOutboundConnectionAdd extends AbstractOutboundConnectionAddHandler {
         super.populateModel(operation, model);
 
         RemoteOutboundConnnectionResourceDefinition.OUTBOUND_SOCKET_BINDING_REF.validateAndSet(operation, model);
+        RemoteOutboundConnnectionResourceDefinition.USERNAME.validateAndSet(operation, model);
+        RemoteOutboundConnnectionResourceDefinition.SECURITY_REALM.validateAndSet(operation, model);
     }
 
     @Override
@@ -72,8 +76,11 @@ class RemoteOutboundConnectionAdd extends AbstractOutboundConnectionAddHandler {
         final ServiceName outboundSocketBindingDependency = OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(outboundSocketBindingRef);
         // fetch the connection creation options from the model
         final OptionMap connectionCreationOptions = ConnectorResource.getOptions(fullModel.get(CommonAttributes.PROPERTY));
+        final String username = fullModel.hasDefined(CommonAttributes.USERNAME) ? fullModel.require(CommonAttributes.USERNAME).asString() : null;
+        final String securityRealm = fullModel.hasDefined(CommonAttributes.SECURITY_REALM) ? fullModel.require(CommonAttributes.SECURITY_REALM).asString() : null;
+
         // create the service
-        final RemoteOutboundConnectionService outboundConnectionService = new RemoteOutboundConnectionService(connectionName, connectionCreationOptions);
+        final RemoteOutboundConnectionService outboundConnectionService = new RemoteOutboundConnectionService(connectionName, connectionCreationOptions, username);
         final ServiceName serviceName = AbstractOutboundConnectionService.OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(connectionName);
         // also add a alias service name to easily distinguish between a generic, remote and local type of connection services
         final ServiceName aliasServiceName = RemoteOutboundConnectionService.REMOTE_OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(connectionName);
@@ -81,6 +88,11 @@ class RemoteOutboundConnectionAdd extends AbstractOutboundConnectionAddHandler {
                 .addAliases(aliasServiceName)
                 .addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, outboundConnectionService.getEnpointInjector())
                 .addDependency(outboundSocketBindingDependency, OutboundSocketBinding.class, outboundConnectionService.getDestinationOutboundSocketBindingInjector());
+
+        if (securityRealm != null) {
+            final ServiceName secuirtyRealmName = SecurityRealmService.BASE_SERVICE_NAME.append(securityRealm);
+            svcBuilder.addDependency(secuirtyRealmName, SecurityRealm.class, outboundConnectionService.getSecurityRealmInjector());
+        }
 
         if (verificationHandler != null) {
             svcBuilder.addListener(verificationHandler);

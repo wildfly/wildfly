@@ -77,7 +77,6 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-
         context.createResource(PathAddress.EMPTY_ADDRESS);
 
         // Add a step validating that we have the correct authentication child resources
@@ -101,7 +100,6 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
     protected void installServices(final OperationContext context, final String realmName, final ModelNode model,
                                    final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers)
             throws OperationFailedException {
-
         final ModelNode authentication = model.hasDefined(AUTHENTICATION) ? model.get(AUTHENTICATION) : null;
         final ModelNode authorization = model.hasDefined(AUTHORIZATION) ? model.get(AUTHORIZATION) : null;
         final ModelNode serverIdentities = model.hasDefined(SERVER_IDENTITY) ? model.get(SERVER_IDENTITY) : null;
