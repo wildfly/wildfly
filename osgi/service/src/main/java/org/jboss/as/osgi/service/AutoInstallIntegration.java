@@ -151,7 +151,6 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
             List<OSGiCapability> configcaps = new ArrayList<OSGiCapability>();
             configcaps.add(new OSGiCapability("javax.api", null));
             configcaps.add(new OSGiCapability("org.osgi.enterprise", null));
-            configcaps.add(new OSGiCapability("org.jboss.osgi.repository", null));
             configcaps.addAll(injectedSubsystemState.getValue().getCapabilities());
             for (OSGiCapability moduleMetaData : configcaps) {
                 ServiceName serviceName = installModule(bundleManager, moduleMetaData);
