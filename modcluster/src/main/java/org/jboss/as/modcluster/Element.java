@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2011, Red Hat Inc., and individual contributors as indicated
+ * Copyright 2012, Red Hat Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -26,6 +26,7 @@ import java.util.Map;
 
 /**
  * @author Jean-Frederic Clere
+ * @author Radoslav Husar
  */
 enum Element {
     // must be first
@@ -42,6 +43,14 @@ enum Element {
     LOAD_METRIC(CommonAttributes.LOAD_METRIC),
     CUSTOM_LOAD_METRIC(CommonAttributes.CUSTOM_LOAD_METRIC),
     PROPERTY(CommonAttributes.PROPERTY),
+
+    /**
+     * @since v1.1
+     */
+    STICKY_SESSION(CommonAttributes.STICKY_SESSION),
+    ADVERTISE(CommonAttributes.ADVERTISE),
+    PROXIES(CommonAttributes.PROXIES),
+    CONTEXTS(CommonAttributes.CONTEXTS),
     ;
 
     private final String name;

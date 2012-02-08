@@ -1,5 +1,10 @@
-        <subsystem xmlns="urn:jboss:domain:modcluster:1.0">
-            <mod-cluster-config advertise-socket="modcluster">
-               <ssl password="toto" />
-            </mod-cluster-config>
-        </subsystem>
+<subsystem xmlns="urn:jboss:domain:modcluster:1.1">
+    <sticky-session enable="true" force="false" remove="false"/>
+    <advertise enable="true" socket-binding="" security-key=""/>
+    <proxies url="someUrl" node-timeout="-1" ping="10" socket-timeout="20" outbound-socket-bindings="binding0 binding1" load-balancing-group="group0"/>
+    <contexts auto-enable="true" stop-timeout="10" excluded="ROOT console" session-draining-strategy="ALWAYS"/>
+    <dynamic-load-provider history="9" decay="2">
+        <load-metric weight="1" capacity="1.0" type="someType"/>
+    </dynamic-load-provider>
+    <ssl key-alias="jboss" password="" certificate-key-file="${user.home}/.keystore" cipher-suite="ALL" protocol="ALL" ca-certificate-file="" ca-revocation-url=""/>
+</subsystem>

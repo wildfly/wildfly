@@ -59,7 +59,13 @@ import static org.jboss.as.modcluster.CommonAttributes.TYPE;
 import static org.jboss.as.modcluster.CommonAttributes.VALUE;
 import static org.jboss.as.modcluster.CommonAttributes.WEIGHT;
 import static org.jboss.as.modcluster.CommonAttributes.WORKER_TIMEOUT;
+import static org.jboss.as.modcluster.CommonAttributes.ENABLE;
+import static org.jboss.as.modcluster.CommonAttributes.FORCE;
+import static org.jboss.as.modcluster.CommonAttributes.REMOVE;
+// TODO: no * import please
+import static org.jboss.as.modcluster.CommonAttributes.*;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -71,66 +77,145 @@ import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
+/**
+ * @author Jean-Frederic Clere
+ * @author Radoslav Husar
+ */
 public class ModClusterSubsystemXMLWriter implements XMLElementWriter<SubsystemMarshallingContext> {
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context)
             throws XMLStreamException {
         context.startSubsystemElement(Namespace.CURRENT.getUri(), false);
 
         ModelNode node = context.getModelNode();
-        if (node.get(MOD_CLUSTER_CONFIG).isDefined() && node.get(MOD_CLUSTER_CONFIG).has(CONFIGURATION))
+        if (node.get(MOD_CLUSTER_CONFIG).isDefined() && node.get(MOD_CLUSTER_CONFIG).has(CONFIGURATION)) {
             writeModClusterConfig(writer, node.get(MOD_CLUSTER_CONFIG).get(CONFIGURATION));
-        else
+        } else {
+            // TODO: Is this necessary?
             writeModClusterConfig(writer, node);
+        }
+
         writer.writeEndElement();
     }
 
     static void writeModClusterConfig(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
-        writer.writeStartElement(Element.MOD_CLUSTER_CONFIG.getLocalName());
-        // write Attributes
-        writePropConf(writer, config);
 
-        // write the elements.
+        // Sticky sessions
+        if (config.hasDefined(STICKY_SESSION) || config.hasDefined(STICKY_SESSION_FORCE)
+                || config.hasDefined(STICKY_SESSION_REMOVE)) {
+            // If one of the sticky session options is defined.
+            writeStickySession(writer, config);
+        }
+
+        // Advertise
+        if (config.hasDefined(ADVERTISE) || config.hasDefined(ADVERTISE_SECURITY_KEY) || config.hasDefined(ADVERTISE_SOCKET)) {
+            writeAdvertise(writer, config);
+        }
+
+        // Proxies
+        if (config.hasDefined(PROXY_URL) || config.hasDefined(PROXY_LIST) || config.hasDefined(DOMAIN)
+                || config.hasDefined(PING) || config.hasDefined(NODE_TIMEOUT) || config.hasDefined(SOCKET_TIMEOUT)
+                || config.hasDefined(WORKER_TIMEOUT) || config.hasDefined(MAX_ATTEMPTS) || config.hasDefined(FLUSH_PACKETS)
+                || config.hasDefined(FLUSH_WAIT) || config.hasDefined(SMAX) || config.hasDefined(TTL)
+                || config.hasDefined(BALANCER)) {
+            writeProxies(writer, config);
+        }
+
+        // Contexts
+        if (config.hasDefined(AUTO_ENABLE_CONTEXTS) || config.hasDefined(STOP_CONTEXT_TIMEOUT)
+                || config.hasDefined(EXCLUDED_CONTEXTS)) {
+            writeContexts(writer, config);
+        }
+
+        // Load providers
         if (config.hasDefined(SIMPLE_LOAD_PROVIDER)) {
             writeSimpleLoadProvider(writer, config.get(SIMPLE_LOAD_PROVIDER));
         }
         if (config.hasDefined(DYNAMIC_LOAD_PROVIDER)) {
             writeDynamicLoadProvider(writer, config.get(DYNAMIC_LOAD_PROVIDER));
         }
+
+        // SSL config
         if (config.get(SSL).isDefined() && config.get(SSL).has(CONFIGURATION)) {
             writeSSL(writer, config.get(SSL).get(CONFIGURATION));
         }
+
+    }
+
+    static void writeStickySession(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
+        writer.writeStartElement(Element.STICKY_SESSION.getLocalName());
+
+        writeAttributeAs(writer, ENABLE, STICKY_SESSION, config);
+        writeAttributeAs(writer, FORCE, STICKY_SESSION_FORCE, config);
+        writeAttributeAs(writer, REMOVE, STICKY_SESSION_REMOVE, config);
+
         writer.writeEndElement();
     }
 
-    /* prop-confType */
-    static void writePropConf(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
-        writeAttribute(writer, ADVERTISE_SOCKET, config);
-        writeAttribute(writer, PROXY_LIST, config);
-        writeAttribute(writer, PROXY_URL, config);
-        writeAttribute(writer, ADVERTISE, config);
-        writeAttribute(writer, ADVERTISE_SECURITY_KEY, config);
-        writeAttribute(writer, EXCLUDED_CONTEXTS, config);
-        writeAttribute(writer, AUTO_ENABLE_CONTEXTS, config);
-        writeAttribute(writer, STOP_CONTEXT_TIMEOUT, config);
+    static void writeAdvertise(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
+        writer.writeStartElement(Element.ADVERTISE.getLocalName());
+
+        writeAttributeAs(writer, ENABLE, ADVERTISE, config);
+        writeAttributeAs(writer, SOCKET_BINDING, ADVERTISE_SOCKET, config);
+        writeAttributeAs(writer, SECURITY_KEY, ADVERTISE_SECURITY_KEY, config);
+
+        writer.writeEndElement();
+    }
+
+    static void writeProxies(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
+        writer.writeStartElement(Element.PROXIES.getLocalName());
+
+        writeAttributeAs(writer, URL, PROXY_URL, config);
+        if (config.hasDefined(PROXY_LIST)) {
+            List<ModelNode> proxyList = config.get(PROXY_LIST).asList();
+            List<String> proxies = new ArrayList<String>(proxyList.size());
+            for (ModelNode proxy: proxyList) {
+                proxies.add(proxy.asString());
+            }
+            writer.writeAttribute(OUTBOUND_SOCKET_BINDINGS, proxies);
+        }
+        writeAttributeAs(writer, LOAD_BALANCING_GROUP, DOMAIN, config);
+
+        writeAttribute(writer, PING, config);
+        writeAttribute(writer, NODE_TIMEOUT, config);
         writeAttribute(writer, SOCKET_TIMEOUT, config);
 
-        writeAttribute(writer, STICKY_SESSION, config);
-        writeAttribute(writer, STICKY_SESSION_REMOVE, config);
-        writeAttribute(writer, STICKY_SESSION_FORCE, config);
         writeAttribute(writer, WORKER_TIMEOUT, config);
         writeAttribute(writer, MAX_ATTEMPTS, config);
         writeAttribute(writer, FLUSH_PACKETS, config);
         writeAttribute(writer, FLUSH_WAIT, config);
-        writeAttribute(writer, PING, config);
         writeAttribute(writer, SMAX, config);
         writeAttribute(writer, TTL, config);
-        writeAttribute(writer, NODE_TIMEOUT, config);
         writeAttribute(writer, BALANCER, config);
-        writeAttribute(writer, DOMAIN, config);
+
+        writer.writeEndElement();
     }
 
+    static void writeContexts(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
+        writer.writeStartElement(Element.CONTEXTS.getLocalName());
+
+        writeAttributeAs(writer, AUTO_ENABLE, AUTO_ENABLE_CONTEXTS, config);
+        writeAttributeAs(writer, STOP_TIMEOUT, STOP_CONTEXT_TIMEOUT, config);
+        if (config.hasDefined(EXCLUDED_CONTEXTS)) {
+            List<ModelNode> contexts = config.get(EXCLUDED_CONTEXTS).asList();
+            List<String> list = new ArrayList<String>(contexts.size());
+            for (ModelNode context: contexts) {
+                list.add(context.asString());
+            }
+            writer.writeAttribute(EXCLUDED_CONTEXTS, list);
+        }
+        writeAttributeAs(writer, SESSION_DRAINING_STRATEGY, SESSION_DRAINING_STRATEGY, config);
+
+        writer.writeEndElement();
+    }
+
+    /**
+     * SSL
+     */
     static void writeSSL(XMLExtendedStreamWriter writer, ModelNode sslConfig) throws XMLStreamException {
         writer.writeStartElement(Element.SSL.getLocalName());
         writeAttribute(writer, Attribute.KEY_ALIAS.getLocalName(), sslConfig);
@@ -143,14 +228,18 @@ public class ModClusterSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         writer.writeEndElement();
     }
 
-    /* Simple Load provider */
+    /**
+     * Simple Load provider
+     */
     static void writeSimpleLoadProvider(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
         writer.writeStartElement(Element.SIMPLE_LOAD_PROVIDER.getLocalName());
         writeAttribute(writer, FACTOR, config);
         writer.writeEndElement();
     }
 
-    /* Dynamic load provider */
+    /**
+     * Dynamic load provider
+     */
     static void writeDynamicLoadProvider(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
         writer.writeStartElement(Element.DYNAMIC_LOAD_PROVIDER.getLocalName());
         writeAttribute(writer, HISTORY, config);
@@ -166,7 +255,9 @@ public class ModClusterSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         writer.writeEndElement();
     }
 
-    /* Load Metric parsing logic */
+    /**
+     * Load Metric parsing logic
+     */
     static void writeLoadMetric(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
         final List<ModelNode> array = config.asList();
         Iterator<ModelNode> it = array.iterator();
@@ -185,7 +276,9 @@ public class ModClusterSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         }
     }
 
-    /* Custom Load Metric parsing logic */
+    /**
+     * Custom Load Metric parsing logic
+     */
     static void writeCustomLoadMetric(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
         final List<ModelNode> array = config.asList();
         Iterator<ModelNode> it = array.iterator();
@@ -211,7 +304,21 @@ public class ModClusterSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         }
     }
 
-    /* Property logic */
+    /**
+     * Enables you to specify what is the output name and which model you want to persist. TODO: Is there a better way?
+     *
+     * @since schema v1.1
+     */
+    static void writeAttributeAs(final XMLExtendedStreamWriter writer, final String name, final String modelName,
+            ModelNode node) throws XMLStreamException {
+        if (node.hasDefined(modelName)) {
+            writer.writeAttribute(name, node.get(modelName).asString());
+        }
+    }
+
+    /**
+     * Property logic
+     */
     static void writeProperty(final XMLExtendedStreamWriter writer, Property property) throws XMLStreamException {
         writer.writeStartElement(Element.PROPERTY.getLocalName());
         writer.writeAttribute(NAME, property.getName());

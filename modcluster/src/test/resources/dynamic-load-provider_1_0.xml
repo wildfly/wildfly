@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<subsystem xmlns="urn:jboss:domain:modcluster:1.0">
+    <mod-cluster-config advertise-socket="mod_cluster">
+        <dynamic-load-provider history="10" decay="2">
+            <load-metric type="cpu" weight="2" capacity="1"/>
+            <load-metric type="sessions" weight="1" capacity="512"/>
+            <custom-load-metric class="mypackage.myclass" weight="1" capacity="512">
+                <property name="myproperty" value="myvalue" />
+                <property name="otherproperty" value="othervalue" />
+            </custom-load-metric>
+        </dynamic-load-provider>
+    </mod-cluster-config>
+</subsystem>

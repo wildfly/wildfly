@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,11 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.modcluster;
 
 /**
  * @author Jean-Frederic Clere
+ * @author Radoslav Husar
  */
 interface CommonAttributes {
 
@@ -37,7 +37,7 @@ interface CommonAttributes {
     String PROXY_URL = "proxy-url";
     String ADVERTISE = "advertise";
     String ADVERTISE_SECURITY_KEY = "advertise-security-key";
-    String EXCLUDED_CONTEXTS = "excluded-contexts";
+    String EXCLUDED_CONTEXTS = "excluded";
     String AUTO_ENABLE_CONTEXTS = "auto-enable-contexts";
     String STOP_CONTEXT_TIMEOUT = "stop-context-timeout";
     String SOCKET_TIMEOUT = "socket-timeout";
@@ -72,7 +72,7 @@ interface CommonAttributes {
     String PROPERTY = "property";
     String VALUE = "value";
     String KEY_ALIAS = "key-alias";
-    String PASSWORD = "password" ;
+    String PASSWORD = "password";
     String CERTIFICATE_KEY_FILE = "certificate-key-file";
     String CIPHER_SUITE = "cipher-suite";
     String PROTOCOL = "protocol";
@@ -80,4 +80,21 @@ interface CommonAttributes {
     String CA_CERTIFICATE_FILE = "ca-certificate-file";
     String CA_REVOCATION_URL = "ca-revocation-url";
     String CONFIGURATION = "configuration";
+
+    /**
+     * @since v1.1
+     */
+    String ENABLE = "enable";
+    String FORCE = "force";
+    String REMOVE = "remove";
+    String PROXIES = "proxies";
+    String URL = "url";
+    String CONTEXTS = "contexts";
+    String SESSION_DRAINING_STRATEGY = "session-draining-strategy";
+    String SOCKET_BINDING = "socket-binding";
+    String SECURITY_KEY = "security-key";
+    String OUTBOUND_SOCKET_BINDINGS = "outbound-socket-bindings";
+    String LOAD_BALANCING_GROUP = "load-balancing-group";
+    String AUTO_ENABLE = "auto-enable";
+    String STOP_TIMEOUT = "stop-timeout";
 }

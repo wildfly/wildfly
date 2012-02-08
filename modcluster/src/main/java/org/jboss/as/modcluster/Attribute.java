@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2010, Red Hat Inc., and individual contributors as indicated
+ * Copyright 2012, Red Hat Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -27,6 +27,7 @@ import java.util.Map;
 /**
  * @author Emanuel Muckenhuber
  * @author Jean-Frederic Clere
+ * @author Radoslav Husar
  */
 enum Attribute {
     UNKNOWN(null),
@@ -80,6 +81,21 @@ enum Attribute {
     PROTOCOL(CommonAttributes.PROTOCOL),
     CA_CERTIFICATE_FILE(CommonAttributes.CA_CERTIFICATE_FILE),
     CA_REVOCATION_URL(CommonAttributes.CA_REVOCATION_URL),
+
+    /**
+     * @since v1.1
+     */
+    ENABLE(CommonAttributes.ENABLE),
+    FORCE(CommonAttributes.FORCE),
+    REMOVE(CommonAttributes.REMOVE),
+    SOCKET_BINDING(CommonAttributes.SOCKET_BINDING),
+    SECURITY_KEY(CommonAttributes.SECURITY_KEY),
+    URL(CommonAttributes.URL),
+    SESSION_DRAINING_STRATEGY(CommonAttributes.SESSION_DRAINING_STRATEGY),
+    OUTBOUND_SOCKET_BINDINGS(CommonAttributes.OUTBOUND_SOCKET_BINDINGS),
+    LOAD_BALANCING_GROUP(CommonAttributes.LOAD_BALANCING_GROUP),
+    AUTO_ENABLE(CommonAttributes.AUTO_ENABLE),
+    STOP_TIMEOUT(CommonAttributes.STOP_TIMEOUT),
     ;
 
     private final String name;
@@ -105,7 +121,7 @@ enum Attribute {
             final String name = element.getLocalName();
             if (name != null)
                 map.put(name, element);
-        }
+            }
         MAP = map;
     }
 

@@ -24,6 +24,7 @@ package org.jboss.as.modcluster;
 
 import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
@@ -34,6 +35,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jboss.as.web.WebServer;
@@ -93,15 +95,20 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler implements Descripti
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         String bindingRef = null;
         ModelNode node = operation.get(CommonAttributes.MOD_CLUSTER_CONFIG);
+        List<String> outboundSocketBindings = new LinkedList<String>();
         if (operation.hasDefined(CommonAttributes.MOD_CLUSTER_CONFIG)) {
             if (operation.get(CommonAttributes.MOD_CLUSTER_CONFIG).hasDefined(CommonAttributes.CONFIGURATION))
                 node = operation.get(CommonAttributes.MOD_CLUSTER_CONFIG).get(CommonAttributes.CONFIGURATION);
             if (node.hasDefined(CommonAttributes.ADVERTISE_SOCKET)) {
                 bindingRef = node.get(CommonAttributes.ADVERTISE_SOCKET).asString();
             }
+            if (node.hasDefined(CommonAttributes.PROXY_LIST)) {
+                for (ModelNode proxy: node.get(CommonAttributes.PROXY_LIST).asList()) {
+                    outboundSocketBindings.add(proxy.asString());
+                }
+            }
         }
         try {
-
             //Get the unmasked password
             // Add mod_cluster service
             final ModelNode resolved = context.resolveExpressions(node.clone());
@@ -112,9 +119,12 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler implements Descripti
                     .addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER, SocketBindingManager.class, service.getBindingManager())
                     .addListener(verificationHandler)
                     .setInitialMode(Mode.ACTIVE);
-             if (bindingRef != null)
+            if (bindingRef != null) {
                 serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding());
-
+            }
+            for (String outboundSocketBinding: outboundSocketBindings) {
+                serviceBuilder.addDependency(OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(outboundSocketBinding), OutboundSocketBinding.class, service.addOutboundSocketBinding());
+            }
             newControllers.add(serviceBuilder.install());
         } catch (Throwable t) {
             ROOT_LOGGER.debugf("Error: %s", t);

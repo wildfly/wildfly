@@ -393,7 +393,7 @@ class ModClusterSubsystemDescriptions {
         node.get(type, CommonAttributes.EXCLUDED_CONTEXTS, DESCRIPTION).set(bundle.getString("modcluster.configuration.excluded-contexts"));
         node.get(type, CommonAttributes.EXCLUDED_CONTEXTS, REQUIRED).set(false);
         node.get(type, CommonAttributes.EXCLUDED_CONTEXTS, EXPRESSIONS_ALLOWED).set(true);
-        node.get(type, CommonAttributes.EXCLUDED_CONTEXTS, DEFAULT).set("ROOT,admin-console,invoker,jbossws,jmx-console,juddi,web-console");
+        node.get(type, CommonAttributes.EXCLUDED_CONTEXTS, DEFAULT).set("ROOT,console");
 
         node.get(type, CommonAttributes.AUTO_ENABLE_CONTEXTS, TYPE).set(ModelType.BOOLEAN);
         node.get(type, CommonAttributes.AUTO_ENABLE_CONTEXTS, DESCRIPTION).set(bundle.getString("modcluster.configuration.auto-enable-contexts"));
