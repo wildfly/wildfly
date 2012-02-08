@@ -81,7 +81,7 @@ public class DomainFinalResultHandler implements OperationStepHandler {
         if(shouldContinue){
             ModelNode contextResult = context.getResult();
             contextResult.setEmptyObject(); // clear out any old data
-            contextResult.get(DOMAIN_RESULTS).set(getDomainResults(operation));
+            contextResult.set(getDomainResults(operation));
             if (domainOperationContext.getServerResults().size() > 0) {
                 populateServerGroupResults(context, context.getResult());
             }
