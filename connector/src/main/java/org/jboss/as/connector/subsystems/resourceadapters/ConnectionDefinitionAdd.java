@@ -22,8 +22,10 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import static org.jboss.as.connector.ConnectorLogger.SUBSYSTEM_RA_LOGGER;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.ADD_CONNECTION_DEFINITION_DESC;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.CONNECTIONDEFINITIONS_NODEATTRIBUTE;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.List;
@@ -38,6 +40,7 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
+import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -65,7 +68,10 @@ public class ConnectionDefinitionAdd extends AbstractAddStepHandler implements D
     @Override
     protected void populateModel(ModelNode operation, ModelNode modelNode) throws OperationFailedException {
         for (SimpleAttributeDefinition attribute : CONNECTIONDEFINITIONS_NODEATTRIBUTE) {
-             attribute.validateAndSet(operation, modelNode);
+            if (!attribute.isAllowed(operation) && operation.hasDefined(attribute.getName())) {
+                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalid(attribute.getName())));
+            }
+            attribute.validateAndSet(operation, modelNode);
         }
 
 
@@ -82,11 +88,15 @@ public class ConnectionDefinitionAdd extends AbstractAddStepHandler implements D
         final String poolName = PathAddress.pathAddress(address).getLastElement().getValue();
 
         try {
-            final ModifiableConnDef connectionDefinitionValue = RaOperationUtil.buildConnectionDefinitionObject(context, operation, poolName);
-
-
             ServiceName serviceName = ServiceName.of(ConnectorServices.RA_SERVICE, archiveName, poolName);
             ServiceName raServiceName = ServiceName.of(ConnectorServices.RA_SERVICE, archiveName);
+
+            final ModifiableResourceAdapter ravalue = ((ModifiableResourceAdapter) context.getServiceRegistry(false).getService(raServiceName).getValue());
+            boolean isXa = ravalue.getTransactionSupport() == TransactionSupportEnum.XATransaction;
+
+            final ModifiableConnDef connectionDefinitionValue = RaOperationUtil.buildConnectionDefinitionObject(context, operation, poolName, isXa);
+
+
 
             final ServiceTarget serviceTarget = context.getServiceTarget();
 

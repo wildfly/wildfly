@@ -25,6 +25,7 @@ import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ADMIN_OBJECTS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BEANVALIDATIONGROUP;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BEANVALIDATIONGROUPS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BOOTSTRAPCONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFIG_PROPERTIES;
@@ -45,6 +46,7 @@ import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.util.ParserException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.CommonBundle;
+import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
 import org.jboss.jca.common.api.validator.ValidateException;
@@ -145,6 +147,10 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
         HashMap<String, ModelNode> adminObjectsOperations = new HashMap<String, ModelNode>();
         HashMap<String, HashMap<String, ModelNode>> aoConfigPropertiesOperations = new HashMap<String, HashMap<String, ModelNode>>();
 
+
+        boolean archiveMatched = false;
+        boolean txSupportMatched = false;
+        boolean isXa = false;
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
                 case END_ELEMENT: {
@@ -240,12 +246,12 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                         }
 
                         case CONNECTION_DEFINITION: {
-                            parseConnectionDefinitions(reader, connectionDefinitionsOperations, cfConfigPropertiesOperations);
+                            parseConnectionDefinitions(reader, connectionDefinitionsOperations, cfConfigPropertiesOperations, isXa);
                             break;
                         }
                         case BEAN_VALIDATION_GROUP: {
                             String value = rawElementText(reader);
-                            operation.get(BEANVALIDATIONGROUPS.getName()).add(BEANVALIDATIONGROUPS.parse(value, reader));
+                            operation.get(BEANVALIDATIONGROUPS.getName()).add(BEANVALIDATIONGROUP.parse(value, reader));
                             break;
                         }
                         case BOOTSTRAP_CONTEXT: {
@@ -259,13 +265,22 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
 
                         }
                         case TRANSACTION_SUPPORT: {
+                            if (txSupportMatched) {
+                                throw new ParserException(bundle.unexpectedElement(TRANSACTIONSUPPORT.getXmlName()));
+                            }
                             String value = rawElementText(reader);
                             TRANSACTIONSUPPORT.parseAndSetParameter(value, operation, reader);
+                            isXa = value != null && TransactionSupportEnum.valueOf(value) == TransactionSupportEnum.XATransaction;
+                            txSupportMatched = true;
                             break;
                         }
                         case ARCHIVE: {
+                            if (archiveMatched) {
+                                throw new ParserException(bundle.unexpectedElement(ARCHIVE.getXmlName()));
+                            }
                             archiveName = rawElementText(reader);
                             ARCHIVE.parseAndSetParameter(archiveName, operation, reader);
+                            archiveMatched = true;
                             break;
                         }
                         default:

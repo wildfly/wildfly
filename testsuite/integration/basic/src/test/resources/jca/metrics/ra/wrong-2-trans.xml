@@ -1,0 +1,9 @@
+<subsystem xmlns="urn:jboss:domain:resource-adapters:1.0">
+ <resource-adapters>
+  <resource-adapter>
+	<transaction-support>NoTransaction</transaction-support>
+	<transaction-support>LocalTransaction</transaction-support>
+   <archive>wrong-2-trans.rar</archive>
+    </resource-adapter>
+  </resource-adapters>
+</subsystem>

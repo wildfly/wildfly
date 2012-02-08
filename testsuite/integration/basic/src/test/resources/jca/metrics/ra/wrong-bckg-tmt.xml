@@ -1,0 +1,16 @@
+<subsystem xmlns="urn:jboss:domain:resource-adapters:1.0">
+ <resource-adapters>
+  <resource-adapter>
+  	<transaction-support>XATransaction</transaction-support>
+     <archive>wrong-bckg-tmt.rar</archive>
+     <connection-definitions>
+        	<connection-definition class-name="foo"  jndi-name="java:jboss/name1">
+        	<validation>
+        		<background-validation>true</background-validation>
+        		<background-validation-millis>-1</background-validation-millis>
+        	</validation>
+        	</connection-definition>
+		</connection-definitions>
+    </resource-adapter>
+  </resource-adapters>
+</subsystem>

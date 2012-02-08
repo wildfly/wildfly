@@ -1,0 +1,14 @@
+<subsystem xmlns="urn:jboss:domain:resource-adapters:1.0">
+ <resource-adapters>
+  <resource-adapter>
+   <archive>wrong-2-con-def-wo-class.rar</archive>
+        <connection-definitions>
+        	<connection-definition class-name="foo"  jndi-name="java:jboss/name1">    </connection-definition>
+        	<connection-definition   jndi-name="java:jboss/name2">    </connection-definition>
+		</connection-definitions>
+        <admin-objects>
+          <admin-object class-name="foo"  jndi-name="java:jboss/Name3">  </admin-object>
+         </admin-objects>
+    </resource-adapter>
+  </resource-adapters>
+</subsystem>

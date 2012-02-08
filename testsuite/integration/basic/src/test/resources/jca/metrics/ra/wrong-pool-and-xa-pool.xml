@@ -1,0 +1,18 @@
+<subsystem xmlns="urn:jboss:domain:resource-adapters:1.0">
+ <resource-adapters>
+  <resource-adapter>
+   <archive>wrong-pool-and-xa-pool.rar</archive>
+
+    <connection-definitions>
+    <connection-definition  class-name="foo" jndi-name="def">
+    	<pool>
+    	<min-pool-size>1</min-pool-size>
+    	</pool>
+    	<xa-pool>
+    	<min-pool-size>2</min-pool-size>
+    	</xa-pool>
+    </connection-definition>
+    </connection-definitions>
+    </resource-adapter>
+  </resource-adapters>
+</subsystem>

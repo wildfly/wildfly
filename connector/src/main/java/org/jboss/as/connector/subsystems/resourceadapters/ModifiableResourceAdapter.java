@@ -48,8 +48,16 @@ public class ModifiableResourceAdapter extends ResourceAdapterImpl {
         connectionDefinitions.add(value);
     }
 
+    public synchronized int connectionDefinitionSize() {
+            return connectionDefinitions.size();
+    }
+
     public synchronized void addAdminObject(CommonAdminObject value) {
         adminObjects.add(value);
+    }
+
+    public synchronized int adminObjectSize() {
+        return adminObjects.size();
     }
 
     public ServiceName getRaXmlDeploymentServiceName() {

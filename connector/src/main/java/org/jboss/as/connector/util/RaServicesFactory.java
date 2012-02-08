@@ -2,12 +2,14 @@ package org.jboss.as.connector.util;
 
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.StatisticsDescriptionProvider;
+import org.jboss.as.connector.SubSystemExtensionDescriptionProvider;
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterXmlDeploymentService;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.pool.PoolMetrics;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.ClearStatisticsHandler;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
+import org.jboss.as.connector.subsystems.resourceadapters.Constants;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders;
 import org.jboss.as.controller.PathAddress;
@@ -22,6 +24,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
+import org.jboss.jca.core.connectionmanager.ConnectionManager;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.jca.core.spi.statistics.StatisticsPlugin;
@@ -77,11 +80,16 @@ public class RaServicesFactory {
                             CommonDeployment deploymentMD = ((ResourceAdapterXmlDeploymentService) controller.getService()).getRaxmlDeployment();
 
 
-                            if (deploymentMD.getConnectionManagers() != null && deploymentMD.getConnectionManagers()[0].getPool() != null) {
-                                StatisticsPlugin poolStats = deploymentMD.getConnectionManagers()[0].getPool().getStatistics();
+                            if (deploymentMD.getConnectionManagers() != null) {
+                                for (ConnectionManager cm : deploymentMD.getConnectionManagers())  {
+                                                                if(cm.getPool() != null) {
+                                                                    StatisticsPlugin poolStats = cm.getPool().getStatistics();
+
                                 if (poolStats.getNames().size() != 0) {
                                     DescriptionProvider statsResourceDescriptionProvider = new StatisticsDescriptionProvider(ResourceAdaptersSubsystemProviders.RESOURCE_NAME, "statistics", poolStats);
                                     PathElement pe = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ResourceAdaptersExtension.SUBSYSTEM_NAME);
+                                    PathElement peCD = PathElement.pathElement(Constants.CONNECTIONDEFINITIONS_NAME, cm.getJndiName());
+
                                     ManagementResourceRegistration overrideRegistration = registration;
                                     //when you are in deploy you have a registration pointing to deployment=*
                                     //when you are in re-deploy it points to specific deploymentUnit
@@ -98,14 +106,22 @@ public class RaServicesFactory {
                                             }
                                         });
                                     }
-                                    if (overrideRegistration.getSubModel(PathAddress.pathAddress(pe)) == null) {
-                                        ManagementResourceRegistration subRegistration = overrideRegistration.registerSubModel(pe, statsResourceDescriptionProvider);
-                                        for (String statName : poolStats.getNames()) {
-                                            subRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
-                                        }
-                                        subRegistration.registerOperationHandler("clear-statistics", new ClearStatisticsHandler(poolStats), ResourceAdaptersSubsystemProviders.CLEAR_STATISTICS_DESC, false);
+
+                                    ManagementResourceRegistration subRegistration = overrideRegistration.getSubModel(PathAddress.pathAddress(pe));
+                                    if (subRegistration == null) {
+                                        subRegistration = overrideRegistration.registerSubModel(pe, new SubSystemExtensionDescriptionProvider(ResourceAdaptersSubsystemProviders.RESOURCE_NAME, "statistics"));
                                     }
+                                    if (subRegistration.getSubModel(PathAddress.pathAddress(peCD)) == null) {
+                                        ManagementResourceRegistration cdSubRegistration = subRegistration.registerSubModel(pe, statsResourceDescriptionProvider);
+                                        for (String statName : poolStats.getNames()) {
+                                            cdSubRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
+                                        }
+                                        cdSubRegistration.registerOperationHandler("clear-statistics", new ClearStatisticsHandler(poolStats), ResourceAdaptersSubsystemProviders.CLEAR_STATISTICS_DESC, false);
+                                    }
+
                                 }
+                            }
+                        }
                             }
                         }
                         break;

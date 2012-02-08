@@ -46,6 +46,7 @@ import org.jboss.jca.common.metadata.common.CommonPoolImpl;
 import org.jboss.jca.common.metadata.common.CommonSecurityImpl;
 import org.jboss.jca.common.metadata.common.CommonTimeOutImpl;
 import org.jboss.jca.common.metadata.common.CommonValidationImpl;
+import org.jboss.jca.common.metadata.common.CommonXaPoolImpl;
 import org.jboss.jca.common.metadata.common.CredentialImpl;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -74,18 +75,23 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BEANV
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BOOTSTRAPCONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CLASS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.INTERLEAVING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDINAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXSEPARATEPOOL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NO_RECOVERY;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PAD_XID;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_CLASSNAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_PROPERTIES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_PASSWORD;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_USERNAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SAME_RM_OVERRIDE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN_AND_APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTIONSUPPORT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_CCM;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WRAP_XA_RESOURCE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
 
 public class RaOperationUtil {
@@ -120,7 +126,9 @@ public class RaOperationUtil {
 
     }
 
-    public static ModifiableConnDef buildConnectionDefinitionObject(final OperationContext context, final ModelNode operation, final String poolName) throws OperationFailedException, ValidateException {
+    public static ModifiableConnDef buildConnectionDefinitionObject(final OperationContext context,
+                                                                    final ModelNode operation, final String poolName,
+                                                                    final boolean isXa) throws OperationFailedException, ValidateException {
         Map<String, String> configProperties = new HashMap<String, String>(0);
 //        if (operation.hasDefined(CONFIG_PROPERTIES.getName())) {
 //            configProperties = new HashMap<String, String>(operation.get(CONFIG_PROPERTIES.getName()).asList().size());
@@ -140,29 +148,37 @@ public class RaOperationUtil {
         boolean useStrictMin = getBooleanIfSetOrGetDefault(context, operation, POOL_USE_STRICT_MIN, Defaults.USE_STRICT_MIN);
         final FlushStrategy flushStrategy = operation.hasDefined(POOL_FLUSH_STRATEGY.getName()) ? FlushStrategy.forName(operation
                 .get(POOL_FLUSH_STRATEGY.getName()).asString()) : Defaults.FLUSH_STRATEGY;
+        Boolean isSameRM = getBooleanIfSetOrGetDefault(context, operation, SAME_RM_OVERRIDE, Defaults.IS_SAME_RM_OVERRIDE);
+        Boolean interlivng = getBooleanIfSetOrGetDefault(context, operation, INTERLEAVING, Defaults.INTERLEAVING);
+        Boolean padXid = getBooleanIfSetOrGetDefault(context, operation, PAD_XID, Defaults.PAD_XID);
+        Boolean wrapXaResource = getBooleanIfSetOrGetDefault(context, operation, WRAP_XA_RESOURCE, Defaults.WRAP_XA_RESOURCE);
+        Boolean noTxSeparatePool = getBooleanIfSetOrGetDefault(context, operation, NOTXSEPARATEPOOL, Defaults.NO_TX_SEPARATE_POOL);
 
         Integer allocationRetry = getIntIfSetOrGetDefault(context, operation, ALLOCATION_RETRY, null);
         Long allocationRetryWaitMillis = getLongIfSetOrGetDefault(context, operation, ALLOCATION_RETRY_WAIT_MILLIS, null);
         Long blockingTimeoutMillis = getLongIfSetOrGetDefault(context, operation, BLOCKING_TIMEOUT_WAIT_MILLIS, null);
         Long idleTimeoutMinutes = getLongIfSetOrGetDefault(context, operation, IDLETIMEOUTMINUTES, null);
         Integer xaResourceTimeout = getIntIfSetOrGetDefault(context, operation, XA_RESOURCE_TIMEOUT, null);
+
         CommonTimeOut timeOut = new CommonTimeOutImpl(blockingTimeoutMillis, idleTimeoutMinutes, allocationRetry,
                 allocationRetryWaitMillis, xaResourceTimeout);
-        CommonPool pool = new CommonPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy);
-
+        CommonPool pool = null;
+        if (isXa) {
+              pool = new CommonXaPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy, isSameRM,interlivng, padXid, wrapXaResource, noTxSeparatePool);
+        }   else {
+              pool =  new CommonPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy);
+        }
         String securityDomain = getResolvedStringIfSetOrGetDefault(context, operation, SECURITY_DOMAIN.getName(), null);
         String securityDomainAndApplication = getResolvedStringIfSetOrGetDefault(context, operation, SECURITY_DOMAIN_AND_APPLICATION.getName(),
                 null);
         Boolean application = getBooleanIfSetOrGetDefault(context, operation, APPLICATION, null);
-
         CommonSecurity security = null;
+        if (securityDomain != null || securityDomainAndApplication != null || application != null) {
+            if (application == null)
+                application = Defaults.APPLICATION_MANAGED_SECURITY;
 
-        if (securityDomain != null && securityDomainAndApplication != null && application != null) {
-            if (application == null) application = Defaults.APPLICATION_MANAGED_SECURITY;
             security = new CommonSecurityImpl(securityDomain, securityDomainAndApplication, application);
         }
-
-
         Long backgroundValidationMillis = getLongIfSetOrGetDefault(context, operation, BACKGROUNDVALIDATIONMILLIS, null);
         boolean backgroundValidation = getBooleanIfSetOrGetDefault(context, operation, BACKGROUNDVALIDATION, Defaults.BACKGROUND_VALIDATION);
         boolean useFastFail = getBooleanIfSetOrGetDefault(context, operation, USE_FAST_FAIL, Defaults.USE_FAST_FAIl);
@@ -195,7 +211,7 @@ public class RaOperationUtil {
 
     }
 
-    public static ModifiableAdminObject buildAdminObjects(final OperationContext operationContext, ModelNode operation, final String poolName) throws OperationFailedException {
+    public static ModifiableAdminObject buildAdminObjects(final OperationContext operationContext, ModelNode operation, final String poolName) throws OperationFailedException, ValidateException {
                 Map<String, String> configProperties = new HashMap<String, String>(0);
                 String className = getResolvedStringIfSetOrGetDefault(operationContext, operation, CLASS_NAME.getName(), null);
                 String jndiName = getResolvedStringIfSetOrGetDefault(operationContext, operation, JNDINAME.getName(), null);
@@ -277,10 +293,17 @@ public class RaOperationUtil {
 
     public static void deactivateIfActive(OperationContext context, String raName) throws OperationFailedException {
         final ServiceName raDeploymentServiceName = ConnectorServices.getDeploymentServiceName(raName);
+        Integer identifier = 0;
+        if (raName.indexOf("->") != -1) {
+            identifier = Integer.valueOf(raName.substring(raName.indexOf("->")+2));
+            raName = raName.substring(0,raName.indexOf("->"));
+        }
         if (raDeploymentServiceName != null)  {
             context.removeService(raDeploymentServiceName);
             ConnectorServices.unregisterDeployment(raName, raDeploymentServiceName);
         }
+        ConnectorServices.unregisterResourceIdentifier(raName, identifier);
+
     }
 
     public static void activate(OperationContext context, String raName, String rarName)  throws OperationFailedException {
