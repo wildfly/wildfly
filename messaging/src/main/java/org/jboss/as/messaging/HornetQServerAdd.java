@@ -114,6 +114,7 @@ import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.QUEUE;
 import static org.jboss.as.messaging.CommonAttributes.RUN_SYNC_SPEED_TEST;
 import static org.jboss.as.messaging.CommonAttributes.SCHEDULED_THREAD_POOL_MAX_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.SECURITY_DOMAIN;
 import static org.jboss.as.messaging.CommonAttributes.SECURITY_ENABLED;
 import static org.jboss.as.messaging.CommonAttributes.SECURITY_INVALIDATION_INTERVAL;
 import static org.jboss.as.messaging.CommonAttributes.SECURITY_SETTING;
@@ -226,8 +227,9 @@ class HornetQServerAdd implements OperationStepHandler {
                 serviceBuilder.addDependency(pagingPath, String.class, hqService.getPathInjector(DEFAULT_PAGING_DIR));
 
                 // Add security
+                String domain = SECURITY_DOMAIN.resolveModelAttribute(context, model).asString();
                 serviceBuilder.addDependency(DependencyType.REQUIRED,
-                        SecurityDomainService.SERVICE_NAME.append("messaging"),
+                        SecurityDomainService.SERVICE_NAME.append(domain),
                         SecurityDomainContext.class,
                         hqService.getSecurityDomainContextInjector());
 

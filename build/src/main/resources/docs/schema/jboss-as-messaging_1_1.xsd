@@ -72,6 +72,7 @@
                   </xs:documentation>
               </xs:annotation>
           </xs:element>
+          <xs:element maxOccurs="1" minOccurs="0" name="security-domain" type="xs:string" />
           <xs:element maxOccurs="1" minOccurs="0" name="security-enabled" type="xs:boolean" />
           <xs:element maxOccurs="1" minOccurs="0" name="security-invalidation-interval" type="xs:long" />
           <xs:element maxOccurs="1" minOccurs="0" name="wild-card-routing-enabled" type="xs:boolean" />

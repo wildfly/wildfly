@@ -85,6 +85,7 @@ public interface ModulesMap {
             put("RunAs", RunAsLoginModule.class.getName());
             put("Simple", SimpleServerLoginModule.class.getName());
             put("UsersRoles", UsersRolesLoginModule.class.getName());
+            put("RealmUsersRoles", RealmUsersRolesLoginModule.class.getName());
             put("Disabled", DisabledLoginModule.class.getName());
             // Authentication only modules
             put("PropertiesUsers", PropertiesUsersLoginModule.class.getName());

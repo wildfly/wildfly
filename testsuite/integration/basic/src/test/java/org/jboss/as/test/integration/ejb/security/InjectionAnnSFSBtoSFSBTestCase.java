@@ -59,19 +59,16 @@ public class InjectionAnnSFSBtoSFSBTestCase extends AnnSBTest {
    }
 
    @Test
-   @Ignore("AS7-2994")
    public void testSingleMethodAnnotationsNoUser() throws Exception {
       testSingleMethodAnnotationsNoUserTemplate(MODULE,log, beanClass());
    }
 
    @Test
-   @Ignore("AS7-2999")
    public void testSingleMethodAnnotationsUser1() throws Exception {
       testSingleMethodAnnotationsUser1Template(MODULE, log, beanClass());
    }
 
    @Test
-   @Ignore("AS7-2999")
    public void testSingleMethodAnnotationsUser2() throws Exception {
       testSingleMethodAnnotationsUser2Template(MODULE, log, beanClass());
    }

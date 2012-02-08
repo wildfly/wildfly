@@ -285,6 +285,9 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 case REMOTING_INTERCEPTORS:
                     processRemotingInterceptors(reader, operation);
                     break;
+                case SECURITY_DOMAIN:
+                    handleElementText(reader, element, "server", operation);
+                    break;
                 case SECURITY_SETTINGS: {
                     // process security settings
                     processSecuritySettings(reader, address, list);

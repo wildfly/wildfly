@@ -32,7 +32,7 @@ import javax.ejb.Stateful;
  * @author <a href="mailto:pskopek@redhat.com">Peter Skopek</a>
  */
 @Stateful
-@SecurityDomain("ejb3-tests")
+@SecurityDomain("other")
 public class SingleMethodsAnnOnlyCheckSFSB implements SimpleAuthorizationRemote {
 
     public String defaultAccess(String message) {

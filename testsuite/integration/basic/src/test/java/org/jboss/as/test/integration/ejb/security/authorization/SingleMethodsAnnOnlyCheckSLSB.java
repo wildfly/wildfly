@@ -32,7 +32,7 @@ import javax.ejb.Stateless;
  * @author <a href="mailto:pskopek@redhat.com">Peter Skopek</a>
  */
 @Stateless
-@SecurityDomain("ejb3-tests")
+@SecurityDomain("other")
 public class SingleMethodsAnnOnlyCheckSLSB implements SimpleAuthorizationRemote {
 
 

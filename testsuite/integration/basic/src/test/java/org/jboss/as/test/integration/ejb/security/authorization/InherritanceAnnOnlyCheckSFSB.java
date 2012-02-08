@@ -30,6 +30,6 @@ import javax.ejb.Stateful;
  * @author <a href="mailto:jlanik@redhat.com">Jan Lanik</a>.
  */
 @Stateful
-@SecurityDomain("ejb3-tests")
+@SecurityDomain("other")
 public class InherritanceAnnOnlyCheckSFSB extends ParentAnnOnlyCheck implements SimpleAuthorizationRemote {
 }
