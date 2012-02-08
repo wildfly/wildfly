@@ -35,7 +35,6 @@ import javax.ejb.Stateful;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceContextType;
-
 import org.jboss.ejb3.annotation.Cache;
 import org.jboss.logging.Logger;
 
@@ -82,8 +81,7 @@ public class TestPassivationBean extends PassivationSuperClass implements TestPa
     @Override
     public boolean isPersistenceContextSame() {
         Employee e2 = nestledBean.get(1);
-        Employee e1 = (Employee) entityManager.createQuery("select e from Employee e where e.id=:id")
-                .setParameter("id", 1)
+        Employee e1 = (Employee) entityManager.createQuery("select e from Employee e where e.id=:id").setParameter("id", 1)
                 .getSingleResult();
         return e1 == e2;
 
@@ -102,17 +100,17 @@ public class TestPassivationBean extends PassivationSuperClass implements TestPa
     public void postConstruct() {
         Random r = new Random();
         this.identificator = new Integer(r.nextInt(999)).toString();
-        log.info("Bean [" +  this.identificator + "] created");
+        log.info("Bean [" + this.identificator + "] created");
     }
 
     @PreDestroy
     public void preDestroy() {
-        log.info("Bean [" +  this.identificator + "] destroyed");
+        log.info("Bean [" + this.identificator + "] destroyed");
     }
 
     @PrePassivate
     public void setPassivateFlag() {
-        log.info(this.toString() + " PrePassivation [" +  this.identificator + "]");
+        log.info(this.toString() + " PrePassivation [" + this.identificator + "]");
         this.beenPassivated = true;
     }
 
@@ -124,7 +122,7 @@ public class TestPassivationBean extends PassivationSuperClass implements TestPa
 
     @Remove
     public void remove() {
-        log.info("Bean [" +  this.identificator + "] removing");
+        log.info("Bean [" + this.identificator + "] removing");
     }
 
 
