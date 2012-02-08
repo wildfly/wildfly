@@ -104,12 +104,15 @@ public class OperationRouting {
                     allHosts.addAll(stepRouting.getHosts());
                 }
 
-                if (allHosts.size() == 1) {
-                    routing = new OperationRouting(allHosts.iterator().next(), twoStep);
-                }
-                else {
-                    routing = new OperationRouting(allHosts);
-                }
+                // AS7-2907 Always process as a two-step so the results for a composite op are consistent in all cases
+                // routing = new OperationRouting(allHosts.iterator().next(), twoStep);
+//                if (allHosts.size() == 1) {
+//                    routing = new OperationRouting(allHosts.iterator().next(), true);
+//                }
+//                else {
+//                    routing = new OperationRouting(allHosts);
+//                }
+                routing = new OperationRouting(allHosts);
             }
             else {
                 // empty; this will be an error but don't deal with it here
@@ -148,20 +151,20 @@ public class OperationRouting {
 
     }
 
+    private final String singleHost;
     private final Set<String> hosts = new HashSet<String>();
     private final boolean twoStep;
-    private final boolean routeToMaster;
 
     /** Constructor for domain-level requests where we are not master */
     private OperationRouting() {
         twoStep = false;
-        routeToMaster = true;
+        singleHost = null;
     }
 
     /** Constructor for multi-host ops */
     private OperationRouting(final boolean twoStep) {
         this.twoStep = twoStep;
-        routeToMaster = !twoStep;
+        singleHost = null;
     }
 
     /**
@@ -173,7 +176,8 @@ public class OperationRouting {
     public OperationRouting(String host, boolean twoStep) {
         this.hosts.add(host);
         this.twoStep = twoStep;
-        routeToMaster = false;
+        singleHost = host;
+        hosts.add(host);
     }
 
     /**
@@ -184,7 +188,7 @@ public class OperationRouting {
     public OperationRouting(final Collection<String> hosts) {
         this.hosts.addAll(hosts);
         this.twoStep = true;
-        routeToMaster = false;
+        singleHost = null;
     }
 
     public Set<String> getHosts() {
@@ -192,22 +196,22 @@ public class OperationRouting {
     }
 
     public String getSingleHost() {
-        return hosts.size() == 1 ? hosts.iterator().next() : null;
+        return singleHost;
     }
 
     public boolean isTwoStep() {
         return twoStep;
     }
 
-    public boolean isRouteToMaster() {
-        return routeToMaster;
-    }
-
     public boolean isLocalOnly(final String localHostName) {
-        return localHostName.equals(getSingleHost());
+        if (singleHost != null) {
+            return localHostName.equals(singleHost);
+        } else {
+            return hosts.size() == 1 && hosts.contains(localHostName);
+        }
     }
 
     public boolean isLocalCallNeeded(final String localHostName) {
-        return isLocalOnly(localHostName) || hosts.size() == 0 || hosts.contains(localHostName);
+        return localHostName.equals(singleHost) || hosts.size() == 0 || hosts.contains(localHostName);
     }
 }

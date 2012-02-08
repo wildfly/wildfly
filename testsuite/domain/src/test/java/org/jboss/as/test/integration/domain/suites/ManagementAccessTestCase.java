@@ -171,14 +171,14 @@ public class ManagementAccessTestCase {
 
         ModelNode response = masterClient.execute(request);
         System.out.println(response);
-        ModelNode returnVal = validateResponse(response);
+        ModelNode returnVal = validateResponse(response).get(DOMAIN_RESULTS);
         validateResponse(returnVal.get("step-1"));
         ModelNode profile = validateResponse(returnVal.get("step-2"));
         Assert.assertEquals("osgi", profile.asString());
 
         response = slaveClient.execute(request);
         System.out.println(response);
-        ModelNode slaveReturnVal = validateResponse(response);
+        ModelNode slaveReturnVal = validateResponse(response).get(DOMAIN_RESULTS);
         Assert.assertEquals(returnVal, slaveReturnVal);
     }
 
@@ -227,7 +227,7 @@ public class ManagementAccessTestCase {
 
         ModelNode response = masterClient.execute(masterRequest);
         System.out.println(response);
-        ModelNode returnVal = validateResponse(response);
+        ModelNode returnVal = validateResponse(response).get(DOMAIN_RESULTS);
         ModelNode name = validateResponse(returnVal.get("step-1"));
         Assert.assertEquals("master", name.asString());
         ModelNode inetAddress = validateResponse(returnVal.get("step-2"));
@@ -241,7 +241,7 @@ public class ManagementAccessTestCase {
 
         response = slaveClient.execute(slaveRequest);
         System.out.println(response);
-        ModelNode slaveReturnVal = validateResponse(response);
+        ModelNode slaveReturnVal = validateResponse(response).get(DOMAIN_RESULTS);
         name = validateResponse(slaveReturnVal.get("step-1"));
         Assert.assertEquals("slave", name.asString());
         inetAddress = validateResponse(slaveReturnVal.get("step-2"));
@@ -249,7 +249,7 @@ public class ManagementAccessTestCase {
 
         // Check we get the same thing via the master
         response = masterClient.execute(slaveRequest);
-        returnVal = validateResponse(response);
+        returnVal = validateResponse(response).get(DOMAIN_RESULTS);
         Assert.assertEquals(returnVal, slaveReturnVal);
 
         // Can't access the master via the slave
