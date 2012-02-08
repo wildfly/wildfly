@@ -203,6 +203,7 @@ public class FrameworkBootstrapService implements Service<Void> {
             buffer.append("org.jboss.modules,");
             buffer.append("org.jboss.msc,");
             buffer.append("org.jboss.osgi.framework,");
+            buffer.append("org.jboss.osgi.repository,");
             buffer.append("org.slf4j");
             props.put(PROP_JBOSS_OSGI_SYSTEM_MODULES, buffer.toString());
         }
@@ -218,6 +219,11 @@ public class FrameworkBootstrapService implements Service<Void> {
             sysPackages.add("org.jboss.as.configadmin.service");
             sysPackages.add("org.jboss.as.osgi.service");
             sysPackages.add("org.jboss.logging;version=3.1.0");
+            sysPackages.add("org.jboss.osgi.repository;version=1.0");
+            sysPackages.add("org.jboss.osgi.resolver.v2;version=2.0");
+            sysPackages.add("org.osgi.service.repository;version=1.0");
+            sysPackages.add("org.osgi.framework.resource;version=1.0");
+            sysPackages.add("org.osgi.framework.wiring;version=1.1");
             sysPackages.add("org.slf4j;version=1.6.1");
             syspackages = sysPackages.toString();
             syspackages = syspackages.substring(1, syspackages.length() - 1);
