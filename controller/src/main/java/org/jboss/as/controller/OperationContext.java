@@ -135,6 +135,30 @@ public interface OperationContext {
     boolean hasResult();
 
     /**
+     * Get the failure description result node, creating it if necessary.
+     *
+     * @return the failure description
+     */
+    ModelNode getFailureDescription();
+
+    /**
+     * Returns whether {@link #getFailureDescription()} has been invoked.
+     *
+     * @return {@code true} if {@link #getFailureDescription()} has been invoked
+     */
+    boolean hasFailureDescription();
+
+    /**
+     * Get the node into which the details of server results in a multi-server managed domain operation should be written.
+     *
+     * @return the server results node
+     *
+     * @throws IllegalStateException if this process is not a {@link ProcessType#HOST_CONTROLLER}
+     */
+    ModelNode getServerResults();
+
+
+    /**
      * Complete a step, returning the overall operation result.  The step handler calling this operation should append
      * its result status to the operation result before calling this method.  The return value should be checked
      * to determine whether the operation step should be rolled back.
@@ -158,21 +182,6 @@ public interface OperationContext {
      * @param rollbackHandler the handler for any rollback notification. Cannot be {@code null}.
      */
     void completeStep(RollbackHandler rollbackHandler);
-
-    /**
-     * Get the failure description result node, creating it if necessary.
-     *
-     * @return the failure description
-     */
-    ModelNode getFailureDescription();
-
-    /**
-     * Returns whether {@link #getFailureDescription()} has been invoked.
-     *
-     * @return {@code true} if {@link #getFailureDescription()} has been invoked
-     */
-    boolean hasFailureDescription();
-
     /**
      * Get the type of process in which this operation is executing.
      *

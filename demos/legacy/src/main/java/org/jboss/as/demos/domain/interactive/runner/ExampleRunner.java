@@ -997,8 +997,10 @@ public class ExampleRunner implements Runnable {
             deployed = true;
 
             try {
-                final ModelNode result = executeForResult(queueAddOperation);
-                Collection<String> serverGroups = resultToServerGroupIdentitySet(result);
+                final ModelNode response = executeForResponse(queueAddOperation);
+                // Validate success
+                getSuccessResult(queueAddOperation);
+                Collection<String> serverGroups = resultToServerGroupIdentitySet(response);
                 for (String serverGroup : serverGroups) {
                     System.out.println(serverGroup);
                     //TODO: fixme
@@ -1225,26 +1227,38 @@ public class ExampleRunner implements Runnable {
         runner.run();
     }
 
+    private ModelNode executeForResponse(ModelNode op) throws Exception {
+        return executeForResponse(new OperationBuilder(op).build());
+    }
+
     private ModelNode executeForResult(ModelNode op) throws Exception {
         return executeForResult(new OperationBuilder(op).build());
     }
 
-    private ModelNode executeForResult(Operation op) {
+    private ModelNode executeForResponse(Operation op) {
         try {
-            ModelNode result = client.execute(op);
-            if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
-                return result.get("result");
-            } else if (result.hasDefined("failure-description")) {
-                throw new RuntimeException(result.get("failure-description").toString());
-            } else if (result.hasDefined("domain-failure-description")) {
-                throw new RuntimeException(result.get("domain-failure-description").toString());
-            } else if (result.hasDefined("host-failure-descriptions")) {
-                throw new RuntimeException(result.get("host-failure-descriptions").toString());
-            } else {
-                throw new RuntimeException("Operation outcome is " + result);
-            }
+            return client.execute(op);
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private ModelNode executeForResult(Operation op) {
+        ModelNode response = executeForResponse(op);
+        return getSuccessResult(response);
+    }
+
+    private ModelNode getSuccessResult(ModelNode response) {
+        if (response.hasDefined("outcome") && "success".equals(response.get("outcome").asString())) {
+            return response.get("result");
+        } else if (response.hasDefined("failure-description")) {
+            throw new RuntimeException(response.get("failure-description").toString());
+        } else if (response.hasDefined("domain-failure-description")) {
+            throw new RuntimeException(response.get("domain-failure-description").toString());
+        } else if (response.hasDefined("host-failure-descriptions")) {
+            throw new RuntimeException(response.get("host-failure-descriptions").toString());
+        } else {
+            throw new RuntimeException("Operation outcome is " + response);
         }
     }
 

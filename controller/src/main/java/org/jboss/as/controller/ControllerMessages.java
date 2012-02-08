@@ -2402,4 +2402,17 @@ public interface ControllerMessages {
     @Message(id = 14840, value = "Operation '%s' targeted at resource '%s' was directly invoked by a user. " +
             "User operations are not permitted to directly update the persistent configuration of a server in a managed domain.")
     OperationFailedRuntimeException modelUpdateNotAuthorized(String operation, PathAddress address);
+
+    /*
+     * Creates an exception indicating an operation handler tried to access the server results portion of an operation
+     * response on a non-HostController process.
+     *
+     * @param validType ProcessType.HOST_CONTROLLER -- a param here so it won't be translated
+     * @param processType the type of process that tried to access the server results
+     *
+     * @return a {@link IllegalStateException} for the error.
+     */
+    @Message(id = 14841, value = "An operation handler attempted to access the operation response server results object " +
+            "on a process type other than '%s'. The current process type is '%s'")
+    IllegalStateException serverResultsAccessNotAllowed(ProcessType validType, ProcessType processType);
 }

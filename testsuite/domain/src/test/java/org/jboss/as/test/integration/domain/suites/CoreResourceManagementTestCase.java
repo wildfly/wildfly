@@ -562,13 +562,11 @@ public class CoreResourceManagementTestCase {
         composite.get(STEPS).add(server1);
         composite.get(STEPS).add(server3);
 
-        ModelNode result = masterClient.execute(composite);
+        ModelNode response = masterClient.execute(composite);
+        validateFailedResponse(response);
 
         String errorCode = getNotAuthorizedErrorCode();
-
-        validateFailedResponse(result);
-
-        List<Property> steps = result.get(RESULT, SERVER_GROUPS, "main-server-group").asPropertyList();
+        List<Property> steps = response.get(SERVER_GROUPS, "main-server-group").asPropertyList();
         Assert.assertEquals(2, steps.size());
         int i = 0;
         for (Property property : steps) {
@@ -627,11 +625,12 @@ public class CoreResourceManagementTestCase {
         write.get(OP_ADDR).add(HOST, "master").add(SERVER_CONFIG, "main-one");
         write.get(NAME).set("socket-binding-port-offset");
         write.get(VALUE).set(original + 1);
-        result = validateResponse(masterClient.execute(write));
+        ModelNode response = masterClient.execute(write);
+        validateResponse(response);
 
         final String mainServerGroup = "main-server-group";
-        Assert.assertEquals(SUCCESS, result.get(SERVER_GROUPS, mainServerGroup, "main-one", RESPONSE, OUTCOME).asString());
-        ModelNode headers = result.get(SERVER_GROUPS, mainServerGroup, "main-one", RESPONSE, RESPONSE_HEADERS);
+        Assert.assertEquals(SUCCESS, response.get(SERVER_GROUPS, mainServerGroup, "main-one", RESPONSE, OUTCOME).asString());
+        ModelNode headers = response.get(SERVER_GROUPS, mainServerGroup, "main-one", RESPONSE, RESPONSE_HEADERS);
         Assert.assertEquals(RESTART_REQUIRED, headers.get(PROCESS_STATE).asString());
         Assert.assertTrue(RESTART_REQUIRED, headers.get(OPERATION_REQUIRES_RESTART).asBoolean());
 

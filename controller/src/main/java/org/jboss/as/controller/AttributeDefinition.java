@@ -589,6 +589,11 @@ public abstract class AttributeDefinition {
         }
 
         @Override
+        public ModelNode getServerResults() {
+            return null;
+        }
+
+        @Override
         public ManagementResourceRegistration getResourceRegistrationForUpdate() {
             return null;
         }
