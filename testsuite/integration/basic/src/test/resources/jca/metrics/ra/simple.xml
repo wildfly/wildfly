@@ -1,0 +1,13 @@
+<subsystem xmlns="urn:jboss:domain:resource-adapters:1.0">
+ <resource-adapters>
+  <resource-adapter>
+   <archive>simple.rar</archive>
+        <connection-definitions>
+        	<connection-definition class-name="foo"  jndi-name="java:jboss/name1">    </connection-definition>
+		</connection-definitions>
+        <admin-objects>
+          <admin-object class-name="foo"  jndi-name="java:jboss/Name3">  </admin-object>
+         </admin-objects>
+    </resource-adapter>
+  </resource-adapters>
+</subsystem>

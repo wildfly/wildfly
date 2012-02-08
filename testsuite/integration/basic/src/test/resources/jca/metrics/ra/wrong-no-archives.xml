@@ -1,0 +1,6 @@
+<subsystem xmlns="urn:jboss:domain:resource-adapters:1.0">
+            <resource-adapters>
+                <resource-adapter>
+                </resource-adapter>
+            </resource-adapters>
+</subsystem>

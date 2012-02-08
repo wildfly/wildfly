@@ -1,0 +1,14 @@
+<subsystem xmlns="urn:jboss:domain:resource-adapters:1.0">
+ <resource-adapters>
+  <resource-adapter>
+     <archive>wrong-idle-tmt.rar</archive>
+     <connection-definitions>  
+        	<connection-definition   jndi-name="java:jboss/name1">
+        	<timeout>
+        		<idle-timeout-minutes>-1</idle-timeout-minutes>
+        	</timeout>
+        	</connection-definition>
+		</connection-definitions>
+    </resource-adapter>
+  </resource-adapters>
+</subsystem>

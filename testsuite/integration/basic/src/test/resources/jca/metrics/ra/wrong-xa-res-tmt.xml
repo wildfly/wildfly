@@ -1,0 +1,15 @@
+<subsystem xmlns="urn:jboss:domain:resource-adapters:1.0">
+ <resource-adapters>
+  <resource-adapter>
+  	<transaction-support>XATransaction</transaction-support>
+     <archive>wrong-xa-res-tmt.rar</archive>
+     <connection-definitions>
+        	<connection-definition class-name="foo"  jndi-name="java:jboss/name1">
+        	<timeout>
+        		<xa-resource-timeout>-1</xa-resource-timeout>
+        	</timeout>
+        	</connection-definition>
+		</connection-definitions>
+    </resource-adapter>
+  </resource-adapters>
+</subsystem>

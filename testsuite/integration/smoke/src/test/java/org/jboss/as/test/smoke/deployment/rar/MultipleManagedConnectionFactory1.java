@@ -107,7 +107,8 @@ public class MultipleManagedConnectionFactory1 implements ManagedConnectionFacto
     */
    public Object createConnectionFactory() throws ResourceException
    {
-      throw new ResourceException("This resource adapter doesn't support non-managed environments");
+       return new MultipleManagedConnectionFactory1();
+      //throw new ResourceException("This resource adapter doesn't support non-managed environments");
    }
 
    /**

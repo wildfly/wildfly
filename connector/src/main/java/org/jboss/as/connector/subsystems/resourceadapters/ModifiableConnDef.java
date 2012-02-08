@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.jboss.jca.common.CommonBundle;
+import org.jboss.jca.common.api.metadata.ValidatableMetadata;
 import org.jboss.jca.common.api.metadata.common.CommonConnDef;
 import org.jboss.jca.common.api.metadata.common.CommonPool;
 import org.jboss.jca.common.api.metadata.common.CommonSecurity;
@@ -34,6 +36,8 @@ import org.jboss.jca.common.api.metadata.common.CommonTimeOut;
 import org.jboss.jca.common.api.metadata.common.CommonValidation;
 import org.jboss.jca.common.api.metadata.common.CommonXaPool;
 import org.jboss.jca.common.api.metadata.common.Recovery;
+import org.jboss.jca.common.api.validator.ValidateException;
+import org.jboss.logging.Messages;
 
 
 public class ModifiableConnDef implements CommonConnDef {
@@ -66,6 +70,9 @@ public class ModifiableConnDef implements CommonConnDef {
 
     private final Recovery recovery;
 
+    private static CommonBundle bundle = Messages.getBundle(CommonBundle.class);
+
+
     /**
      * Create a new ConnectionDefinition.
      *
@@ -84,7 +91,7 @@ public class ModifiableConnDef implements CommonConnDef {
      */
     public ModifiableConnDef(Map<String, String> configProperties, String className, String jndiName,
                              String poolName, Boolean enabled, Boolean useJavaContext, Boolean useCcm, CommonPool pool, CommonTimeOut timeOut,
-                             CommonValidation validation, CommonSecurity security, Recovery recovery) {
+                             CommonValidation validation, CommonSecurity security, Recovery recovery) throws ValidateException {
         super();
         if (configProperties != null) {
             this.configProperties = new HashMap<String, String>(configProperties.size());
@@ -386,4 +393,5 @@ public class ModifiableConnDef implements CommonConnDef {
     public final Recovery getRecovery() {
         return recovery;
     }
+
 }

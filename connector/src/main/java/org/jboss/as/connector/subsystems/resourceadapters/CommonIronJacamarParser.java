@@ -37,6 +37,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOC
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CLASS_NAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFIG_PROPERTIES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFIG_PROPERTY_VALUE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.INTERLEAVING;
@@ -97,7 +98,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
     private static CommonBundle bundle = Messages.getBundle(CommonBundle.class);
 
 
-    protected void parseConfigProperties(final XMLExtendedStreamReader reader, final Map<String,ModelNode> map) throws XMLStreamException {
+    protected void parseConfigProperties(final XMLExtendedStreamReader reader, final Map<String,ModelNode> map) throws XMLStreamException, ParserException {
 
             String name = rawAttributeText(reader, "name");
 
@@ -109,6 +110,9 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
 
             CONFIG_PROPERTY_VALUE.parseAndSetParameter(value,operation,reader);
 
+            if (map.containsKey(name)) {
+                throw new ParserException(bundle.unexpectedElement(CONFIG_PROPERTIES.getXmlName()));
+            }
             map.put(name, operation);
         }
 
@@ -124,7 +128,8 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
      * @throws org.jboss.jca.common.api.validator.ValidateException
      *          ValidateException
      */
-    protected void parseConnectionDefinitions(final XMLExtendedStreamReader reader, final Map<String,ModelNode> map, final Map<String,HashMap<String, ModelNode>> configMap)
+    protected void parseConnectionDefinitions(final XMLExtendedStreamReader reader, final Map<String,ModelNode> map,
+                                              final Map<String,HashMap<String, ModelNode>> configMap, final boolean isXa)
             throws XMLStreamException, ParserException, ValidateException {
 
 
@@ -134,7 +139,6 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
         String poolName = null;
         String jndiName = null;
         int attributeSize = reader.getAttributeCount();
-        boolean isXa = Boolean.FALSE;
         boolean poolDefined = Boolean.FALSE;
 
         for (int i = 0; i < attributeSize; i++) {
@@ -235,14 +239,15 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                             break;
                         }
                         case XA_POOL: {
+                            if (! isXa) throw new ParserException(bundle.unexpectedElement(CommonConnDef.Tag.XA_POOL.name()));
                             if (poolDefined)
                                 throw new ParserException(bundle.multiplePools());
                             parseXaPool(reader, connectionDefinitionNode);
-                            isXa = true;
                             poolDefined = true;
                             break;
                         }
                         case POOL: {
+                            if (isXa) throw new ParserException(bundle.unexpectedElement(CommonConnDef.Tag.POOL.name()));
                             if (poolDefined)
                                 throw new ParserException(bundle.multiplePools());
                             parsePool(reader, connectionDefinitionNode);
@@ -663,6 +668,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
     private void parseSecuritySettings(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException, ParserException,
             ValidateException {
 
+        boolean securtyDomainMatched = false;
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
                 case END_ELEMENT: {
@@ -680,8 +686,12 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                     switch (CommonSecurity.Tag.forName(reader.getLocalName())) {
 
                         case SECURITY_DOMAIN: {
+                            if (securtyDomainMatched) {
+                                throw new ParserException(bundle.unexpectedElement(SECURITY_DOMAIN.getXmlName()));
+                            }
                             String value = rawElementText(reader);
                             SECURITY_DOMAIN.parseAndSetParameter(value, node, reader);
+                            securtyDomainMatched = true;
                             break;
                         }
                         case SECURITY_DOMAIN_AND_APPLICATION: {

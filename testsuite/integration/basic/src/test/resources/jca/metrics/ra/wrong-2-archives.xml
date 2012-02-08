@@ -1,0 +1,12 @@
+<subsystem xmlns="urn:jboss:domain:resource-adapters:1.0">
+            <resource-adapters>
+                <resource-adapter>
+                    <archive>
+                        some1.rar
+                    </archive>
+                    <archive>
+                        wrong-2-archives.rar
+                    </archive>
+                </resource-adapter>
+            </resource-adapters>
+</subsystem>
