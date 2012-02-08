@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
+<config>
+   <subsystems>
+      <subsystem>configuration/subsystems/logging.xml</subsystem>
+      <subsystem>configuration/subsystems/configadmin.xml</subsystem>
+      <subsystem supplement="no-remote-connector">configuration/subsystems/jmx.xml</subsystem>
+      <subsystem supplement="osgi-only-example">configuration/subsystems/osgi.xml</subsystem>
+      <subsystem>configuration/subsystems/remoting.xml</subsystem>
+   </subsystems>  
+</config>

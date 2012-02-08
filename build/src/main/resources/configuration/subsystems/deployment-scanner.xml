@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
+<config>
+   <extension-module>org.jboss.as.deployment-scanner</extension-module>
+   <subsystem xmlns="urn:jboss:domain:deployment-scanner:1.1">
+       <deployment-scanner path="deployments" relative-to="jboss.server.base.dir" scan-interval="5000"/>
+   </subsystem>
+</config>

@@ -37,6 +37,15 @@
 
     <name>JBoss Application Server: Build</name>
     <packaging>pom</packaging>
+    
+    <properties>
+        <!-- generated configs root dirs -->
+        <generated.configs>${basedir}/target/generated-configs</generated.configs>
+        <generated.configs.standalone>${generated.configs}/standalone/configuration</generated.configs.standalone>
+        <generated.configs.domain>${generated.configs}/domain/configuration</generated.configs.domain>
+        <generated.configs.examples>${generated.configs}/docs/examples/configs</generated.configs.examples>
+        <generated.configs.src.dir>${basedir}/src/main/resources</generated.configs.src.dir>
+    </properties>
 
     <build>
         <plugins>
@@ -45,6 +54,21 @@
                 <artifactId>maven-antrun-plugin</artifactId>
                 <inherited>false</inherited>
                 <executions>
+                    <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
+                    <execution>
+                        <id>generate-configs</id>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <target>
+                                <ant antfile="build-configs.xml" inheritRefs="true">
+                                    <target name="all"/>
+                                </ant>
+                            </target>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>build-dist</id>
                         <goals>
@@ -77,7 +101,7 @@
                         <version>${version.rhino.js}</version>
                     </dependency>
                 </dependencies>
-            </plugin>
+            </plugin>    
         </plugins>
     </build>
 
@@ -686,6 +710,11 @@
                 <dependency>
                     <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-appclient</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-config-assembly</artifactId>
                 </dependency>
 
                 <dependency>

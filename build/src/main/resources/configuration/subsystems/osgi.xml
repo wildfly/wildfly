@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
+<config default-supplement="default">
+   <extension-module>org.jboss.as.osgi</extension-module>
+   <subsystem xmlns="urn:jboss:domain:osgi:1.2" activation="@@activation@@">
+       <?PROPERTIES?>
+       <?CAPABILITIES?>
+   </subsystem>
+   <supplement name="default">
+      <replacement placeholder="@@activation@@" attributeValue="lazy"/>
+      <replacement placeholder="PROPERTIES">
+	       <properties>
+	           <!-- Specifies the beginning start level of the framework -->
+	           <property name="org.osgi.framework.startlevel.beginning">1</property>
+	       </properties>
+      </replacement>
+      <replacement placeholder="CAPABILITIES">
+	       <capabilities>
+	           <!-- modules registered with the OSGi layer on startup -->
+	           <capability name="javax.servlet.api:v25"/>
+	           <capability name="javax.transaction.api"/>
+	           <!-- bundles started in startlevel 1 -->
+	           <capability name="org.apache.felix.log" startlevel="1"/>
+	           <capability name="org.jboss.osgi.logging" startlevel="1"/>
+	           <capability name="org.apache.felix.configadmin" startlevel="1"/>
+	           <capability name="org.jboss.as.osgi.configadmin" startlevel="1"/>
+	       </capabilities>
+      </replacement>
+   </supplement>
+   <supplement name="osgi-only-example">
+      <replacement placeholder="@@activation@@" attributeValue="eager"/>
+   </supplement>
+   <socket-binding name="osgi-http" interface="management" port="8090"/>
+</config>

@@ -42,6 +42,10 @@
                 <include name="standalone/deployments/**"/>
                 <include name="welcome-content/**"/>
             </fileset>
+        	   <fileset dir="${generated.configs}">
+        	   	 <include name="domain/**"/>
+        	   	 <include name="docs/**"/>
+        	   </fileset>
         </copy>
         <chmod perm="755">
             <fileset dir="${output.dir}/bin">
@@ -64,7 +68,7 @@
 
     <target name="copy-standalone" description="Copy all standard configurations">
         <copy todir="${output.dir}">
-            <fileset dir="src/main/resources">
+            <fileset dir="${generated.configs}">
                 <include name="standalone/configuration/**.xml"/>
             </fileset>
         </copy>
@@ -73,7 +77,7 @@
     <target name="copy-standalone-minimalistic">
         <copy tofile="${output.dir}/standalone/configuration/standalone.xml" file="src/main/resources/docs/examples/configs/standalone-minimalistic.xml"/>
         <copy todir="${output.dir}/docs/examples/configs">
-            <fileset dir="src/main/resources/standalone/configuration">
+            <fileset dir="${generated.configs.standalone}">
                 <include name="**.xml"/>
             </fileset>
         </copy>

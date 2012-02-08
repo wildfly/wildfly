@@ -1,0 +1,141 @@
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2012, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<project name="module-repository" basedir="." default="all">
+
+    <property name="output.dir" value="target/jboss-as-${jboss.as.release.version}"/>
+
+    <target name="generate-configs" description="Generate standard standalone configurations">
+    	<!-- make output file directory -->
+    	<mkdir dir="${generated.configs.standalone}"/>
+      <mkdir dir="${generated.configs.domain}"/>
+      <mkdir dir="${generated.configs.examples}"/>
+    	<delete>
+         <fileset dir="${generated.configs.standalone}">
+            <include name="**/*"/>
+         </fileset>
+         <fileset dir="${generated.configs.domain}">
+            <include name="**/*"/>
+         </fileset>
+         <fileset dir="${generated.configs.examples}">
+            <include name="**/*"/>
+         </fileset>
+    	</delete>
+    	
+    	<!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
+    	
+    	<!-- Core configs -->
+      <generate-server-config 
+           paramTemplateFile="configuration/standalone/template.xml" 
+           paramSubsystemsFile="configuration/standalone/subsystems.xml"
+           paramOutputFile="${generated.configs.standalone}/standalone.xml"/>
+      <generate-server-config 
+           paramTemplateFile="configuration/standalone/template.xml" 
+           paramSubsystemsFile="configuration/standalone/subsystems-full.xml"
+           paramOutputFile="${generated.configs.standalone}/standalone-full.xml"/>
+      <generate-server-config 
+           paramTemplateFile="configuration/standalone/template.xml" 
+           paramSubsystemsFile="configuration/standalone/subsystems-ha.xml"
+           paramOutputFile="${generated.configs.standalone}/standalone-ha.xml"/>
+      <generate-server-config 
+           paramTemplateFile="configuration/standalone/template.xml" 
+           paramSubsystemsFile="configuration/standalone/subsystems-full-ha.xml"
+           paramOutputFile="${generated.configs.standalone}/standalone-full-ha.xml"/>
+      <generate-domain-config 
+           paramTemplateFile="configuration/domain/template.xml" 
+           paramSubsystemsFile="configuration/domain/subsystems.xml"
+           paramOutputFile="${generated.configs.domain}/domain.xml"/>
+
+      <!-- Example configs -->
+      <generate-server-config 
+           paramTemplateFile="configuration/standalone/template.xml" 
+           paramSubsystemsFile="configuration/examples/subsystems-hornetq-colocated.xml"
+           paramOutputFile="${generated.configs.examples}/standalone-hornetq-colocated.xml"/>
+      <generate-server-config 
+           paramTemplateFile="configuration/standalone/template.xml" 
+           paramSubsystemsFile="configuration/examples/subsystems-jts.xml"
+           paramOutputFile="${generated.configs.examples}/standalone-jts.xml"/>
+      <generate-server-config 
+           paramTemplateFile="configuration/standalone/template.xml" 
+           paramSubsystemsFile="configuration/examples/subsystems-osgi-only.xml"
+           paramOutputFile="${generated.configs.examples}/standalone-osgi-only.xml"/>
+      <generate-server-config 
+           paramTemplateFile="configuration/standalone/template.xml" 
+           paramSubsystemsFile="configuration/examples/subsystems-xts.xml"
+           paramOutputFile="${generated.configs.examples}/standalone-xts.xml"/>
+    		
+    </target>
+
+
+    <target name="all" depends="generate-configs"/>
+
+	<macrodef name="generate-server-config">
+      <attribute name="paramTemplateFile"/>
+      <attribute name="paramSubsystemsFile"/>
+      <attribute name="paramOutputFile"/> 
+
+    	<sequential>
+    		<generate-configuration 
+    			paramTemplateFile="@{paramTemplateFile}"
+    		   paramSubsystemsFile="@{paramSubsystemsFile}"
+    		   paramOutputFile="@{paramOutputFile}"
+    		   className="StandaloneMain"/>
+      </sequential>
+	 </macrodef>
+
+   <macrodef name="generate-domain-config">
+      <attribute name="paramTemplateFile"/>
+      <attribute name="paramSubsystemsFile"/>
+      <attribute name="paramOutputFile"/> 
+
+      <sequential>
+         <generate-configuration 
+            paramTemplateFile="@{paramTemplateFile}"
+            paramSubsystemsFile="@{paramSubsystemsFile}"
+            paramOutputFile="@{paramOutputFile}"
+            className="DomainMain"/>
+      </sequential>
+    </macrodef>
+
+	<macrodef name="generate-configuration">
+      <attribute name="paramTemplateFile"/>
+      <attribute name="paramSubsystemsFile"/>
+      <attribute name="paramOutputFile"/> 
+		<attribute name="className"/>
+
+      <sequential>
+         <echo>Merging standalone @{paramTemplateFile} and @{paramSubsystemsFile} into @{paramOutputFile}, using @{className}</echo>
+         
+         <java classname="org.jboss.as.config.assembly.@{className}">
+             <classpath>
+                    <path refid="maven.compile.classpath"/>
+             </classpath>
+            <!-- baseDir -->
+            
+            <arg value="${generated.configs.src.dir}"/>
+            <arg value="${generated.configs.src.dir}/@{paramTemplateFile}"/>
+            <arg value="${generated.configs.src.dir}/@{paramSubsystemsFile}"/>
+            <arg value="@{paramOutputFile}"/>
+         </java>
+      </sequential>
+	</macrodef>
+</project>

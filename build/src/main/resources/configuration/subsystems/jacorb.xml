@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
+<config>
+   <extension-module>org.jboss.as.jacorb</extension-module>
+   <subsystem xmlns="urn:jboss:domain:jacorb:1.1">
+       <orb>
+           <initializers transactions="spec" security="on"/>
+       </orb>
+   </subsystem>
+   <socket-binding name="jacorb" interface="unsecure" port="3528"/>
+   <socket-binding name="jacorb-ssl" interface="unsecure" port="3529"/>
+</config>

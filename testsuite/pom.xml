@@ -131,7 +131,6 @@
         <!-- Arquillian dependency versions -->
         <version.arquillian_core>${version.org.jboss.arquillian.core}</version.arquillian_core>
         <version.arquillian_as7>${project.parent.version}</version.arquillian_as7>
-        <version.xml.maven.plugin>1.0</version.xml.maven.plugin>
         <version.saxon>8.7</version.saxon>
     </properties>
 
@@ -190,17 +189,6 @@
     </dependencies>
 
     <build>
-        <!-- Define XML plugin version. -->
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>xml-maven-plugin</artifactId>
-                    <version>${version.xml.maven.plugin}</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-
         <plugins>
 
             <!-- Testsuite debugging info. -->
@@ -322,7 +310,7 @@
                         <configuration>
                             <transformationSets>
                                 <transformationSet>
-                                    <dir      >${basedir}/target/jbossas/standalone/configuration</dir>
+                                    <dir>${basedir}/target/jbossas/standalone/configuration</dir>
                                     <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
                                     <stylesheet>${xslt.scripts.dir}/changeIPAddresses.xsl</stylesheet>
                                     <includes>

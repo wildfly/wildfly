@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<config>
+   <subsystems>
+      <!-- Default subsystem to be used for standalone  -->
+      <subsystem>empty.xml</subsystem>
+      <subsystem>ejb3.xml</subsystem>
+   </subsystems>  
+</config>

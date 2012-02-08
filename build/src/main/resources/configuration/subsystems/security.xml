@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
+<config>
+   <extension-module>org.jboss.as.security</extension-module>
+   <subsystem xmlns="urn:jboss:domain:security:1.1">
+       <security-domains>
+           <security-domain name="other" cache-type="default">
+               <authentication>
+                   <login-module code="Remoting" flag="optional">
+                       <module-option name="password-stacking" value="useFirstPass"/>
+                   </login-module>
+                   <login-module code="RealmUsersRoles" flag="required">
+                       <module-option name="usersProperties" value="@@realm-users-roles-users@@"/>
+                       <module-option name="rolesProperties" value="@@realm-users-roles-roles@@"/>
+                       <module-option name="realm" value="ApplicationRealm"/>
+                       <module-option name="password-stacking" value="useFirstPass"/>
+                   </login-module>
+               </authentication>
+           </security-domain>
+           <security-domain name="jboss-web-policy" cache-type="default">
+               <authorization>
+                   <policy-module code="Delegating" flag="required"/>
+               </authorization>
+           </security-domain>
+           <security-domain name="jboss-ejb-policy" cache-type="default">
+               <authorization>
+                   <policy-module code="Delegating" flag="required"/>
+               </authorization>
+           </security-domain>
+           
+           <?messaging-domain?>
+       </security-domains>
+   </subsystem>
+   <supplement name="standalone">
+      <replacement placeholder="@@realm-users-roles-users@@" attributeValue="${jboss.server.config.dir}/application-users.properties"/>
+      <replacement placeholder="@@realm-users-roles-roles@@" attributeValue="${jboss.server.config.dir}/application-roles.properties"/>
+   </supplement>
+   <supplement name="domain">
+      <replacement placeholder="@@realm-users-roles-users@@" attributeValue="${jboss.domain.config.dir}/application-users.properties"/>
+      <replacement placeholder="@@realm-users-roles-roles@@" attributeValue="${jboss.domain.config.dir}/application-roles.properties"/>
+   </supplement>
+</config>

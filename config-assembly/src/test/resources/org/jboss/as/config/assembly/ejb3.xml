@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<config>
+   <extension-module>org.jboss.as.ejb3</extension-module>
+   <subsystem xmlns="urn:jboss:domain:ejb3:1.2">
+       <session-bean>
+           <stateless>
+               <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
+           </stateless>
+           <stateful default-access-timeout="5000" cache-ref="simple"/>
+           <singleton default-access-timeout="5000"/>
+       </session-bean>
+       <mdb>
+           <resource-adapter-ref resource-adapter-name="hornetq-ra"/>
+           <bean-instance-pool-ref pool-name="mdb-strict-max-pool"/>
+       </mdb>
+       <pools>
+           <bean-instance-pools>
+               <strict-max-pool name="slsb-strict-max-pool" max-pool-size="20" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
+               <strict-max-pool name="mdb-strict-max-pool" max-pool-size="20" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
+           </bean-instance-pools>
+       </pools>
+       <caches>
+           <cache name="simple" aliases="NoPassivationCache"/>
+           <cache name="passivating" passivation-store-ref="file" aliases="SimpleStatefulCache"/>
+       </caches>
+       <passivation-stores>
+           <file-passivation-store name="file"/>
+       </passivation-stores>
+       <async thread-pool-name="default"/>
+       <timer-service thread-pool-name="default">
+           <data-store path="timer-service-data" relative-to="jboss.server.data.dir"/>
+       </timer-service>
+       <remote connector-ref="remoting-connector" thread-pool-name="default"/>
+       <thread-pools>
+           <thread-pool name="default">
+               <max-threads count="10"/>
+               <keepalive-time time="100" unit="milliseconds"/>
+           </thread-pool>
+       </thread-pools>
+   </subsystem>
+</config>

@@ -247,6 +247,7 @@
         <version.sun.saaj-impl>1.3.16-jbossorg-1</version.sun.saaj-impl>
         <version.rhino.js>1.7R2</version.rhino.js>
         <version.wsdl4j>1.6.2</version.wsdl4j>
+        <version.xml.maven.plugin>1.0</version.xml.maven.plugin>        
         <version.xom>1.2.5</version.xom>
 
         <!-- Non-default plugin versions and configuration -->
@@ -259,7 +260,6 @@
 
         <!-- Checkstyle configuration -->
         <linkXRef>false</linkXRef>
-
     </properties>
 
     <modules>
@@ -639,6 +639,11 @@
                         </lifecycleMappingMetadata>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>xml-maven-plugin</artifactId>
+                    <version>${version.xml.maven.plugin}</version>
+                </plugin>
             </plugins>
         </pluginManagement>
         <extensions>
@@ -810,6 +815,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-configadmin</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-config-assembly</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -5947,6 +5958,7 @@
                 <module>clustering</module>
                 <module>cmp</module>
                 <module>configadmin</module>
+                <module>config-assembly</module>
                 <module>connector</module>
                 <module>demos</module>
                 <module>deployment-scanner</module>

@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
+<config default-supplement="default">
+   <extension-module>org.jboss.as.connector</extension-module>
+   <subsystem xmlns="urn:jboss:domain:jca:1.1">
+       <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
+       <bean-validation enabled="@@bean-validation-enabled@@"/>
+       <default-workmanager>
+           <short-running-threads>
+               <core-threads count="50"/>
+               <queue-length count="50"/>
+               <max-threads count="50"/>
+               <keepalive-time time="10" unit="seconds"/>
+           </short-running-threads>
+           <long-running-threads>
+               <core-threads count="50"/>
+               <queue-length count="50"/>
+               <max-threads count="50"/>
+               <keepalive-time time="10" unit="seconds"/>
+           </long-running-threads>
+       </default-workmanager>
+       <?CACHED-CONNECTION-MANAGER?>
+   </subsystem>
+   <supplement name="default">
+      <replacement placeholder="@@bean-validation-enabled@@" attributeValue="false"/>
+   </supplement>
+   <supplement name="full">
+      <replacement placeholder="@@bean-validation-enabled@@" attributeValue="true"/>
+      <replacement placeholder="CACHED-CONNECTION-MANAGER">
+         <cached-connection-manager/>
+      </replacement>
+   </supplement>
+   
+</config>

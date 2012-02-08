@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<config>
+   <extension-module>org.jboss.as.simple</extension-module>
+   <subsystem xmlns="urn:jboss:domain:simple-cdata:1.0" >
+      <!--comment-->
+   </subsystem>
+</config>

@@ -1,0 +1,67 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
+<config default-supplement="default">
+   <extension-module>org.jboss.as.ejb3</extension-module>
+   <subsystem xmlns="urn:jboss:domain:ejb3:1.2">
+       <session-bean>
+           <stateless>
+               <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
+           </stateless>
+           <?STATEFUL-BEAN?>
+           <singleton default-access-timeout="5000"/>
+       </session-bean>
+       <mdb>
+           <resource-adapter-ref resource-adapter-name="hornetq-ra"/>
+           <bean-instance-pool-ref pool-name="mdb-strict-max-pool"/>
+       </mdb>
+       <pools>
+           <bean-instance-pools>
+               <strict-max-pool name="slsb-strict-max-pool" max-pool-size="20" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
+               <strict-max-pool name="mdb-strict-max-pool" max-pool-size="20" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
+           </bean-instance-pools>
+       </pools>
+       <caches>
+           <cache name="simple" aliases="NoPassivationCache"/>
+           <cache name="passivating" passivation-store-ref="file" aliases="SimpleStatefulCache"/>
+           <?CLUSTERED-CACHE?>
+       </caches>
+       <passivation-stores>
+           <file-passivation-store name="file"/>
+           <?CLUSTER-PASSIVATION-STORE?>
+       </passivation-stores>
+       <async thread-pool-name="default"/>
+       <timer-service thread-pool-name="default">
+           <data-store path="timer-service-data" relative-to="jboss.server.data.dir"/>
+       </timer-service>
+       <remote connector-ref="remoting-connector" thread-pool-name="default"/>
+       <thread-pools>
+           <thread-pool name="default">
+               <max-threads count="10"/>
+               <keepalive-time time="100" unit="milliseconds"/>
+           </thread-pool>
+       </thread-pools>
+       <?IIOP?>
+   </subsystem>
+   <supplement name="default">
+      <replacement placeholder="STATEFUL-BEAN">
+         <stateful default-access-timeout="5000" cache-ref="simple"/>
+      </replacement>
+   </supplement>
+   <supplement name="full" includes="default">
+      <replacement placeholder="IIOP">
+         <iiop enable-by-default="false" use-qualified-name="false"/>
+      </replacement>
+   </supplement>
+   <supplement name="ha">
+      <replacement placeholder="STATEFUL-BEAN">
+         <stateful default-access-timeout="5000" cache-ref="simple" clustered-cache-ref="clustered"/>
+      </replacement>
+      <replacement placeholder="CLUSTERED-CACHE">
+         <cache name="clustered" passivation-store-ref="infinispan" aliases="StatefulTreeCache"/>
+      </replacement>
+      <replacement placeholder="CLUSTER-PASSIVATION-STORE">
+         <cluster-passivation-store name="infinispan" cache-container="ejb"/>
+      </replacement>
+   </supplement>
+   <supplement name="full-ha" includes="full ha"/>
+</config>

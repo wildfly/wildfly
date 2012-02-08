@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<config>
+   <extension-module>org.jboss.as.simple</extension-module>
+   <subsystem xmlns="urn:jboss:domain:simple-with-text-and-comments:1.0" attr1="one">
+      <!-- Outer comment  -->
+      <childA childA-attr="child-one">Hello</childA>
+      <childB ohildB-attr="child two">
+         <!-- Before comment  -->
+         <childB1/>
+      </childB>
+      <childC ohildC-attr="child two">
+         <childC1>
+         Yo
+         </childC1>
+         <!-- After comment  -->
+      </childC>
+   </subsystem>
+   <socket-binding name="remoting" port="4447"/>
+   <socket-binding name="txn-status-manager" port="4713"/>
+   <outbound-socket-binding name="mail-smtp">
+       <remote-destination host="localhost" port="25"/>
+   </outbound-socket-binding>
+   
+</config>
