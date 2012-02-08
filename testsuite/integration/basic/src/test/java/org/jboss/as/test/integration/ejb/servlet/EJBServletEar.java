@@ -38,7 +38,7 @@ import org.jboss.security.client.SecurityClientFactory;
 
 /**
  * A servlet that accesses an EJB and tests whether the call argument is serialized.
- * 
+ *
  * @author Scott.Stark@jboss.org
  */
 public class EJBServletEar extends HttpServlet {
@@ -53,11 +53,11 @@ public class EJBServletEar extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         SecurityClient client = null;
-        try {           
+        try {
             InitialContext ctx = new InitialContext();
-            
+
             client = SecurityClientFactory.getSecurityClient();
-            client.setSimple("somebody", "password");
+            client.setSimple("user1", "password1");
             client.login();
 
             injectedSession.hello();

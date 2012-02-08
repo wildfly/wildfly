@@ -24,27 +24,27 @@ package org.jboss.as.test.integration.ejb.security;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import com.sun.xml.internal.xsom.impl.Const;
-import javassist.CtNewConstructor;
+import javax.ejb.EJBAccessException;
+import javax.naming.Context;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.sasl.RealmCallback;
+
 import org.jboss.as.test.integration.ejb.security.authorization.AnnOnlyCheckSFSBForInjection;
 import org.jboss.as.test.integration.ejb.security.authorization.AnnOnlyCheckSLSBForInjection;
 import org.jboss.as.test.integration.ejb.security.authorization.ParentAnnOnlyCheck;
 import org.jboss.as.test.integration.ejb.security.authorization.SimpleAuthorizationRemote;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
-import org.jboss.ejb.client.ConstantContextSelector;
 import org.jboss.ejb.client.ContextSelector;
-import org.jboss.ejb.client.EJBClientConfiguration;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.EJBReceiver;
-import org.jboss.ejb.client.PropertiesBasedEJBClientConfiguration;
-import org.jboss.ejb.client.remoting.ConfigBasedEJBClientContextSelector;
 import org.jboss.ejb.client.remoting.IoFutureHelper;
 import org.jboss.ejb.client.remoting.RemotingConnectionEJBReceiver;
 import org.jboss.logging.Logger;
@@ -57,19 +57,9 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.xnio.IoFuture;
-import org.xnio.Option;
 import org.xnio.OptionMap;
 import org.xnio.Options;
 import org.xnio.Sequence;
-
-import javax.ejb.EJBAccessException;
-import javax.naming.Context;
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.sasl.RealmCallback;
 
 /**
  * This is a common parent for test cases to check whether basic EJB authorization works from an EJB client to a remote EJB.
@@ -106,7 +96,7 @@ public abstract class AnnSBTest extends SecurityTest {
      */
     public void testSingleMethodAnnotationsNoUserTemplate(final String MODULE, final Logger log, final Class SB_CLASS) throws Exception {
         final Context ctx = Util.createNamingContext();
-        ContextSelector<EJBClientContext> old = setupEJBClientContextSelector(null, null);
+        ContextSelector<EJBClientContext> old = setupEJBClientContextSelector("$local", null);
         try {
 
             String myContext = Util.createRemoteEjbJndiContext(
@@ -135,9 +125,8 @@ public abstract class AnnSBTest extends SecurityTest {
             try {
                 echoValue = singleMethodsAnnOnlyBean.roleBasedAccessMore("alohomora");
                 Assert.fail("Method cannot be successfully called without logged in user");
-            } catch (Exception e) {
+            } catch (EJBAccessException e) {
                 // expected
-                Assert.assertTrue("Thrown exception must be EJBAccessException, but was " + e.getClass().getSimpleName(), e instanceof EJBAccessException);
             }
 
             try {

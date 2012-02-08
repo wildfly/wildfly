@@ -22,6 +22,14 @@
 
 package org.jboss.as.test.integration.ejb.client.descriptor;
 
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
+
+import javax.ejb.EJBException;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -39,13 +47,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.ejb.EJBException;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
 
 /**
  * Tests that deployments containing a jboss-ejb-client.xml are processed correctly for EJB client context
@@ -135,6 +136,7 @@ public class EJBClientDescriptorTestCase {
             final Map<String, String> connectionCreationOptions = new HashMap<String, String>();
             connectionCreationOptions.put("SSL_ENABLED", "false"); //without class name should also work
             connectionCreationOptions.put("org.xnio.Options.SASL_POLICY_NOANONYMOUS", "false");
+            connectionCreationOptions.put("org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "false");
             logger.info("Creatng remote outbound connection " + outboundConnectionName);
             EJBManagementUtil.createRemoteOutboundConnection("localhost", 9999, outboundConnectionName, outboundSocketName, connectionCreationOptions, Authentication.getCallbackHandler());
             outboundConnectionCreated = true;

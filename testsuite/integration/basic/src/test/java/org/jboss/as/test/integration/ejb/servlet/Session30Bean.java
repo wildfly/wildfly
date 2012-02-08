@@ -48,11 +48,11 @@ public class Session30Bean implements Session30 {
 
     private TestObject testObject;
 
-    @RolesAllowed({ "allowed" })
+    @RolesAllowed({ "Role1" })
     public void hello() {
     }
 
-    @RolesAllowed({ "allowed" })
+    @RolesAllowed({ "Role1" })
     public void goodbye() {
     }
 

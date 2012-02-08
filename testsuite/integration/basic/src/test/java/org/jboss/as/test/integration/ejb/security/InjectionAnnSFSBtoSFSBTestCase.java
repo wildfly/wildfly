@@ -40,6 +40,7 @@ import org.junit.Ignore;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("AS7-2999")
 public class InjectionAnnSFSBtoSFSBTestCase extends AnnSBTest {
 
    private static final Logger log = Logger.getLogger(testClass());

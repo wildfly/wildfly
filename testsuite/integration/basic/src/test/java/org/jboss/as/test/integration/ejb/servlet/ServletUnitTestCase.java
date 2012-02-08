@@ -42,7 +42,7 @@ import org.junit.runner.RunWith;
 /**
  * A servlet that accesses an EJB and tests whether the call argument is serialized.
  * Part of migration AS5 testsuite to AS7 [JIRA JBQA-5275].
- * 
+ *
  * @author William DeCoste, Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
@@ -75,20 +75,20 @@ public class ServletUnitTestCase {
         log.info(war.toString(true));
         return war;
     }
-    
-    @Deployment(name = "ear", order = 4) 
+
+    @Deployment(name = "ear", order = 4)
     public static Archive<?> deployEar() {
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "ejb3-ear-servlet.ear");
-        
+
         ear.addAsModule(getClient("ejb3-ear-servlet-client.jar"));
         ear.addAsModule(getEjbs("ejb3-ear-servlet-ejbs.jar"));
-        
+
         WebArchive war = getServlet("ejb3-ear-servlet.war");
         war.addAsWebInfResource(ServletUnitTestCase.class.getPackage(), "jboss-web-ear.xml", "jboss-web.xml");
         war.addAsWebInfResource(ServletUnitTestCase.class.getPackage(), "web-ear.xml", "web.xml");
         war.addClass(EJBServletEar.class);
         ear.addAsModule(war);
-        
+
         ear.addAsManifestResource(ServletUnitTestCase.class.getPackage(), "application.xml", "application.xml");
         log.info(ear.toString(true));
         return ear;
@@ -97,22 +97,20 @@ public class ServletUnitTestCase {
     private static JavaArchive getEjbs(String archiveName) {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, archiveName);
         jar.addClasses(
-                Session30.class, 
-                Session30Bean.class, 
-                Session30BusinessLocal.class, 
+                Session30.class,
+                Session30Bean.class,
+                Session30BusinessLocal.class,
                 Session30BusinessRemote.class,
-                Session30Home.class, 
-                Session30Local.class, 
-                Session30LocalHome.class, 
-                Session30Remote.class, 
+                Session30Home.class,
+                Session30Local.class,
+                Session30LocalHome.class,
+                Session30Remote.class,
                 StatefulBean.class,
-                StatefulLocal.class, 
-                StatefulRemote.class, 
-                StatelessBean.class, 
+                StatefulLocal.class,
+                StatefulRemote.class,
+                StatelessBean.class,
                 StatelessLocal.class,
                 TestObject.class);
-        jar.addAsResource(ServletUnitTestCase.class.getPackage(), "users.properties", "users.properties");
-        jar.addAsResource(ServletUnitTestCase.class.getPackage(), "roles.properties", "roles.properties");
         return jar;
     }
 
@@ -133,7 +131,7 @@ public class ServletUnitTestCase {
         String res = HttpRequest.get("http://localhost:8080/servlet/EJBServlet", 2, TimeUnit.SECONDS);
         Assert.assertEquals("EJBServlet OK", res);
     }
-    
+
     @Test
     public void testEJBServlet() throws Exception {
         String res = HttpRequest.get("http://localhost:8080/ejb3-servlet/EJBServlet", 2, TimeUnit.SECONDS);

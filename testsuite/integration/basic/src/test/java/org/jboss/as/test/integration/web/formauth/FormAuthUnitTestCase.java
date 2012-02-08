@@ -21,19 +21,6 @@
  */
 package org.jboss.as.test.integration.web.formauth;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.security.Constants.AUTHENTICATION;
-import static org.jboss.as.security.Constants.CODE;
-import static org.jboss.as.security.Constants.FLAG;
-import static org.jboss.as.security.Constants.MODULE_OPTIONS;
-import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URL;
@@ -68,9 +55,22 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.security.Constants.AUTHENTICATION;
+import static org.jboss.as.security.Constants.CODE;
+import static org.jboss.as.security.Constants.FLAG;
+import static org.jboss.as.security.Constants.MODULE_OPTIONS;
+import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 /**
  * Tests of form authentication
- * 
+ *
  * @author Scott.Stark@jboss.org
  * @author lbarreiro@redhat.com
  */
@@ -101,9 +101,6 @@ public class FormAuthUnitTestCase {
         war.setWebXML(tccl.getResource(resourcesLocation + "web.xml"));
         war.addAsWebInfResource(tccl.getResource(resourcesLocation + "jboss-web.xml"), "jboss-web.xml");
 
-        war.addAsWebResource(tccl.getResource(resourcesLocation + "users.properties"), "/WEB-INF/classes/users.properties");
-        war.addAsWebResource(tccl.getResource(resourcesLocation + "roles.properties"), "/WEB-INF/classes/roles.properties");
-
         war.addClass(SecureServlet.class);
         war.addClass(SecuredPostServlet.class);
         war.addClass(LogoutServlet.class);
@@ -128,7 +125,7 @@ public class FormAuthUnitTestCase {
         }
     }
 
-    private static void createSecurityDomains(ModelControllerClient client) throws Exception {        
+    private static void createSecurityDomains(ModelControllerClient client) throws Exception {
         final List<ModelNode> updates = new ArrayList<ModelNode>();
 
         ModelNode op = new ModelNode();
@@ -178,7 +175,7 @@ public class FormAuthUnitTestCase {
 
     /**
      * Test form authentication of a secured servlet
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -279,7 +276,7 @@ public class FormAuthUnitTestCase {
         assertTrue("Wrong response code: " + statusCode, statusCode == HttpURLConnection.HTTP_OK);
         assertTrue("X-NoJException(" + Arrays.toString(errorHeaders) + ") is null", errorHeaders.length == 0);
         EntityUtils.consume(response.getEntity());
-        
+
         // Submit the form to /restricted/SecuredPostServlet
         HttpPost restrictedPost = new HttpPost(baseURLNoAuth + "restricted/SecuredPostServlet");
 
@@ -315,8 +312,8 @@ public class FormAuthUnitTestCase {
         formPost.addHeader("Referer", baseURLNoAuth + "restricted/login.html");
 
         List<NameValuePair> formparams = new ArrayList<NameValuePair>();
-        formparams.add(new BasicNameValuePair("j_username", "jduke"));
-        formparams.add(new BasicNameValuePair("j_password", "theduke"));
+        formparams.add(new BasicNameValuePair("j_username", "user1"));
+        formparams.add(new BasicNameValuePair("j_password", "password1"));
         formPost.setEntity(new UrlEncodedFormEntity(formparams, "UTF-8"));
 
         log.info("Executing request " + formPost.getRequestLine());
@@ -327,7 +324,7 @@ public class FormAuthUnitTestCase {
         assertTrue("Should see HTTP_MOVED_TEMP. Got " + statusCode, statusCode == HttpURLConnection.HTTP_MOVED_TEMP);
         assertTrue("X-NoJException(" + Arrays.toString(errorHeaders) + ") is null", errorHeaders.length == 0);
         EntityUtils.consume(postResponse.getEntity());
-        
+
         // Follow the redirect to the SecureServlet
         Header location = postResponse.getFirstHeader("Location");
         URL indexURI = new URL(location.getValue());
@@ -357,7 +354,7 @@ public class FormAuthUnitTestCase {
      * jaas security domain cache entries after the web session has been
      * invalidated.
      */
-    // lbarerreiro: SKIPPED !!! No JMX connection on AS7 
+    // lbarerreiro: SKIPPED !!! No JMX connection on AS7
     // TODO: Other ways of getting this values !?!?
     @Ignore
     @Test
@@ -392,7 +389,7 @@ public class FormAuthUnitTestCase {
     }
 
     public HttpPost doSecureGetWithLogin(String path) throws Exception {
-        return doSecureGetWithLogin(path, "jduke", "theduke");
+        return doSecureGetWithLogin(path, "user2", "password2");
     }
 
     public HttpPost doSecureGetWithLogin(String path, String username, String password) throws Exception {
@@ -441,7 +438,7 @@ public class FormAuthUnitTestCase {
         assertTrue("Should see HTTP_MOVED_TEMP. Got " + statusCode, statusCode == HttpURLConnection.HTTP_MOVED_TEMP);
         assertTrue("X-NoJException(" + Arrays.toString(errorHeaders) + ") is null", errorHeaders.length == 0);
         EntityUtils.consume(postResponse.getEntity());
-        
+
         // Follow the redirect to the SecureServlet
         Header location = postResponse.getFirstHeader("Location");
         URL indexURI = new URL(location.getValue());

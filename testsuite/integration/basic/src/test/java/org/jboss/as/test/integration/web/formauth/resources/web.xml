@@ -4,7 +4,7 @@
    "http://java.sun.com/dtd/web-app_2_3.dtd">
 <web-app>
     <description>Security Tests Using FORM Authentication</description>
-    
+
     <!-- ### Servlets -->
     <servlet>
         <servlet-name>SecureServlet</servlet-name>
@@ -52,7 +52,7 @@
         </web-resource-collection>
         <auth-constraint>
             <description>Only authenticated users can access secure content</description>
-            <role-name>AuthorizedUser</role-name>
+            <role-name>Users</role-name>
         </auth-constraint>
         <user-data-constraint>
             <description>no description</description>
@@ -67,9 +67,9 @@
             <form-error-page>/restricted/errors.jsp</form-error-page>
         </form-login-config>
     </login-config>
-    
+
     <security-role>
         <description>An AuthorizedUser is one with a valid username and password</description>
-        <role-name>AuthorizedUser</role-name>
+        <role-name>Users</role-name>
     </security-role>
 </web-app>

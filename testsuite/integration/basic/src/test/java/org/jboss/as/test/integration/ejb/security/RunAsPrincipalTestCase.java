@@ -21,16 +21,16 @@
  */
 package org.jboss.as.test.integration.ejb.security;
 
-import org.jboss.as.test.shared.integration.ejb.security.Util;
-import org.junit.Ignore;
-import org.junit.Test;
+import javax.ejb.EJBAccessException;
+import javax.naming.InitialContext;
 
-import org.jboss.logging.Logger;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.ejb.security.runasprincipal.Caller;
 import org.jboss.as.test.integration.ejb.security.runasprincipal.CallerWithIdentity;
 import org.jboss.as.test.integration.ejb.security.runasprincipal.WhoAmI;
+import org.jboss.as.test.shared.integration.ejb.security.Util;
+import org.jboss.logging.Logger;
 import org.jboss.security.client.SecurityClient;
 import org.jboss.security.client.SecurityClientFactory;
 import org.jboss.shrinkwrap.api.Archive;
@@ -39,10 +39,9 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.util.Base64;
 import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.ejb.EJBAccessException;
-import javax.naming.InitialContext;
 
 /**
  * Migration of test from EJB3 testsuite [JBQA-5451] Testing calling with runasprincipal annotation (ejbthree1945)
@@ -72,8 +71,6 @@ public class RunAsPrincipalTestCase extends SecurityTest {
                 .addClass(RunAsPrincipalTestCase.class)
                 .addClass(Base64.class)
                 .addClass(SecurityTest.class)
-                .addAsResource(CallerWithIdentity.class.getPackage(),"users.properties", "users.properties")
-                .addAsResource(CallerWithIdentity.class.getPackage(),"roles.properties", "roles.properties")
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr\n"),"MANIFEST.MF");
         log.info(war.toString(true));
         return war;
@@ -90,7 +87,7 @@ public class RunAsPrincipalTestCase extends SecurityTest {
     @Test
     public void testJackInABox() throws Exception {
         SecurityClient client = SecurityClientFactory.getSecurityClient();
-        client.setSimple("thomas", "valid");
+        client.setSimple("user1", "password1");
         client.login();
         try {
             WhoAmI bean =  lookupCallerWithIdentity();
@@ -116,7 +113,7 @@ public class RunAsPrincipalTestCase extends SecurityTest {
     @Test
     public void testAnonymous() throws Exception {
         SecurityClient client = SecurityClientFactory.getSecurityClient();
-        client.setSimple("thomas", "valid");
+        client.setSimple("user1", "password1");
         client.login();
         try {
             WhoAmI bean = lookupCaller();

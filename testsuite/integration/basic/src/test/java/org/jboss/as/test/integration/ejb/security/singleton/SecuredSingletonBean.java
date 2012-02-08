@@ -42,10 +42,10 @@ public class SecuredSingletonBean implements SingletonSecurity {
     private EJBContext ejbContext;
 
     @Override
-    @RolesAllowed("role1")
+    @RolesAllowed("Role1")
     public void allowedForRole1() {
-        if (!this.ejbContext.isCallerInRole("role1")) {
-            throw new RuntimeException("Only role1 was expected to be allowed to invoke this method");
+        if (!this.ejbContext.isCallerInRole("Role1")) {
+            throw new RuntimeException("Only Role1 was expected to be allowed to invoke this method");
         }
     }
 }

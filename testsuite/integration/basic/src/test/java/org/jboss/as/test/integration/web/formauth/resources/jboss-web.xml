@@ -5,6 +5,6 @@
 <jboss-web>
     <!-- Specify the security domain for authentication/authorization and require that the domain's cache be flushed when the session invalidates. -->
     <security-domain flushOnSessionInvalidation="true">
-       java:/jaas/jbossweb-form-auth
+       other
     </security-domain>
 </jboss-web>

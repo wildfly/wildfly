@@ -711,6 +711,7 @@
                 <dependency>
                     <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-client-all</artifactId>
+                    <scope>provided</scope>
                 </dependency>
 
                 <dependency>

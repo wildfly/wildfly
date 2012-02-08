@@ -100,6 +100,7 @@ public class GetCallerPrincipalTestCase extends SecurityTest {
     private static final String OK = "OK";
 
     private static ModelControllerClient modelControllerClient;
+    public static final String LOCAL_USER = "$local";
 
     @ArquillianResource
     Deployer deployer;
@@ -293,7 +294,7 @@ public class GetCallerPrincipalTestCase extends SecurityTest {
 
             bean.remove();
 
-            Assert.assertEquals(ANONYMOUS + "stop", results.getSfsb("predestroy"));
+            Assert.assertEquals(LOCAL_USER +  "stop", results.getSfsb("predestroy"));
         } finally {
             deployer.undeploy("sfsb");
             client.logout();

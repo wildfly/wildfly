@@ -23,18 +23,22 @@
 package org.jboss.as.test.integration.naming.remote.simple;
 
 import java.util.Properties;
+
 import javax.naming.Context;
 import javax.naming.InitialContext;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.shared.integration.ejb.security.CallbackHandler;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author John Bailey
@@ -52,12 +56,14 @@ public class RemoteNamingTestCase {
     }
 
     private static Context remoteContext;
-    
+
     @BeforeClass
     public static void setupRemoteContext() throws Exception {
         final Properties env = new Properties();
         env.put(Context.INITIAL_CONTEXT_FACTORY, org.jboss.naming.remote.client.InitialContextFactory.class.getName());
         env.put(Context.PROVIDER_URL, "remote://localhost:4447");
+        env.put("jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "false");
+        env.put("jboss.naming.client.security.callback.handler.class", CallbackHandler.class.getName());
         remoteContext = new InitialContext(env);
     }
 

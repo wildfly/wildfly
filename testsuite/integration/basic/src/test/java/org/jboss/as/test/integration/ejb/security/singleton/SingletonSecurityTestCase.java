@@ -41,33 +41,31 @@ import org.junit.runner.RunWith;
 /**
  * Tests that invocations on a secured singleton bean work as expected.
  * Part of the migration AS6->AS7 testsuite [JBQA-5275] - ejb3/singleton.
- * 
+ *
  * @author Jaikiran Pai, Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
 public class SingletonSecurityTestCase {
-    private static final Logger log = Logger.getLogger(SingletonSecurityTestCase.class.getName()); 
-    
+    private static final Logger log = Logger.getLogger(SingletonSecurityTestCase.class.getName());
+
     @Deployment
     public static Archive<?> deploy() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ejb3-singleton-security.jar");
         jar.addPackage(SingletonSecurityTestCase.class.getPackage());
-        jar.addAsResource(SingletonSecurityTestCase.class.getPackage(), "users.properties", "users.properties");
-        jar.addAsResource(SingletonSecurityTestCase.class.getPackage(), "roles.properties", "roles.properties");
         log.info(jar.toString(true));
         return jar;
     }
 
     /**
      * Test a method invocation on a singleton bean with the correct expected role.
-     * 
+     *
      * @throws Exception
      */
     @Test
     public void testInvocationOnSecuredMethodWithCorrectRole() throws Exception {
         final SingletonSecurity securedSingleton = InitialContext.doLookup("java:module/" + SecuredSingletonBean.class.getSimpleName());
         final SecurityClient securityClient = SecurityClientFactory.getSecurityClient();
-        securityClient.setSimple("user1", "pass1");
+        securityClient.setSimple("user1", "password1");
         try {
             // login
             securityClient.login();
@@ -81,14 +79,14 @@ public class SingletonSecurityTestCase {
 
     /**
      * Test a method invocation on a singleton bean with an incorrect role.
-     * 
+     *
      * @throws Exception
      */
     @Test
     public void testInvocationOnSecuredMethodWithInCorrectRole() throws Exception {
         final SingletonSecurity securedSingleton = InitialContext.doLookup("java:module/" + SecuredSingletonBean.class.getSimpleName());
         final SecurityClient securityClient = SecurityClientFactory.getSecurityClient();
-        securityClient.setSimple("user2", "pass2");
+        securityClient.setSimple("user2", "password2");
         try {
             // login
             securityClient.login();
@@ -107,7 +105,7 @@ public class SingletonSecurityTestCase {
 
     /**
      * Test a method invocation on a singleton bean without logging in.
-     * 
+     *
      * @throws Exception
      */
     @Test

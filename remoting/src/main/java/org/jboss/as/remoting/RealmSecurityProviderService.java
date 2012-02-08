@@ -55,13 +55,18 @@ public class RealmSecurityProviderService implements Service<RemotingSecurityPro
 
     public void start(StartContext startContext) throws StartException {
         String path = tmpDirValue.getValue();
+
         File authDir = new File(path, "auth");
         if (authDir.exists()) {
             if (!authDir.isDirectory()) {
                 throw MESSAGES.unableToCreateTempDirForAuthTokensFileExists();
             }
         } else if (!authDir.mkdirs()) {
-            throw MESSAGES.unableToCreateAuthDir();
+            //there is a race if multiple services are starting for the same
+            //security realm
+            if(!authDir.isDirectory()) {
+                throw MESSAGES.unableToCreateAuthDir(authDir.getAbsolutePath());
+            }
         } else {
             // As a precaution make perms user restricted for directories created (if the OS allows)
             authDir.setWritable(false, false);

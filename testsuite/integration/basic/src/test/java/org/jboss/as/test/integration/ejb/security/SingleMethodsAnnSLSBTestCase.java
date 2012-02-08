@@ -22,7 +22,6 @@
 
 package org.jboss.as.test.integration.ejb.security;
 
-import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -30,9 +29,9 @@ import org.jboss.as.test.integration.ejb.security.authorization.SingleMethodsAnn
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.Ignore;
 
 /**
  * This test case check whether basic EJB authorization works from EJB client to remote stateful EJB.
@@ -65,11 +64,13 @@ public class SingleMethodsAnnSLSBTestCase extends AnnSBTest {
    }
 
    @Test
+   @Ignore("AS7-2999")
    public void testSingleMethodAnnotationsUser1() throws Exception {
       testSingleMethodAnnotationsUser1Template(MODULE, log, beanClass());
    }
 
    @Test
+   @Ignore("AS7-2999")
    public void testSingleMethodAnnotationsUser2() throws Exception {
       testSingleMethodAnnotationsUser2Template(MODULE, log, beanClass());
    }

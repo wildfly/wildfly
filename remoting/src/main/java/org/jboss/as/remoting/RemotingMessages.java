@@ -22,6 +22,14 @@
 
 package org.jboss.as.remoting;
 
+import java.io.IOException;
+import java.net.BindException;
+import java.net.URISyntaxException;
+
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.sasl.SaslException;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
@@ -29,13 +37,6 @@ import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 import org.jboss.logging.Param;
 import org.jboss.msc.service.StartException;
-
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.sasl.SaslException;
-import java.io.IOException;
-import java.net.BindException;
-import java.net.URISyntaxException;
 
 /**
  * Date: 05.11.2011
@@ -91,8 +92,8 @@ public interface RemotingMessages {
     @Message(id = 17122, value = "Unable to create tmp dir for auth tokens as file already exists.")
     StartException unableToCreateTempDirForAuthTokensFileExists();
 
-    @Message(id = 17123, value = "Unable to create auth dir.")
-    StartException unableToCreateAuthDir();
+    @Message(id = 17123, value = "Unable to create auth dir %s.")
+    StartException unableToCreateAuthDir(String dir);
 
     @Message(id = 17124, value = "Could not register a connection provider factory for %s uri scheme")
     StartException couldNotRegisterConnectionProvider(String remoteUriScheme, @Cause IOException ioe);
