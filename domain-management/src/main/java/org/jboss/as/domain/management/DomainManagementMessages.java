@@ -22,6 +22,13 @@
 
 package org.jboss.as.domain.management;
 
+import java.io.IOException;
+import java.util.Set;
+
+import javax.naming.NamingException;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.UnsupportedCallbackException;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
@@ -29,12 +36,6 @@ import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 import org.jboss.logging.Param;
 import org.jboss.msc.service.StartException;
-
-import javax.naming.NamingException;
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import java.io.IOException;
-import java.util.Set;
 
 /**
  * Date: 05.11.2011
@@ -188,8 +189,8 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(id = 15234, value = "No mgmt-users.properties files found.")
-    String mgmtUsersPropertiesNotFound();
+    @Message(id = 15234, value = "No %s files found.")
+    String propertiesFileNotFound(String file);
 
     /**
      * A message prompting the user to enter the details of the user being added.
@@ -450,5 +451,31 @@ public interface DomainManagementMessages {
      */
     @Message(id = 15250, value = "An unexpected number (%d) of RealmUsers are associated with the SecurityContext.")
     String unexpectedNumberOfRealmUsers(int count);
+
+    /**
+     * Prompt for the file to update in add-users
+     */
+    @Message(value = "What type of user do you wish to add? %n a) Management User (mgmt-users.properties) %n b) Application User (application-users.properties)")
+    String filePrompt();
+
+    /**
+     * Propmpt the user for the roles to add the user to
+     * @return
+     */
+    @Message(value = "What roles do you want this user to belong to? (Please enter a comma separated list, or leave blank for none)")
+    String rolesPrompt();
+
+
+    /**
+     * Message to inform user that the new user has been added to the roles file identified.
+     *
+     * @param username - The new username.
+     * @param roles - The new roles.
+     * @param fileName - The file the user has been added to.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(value = "Added user '%s' with roles %s to file '%s'")
+    String addedRoles(String username, String roles, String fileName);
 
 }

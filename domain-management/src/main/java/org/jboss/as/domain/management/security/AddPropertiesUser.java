@@ -22,26 +22,26 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
-
 import java.io.BufferedWriter;
 import java.io.Closeable;
 import java.io.Console;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
-import java.io.StringReader;
 import java.io.IOException;
+import java.io.StringReader;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
 import org.jboss.sasl.util.UsernamePasswordHashUtil;
+
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 /**
  * A command line utility to add new users to the mgmt-users.properties files.
@@ -50,16 +50,23 @@ import org.jboss.sasl.util.UsernamePasswordHashUtil;
  */
 public class AddPropertiesUser {
 
-    private static final String[] badUsernames = { "admin", "administrator", "root" };
+    private static final String[] badUsernames = {"admin", "administrator", "root"};
 
-    private static final String DEFAULT_REALM = "ManagementRealm";
+    private static final String DEFAULT_MANAGEMENT_REALM = "ManagementRealm";
+    private static final String DEFAULT_APPLICATION_REALM = "ApplicationRealm";
+    public static final String MGMT_USERS_PROPERTIES = "mgmt-users.properties";
+    public static final String APPLICATION_USERS_PROPERTIES = "application-users.properties";
+    public static final String APPLICATION_ROLES_PROPERTIES = "application-roles.properties";
+    public static final String APPLICATION_USERS_SWITCH = "-a";
+
     private static final String NEW_LINE = "\n";
     private static final String SPACE = " ";
     private static final Properties argsCliProps = new Properties();
 
-    private Console theConsole = System.console();
+    private final Console theConsole = System.console();
 
     private List<File> propertiesFiles;
+    private List<File> roleFiles;
     private Set<String> knownUsers;
     private State nextState;
 
@@ -67,10 +74,10 @@ public class AddPropertiesUser {
         if (theConsole == null) {
             throw MESSAGES.noConsoleAvailable();
         }
-        nextState = new PropertyFileFinder();
+        nextState = new PropertyFilePrompt();
     }
 
-    private AddPropertiesUser(final String user, final char[] password, final String realm) {
+    private AddPropertiesUser(final boolean management, final String user, final char[] password, final String realm) {
         boolean silent = false;
         Values values = new Values();
 
@@ -91,12 +98,13 @@ public class AddPropertiesUser {
         values.userName = user;
         values.password = password;
         values.realm = realm;
+        values.management = management;
 
         nextState = new PropertyFileFinder(values);
     }
 
-    private AddPropertiesUser(final String user, final char[] password) {
-        this(user, password, DEFAULT_REALM);
+    private AddPropertiesUser(boolean management, final String user, final char[] password) {
+        this(management, user, password, management ? DEFAULT_MANAGEMENT_REALM : DEFAULT_APPLICATION_REALM);
     }
 
     private void run() {
@@ -112,12 +120,13 @@ public class AddPropertiesUser {
         List<String> argsList = new LinkedList<String>();
         String[] argsArray = null;
         StringReader stringReader = null;
+        boolean management = true;
 
         int realArgsLength;
 
         if (args.length >= 1) {
 
-            for(String temp : args) {
+            for (String temp : args) {
                 if (temp.startsWith("--")) {
                     try {
                         stringReader = new StringReader(temp.substring(2));
@@ -127,19 +136,64 @@ public class AddPropertiesUser {
                     } finally {
                         safeClose(stringReader);
                     }
+                } else if (temp.equals(APPLICATION_USERS_SWITCH)) {
+                    management = false;
                 } else {
-                   argsList.add(temp);
+                    argsList.add(temp);
                 }
             }
         }
         argsArray = argsList.toArray(new String[0]);
         realArgsLength = argsArray.length;
         if (realArgsLength == 3) {
-            new AddPropertiesUser(argsArray[0], argsArray[1].toCharArray(), argsArray[2]).run();
+            new AddPropertiesUser(management, argsArray[0], argsArray[1].toCharArray(), argsArray[2]).run();
         } else if (realArgsLength == 2) {
-            new AddPropertiesUser(argsArray[0], argsArray[1].toCharArray()).run();
+            new AddPropertiesUser(management, argsArray[0], argsArray[1].toCharArray()).run();
         } else {
             new AddPropertiesUser().run();
+        }
+    }
+
+
+    private class PropertyFilePrompt implements State {
+
+        @Override
+        public State execute() {
+
+            Values values = new Values();
+            theConsole.printf(NEW_LINE);
+            theConsole.printf(MESSAGES.filePrompt());
+            theConsole.printf(NEW_LINE);
+
+            while (true) {
+                String temp = theConsole.readLine("(a): ");
+                if (temp == null) {
+                    /*
+                     * This will return user to the command prompt so add a new line to
+                     * ensure the command prompt is on the next line.
+                     */
+                    theConsole.printf(NEW_LINE);
+                    return null;
+                }
+                if (temp.length() > 0) {
+                    switch (temp.charAt(0)) {
+                        case 'a':
+                        case 'A':
+                            values.management = true;
+                            values.realm = DEFAULT_MANAGEMENT_REALM;
+                            return new PropertyFileFinder(values);
+                        case 'b':
+                        case 'B':
+                            values.management = false;
+                            values.realm = DEFAULT_APPLICATION_REALM;
+                            return new PropertyFileFinder(values);
+                    }
+                } else {
+                    values.management = true;
+                    values.realm = DEFAULT_MANAGEMENT_REALM;
+                    return new PropertyFileFinder(values);
+                }
+            }
         }
     }
 
@@ -149,10 +203,6 @@ public class AddPropertiesUser {
     private class PropertyFileFinder implements State {
 
         private final Values values;
-
-        private PropertyFileFinder() {
-            values = null;
-        }
 
         private PropertyFileFinder(final Values values) {
             this.values = values;
@@ -166,17 +216,16 @@ public class AddPropertiesUser {
             }
 
             List<File> foundFiles = new ArrayList<File>(2);
-            File standaloneProps = new File(jbossHome + "/standalone/configuration/mgmt-users.properties");
-            if (standaloneProps.exists()) {
-                foundFiles.add(standaloneProps);
+            final String fileName = values.management ? MGMT_USERS_PROPERTIES : APPLICATION_USERS_PROPERTIES;
+            if (!findFiles(jbossHome, foundFiles, fileName)) {
+                return new ErrorState(MESSAGES.propertiesFileNotFound(fileName), null, values);
             }
-            File domainProps = new File(jbossHome + "/domain/configuration/mgmt-users.properties");
-            if (domainProps.exists()) {
-                foundFiles.add(domainProps);
-            }
-
-            if (foundFiles.size() == 0) {
-                return new ErrorState(MESSAGES.mgmtUsersPropertiesNotFound(), null, values);
+            if(!values.management) {
+                List<File> foundRoleFiles = new ArrayList<File>(2);
+                if (!findFiles(jbossHome, foundRoleFiles, APPLICATION_ROLES_PROPERTIES)) {
+                    return new ErrorState(MESSAGES.propertiesFileNotFound(APPLICATION_ROLES_PROPERTIES), null, values);
+                }
+                roleFiles = foundRoleFiles;
             }
 
             propertiesFiles = foundFiles;
@@ -196,6 +245,22 @@ public class AddPropertiesUser {
             } else {
                 return new PromptNewUserState(values);
             }
+        }
+
+        private boolean findFiles(final String jbossHome, final List<File> foundFiles, final String fileName) {
+            File standaloneProps = new File(jbossHome + "/standalone/configuration/" + fileName);
+            if (standaloneProps.exists()) {
+                foundFiles.add(standaloneProps);
+            }
+            File domainProps = new File(jbossHome + "/domain/configuration/" + fileName);
+            if (domainProps.exists()) {
+                foundFiles.add(domainProps);
+            }
+
+            if (foundFiles.size() == 0) {
+                return false;
+            }
+            return true;
         }
 
         private Set<String> loadUserNames(final File file) throws IOException {
@@ -224,7 +289,7 @@ public class AddPropertiesUser {
 
         PromptNewUserState() {
             values = new Values();
-            values.realm = DEFAULT_REALM;
+            values.realm = DEFAULT_MANAGEMENT_REALM;
         }
 
         PromptNewUserState(final Values values) {
@@ -261,7 +326,7 @@ public class AddPropertiesUser {
                  */
                 String existingUsername = values.userName;
                 String usernamePrompt = existingUsername == null ? MESSAGES.usernamePrompt() :
-                                                                   MESSAGES.usernamePrompt(existingUsername);
+                        MESSAGES.usernamePrompt(existingUsername);
                 theConsole.printf(usernamePrompt);
                 temp = theConsole.readLine(" : ");
                 if (temp != null && temp.length() > 0) {
@@ -292,6 +357,11 @@ public class AddPropertiesUser {
                     return new ErrorState(MESSAGES.passwordMisMatch(), this);
                 }
                 values.password = tempChar;
+
+                if(!values.management) {
+                    theConsole.printf(MESSAGES.rolesPrompt());
+                    values.roles = theConsole.readLine(" : ");
+                }
             }
 
             return new WeakCheckState(values);
@@ -301,7 +371,7 @@ public class AddPropertiesUser {
 
     /**
      * State to check the strength of the values selected.
-     *
+     * <p/>
      * TODO - Currently only very basic checks are performed, this could be updated to perform additional password strength
      * checks.
      */
@@ -384,12 +454,11 @@ public class AddPropertiesUser {
         }
 
 
-
     }
 
     /**
      * State to display a message to the user with option to confirm a choice.
-     *
+     * <p/>
      * This state handles either a yes or no outcome and will loop with an error
      * on invalid input.
      */
@@ -450,7 +519,7 @@ public class AddPropertiesUser {
 
     /**
      * State to perform the actual addition to the discovered properties files.
-     *
+     * <p/>
      * By this time ALL validation should be complete, this State will only fail for IOExceptions encountered
      * performing the actual writes.
      */
@@ -483,6 +552,21 @@ public class AddPropertiesUser {
                     }
                 } catch (IOException e) {
                     return new ErrorState(MESSAGES.unableToAddUser(current.getAbsolutePath(), e.getMessage()), null, values);
+                }
+            }
+
+            if(!values.management && values.roles != null && values.roles.length() > 0) {
+                for (final File current : roleFiles) {
+                    String role = values.userName + "=" + values.roles;
+                    try {
+                        append(role, current);
+                        if (values.isSilent() == false) {
+                            theConsole.printf(MESSAGES.addedRoles(values.userName, values.roles, current.getCanonicalPath()));
+                            theConsole.printf(NEW_LINE);
+                        }
+                    } catch (IOException e) {
+                        return new ErrorState(MESSAGES.unableToAddUser(current.getAbsolutePath(), e.getMessage()), null, values);
+                    }
                 }
             }
 
@@ -533,6 +617,7 @@ public class AddPropertiesUser {
             this.nextState = nextState;
             this.values = values;
         }
+
         @Override
         public State execute() {
             if ((values == null) || (values != null) && (values.isSilent() == false)) {
@@ -565,6 +650,8 @@ public class AddPropertiesUser {
         private String realm;
         private String userName;
         private char[] password;
+        private boolean management;
+        private String roles;
 
         private boolean isSilentOrNonInteractive() {
             return (howInteractive == Interactiveness.NON_INTERACTIVE) || isSilent();
@@ -578,6 +665,7 @@ public class AddPropertiesUser {
     private enum Interactiveness {
         SILENT, NON_INTERACTIVE, INTERACTIVE
     }
+
     private interface State {
 
         State execute();
