@@ -263,6 +263,7 @@
                             <connector-ref connector-name="netty"/>
                         </connectors>
                         <entries>
+                            <entry name="RemoteConnectionFactory"/>
                             <entry name="java:jboss/exported/jms/RemoteConnectionFactory"/>
                         </entries>
                     </connection-factory>
@@ -279,9 +280,11 @@
 
                 <jms-destinations>
                     <jms-queue name="testQueue">
+                        <entry name="queue/test"/>
                         <entry name="java:jboss/exported/jms/queue/test"/>
                     </jms-queue>
                     <jms-topic name="testTopic">
+                        <entry name="topic/test"/>
                         <entry name="java:jboss/exported/jms/topic/test"/>
                     </jms-topic>
                 </jms-destinations>
