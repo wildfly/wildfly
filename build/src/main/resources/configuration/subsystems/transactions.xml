@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
+<config>
+   <extension-module>org.jboss.as.transactions</extension-module>
+   <subsystem xmlns="urn:jboss:domain:transactions:1.1">
+       <core-environment>
+           <process-id>
+               <uuid/>
+           </process-id>
+       </core-environment>
+       <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
+       <coordinator-environment default-timeout="300"/>
+       
+       <?JTS?>
+       
+   </subsystem>
+   <supplement name="jts-example">
+      <replacement placeholder="JTS">
+         <jts/>
+      </replacement>
+   </supplement>
+   
+   <socket-binding name="txn-recovery-environment" port="4712"/>
+   <socket-binding name="txn-status-manager" port="4713"/>
+</config>

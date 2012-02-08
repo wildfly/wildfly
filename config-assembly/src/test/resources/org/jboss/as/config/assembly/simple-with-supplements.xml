@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<config default-supplement="default">
+   <extension-module>org.jboss.as.simple</extension-module>
+   <subsystem xmlns="urn:jboss:domain:simple-with-text-and-comments:1.0">
+      <some-element value="@@value"/>
+      <?CHILD-A-B?>
+      <?CHILD-C?>
+      <?UNUSED?>
+   </subsystem>
+   <supplement name="default">
+      <replacement placeholder="@@value" attributeValue="true"/>
+   </supplement>
+   <supplement name="full">
+      <replacement placeholder="@@value" attributeValue="false"/>
+      <replacement placeholder="CHILD-A-B">
+         <childA childA-attr="child-one">Hello</childA>
+	      <childB ohildB-attr="child two">
+	         <childB1/>
+	      </childB>
+      </replacement>
+   </supplement>
+   <supplement name="ha" includes="default">
+      <replacement placeholder="CHILD-C">
+         <childC ohildC-attr="child two">
+            <childC1>Yo</childC1>
+         </childC>
+      </replacement>
+   </supplement>
+   <supplement name="unused">
+      <replacement placeholder="UNUSED">
+         <unused/>
+      </replacement>
+   </supplement>
+   <supplement name="full-ha" includes="full ha">
+      <replacement placeholder="CHILD-C">
+         <childC ohildC-attr="child two">
+            <childC1>Overridden by full-ha</childC1>
+         </childC>
+      </replacement>
+   </supplement>
+   <socket-binding name="remoting" port="4447"/>
+   
+</config>

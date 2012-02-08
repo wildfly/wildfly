@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<config>
+   <extension-module>org.jboss.as.empty</extension-module>
+   <subsystem xmlns="urn:jboss:domain:empty-with-attributes:1.0" attr1="one" attr2="two"/>
+</config>

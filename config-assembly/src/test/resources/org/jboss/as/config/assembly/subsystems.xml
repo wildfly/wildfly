@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<config>
+   <subsystems name="default">
+      <!--  This is an example  -->
+      <subsystem>simple-with-text-and-comments.xml</subsystem>
+      <subsystem>empty-with-attributes.xml</subsystem>
+   </subsystems>     
+   <subsystems name="ha">
+      <!--  This is an example  -->
+      <subsystem>empty.xml</subsystem>
+      <subsystem supplement="hah!">ha-only.xml</subsystem>
+   </subsystems>   
+   <subsystems>
+      <!-- Default subsystem to be used for standalone  -->
+      <subsystem>simple-with-text-and-comments.xml</subsystem>
+      <subsystem>empty-with-attributes.xml</subsystem>
+   </subsystems>  
+</config>

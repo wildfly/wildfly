@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
+<config>
+   <extension-module>org.jboss.as.mail</extension-module>
+   <subsystem xmlns="urn:jboss:domain:mail:1.0">
+       <mail-session jndi-name="java:jboss/mail/Default">
+           <smtp-server outbound-socket-binding-ref="mail-smtp"/>
+       </mail-session>
+   </subsystem>
+   <outbound-socket-binding name="mail-smtp">
+       <remote-destination host="localhost" port="25"/>
+   </outbound-socket-binding>
+</config>

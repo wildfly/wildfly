@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
+<config default-supplement="default">
+   <extension-module>org.jboss.as.jmx</extension-module>
+   <subsystem xmlns="urn:jboss:domain:jmx:1.1">
+       <show-model value="true"/>
+       <?REMOTING-CONNECTOR?>
+   </subsystem>
+   <supplement name="default">
+      <replacement placeholder="REMOTING-CONNECTOR">
+         <remoting-connector/>
+      </replacement>
+   </supplement>
+   <supplement name="no-remote-connector">
+   </supplement>
+   
+</config>

@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
+<config>
+   <extension-module>org.jboss.as.webservices</extension-module>
+   <subsystem xmlns="urn:jboss:domain:webservices:1.1">
+       <modify-wsdl-address>true</modify-wsdl-address>
+       <wsdl-host>${jboss.bind.address:127.0.0.1}</wsdl-host>
+       <endpoint-config name="Standard-Endpoint-Config"/>
+       <endpoint-config name="Recording-Endpoint-Config">
+           <pre-handler-chain name="recording-handlers" protocol-bindings="##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM">
+               <handler name="RecordingHandler" class="org.jboss.ws.common.invocation.RecordingServerHandler"/>
+           </pre-handler-chain>
+       </endpoint-config>
+   </subsystem>
+</config>

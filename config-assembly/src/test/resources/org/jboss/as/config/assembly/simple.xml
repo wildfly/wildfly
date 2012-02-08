@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<config>
+   <extension-module>org.jboss.as.simple</extension-module>
+   <subsystem xmlns="urn:jboss:domain:simple:1.0" attr1="one">
+      <childA childA-attr="child-one"/>
+      <childB ohildB-attr="child two">
+         <childB1/>
+      </childB>
+      <childC ohildC-attr="child two">
+         <childC1/>
+      </childC>
+   </subsystem>
+</config>

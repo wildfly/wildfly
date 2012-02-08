@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<config>
+   <extension-module>org.jboss.as.ha</extension-module>
+   <subsystem xmlns="urn:jboss:domain:ha-only:1.0"/>
+   <socket-binding name="ha" port="1234"/>
+   <outbound-socket-binding name="ha-out">
+       <remote-destination host="localhost" port="30"/>
+   </outbound-socket-binding>
+   <supplement name="hah!"/>
+   
+</config>

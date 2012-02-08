@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
+<config>
+   <extension-module>org.jboss.as.jaxr</extension-module>
+   <subsystem xmlns="urn:jboss:domain:jaxr:1.0">
+       <connection-factory jndi-name="java:jboss/jaxr/ConnectionFactory"/>
+       <juddi-server publish-url="http://localhost:8080/juddi/publish" query-url="http://localhost:8080/juddi/query"/>
+   </subsystem>
+</config>
