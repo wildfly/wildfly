@@ -27,12 +27,17 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOU
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+
+import java.util.List;
 
 /**
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
@@ -44,6 +49,7 @@ public class RaRemove extends RaOperationUtil implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         final ModelNode opAddr = operation.require(OP_ADDR);
+        final String raName = PathAddress.pathAddress(opAddr).getLastElement().getValue();
 
         // Compensating is add
         final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
@@ -63,11 +69,16 @@ public class RaRemove extends RaOperationUtil implements OperationStepHandler {
 
         context.addStep(new OperationStepHandler() {
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                //ServiceName raServiceName = ServiceName.of(ConnectorServices.RA_SERVICE, archive);
-                //context.removeService(raServiceName);
 
                 RaOperationUtil.deactivateIfActive(context, archive);
-
+                ServiceName raServiceName = ServiceName.of(ConnectorServices.RA_SERVICE, raName);
+                final List<ServiceName> serviceNameList = context.getServiceRegistry(false).getServiceNames();
+                for (ServiceName name : serviceNameList) {
+                    if (raServiceName.isParentOf(name)) {
+                        context.removeService(name);
+                    }
+                    context.removeService(ServiceName.of(ConnectorServices.RA_SERVICE, raName));
+                }
                 if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                     // TODO:  RE-ADD SERVICES
                 }

@@ -218,4 +218,11 @@ public abstract class AbstractMgmtTestBase {
         }
         return writer.toString();
     }
+    
+    protected void takeSnapShot() throws Exception{
+    	final ModelNode operation0 = new ModelNode();
+        operation0.get(OP).set("take-snapshot");
+        
+        executeOperation(operation0);
+    }
 }

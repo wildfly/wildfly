@@ -51,11 +51,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.addExtensionProperties;
-import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.checkModelParams;
-import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.nonXaDsProperties;
-import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.setOperationParams;
-import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.xaDsProperties;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.addExtensionProperties;
+import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.checkModelParams;
+import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.nonXaDsProperties;
+import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.setOperationParams;
+import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.xaDsProperties;
 
 
 /**

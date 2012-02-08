@@ -122,6 +122,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
                         String jndi = value.getDeployment().getCfJndiNames()[i];
 
                         mdr.getValue().unregisterJndiMapping(value.getDeployment().getURL().toExternalForm(), cf, jndi);
+
                     } catch (Throwable nfe) {
                         DEPLOYMENT_CONNECTOR_LOGGER.debug("Exception during JNDI unbinding", nfe);
                     }
@@ -256,6 +257,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
             final ConnectionFactoryService connectionFactoryService = new ConnectionFactoryService(cf);
 
             final ServiceName connectionFactoryServiceName = ConnectionFactoryService.SERVICE_NAME_BASE.append(jndi);
+
             serviceTarget.addService(connectionFactoryServiceName, connectionFactoryService)
                     .addDependency(ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(deploymentName))
                     .setInitialMode(ServiceController.Mode.ACTIVE).install();

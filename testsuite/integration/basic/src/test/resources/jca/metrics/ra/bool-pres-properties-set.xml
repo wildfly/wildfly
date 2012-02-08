@@ -1,0 +1,23 @@
+<subsystem xmlns="urn:jboss:domain:resource-adapters:1.0">
+ <resource-adapters>
+  <resource-adapter>
+   <archive>bool-pres-properties-set.rar</archive>
+   <transaction-support>XATransaction</transaction-support>
+        <connection-definitions>
+        	<connection-definition class-name="foo"  jndi-name="java:jboss/name1">
+        	<xa-pool>
+        	<interleaving>true</interleaving>
+        	<no-tx-separate-pools>true</no-tx-separate-pools>
+        	</xa-pool>
+        	<security>
+        	<application>true</application>
+        	</security>
+        	<recovery no-recovery="true"></recovery>
+        	</connection-definition>
+		</connection-definitions>
+        <admin-objects>
+          <admin-object  class-name="foo" jndi-name="java:jboss/Name3">  </admin-object>
+         </admin-objects>
+    </resource-adapter>
+  </resource-adapters>
+</subsystem>

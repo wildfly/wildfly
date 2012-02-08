@@ -1,0 +1,15 @@
+<subsystem xmlns="urn:jboss:domain:resource-adapters:1.0">
+ <resource-adapters>
+  <resource-adapter>
+  	<transaction-support>XATransaction</transaction-support>
+     <archive>wrong-recover-plugin.rar</archive>
+     <connection-definitions>
+        	<connection-definition class-name="foo"  jndi-name="java:jboss/name1">
+        	<recovery>
+        	<recover-plugin/>
+        	</recovery>
+        	</connection-definition>
+		</connection-definitions>
+    </resource-adapter>
+  </resource-adapters>
+</subsystem>

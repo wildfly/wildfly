@@ -26,41 +26,43 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
+import java.util.List;
+
 /**
  * Operation handler responsible for adding a Ra.
  *
  * @author maeste
  */
-public class RaAdd implements OperationStepHandler {
+public class RaAdd extends AbstractAddStepHandler {
     static final RaAdd INSTANCE = new RaAdd();
 
-    protected void populateModel(ModelNode operation, ModelNode model) {
-        for (final String attribute : ResourceAdaptersSubsystemProviders.RESOURCEADAPTER_ATTRIBUTE) {
-            if (operation.get(attribute).isDefined()) {
-                model.get(attribute).set(operation.get(attribute));
-            }
+    @Override
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        for (final SimpleAttributeDefinition attribute : ResourceAdaptersSubsystemProviders.RESOURCEADAPTER_ATTRIBUTE) {
+            attribute.validateAndSet(operation, model);
         }
     }
 
-    public void execute(OperationContext context, ModelNode operation)  {
-        final ModelNode subModel = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
-        populateModel(operation, subModel);
+    @Override
+    public void performRuntime(final OperationContext context, ModelNode operation, ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> controllers) throws OperationFailedException {
 
         // Compensating is remove
         final ModelNode address = operation.require(OP_ADDR);
         final String name = PathAddress.pathAddress(address).getLastElement().getValue();
-        String archiveName =  operation.get(ARCHIVE.getName()).asString();
+        String archiveName =  model.get(ARCHIVE.getName()).asString();
         if (name.startsWith(archiveName) && (name.substring(archiveName.length()).contains(ConnectorServices.RA_SERVICE_NAME_SEPARATOR) || name.equals(archiveName))) {
             archiveName = name;
         } else {
@@ -69,41 +71,27 @@ public class RaAdd implements OperationStepHandler {
                 archiveName = archiveName + ConnectorServices.RA_SERVICE_NAME_SEPARATOR + identifier;
             }
         }
-        operation.get(ARCHIVE.getName()).set(archiveName);
-        subModel.get(ARCHIVE.getName()).set(archiveName);
-        final String archive = archiveName;
+        model.get(ARCHIVE.getName()).set(archiveName);
 
-        if (context.isNormalServer()) {
-            context.addStep(new OperationStepHandler() {
-                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    final ServiceTarget serviceTarget = context.getServiceTarget();
-                    final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
 
-                    ModifiableResourceAdapter resourceAdapter = RaOperationUtil.buildResourceAdaptersObject(context, operation);
+        final ServiceTarget serviceTarget = context.getServiceTarget();
 
-                    final ServiceController<?> resourceAdaptersService = context.getServiceRegistry(false).getService(
-                            ConnectorServices.RESOURCEADAPTERS_SERVICE);
-                    ServiceController<?> controller = null;
-                    if (resourceAdaptersService == null) {
-                        controller = serviceTarget.addService(ConnectorServices.RESOURCEADAPTERS_SERVICE,
-                                new ResourceAdaptersService()).setInitialMode(Mode.ACTIVE).addListener(verificationHandler).install();
-                    }
-                    ServiceName raServiceName = ServiceName.of(ConnectorServices.RA_SERVICE, name);
-                    ResourceAdapterService raService = new ResourceAdapterService(resourceAdapter);
-                    serviceTarget.addService(raServiceName, raService).setInitialMode(Mode.ACTIVE)
-                            .addDependency(ConnectorServices.RESOURCEADAPTERS_SERVICE, ResourceAdaptersService.ModifiableResourceAdaptors.class, raService.getResourceAdaptersInjector())
-                            .addListener(verificationHandler).install();
+        ModifiableResourceAdapter resourceAdapter = RaOperationUtil.buildResourceAdaptersObject(context, operation);
 
-                    context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
-
-                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-                        if (controller != null) {
-                            context.removeService(ConnectorServices.RESOURCEADAPTERS_SERVICE);
-                        }
-                    }
-                }
-            }, OperationContext.Stage.RUNTIME);
+        final ServiceController<?> resourceAdaptersService = context.getServiceRegistry(false).getService(
+                ConnectorServices.RESOURCEADAPTERS_SERVICE);
+        ServiceController<?> controller = null;
+        if (resourceAdaptersService == null) {
+            controller = serviceTarget.addService(ConnectorServices.RESOURCEADAPTERS_SERVICE,
+                    new ResourceAdaptersService()).setInitialMode(Mode.ACTIVE).addListener(verificationHandler).install();
         }
-        context.completeStep();
+        ServiceName raServiceName = ServiceName.of(ConnectorServices.RA_SERVICE, name);
+
+        ResourceAdapterService raService = new ResourceAdapterService(resourceAdapter);
+        serviceTarget.addService(raServiceName, raService).setInitialMode(Mode.ACTIVE)
+                .addDependency(ConnectorServices.RESOURCEADAPTERS_SERVICE, ResourceAdaptersService.ModifiableResourceAdaptors.class, raService.getResourceAdaptersInjector())
+                .addListener(verificationHandler).install();
+
+
     }
 }

@@ -147,6 +147,22 @@ public final class ConnectorServices {
         }
     }
 
+    public static void unregisterResourceIdentifier(String raName, Integer identifier) {
+
+            Set<Integer> entries = resourceIdentifiers.get(raName);
+
+            if (entries != null) {
+
+                if (entries.contains(identifier)) {
+                    entries.remove(identifier);
+                }
+                if (entries.isEmpty()) {
+                    unregisterResourceIdentifiers(raName);
+                }
+
+            }
+        }
+
     public static synchronized void unregisterResourceIdentifiers(String raName) {
             if (raName == null)
                 throw MESSAGES.undefinedVar("RaName");

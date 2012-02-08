@@ -23,6 +23,21 @@
 package org.jboss.as.test.smoke.mgmt.resourceadapter;
 
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.checkModelParams;
+import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.raAdminProperties;
+import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.raCommonProperties;
+import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.raConnectionProperties;
+import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.setOperationParams;
+
+import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
+import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension.ResourceAdapterSubsystemParser;
+import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+
+import java.io.IOException;
+import java.util.Properties;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -42,11 +57,11 @@ import org.junit.runner.RunWith;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.checkModelParams;
-import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.raAdminProperties;
-import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.raCommonProperties;
-import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.raConnectionProperties;
-import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.setOperationParams;
+import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.checkModelParams;
+import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.raAdminProperties;
+import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.raCommonProperties;
+import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.raConnectionProperties;
+import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.setOperationParams;
 
 
 /**

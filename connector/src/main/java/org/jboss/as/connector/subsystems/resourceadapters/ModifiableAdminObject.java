@@ -27,7 +27,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.jboss.jca.common.CommonBundle;
+import org.jboss.jca.common.api.metadata.ValidatableMetadata;
 import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
+import org.jboss.jca.common.api.validator.ValidateException;
+import org.jboss.logging.Messages;
 
 
 public class ModifiableAdminObject implements CommonAdminObject {
@@ -48,6 +52,9 @@ public class ModifiableAdminObject implements CommonAdminObject {
 
     private final Boolean useJavaContext;
 
+    private static CommonBundle bundle = Messages.getBundle(CommonBundle.class);
+
+
     /**
      * Create a new AdminObjectImpl.
      *
@@ -59,7 +66,7 @@ public class ModifiableAdminObject implements CommonAdminObject {
      * @param useJavaContext   useJavaContext
      */
     public ModifiableAdminObject(Map<String, String> configProperties, String className, String jndiName,
-                                 String poolName, Boolean enabled, Boolean useJavaContext) {
+                                 String poolName, Boolean enabled, Boolean useJavaContext) throws ValidateException {
         super();
         if (configProperties != null) {
             this.configProperties = new HashMap<String, String>(configProperties.size());
@@ -234,4 +241,5 @@ public class ModifiableAdminObject implements CommonAdminObject {
     public final String getPoolName() {
         return poolName;
     }
+
 }

@@ -1,0 +1,14 @@
+<subsystem xmlns="urn:jboss:domain:resource-adapters:1.0">
+ <resource-adapters>
+  <resource-adapter>
+     <archive>wrong-blck-tmt.rar</archive>
+     <connection-definitions>
+        	<connection-definition class-name="foo"  jndi-name="java:jboss/name1">
+        	<timeout>
+        		<blocking-timeout-millis>-1</blocking-timeout-millis>
+        	</timeout>
+        	</connection-definition>
+		</connection-definitions>
+    </resource-adapter>
+  </resource-adapters>
+</subsystem>

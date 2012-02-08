@@ -33,8 +33,6 @@
 			    </xa-pool>
 			    <security>
 			      <application/>
-			      <security-domain>HsqlDbRealm</security-domain>
-			      <security-domain-and-application>HsqlDbRealm1</security-domain-and-application>
 			    </security>
 			   <timeout>
 			      <blocking-timeout-millis>5000</blocking-timeout-millis>

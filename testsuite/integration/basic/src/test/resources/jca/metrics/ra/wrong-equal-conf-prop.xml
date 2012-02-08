@@ -1,0 +1,11 @@
+<subsystem xmlns="urn:jboss:domain:resource-adapters:1.0">
+            <resource-adapters>
+                <resource-adapter>
+                    <archive>
+                        wrong-equal-conf-prop.rar
+                    </archive>
+                    <config-property name="name1">value1</config-property>
+                    <config-property name="name1">value2</config-property>
+                </resource-adapter>
+            </resource-adapters>
+</subsystem>

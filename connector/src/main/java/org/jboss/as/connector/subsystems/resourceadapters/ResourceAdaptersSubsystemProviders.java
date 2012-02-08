@@ -93,8 +93,8 @@ import org.jboss.dmr.ModelType;
  */
 public class ResourceAdaptersSubsystemProviders {
 
-    static final String[] RESOURCEADAPTER_ATTRIBUTE = new String[]{ARCHIVE.getName(), TRANSACTIONSUPPORT.getName(), BOOTSTRAPCONTEXT.getName(),
-            CONFIG_PROPERTIES.getName(), BEANVALIDATIONGROUPS.getName(), CONNECTIONDEFINITIONS_NAME, ADMIN_OBJECTS_NAME};
+    static final SimpleAttributeDefinition[] RESOURCEADAPTER_ATTRIBUTE = new SimpleAttributeDefinition[]{ARCHIVE, TRANSACTIONSUPPORT, BOOTSTRAPCONTEXT,
+            CONFIG_PROPERTIES, BEANVALIDATIONGROUPS };
     static final SimpleAttributeDefinition[] CONNECTIONDEFINITIONS_NODEATTRIBUTE = new SimpleAttributeDefinition[]{
             CLASS_NAME, JNDINAME,
             USE_JAVA_CONTEXT,
