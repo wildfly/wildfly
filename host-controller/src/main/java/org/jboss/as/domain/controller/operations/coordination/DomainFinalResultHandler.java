@@ -229,9 +229,12 @@ public class DomainFinalResultHandler implements OperationStepHandler {
                 serverNode.get(RESPONSE).set(hostServer.result);
                 groupNode.get(hostServer.serverName).set(serverNode);
             }
+            context.getServerResults().get(groupName).set(groupNode);
+            // FIXME AS7-3677
             result.get(SERVER_GROUPS, groupName).set(groupNode);
         }
         if(!serverGroupSuccess) {
+            // TODO see if we can extract more information from the server details
             context.getFailureDescription().set(MESSAGES.operationFailedOrRolledBack());
         }
     }

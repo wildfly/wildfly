@@ -222,6 +222,11 @@ public abstract class AbstractOperationTestCase {
             return false;
         }
 
+        @Override
+        public ModelNode getServerResults() {
+            return null;
+        }
+
         public OperationContext.ResultAction completeStep() {
             return null;
         }

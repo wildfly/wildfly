@@ -38,6 +38,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLED_BACK;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_UPDATE_SKIPPED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 import java.util.ArrayDeque;
@@ -582,6 +583,13 @@ abstract class AbstractOperationContext implements OperationContext {
 
     public final boolean hasResult() {
         return activeStep.response.has(RESULT);
+    }
+
+    public final ModelNode getServerResults() {
+        if (processType != ProcessType.HOST_CONTROLLER ) {
+            throw MESSAGES.serverResultsAccessNotAllowed(ProcessType.HOST_CONTROLLER, processType);
+        }
+        return activeStep.response.get(SERVER_GROUPS);
     }
 
     private boolean hasMoreSteps() {
