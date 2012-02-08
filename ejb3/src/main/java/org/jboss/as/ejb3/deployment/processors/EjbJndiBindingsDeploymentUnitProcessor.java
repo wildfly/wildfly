@@ -112,7 +112,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
         final String globalJNDIBaseName = "java:global/" + (applicationName != null ? applicationName + "/" : "") + sessionBean.getModuleName() + "/" + sessionBean.getEJBName();
         final String appJNDIBaseName = "java:app/" + sessionBean.getModuleName() + "/" + sessionBean.getEJBName();
         final String moduleJNDIBaseName = "java:module/" + sessionBean.getEJBName();
-        final String remoteJNDIBaseName = "java:jboss/exported/" + (applicationName != null ? applicationName + "/" : "") + sessionBean.getModuleName() + "/" + sessionBean.getEJBName();
+        final String remoteExportedJNDIBaseName = "java:jboss/exported/" + (applicationName != null ? applicationName + "/" : "") + sessionBean.getModuleName() + "/" + sessionBean.getEJBName();
 
         // the base ServiceName which will be used to create the ServiceName(s) for each of the view bindings
         final StringBuilder jndiBindingsLogMessage = new StringBuilder();
@@ -144,8 +144,9 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
             registerBinding(sessionBean, viewDescription, moduleJNDIName);
             logBinding(jndiBindingsLogMessage, moduleJNDIName);
 
-            if(ejbViewDescription.getMethodIntf() != MethodIntf.REMOTE || ejbViewDescription.getMethodIntf() != MethodIntf.HOME) {
-                final String remoteJNDIName = remoteJNDIBaseName + "!" + viewClassName;
+            // If it a remote or (remote) home view then bind the java:jboss/exported jndi names for the view
+            if(ejbViewDescription.getMethodIntf() == MethodIntf.REMOTE || ejbViewDescription.getMethodIntf() == MethodIntf.HOME) {
+                final String remoteJNDIName = remoteExportedJNDIBaseName + "!" + viewClassName;
                 registerRemoteBinding(sessionBean, viewDescription, remoteJNDIName);
                 logBinding(jndiBindingsLogMessage, remoteJNDIName);
             }
