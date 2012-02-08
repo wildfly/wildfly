@@ -28,7 +28,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DIRECTORY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_RESULTS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
@@ -660,12 +659,17 @@ public class CoreResourceManagementTestCase {
 
         validateFailedResponse(result);
 
-        String errorCode = getNotAuthorizedErrorCode();
+        Set<String> keys = new HashSet<String>(result.get(RESULT).keys());
+        keys.remove(SERVER_GROUPS);
+        Assert.assertEquals(2, keys.size());
 
-        List<Property> steps = result.get(RESULT, DOMAIN_RESULTS).asPropertyList();
-        Assert.assertEquals(2, steps.size());
+        String errorCode = getNotAuthorizedErrorCode();
+        List<Property> steps = result.get(RESULT).asPropertyList();
         int i = 0;
         for (Property property : steps) {
+            if (property.getName().equals(SERVER_GROUPS)) {
+                continue;
+            }
             ModelNode stepResult = property.getValue();
             Assert.assertEquals(FAILED, stepResult.get(OUTCOME).asString());
             if (i == 0) {
@@ -698,12 +702,17 @@ public class CoreResourceManagementTestCase {
 
         validateFailedResponse(result);
 
-        String errorCode = getNotAuthorizedErrorCode();
+        Set<String> keys = new HashSet<String>(result.get(RESULT).keys());
+        keys.remove(SERVER_GROUPS);
+        Assert.assertEquals(2, keys.size());
 
+        String errorCode = getNotAuthorizedErrorCode();
         List<Property> steps = result.get(RESULT).asPropertyList();
-        Assert.assertEquals(2, steps.size());
         int i = 0;
         for (Property property : steps) {
+            if (property.getName().equals(SERVER_GROUPS)) {
+                continue;
+            }
             ModelNode stepResult = property.getValue();
             Assert.assertEquals(FAILED, stepResult.get(OUTCOME).asString());
             if (i == 0) {
@@ -747,14 +756,14 @@ public class CoreResourceManagementTestCase {
         snapshotOperation.get(OP).set(SnapshotTakeHandler.OPERATION_NAME);
         snapshotOperation.get(OP_ADDR).set(addr);
         ModelNode response = masterClient.execute(snapshotOperation);
-        final String snapshot = validateResponse(response).get(DOMAIN_RESULTS).asString();
+        final String snapshot = validateResponse(response).asString();
         Assert.assertNotNull(snapshot);
         Assert.assertFalse(snapshot.isEmpty());
 
         ModelNode listSnapshotOperation = new ModelNode();
         listSnapshotOperation.get(OP).set(SnapshotListHandler.OPERATION_NAME);
         listSnapshotOperation.get(OP_ADDR).set(addr);
-        ModelNode listResult = validateResponse(masterClient.execute(listSnapshotOperation)).get(DOMAIN_RESULTS);
+        ModelNode listResult = validateResponse(masterClient.execute(listSnapshotOperation));
         Set<String> snapshots = new HashSet<String>();
         for (ModelNode curr : listResult.get(NAMES).asList()) {
             snapshots.add(listResult.get(DIRECTORY).asString() + "/" + curr.asString());
@@ -768,7 +777,7 @@ public class CoreResourceManagementTestCase {
         deleteSnapshotOperation.get(NAME).set(snapshot.substring(snapshot.lastIndexOf("/")  + 1));
         validateResponse(masterClient.execute(deleteSnapshotOperation));
 
-        listResult = validateResponse(masterClient.execute(listSnapshotOperation)).get(DOMAIN_RESULTS);
+        listResult = validateResponse(masterClient.execute(listSnapshotOperation));
         snapshots = new HashSet<String>();
         for (ModelNode curr : listResult.get(NAMES).asList()) {
             snapshots.add(listResult.get(DIRECTORY).asString() + "/" + curr.asString());

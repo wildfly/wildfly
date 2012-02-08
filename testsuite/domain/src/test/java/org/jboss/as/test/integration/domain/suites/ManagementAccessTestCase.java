@@ -25,7 +25,6 @@ package org.jboss.as.test.integration.domain.suites;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_RESULTS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INET_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
@@ -36,7 +35,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PLA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
@@ -49,12 +47,12 @@ import static org.jboss.as.test.integration.domain.DomainTestSupport.validateRes
 
 import java.io.IOException;
 
-import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationRemoveHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.domain.DomainTestSupport;
+import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -63,7 +61,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -171,14 +168,14 @@ public class ManagementAccessTestCase {
 
         ModelNode response = masterClient.execute(request);
         System.out.println(response);
-        ModelNode returnVal = validateResponse(response).get(DOMAIN_RESULTS);
+        ModelNode returnVal = validateResponse(response);
         validateResponse(returnVal.get("step-1"));
         ModelNode profile = validateResponse(returnVal.get("step-2"));
         Assert.assertEquals("osgi", profile.asString());
 
         response = slaveClient.execute(request);
         System.out.println(response);
-        ModelNode slaveReturnVal = validateResponse(response).get(DOMAIN_RESULTS);
+        ModelNode slaveReturnVal = validateResponse(response);
         Assert.assertEquals(returnVal, slaveReturnVal);
     }
 
@@ -227,7 +224,7 @@ public class ManagementAccessTestCase {
 
         ModelNode response = masterClient.execute(masterRequest);
         System.out.println(response);
-        ModelNode returnVal = validateResponse(response).get(DOMAIN_RESULTS);
+        ModelNode returnVal = validateResponse(response);
         ModelNode name = validateResponse(returnVal.get("step-1"));
         Assert.assertEquals("master", name.asString());
         ModelNode inetAddress = validateResponse(returnVal.get("step-2"));
@@ -241,7 +238,7 @@ public class ManagementAccessTestCase {
 
         response = slaveClient.execute(slaveRequest);
         System.out.println(response);
-        ModelNode slaveReturnVal = validateResponse(response).get(DOMAIN_RESULTS);
+        ModelNode slaveReturnVal = validateResponse(response);
         name = validateResponse(slaveReturnVal.get("step-1"));
         Assert.assertEquals("slave", name.asString());
         inetAddress = validateResponse(slaveReturnVal.get("step-2"));
@@ -249,7 +246,7 @@ public class ManagementAccessTestCase {
 
         // Check we get the same thing via the master
         response = masterClient.execute(slaveRequest);
-        returnVal = validateResponse(response).get(DOMAIN_RESULTS);
+        returnVal = validateResponse(response);
         Assert.assertEquals(returnVal, slaveReturnVal);
 
         // Can't access the master via the slave
@@ -273,7 +270,7 @@ public class ManagementAccessTestCase {
         System.out.println(masterRequest);
         ModelNode response = masterClient.execute(masterRequest);
         System.out.println(response);
-        ModelNode returnVal = validateResponse(response).get(DOMAIN_RESULTS);
+        ModelNode returnVal = validateResponse(response);
         ModelNode name = validateResponse(returnVal.get("step-1"));
         Assert.assertEquals("master", name.asString());
         ModelNode inetAddress = validateResponse(returnVal.get("step-2"));
