@@ -3,6 +3,7 @@
         <hornetq-server>
             <!-- disable messaging persistence -->
             <persistence-enabled>false</persistence-enabled>
+            <security-domain>someDomain</security-domain>
             <remoting-interceptors>
                 <class-name>foo.bar</class-name>
                 <class-name>bar.foo</class-name>
