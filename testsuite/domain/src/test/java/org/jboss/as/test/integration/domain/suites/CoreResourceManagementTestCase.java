@@ -505,22 +505,22 @@ public class CoreResourceManagementTestCase {
 
     @Test
     public void testCannotInvokeManagedMasterServerOperationsInDomainComposite() throws Exception {
-        testCannotInvokeManagedServerOperationsComposite(new ModelNode().setEmptyList(), new ModelNode().add("host", "master").add("server", "main-one").add("subsystem", "threads"));
+        testCannotInvokeManagedServerOperationsComposite(new ModelNode().add("host", "master").add("server", "main-one").add("subsystem", "threads"));
     }
 
     @Test
     public void testCannotInvokeManagedSlaveServerOperationsInDomainComposite() throws Exception {
-        testCannotInvokeManagedServerOperationsComposite(new ModelNode().setEmptyList(), new ModelNode().add("host", "slave").add("server", "main-three").add("subsystem", "threads"));
+        testCannotInvokeManagedServerOperationsComposite(new ModelNode().add("host", "slave").add("server", "main-three").add("subsystem", "threads"));
     }
 
     @Test
     public void testCannotInvokeManagedMasterServerOperationsInServerComposite() throws Exception {
-        testCannotInvokeManagedServerOperationsComposite(new ModelNode().add("host", "master").add("server", "main-one"), new ModelNode().add("subsystem", "threads"));
+        testCannotInvokeManagedServerOperationsComposite("master", "main-one", new ModelNode().add("subsystem", "threads"));
     }
 
     @Test
     public void testCannotInvokeManagedSlaveServerOperationsInServerComposite() throws Exception {
-        testCannotInvokeManagedServerOperationsComposite(new ModelNode().add("host", "slave").add("server", "main-three"), new ModelNode().add("subsystem", "threads"));
+        testCannotInvokeManagedServerOperationsComposite("slave", "main-three", new ModelNode().add("subsystem", "threads"));
     }
 
     @Test
@@ -642,12 +642,12 @@ public class CoreResourceManagementTestCase {
         validateResponse(masterClient.execute(write));
     }
 
-    private void testCannotInvokeManagedServerOperationsComposite(ModelNode compositeAddress, ModelNode stepAddress) throws Exception {
+    private void testCannotInvokeManagedServerOperationsComposite(ModelNode stepAddress) throws Exception {
         final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
 
         ModelNode composite = new ModelNode();
         composite.get(OP).set(CompositeOperationHandler.NAME);
-        composite.get(OP_ADDR).set(compositeAddress);
+        composite.get(OP_ADDR).setEmptyList();
         composite.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
 
         ModelNode goodServerOp = new ModelNode();
@@ -658,11 +658,47 @@ public class CoreResourceManagementTestCase {
 
         ModelNode result = masterClient.execute(composite);
 
+        validateFailedResponse(result);
 
         String errorCode = getNotAuthorizedErrorCode();
 
-        ModelNode desc = validateFailedResponse(result);
-        Assert.assertTrue(desc.toString() + " does not contain " + errorCode, desc.toString().contains(errorCode));
+        List<Property> steps = result.get(RESULT, DOMAIN_RESULTS).asPropertyList();
+        Assert.assertEquals(2, steps.size());
+        int i = 0;
+        for (Property property : steps) {
+            ModelNode stepResult = property.getValue();
+            Assert.assertEquals(FAILED, stepResult.get(OUTCOME).asString());
+            if (i == 0) {
+                Assert.assertFalse(stepResult.hasDefined(FAILURE_DESCRIPTION));
+            }
+            if (i++ == 1) {
+                ModelNode desc = validateFailedResponse(stepResult);
+                Assert.assertTrue(desc.toString() + " does not contain " + errorCode, desc.toString().contains(errorCode));
+            }
+            i++;
+        }
+    }
+
+    private void testCannotInvokeManagedServerOperationsComposite(String host, String server, ModelNode stepAddress) throws Exception {
+        final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
+
+        ModelNode composite = new ModelNode();
+        composite.get(OP).set(CompositeOperationHandler.NAME);
+        composite.get(OP_ADDR).add(HOST, host);
+        composite.get(OP_ADDR).add(SERVER, server);
+        composite.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+
+        ModelNode goodServerOp = new ModelNode();
+        goodServerOp.get(OP).set(READ_RESOURCE_OPERATION);
+        goodServerOp.get(OP_ADDR).set(stepAddress);
+        composite.get(STEPS).add(goodServerOp);
+        composite.get(STEPS).add(getAddThreadFactoryOperation(stepAddress.clone().add("thread-factory", "test-pool-123abc")));
+
+        ModelNode result = masterClient.execute(composite);
+
+        validateFailedResponse(result);
+
+        String errorCode = getNotAuthorizedErrorCode();
 
         List<Property> steps = result.get(RESULT).asPropertyList();
         Assert.assertEquals(2, steps.size());
@@ -674,7 +710,7 @@ public class CoreResourceManagementTestCase {
                 Assert.assertFalse(stepResult.hasDefined(FAILURE_DESCRIPTION));
             }
             if (i++ == 1) {
-                desc = validateFailedResponse(stepResult);
+                ModelNode desc = validateFailedResponse(stepResult);
                 Assert.assertTrue(desc.toString() + " does not contain " + errorCode, desc.toString().contains(errorCode));
             }
             i++;

@@ -2399,7 +2399,7 @@ public interface ControllerMessages {
      *
      * @return a {@link OperationFailedRuntimeException} for the error.
      */
-    @Message(id = 14840, value = "Operation '%s' targetted at resource '%s' was directly invoked by a user. " +
+    @Message(id = 14840, value = "Operation '%s' targeted at resource '%s' was directly invoked by a user. " +
             "User operations are not permitted to directly update the persistent configuration of a server in a managed domain.")
     OperationFailedRuntimeException modelUpdateNotAuthorized(String operation, PathAddress address);
 }

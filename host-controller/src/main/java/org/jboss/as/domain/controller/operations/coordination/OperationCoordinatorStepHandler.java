@@ -93,7 +93,7 @@ public class OperationCoordinatorStepHandler {
         OperationRouting routing = OperationRouting.determineRouting(operation, localHostControllerInfo, opRegistry);
 
         if (!localHostControllerInfo.isMasterDomainController()
-                && (routing.isRouteToMaster() || !routing.isLocalOnly(localHostControllerInfo.getLocalHostName()))) {
+                && !routing.isLocalOnly(localHostControllerInfo.getLocalHostName())) {
             // We cannot handle this ourselves
             routetoMasterDomainController(context, operation);
         }
