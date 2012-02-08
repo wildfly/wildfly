@@ -11,16 +11,19 @@
         <extension module="org.jboss.as.ee"/>
         <extension module="org.jboss.as.ejb3"/>
         <extension module="org.jboss.as.jacorb"/>
+        <extension module="org.jboss.as.jaxr"/>
         <extension module="org.jboss.as.jaxrs"/>
         <extension module="org.jboss.as.jdr"/>
         <extension module="org.jboss.as.jmx"/>
         <extension module="org.jboss.as.jpa"/>
+        <extension module="org.jboss.as.jsr77"/>
         <extension module="org.jboss.as.logging"/>
         <extension module="org.jboss.as.mail"/>
         <extension module="org.jboss.as.messaging"/>
         <extension module="org.jboss.as.modcluster"/>
         <extension module="org.jboss.as.naming"/>
         <extension module="org.jboss.as.osgi"/>
+        <extension module="org.jboss.as.pojo"/>
         <extension module="org.jboss.as.remoting"/>
         <extension module="org.jboss.as.sar"/>
         <extension module="org.jboss.as.security"/>
@@ -51,6 +54,7 @@
                     </formatter>
                     <file relative-to="jboss.server.log.dir" path="server.log"/>
                     <suffix value=".yyyy-MM-dd"/>
+                    <append value="true"/>
                 </periodic-rotating-file-handler>
                 <logger category="com.arjuna">
                     <level name="WARN"/>
@@ -152,6 +156,10 @@
                 </cache-container>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jacorb:1.1"/>
+            <subsystem xmlns="urn:jboss:domain:jaxr:1.0">
+                <connection-factory jndi-name="java:jboss/jaxr/ConnectionFactory"/>
+                <juddi-server publish-url="http://localhost:8080/juddi/publish" query-url="http://localhost:8080/juddi/query"/>
+            </subsystem>
             <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
             <subsystem xmlns="urn:jboss:domain:jca:1.1">
                 <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
@@ -170,14 +178,17 @@
                         <keepalive-time time="10" unit="seconds"/>
                     </long-running-threads>
                 </default-workmanager>
+                <cached-connection-manager/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jdr:1.0"/>
             <subsystem xmlns="urn:jboss:domain:jmx:1.1">
                 <show-model value="true"/>
+                <remoting-connector/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jpa:1.0">
                 <jpa default-datasource=""/>
             </subsystem>
+            <subsystem xmlns="urn:jboss:domain:jsr77:1.0"/>
             <subsystem xmlns="urn:jboss:domain:mail:1.0">
                 <mail-session jndi-name="java:jboss/mail/Default">
                     <smtp-server outbound-socket-binding-ref="mail-smtp"/>
@@ -285,6 +296,7 @@
                     <capability name="org.jboss.as.osgi.configadmin" startlevel="1"/>
                 </capabilities>
             </subsystem>
+            <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
             <subsystem xmlns="urn:jboss:domain:remoting:1.1">
                 <connector name="remoting-connector" socket-binding="remoting"/>
             </subsystem>
@@ -292,10 +304,20 @@
             <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
             <subsystem xmlns="urn:jboss:domain:security:1.1">
                 <security-domains>
-                    <security-domain name="other">
+                    <security-domain name="other" cache-type="default">
                         <authentication>
                             <login-module code="UsersRoles" flag="required"/>
                         </authentication>
+                    </security-domain>
+                    <security-domain name="jboss-web-policy" cache-type="default">
+                        <authorization>
+                            <policy-module code="Delegating" flag="required"/>
+                        </authorization>
+                    </security-domain>
+                    <security-domain name="jboss-ejb-policy" cache-type="default">
+                        <authorization>
+                            <policy-module code="Delegating" flag="required"/>
+                        </authorization>
                     </security-domain>
                     <security-domain name="messaging" cache-type="default">
                         <authentication>
@@ -351,6 +373,7 @@
                     </formatter>
                     <file relative-to="jboss.server.log.dir" path="server.log"/>
                     <suffix value=".yyyy-MM-dd"/>
+                    <append value="true"/>
                 </periodic-rotating-file-handler>
                 <logger category="com.arjuna">
                     <level name="WARN"/>
@@ -432,7 +455,6 @@
                         <keepalive-time time="100" unit="milliseconds"/>
                     </thread-pool>
                 </thread-pools>
-                <iiop enable-by-default="true" use-qualified-name="true"/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:infinispan:1.1" default-cache-container="cluster">
                 <cache-container name="cluster" aliases="ha-partition" default-cache="default">
@@ -464,7 +486,6 @@
                         <eviction strategy="LRU"/>
                         <file-store/>
                     </distributed-cache>
-
                 </cache-container>
                 <cache-container name="hibernate" default-cache="local-query">
                     <transport lock-timeout="60000"/>
@@ -485,10 +506,14 @@
                 </cache-container>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jacorb:1.1"/>
+            <subsystem xmlns="urn:jboss:domain:jaxr:1.0">
+                <connection-factory jndi-name="java:jboss/jaxr/ConnectionFactory"/>
+                <juddi-server publish-url="http://localhost:8080/juddi/publish" query-url="http://localhost:8080/juddi/query"/>
+            </subsystem>
             <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
             <subsystem xmlns="urn:jboss:domain:jca:1.1">
-                <archive-validation enabled="true"/>
-                <bean-validation enabled="true"/>
+                <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
+                <bean-validation enabled="false"/>
                 <default-workmanager>
                     <short-running-threads>
                         <core-threads count="50"/>
@@ -541,10 +566,12 @@
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jmx:1.1">
                 <show-model value="true"/>
+                <remoting-connector/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jpa:1.0">
                 <jpa default-datasource=""/>
             </subsystem>
+            <subsystem xmlns="urn:jboss:domain:jsr77:1.0"/>
             <subsystem xmlns="urn:jboss:domain:mail:1.0">
                 <mail-session jndi-name="java:jboss/mail/Default">
                     <smtp-server outbound-socket-binding-ref="mail-smtp"/>
@@ -655,6 +682,7 @@
                     <capability name="org.jboss.as.osgi.configadmin" startlevel="1"/>
                 </capabilities>
             </subsystem>
+            <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
             <subsystem xmlns="urn:jboss:domain:remoting:1.1">
                 <connector name="remoting-connector" socket-binding="remoting"/>
             </subsystem>
@@ -662,10 +690,20 @@
             <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
             <subsystem xmlns="urn:jboss:domain:security:1.1">
                 <security-domains>
-                    <security-domain name="other">
+                    <security-domain name="other" cache-type="default">
                         <authentication>
                             <login-module code="UsersRoles" flag="required"/>
                         </authentication>
+                    </security-domain>
+                    <security-domain name="jboss-web-policy" cache-type="default">
+                        <authorization>
+                            <policy-module code="Delegating" flag="required"/>
+                        </authorization>
+                    </security-domain>
+                    <security-domain name="jboss-ejb-policy" cache-type="default">
+                        <authorization>
+                            <policy-module code="Delegating" flag="required"/>
+                        </authorization>
                     </security-domain>
                     <security-domain name="messaging" cache-type="default">
                         <authentication>
