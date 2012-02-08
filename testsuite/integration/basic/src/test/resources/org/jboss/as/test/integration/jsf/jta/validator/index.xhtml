@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"    
+      xmlns:h="http://java.sun.com/jsf/html" 
+      xmlns:f="http://java.sun.com/jsf/core">
+ 
+    <h:head>
+        <title>JSF Simple Login Example</title>
+    </h:head>
+    <h:body bgcolor="white">
+    	
+        <h:form id="login_form" name="login_form" method="POST">
+        <table>
+            <tr>
+                <td><h:outputText value="Enter Login ID: " /></td>
+                <td><h:inputText id="login_name" name="login_name"
+                        	value="#{SimpleLogin.loginname}">
+                        <f:validator validatorId="CustomValidator"/>
+                        </h:inputText>
+                        </td>
+            </tr>
+            <tr>
+                <td><h:outputText value="Enter Password: "/></td>
+                <td><h:inputSecret id="password" name="password"
+                        value="#{SimpleLogin.password}" /></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td><h:commandButton value="Login"
+                        action="#{SimpleLogin.checkValidUser}" id="login_button"/></td>
+            </tr>
+             
+        </table>
+    </h:form>
+     
+    </h:body>
+</html>
