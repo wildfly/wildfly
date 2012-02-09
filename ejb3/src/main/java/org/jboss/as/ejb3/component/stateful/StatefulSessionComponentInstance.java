@@ -185,6 +185,6 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
     }
 
     public Object writeReplace() throws ObjectStreamException {
-        return new SerializedStatefulSessionComponent(getInstance(), id, getComponent().getCreateServiceName().getCanonicalName(), serializableInterceptors);
+        return new SerializedStatefulSessionComponent(getInstanceReference().get(), id, getComponent().getCreateServiceName().getCanonicalName(), serializableInterceptors);
     }
 }

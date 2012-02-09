@@ -30,9 +30,18 @@ import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.weld.WeldMessages;
 
 /**
-* @author Stuart Douglas
-*/
+ * Managed reference that is used to instantiate components when CDI is in use. It needs to create the components
+ * so it can perform constructor injection.
+ *
+ * This class is serializable, as it is stored when replicating / passivating to make sure the CDI beans can be
+ * released correctly.
+ *
+ * @author Stuart Douglas
+ */
 class WeldManagedReference implements ManagedReference, Serializable {
+
+    private static final long serialVersionUID = 1L;
+
     private final CreationalContext<?> context;
     private final Object instance;
 
@@ -57,7 +66,7 @@ class WeldManagedReference implements ManagedReference, Serializable {
 
     public void injectInterceptor(Class<?> interceptorClass, Object instance) {
         final WeldEEInjection injection = interceptorInjections.get(interceptorClass);
-        if(injection != null) {
+        if (injection != null) {
             injection.inject(instance, context);
         } else {
             throw WeldMessages.MESSAGES.unknownInterceptorClassForCDIInjection(interceptorClass);

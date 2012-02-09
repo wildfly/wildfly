@@ -27,10 +27,10 @@ public class SerializedStatefulSessionComponent implements Serializable {
 
     private final String serviceName;
     private final SessionID sessionID;
-    private final Object instance;
     private final Map<Object, Object> serializableInterceptors;
+    private final ManagedReference instance;
 
-    public SerializedStatefulSessionComponent(final Object instance, final SessionID sessionID, final String serviceName, final Map<Object, Object> serializableInterceptors) {
+    public SerializedStatefulSessionComponent(final ManagedReference instance, final SessionID sessionID, final String serviceName, final Map<Object, Object> serializableInterceptors) {
         this.instance = instance;
         this.sessionID = sessionID;
         this.serviceName = serviceName;
@@ -49,6 +49,6 @@ public class SerializedStatefulSessionComponent implements Serializable {
             context.getContextData().put(entry.getKey(), referenceReference);
         }
         context.getContextData().put(SessionID.class, sessionID);
-        return component.constructComponentInstance(new ValueManagedReference(new ImmediateValue<Object>(instance)), false, context);
+        return component.constructComponentInstance(instance, false, context);
     }
 }

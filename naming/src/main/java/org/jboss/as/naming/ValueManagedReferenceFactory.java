@@ -22,6 +22,8 @@
 
 package org.jboss.as.naming;
 
+import java.io.Serializable;
+
 import org.jboss.msc.value.Value;
 
 /**
@@ -44,28 +46,31 @@ public final class ValueManagedReferenceFactory implements ManagedReferenceFacto
 
     @Override
     public ManagedReference getReference() {
-        return new ManagedReference() {
-
-            private volatile Object instance;
-
-            @Override
-            public void release() {
-                this.instance = null;
-            }
-
-            @Override
-            public Object getInstance() {
-                if (instance != null) {
-                    return this.instance;
-                }
-                synchronized (this) {
-                    if (instance == null) {
-                        this.instance = value.getValue();
-                    }
-                }
-                return this.instance;
-            }
-        };
+        return new ValueManagedReference();
     }
 
+    private class ValueManagedReference implements ManagedReference, Serializable {
+
+        private static final long serialVersionUID = 1L;
+
+        private volatile Object instance;
+
+        @Override
+        public void release() {
+            this.instance = null;
+        }
+
+        @Override
+        public Object getInstance() {
+            if (instance != null) {
+                return this.instance;
+            }
+            synchronized (this) {
+                if (instance == null) {
+                    this.instance = value.getValue();
+                }
+            }
+            return this.instance;
+        }
+    }
 }
