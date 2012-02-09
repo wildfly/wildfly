@@ -89,7 +89,9 @@ public class SosInterpreter {
             reporter.setPassword(password);
             reporter.setHostname(host);
             reporter.setPort(port);
-            reporter.setControllerClient(controllerClient);
+            if (controllerClient != null) {
+                reporter.setControllerClient(controllerClient);
+            }
             reporter.setHostControllerName(hostControllerName);
             reporter.setServerName(serverName);
             reporter.setHome(homeDir);
