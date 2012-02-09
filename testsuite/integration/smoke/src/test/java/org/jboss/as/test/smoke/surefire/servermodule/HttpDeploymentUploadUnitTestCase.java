@@ -49,6 +49,7 @@ import static junit.framework.Assert.assertNotNull;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import org.junit.Ignore;
 
 /**
  * Test the HTTP API upload functionality to ensure that a deployment is successfully
@@ -58,6 +59,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
  */
 @RunAsClient
 @RunWith(Arquillian.class)
+@Ignore("AS7-3704")
 public class HttpDeploymentUploadUnitTestCase {
 
     private static final String BOUNDARY_PARAM = "NeAG1QNIHHOyB5joAS7Rox!!";
