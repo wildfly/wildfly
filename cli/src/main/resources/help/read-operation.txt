@@ -1,0 +1,26 @@
+SYNOPSIS
+
+    read-operation --help |
+                   [--node=node_path] [operation_name]
+                   [--headers={operation_header (;operation_header)*}]
+
+DESCRIPTION
+
+    If the operation name argument is not provided, lists all the operation names
+    available in the current context and for the current node path.
+    If the operation name is specified, prints the description of the operation,
+    detailed description of its parameters and response.
+
+ARGUMENTS
+
+ --help              - prints this message.
+ 
+ --node              - (optional) the node path of the managed resource
+                       the target operation belongs to.
+                       If not present, the current node path (indicated in the prompt) is assumed.
+
+ operation_name      - (optional) the name of the operation to describe.
+                       If not present, all the operations of the managed resource will be listed.
+
+ --headers           - a list of operation headers separated by a semicolon. For the list of supported
+                       headers, please, refer to the domain management documentation or use tab-completion.
