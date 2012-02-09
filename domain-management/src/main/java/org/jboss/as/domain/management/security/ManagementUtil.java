@@ -67,7 +67,7 @@ public class ManagementUtil {
     static String getSecurityRealmName(final ModelNode operation) {
         String realmName = null;
         PathAddress pa = PathAddress.pathAddress(operation.require(OP_ADDR));
-        for (int i = pa.size() - 1; i > 0; i++) {
+        for (int i = pa.size() - 1; i > 0; i--) {
             PathElement pe = pa.getElement(i);
             if (SECURITY_REALM.equals(pe.getKey())) {
                 realmName = pe.getValue();
