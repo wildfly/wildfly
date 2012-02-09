@@ -251,6 +251,7 @@
 
         <!-- Non-default plugin versions and configuration -->
         <version.javacc.plugin>2.5</version.javacc.plugin>
+        <version.org.zanata.plugin>1.4.5.1</version.org.zanata.plugin>
         <version.shade.plugin>1.5</version.shade.plugin>
 
         <!-- Surefire args -->
@@ -285,6 +286,22 @@
 
     <build>
         <plugins>
+           <!-- Zanata translations -->
+            <plugin>
+              <groupId>org.zanata</groupId>
+              <artifactId>zanata-maven-plugin</artifactId>
+              <version>${version.org.zanata.plugin}</version>
+              <configuration>
+                 <!-- Process sub-modules separately, sharing parent config -->
+                 <enableModules>true</enableModules>
+                 <projectConfig>${session.executionRootDirectory}/zanata.xml</projectConfig>
+                  <!-- Generated English i18n.properties are written here: -->
+                 <srcDir>target/classes</srcDir>
+                 <transDir>src/main/resources</transDir>
+                 <includes>**/*.i18n.properties,**/LocalDescriptions.properties</includes>
+              </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<config xmlns="http://zanata.org/namespace/config/">
+    <url>https://translate.jboss.org/</url>
+    <project>jboss-as</project>
+    <project-version>master</project-version>
+    <project-type>properties</project-type>
+
+    <locales mapping="java">
+       <locale>de</locale>
+       <locale>es</locale>
+       <locale>fr</locale>
+       <locale>ja</locale>
+       <locale>pt-BR</locale>
+       <locale map-from="zh-CN">zh-Hans</locale>
+    </locales>
+
+</config>
