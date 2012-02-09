@@ -268,15 +268,15 @@ public interface JpaMessages {
     IllegalArgumentException classLevelAnnotationParameterRequired(String annotation, String parameter);
 
     /**
-     * A message indicating that the deployment unit, represented by the {@code path} parameter, could not be found at
+     * A message indicating that the persistence unit, represented by the {@code path} parameter, could not be found at
      * the current deployment unit, represented by the {@code deploymentUnit} parameter.
      *
      * @param puName         the persistence unit name.
      * @param deploymentUnit the deployment unit.
      * @return the message.
      */
-    @Message(id = 11440, value = "Can't find a deployment unit named %s in %s")
-    String deploymentUnitNotFound(String puName, DeploymentUnit deploymentUnit);
+    @Message(id = 11440, value = "Can't find a persistence unit named %s in %s")
+    String persistenceUnitNotFound(String puName, DeploymentUnit deploymentUnit);
 
     /**
      * Creates an exception indicating that the deployment unit, represented by the {@code path} and {@code puName}

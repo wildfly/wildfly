@@ -217,7 +217,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
 
         PersistenceUnitMetadata pu = PersistenceUnitSearch.resolvePersistenceUnitSupplier(deploymentUnit, puName);
         if (null == pu) {
-            throw new DeploymentUnitProcessingException(MESSAGES.deploymentUnitNotFound(puName, deploymentUnit));
+            throw new DeploymentUnitProcessingException(MESSAGES.persistenceUnitNotFound(puName, deploymentUnit));
         }
         return pu;
     }
