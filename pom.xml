@@ -170,7 +170,7 @@
         <version.org.jboss.modules.jboss-modules>1.1.0.GA</version.org.jboss.modules.jboss-modules>
         <version.org.jboss.msc.jboss-msc>1.0.2.GA</version.org.jboss.msc.jboss-msc>
         <version.org.jboss.netty>3.2.6.Final</version.org.jboss.netty>
-        <version.org.jboss.osgi.framework>1.1.4</version.org.jboss.osgi.framework>
+        <version.org.jboss.osgi.framework>1.1.5</version.org.jboss.osgi.framework>
         <version.org.jboss.osgi.http>1.0.5</version.org.jboss.osgi.http>
         <version.org.jboss.osgi.logging>1.0.0</version.org.jboss.osgi.logging>
         <version.org.jboss.osgi.metadata>2.0.0</version.org.jboss.osgi.metadata>
