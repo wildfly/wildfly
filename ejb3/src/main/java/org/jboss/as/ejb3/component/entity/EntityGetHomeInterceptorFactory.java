@@ -39,10 +39,10 @@ public class EntityGetHomeInterceptorFactory implements InterceptorFactory {
 
     private final InjectedValue<ComponentView> viewToCreate = new InjectedValue<ComponentView>();
 
-    @Override
-    public Interceptor create(final InterceptorFactoryContext context) {
+    private final Interceptor interceptor;
 
-        return new Interceptor() {
+    public EntityGetHomeInterceptorFactory() {
+        interceptor = new Interceptor() {
             @Override
             public Object processInvocation(final InterceptorContext context) throws Exception {
                 final EntityBeanComponentInstance instance = (EntityBeanComponentInstance) context.getPrivateData(ComponentInstance.class);
@@ -54,6 +54,11 @@ public class EntityGetHomeInterceptorFactory implements InterceptorFactory {
 
             }
         };
+    }
+
+    @Override
+    public Interceptor create(final InterceptorFactoryContext context) {
+        return interceptor;
     }
 
 

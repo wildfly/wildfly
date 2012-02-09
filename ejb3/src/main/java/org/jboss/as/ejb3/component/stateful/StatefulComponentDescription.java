@@ -316,7 +316,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
                 public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
                     // add the instance associating interceptor to the *start of the invocation interceptor chain*
                     configuration.addClientInterceptor(StatefulComponentIdInterceptor.Factory.INSTANCE, InterceptorOrder.Client.ASSOCIATING_INTERCEPTOR);
-                    configuration.addViewInterceptor(StatefulComponentInstanceInterceptor.Factory.INSTANCE, InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);
+                    configuration.addViewInterceptor(StatefulComponentInstanceInterceptor.FACTORY, InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);
                 }
             });
         }

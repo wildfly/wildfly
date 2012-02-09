@@ -21,10 +21,10 @@
  */
 package org.jboss.as.ejb3.component.session;
 
+import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
-import org.jboss.invocation.InterceptorFactoryContext;
 
 /**
  * Interceptor that handles the writeReplace method for a stateless and singleton session beans
@@ -44,17 +44,7 @@ public class StatelessWriteReplaceInterceptor implements Interceptor {
         return new StatelessSerializedProxy(serviceName);
     }
 
-    public static class Factory implements InterceptorFactory {
-
-        private final StatelessWriteReplaceInterceptor interceptor;
-
-        public Factory(final String serviceName) {
-            interceptor = new StatelessWriteReplaceInterceptor(serviceName);
-        }
-
-        @Override
-        public Interceptor create(final InterceptorFactoryContext context) {
-            return interceptor;
-        }
+    public static InterceptorFactory factory(final String serviceName) {
+        return new ImmediateInterceptorFactory(new StatelessWriteReplaceInterceptor(serviceName));
     }
 }

@@ -120,7 +120,7 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
                 configuration.addViewInterceptor(method, interceptorFactory, InterceptorOrder.View.COMPONENT_DISPATCHER);
 
             } else if (method.getName().equals("remove") && method.getParameterTypes().length == 1 && method.getParameterTypes()[0] == Object.class) {
-                configuration.addViewInterceptor(method, new EntityBeanHomeRemoveInterceptorFactory(!localHome), InterceptorOrder.View.COMPONENT_DISPATCHER);
+                configuration.addViewInterceptor(method, EntityBeanHomeRemoveInterceptorFactory.instance(!localHome), InterceptorOrder.View.COMPONENT_DISPATCHER);
             } else if (method.getName().equals("remove") && method.getParameterTypes().length == 1 && method.getParameterTypes()[0] == Handle.class) {
                 configuration.addViewInterceptor(method, EntityBeanHomeRemoveByHandleInterceptorFactory.INSTANCE, InterceptorOrder.View.COMPONENT_DISPATCHER);
             } else if (method.getName().equals("getEJBMetaData") && method.getParameterTypes().length == 0) {

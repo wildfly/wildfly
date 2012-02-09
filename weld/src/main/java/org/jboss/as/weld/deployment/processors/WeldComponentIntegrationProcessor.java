@@ -150,7 +150,7 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
         if (description instanceof EJBComponentDescription) {
 
             //add interceptor to activate the request scope if required
-            final EjbRequestScopeActivationInterceptor.Factory requestFactory = new EjbRequestScopeActivationInterceptor.Factory(classLoader, weldServiceName, description instanceof MessageDrivenComponentDescription);
+            final EjbRequestScopeActivationInterceptor.Factory requestFactory = new EjbRequestScopeActivationInterceptor.Factory(weldServiceName, description instanceof MessageDrivenComponentDescription);
             configuration.addComponentInterceptor(requestFactory, InterceptorOrder.Component.CDI_REQUEST_SCOPE, false);
 
             final Jsr299BindingsInterceptor.Factory aroundInvokeFactory = new Jsr299BindingsInterceptor.Factory(description.getBeanDeploymentArchiveId(), beanName, InterceptionType.AROUND_INVOKE, classLoader);
