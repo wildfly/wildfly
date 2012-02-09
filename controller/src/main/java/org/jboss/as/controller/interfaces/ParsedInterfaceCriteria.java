@@ -118,6 +118,7 @@ public final class ParsedInterfaceCriteria {
         final ModelNode subModel = model.clone();
         subModel.remove(ModelDescriptionConstants.OP);
         subModel.remove(ModelDescriptionConstants.OP_ADDR);
+        subModel.remove(ModelDescriptionConstants.OPERATION_HEADERS);
         final ParsedInterfaceCriteria parsed;
         if(subModel.hasDefined(ANY_ADDRESS) && subModel.get(ANY_ADDRESS).asBoolean(false)) {
             parsed = ParsedInterfaceCriteria.ANY;
