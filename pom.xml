@@ -177,7 +177,7 @@
         <version.org.jboss.osgi.repository>1.0.4</version.org.jboss.osgi.repository>
         <version.org.jboss.osgi.resolver>1.0.11</version.org.jboss.osgi.resolver>
         <version.org.jboss.osgi.spi>2.0.4</version.org.jboss.osgi.spi>
-        <version.org.jboss.remote-naming>1.0.0.Final</version.org.jboss.remote-naming>
+        <version.org.jboss.remote-naming>1.0.1.Final</version.org.jboss.remote-naming>
         <version.org.jboss.remoting3>3.2.0.GA</version.org.jboss.remoting3>
         <version.org.jboss.remoting3.remoting-jmx>1.0.0.Final</version.org.jboss.remoting3.remoting-jmx>
         <version.org.jboss.resteasy>2.3.1.GA</version.org.jboss.resteasy>
