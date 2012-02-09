@@ -11,6 +11,7 @@
         <extension module="org.jboss.as.ee"/>
         <extension module="org.jboss.as.ejb3"/>
         <extension module="org.jboss.as.jacorb"/>
+        <extension module="org.jboss.as.jaxr"/>
         <extension module="org.jboss.as.jaxrs"/>
         <extension module="org.jboss.as.jdr"/>
         <extension module="org.jboss.as.jmx"/>
@@ -38,6 +39,11 @@
             <security-realm name="ManagementRealm">
                 <authentication>
                     <properties path="mgmt-users.properties" relative-to="jboss.server.config.dir"/>
+                </authentication>
+            </security-realm>
+            <security-realm name="ApplicationRealm">
+                <authentication>
+                    <properties path="application-users.properties" relative-to="jboss.server.config.dir"/>
                 </authentication>
             </security-realm>
         </security-realms>
@@ -97,7 +103,6 @@
                 <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true">
                     <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
                     <driver>h2</driver>
-                    <pool></pool>
                     <security>
                         <user-name>sa</user-name>
                         <password>sa</password>
@@ -171,6 +176,10 @@
             </cache-container>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jacorb:1.1"/>
+        <subsystem xmlns="urn:jboss:domain:jaxr:1.0">
+            <connection-factory jndi-name="java:jboss/jaxr/ConnectionFactory"/>
+            <juddi-server publish-url="http://localhost:8080/juddi/publish" query-url="http://localhost:8080/juddi/query"/>
+        </subsystem>
         <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
         <subsystem xmlns="urn:jboss:domain:jca:1.1">
             <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
@@ -196,7 +205,7 @@
             <show-model value="true"/>
             <remoting-connector/>
         </subsystem>
-         <subsystem xmlns="urn:jboss:domain:jpa:1.0">
+        <subsystem xmlns="urn:jboss:domain:jpa:1.0">
             <jpa default-datasource=""/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jsr77:1.0"/>
@@ -238,14 +247,13 @@
                 </security-settings>
 
                 <address-settings>
-                    <!--default for catch all-->
                     <address-setting match="#">
                         <dead-letter-address>jms.queue.DLQ</dead-letter-address>
                         <expiry-address>jms.queue.ExpiryQueue</expiry-address>
                         <redelivery-delay>0</redelivery-delay>
                         <max-size-bytes>10485760</max-size-bytes>
-                        <message-counter-history-day-limit>10</message-counter-history-day-limit>
                         <address-full-policy>BLOCK</address-full-policy>
+                        <message-counter-history-day-limit>10</message-counter-history-day-limit>
                     </address-setting>
                 </address-settings>
 
@@ -309,7 +317,7 @@
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
         <subsystem xmlns="urn:jboss:domain:remoting:1.1">
-            <connector name="remoting-connector" socket-binding="remoting"/>
+            <connector name="remoting-connector" socket-binding="remoting" security-realm="ApplicationRealm"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:resource-adapters:1.0"/>
         <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
@@ -317,7 +325,15 @@
             <security-domains>
                 <security-domain name="other" cache-type="default">
                     <authentication>
-                        <login-module code="UsersRoles" flag="required"/>
+                        <login-module code="Remoting" flag="optional">
+                            <module-option name="password-stacking" value="useFirstPass"/>
+                        </login-module>
+                        <login-module code="RealmUsersRoles" flag="required">
+                            <module-option name="usersProperties" value="${jboss.server.config.dir}/application-users.properties"/>
+                            <module-option name="rolesProperties" value="${jboss.server.config.dir}/application-roles.properties"/>
+                            <module-option name="realm" value="ApplicationRealm"/>
+                            <module-option name="password-stacking" value="useFirstPass"/>
+                        </login-module>
                     </authentication>
                 </security-domain>
                 <security-domain name="jboss-web-policy" cache-type="default">
@@ -381,6 +397,7 @@
         <socket-binding name="jacorb-ssl" port="3529"/>
         <socket-binding name="management-native" interface="management" port="${jboss.management.native.port:9999}"/>
         <socket-binding name="management-http" interface="management" port="${jboss.management.http.port:9990}"/>
+        <socket-binding name="management-https" interface="management" port="${jboss.management.https.port:9443}"/>
         <socket-binding name="messaging" port="5445"/>
         <socket-binding name="messaging-throughput" port="5455"/>
         <socket-binding name="osgi-http" interface="management" port="8090"/>
@@ -391,5 +408,4 @@
             <remote-destination host="localhost" port="25"/>
         </outbound-socket-binding>
     </socket-binding-group>
-
 </server>
