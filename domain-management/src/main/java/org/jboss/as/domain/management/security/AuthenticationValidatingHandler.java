@@ -55,7 +55,7 @@ class AuthenticationValidatingHandler implements OperationStepHandler {
     static ModelNode createOperation(final ModelNode operationToValidate) {
         PathAddress pa = PathAddress.pathAddress(operationToValidate.require(ModelDescriptionConstants.OP_ADDR));
         PathAddress realmPA = null;
-        for (int i = pa.size() - 1; i > 0; i++) {
+        for (int i = pa.size() - 1; i > 0; i--) {
             PathElement pe = pa.getElement(i);
             if (ModelDescriptionConstants.SECURITY_REALM.equals(pe.getKey())) {
                 realmPA = pa.subAddress(0, i + 1);
