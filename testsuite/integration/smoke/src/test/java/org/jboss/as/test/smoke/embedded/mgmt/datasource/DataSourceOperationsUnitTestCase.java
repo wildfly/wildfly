@@ -489,9 +489,11 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase{
         
         final ModelNode result2 = result.get(0);
         Assert.assertNotNull("There are no installed JDBC drivers",result2);
+        Assert.assertTrue("Name of JDBC driver is udefined",result2.hasDefined("driver-name"));
+        if(!result2.hasDefined("deployment-name")){//deployed drivers haven't these attributes
         Assert.assertTrue("Module name of JDBC driver is udefined",result2.hasDefined("driver-module-name"));
         Assert.assertTrue("Module slot of JDBC driver is udefined",result2.hasDefined("module-slot"));
-        Assert.assertTrue("Name of JDBC driver is udefined",result2.hasDefined("driver-name"));
+        }
     }
 
     /**
