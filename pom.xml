@@ -158,7 +158,7 @@
         <version.org.jboss.jbossts.jbossjts-integration>4.16.2.Final</version.org.jboss.jbossts.jbossjts-integration>
         <version.org.jboss.jbossts.jbossxts>4.16.2.Final</version.org.jboss.jbossts.jbossxts>
         <version.org.jboss.jboss-vfs>3.1.0.CR1</version.org.jboss.jboss-vfs>
-        <version.org.jboss.jsfunit>2.0.0.Beta1</version.org.jboss.jsfunit>
+        <version.org.jboss.jsfunit>2.0.0.Beta2</version.org.jboss.jsfunit>
         <version.org.jboss.logging.jboss-logging>3.1.0.GA</version.org.jboss.logging.jboss-logging>
         <version.org.jboss.logging.jboss-logging-processor>1.0.0.Final</version.org.jboss.logging.jboss-logging-processor>
         <version.org.jboss.logmanager.jboss-logmanager>1.2.2.GA</version.org.jboss.logmanager.jboss-logmanager>
