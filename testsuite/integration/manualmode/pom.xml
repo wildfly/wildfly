@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.jboss.as</groupId>
+        <artifactId>jboss-as-testsuite-integration-agg</artifactId>
+        <version>7.1.0.Final-SNAPSHOT</version>
+    </parent>
+
+    <!-- ********************************************************************************** -->
+    <!-- ************************* Manual-mode Integration Tests ************************** -->
+    <!-- ********************************************************************************** -->
+    <groupId>org.jboss.as</groupId>
+    <artifactId>jboss-as-testsuite-integration-manualmode</artifactId>
+    <version>7.1.0.Final-SNAPSHOT</version>
+
+    <name>JBoss AS Test Suite: Integration - Manual Mode Tests</name>
+    
+    <properties>
+        <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
+        <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
+        <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
+    </properties>
+
+    <!--  TODO move this to parent? -->
+    <build>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+            </testResource>
+            <testResource>
+                <directory>src/test/java</directory>
+                <excludes>
+                    <exclude>**/*.java</exclude>
+                </excludes>
+            </testResource>
+        </testResources>
+    </build>
+
+
+    <profiles>
+
+        <!-- ********************************************************************************** -->
+        <!-- ****     Manual-mode tests                                               ********* -->
+        <!-- ********************************************************************************** -->
+        <profile>
+            <id>manualmode.integration.tests.profile</id>
+            <activation>
+                <property>
+                    <name>!noManualmode</name>
+                </property>
+            </activation>
+
+            <properties>
+            </properties>
+
+            <!--
+                Server configuration executions.
+                Naming convention for executions (which we read in the log): for server config X, call it X.server
+            -->
+            <build>
+                <plugins>
+
+                    <!-- Build the target/jbossts server configuration. -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions combine.children="append">
+                            <execution>
+                                <id>build-manualmode.server</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <!-- Build the UDP server configs in target. -->
+                                        <ant antfile="${basedir}/../src/test/scripts/manualmode-build.xml">
+                                            <target name="build-manualmode"/>
+                                        </ant>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!-- Surefire. -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions combine.children="append">
+
+                            <!-- Disable default-test execution. -->
+                            <execution><id>default-test</id><goals><goal>test</goal></goals><phase>none</phase></execution>
+
+                            <!-- Manual-mode tests -->
+                            <execution>
+                                <id>manualmode.surefire</id>
+                                <phase>test</phase>
+                                <goals><goal>test</goal></goals>
+                                <configuration>
+                                    <includes>
+                                        <include>org/jboss/as/test/manualmode/**/*TestCase.java</include>
+                                    </includes>
+
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables>
+                                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+
+                        </executions>
+
+                    </plugin>
+
+                </plugins>
+            </build>
+        </profile>
+        
+    </profiles>
+</project>

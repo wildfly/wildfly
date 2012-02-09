@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<arquillian xmlns="http://jboss.org/schema/arquillian" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://jboss.org/schema/arquillian http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
+
+    <container qualifier="jboss" default="true" mode="manual">
+        <configuration>
+            <property name="jbossHome">${basedir}/target/jbossas-manualmode</property>
+            <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-manualmode</property>
+            <property name="serverConfig">${jboss.server.config.file.name:standalone.xml}</property>
+            <property name="allowConnectingToRunningServer">true</property>
+        </configuration>
+    </container>
+
+</arquillian>
