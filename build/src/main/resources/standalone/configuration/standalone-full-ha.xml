@@ -282,6 +282,7 @@
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:messaging:1.1">
             <hornetq-server>
+                <clustered>true</clustered>
                 <persistence-enabled>true</persistence-enabled>
                 <journal-file-size>102400</journal-file-size>
                 <journal-min-files>2</journal-min-files>
@@ -303,6 +304,31 @@
                     <in-vm-acceptor name="in-vm" server-id="0"/>
                 </acceptors>
 
+                <broadcast-groups>
+                    <broadcast-group name="bg-group1">
+                        <group-address>231.7.7.7</group-address>
+                        <group-port>9876</group-port>
+                        <broadcast-period>5000</broadcast-period>
+                        <connector-ref>netty</connector-ref>
+                    </broadcast-group>
+                </broadcast-groups>
+
+                <discovery-groups>
+                    <discovery-group name="dg-group1">
+                        <group-address>231.7.7.7</group-address>
+                        <group-port>9876</group-port>
+                        <refresh-timeout>10000</refresh-timeout>
+                    </discovery-group>
+                </discovery-groups>
+
+                <cluster-connections>
+                    <cluster-connection name="my-cluster">
+                        <address>jms</address>
+                        <connector-ref>netty</connector-ref>
+                        <discovery-group-ref discovery-group-name="dg-group1"/>
+                    </cluster-connection>
+                </cluster-connections>
+
                 <security-settings>
                     <security-setting match="#">
                         <permission type="send" roles="guest"/>
@@ -318,6 +344,7 @@
                         <dead-letter-address>jms.queue.DLQ</dead-letter-address>
                         <expiry-address>jms.queue.ExpiryQueue</expiry-address>
                         <redelivery-delay>0</redelivery-delay>
+                        <redistribution-delay>1000</redistribution-delay>
                         <max-size-bytes>10485760</max-size-bytes>
                         <address-full-policy>BLOCK</address-full-policy>
                         <message-counter-history-day-limit>10</message-counter-history-day-limit>
