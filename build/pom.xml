@@ -344,16 +344,6 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>net.sourceforge.htmlunit</groupId>
-                    <artifactId>htmlunit</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>net.sourceforge.htmlunit</groupId>
-                    <artifactId>htmlunit-core-js</artifactId>
-                </dependency>
-
-                <dependency>
                     <groupId>net.sourceforge.nekohtml</groupId>
                     <artifactId>nekohtml</artifactId>
                 </dependency>
@@ -1118,11 +1108,6 @@
                 <dependency>
                     <groupId>org.jboss.jbossts</groupId>
                     <artifactId>jbossxts-api</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.jboss.jsfunit</groupId>
-                    <artifactId>jboss-jsfunit-core</artifactId>
                 </dependency>
 
                 <dependency>

@@ -467,11 +467,6 @@
             <maven-resource group="net.sourceforge.cssparser" artifact="cssparser"/>
         </module-def>
 
-        <module-def name="net.sourceforge.htmlunit">
-            <maven-resource group="net.sourceforge.htmlunit" artifact="htmlunit"/>
-            <maven-resource group="net.sourceforge.htmlunit" artifact="htmlunit-core-js"/>
-        </module-def>
-
         <module-def name="net.sourceforge.nekohtml">
             <maven-resource group="net.sourceforge.nekohtml" artifact="nekohtml"/>
         </module-def>
@@ -938,10 +933,6 @@
 
         <module-def name="org.jboss.jaxbintros">
             <maven-resource group="jboss.jaxbintros" artifact="jboss-jaxb-intros"/>
-        </module-def>
-
-        <module-def name="org.jboss.jsfunit.core">
-            <maven-resource group="org.jboss.jsfunit" artifact="jboss-jsfunit-core"/>
         </module-def>
 
         <module-def name="org.jboss.jts">
