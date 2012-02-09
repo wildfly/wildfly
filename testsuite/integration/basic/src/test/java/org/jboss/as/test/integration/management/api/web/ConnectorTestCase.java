@@ -99,6 +99,13 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
             removeConnector(Connector.HTTPNATIVE);
         } catch (Exception ex) {
             // Assume native not enable on installed.
+
+            try {
+                ModelNode op = getRemoveSocketBindingOp(Connector.HTTPNATIVE);
+                executeOperation(op);
+            } catch (Exception e) {
+                // hmmm
+            }
         }
     }
 
