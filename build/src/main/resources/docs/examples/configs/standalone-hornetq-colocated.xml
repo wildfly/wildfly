@@ -13,7 +13,6 @@
         <extension module="org.jboss.as.jaxrs"/>
         <extension module="org.jboss.as.jmx"/>
         <extension module="org.jboss.as.jpa"/>
-        <extension module="org.jboss.as.jsr77"/>
         <extension module="org.jboss.as.logging"/>
         <extension module="org.jboss.as.mail"/>
         <extension module="org.jboss.as.messaging"/>
@@ -32,7 +31,12 @@
         <security-realms>
             <security-realm name="ManagementRealm">
                 <authentication>
-                    <properties path="mgmt-users.properties" relative-to="jboss.server.config.dir" plain-text="true"/>
+                    <properties path="mgmt-users.properties" relative-to="jboss.server.config.dir"/>
+                </authentication>
+            </security-realm>
+            <security-realm name="ApplicationRealm">
+                <authentication>
+                    <properties path="application-users.properties" relative-to="jboss.server.config.dir"/>
                 </authentication>
             </security-realm>
         </security-realms>
@@ -143,6 +147,7 @@
                     <keepalive-time time="100" unit="milliseconds"/>
                 </thread-pool>
             </thread-pools>
+            <iiop enable-by-default="false" use-qualified-name="false"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:infinispan:1.1" default-cache-container="hibernate">
             <cache-container name="hibernate" default-cache="local-query">
@@ -163,14 +168,9 @@
             </cache-container>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jacorb:1.1">
-            <orb name="JBoss" print-version="off" giop-minor-version="2">
-                <connection max-managed-buf-size="24" outbuf-cache-timeout="-1"/>
+            <orb>
+                <initializers transactions="on" security="on"/>
             </orb>
-            <poa monitoring="off" queue-wait="off">
-                <request-processors pool-size="2" max-threads="8"/>
-            </poa>
-            <naming root-context="JBoss/Naming/root" export-corbaloc="on"/>
-            <interop sun="on" chunk-custom-rmi-valuetypes="on" strict-check-on-tc-creation="off"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
         <subsystem xmlns="urn:jboss:domain:jca:1.1">
@@ -197,7 +197,6 @@
         <subsystem xmlns="urn:jboss:domain:jpa:1.0">
             <jpa default-datasource=""/>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:jsr77:1.0"/>
         <subsystem xmlns="urn:jboss:domain:mail:1.0">
             <mail-session jndi-name="java:jboss/mail/Default">
                 <smtp-server outbound-socket-binding-ref="mail-smtp"/>
@@ -368,7 +367,7 @@
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:naming:1.1"/>
         <subsystem xmlns="urn:jboss:domain:remoting:1.1">
-            <connector name="remoting-connector" socket-binding="remoting"/>
+            <connector name="remoting-connector" socket-binding="remoting" security-realm="ApplicationRealm"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:resource-adapters:1.0"/>
         <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
@@ -376,7 +375,15 @@
             <security-domains>
                 <security-domain name="other" cache-type="default">
                     <authentication>
-                        <login-module code="UsersRoles" flag="required"/>
+                        <login-module code="Remoting" flag="optional">
+                            <module-option name="password-stacking" value="useFirstPass"/>
+                        </login-module>
+                        <login-module code="RealmUsersRoles" flag="required">
+                            <module-option name="usersProperties" value="${jboss.server.config.dir}/application-users.properties"/>
+                            <module-option name="rolesProperties" value="${jboss.server.config.dir}/application-roles.properties"/>
+                            <module-option name="realm" value="ApplicationRealm"/>
+                            <module-option name="password-stacking" value="useFirstPass"/>
+                        </login-module>
                     </authentication>
                 </security-domain>
                 <security-domain name="jboss-web-policy" cache-type="default">
@@ -388,14 +395,6 @@
                     <authorization>
                         <policy-module code="Delegating" flag="required"/>
                     </authorization>
-                </security-domain>
-                <security-domain name="messaging" cache-type="default">
-                    <authentication>
-                        <login-module code="UsersRoles" flag="required">
-                            <module-option name="usersProperties" value="${jboss.server.config.dir}/messaging-users.properties"/>
-                            <module-option name="rolesProperties" value="${jboss.server.config.dir}/messaging-roles.properties"/>
-                        </login-module>
-                    </authentication>
                 </security-domain>
             </security-domains>
         </subsystem>
