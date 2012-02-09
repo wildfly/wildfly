@@ -52,7 +52,6 @@ import org.jboss.weld.manager.BeanManagerImpl;
 public class EjbRequestScopeActivationInterceptor implements Serializable, org.jboss.invocation.Interceptor {
 
     private volatile EjbRequestContext requestContext;
-    private final ClassLoader classLoader;
     private final ServiceName weldContainerServiceName;
     private final boolean alwaysActivate;
 
@@ -70,8 +69,7 @@ public class EjbRequestScopeActivationInterceptor implements Serializable, org.j
         INVOCATION_TYPES = Collections.unmodifiableSet(set);
     }
 
-    public EjbRequestScopeActivationInterceptor(final ClassLoader classLoader, final ServiceName weldContainerServiceName, final boolean alwaysActivate) {
-        this.classLoader = classLoader;
+    public EjbRequestScopeActivationInterceptor(final ServiceName weldContainerServiceName, final boolean alwaysActivate) {
         this.weldContainerServiceName = weldContainerServiceName;
         this.alwaysActivate = alwaysActivate;
     }
@@ -111,11 +109,9 @@ public class EjbRequestScopeActivationInterceptor implements Serializable, org.j
     public static class Factory implements InterceptorFactory {
 
         private final Interceptor interceptor;
-        private final boolean alwaysActivate;
 
-        public Factory(final ClassLoader classLoader, final ServiceName weldContainerServiceName, final boolean alwaysActivate) {
-            this.alwaysActivate = alwaysActivate;
-            this.interceptor = new EjbRequestScopeActivationInterceptor(classLoader, weldContainerServiceName, alwaysActivate);
+        public Factory(final ServiceName weldContainerServiceName, final boolean alwaysActivate) {
+            this.interceptor = new EjbRequestScopeActivationInterceptor(weldContainerServiceName, alwaysActivate);
         }
 
         @Override

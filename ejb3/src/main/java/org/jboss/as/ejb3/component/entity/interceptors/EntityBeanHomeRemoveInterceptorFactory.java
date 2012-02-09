@@ -35,14 +35,18 @@ import org.jboss.invocation.InterceptorFactoryContext;
  */
 public class EntityBeanHomeRemoveInterceptorFactory implements InterceptorFactory {
 
-    private final boolean remote;
-
-    public EntityBeanHomeRemoveInterceptorFactory(final boolean remote) {
-        this.remote = remote;
+    public static InterceptorFactory instance(boolean remote) {
+        return remote ? REMOTE : LOCAL;
     }
 
-    public Interceptor create(final InterceptorFactoryContext context) {
-        return new AbstractEJBInterceptor() {
+
+    private static final InterceptorFactory REMOTE = new EntityBeanHomeRemoveInterceptorFactory(true);
+    private static final InterceptorFactory LOCAL = new EntityBeanHomeRemoveInterceptorFactory(false);
+
+    private final Interceptor interceptor;
+
+    private EntityBeanHomeRemoveInterceptorFactory(final boolean remote) {
+        interceptor = new AbstractEJBInterceptor() {
             public Object processInvocation(final InterceptorContext context) throws Exception {
                 final EntityBeanComponent component = getComponent(context, EntityBeanComponent.class);
                 if(remote) {
@@ -53,6 +57,10 @@ public class EntityBeanHomeRemoveInterceptorFactory implements InterceptorFactor
                 return null;
             }
         };
+    }
+
+    public Interceptor create(final InterceptorFactoryContext context) {
+        return interceptor;
     }
 
 }

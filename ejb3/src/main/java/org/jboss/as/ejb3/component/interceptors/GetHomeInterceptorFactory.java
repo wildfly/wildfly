@@ -35,18 +35,22 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class GetHomeInterceptorFactory implements InterceptorFactory {
 
-
     private final InjectedValue<ComponentView> viewToCreate = new InjectedValue<ComponentView>();
 
-    @Override
-    public Interceptor create(final InterceptorFactoryContext context) {
+    private final Interceptor interceptor;
 
-        return new Interceptor() {
+    public GetHomeInterceptorFactory() {
+        interceptor = new Interceptor() {
             @Override
             public Object processInvocation(final InterceptorContext context) throws Exception {
                 return viewToCreate.getValue().createInstance().getInstance();
             }
         };
+    }
+
+    @Override
+    public Interceptor create(final InterceptorFactoryContext context) {
+        return interceptor;
     }
 
 

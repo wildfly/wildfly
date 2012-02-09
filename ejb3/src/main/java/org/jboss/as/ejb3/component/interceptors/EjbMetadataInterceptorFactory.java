@@ -40,28 +40,20 @@ public class EjbMetadataInterceptorFactory implements InterceptorFactory {
 
     private final InjectedValue<ComponentView> homeView = new InjectedValue<ComponentView>();
 
-    private final Class<?> remoteClass;
-    private final Class<?> homeClass;
-    private final Class<?> pkClass;
-    private final boolean session;
-    private final boolean stateless;
+    private final Interceptor interceptor;
 
     public EjbMetadataInterceptorFactory(final Class<?> remoteClass, final Class<?> homeClass, final Class<?> pkClass, final boolean session, final boolean stateless) {
-        this.remoteClass = remoteClass;
-        this.homeClass = homeClass;
-        this.pkClass = pkClass;
-        this.session = session;
-        this.stateless = stateless;
-    }
-
-    @Override
-    public Interceptor create(final InterceptorFactoryContext context) {
-        return new Interceptor() {
+        this.interceptor = new Interceptor() {
             @Override
             public Object processInvocation(final InterceptorContext context) throws Exception {
                 return new EJBMetaDataImpl(remoteClass, homeClass, pkClass, session, stateless, (EJBHome) homeView.getValue().createInstance().getInstance());
             }
         };
+    }
+
+    @Override
+    public Interceptor create(final InterceptorFactoryContext context) {
+        return interceptor;
     }
 
     public InjectedValue<ComponentView> getHomeView() {

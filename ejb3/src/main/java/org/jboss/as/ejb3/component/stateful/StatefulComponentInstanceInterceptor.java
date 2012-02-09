@@ -31,11 +31,9 @@ import javax.ejb.RemoveException;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
 import org.jboss.ejb.client.SessionID;
-import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
-import org.jboss.invocation.InterceptorFactoryContext;
-import org.jboss.logging.Logger;
 
 import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
@@ -47,9 +45,7 @@ import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
  */
 public class StatefulComponentInstanceInterceptor extends AbstractEJBInterceptor {
 
-
-    private static final Logger log = Logger.getLogger(StatefulComponentInstanceInterceptor.class);
-
+    public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new StatefulComponentInstanceInterceptor());
 
     @Override
     public Object processInvocation(InterceptorContext context) throws Exception {
@@ -100,19 +96,6 @@ public class StatefulComponentInstanceInterceptor extends AbstractEJBInterceptor
 
     static StatefulSessionComponentInstance getComponentInstance(InterceptorContext context) {
         return (StatefulSessionComponentInstance) context.getPrivateData(ComponentInstance.class);
-    }
-
-    public static class Factory implements InterceptorFactory {
-
-        public static final InterceptorFactory INSTANCE = new Factory();
-
-        private Factory() {
-        }
-
-        @Override
-        public Interceptor create(InterceptorFactoryContext context) {
-            return new StatefulComponentInstanceInterceptor();
-        }
     }
 
 }

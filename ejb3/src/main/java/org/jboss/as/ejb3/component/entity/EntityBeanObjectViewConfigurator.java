@@ -37,7 +37,7 @@ import org.jboss.as.ee.component.interceptors.ComponentDispatcherInterceptor;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
 import org.jboss.as.ejb3.EjbMessages;
-import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanAssociatingInterceptorFactory;
+import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanAssociatingInterceptor;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanEjbCreateMethodInterceptorFactory;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanIdentityInterceptorFactory;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanIsIdenticalInterceptorFactory;
@@ -68,7 +68,7 @@ public class EntityBeanObjectViewConfigurator implements ViewConfigurator {
 
         configuration.addClientPostConstructInterceptor(getEjbCreateInterceptorFactory(), InterceptorOrder.ClientPostConstruct.INSTANCE_CREATE);
         configuration.addClientInterceptor(EntityBeanPrimaryKeyInterceptor.Factory.INSTANCE, InterceptorOrder.Client.ASSOCIATING_INTERCEPTOR);
-        configuration.addViewInterceptor(EntityBeanAssociatingInterceptorFactory.INSTANCE, InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);
+        configuration.addViewInterceptor(EntityBeanAssociatingInterceptor.FACTORY, InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);
 
         for (final Method method : configuration.getProxyFactory().getCachedMethods()) {
 

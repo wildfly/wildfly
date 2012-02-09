@@ -30,7 +30,7 @@ import org.jboss.as.cmp.component.CmpEntityBeanComponent;
 import org.jboss.as.cmp.component.CmpEntityBeanComponentInstance;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
-import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanAssociatingInterceptorFactory;
+import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanAssociatingInterceptor;
 import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -45,16 +45,12 @@ import org.jboss.logging.Logger;
  */
 public class CmpEntityBeanRemoveInterceptorFactory implements InterceptorFactory {
 
-    private final Logger log = Logger.getLogger(EntityBeanAssociatingInterceptorFactory.class);
+    private final Logger log = Logger.getLogger(EntityBeanAssociatingInterceptor.class);
 
-    private final Method ejbRemove;
+    private final Interceptor interceptor;
 
     public CmpEntityBeanRemoveInterceptorFactory(final Method ejbRemove) {
-        this.ejbRemove = ejbRemove;
-    }
-
-    public Interceptor create(final InterceptorFactoryContext context) {
-        return new AbstractEJBInterceptor() {
+        this.interceptor = new AbstractEJBInterceptor() {
             public Object processInvocation(final InterceptorContext context) throws Exception {
                 final CmpEntityBeanComponent component = getComponent(context, CmpEntityBeanComponent.class);
 
@@ -84,5 +80,9 @@ public class CmpEntityBeanRemoveInterceptorFactory implements InterceptorFactory
                 return null;
             }
         };
+    }
+
+    public Interceptor create(final InterceptorFactoryContext context) {
+        return interceptor;
     }
 }
