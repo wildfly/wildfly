@@ -18,11 +18,11 @@ import org.jboss.ejb.iiop.HandleImplIIOP;
 @Stateless
 public class ClientEjb {
 
-    @EJB(lookup = "corbaname:iiop:localhost:3628#server/IIOPBasicBean")
+    @EJB(lookup = "corbaname:iiop:localhost:3628#IIOPBasicBean")
     private IIOPBasicHome home;
 
 
-    @EJB(lookup = "corbaname:iiop:localhost:3628#server/IIOPBasicStatefulBean")
+    @EJB(lookup = "corbaname:iiop:localhost:3628#IIOPBasicStatefulBean")
     private IIOPBasicStatefulHome statefulHome;
 
     public String getRemoteMessage() throws RemoteException {

@@ -55,7 +55,8 @@ public class TransactionIIOPInvocationTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "server.jar");
         jar.addClasses(IIOPTransactionalStatelessBean.class, IIOPTransactionalHome.class,
                 IIOPTransactionalRemote.class, IIOPTransactionalStatefulHome.class,
-                IIOPTransactionalStatefulRemote.class, IIOPTransactionalStatefulBean.class);
+                IIOPTransactionalStatefulRemote.class, IIOPTransactionalStatefulBean.class)
+            .addAsManifestResource(TransactionIIOPInvocationTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         return jar;
     }
 
@@ -65,7 +66,8 @@ public class TransactionIIOPInvocationTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "client.jar");
         jar.addClasses(ClientEjb.class, IIOPTransactionalHome.class,
                 IIOPTransactionalRemote.class, TransactionIIOPInvocationTestCase.class
-                , IIOPTransactionalStatefulHome.class, IIOPTransactionalStatefulRemote.class);
+                , IIOPTransactionalStatefulHome.class, IIOPTransactionalStatefulRemote.class)
+                .addAsManifestResource(TransactionIIOPInvocationTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         return jar;
     }
 

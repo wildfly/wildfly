@@ -32,6 +32,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.iiop.transaction.TransactionIIOPInvocationTestCase;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -51,7 +52,8 @@ public class BasicIIOPInvocationTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "server.jar");
         jar.addClasses(IIOPBasicBean.class, IIOPBasicHome.class, IIOPBasicRemote.class,
                 IIOPBasicStatefulBean.class, IIOPBasicStatefulHome.class, IIOPBasicStatefulRemote.class,
-                HandleWrapper.class);
+                HandleWrapper.class)
+                .addAsManifestResource(BasicIIOPInvocationTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         return jar;
     }
 
@@ -61,7 +63,8 @@ public class BasicIIOPInvocationTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "client.jar");
         jar.addClasses(ClientEjb.class, IIOPBasicHome.class, IIOPBasicRemote.class,
                 BasicIIOPInvocationTestCase.class, IIOPBasicStatefulHome.class,
-                IIOPBasicStatefulRemote.class, HandleWrapper.class);
+                IIOPBasicStatefulRemote.class, HandleWrapper.class)
+                .addAsManifestResource(BasicIIOPInvocationTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         return jar;
     }
 

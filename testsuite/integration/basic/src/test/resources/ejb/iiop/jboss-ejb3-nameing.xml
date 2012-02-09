@@ -11,7 +11,8 @@
                impl-version="2.0">
     <assembly-descriptor>
         <iiop:iiop>
-            <ejb-name>*</ejb-name>
+            <ejb-name>IIOPNamingBean</ejb-name>
+            <iiop:binding-name>bean/custom/name/IIOPNamingBean</iiop:binding-name>
         </iiop:iiop>
     </assembly-descriptor>
 </jboss:ejb-jar>

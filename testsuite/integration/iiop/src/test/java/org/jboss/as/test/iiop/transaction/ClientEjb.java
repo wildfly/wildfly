@@ -27,11 +27,11 @@ public class ClientEjb {
     @Resource
     private UserTransaction userTransaction;
 
-    @EJB(lookup = "corbaname:iiop:localhost:3628#server/IIOPTransactionalStatelessBean")
+    @EJB(lookup = "corbaname:iiop:localhost:3628#IIOPTransactionalStatelessBean")
     private IIOPTransactionalHome home;
 
 
-    @EJB(lookup = "corbaname:iiop:localhost:3628#server/IIOPTransactionalStatefulBean")
+    @EJB(lookup = "corbaname:iiop:localhost:3628#IIOPTransactionalStatefulBean")
     private IIOPTransactionalStatefulHome statefulHome;
 
     public void basicTransactionPropagationTest() throws RemoteException, SystemException, NotSupportedException {
