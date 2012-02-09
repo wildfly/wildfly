@@ -25,8 +25,8 @@ package org.jboss.as.capedwarf.services;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -62,7 +62,7 @@ public class ServletExecutor {
      * @throws IOException for any I/O exception
      * @throws ServletException for any servlet exception
      */
-    static void dispatch(final String appId, final String path, final ServletRequest request) throws IOException, ServletException {
+    static void dispatch(final String appId, final String path, final HttpServletRequest request) throws IOException, ServletException {
         dispatch(appId, path, getContext(appId), request);
     }
 
@@ -76,7 +76,7 @@ public class ServletExecutor {
      * @throws IOException for any I/O exception
      * @throws ServletException for any servlet exception
      */
-    static void dispatch(final String appId, final String path, final ServletContext context, final ServletRequest request) throws IOException, ServletException {
+    static void dispatch(final String appId, final String path, final ServletContext context, final HttpServletRequest request) throws IOException, ServletException {
         if (appId == null)
             throw new IllegalArgumentException("Null appId");
         if (path == null)
@@ -90,6 +90,7 @@ public class ServletExecutor {
         if (dispatcher == null)
             throw new IllegalArgumentException("No dispatcher for path: " + path);
 
-        dispatcher.forward(request, NOOP);
+        final HttpServletRequest hsr = Hack.wrap(request);
+        dispatcher.forward(hsr, NOOP);
     }
 }

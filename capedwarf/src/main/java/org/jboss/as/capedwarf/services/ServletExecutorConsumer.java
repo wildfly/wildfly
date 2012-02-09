@@ -31,7 +31,7 @@ import org.jboss.modules.ModuleLoader;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -65,7 +65,7 @@ class ServletExecutorConsumer implements MessageListener {
         return ModuleIdentifier.fromString(mi);
     }
 
-    private ServletRequest createServletRequest(ClassLoader cl, Message message, ServletContext context) throws Exception {
+    private HttpServletRequest createServletRequest(ClassLoader cl, Message message, ServletContext context) throws Exception {
         final String factoryClass = getValue(message, "factory");
         Object factory;
         synchronized (cache) {
@@ -82,7 +82,7 @@ class ServletExecutorConsumer implements MessageListener {
             }
         }
         Method m = factory.getClass().getMethod("createServletRequest", ServletContext.class, Message.class);
-        return (ServletRequest) m.invoke(factory, context, message);
+        return (HttpServletRequest) m.invoke(factory, context, message);
     }
 
     public void onMessage(Message message) {
@@ -100,7 +100,7 @@ class ServletExecutorConsumer implements MessageListener {
                 final String appId = getValue(message, "appId");
                 final String path = getValue(message, "path");
                 final ServletContext context = ServletExecutor.getContext(appId);
-                final ServletRequest request = createServletRequest(cl, message, context);
+                final HttpServletRequest request = createServletRequest(cl, message, context);
                 ServletExecutor.dispatch(appId, path, context, request);
             } finally {
                 Thread.currentThread().setContextClassLoader(previous);
