@@ -44,7 +44,18 @@
         </license>
     </licenses>
 
-    <build>    
+    <build>
+        <plugins>
+            <plugin>
+              <groupId>org.zanata</groupId>
+              <artifactId>zanata-maven-plugin</artifactId>
+              <version>1.4.5.1</version>
+              <configuration>
+                 <skip>true</skip>
+              </configuration>
+            </plugin>
+        </plugins>
+
         <extensions>
             <extension>
                 <groupId>org.apache.maven.wagon</groupId>
