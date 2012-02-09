@@ -134,6 +134,7 @@
                         <keepalive-time time="100" unit="milliseconds"/>
                     </thread-pool>
                 </thread-pools>
+                <iiop enable-by-default="false" use-qualified-name="false"/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:infinispan:1.1" default-cache-container="hibernate">
                 <cache-container name="hibernate" default-cache="local-query">
@@ -639,7 +640,7 @@
                         <keepalive-time time="100" unit="milliseconds"/>
                     </thread-pool>
                 </thread-pools>
-                <iiop enable-by-default="true" use-qualified-name="true"/>
+                <iiop enable-by-default="false" use-qualified-name="false"/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:infinispan:1.1" default-cache-container="hibernate">
                 <cache-container name="hibernate" default-cache="local-query">
@@ -659,7 +660,11 @@
                     </local-cache>
                 </cache-container>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:jacorb:1.1"/>
+            <subsystem xmlns="urn:jboss:domain:jacorb:1.1">
+                <orb>
+                    <initializers transactions="spec" security="on"/>
+                </orb>
+            </subsystem>
             <subsystem xmlns="urn:jboss:domain:jaxr:1.0">
                 <connection-factory jndi-name="java:jboss/jaxr/ConnectionFactory"/>
                 <juddi-server publish-url="http://localhost:8080/juddi/publish" query-url="http://localhost:8080/juddi/query"/>
@@ -667,7 +672,7 @@
             <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
             <subsystem xmlns="urn:jboss:domain:jca:1.1">
                 <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
-                <bean-validation enabled="false"/>
+                <bean-validation enabled="true"/>
                 <default-workmanager>
                     <short-running-threads>
                         <core-threads count="50"/>
@@ -959,6 +964,7 @@
                         <keepalive-time time="100" unit="milliseconds"/>
                     </thread-pool>
                 </thread-pools>
+                <iiop enable-by-default="false" use-qualified-name="false"/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:infinispan:1.1" default-cache-container="cluster">
                 <cache-container name="cluster" aliases="ha-partition" default-cache="default">
@@ -1009,7 +1015,11 @@
                     </replicated-cache>
                 </cache-container>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:jacorb:1.1"/>
+            <subsystem xmlns="urn:jboss:domain:jacorb:1.1">
+                <orb>
+                    <initializers transactions="spec" security="on"/>
+                </orb>
+            </subsystem>
             <subsystem xmlns="urn:jboss:domain:jaxr:1.0">
                 <connection-factory jndi-name="java:jboss/jaxr/ConnectionFactory"/>
                 <juddi-server publish-url="http://localhost:8080/juddi/publish" query-url="http://localhost:8080/juddi/query"/>
@@ -1017,7 +1027,7 @@
             <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
             <subsystem xmlns="urn:jboss:domain:jca:1.1">
                 <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
-                <bean-validation enabled="false"/>
+                <bean-validation enabled="true"/>
                 <default-workmanager>
                     <short-running-threads>
                         <core-threads count="50"/>
