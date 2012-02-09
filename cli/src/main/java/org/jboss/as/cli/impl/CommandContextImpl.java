@@ -94,6 +94,7 @@ import org.jboss.as.cli.handlers.PrefixHandler;
 import org.jboss.as.cli.handlers.PrintWorkingNodeHandler;
 import org.jboss.as.cli.handlers.QuitHandler;
 import org.jboss.as.cli.handlers.ReadAttributeHandler;
+import org.jboss.as.cli.handlers.ReadOperationHandler;
 import org.jboss.as.cli.handlers.UndeployHandler;
 import org.jboss.as.cli.handlers.VersionHandler;
 import org.jboss.as.cli.handlers.batch.BatchClearHandler;
@@ -264,6 +265,7 @@ class CommandContextImpl implements CommandContext {
         cmdRegistry.registerHandler(new PrintWorkingNodeHandler(), "pwd", "pwn");
         cmdRegistry.registerHandler(new QuitHandler(), "quit", "q", "exit");
         cmdRegistry.registerHandler(new ReadAttributeHandler(this), "read-attribute");
+        cmdRegistry.registerHandler(new ReadOperationHandler(this), "read-operation");
         cmdRegistry.registerHandler(new VersionHandler(), "version");
 
         // deployment
