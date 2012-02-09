@@ -435,7 +435,7 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
         final PathAddress address = PathAddress.pathAddress(PathAddress.pathAddress(parentAddress), PathElement.pathElement(CommonAttributes.REMOTE_OUTBOUND_CONNECTION, name));
 
         // create add operation add it to the list of operations
-        operations.add(getConnectionAddOperation(name, outboundSocketBindingRef, address));
+        operations.add(getConnectionAddOperation(name, outboundSocketBindingRef, username, securityRealm, address));
         // parse the nested elements
         final EnumSet<Element> visited = EnumSet.noneOf(Element.class);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {

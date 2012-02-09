@@ -13,12 +13,19 @@
     <xsl:param name="connectionName" select="'remote-ejb-connection'"/>
     <xsl:param name="node" select="'localhost'"/>
     <xsl:param name="remotePort" select="'4447'"/>
-
+    <xsl:param name="securityRealm" select="NOT_DEFINED"/>
+    <xsl:param name="userName" select="NOT_DEFINED"/>
 
     <xsl:variable name="newRemoteOutboundConnection">
         <r:remote-outbound-connection>
             <xsl:attribute name="name"><xsl:value-of select="$connectionName"/></xsl:attribute>
             <xsl:attribute name="outbound-socket-binding-ref">binding-<xsl:value-of select="$connectionName"/></xsl:attribute>
+            <xsl:if test="$securityRealm != 'NOT_DEFINED'">
+                <xsl:attribute name="security-realm"><xsl:value-of select="$securityRealm"/></xsl:attribute>
+            </xsl:if>
+            <xsl:if test="$userName != 'NOT_DEFINED'">
+                <xsl:attribute name="username"><xsl:value-of select="$userName"/></xsl:attribute>
+            </xsl:if>
             <r:properties>
                 <r:property name="SASL_POLICY_NOANONYMOUS" value="false"/>
                 <r:property name="SSL_ENABLED" value="false"/>
