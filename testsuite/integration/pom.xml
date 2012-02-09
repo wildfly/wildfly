@@ -190,7 +190,7 @@
                             </resources>
                         </configuration>
                     </execution>
-                    <!-- Management users config. -->
+                    <!-- Users and roles config. -->
                     <execution>
                         <id>ts.config-as.copy-mgmt-users</id>
                         <phase>generate-test-resources</phase>
@@ -201,7 +201,10 @@
                             <resources>
                                 <resource>
                                     <directory>../shared/src/main/resources</directory>
-                                    <includes><include>mgmt-users.properties</include></includes>
+                                    <includes>
+                                        <include>application-*.properties</include>
+                                        <include>messaging-*.properties</include>
+                                    </includes>
                                 </resource>
                             </resources>
                         </configuration>
