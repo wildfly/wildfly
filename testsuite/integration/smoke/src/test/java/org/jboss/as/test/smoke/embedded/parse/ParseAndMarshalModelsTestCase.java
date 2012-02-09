@@ -207,6 +207,16 @@ public class ParseAndMarshalModelsTestCase {
         standaloneXmlTest(getOriginalStandaloneXml("standalone-ha.xml"));
     }
 
+    @Test
+    public void testStandaloneFullXml() throws Exception {
+        standaloneXmlTest(getOriginalStandaloneXml("standalone-full.xml"));
+    }
+
+    @Test
+    public void testStandaloneFullHAXml() throws Exception {
+        standaloneXmlTest(getOriginalStandaloneXml("standalone-full-ha.xml"));
+    }
+
 
     private void standaloneXmlTest(File original) throws Exception {
 
