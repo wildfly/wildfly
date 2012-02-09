@@ -22,8 +22,10 @@
 
 package org.jboss.as.capedwarf.services;
 
+import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 
 import javax.jms.Message;
@@ -41,6 +43,7 @@ import java.util.Map;
  */
 class ServletExecutorConsumer implements MessageListener {
 
+    private static final Logger log = Logger.getLogger(ServletExecutorConsumer.class);
     private static final String PREFIX = "org_jboss_capedwarf_jms_";
 
     private final Map<ClassLoader, Map<String, Object>> cache = new HashMap<ClassLoader, Map<String, Object>>();
@@ -84,8 +87,13 @@ class ServletExecutorConsumer implements MessageListener {
 
     public void onMessage(Message message) {
         try {
+            final ModuleIdentifier identifier = parseModuleIdentifier(message);
+            final Module module = loadModule(identifier);
+            if (module == null) {
+                return;
+            }
+
             final ClassLoader previous = Thread.currentThread().getContextClassLoader();
-            final Module module = loader.loadModule(parseModuleIdentifier(message));
             final ClassLoader cl = module.getClassLoader();
             Thread.currentThread().setContextClassLoader(cl);
             try {
@@ -101,6 +109,15 @@ class ServletExecutorConsumer implements MessageListener {
             throw e;
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    protected Module loadModule(ModuleIdentifier identifier) {
+        try {
+            return loader.loadModule(identifier);
+        } catch (ModuleLoadException e) {
+            log.warn("Cannot load module, app (" + identifier + ") already undeployed? - " + e.getMessage());
+            return null;
         }
     }
 
