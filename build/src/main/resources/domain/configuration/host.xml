@@ -9,6 +9,11 @@
                     <properties path="mgmt-users.properties" relative-to="jboss.domain.config.dir"/>
                 </authentication>
             </security-realm>
+            <security-realm name="ApplicationRealm">
+                <authentication>
+                    <properties path="application-users.properties" relative-to="jboss.domain.config.dir" />
+                </authentication>
+            </security-realm>
         </security-realms>
         <management-interfaces>
             <native-interface security-realm="ManagementRealm">

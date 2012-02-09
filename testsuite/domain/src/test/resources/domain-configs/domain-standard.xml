@@ -243,16 +243,16 @@
             <subsystem xmlns="urn:jboss:domain:naming:1.0"/>
             <subsystem xmlns="urn:jboss:domain:security:1.0">
                 <security-domains>
-                    <security-domain name="other">
+                    <security-domain name="other" cache-type="default">
                         <authentication>
-                            <login-module code="UsersRoles" flag="required"/>
-                        </authentication>
-                    </security-domain>
-                    <security-domain name="messaging" cache-type="default">
-                        <authentication>
-                            <login-module code="UsersRoles" flag="required">
-                                <module-option name="usersProperties" value="${jboss.domain.config.dir}/messaging-users.properties"/>
-                                <module-option name="rolesProperties" value="${jboss.domain.config.dir}/messaging-roles.properties"/>
+                            <login-module code="Remoting" flag="optional">
+                                <module-option name="password-stacking" value="useFirstPass"/>
+                            </login-module>
+                            <login-module code="RealmUsersRoles" flag="required">
+                                <module-option name="usersProperties" value="${jboss.domain.config.dir}/application-users.properties"/>
+                                <module-option name="rolesProperties" value="${jboss.domain.config.dir}/application-roles.properties"/>
+                                <module-option name="realm" value="ApplicationRealm"/>
+                                <module-option name="password-stacking" value="useFirstPass"/>
                             </login-module>
                         </authentication>
                     </security-domain>
@@ -268,7 +268,7 @@
                 <coordinator-environment default-timeout="300"/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:remoting:1.1">
-                <connector name="remoting-connector" socket-binding="remoting"/>
+                <connector name="remoting-connector" socket-binding="remoting" security-realm="ApplicationRealm"/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jdr:1.0"/>
             <subsystem xmlns="urn:jboss:domain:jmx:1.0">
