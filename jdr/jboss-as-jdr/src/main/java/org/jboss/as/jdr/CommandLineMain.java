@@ -62,7 +62,7 @@ public class CommandLineMain {
         String host = "localhost";
 
         try {
-            CommandLine line = parser.parse(options, args, true);
+            CommandLine line = parser.parse(options, args, false);
 
             if (line.hasOption("help")) {
                 formatter.printHelp(usage, options);
