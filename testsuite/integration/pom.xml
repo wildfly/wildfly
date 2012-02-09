@@ -57,6 +57,7 @@
                 <module>iiop</module>
                 <module>xts</module>
                 <module>multinode</module>
+                <module>manualmode</module>
             </modules>
         </profile>
         <!-- Define ts.integration uber-group. -->
@@ -70,6 +71,7 @@
                 <module>iiop</module>
                 <module>xts</module>
                 <module>multinode</module>
+                <module>manualmode</module>
             </modules>
         </profile>
 
@@ -124,6 +126,15 @@
             <activation><property><name>ts.multinode</name></property></activation>
             <modules>
                 <module>multinode</module>
+            </modules>
+        </profile>
+
+        <!-- -Dts.manualmode -->
+        <profile>
+            <id>ts.integ.group.manualmode</id>
+            <activation><property><name>ts.manualmode</name></property></activation>
+            <modules>
+                <module>manualmode</module>
             </modules>
         </profile>
 
