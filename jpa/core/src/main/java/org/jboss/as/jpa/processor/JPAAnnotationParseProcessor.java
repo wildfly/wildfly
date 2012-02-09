@@ -22,6 +22,8 @@
 
 package org.jboss.as.jpa.processor;
 
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,8 +62,6 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.msc.service.ServiceName;
-
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
 /**
  * Handle PersistenceContext and PersistenceUnit annotations.
@@ -283,7 +283,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         }
         PersistenceUnitMetadata pu = PersistenceUnitSearch.resolvePersistenceUnitSupplier(deploymentUnit, searchName);
         if (null == pu) {
-            classDescription.setInvalid(MESSAGES.deploymentUnitNotFound(searchName, deploymentUnit));
+            classDescription.setInvalid(MESSAGES.persistenceUnitNotFound(searchName, deploymentUnit));
             return null;
         }
         return pu;
