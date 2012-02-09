@@ -22,6 +22,14 @@
 
 package org.jboss.as.test.clustering.unmanaged.ejb3.stateful.remote.failover;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Hashtable;
+import java.util.Properties;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -37,18 +45,12 @@ import org.jboss.ejb.client.remoting.ConfigBasedEJBClientContextSelector;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Hashtable;
-import java.util.Properties;
 
 /**
  * Tests that invocations on a clustered stateful session bean from a remote EJB client, failover to
@@ -92,6 +94,7 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
     private static Archive createDeployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         ejbJar.addPackage(CounterBean.class.getPackage());
+        ejbJar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
         return ejbJar;
     }
 
@@ -124,10 +127,12 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
 
         final ContextSelector<EJBClientContext> previousSelector = this.setupEJBClientContextSelector();
         final String jndiName = "ejb:" + "" + "/" + MODULE_NAME + "/" + "" + "/" + CounterBean.class.getSimpleName() + "!" + RemoteCounter.class.getName() + "?stateful";
+        final String destructionCounterJndiName = "ejb:" + "" + "/" + MODULE_NAME + "/" + "" + "/" + DestructionCounterSingleton.class.getSimpleName() + "!" + DestructionCounterRemote.class.getName();
         boolean container1Stopped = false;
         boolean container2Stopped = false;
         try {
             final RemoteCounter remoteCounter = (RemoteCounter) context.lookup(jndiName);
+            final DestructionCounterRemote destructionCounter = (DestructionCounterRemote) context.lookup(destructionCounterJndiName);
             // invoke on the bean a few times
             final int NUM_TIMES = 25;
             for (int i = 0; i < NUM_TIMES; i++) {
@@ -137,6 +142,8 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
             final CounterResult result = remoteCounter.getCount();
             Assert.assertNotNull("Result from remote stateful counter was null", result);
             Assert.assertEquals("Unexpected count from remote counter", NUM_TIMES, result.getCount());
+            Assert.assertEquals("Nothing should have been destroyed yet", 0, destructionCounter.getCDIDestructionCount());
+            Assert.assertEquals("Nothing should have been destroyed yet", 0, destructionCounter.getSFSBDestructionCount());
 
             // shutdown the node on which the previous invocation happened
             final int totalCountBeforeShuttingDownANode = result.getCount();
@@ -172,6 +179,15 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
             final String finalNodeName = finalResult.getNodeName();
             Assert.assertEquals("Result was received from an unexpected node, after shutting down a node", aliveNode, finalNodeName);
             Assert.assertEquals("Unexpected count from remote counter, after shutting down a node", countBeforeDecrementing - NUM_TIMES, finalCount);
+
+
+            Assert.assertEquals("Nothing should have been destroyed yet", 0, destructionCounter.getCDIDestructionCount());
+            Assert.assertEquals("Nothing should have been destroyed yet", 0, destructionCounter.getSFSBDestructionCount());
+            remoteCounter.remove();
+            Assert.assertEquals("CDI bean was not destroyed", 1, destructionCounter.getCDIDestructionCount());
+            Assert.assertEquals("SFSB was not destroyed", 1, destructionCounter.getSFSBDestructionCount());
+
+
         } finally {
             // reset the selector
             if (previousSelector != null) {

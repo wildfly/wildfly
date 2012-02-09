@@ -32,4 +32,6 @@ public interface RemoteCounter {
     CounterResult decrement();
 
     CounterResult getCount();
+
+    void remove();
 }

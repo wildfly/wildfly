@@ -22,10 +22,14 @@
 
 package org.jboss.as.test.clustering.unmanaged.ejb3.stateful.remote.failover;
 
-import org.jboss.ejb3.annotation.Clustered;
-
+import javax.annotation.PreDestroy;
+import javax.ejb.EJB;
 import javax.ejb.Remote;
+import javax.ejb.Remove;
 import javax.ejb.Stateful;
+import javax.inject.Inject;
+
+import org.jboss.ejb3.annotation.Clustered;
 
 /**
  * @author Jaikiran Pai
@@ -34,6 +38,18 @@ import javax.ejb.Stateful;
 @Clustered
 @Remote(RemoteCounter.class)
 public class CounterBean implements RemoteCounter {
+
+    @EJB
+    private DestructionCounterRemote counter;
+
+    @Inject
+    public CounterBean(CDIManagedBean bean) {
+        //just loose the reference
+    }
+
+    public CounterBean() {
+
+    }
 
     private int count;
 
@@ -54,7 +70,18 @@ public class CounterBean implements RemoteCounter {
         return new CounterResult(this.count, getNodeName());
     }
 
+    @Override
+    @Remove
+    public void remove() {
+
+    }
+
     private String getNodeName() {
         return System.getProperty("jboss.node.name");
+    }
+
+    @PreDestroy
+    public void destroy() {
+        counter.incrementSFSBDestructionCount();
     }
 }
