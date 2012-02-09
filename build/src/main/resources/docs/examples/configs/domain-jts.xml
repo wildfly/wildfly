@@ -296,9 +296,27 @@
             <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
             <subsystem xmlns="urn:jboss:domain:security:1.1">
                 <security-domains>
-                    <security-domain name="other">
+                    <security-domain name="other" cache-type="default">
                         <authentication>
                             <login-module code="UsersRoles" flag="required"/>
+                        </authentication>
+                    </security-domain>
+                    <security-domain name="jboss-web-policy" cache-type="default">
+                        <authorization>
+                            <policy-module code="Delegating" flag="required"/>
+                        </authorization>
+                    </security-domain>
+                    <security-domain name="jboss-ejb-policy" cache-type="default">
+                        <authorization>
+                            <policy-module code="Delegating" flag="required"/>
+                        </authorization>
+                    </security-domain>
+                    <security-domain name="messaging" cache-type="default">
+                        <authentication>
+                            <login-module code="UsersRoles" flag="required">
+                                <module-option name="usersProperties" value="${jboss.domain.config.dir}/messaging-users.properties"/>
+                                <module-option name="rolesProperties" value="${jboss.domain.config.dir}/messaging-roles.properties"/>
+                            </login-module>
                         </authentication>
                     </security-domain>
                 </security-domains>
@@ -314,7 +332,7 @@
                 <coordinator-environment default-timeout="300"/>
                 <jts/>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:web:1.1" default-virtual-server="default-host">
+            <subsystem xmlns="urn:jboss:domain:web:1.1" default-virtual-server="default-host" native="false">
                 <connector name="http" protocol="HTTP/1.1" scheme="http" socket-binding="http"/>
                 <virtual-server name="default-host" enable-welcome-root="true">
                     <alias name="localhost"/>
@@ -649,9 +667,27 @@
             <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
             <subsystem xmlns="urn:jboss:domain:security:1.1">
                 <security-domains>
-                    <security-domain name="other">
+                    <security-domain name="other" cache-type="default">
                         <authentication>
                             <login-module code="UsersRoles" flag="required"/>
+                        </authentication>
+                    </security-domain>
+                    <security-domain name="jboss-web-policy" cache-type="default">
+                        <authorization>
+                            <policy-module code="Delegating" flag="required"/>
+                        </authorization>
+                    </security-domain>
+                    <security-domain name="jboss-ejb-policy" cache-type="default">
+                        <authorization>
+                            <policy-module code="Delegating" flag="required"/>
+                        </authorization>
+                    </security-domain>
+                    <security-domain name="messaging" cache-type="default">
+                        <authentication>
+                            <login-module code="UsersRoles" flag="required">
+                                <module-option name="usersProperties" value="${jboss.domain.config.dir}/messaging-users.properties"/>
+                                <module-option name="rolesProperties" value="${jboss.domain.config.dir}/messaging-roles.properties"/>
+                            </login-module>
                         </authentication>
                     </security-domain>
                 </security-domains>
@@ -666,7 +702,7 @@
                 <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
                 <coordinator-environment default-timeout="300"/>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:web:1.1" default-virtual-server="default-host">
+            <subsystem xmlns="urn:jboss:domain:web:1.1" default-virtual-server="default-host" native="false">
                 <connector name="http" protocol="HTTP/1.1" scheme="http" socket-binding="http"/>
                 <virtual-server name="default-host" enable-welcome-root="true">
                     <alias name="localhost"/>
