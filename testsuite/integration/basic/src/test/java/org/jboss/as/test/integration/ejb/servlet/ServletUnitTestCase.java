@@ -29,6 +29,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.as.test.integration.ejb.security.SecurityTest;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -47,7 +48,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class ServletUnitTestCase {
+public class ServletUnitTestCase extends SecurityTest {
     private static final Logger log = Logger.getLogger(ServletUnitTestCase.class.getName());
 
     @Deployment(name = "ejb", order = 2)
@@ -60,6 +61,12 @@ public class ServletUnitTestCase {
 
     @Deployment(name = "client", order = 1)
     public static Archive<?> deployClient() {
+    	try {
+            // create required security domains
+            createSecurityDomain();
+        } catch (Exception e) {
+            // ignore
+        }
         JavaArchive jar = getClient("ejb3-servlet-client.jar");
         log.info(jar.toString(true));
         return jar;

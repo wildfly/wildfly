@@ -34,7 +34,7 @@ import org.jboss.ejb3.annotation.SecurityDomain;
  * User: jpai
  */
 @Singleton
-@SecurityDomain("other")
+@SecurityDomain("ejb3-tests")
 @Remote(SingletonSecurity.class)
 public class SecuredSingletonBean implements SingletonSecurity {
 

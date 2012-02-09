@@ -40,7 +40,7 @@ import org.jboss.ejb3.annotation.SecurityDomain;
 @Local(Session30BusinessLocal.class)
 @RemoteHome(Session30Home.class)
 @LocalHome(Session30LocalHome.class)
-@SecurityDomain("other")
+@SecurityDomain("ejb3-tests")
 public class Session30Bean implements Session30 {
 
     @EJB

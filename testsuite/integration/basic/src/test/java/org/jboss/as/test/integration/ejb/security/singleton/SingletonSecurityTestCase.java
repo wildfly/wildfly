@@ -30,10 +30,12 @@ import javax.naming.InitialContext;
 import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.integration.ejb.security.SecurityTest;
 import org.jboss.security.client.SecurityClient;
 import org.jboss.security.client.SecurityClientFactory;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,15 +47,23 @@ import org.junit.runner.RunWith;
  * @author Jaikiran Pai, Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
-public class SingletonSecurityTestCase {
+public class SingletonSecurityTestCase extends SecurityTest {
     private static final Logger log = Logger.getLogger(SingletonSecurityTestCase.class.getName()); 
     
     @Deployment
     public static Archive<?> deploy() {
+    	try {
+            // create required security domains
+            createSecurityDomain();
+        } catch (Exception e) {
+            // ignore
+        }
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ejb3-singleton-security.jar");
         jar.addPackage(SingletonSecurityTestCase.class.getPackage());
+        jar.addClass(SecurityTest.class);
         jar.addAsResource(SingletonSecurityTestCase.class.getPackage(), "users.properties", "users.properties");
         jar.addAsResource(SingletonSecurityTestCase.class.getPackage(), "roles.properties", "roles.properties");
+        jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr\n"),"MANIFEST.MF");
         log.info(jar.toString(true));
         return jar;
     }

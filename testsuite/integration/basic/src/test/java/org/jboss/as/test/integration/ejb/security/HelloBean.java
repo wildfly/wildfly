@@ -13,7 +13,7 @@ import org.jboss.ejb3.annotation.SecurityDomain;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 @Stateless
-@SecurityDomain("other")
+@SecurityDomain("ejb3-tests")
 @RemoteHome(HelloHome.class)
 public class HelloBean implements SessionBean {
     private SessionContext ctx;

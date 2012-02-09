@@ -48,7 +48,7 @@ import org.jboss.ejb3.annotation.SecurityDomain;
         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
         @ActivationConfigProperty(propertyName = "destination", propertyValue = "java:jboss/queue/mdbtest") })
 @RunAs("TestRole")
-@SecurityDomain(value = "other", unauthenticatedPrincipal = "user")
+@SecurityDomain(value = "ejb3-tests", unauthenticatedPrincipal = "user")
 @ResourceAdapter(value = "hornetq-ra.rar")
 public class QueueTestMDB implements MessageListener {
     @Resource(mappedName = "java:/ConnectionFactory")
