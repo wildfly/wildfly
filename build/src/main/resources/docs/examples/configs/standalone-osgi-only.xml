@@ -17,6 +17,11 @@
                     <properties path="mgmt-users.properties" relative-to="jboss.server.config.dir"/>
                 </authentication>
             </security-realm>
+            <security-realm name="ApplicationRealm">
+                <authentication>
+                    <properties path="application-users.properties" relative-to="jboss.server.config.dir"/>
+                </authentication>
+            </security-realm>
         </security-realms>
         <management-interfaces>
             <native-interface security-realm="ManagementRealm">
@@ -61,9 +66,13 @@
             </root-logger>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:configadmin:1.0"/>
-        <subsystem xmlns="urn:jboss:domain:jmx:1.1"/>
+        <subsystem xmlns="urn:jboss:domain:jmx:1.1">
+            <show-model value="true"/>
+        </subsystem>
         <subsystem xmlns="urn:jboss:domain:osgi:1.2" activation="eager"/>
-        <subsystem xmlns="urn:jboss:domain:remoting:1.1"/>
+        <subsystem xmlns="urn:jboss:domain:remoting:1.1">
+            <connector name="remoting-connector" socket-binding="remoting" security-realm="ApplicationRealm"/>
+        </subsystem>
     </profile>
 
     <interfaces>
