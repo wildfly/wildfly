@@ -35,6 +35,7 @@
         <version.org.jboss.arquillian.extension.drone>1.0.0.CR3</version.org.jboss.arquillian.extension.drone>
         <version.org.jboss.arquillian.ajocado>1.0.0.CR2</version.org.jboss.arquillian.ajocado>
         <version.org.jboss.as.arquillian.container>7.1.0.CR1b</version.org.jboss.as.arquillian.container>
+        <version.org.jboss.jbossts.jbossjts>4.16.1.Final</version.org.jboss.jbossts.jbossjts>
 
         <!-- Versions of projects not directly under JBoss umbrella -->
         <version.junit>4.8.1</version.junit>
@@ -47,6 +48,7 @@
 
     <modules>
         <module>jboss-javaee-6.0-with-tools</module>
+        <module>jboss-javaee-6.0-with-transactions</module>
     </modules>
 
 </project>
