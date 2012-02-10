@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DIRECTORY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
@@ -70,6 +71,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.jboss.as.connector.subsystems.datasources.Util;
 import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.PathAddress;
@@ -102,6 +104,7 @@ public class CoreResourceManagementTestCase {
     private static final ModelNode ROOT_PROP_ADDRESS = new ModelNode();
     private static final ModelNode SERVER_GROUP_PROP_ADDRESS = new ModelNode();
     private static final ModelNode HOST_PROP_ADDRESS = new ModelNode();
+    private static final ModelNode HOST_COMPOSITE_PROP_ADDRESS = new ModelNode();
     private static final ModelNode HOST_CLASSLOADING_ADDRESS = new ModelNode();
     private static final ModelNode SERVER_PROP_ADDRESS = new ModelNode();
     private static final ModelNode MAIN_RUNNING_SERVER_ADDRESS = new ModelNode();
@@ -120,6 +123,9 @@ public class CoreResourceManagementTestCase {
         HOST_PROP_ADDRESS.add(HOST, "slave");
         HOST_PROP_ADDRESS.add(SYSTEM_PROPERTY, TEST);
         HOST_PROP_ADDRESS.protect();
+        HOST_COMPOSITE_PROP_ADDRESS.add(HOST, "slave");
+        HOST_COMPOSITE_PROP_ADDRESS.add(SYSTEM_PROPERTY, COMPOSITE);
+        HOST_COMPOSITE_PROP_ADDRESS.protect();
         HOST_CLASSLOADING_ADDRESS.add(HOST, "slave");
         HOST_CLASSLOADING_ADDRESS.add(CORE_SERVICE, PLATFORM_MBEAN);
         HOST_CLASSLOADING_ADDRESS.add(TYPE, "class-loading");
@@ -353,6 +359,28 @@ public class CoreResourceManagementTestCase {
         response = slaveClient.execute(getReadChildrenNamesOperation(OTHER_RUNNING_SERVER_ADDRESS, SYSTEM_PROPERTY));
         returnVal = validateResponse(response);
         Assert.assertEquals(origPropCount, returnVal.asList().size());
+    }
+
+    /** Test for AS7-3443 */
+    @Test
+    public void testSystemPropertyComposites() throws Exception {
+
+        DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
+        DomainClient slaveClient = domainSlaveLifecycleUtil.getDomainClient();
+
+        ModelNode composite = new ModelNode();
+        composite.get(OP).set(COMPOSITE);
+        ModelNode steps = composite.get(STEPS);
+        steps.add(getSystemPropertyAddOperation(HOST_COMPOSITE_PROP_ADDRESS, "host", null));
+        steps.add(getWriteAttributeOperation(HOST_COMPOSITE_PROP_ADDRESS, "host2"));
+
+        ModelNode response = masterClient.execute(composite);
+        validateResponse(response);
+
+        masterClient.execute(getEmptyOperation(REMOVE, HOST_COMPOSITE_PROP_ADDRESS));
+
+        response = slaveClient.execute(composite);
+        validateResponse(response);
     }
 
     @Test
