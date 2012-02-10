@@ -28,7 +28,6 @@
     </properties>
 
     <resources>
-        <resource-root path="jboss-as-security-7.1.0.Final-SNAPSHOT.jar"/>
         <!-- Insert resources here -->
     </resources>
 
