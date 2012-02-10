@@ -18,8 +18,9 @@
  */
 package org.jboss.as.controller.operations.validation;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
@@ -32,7 +33,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class ParametersValidator implements ParameterValidator {
 
-    final Map<String, ParameterValidator> validators = new ConcurrentHashMap<String, ParameterValidator>();
+    final Map<String, ParameterValidator> validators = Collections.synchronizedMap(new HashMap<String, ParameterValidator>());
 
     public ParametersValidator() {
     }
