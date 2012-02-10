@@ -25,8 +25,12 @@ package org.jboss.as.test.integration.jpa.webtxem;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
 
+import java.net.URL;
+
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.jpa.hibernate.entity.Company;
 import org.jboss.as.test.integration.jpa.hibernate.entity.Customer;
@@ -46,9 +50,13 @@ import org.junit.runner.RunWith;
  * @author Zbyněk Roubalík
  */
 @RunWith(Arquillian.class)
+@RunAsClient
 public class WebJPATestCase {
 
 	private static final String ARCHIVE_NAME = "web_jpa";
+	
+	@ArquillianResource
+	static URL baseUrl;
 
 	private static final String persistence_xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> "
 			+ "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">"
@@ -73,7 +81,7 @@ public class WebJPATestCase {
 
 	private static String performCall(String urlPattern, String param)
 			throws Exception {
-		return HttpRequest.get("http://localhost:8080/web_jpa/" + urlPattern + "?mode=" + param, 20, SECONDS);
+		return HttpRequest.get(baseUrl.toString() + urlPattern + "?mode=" + param, 20, SECONDS);
 	}
 
 	@Test
