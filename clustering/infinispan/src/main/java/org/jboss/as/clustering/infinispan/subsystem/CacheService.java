@@ -28,6 +28,7 @@ import org.infinispan.Cache;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.msc.AsynchronousService;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.tm.XAResourceRecovery;
 import org.jboss.tm.XAResourceRecoveryRegistry;
@@ -44,6 +45,7 @@ public class CacheService<K, V> extends AsynchronousService<Cache<K, V>> {
     private volatile Cache<K, V> cache;
     private volatile XAResourceRecovery recovery;
 
+    private static final Logger log = Logger.getLogger(CacheService.class.getPackage().getName());
     public static ServiceName getServiceName(String container, String cache) {
         return EmbeddedCacheManagerService.getServiceName(container).append((cache != null) ? cache : CacheContainer.DEFAULT_CACHE_NAME);
     }
@@ -79,6 +81,7 @@ public class CacheService<K, V> extends AsynchronousService<Cache<K, V>> {
             this.recovery = new InfinispanXAResourceRecovery(this.name, container);
             recoveryRegistry.addXAResourceRecovery(this.recovery);
         }
+        log.debugf("%s cache started", this.name);
     }
 
     @Override
@@ -89,6 +92,7 @@ public class CacheService<K, V> extends AsynchronousService<Cache<K, V>> {
             }
 
             this.cache.stop();
+            log.debugf("%s cache stopped", this.name);
         }
     }
 
