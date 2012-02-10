@@ -49,6 +49,7 @@ import org.jboss.as.ejb3.component.session.SessionBeanComponentInstance;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.ejb.client.SessionID;
+import org.jboss.interceptor.spi.model.InterceptionModel;
 import org.jboss.marshalling.ClassTable;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.Unmarshaller;
@@ -84,6 +85,7 @@ public class StatefulSessionBeanClassTable implements ClassTable {
         StatefulSerializedProxy.class,
         ManagedReference.class,
         ValueManagedReferenceFactory.ValueManagedReference.class,
+        InterceptionModel.class,
     };
 
     private static final Map<Class<?>, Writer> writers = createWriters();
