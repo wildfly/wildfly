@@ -25,7 +25,6 @@ import org.jboss.as.clustering.MarshallingContext;
 import org.jboss.as.clustering.web.LocalDistributableSessionManager;
 import org.jboss.as.clustering.web.SessionAttributeMarshaller;
 import org.jboss.as.clustering.web.SessionAttributeMarshallerFactory;
-import org.jboss.marshalling.AbstractClassResolver;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.MarshallingConfiguration;
@@ -54,21 +53,7 @@ public class SessionAttributeMarshallerFactoryImpl implements SessionAttributeMa
     @Override
     public SessionAttributeMarshaller createMarshaller(LocalDistributableSessionManager manager) {
         MarshallingConfiguration configuration = new MarshallingConfiguration();
-        ApplicationClassResolver resolver = new ApplicationClassResolver(manager);
-        configuration.setClassResolver(resolver);
+        configuration.setClassResolver(manager.getApplicationClassResolver());
         return new SessionAttributeMarshallerImpl(new MarshallingContext(this.factory, configuration));
-    }
-
-    private static class ApplicationClassResolver extends AbstractClassResolver {
-        private final LocalDistributableSessionManager manager;
-
-        ApplicationClassResolver(LocalDistributableSessionManager manager) {
-            this.manager = manager;
-        }
-
-        @Override
-        public ClassLoader getClassLoader() {
-            return manager.getApplicationClassLoader();
-        }
     }
 }

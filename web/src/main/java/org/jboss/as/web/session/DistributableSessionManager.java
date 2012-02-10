@@ -71,6 +71,7 @@ import org.jboss.as.web.session.notification.ClusteredSessionNotificationCause;
 import org.jboss.as.web.session.notification.ClusteredSessionNotificationPolicy;
 import org.jboss.as.web.session.notification.IgnoreUndeployLegacyClusteredSessionNotificationPolicy;
 import org.jboss.logging.Logger;
+import org.jboss.marshalling.ClassResolver;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.jboss.PassivationConfig;
 import org.jboss.metadata.web.jboss.ReplicationConfig;
@@ -94,7 +95,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
     private SnapshotManager snapshotManager;
 
     private final ReplicationConfig replicationConfig;
-
+    private final ClassResolver resolver;
     private ClusteredSessionNotificationPolicy notificationPolicy;
     private final OutdatedSessionChecker outdatedSessionChecker = new AskSessionOutdatedSessionChecker();
     private final Semaphore semaphore = new Semaphore(TOTAL_PERMITS, true);
@@ -127,7 +128,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
     /** Sessions that have been created but not yet loaded. Used to ensure concurrent threads trying to load the same session */
     private final ConcurrentMap<String, ClusteredSession<O>> embryonicSessions = new ConcurrentHashMap<String, ClusteredSession<O>>();
 
-    public DistributableSessionManager(DistributedCacheManagerFactory factory, Context context, JBossWebMetaData metaData) throws ClusteringNotSupportedException {
+    public DistributableSessionManager(DistributedCacheManagerFactory factory, Context context, JBossWebMetaData metaData, ClassResolver resolver) throws ClusteringNotSupportedException {
         super(metaData);
 
         PassivationConfig passivationConfig = metaData.getPassivationConfig();
@@ -154,6 +155,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
         this.hostName = (host == null) ? "localhost" : host;
         this.contextName = context.getName();
         this.name = String.format("//%s/%s", this.hostName, this.contextName);
+        this.resolver = resolver;
         this.distributedCacheManager = factory.getDistributedCacheManager(this);
     }
 
@@ -1049,8 +1051,8 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
     }
 
     @Override
-    public ClassLoader getApplicationClassLoader() {
-        return this.getContainer().getLoader().getClassLoader();
+    public ClassResolver getApplicationClassResolver() {
+        return this.resolver;
     }
 
     @Override
