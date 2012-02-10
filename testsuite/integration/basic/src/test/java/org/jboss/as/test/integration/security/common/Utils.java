@@ -52,6 +52,8 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.test.integration.security.loginmodules.common.Coding;
 import org.jboss.dmr.ModelNode;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.util.Base64;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -362,6 +364,10 @@ public class Utils {
       } catch (IOException e) {
          throw new RuntimeException("Temporary file could not be created or writen to!", e);
       }
+   }
+   
+   public static void saveWar(WebArchive war, String address){
+      war.as(ZipExporter.class).exportTo(new File(address), true);
    }
 
 }
