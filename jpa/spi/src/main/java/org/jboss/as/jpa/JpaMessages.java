@@ -279,7 +279,7 @@ public interface JpaMessages {
     String persistenceUnitNotFound(String puName, DeploymentUnit deploymentUnit);
 
     /**
-     * Creates an exception indicating that the deployment unit, represented by the {@code path} and {@code puName}
+     * Creates an exception indicating that the persistence unit, represented by the {@code path} and {@code puName}
      * parameters, could not be found at the current deployment unit, represented by the {@code deploymentUnit}
      * parameter.
      *
@@ -288,8 +288,8 @@ public interface JpaMessages {
      * @param deploymentUnit the deployment unit.
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11441, value = "Can't find a deployment unit named %s#%s at %s")
-    IllegalArgumentException deploymentUnitNotFound(String path, String puName, DeploymentUnit deploymentUnit);
+    @Message(id = 11441, value = "Can't find a persistence unit named %s#%s at %s")
+    IllegalArgumentException persistenceUnitNotFound(String path, String puName, DeploymentUnit deploymentUnit);
 
     /**
      * Creates an exception indicating the parameter, likely a collection, is empty.
