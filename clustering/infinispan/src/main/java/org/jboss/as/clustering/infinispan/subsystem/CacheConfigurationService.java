@@ -32,6 +32,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.InfinispanMessages;
 import org.jboss.as.clustering.infinispan.TransactionManagerProvider;
 import org.jboss.as.clustering.infinispan.TransactionSynchronizationRegistryProvider;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -48,6 +49,8 @@ public class CacheConfigurationService implements Service<Configuration> {
     private final ConfigurationBuilder builder;
     private final Dependencies dependencies;
     private volatile Configuration config;
+
+    private static final Logger log = Logger.getLogger(CacheConfigurationService.class.getPackage().getName());
 
     public static ServiceName getServiceName(String container, String cache) {
         return CacheService.getServiceName(container, cache).append("config");
@@ -98,6 +101,8 @@ public class CacheConfigurationService implements Service<Configuration> {
         }
 
         container.defineConfiguration(this.name, this.config);
+
+        log.debugf("%s cache configuration started", this.name);
     }
 
     /**
@@ -107,5 +112,6 @@ public class CacheConfigurationService implements Service<Configuration> {
     @Override
     public void stop(StopContext context) {
         this.config = null;
+        log.debugf("%s cache configuration stopped", this.name);
     }
 }

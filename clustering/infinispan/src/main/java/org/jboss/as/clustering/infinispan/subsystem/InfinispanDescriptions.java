@@ -25,6 +25,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.BATCHING;
 import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.DEFAULT_CACHE_CONTAINER;
 import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.INDEXING;
+import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.JNDI_NAME;
 import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.NAME;
 import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.START;
 import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.STATE_TRANSFER_OBJECT;
@@ -667,7 +668,7 @@ public class InfinispanDescriptions {
         START.addOperationParameterDescription(resources, keyPrefix, operation);
         BATCHING.addOperationParameterDescription(resources, keyPrefix, operation);
         INDEXING.addOperationParameterDescription(resources, keyPrefix, operation);
-
+        JNDI_NAME.addOperationParameterDescription(resources, keyPrefix, operation);
     }
 
     /**

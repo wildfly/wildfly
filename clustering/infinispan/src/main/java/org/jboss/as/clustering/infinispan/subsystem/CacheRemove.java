@@ -5,6 +5,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
@@ -24,10 +25,18 @@ public class CacheRemove extends AbstractRemoveStepHandler {
         final String cacheName = cacheAddress.getLastElement().getValue() ;
         final String containerName = containerAddress.getLastElement().getValue() ;
 
-        // what about the cache configuration?
-
+        // remove all services started by CacheAdd, in reverse order
+        // remove the binder service
+        String jndiName = (model.hasDefined(ModelKeys.JNDI_NAME) ?
+                InfinispanJndiName.toJndiName(model.get(ModelKeys.JNDI_NAME).asString()) :
+                InfinispanJndiName.defaultCacheJndiName(containerName, cacheName)).getAbsoluteName();
+        ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
+        context.removeService(bindInfo.getBinderServiceName()) ;
         // remove the CacheService instance
         context.removeService(EmbeddedCacheManagerService.getServiceName(containerName).append(cacheName));
+        // remove the cache configuration service
+        context.removeService(CacheConfigurationService.getServiceName(containerName, cacheName));
+
         log.debugf("cache %s removed for container %s", cacheName, containerName);
     }
 
