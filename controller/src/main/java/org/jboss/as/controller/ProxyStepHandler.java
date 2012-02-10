@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUPS;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -134,6 +135,9 @@ public class ProxyStepHandler implements OperationStepHandler {
                     }
                 } else {
                     context.getResult().set(finalResult);
+                }
+                if (context.getProcessType() == ProcessType.HOST_CONTROLLER && finalResponse.has(SERVER_GROUPS)) {
+                    context.getServerResults().set(finalResponse.get(SERVER_GROUPS));
                 }
             } else {
                 // This is an error condition

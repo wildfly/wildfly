@@ -84,6 +84,9 @@ public class DomainFinalResultHandler implements OperationStepHandler {
             contextResult.set(getDomainResults(operation));
             if (domainOperationContext.getServerResults().size() > 0) {
                 populateServerGroupResults(context, context.getResult());
+            } else {
+                // Just make sure there's an 'undefined' server-groups node
+                context.getServerResults();
             }
         }
     }
@@ -230,7 +233,7 @@ public class DomainFinalResultHandler implements OperationStepHandler {
                 groupNode.get(hostServer.serverName).set(serverNode);
             }
             context.getServerResults().get(groupName).set(groupNode);
-            // FIXME AS7-3677
+            // TODO AS7-3677
             result.get(SERVER_GROUPS, groupName).set(groupNode);
         }
         if(!serverGroupSuccess) {

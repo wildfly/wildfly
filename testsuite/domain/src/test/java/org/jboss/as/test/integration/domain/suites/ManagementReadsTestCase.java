@@ -377,9 +377,9 @@ public class ManagementReadsTestCase {
 
         DomainClient domainClient = domainMasterLifecycleUtil.getDomainClient();
         ModelNode response = domainClient.execute(op);
-        ModelNode result = validateResponse(response);
-        validateResolveExpressionOnMaster(result);
-        validateResolveExpressionOnSlave(result);
+        validateResponse(response);
+        validateResolveExpressionOnMaster(response);
+        validateResolveExpressionOnSlave(response);
     }
 
     @Test
@@ -389,8 +389,8 @@ public class ManagementReadsTestCase {
 
         DomainClient domainClient = domainMasterLifecycleUtil.getDomainClient();
         ModelNode response = domainClient.execute(op);
-        ModelNode result = validateResponse(response);
-        validateResolveExpressionOnMaster(result);
+        validateResponse(response);
+        validateResolveExpressionOnMaster(response);
     }
 
     @Test
@@ -426,10 +426,10 @@ public class ManagementReadsTestCase {
     private void resolveExpressionOnSlaveHostTest(ModelControllerClient domainClient) throws Exception {
         ModelNode op = testSupport.createOperationNode("host=slave", "resolve-expression-on-domain");
         op.get("expression").set("${file.separator}");
-
+        System.out.println(op);
         ModelNode response = domainClient.execute(op);
-        ModelNode result = validateResponse(response);
-        validateResolveExpressionOnSlave(result);
+        validateResponse(response);
+        validateResolveExpressionOnSlave(response);
     }
 
     private static void validateResolveExpressionOnMaster(final ModelNode result) {
