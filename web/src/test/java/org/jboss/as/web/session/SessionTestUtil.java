@@ -77,6 +77,7 @@ import org.jboss.as.web.session.mocks.MockValve;
 import org.jboss.as.web.session.mocks.RequestHandler;
 import org.jboss.as.web.session.mocks.RequestHandlerValve;
 import org.jboss.logging.Logger;
+import org.jboss.marshalling.ContextClassResolver;
 import org.jboss.metadata.javaee.spec.EmptyMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.jboss.PassivationConfig;
@@ -204,7 +205,7 @@ public class SessionTestUtil {
         host.addChild(context);
 
         try {
-            DistributableSessionManager<OutgoingDistributableSessionData> manager = new DistributableSessionManager<OutgoingDistributableSessionData>(factory, context, metaData) {
+            DistributableSessionManager<OutgoingDistributableSessionData> manager = new DistributableSessionManager<OutgoingDistributableSessionData>(factory, context, metaData, new ContextClassResolver()) {
                 @Override
                 public void start() throws LifecycleException {
                     try {

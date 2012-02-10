@@ -64,7 +64,8 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.web.WebLogger;
 import org.jboss.as.web.deployment.helpers.VFSDirContext;
 import org.jboss.as.web.session.DistributableSessionManager;
-import org.jboss.logging.Logger;
+import org.jboss.marshalling.ClassResolver;
+import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.metadata.javaee.spec.DescriptionGroupMetaData;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleMetaData;
@@ -121,8 +122,6 @@ import org.jboss.vfs.VirtualFile;
  * @author Remy Maucherat
  */
 public class JBossContextConfig extends ContextConfig {
-    private static Logger log = Logger.getLogger(JBossContextConfig.class);
-
     private DeploymentUnit deploymentUnitContext = null;
     private Set<String> overlays = new HashSet<String>();
     private final InjectedValue<DistributedCacheManagerFactory> factory = new InjectedValue<DistributedCacheManagerFactory>();
@@ -282,7 +281,8 @@ public class JBossContextConfig extends ContextConfig {
         // Distributable
         if (metaData.getDistributable() != null) {
             try {
-                context.setManager(new DistributableSessionManager<OutgoingDistributableSessionData>(this.factory.getOptionalValue(), this.context, metaData));
+                ClassResolver resolver = ModularClassResolver.getInstance(this.deploymentUnitContext.getAttachment(Attachments.MODULE).getModuleLoader());
+                context.setManager(new DistributableSessionManager<OutgoingDistributableSessionData>(this.factory.getValue(), this.context, metaData, resolver));
                 context.setDistributable(true);
             } catch (Exception e) {
                 WebLogger.WEB_LOGGER.clusteringNotSupported();

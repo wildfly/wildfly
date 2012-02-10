@@ -21,12 +21,15 @@
  */
 package org.jboss.as.clustering.web.impl;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.jboss.as.clustering.web.LocalDistributableSessionManager;
 import org.jboss.as.clustering.web.SessionAttributeMarshaller;
 import org.jboss.as.clustering.web.SessionAttributeMarshallerFactory;
+import org.jboss.marshalling.ClassResolver;
 import org.jboss.marshalling.MarshallerFactory;
 import org.junit.Test;
 
@@ -40,8 +43,9 @@ public class SessionAttributeMarshallerFactoryTest {
         MarshallerFactory marshallerFactory = mock(MarshallerFactory.class);
         LocalDistributableSessionManager manager = mock(LocalDistributableSessionManager.class);
         SessionAttributeMarshallerFactory factory = new SessionAttributeMarshallerFactoryImpl(marshallerFactory);
+        ClassResolver resolver = mock(ClassResolver.class);
 
-        when(manager.getApplicationClassLoader()).thenReturn(Thread.currentThread().getContextClassLoader());
+        when(manager.getApplicationClassResolver()).thenReturn(resolver);
 
         SessionAttributeMarshaller marshaller = factory.createMarshaller(manager);
 

@@ -21,6 +21,7 @@
  */
 package org.jboss.as.clustering.web;
 
+import org.jboss.marshalling.ClassResolver;
 import org.jboss.metadata.web.jboss.ReplicationConfig;
 
 /**
@@ -54,7 +55,7 @@ public interface LocalDistributableSessionManager {
      * Get the classloader able to load application classes.
      * @return the classloader. Will not return <code>null</code>
      */
-    ClassLoader getApplicationClassLoader();
+    ClassResolver getApplicationClassResolver();
 
     /**
      * Gets the web application metadata.

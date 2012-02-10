@@ -32,6 +32,7 @@ import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.as.web.session.mocks.MockDistributedCacheManagerFactory;
 import org.jboss.as.web.session.mocks.MockEngine;
 import org.jboss.as.web.session.mocks.MockHost;
+import org.jboss.marshalling.ContextClassResolver;
 import org.jboss.metadata.web.jboss.ReplicationGranularity;
 import org.junit.Test;
 
@@ -62,7 +63,7 @@ public class ClusteredSessionUnitTestCase {
         context.setName("test");
         host.addChild(context);
         
-        DistributableSessionManager<?> mgr = new DistributableSessionManager<OutgoingDistributableSessionData>(new MockDistributedCacheManagerFactory(), context, SessionTestUtil.createWebMetaData(10));
+        DistributableSessionManager<?> mgr = new DistributableSessionManager<OutgoingDistributableSessionData>(new MockDistributedCacheManagerFactory(), context, SessionTestUtil.createWebMetaData(10), new ContextClassResolver());
         context.setManager(mgr);
         mgr.start();
 
