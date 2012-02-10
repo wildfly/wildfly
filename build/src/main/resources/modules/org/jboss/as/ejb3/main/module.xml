@@ -47,6 +47,7 @@
         <module name="org.jboss.as.clustering.infinispan"/>
         <module name="org.jboss.as.clustering.registry"/>
         <module name="org.jboss.as.controller"/>
+        <module name="org.jboss.as.weld"/>
         <!-- So we can access its integration API -->
         <module name="org.jboss.as.connector"/>
         <module name="org.jboss.as.ee"/>
@@ -59,6 +60,7 @@
         <module name="org.jboss.as.threads"/>
         <module name="org.jboss.as.transactions"/>
         <module name="org.jboss.classfilewriter"/>
+        <module name="org.jboss.interceptor"/>
         <module name="org.jboss.threads"/>
         <module name="org.jboss.jboss-transaction-spi"/>
         <module name="org.jboss.common-core"/>
