@@ -45,7 +45,7 @@ import org.jboss.ejb.client.remoting.ConfigBasedEJBClientContextSelector;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -55,6 +55,8 @@ import org.junit.runner.RunWith;
 /**
  * Tests that invocations on a clustered stateful session bean from a remote EJB client, failover to
  * other node(s) in cases like a node going down
+ *
+ * This test also replicates some decorated CDI beans, to make sure they are replicated correctly.
  *
  * @author Jaikiran Pai
  */
@@ -94,7 +96,9 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
     private static Archive createDeployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         ejbJar.addPackage(CounterBean.class.getPackage());
-        ejbJar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+        ejbJar.addAsManifestResource(new StringAsset("<beans>" +
+                "<decorators><class>" + CDIDecorator.class.getName() + "</class></decorators>" +
+                "</beans>"), "beans.xml");
         return ejbJar;
     }
 

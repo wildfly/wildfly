@@ -42,9 +42,14 @@ public class CounterBean implements RemoteCounter {
     @EJB
     private DestructionCounterRemote counter;
 
+    private DecoratorInterface bean;
+
     @Inject
-    public CounterBean(CDIManagedBean bean) {
-        //just loose the reference
+    public CounterBean(DecoratorInterface bean) {
+        if(!"Hello World".equals(bean.getMessage())) {
+            throw new RuntimeException("bean was not decorated");
+        }
+        this.bean = bean;
     }
 
     public CounterBean() {

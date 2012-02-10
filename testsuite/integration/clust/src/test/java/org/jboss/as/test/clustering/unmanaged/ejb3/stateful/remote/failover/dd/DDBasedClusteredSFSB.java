@@ -22,11 +22,11 @@
 
 package org.jboss.as.test.clustering.unmanaged.ejb3.stateful.remote.failover.dd;
 
-import org.jboss.as.test.clustering.unmanaged.ejb3.stateful.remote.failover.CounterResult;
-import org.jboss.as.test.clustering.unmanaged.ejb3.stateful.remote.failover.RemoteCounter;
-
 import javax.ejb.Remote;
 import javax.ejb.Stateful;
+
+import org.jboss.as.test.clustering.unmanaged.ejb3.stateful.remote.failover.CounterResult;
+import org.jboss.as.test.clustering.unmanaged.ejb3.stateful.remote.failover.RemoteCounter;
 
 /**
  * @author Jaikiran Pai
@@ -52,6 +52,11 @@ public class DDBasedClusteredSFSB implements RemoteCounter {
     @Override
     public CounterResult getCount() {
         return new CounterResult(this.count, getNodeName());
+    }
+
+    @Override
+    public void remove() {
+
     }
 
     private String getNodeName() {

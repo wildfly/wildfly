@@ -47,6 +47,7 @@ import org.jboss.as.ejb3.cache.spi.impl.AbstractBackingCacheEntry;
 import org.jboss.as.ejb3.component.EjbComponentInstance;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentInstance;
 import org.jboss.as.naming.ManagedReference;
+import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.marshalling.ClassTable;
 import org.jboss.marshalling.Marshaller;
@@ -82,6 +83,7 @@ public class StatefulSessionBeanClassTable implements ClassTable {
         AbstractBackingCacheEntry.class,
         StatefulSerializedProxy.class,
         ManagedReference.class,
+        ValueManagedReferenceFactory.ValueManagedReference.class,
     };
 
     private static final Map<Class<?>, Writer> writers = createWriters();
