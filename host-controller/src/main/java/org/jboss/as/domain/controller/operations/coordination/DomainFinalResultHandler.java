@@ -233,8 +233,6 @@ public class DomainFinalResultHandler implements OperationStepHandler {
                 groupNode.get(hostServer.serverName).set(serverNode);
             }
             context.getServerResults().get(groupName).set(groupNode);
-            // TODO AS7-3677
-            result.get(SERVER_GROUPS, groupName).set(groupNode);
         }
         if(!serverGroupSuccess) {
             // TODO see if we can extract more information from the server details
