@@ -188,7 +188,7 @@ public class PersistenceUnitSearch {
         }
 
 
-        throw MESSAGES.deploymentUnitNotFound(absolutePath, puName, current);
+        throw MESSAGES.persistenceUnitNotFound(absolutePath, puName, current);
     }
 }
 
