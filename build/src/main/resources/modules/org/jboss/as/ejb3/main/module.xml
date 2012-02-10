@@ -61,6 +61,7 @@
         <module name="org.jboss.as.transactions"/>
         <module name="org.jboss.classfilewriter"/>
         <module name="org.jboss.interceptor"/>
+        <module name="org.jboss.interceptor.spi"/>
         <module name="org.jboss.threads"/>
         <module name="org.jboss.jboss-transaction-spi"/>
         <module name="org.jboss.common-core"/>
