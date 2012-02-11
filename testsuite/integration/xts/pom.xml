@@ -102,6 +102,7 @@
 
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
+                                        <!-- TODO: Use a property. -->
                                         <jboss.server.config.file.name>../../docs/examples/configs/standalone-xts.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
                                 </configuration>

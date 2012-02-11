@@ -6,13 +6,8 @@
 
     <target name="build-xts" description="Builds server configuration for XTS tests">
 
-        <echo message="Building config xts"/>
-
-        <build-server-config name="xts"/>
-        <antcall target="changeDefaultDatabase">
-           <param name="server-config" value="xts"/>
-           <propertyset refid="ds.properties"/>
-        </antcall>
+        <echo message="Copying and configuring AS instance for XTS..."/>
+        <build-server-config name="jbossas-xts"/>
 
     </target>
 
