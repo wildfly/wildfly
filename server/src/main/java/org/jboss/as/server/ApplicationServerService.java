@@ -101,8 +101,8 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
             for (String property : new TreeSet<String>(properties.stringPropertyNames())) {
                 b.append("\n\t").append(property).append(" = ").append(properties.getProperty(property, "<undefined>"));
             }
-            CONFIG_LOGGER.debug(b);
-            CONFIG_LOGGER.debugf("VM Arguments: %s", getVMArguments());
+            CONFIG_LOGGER.info(b);
+            CONFIG_LOGGER.infof("VM Arguments: %s", getVMArguments());
             if (CONFIG_LOGGER.isTraceEnabled()) {
                 b.setLength(0);
                 final Map<String,String> env = System.getenv();
