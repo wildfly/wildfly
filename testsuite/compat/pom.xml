@@ -103,13 +103,13 @@
                         </goals>
                         <phase>test-compile</phase>
                         <configuration>
-                            <tasks>
+                            <target>
                                 <property name="tests.resources.dir" value="${basedir}/src/test/resources"/>
                                 <property name="tests.output.dir" value="${project.build.directory}"/>
                                 <ant antfile="src/test/scripts/build-jars.xml">
                                     <target name="build-jars"/>
                                 </ant>
-                            </tasks>
+                            </target>
                         </configuration>
                     </execution>
                 </executions>
