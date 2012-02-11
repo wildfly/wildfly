@@ -10,6 +10,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY_IPV6_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INET_ADDRESS;
 
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -89,8 +90,13 @@ public class InetAddressMatchInterfaceCriteria implements InterfaceCriteria {
                 anyLocalLogged = true;
             }
 
-            if( getAddress().equals(address) )
-                return getAddress();
+
+            if( toMatch.equals(address) ) {
+                if (toMatch instanceof Inet6Address) {
+                    return matchIPv6((Inet6Address) toMatch, (Inet6Address) address);
+                }
+                return toMatch;
+            }
         } catch (UnknownHostException e) {
             // One time only log a warning
             if (!unknownHostLogged) {
@@ -110,6 +116,11 @@ public class InetAddressMatchInterfaceCriteria implements InterfaceCriteria {
         sb.append(resolved);
         sb.append(')');
         return sb.toString();
+    }
+
+    private static InetAddress matchIPv6(Inet6Address toMatch, Inet6Address address) {
+        // No specified scope always matches; specified scope must match
+        return (toMatch.getScopeId() == 0 || toMatch.getScopeId() == address.getScopeId()) ? address : null;
     }
 
 }
