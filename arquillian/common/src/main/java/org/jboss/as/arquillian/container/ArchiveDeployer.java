@@ -65,7 +65,13 @@ public class ArchiveDeployer {
             }
 
         } catch (Exception e) {
-            throw new DeploymentException("Could not deploy to container", e);
+            String rcMessage = e.getMessage();
+            Throwable rootCause = e.getCause();
+            while( null != rootCause ){
+                rcMessage = rootCause.getMessage();
+                rootCause = rootCause.getCause();
+            }
+            throw new DeploymentException("Could not deploy to container: " + rcMessage, e);
         }
     }
 
