@@ -26,6 +26,8 @@ import java.io.File;
 import java.io.FileReader;
 
 import org.jboss.as.cli.CliInitializationException;
+import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.CommandContextFactory;
 import org.jboss.as.cli.gui.GuiMain;
 import org.jboss.as.cli.handlers.VersionHandler;
 import org.jboss.as.protocol.StreamUtils;
@@ -38,7 +40,7 @@ public class CliLauncher {
 
     public static void main(String[] args) throws Exception {
         int exitCode = 0;
-        CommandContextImpl cmdCtx = null;
+        CommandContext cmdCtx = null;
         boolean gui = false;
         try {
             String argError = null;
@@ -184,9 +186,8 @@ public class CliLauncher {
             }
 
             // Interactive mode
-
-            cmdCtx = new CommandContextImpl(defaultControllerHost, defaultControllerPort, username, password, true);
-            cmdCtx.interact(connect);
+            cmdCtx = initCommandContext(defaultControllerHost, defaultControllerPort, username, password, true, connect);
+            cmdCtx.interact();
         } catch(Throwable t) {
             t.printStackTrace();
         } finally {
@@ -200,24 +201,15 @@ public class CliLauncher {
         System.exit(exitCode);
     }
 
-    private static CommandContextImpl initCommandContext(String defaultHost, int defaultPort, String username, char[] password, boolean initConsole, boolean connect) throws CliInitializationException {
-        final CommandContextImpl cmdCtx = new CommandContextImpl(defaultHost, defaultPort, username, password, false);
-        SecurityActions.addShutdownHook(new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (!cmdCtx.isTerminated()) {
-                    cmdCtx.terminateSession();
-                }
-                cmdCtx.disconnectController();
-            }
-        }));
+    private static CommandContext initCommandContext(String defaultHost, int defaultPort, String username, char[] password, boolean initConsole, boolean connect) throws CliInitializationException {
+        final CommandContext cmdCtx = CommandContextFactory.getInstance().newCommandContext(defaultHost, defaultPort, username, password, initConsole);
         if(connect) {
             cmdCtx.connectController(null, -1);
         }
         return cmdCtx;
     }
 
-    private static void processGui(final CommandContextImpl cmdCtx) {
+    private static void processGui(final CommandContext cmdCtx) {
         try {
             GuiMain.start(cmdCtx);
         } catch(Throwable t) {
@@ -225,10 +217,10 @@ public class CliLauncher {
         }
     }
 
-    private static void processCommands(String[] commands, CommandContextImpl cmdCtx) {
+    private static void processCommands(String[] commands, CommandContext cmdCtx) {
         try {
             for (int i = 0; i < commands.length && !cmdCtx.isTerminated(); ++i) {
-                cmdCtx.processLine(commands[i]);
+                cmdCtx.handleSafe(commands[i]);
             }
         } catch(Throwable t) {
             t.printStackTrace();
@@ -240,14 +232,14 @@ public class CliLauncher {
         }
     }
 
-    private static void processFile(File file, final CommandContextImpl cmdCtx) {
+    private static void processFile(File file, final CommandContext cmdCtx) {
 
         BufferedReader reader = null;
         try {
             reader = new BufferedReader(new FileReader(file));
             String line = reader.readLine();
             while (!cmdCtx.isTerminated() && line != null) {
-                cmdCtx.processLine(line.trim());
+                cmdCtx.handleSafe(line.trim());
                 line = reader.readLine();
             }
         } catch (Throwable e) {
