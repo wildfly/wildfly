@@ -38,8 +38,12 @@ class SecurityActions {
                 return System.getSecurityManager() == null ? NON_PRIVILEGED : PRIVILEGED;
             }
 
-            public static String getSystemProperty(String name) {
+            static String getSystemProperty(String name) {
                 return getTCLAction().getSystemProperty(name);
+            }
+
+            static ClassLoader getContextClassLoader() {
+                return getTCLAction().getContextClassLoader();
             }
         }
 
@@ -47,6 +51,11 @@ class SecurityActions {
             @Override
             public String getSystemProperty(String name) {
                 return System.getProperty(name);
+            }
+
+            @Override
+            public ClassLoader getContextClassLoader() {
+                return Thread.currentThread().getContextClassLoader();
             }
         };
 
@@ -60,12 +69,27 @@ class SecurityActions {
                     }
                 });
             }
+
+            @Override
+            public ClassLoader getContextClassLoader() {
+                return (ClassLoader) AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                    public Object run() {
+                        return Thread.currentThread().getContextClassLoader();
+                    }
+                });
+            }
         };
 
         String getSystemProperty(String name);
+
+        ClassLoader getContextClassLoader();
     }
 
     protected static String getSystemProperty(String name) {
         return TCLAction.UTIL.getSystemProperty(name);
+    }
+
+    protected static ClassLoader getContextClassLoader() {
+        return TCLAction.UTIL.getContextClassLoader();
     }
 }

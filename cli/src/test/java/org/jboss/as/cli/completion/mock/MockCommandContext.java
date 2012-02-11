@@ -45,6 +45,7 @@ import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
 import org.jboss.as.cli.operation.impl.DefaultPrefixFormatter;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.dmr.ModelNode;
 
 /**
  *
@@ -308,5 +309,23 @@ public class MockCommandContext implements CommandContext {
             throw new IllegalArgumentException("dir is null");
         }
         this.curDir = dir;
+    }
+
+    @Override
+    public void handleSafe(String line) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void interact() {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public ModelNode buildRequest(String line) throws CommandFormatException {
+        // TODO Auto-generated method stub
+        return null;
     }
 }
