@@ -52,19 +52,19 @@ public class BasicDomainUpdateResult implements Serializable {
         this.domainFailure = null;
     }
 
-    public BasicDomainUpdateResult(final UpdateFailedException domainFailure) {
+    public BasicDomainUpdateResult(final UpdateFailedException domainFailure, final boolean rolledBack) {
         this.domainFailure = domainFailure;
         this.cancelled = false;
-        this.rolledBack = false;
+        this.rolledBack = rolledBack;
     }
 
-    public BasicDomainUpdateResult(final Map<String, UpdateFailedException> hostFailures) {
+    public BasicDomainUpdateResult(final Map<String, UpdateFailedException> hostFailures, final boolean rolledBack) {
         this.domainFailure = null;
         if (hostFailures != null) {
             this.hostFailures.putAll(hostFailures);
         }
         this.cancelled = false;
-        this.rolledBack = false;
+        this.rolledBack = rolledBack;
     }
 
     public BasicDomainUpdateResult() {

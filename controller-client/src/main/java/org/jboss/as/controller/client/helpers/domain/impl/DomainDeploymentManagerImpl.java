@@ -48,6 +48,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -62,6 +63,7 @@ import org.jboss.as.controller.client.helpers.domain.DomainDeploymentManager;
 import org.jboss.as.controller.client.helpers.domain.DuplicateDeploymentNameException;
 import org.jboss.as.controller.client.helpers.domain.InitialDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.domain.ServerGroupDeploymentPlan;
+import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -102,10 +104,10 @@ class DomainDeploymentManagerImpl implements DomainDeploymentManager {
             throw MESSAGES.cannotUseDeploymentPlan();
         }
         DeploymentPlanImpl planImpl = DeploymentPlanImpl.class.cast(plan);
-        Map<UUID, String> actionsById = new HashMap<UUID, String>();
+        Map<UUID, List<String>> actionsById = new HashMap<UUID, List<String>>();
         Operation operation = getDeploymentPlanOperation(planImpl, actionsById);
         Future<ModelNode> future = client.executeAsync(operation, null);
-        return new DomainDeploymentPlanResultFuture(planImpl, future, actionsById);
+        return new DomainDeploymentPlanResultFuture(planImpl, future, new LinkedHashSet<ServerIdentity>(client.getServerStatuses().keySet()), actionsById);
     }
 
     @Override
@@ -113,13 +115,13 @@ class DomainDeploymentManagerImpl implements DomainDeploymentManager {
         return InitialDeploymentPlanBuilderFactory.newInitialDeploymentPlanBuilder(this.contentDistributor);
     }
 
-    private Operation getDeploymentPlanOperation(DeploymentPlanImpl plan, Map<UUID, String> actionsById) {
+    private Operation getDeploymentPlanOperation(DeploymentPlanImpl plan, Map<UUID, List<String>> actionsById) {
         Operation op = getCompositeOperation(plan, actionsById);
         addRollbackPlan(plan, op);
         return op;
     }
 
-    private Operation getCompositeOperation(DeploymentPlanImpl plan, Map<UUID, String> actionsById) {
+    private Operation getCompositeOperation(DeploymentPlanImpl plan, Map<UUID, List<String>> actionsById) {
 
         Set<String> deployments = getCurrentDomainDeployments();
         Set<String> serverGroups = getServerGroupNames(plan);
@@ -135,9 +137,9 @@ class DomainDeploymentManagerImpl implements DomainDeploymentManager {
         OperationBuilder builder = new OperationBuilder(op);
         int stepNum = 1;
         for (DeploymentActionImpl action : plan.getDeploymentActionImpls()) {
+            final List<String> actionStepIds = new ArrayList<String>();
 
-            actionsById.put(action.getId(), "step-" + stepNum);
-            stepNum++;
+            actionsById.put(action.getId(), actionStepIds);
 
             List<ModelNode> actionSteps = new ArrayList<ModelNode>();
             String uniqueName = action.getDeploymentUnitUniqueName();
@@ -215,6 +217,7 @@ class DomainDeploymentManagerImpl implements DomainDeploymentManager {
             }
 
             for (ModelNode actionStep : actionSteps) {
+                actionStepIds.add(String.format("step-%d",  stepNum++));
                 steps.add(actionStep);
             }
         }
