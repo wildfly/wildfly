@@ -5,6 +5,7 @@ import org.jboss.metadata.javaee.spec.EnvironmentRefsGroupMetaData;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.javaee.spec.ResourceReferenceMetaData;
 import org.jboss.metadata.javaee.spec.ResourceReferencesMetaData;
+import org.jboss.metadata.web.spec.DispatcherType;
 import org.jboss.metadata.web.spec.FilterMappingMetaData;
 import org.jboss.metadata.web.spec.FilterMetaData;
 import org.jboss.metadata.web.spec.FiltersMetaData;
@@ -15,6 +16,7 @@ import org.jboss.metadata.web.spec.ServletsMetaData;
 import org.jboss.metadata.web.spec.WebMetaData;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -143,6 +145,7 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
         FilterMappingMetaData filterMapping = new FilterMappingMetaData();
         filterMapping.setFilterName(GAE_FILTER_NAME);
         filterMapping.setUrlPatterns(Collections.singletonList("/*"));
+        filterMapping.setDispatchers(Arrays.asList(DispatcherType.REQUEST, DispatcherType.FORWARD));
         return filterMapping;
     }
 

@@ -27,7 +27,8 @@ import java.util.Map;
 class Hack {
 
     static HttpServletRequest wrap(HttpServletRequest delegate) {
-        delegate.setAttribute(ApplicationFilterFactory.DISPATCHER_TYPE_ATTR, 0); // see AppDispatcher::processRequest
+        // see AppDispatcher::processRequest
+        delegate.setAttribute(ApplicationFilterFactory.DISPATCHER_TYPE_ATTR, ApplicationFilterFactory.REQUEST_INTEGER);
         return new HttpServletRequestWrapper(new RequestFacadeHack(delegate));
     }
 
