@@ -26,21 +26,20 @@ import java.util.List;
 import org.jboss.dmr.ModelNode;
 
 /**
- *
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
 public class ModelUtil {
-    
+
     public static List<String> modelNodeAsStingList(ModelNode node) {
         List<String> ret = new LinkedList<String>();
         for (ModelNode n : node.asList()) ret.add(n.asString());
         return ret;
     }
- 
+
     public static ModelNode createCompositeNode(ModelNode[] steps) {
         ModelNode comp = new ModelNode();
         comp.get("operation").set("composite");
-        for(ModelNode step : steps) {
+        for (ModelNode step : steps) {
             comp.get("steps").add(step);
         }
         return comp;
@@ -52,7 +51,7 @@ public class ModelUtil {
         // set address
         ModelNode list = op.get("address").setEmptyList();
         if (address != null) {
-            String [] pathSegments = address.split("/");
+            String[] pathSegments = address.split("/");
             for (String segment : pathSegments) {
                 String[] elements = segment.split("=");
                 list.add(elements[0], elements[1]);
@@ -61,5 +60,4 @@ public class ModelUtil {
         op.get("operation").set(operation);
         return op;
     }
-    
 }

@@ -1,25 +1,24 @@
-
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */
+* JBoss, Home of Professional Open Source.
+* Copyright 2011, Red Hat, Inc., and individual contributors
+* as indicated by the @author tags. See the copyright.txt file in the
+* distribution for a full listing of individual contributors.
+*
+* This is free software; you can redistribute it and/or modify it
+* under the terms of the GNU Lesser General Public License as
+* published by the Free Software Foundation; either version 2.1 of
+* the License, or (at your option) any later version.
+*
+* This software is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+* Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public
+* License along with this software; if not, write to the Free
+* Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+* 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+*/
 package org.jboss.as.test.integration.management.base;
 
 import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
@@ -75,8 +74,8 @@ import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.staxmapper.XMLMapper;
 import org.junit.Assert;
+
 /**
- *
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
 public class AbstractMgmtTestBase {
@@ -96,9 +95,11 @@ public class AbstractMgmtTestBase {
             }
         }
     }
-    protected  ModelControllerClient getModelControllerClient(){
-    	return modelControllerClient;
+
+    protected ModelControllerClient getModelControllerClient() {
+        return modelControllerClient;
     }
+
     protected static void closeModelControllerClient() throws IOException {
         if (modelControllerClient != null) {
             try {
@@ -111,15 +112,15 @@ public class AbstractMgmtTestBase {
 
     protected static ModelNode executeOperation(final ModelNode op, boolean unwrapResult) throws IOException, MgmtOperationException {
         ModelNode ret = modelControllerClient.execute(op);
-        if (! unwrapResult) return ret;
+        if (!unwrapResult) return ret;
 
-        if (! SUCCESS.equals(ret.get(OUTCOME).asString())) {
+        if (!SUCCESS.equals(ret.get(OUTCOME).asString())) {
             throw new MgmtOperationException("Management operation failed: " + ret.get(FAILURE_DESCRIPTION), op, ret);
         }
         return ret.get(RESULT);
     }
 
-    protected static ModelNode executeOperation(final ModelNode op) throws IOException, MgmtOperationException  {
+    protected static ModelNode executeOperation(final ModelNode op) throws IOException, MgmtOperationException {
         return executeOperation(op, true);
     }
 
@@ -168,6 +169,7 @@ public class AbstractMgmtTestBase {
         new ZipExporterImpl(war).exportTo(brokenWar, true);
         return brokenWar;
     }
+
     protected Map<String, ModelNode> getChildren(final ModelNode result) {
         assert result.isDefined();
         final Map<String, ModelNode> steps = new HashMap<String, ModelNode>();
@@ -176,18 +178,21 @@ public class AbstractMgmtTestBase {
         }
         return steps;
     }
-    protected ModelNode findNodeWithProperty(List<ModelNode> newList,String propertyName,String setTo){
-    	ModelNode toReturn=null;
-    	for(ModelNode result : newList){
+
+    protected ModelNode findNodeWithProperty(List<ModelNode> newList, String propertyName, String setTo) {
+        ModelNode toReturn = null;
+        for (ModelNode result : newList) {
             final Map<String, ModelNode> parseChildren = getChildren(result);
-            if (! parseChildren.isEmpty() && parseChildren.get(propertyName)!= null && parseChildren.get(propertyName).asString().equals(setTo)) {
-                toReturn=result;break;
+            if (!parseChildren.isEmpty() && parseChildren.get(propertyName) != null && parseChildren.get(propertyName).asString().equals(setTo)) {
+                toReturn = result;
+                break;
             }
         }
-    	return toReturn;
+        return toReturn;
     }
-    public static String ModelToXml(String subsystemName, String childType,XMLElementWriter<SubsystemMarshallingContext> parser)throws Exception {
-    	final ModelNode address = new ModelNode();
+
+    public static String ModelToXml(String subsystemName, String childType, XMLElementWriter<SubsystemMarshallingContext> parser) throws Exception {
+        final ModelNode address = new ModelNode();
         address.add("subsystem", subsystemName);
         address.protect();
 
@@ -196,13 +201,13 @@ public class AbstractMgmtTestBase {
         operation.get("child-type").set(childType);
         operation.get(RECURSIVE).set(true);
         operation.get(OP_ADDR).set(address);
-        
+
         final ModelNode result = executeOperation(operation);
         Assert.assertNotNull(result);
 
         ModelNode dsNode = new ModelNode();
         dsNode.get(childType).set(result);
-        
+
         StringWriter strWriter = new StringWriter();
         XMLExtendedStreamWriter writer = XMLExtendedStreamWriterFactory.create(XMLOutputFactory.newFactory()
                 .createXMLStreamWriter(strWriter));
@@ -210,31 +215,33 @@ public class AbstractMgmtTestBase {
         writer.flush();
         return strWriter.toString();
     }
-    
-    public static List<ModelNode> XmlToModelOperations(String xml,String nameSpaceUriString,XMLElementReader<List<ModelNode>> parser) throws Exception {
-    	
-    	XMLMapper mapper = XMLMapper.Factory.create();
+
+    public static List<ModelNode> XmlToModelOperations(String xml, String nameSpaceUriString, XMLElementReader<List<ModelNode>> parser) throws Exception {
+        XMLMapper mapper = XMLMapper.Factory.create();
         mapper.registerRootElement(new QName(nameSpaceUriString, "subsystem"), parser);
-        
+
         StringReader strReader = new StringReader(xml);
-       
+
         XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new StreamSource(strReader));
         List<ModelNode> newList = new ArrayList<ModelNode>();
         mapper.parseDocument(newList, reader);
-        
+
         return newList;
     }
-    public static ModelNode operationListToCompositeOperation(List<ModelNode> operations){
-    	return operationListToCompositeOperation(operations,true);
+
+    public static ModelNode operationListToCompositeOperation(List<ModelNode> operations) {
+        return operationListToCompositeOperation(operations, true);
     }
-    public static ModelNode operationListToCompositeOperation(List<ModelNode> operations, boolean skipFirst){
-    	if(skipFirst) operations.remove(0);
-    	ModelNode steps[]=new ModelNode[operations.size()];
-    	operations.toArray(steps);
-    	return createCompositeNode(steps);
+
+    public static ModelNode operationListToCompositeOperation(List<ModelNode> operations, boolean skipFirst) {
+        if (skipFirst) operations.remove(0);
+        ModelNode[] steps = new ModelNode[operations.size()];
+        operations.toArray(steps);
+        return createCompositeNode(steps);
     }
+
     public static String readXmlResource(final String name) throws IOException {
-    	File f=new File(name);
+        File f = new File(name);
         BufferedReader reader = new BufferedReader(new FileReader(f));
         StringWriter writer = new StringWriter();
         String line;
@@ -243,5 +250,4 @@ public class AbstractMgmtTestBase {
         }
         return writer.toString();
     }
-
 }

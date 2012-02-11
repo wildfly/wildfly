@@ -56,10 +56,16 @@ public class PollingUtils {
         throw new RuntimeException("Task could not be completed within " + timeoutMs + "ms");
     }
 
+    /**
+     * Task
+     */
     public interface Task {
         boolean execute() throws Exception;
     }
 
+    /**
+     * WaitForMBeanTask
+     */
     public static class WaitForMBeanTask implements Task {
         private final MBeanServerConnection server;
         private final ObjectName name;
@@ -79,6 +85,9 @@ public class PollingUtils {
         }
     }
 
+    /**
+     * JndiLookupTask
+     */
     public static class JndiLookupTask implements Task {
         private final Context context;
         private final String name;
@@ -104,6 +113,9 @@ public class PollingUtils {
         }
     }
 
+    /**
+     * UrlConnectionTask
+     */
     public static class UrlConnectionTask implements Task {
         private final URL url;
         private String response;

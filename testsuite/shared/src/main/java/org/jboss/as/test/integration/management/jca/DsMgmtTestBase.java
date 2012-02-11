@@ -29,56 +29,61 @@ import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension.DataSo
 import java.util.List;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.connector.subsystems.datasources.Namespace;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 
 /**
  * Extension of AbstractMgmtTestBase for data source testing.
- * 
+ *
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
-public class DsMgmtTestBase  extends AbstractMgmtTestBase{
-	public static ModelNode baseAddress;
-     
-    public static void setBaseAddress(String dsType,String dsName) {
-    	baseAddress = new ModelNode();
+public class DsMgmtTestBase extends AbstractMgmtTestBase {
+    public static ModelNode baseAddress;
+
+    public static void setBaseAddress(String dsType, String dsName) {
+        baseAddress = new ModelNode();
         baseAddress.add("subsystem", "datasources");
-        baseAddress.add(dsType,dsName);
+        baseAddress.add(dsType, dsName);
         baseAddress.protect();
     }
+
     //@After - called after each test
-    protected void removeDs() throws Exception{
+    protected void removeDs() throws Exception {
         remove(baseAddress);
     }
+
     //@Before - called from each test
     /*
      * Load data source model, stored in specified file to the configuration
      */
-    protected void setModel(String filename)throws Exception{
-	    String xml=readXmlResource(System.getProperty("jbossas.ts.integ.dir")+"/basic/src/test/resources/jca/metrics/data-sources/"+filename);
-        List<ModelNode> operations=XmlToModelOperations(xml,Namespace.CURRENT.getUriString(),new DataSourceSubsystemParser());
+    protected void setModel(String filename) throws Exception {
+        String xml = readXmlResource(System.getProperty("jbossas.ts.integ.dir") + "/basic/src/test/resources/jca/metrics/data-sources/" + filename);
+        List<ModelNode> operations = XmlToModelOperations(xml, Namespace.CURRENT.getUriString(), new DataSourceSubsystemParser());
         executeOperation(operationListToCompositeOperation(operations));
     }
+
     /*
-     * Bad model must throw an Exception during setModel methos call. To work around wrong test case
-     * removeDs() method is added. 
-     */
-    protected void setBadModel(String filename) throws Exception{
-    	setModel(filename);
-    	removeDs();
+    * Bad model must throw an Exception during setModel methos call. To work around wrong test case
+    * removeDs() method is added.
+    */
+    protected void setBadModel(String filename) throws Exception {
+        setModel(filename);
+        removeDs();
     }
-    protected ModelNode  readAttribute(ModelNode address,String attribute) throws Exception {
+
+    protected ModelNode readAttribute(ModelNode address, String attribute) throws Exception {
         final ModelNode operation = new ModelNode();
         operation.get(OP).set("read-attribute");
         operation.get("name").set(attribute);
         operation.get(OP_ADDR).set(address);
         return executeOperation(operation);
     }
-    protected static List<ModelNode> marshalAndReparseDsResources(String childType) throws Exception{
+
+    protected static List<ModelNode> marshalAndReparseDsResources(String childType) throws Exception {
         DataSourceSubsystemParser parser = new DataSourceSubsystemParser();
-    	return XmlToModelOperations(ModelToXml("datasources",childType,parser),Namespace.CURRENT.getUriString(),parser);
+        return XmlToModelOperations(ModelToXml("datasources", childType, parser), Namespace.CURRENT.getUriString(), parser);
     }
-    private static void testCon(final String dsName,String type) throws Exception {
+
+    private static void testCon(final String dsName, String type) throws Exception {
         final ModelNode address = new ModelNode();
         address.add("subsystem", "datasources");
         address.add(type, dsName);
@@ -89,13 +94,13 @@ public class DsMgmtTestBase  extends AbstractMgmtTestBase{
         operation.get(OP_ADDR).set(address);
 
         executeOperation(operation);
- 
     }
+
     protected static void testConnection(final String dsName) throws Exception {
-    	testCon(dsName,"data-source");
-   }
+        testCon(dsName, "data-source");
+    }
 
     protected static void testConnectionXA(final String dsName) throws Exception {
-    	testCon(dsName,"xa-data-source");
+        testCon(dsName, "xa-data-source");
     }
 }

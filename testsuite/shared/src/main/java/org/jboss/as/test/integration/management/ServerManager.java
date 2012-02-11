@@ -39,11 +39,8 @@ import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNo
  * @author <a href="mailto:pskopek@redhat.com">Peter Skopek</a>
  */
 public class ServerManager extends AbstractMgmtTestBase {
-
-
     private int mgmtPort;
     private String mgmtHostName;
-    
 
     /**
      * Constructor using default hostname and management port.
@@ -77,7 +74,6 @@ public class ServerManager extends AbstractMgmtTestBase {
     }
 
     public void addConnector(Connector conn, int port, String keyPEMFile, String certPEMFile, String keyStoreFile, String password) throws Exception {
-
         // add socket binding
         ModelNode op = getAddSocketBindingOp(conn, port);
         executeOperation(op);
@@ -118,7 +114,6 @@ public class ServerManager extends AbstractMgmtTestBase {
     }
 
     public void removeConnector(Connector conn, String checkURL) throws Exception {
-
         // remove connector
         ModelNode op = getRemoveConnectorOp(conn);
         executeOperation(op);
@@ -132,7 +127,6 @@ public class ServerManager extends AbstractMgmtTestBase {
         // remove socket binding
         op = getRemoveSocketBindingOp(conn);
         executeOperation(op);
-
     }
 
     private ModelNode getRemoveSocketBindingOp(Connector conn) {
@@ -146,7 +140,6 @@ public class ServerManager extends AbstractMgmtTestBase {
     }
 
     public HashSet<String> getConnectorList() throws Exception {
-
         ModelNode op = createOpNode("subsystem=web", "read-children-names");
         op.get("child-type").set("connector");
         ModelNode result = executeOperation(op);
@@ -161,9 +154,6 @@ public class ServerManager extends AbstractMgmtTestBase {
 
 
     public void initModelControllerClient() {
-
         initModelControllerClient(mgmtHostName, getMgmtPort());
-
     }
-    
 }
