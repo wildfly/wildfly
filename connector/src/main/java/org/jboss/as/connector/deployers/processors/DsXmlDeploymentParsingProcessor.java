@@ -95,7 +95,7 @@ public class DsXmlDeploymentParsingProcessor implements DeploymentUnitProcessor 
             return Collections.emptySet();
         }
 
-        final String deploymentRootName = deploymentRoot.getLowerCaseName();
+        final String deploymentRootName = deploymentRoot.getName().toLowerCase();
 
         if (deploymentRootName.endsWith("-ds.xml")) {
             return Collections.singleton(deploymentRoot);

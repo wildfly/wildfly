@@ -71,7 +71,7 @@ public class WebFragmentParsingDeploymentProcessor implements DeploymentUnitProc
             return;
         }
         for (ResourceRoot resourceRoot : resourceRoots) {
-            if (resourceRoot.getRoot().getLowerCaseName().endsWith(".jar")) {
+            if (resourceRoot.getRoot().getName().toLowerCase().endsWith(".jar")) {
                 VirtualFile webFragment = resourceRoot.getRoot().getChild(WEB_FRAGMENT_XML);
                 if (webFragment.exists() && webFragment.isFile()) {
                     InputStream is = null;

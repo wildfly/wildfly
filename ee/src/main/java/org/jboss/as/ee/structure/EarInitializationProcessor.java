@@ -45,7 +45,7 @@ public class EarInitializationProcessor implements DeploymentUnitProcessor {
         final VirtualFile virtualFile = resourceRoot.getRoot();
 
         // Make sure this is an EAR deployment
-        if (virtualFile.getLowerCaseName().endsWith(EAR_EXTENSION)) {
+        if (virtualFile.getName().toLowerCase().endsWith(EAR_EXTENSION)) {
             //  Let other processors know this is an EAR deployment
             DeploymentTypeMarker.setType(DeploymentType.EAR, deploymentUnit);
         }

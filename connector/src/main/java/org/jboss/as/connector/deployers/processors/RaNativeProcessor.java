@@ -62,7 +62,7 @@ public class RaNativeProcessor implements DeploymentUnitProcessor {
         if (deploymentRoot == null || !deploymentRoot.exists())
             return;
 
-        final String deploymentRootName = deploymentRoot.getLowerCaseName();
+        final String deploymentRootName = deploymentRoot.getName().toLowerCase();
         if (!deploymentRootName.endsWith(".rar")) {
             return;
         }
@@ -72,7 +72,7 @@ public class RaNativeProcessor implements DeploymentUnitProcessor {
 
             if (libs != null && libs.size() > 0) {
                 for (VirtualFile vf : libs) {
-                    String fileName = vf.getLowerCaseName();
+                    String fileName = vf.getName().toLowerCase();
                     ROOT_LOGGER.tracef("Processing library: %s", fileName);
 
                     try {
@@ -102,7 +102,7 @@ public class RaNativeProcessor implements DeploymentUnitProcessor {
                 return false;
 
             if (vf.isFile()) {
-                String fileName = vf.getLowerCaseName();
+                String fileName = vf.getName().toLowerCase();
                 if (fileName.endsWith(".a") || fileName.endsWith(".so") || fileName.endsWith(".dll")) {
                     return true;
                 }

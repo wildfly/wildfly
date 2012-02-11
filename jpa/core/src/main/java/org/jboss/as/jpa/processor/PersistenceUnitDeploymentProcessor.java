@@ -166,7 +166,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
             List<ResourceRoot> resourceRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
             assert resourceRoots != null;
             for (ResourceRoot resourceRoot : resourceRoots) {
-                if (resourceRoot.getRoot().getLowerCaseName().endsWith(".jar")) {
+                if (resourceRoot.getRoot().getName().toLowerCase().endsWith(".jar")) {
                     if ((holder = resourceRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS)) != null
                         && holder.getPersistenceUnits().size() > 0) {
 

@@ -105,7 +105,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
         boolean fragmentFound = false;
         Map<String, WebFragmentMetaData> webFragments = warMetaData.getWebFragmentsMetaData();
         for (ResourceRoot resourceRoot : resourceRoots) {
-            if (resourceRoot.getRoot().getLowerCaseName().endsWith(".jar")) {
+            if (resourceRoot.getRoot().getName().toLowerCase().endsWith(".jar")) {
                 jarsSet.add(resourceRoot.getRootName());
                 // Find overlays
                 VirtualFile overlay = resourceRoot.getRoot().getChild("META-INF/resources");
