@@ -42,13 +42,6 @@ public interface BackingCacheEntryStoreSource<K extends Serializable, V extends 
     /**
      * Provide a {@link BackingCacheEntryStore} for storage of serialization groups.
      *
-     * @param containerName name of the container using this store's cache
-     * @param cacheConfigName potentially aliased name of the cache configuration. Implementations should use this value in
-     *        place of {@link CacheConfig#name()}
-     * @param config configuration details of the cache
-     * @param transactionManager TransactionManager the store should use if it needs to monitor transactions
-     * @param synchronizationCoordinator SynchronizationCoordinator the store should use if it needs to add tranaction
-     *        synchronizations
      * @return the store
      */
     <E extends SerializationGroup<K, V, G>> BackingCacheEntryStore<G, Cacheable<G>, E> createGroupIntegratedObjectStore(PassivationManager<G, E> passivationManager, StatefulTimeoutInfo timeout);
@@ -56,12 +49,6 @@ public interface BackingCacheEntryStoreSource<K extends Serializable, V extends 
     /**
      * Provide a {@link BackingCacheEntryStore} for storage of serialization group members.
      *
-     * @param containerName name of the container using this store's cache
-     * @param cacheConfigName TODO
-     * @param transactionManager TransactionManager the store should use if it needs to monitor transactions
-     * @param synchronizationCoordinator SynchronizationCoordinator the store should use if it needs to add tranaction
-     *        synchronizations
-     * @param config configuration details of the cache
      * @return the store
      */
     <E extends SerializationGroupMember<K, V, G>> BackingCacheEntryStore<K, V, E> createIntegratedObjectStore(String beanName, PassivationManager<K, E> passivationManager, StatefulTimeoutInfo timeout);

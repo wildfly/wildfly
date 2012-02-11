@@ -35,14 +35,9 @@ public interface CacheFactory<K extends Serializable, T extends Identifiable<K>>
     /**
      * Creates a cache for a container.
      *
-     * @param containerName fully qualified name of the container. Must be unique across all possibly co-existent containers in
-     *        the system. Should be as concise as possible, as this name may be replicated around a cluster in numerous
-     *        messages. Should not contain characters that are illegal to include in an element of a filesystem path. An example
-     *        containerName for an EJBContainer might be "ear=foo.ear,jar=foo.jar,name=Bar".
      * @param factory factory for creating objects managed by the cache
      * @param passivationManager manager for invoking pre and post passivation and replication callbacks on the cached objects
-     * @param statefulTimeout the stateful timeout
-     * @param config configuration details for the cache
+     * @param timeout the stateful timeout
      *
      * @return the cache
      */

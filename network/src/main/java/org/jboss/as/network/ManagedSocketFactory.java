@@ -83,7 +83,7 @@ public abstract class ManagedSocketFactory extends SocketFactory {
      * @return the socket
      * @throws IOException
      * @throws UnknownHostException
-     * @see {@linkplain SocketFactory#createSocket(String, InetAddress, int)}
+     * @see {@linkplain SocketFactory#createSocket(String, int, java.net.InetAddress, int)}
      */
     public abstract Socket createSocket(String name, String host, int port, InetAddress localHost, int localPort) throws IOException;
 
@@ -97,7 +97,7 @@ public abstract class ManagedSocketFactory extends SocketFactory {
      * @param localPort the local port
      * @return the socket
      * @throws IOException
-     * @see {@linkplain SocketFactory#createSocket(InetAddress, InetAddress, int)}
+     * @see {@linkplain SocketFactory#createSocket(java.net.InetAddress, int, java.net.InetAddress, int)}
      */
     public abstract Socket createSocket(String name, InetAddress address, int port, InetAddress localAddress, int localPort) throws IOException;
 

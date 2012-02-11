@@ -262,7 +262,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
     /**
      * Sends a cluster formation message for the passed clusters, over the remoting channel
      *
-     * @param clusters The new clusters
+     * @param clientMappingRegistries The new clusters
      * @throws IOException If any exception occurs while sending the message over the channel
      */
     private void sendNewClusterFormedMessage(final Collection<Registry<String, List<ClientMapping>>> clientMappingRegistries) throws IOException {
@@ -279,7 +279,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
     /**
      * Sends out a cluster removal message for the passed cluster, over the remoting channel
      *
-     * @param cluster The cluster which was removed
+     * @param registry The cluster which was removed
      * @throws IOException If any exception occurs while sending the message over the channel
      */
     private void sendClusterRemovedMessage(final Registry<String, List<ClientMapping>> registry) throws IOException {
@@ -304,7 +304,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
     }
 
     /**
-     * A {@link GroupMembershipListener} which writes out messages to the client, over a {@link Channel remoting channel}
+     * A {@link org.jboss.as.clustering.GroupMembershipListener} which writes out messages to the client, over a {@link Channel remoting channel}
      * upon cluster topology updates
      */
     private class ClusterTopologyUpdateListener implements Registry.Listener<String, List<ClientMapping>> {

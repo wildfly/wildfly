@@ -37,7 +37,7 @@ import org.jboss.msc.service.ServiceName;
 public interface SetupAction {
 
     /**
-     * Sets up the context. If this method throws an exception then the {@link #teardown()} method will not be called, so this
+     * Sets up the context. If this method throws an exception then the {@link #teardown(java.util.Map)} method will not be called, so this
      * method should be implmeneted in an atomic manner.
      */
     void setup(Map<String, Object> properties);

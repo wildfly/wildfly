@@ -35,8 +35,10 @@ public class DuplicateDeploymentNameException extends Exception {
     private static final long serialVersionUID = -7207529184499737454L;
 
     private final String name;
+
     /**
-     * @param message
+     * @param name
+     * @param fullDomain
      */
     public DuplicateDeploymentNameException(String name, boolean fullDomain) {
         super(fullDomain ? MESSAGES.domainDeploymentAlreadyExists(name) : MESSAGES.serverDeploymentAlreadyExists(name));

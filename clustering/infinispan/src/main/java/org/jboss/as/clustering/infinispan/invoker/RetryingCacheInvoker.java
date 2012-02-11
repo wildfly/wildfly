@@ -49,8 +49,7 @@ public class RetryingCacheInvoker implements CacheInvoker {
     /**
      * {@inheritDoc}
      *
-     * @see org.jboss.ha.web.tomcat.service.session.distributedcache.impl.CacheInvoker#invoke(org.infinispan.Cache,
-     *      org.jboss.ha.web.tomcat.service.session.distributedcache.impl.CacheInvoker.Operation)
+     * @see org.jboss.as.clustering.infinispan.invoker.CacheInvoker#invoke(org.infinispan.Cache, org.jboss.as.clustering.infinispan.invoker.CacheInvoker.Operation)
      */
     @Override
     public <K, V, R> R invoke(Cache<K, V> cache, Operation<K, V, R> operation) {

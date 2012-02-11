@@ -425,7 +425,7 @@ class JacORBSubsystemDefinitions {
 
 
     /**
-     * @see org.jboss.as.remoting.AbstractOutboundConnectionResourceDefinition.PropertiesAttributeDefinition
+     *
      */
     //todo has to be moved to some better place same as org.jboss.as.remoting.AbstractOutboundConnectionResourceDefinition.PropertiesAttributeDefinition
     private static class PropertiesAttributeDefinition extends MapAttributeDefinition {

@@ -69,7 +69,7 @@ public class SerializationGroupImpl<K extends Serializable, V extends Cacheable<
     private transient Map<K, SerializationGroupMember<K, V, UUID>> active = new HashMap<K, SerializationGroupMember<K, V, UUID>>();
 
     /**
-     * Set of keys passed to {@link #addInUse(Object)}
+     * Set of keys passed to {@link #addInUse(java.io.Serializable)}
      */
     private transient Set<K> inUseKeys = new HashSet<K>();
 

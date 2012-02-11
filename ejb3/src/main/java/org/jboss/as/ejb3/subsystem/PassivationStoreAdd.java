@@ -53,7 +53,7 @@ public abstract class PassivationStoreAdd extends AbstractAddStepHandler {
      * Populate the <code>strictMaxPoolModel</code> from the <code>operation</code>
      *
      * @param operation          the operation
-     * @param strictMaxPoolModel strict-max-pool ModelNode
+     * @param model strict-max-pool ModelNode
      * @throws OperationFailedException
      */
     @Override

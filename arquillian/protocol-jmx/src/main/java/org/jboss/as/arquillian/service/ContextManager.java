@@ -26,8 +26,8 @@ import java.util.Map;
 import org.jboss.as.server.deployment.SetupAction;
 
 /**
- * Sets up and tears down a set of contexts, represented by a list of {@link SetupAction}s. If {@link #setup()} completes
- * successfully then {@link #teardown()} must be called.
+ * Sets up and tears down a set of contexts, represented by a list of {@link SetupAction}s. If {@link #setup(java.util.Map)} completes
+ * successfully then {@link #teardown(java.util.Map)} must be called.
  *
  * @author Stuart Douglas
  * @author <a href="mailto:alr@jboss.org">Andrew Lee Rubinger</a>
@@ -74,7 +74,7 @@ public class ContextManager {
 
     /**
      * Tears down the contexts. If an exception is thrown by a {@link SetupAction} it is wrapped and re-thrown after all
-     * {@link SetupAction#teardown()} methods have been called.
+     * {@link SetupAction#teardown(java.util.Map)} methods have been called.
      * <p>
      * Contexts are torn down in the oposite order to which they are set up (i.e. the first context set up is the last to be
      * torn down).

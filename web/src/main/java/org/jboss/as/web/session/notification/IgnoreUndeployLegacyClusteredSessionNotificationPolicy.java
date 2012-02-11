@@ -28,9 +28,9 @@ package org.jboss.as.web.session.notification;
  */
 public class IgnoreUndeployLegacyClusteredSessionNotificationPolicy extends LegacyClusteredSessionNotificationPolicy {
     /**
-     * Overrides superclass to return <code>false</code> if the cause of the notification is {@link ClusteredSessionNotificationCause.UNDEPLOY}.
+     * Overrides superclass to return <code>false</code> if the cause of the notification is {@link ClusteredSessionNotificationCause#UNDEPLOY}.
      * @return <code>true</code> if <code>status.isLocallyUsed()</code> is <code>true</code> and the cause of the notification
-     *         is not {@link ClusteredSessionNotificationCause.UNDEPLOY}.
+     *         is not {@link ClusteredSessionNotificationCause#UNDEPLOY}.
      */
     @Override
     public boolean isHttpSessionAttributeListenerInvocationAllowed(ClusteredSessionManagementStatus status, ClusteredSessionNotificationCause cause, String attributeName, boolean local) {
@@ -38,9 +38,9 @@ public class IgnoreUndeployLegacyClusteredSessionNotificationPolicy extends Lega
     }
 
     /**
-     * Overrides superclass to return <code>false</code> if the cause of the notification is {@link ClusteredSessionNotificationCause.UNDEPLOY}.
+     * Overrides superclass to return <code>false</code> if the cause of the notification is {@link ClusteredSessionNotificationCause#UNDEPLOY}.
      * @return <code>true</code> if <code>status.isLocallyUsed()</code> is <code>true</code> and the cause of the notification
-     *         is not {@link ClusteredSessionNotificationCause.UNDEPLOY}.
+     *         is not {@link ClusteredSessionNotificationCause#UNDEPLOY}.
      */
     @Override
     public boolean isHttpSessionListenerInvocationAllowed(ClusteredSessionManagementStatus status, ClusteredSessionNotificationCause cause, boolean local) {

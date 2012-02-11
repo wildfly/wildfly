@@ -131,7 +131,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
      * Process a single index.
      *
      * @param index the annotation index
-     * @param classLoader the module classloader
+     *
      * @throws DeploymentUnitProcessingException
      */
     protected WebMetaData processAnnotations(Index index)

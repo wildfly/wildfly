@@ -31,8 +31,8 @@ import java.util.Map;
 /**
  * Class level information about the annotations present on a particular class.
  *
- * @param A The annotation type
- * @param T The data type that is used to store the annotation information internally
+ * @param <A> The annotation type
+ * @param <T> The data type that is used to store the annotation information internally
  * @author Stuart Douglas
  */
 public final class ClassAnnotationInformation<A extends Annotation, T> {

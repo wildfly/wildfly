@@ -43,8 +43,7 @@ public class CoarseSessionAttributeStorage implements SessionAttributeStorage<Ou
     /**
      * {@inheritDoc}
      *
-     * @see org.jboss.web.tomcat.service.session.distributedcache.ispn.SessionAttributeStorage#store(org.infinispan.atomic.AtomicMap,
-     *      org.jboss.web.tomcat.service.session.distributedcache.spi.OutgoingDistributableSessionData)
+     * @see org.jboss.as.clustering.web.infinispan.SessionAttributeStorage#store(java.util.Map, org.jboss.as.clustering.web.OutgoingDistributableSessionData)
      */
     @Override
     public void store(Map<Object, Object> map, OutgoingSessionGranularitySessionData sessionData) throws IOException {
@@ -57,7 +56,7 @@ public class CoarseSessionAttributeStorage implements SessionAttributeStorage<Ou
     /**
      * {@inheritDoc}
      *
-     * @see org.jboss.web.tomcat.service.session.distributedcache.ispn.SessionAttributeStorage#load(org.infinispan.atomic.AtomicMap)
+     * @see org.jboss.as.clustering.web.infinispan.SessionAttributeStorage#load(java.util.Map)
      */
     @SuppressWarnings("unchecked")
     @Override

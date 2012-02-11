@@ -113,7 +113,7 @@ public class SerializationGroupMemberImpl<K extends Serializable, V extends Cach
     /**
      * Sets the underlying {@link Cacheable} associated with this group member.
      *
-     * @param item the cache item
+     * @param obj the cache item
      */
     @Override
     public void setUnderlyingItem(V obj) {
@@ -133,7 +133,7 @@ public class SerializationGroupMemberImpl<K extends Serializable, V extends Cach
     /**
      * Sets the {@link SerializationGroupImpl} of which this object is a member.
      *
-     * @param the group. May be <code>null</code>
+     * @param group May be <code>null</code>
      */
     @Override
     public void setGroup(SerializationGroup<K, V, G> group) {

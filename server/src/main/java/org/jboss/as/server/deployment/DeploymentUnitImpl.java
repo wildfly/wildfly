@@ -23,7 +23,6 @@
 package org.jboss.as.server.deployment;
 
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -44,7 +43,6 @@ class DeploymentUnitImpl extends SimpleAttachable implements DeploymentUnit {
      * @param parent the parent (enclosing) deployment unit, if any
      * @param name the deployment unit name
      * @param serviceRegistry the service registry
-     * @param registration the resource registration
      */
     DeploymentUnitImpl(final DeploymentUnit parent, final String name, final ServiceRegistry serviceRegistry) {
         this.parent = parent;

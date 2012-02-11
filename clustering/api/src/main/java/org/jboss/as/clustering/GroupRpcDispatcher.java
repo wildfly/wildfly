@@ -73,7 +73,7 @@ public interface GroupRpcDispatcher extends GroupCommunicationService {
     /**
      * Invoke an RPC call on all nodes of the partition/cluster and return their response values as a list. This convenience
      * method is equivalent to
-     * {@link #callMethodOnCluster(String, String, Object[], Class[], Class, boolean, ResponseFilter, long, boolean)
+     * {@link #callMethodOnCluster(String, String, Object[], Class[], boolean, ResponseFilter, long, boolean)}
      * callAsynchMethodOnCluster(serviceName, methodName, args, types, Object.class, excludeSelf, null, methodTimeout, false)}
      * where <code>methodTimeout</code> is the value returned by {@link #getMethodCallTimeout()}.
      *
@@ -91,7 +91,7 @@ public interface GroupRpcDispatcher extends GroupCommunicationService {
     /**
      * Invoke a synchronous RPC call on all nodes of the partition/cluster and return their response values as a list. This
      * convenience method is equivalent to
-     * {@link #callMethodOnCluster(String, String, Object[], Class[], boolean, ResponseFilter, boolean)
+     * {@link #callMethodOnCluster(String, String, Object[], Class[], boolean, ResponseFilter, long, boolean)}
      * callAsynchMethodOnCluster(serviceName, methodName, args, types, Object.class, excludeSelf, filter, methodTimeout, false)}
      * where <code>methodTimeout</code> is the value returned by {@link #getMethodCallTimeout()}.
      *
@@ -111,7 +111,7 @@ public interface GroupRpcDispatcher extends GroupCommunicationService {
     /**
      * Invoke an RPC call on all nodes of the partition/cluster and return their response values as a list.
      *
-     * @param T the expected type of the return values
+     * @param <T> the expected type of the return values
      * @param serviceName name of the target service name on which calls are invoked
      * @param methodName name of the Java method to be called on remote services
      * @param args array of Java Object representing the set of parameters to be given to the remote method
@@ -162,7 +162,7 @@ public interface GroupRpcDispatcher extends GroupCommunicationService {
     /**
      * Calls method on Cluster coordinator node only. The cluster coordinator node is the first node in the current cluster
      * view. This convenience method is equivalent to
-     * {@link #callMethodOnCoordinatorNode(String, String, Object[], Class[], Class, boolean, long, boolean)
+     * {@link #callMethodOnCoordinatorNode(String, String, Object[], Class[], boolean, long, boolean)}
      * callMethodOnCoordinatorNode(serviceName, methodName, args, types, Object.class, excludeSelf, methodTimeout, false)} where
      * <code>methodTimeout</code> is the value returned by {@link #getMethodCallTimeout()}.
      *
@@ -181,13 +181,11 @@ public interface GroupRpcDispatcher extends GroupCommunicationService {
      * Calls method on Cluster coordinator node only. The cluster coordinator node is the first node in the current cluster
      * view.
      *
-     * @param T the expected type of the return value
+     * @param <T> the expected type of the return value
      * @param serviceName name of the target service name on which calls are invoked
      * @param methodName name of the Java method to be called on remote services
      * @param args array of Java Object representing the set of parameters to be given to the remote method
      * @param types types of the parameters
-     * @param returnType the expected type of the return value, <code>null</code> or <code>void.class</code> if no return value
-     *        is expected
      * @param excludeSelf <code>true</code> if the RPC should not be made on the current node even if the current node is the
      *        coordinator
      * @param methodTimeout max number of ms to wait for response to arrive before returning
@@ -199,7 +197,7 @@ public interface GroupRpcDispatcher extends GroupCommunicationService {
 
     /**
      * Calls method on target node only. This convenience method is equivalent to
-     * {@link #callMethodOnNode(String, String, Object[], Class[], Class, long, ClusterNode, boolean)
+     * {@link #callMethodOnNode(String, String, Object[], Class[], long, ClusterNode, boolean)}
      * callMethodOnNode(serviceName, methodName, args, types, Object.class, methodTimeout, targetNode, false)} where
      * <code>methodTimeout</code> is the value returned by {@link #getMethodCallTimeout()}.
      *
@@ -207,7 +205,6 @@ public interface GroupRpcDispatcher extends GroupCommunicationService {
      * @param methodName name of the Java method to be called on remote services
      * @param args array of Java Object representing the set of parameters to be given to the remote method
      * @param types types of the parameters
-     * @param methodTimeout max number of ms to wait for response to arrive before returning
      * @param targetNode is the target of the call
      *
      * @return the value returned by the target method
@@ -216,7 +213,7 @@ public interface GroupRpcDispatcher extends GroupCommunicationService {
 
     /**
      * Calls method on target node only. This convenience method is equivalent to
-     * {@link #callMethodOnNode(String, String, Object[], Class[], Class, long, ClusterNode, boolean)
+     * {@link #callMethodOnNode(String, String, Object[], Class[], long, ClusterNode, boolean)}
      * callMethodOnNode(serviceName, methodName, args, types, Object.class, methodTimeout, targetNode, false)}.
      *
      * @param serviceName name of the target service name on which calls are invoked
@@ -233,13 +230,11 @@ public interface GroupRpcDispatcher extends GroupCommunicationService {
     /**
      * Calls method synchronously on target node only.
      *
-     * @param T the expected type of the return value
+     * @param <T> the expected type of the return value
      * @param serviceName name of the target service name on which calls are invoked
      * @param methodName name of the Java method to be called on remote services
      * @param args array of Java Object representing the set of parameters to be given to the remote method
      * @param types types of the parameters
-     * @param returnType the expected type of the return value, <code>null</code> or <code>void.class</code> if no return value
-     *        is expected
      * @param methodTimeout max number of ms to wait for response to arrive before returning
      * @param targetNode is the target of the call
      * @param unordered <code>true</code> if the HAPartition isn't required to ensure that this RPC is invoked on all nodes in a
@@ -251,7 +246,7 @@ public interface GroupRpcDispatcher extends GroupCommunicationService {
     /**
      * Calls method on target node only. The call will return immediately and will not wait for the node to answer. Thus no
      * answer is available. This convenience method is equivalent to
-     * {@link #callAsynchMethodOnNode(String, String, Object[], Class[], ClusterNode, boolean)
+     * {@link #callAsyncMethodOnNode(String, String, Object[], Class[], ClusterNode, boolean)}
      * callAsynchMethodOnCluster(serviceName, methodName, args, types, methodTimeout, targetNode, false)}.
      *
      * @param serviceName name of the target service name on which calls are invoked

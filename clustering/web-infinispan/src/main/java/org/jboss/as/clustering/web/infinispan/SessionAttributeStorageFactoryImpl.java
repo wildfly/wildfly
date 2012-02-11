@@ -38,8 +38,7 @@ public class SessionAttributeStorageFactoryImpl implements SessionAttributeStora
     /**
      * {@inheritDoc}
      *
-     * @see org.jboss.web.tomcat.service.session.distributedcache.ispn.SessionAttributeStorageFactory#createStorage(org.jboss.metadata.web.jboss.ReplicationGranularity,
-     *      org.jboss.web.tomcat.service.session.distributedcache.spi.SessionAttributeMarshaller)
+     * @see org.jboss.as.clustering.web.infinispan.SessionAttributeStorageFactory#createStorage(org.jboss.metadata.web.jboss.ReplicationGranularity, org.jboss.as.clustering.web.SessionAttributeMarshaller)
      */
     @SuppressWarnings("unchecked")
     @Override

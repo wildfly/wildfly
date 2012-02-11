@@ -30,7 +30,7 @@ import org.jboss.msc.service.ServiceBuilder;
  * A configurator for a service dependency.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
- * @param T the type of the service that is being configured
+ * @param <T> the type of the service that is being configured
  */
 public interface DependencyConfigurator<T extends Service> {
 

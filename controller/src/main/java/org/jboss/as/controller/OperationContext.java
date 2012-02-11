@@ -309,7 +309,7 @@ public interface OperationContext {
      * Get the service registry.  If the step is not a runtime operation handler step, an exception will be thrown.  The
      * returned registry must not be used to remove services, if an attempt is made to call {@code ServiceController.setMode(REMOVE)}
      * on a {@code ServiceController} returned from this registry an {@code IllegalStateException} will be thrown. To
-     * remove a service call {@link removeService(ServiceName name)}.
+     * remove a service call {@link #removeService(org.jboss.msc.service.ServiceName)}.
      *
      * @param modify {@code true} if the operation may be modifying a service, {@code false} otherwise
      * @return the service registry

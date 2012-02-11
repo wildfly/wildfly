@@ -233,8 +233,8 @@ public class SharedLocalYieldingClusterLockManager {
 
         /**
          * Record that interest in obtaining the lock is finished. Note that does not mean release the lock. This method should
-         * be called in a finally block following a call to {@link #register()}.
-         * @param decrement <code>true</code> if unregistering should reverse the lock count increase that occurred with {@link #register()}
+         * be called in a finally block following a call to {@link #register(org.jboss.as.clustering.ClusterNode)}.
+         * @param decrement <code>true</code> if unregistering should reverse the lock count increase that occurred with {@link #register(org.jboss.as.clustering.ClusterNode)}
          * @return a LockState that will not have the calling thread as latestRegistrant and that, if <code>decrement</code> is
          *         <code>true</code> will have a lock count one less than this one
          */

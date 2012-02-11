@@ -30,15 +30,6 @@ public interface SingletonMessages {
 
     SingletonMessages MESSAGES = Messages.getBundle(SingletonMessages.class);
 
-    /**
-     * Creates an exception indicating a failure to resolve the outbound socket binding represented by the
-     * {@code binding} parameter.
-     *
-     * @param cause the cause of the error.
-     * @param binding the outbound socket binding.
-     *
-     * @return a {@link ConfigurationPersistenceException} for the error.
-     */
     @Message(id = 10350, value = "Expected result from singleton provider only, but instead received %d results.")
     IllegalStateException unexpectedResponseCount(int results);
 }

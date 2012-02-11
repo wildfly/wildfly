@@ -50,7 +50,7 @@ public class SessionAttributeMarshallerFactoryImpl implements SessionAttributeMa
     /**
      * {@inheritDoc}
      *
-     * @see org.jboss.web.tomcat.service.session.distributedcache.spi.SessionAttributeMarshallerFactory#createMarshaller(org.jboss.web.tomcat.service.session.distributedcache.spi.LocalDistributableSessionManager)
+     * @see org.jboss.as.clustering.web.SessionAttributeMarshallerFactory#createMarshaller(org.jboss.as.clustering.web.LocalDistributableSessionManager)
      */
     @Override
     public SessionAttributeMarshaller createMarshaller(LocalDistributableSessionManager manager) {

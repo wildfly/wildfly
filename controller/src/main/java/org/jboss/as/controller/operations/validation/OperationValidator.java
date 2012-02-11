@@ -74,7 +74,7 @@ public class OperationValidator {
     /**
      * Validates operations against their description providers
      *
-     * @param operation The operation to validate
+     * @param operations The operations to validate
      * @throws IllegalArgumentException if any operation is not valid
      */
     public void validateOperations(final List<ModelNode> operations) {

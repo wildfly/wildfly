@@ -164,7 +164,7 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
      *
      * @throws IllegalArgumentException if <code>processExpiresInterval < 1</code>
      *
-     * @see #setMaxEmptyLife()
+     * @see #setMaxEmptyLife(int)
      */
     public void setProcessExpiresInterval(int processExpiresInterval) {
         this.processExpiresInterval = processExpiresInterval * 1000;
@@ -306,7 +306,7 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
      *
      * @param request The servlet request we are processing
      * @param response The servlet response we are creating
-     * @param context The valve context used to invoke the next valve in the current processing pipeline
+     *
      * @throws IOException if an input/output error occurs
      * @throws ServletException if a servlet error occurs
      */

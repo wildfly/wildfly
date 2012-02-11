@@ -29,10 +29,7 @@ package org.jboss.as.ejb3.timerservice;
  * <p/>
  * <ul>
  * <li> {@link #CREATED}  - on create</li>
- * <li> {@link #CREATED} -> {@link #STARTED_IN_TX} - when strated with Tx</li>
  * <li> {@link #CREATED} -> {@link #ACTIVE}  - when started without Tx</li>
- * <li> {@link #STARTED_IN_TX} -> {@link #ACTIVE} - on Tx commit</li>
- * <li> {@link #STARTED_IN_TX} -> {@link #CANCELED} - on Tx rollback</li>
  * <li> {@link #ACTIVE} -> {@link #CANCELED} - on cancel() without Tx</li>
  * <li> {@link #ACTIVE} -> {@link #IN_TIMEOUT} - on TimerTask run</li>
  * <li> {@link #IN_TIMEOUT} -> {@link #ACTIVE} - on Tx commit if intervalDuration > 0</li>
