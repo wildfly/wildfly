@@ -14,7 +14,7 @@
     <!-- ************************* Multi-node Integration Tests *************************** -->
     <!-- ********************************************************************************** -->
     <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-testsuite-integration-multinode</artifactId>
+    <artifactId>jboss-as-ts-integ-multinode</artifactId>
     <version>7.1.1.Final-SNAPSHOT</version>
 
     <name>JBoss AS Test Suite: Integration - Multinode Tests</name>

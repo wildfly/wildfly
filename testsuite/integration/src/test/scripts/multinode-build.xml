@@ -29,14 +29,20 @@
 
     <target name="build-multinode" description="Builds server configurations for Multi-node tests">
 
-        <echo message="Copying and configuring instance multinode-client"/>
-        <build-server-config name="multinode-client"/>
-        <ts.config-as.add-remote-outbound-connection name="multinode-client" node="${node0}" remotePort="4547" securityRealm="PasswordRealm" userName="user1"/>
-        <ts.config-as.add-identity-realm name="multinode-client" realmName="PasswordRealm" secret="cGFzc3dvcmQx"/>
+        <echo message="Copying and configuring instance jbossas-multinode-client"/>
+        <build-server-config name="jbossas-multinode-client"/>
+        <ts.config-as.add-remote-outbound-connection name="jbossas-multinode-client" node="${node0}" remotePort="4547" securityRealm="PasswordRealm" userName="user1"/>
+        <ts.config-as.add-identity-realm name="jbossas-multinode-client" realmName="PasswordRealm" secret="cGFzc3dvcmQx"/>
 
-        <echo message="Copying and configuring instance multinode-server"/>
-        <build-server-config name="multinode-server"/>
-        <ts.config-as.add-port-offset name="multinode-server" offset="100" nativePort="9999" httpPort="9990"/>
+        <echo message="Copying and configuring instance jbossas-multinode-server"/>
+        <build-server-config name="jbossas-multinode-server"/>
+        <ts.config-as.add-port-offset name="jbossas-multinode-server" offset="100" nativePort="9999" httpPort="9990"/>
+        <!-- Security - users and roles definitions. -->
+        <copy todir="target/jbossas-multinode-server/standalone/configuration" overwrite="true">
+            <fileset dir="${jbossas.ts.integ.dir}/../shared/src/main/resources">
+                <include name="application-*.properties"/>
+            </fileset>
+        </copy>
     </target>
 
 </project>

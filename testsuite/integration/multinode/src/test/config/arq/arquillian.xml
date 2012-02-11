@@ -7,8 +7,9 @@
         <!-- The server than invokes the exposed EJB's via remote outbound connection -->
         <container qualifier="multinode-client" default="true">
             <configuration>
-                <property name="jbossHome">${basedir}/target/multinode-client</property>
+                <property name="jbossHome">${basedir}/target/jbossas-multinode-client</property>
                 <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-multinode-client -Djboss.node.name=multinode-client</property>
+                                                                                        <!-- jboss.node.name is defined in the test, not related to AS instance name! -->
                 <property name="serverConfig">${jboss.server.config.file.name:standalone.xml}</property>
             </configuration>
         </container>
@@ -16,7 +17,7 @@
         <!-- The server that exposes EJB's -->
         <container qualifier="multinode-server" default="false">
             <configuration>
-                <property name="jbossHome">${basedir}/target/multinode-server</property>
+                <property name="jbossHome">${basedir}/target/jbossas-multinode-server</property>
                 <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-multinode-server -Djboss.node.name=multinode-server</property>
                 <property name="serverConfig">${jboss.server.config.file.name:standalone.xml}</property>
                 <property name="managementPort">10099</property>
