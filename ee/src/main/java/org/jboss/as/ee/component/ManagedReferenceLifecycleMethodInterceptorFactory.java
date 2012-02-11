@@ -127,7 +127,7 @@ final class ManagedReferenceLifecycleMethodInterceptorFactory implements Interce
                         context.setMethod(oldMethod);
                     }
                 } else {
-                    method.invoke(instance, null);
+                    method.invoke(instance);
                     return context.proceed();
                 }
             } catch (IllegalAccessException e) {

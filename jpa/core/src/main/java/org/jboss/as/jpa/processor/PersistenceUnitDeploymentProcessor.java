@@ -577,7 +577,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
         try {
             Class targetCls = provider.getClass().getClassLoader().loadClass("org.hibernate.Version");
             Method m = targetCls.getMethod("getVersionString");
-            Object version = m.invoke(null, null);
+            Object version = m.invoke(null);
             JPA_LOGGER.tracef("lookup provider checking provider version (%s)", version);
             if (version instanceof String &&
                 ((String) version).startsWith("3.")) {

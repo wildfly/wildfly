@@ -57,7 +57,7 @@ public class JDBCInformixCreateCommand extends JDBCIdentityColumnCreateCommand {
         ClassLoader loader = GetTCLAction.getContextClassLoader();
         try {
             Class psClass = loader.loadClass(className);
-            method = psClass.getMethod(methodName, null);
+            method = psClass.getMethod(methodName);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("Could not load driver class: " + className, e);
         } catch (NoSuchMethodException e) {
@@ -66,7 +66,7 @@ public class JDBCInformixCreateCommand extends JDBCIdentityColumnCreateCommand {
 
         try {
             Class wrapperClass = loader.loadClass("org.jboss.resource.adapter.jdbc.StatementAccess");
-            getUnderlyingStatement = wrapperClass.getMethod("getUnderlyingStatement", null);
+            getUnderlyingStatement = wrapperClass.getMethod("getUnderlyingStatement");
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("Could not load org.jboss.resource.adapter.jdbc.StatementAccess", e);
         } catch (NoSuchMethodException e) {
@@ -107,7 +107,7 @@ public class JDBCInformixCreateCommand extends JDBCIdentityColumnCreateCommand {
         } while (stmt != null && method.getDeclaringClass().isInstance(stmt) == false);
 
         try {
-            Number pk = (Number) method.invoke(stmt, null);
+            Number pk = (Number) method.invoke(stmt);
             pkField.setInstanceValue(ctx, pk);
             return rows;
         } catch (RuntimeException e) {
