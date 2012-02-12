@@ -62,7 +62,7 @@ public class IPv6ScopeIdMatchUnitTestCase {
                 processNetworkInterface(sub);
             }
         }
-        System.out.println("loopback = " + loopbackAddress);
+        System.out.println("loopback: " + loopbackInterface + " " + loopbackAddress);
         for (Map.Entry<NetworkInterface, Set<Inet6Address>> entry : addresses.entrySet()) {
             System.out.println(entry.getKey() + " " + entry.getValue());
         }
@@ -100,8 +100,11 @@ public class IPv6ScopeIdMatchUnitTestCase {
         if (loopbackAddress.getScopeId() > 0) {
             assertEquals(loopbackAddress, criteria.isAcceptable(loopbackInterface, loopbackAddress));
         } else {
-            // This match fails because ::1%lo becomes ::1%<number_of_lo>
-            assertNull(criteria.isAcceptable(loopbackInterface, loopbackAddress));
+            InetAddress match = criteria.isAcceptable(loopbackInterface, loopbackAddress);
+            if (!loopbackAddress.equals(match)) {
+                // This match fails because ::1%lo becomes ::1%<number_of_lo> which isn't 0
+                assertNull(match + " is invalid", criteria.isAcceptable(loopbackInterface, loopbackAddress));
+            }
         }
         criteria = new InetAddressMatchInterfaceCriteria(new ModelNode("::1%" + loopbackAddress.getScopeId()));
         assertEquals(loopbackAddress, criteria.isAcceptable(loopbackInterface, loopbackAddress));
