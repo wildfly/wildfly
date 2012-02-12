@@ -42,7 +42,6 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 
 import java.util.List;
-import java.util.Map;
 
 import static org.jboss.as.connector.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
 import static org.jboss.as.connector.ConnectorMessages.MESSAGES;

@@ -27,16 +27,7 @@ import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.operations.common.SocketBindingAddHandler;
 import org.jboss.as.controller.operations.common.SocketBindingRemoveHandler;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.resource.AbstractSocketBindingResourceDefinition;
-import org.jboss.as.server.services.net.BindingAddHandler;
-import org.jboss.as.server.services.net.BindingFixedPortHandler;
-import org.jboss.as.server.services.net.BindingInterfaceHandler;
-import org.jboss.as.server.services.net.BindingMetricHandlers;
-import org.jboss.as.server.services.net.BindingMulticastAddressHandler;
-import org.jboss.as.server.services.net.BindingMulticastPortHandler;
-import org.jboss.as.server.services.net.BindingPortHandler;
-import org.jboss.as.server.services.net.BindingRemoveHandler;
 
 /**
  * {@link ResourceDefinition} for a domain-level socket binding resource.

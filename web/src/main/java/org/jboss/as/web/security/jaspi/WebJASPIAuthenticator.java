@@ -30,7 +30,6 @@ import org.apache.catalina.deploy.LoginConfig;
 import org.jboss.as.web.WebLogger;
 import org.jboss.as.web.security.JBossGenericPrincipal;
 import org.jboss.as.web.security.JBossWebRealm;
-import org.jboss.logging.Logger;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.ServerAuthenticationManager;
 import org.jboss.security.SimplePrincipal;

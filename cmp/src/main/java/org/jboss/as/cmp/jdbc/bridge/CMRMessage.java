@@ -21,9 +21,6 @@
  */
 package org.jboss.as.cmp.jdbc.bridge;
 
-import java.io.ObjectStreamException;
-import java.io.Serializable;
-
 /**
  * Type safe enumeration of method object is passed through the invocation
  * interceptor chain and caught by the JDBCRelationInterceptor.

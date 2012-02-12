@@ -22,7 +22,6 @@
 
 package org.jboss.as.messaging.jms;
 
-import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.management.JMSQueueControl;
 import org.hornetq.core.server.HornetQServer;

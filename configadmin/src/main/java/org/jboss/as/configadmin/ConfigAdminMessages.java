@@ -22,15 +22,8 @@
 
 package org.jboss.as.configadmin;
 
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.server.services.security.VaultReaderException;
-import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
-import org.jboss.logging.Param;
-import org.jboss.msc.service.StartException;
-
-import java.net.URL;
 
 /**
  * This module is using message IDs in the range 16200-16299.

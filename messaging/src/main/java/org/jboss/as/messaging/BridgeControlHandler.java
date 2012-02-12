@@ -22,7 +22,6 @@
 
 package org.jboss.as.messaging;
 
-import org.hornetq.api.core.management.AcceptorControl;
 import org.hornetq.api.core.management.BridgeControl;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.core.server.HornetQServer;

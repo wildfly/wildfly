@@ -26,11 +26,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import org.jboss.as.cmp.jdbc.metadata.parser.ParsedCmpField;
 import org.jboss.logging.Logger;
-import org.w3c.dom.Element;
 
 /**
  * Imutable class which holds all the information jbosscmp-jdbc needs to know

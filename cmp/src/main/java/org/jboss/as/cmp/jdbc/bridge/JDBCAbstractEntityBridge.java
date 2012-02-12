@@ -21,10 +21,8 @@
  */
 package org.jboss.as.cmp.jdbc.bridge;
 
-import java.util.List;
 import javax.sql.DataSource;
 import org.jboss.as.cmp.bridge.EntityBridge;
-import org.jboss.as.cmp.bridge.FieldBridge;
 import org.jboss.as.cmp.jdbc.JDBCEntityPersistenceStore;
 import org.jboss.as.cmp.jdbc.metadata.JDBCEntityMetaData;
 

@@ -29,7 +29,6 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
-import javax.ejb.EJBException;
 
 /**
  *

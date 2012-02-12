@@ -21,8 +21,6 @@
  */
 package org.jboss.as.connector.subsystems.jca;
 
-import org.jboss.as.connector.bootstrap.NamedBootstrapContext;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;

@@ -22,35 +22,17 @@
 
 package org.jboss.as.connector.metadata.deployment;
 
-import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
-import org.jboss.as.connector.services.ResourceAdapterService;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.naming.WritableServiceBasedNamingStore;
-import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
-import org.jboss.jca.common.api.metadata.ra.Connector;
-import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
-import org.jboss.jca.common.metadata.merge.Merger;
 import org.jboss.jca.deployers.DeployersLogger;
-import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.omg.CORBA.PUBLIC_MEMBER;
 
-import java.io.File;
-import java.net.URL;
-
-import static org.jboss.as.connector.ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER;
 import static org.jboss.as.connector.ConnectorLogger.ROOT_LOGGER;
-import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
 
 /**
  * A ResourceAdapterXmlDeploymentService.

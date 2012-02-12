@@ -31,7 +31,6 @@ import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.ResolveExpressionHandler;
-import org.jboss.as.domain.controller.descriptions.DomainRootDescription;
 import org.jboss.as.host.controller.descriptions.HostRootDescription;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;

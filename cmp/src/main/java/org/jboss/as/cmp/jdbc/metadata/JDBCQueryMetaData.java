@@ -22,7 +22,6 @@
 package org.jboss.as.cmp.jdbc.metadata;
 
 import java.lang.reflect.Method;
-import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 
 /**
  * This interface is used to identify a query that will be invoked in

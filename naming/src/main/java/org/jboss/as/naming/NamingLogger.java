@@ -33,7 +33,7 @@ import org.jboss.logging.MessageLogger;
 
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
-import org.jboss.naming.remote.server.RemoteNamingServerLogger;
+
 import org.jboss.remoting3.Channel;
 
 /**

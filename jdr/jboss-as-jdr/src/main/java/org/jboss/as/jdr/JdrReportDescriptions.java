@@ -22,7 +22,6 @@
 
 package org.jboss.as.jdr;
 
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 

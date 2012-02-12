@@ -23,7 +23,6 @@
 package org.jboss.as.ejb3.subsystem.deployment;
 
 import org.jboss.as.controller.ResourceDefinition;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponent;
 
 /**

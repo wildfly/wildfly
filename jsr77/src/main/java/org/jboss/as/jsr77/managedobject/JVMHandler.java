@@ -23,7 +23,6 @@ package org.jboss.as.jsr77.managedobject;
 
 import org.jboss.as.controller.interfaces.InetAddressUtil;
 
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.Set;

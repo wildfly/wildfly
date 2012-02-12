@@ -1,6 +1,5 @@
 package org.jboss.as.connector.services;
 
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;

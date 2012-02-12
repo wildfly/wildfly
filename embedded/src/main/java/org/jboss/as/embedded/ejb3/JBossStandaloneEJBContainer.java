@@ -22,7 +22,6 @@
 package org.jboss.as.embedded.ejb3;
 
 import static org.jboss.as.embedded.EmbeddedLogger.ROOT_LOGGER;
-import static org.jboss.as.embedded.EmbeddedMessages.MESSAGES;
 
 import org.jboss.as.embedded.StandaloneServer;
 

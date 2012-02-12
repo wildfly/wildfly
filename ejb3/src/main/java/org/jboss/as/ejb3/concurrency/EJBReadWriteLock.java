@@ -21,7 +21,6 @@
  */
 package org.jboss.as.ejb3.concurrency;
 
-import javax.ejb.IllegalLoopbackException;
 import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;

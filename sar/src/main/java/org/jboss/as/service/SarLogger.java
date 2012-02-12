@@ -29,10 +29,8 @@ import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
-import org.jboss.logging.Logger.Level;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
-import org.jboss.msc.service.StartException;
 
 /**
  * This module is using message IDs in the range 17200-17299. This file is using the subset 17200-17219 for

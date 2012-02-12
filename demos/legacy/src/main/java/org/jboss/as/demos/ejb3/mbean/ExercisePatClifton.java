@@ -21,7 +21,6 @@
  */
 package org.jboss.as.demos.ejb3.mbean;
 
-import org.jboss.as.demos.ejb3.archive.BMTStatefulBean;
 import org.jboss.as.demos.ejb3.mdb.PencasterMailCentre;
 
 import javax.naming.InitialContext;

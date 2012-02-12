@@ -24,12 +24,10 @@ package org.jboss.as.messaging.jms;
 
 import java.util.EnumSet;
 
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.messaging.CommonAttributes;
-import org.jboss.dmr.ModelNode;
 
 /**
  * Write attribute handler for attributes that update the persistent configuration of a JMS topic resource.

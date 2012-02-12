@@ -26,7 +26,6 @@ import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
-import javax.xml.stream.XMLStreamWriter;
 import java.io.BufferedOutputStream;
 import java.io.Closeable;
 import java.io.File;

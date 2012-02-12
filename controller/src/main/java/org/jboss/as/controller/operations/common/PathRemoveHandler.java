@@ -24,10 +24,8 @@ import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import org.jboss.as.controller.descriptions.common.PathDescription;
-import static org.jboss.as.controller.descriptions.common.PathDescription.RELATIVE_TO;
 import org.jboss.dmr.ModelNode;
 
 /**

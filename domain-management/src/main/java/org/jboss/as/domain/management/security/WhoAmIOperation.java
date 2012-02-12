@@ -41,7 +41,6 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.controller.security.SecurityContext;
 import org.jboss.as.domain.management.ManagementDescriptions;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;

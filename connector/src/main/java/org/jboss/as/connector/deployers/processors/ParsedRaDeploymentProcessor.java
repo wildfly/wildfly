@@ -54,7 +54,6 @@ import org.jboss.jandex.Index;
 import org.jboss.jca.common.annotations.Annotations;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
 import org.jboss.jca.common.api.metadata.ra.Connector;
-import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
 import org.jboss.jca.common.metadata.merge.Merger;
 import org.jboss.jca.common.spi.annotations.repository.AnnotationRepository;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
@@ -81,8 +80,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
-
-import javax.resource.spi.ResourceAdapter;
 
 /**
  * DeploymentUnitProcessor responsible for using IronJacamar metadata and create

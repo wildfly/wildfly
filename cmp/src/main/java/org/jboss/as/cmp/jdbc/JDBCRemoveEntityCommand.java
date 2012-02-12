@@ -26,7 +26,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.Map;
 import javax.ejb.RemoveException;
-import org.jboss.as.cmp.component.CmpEntityBeanComponent;
+
 import org.jboss.as.cmp.jdbc.bridge.JDBCCMRFieldBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCEntityBridge;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;

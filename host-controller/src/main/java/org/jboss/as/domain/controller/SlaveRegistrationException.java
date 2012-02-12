@@ -21,8 +21,6 @@
 */
 package org.jboss.as.domain.controller;
 
-import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
-
 import org.jboss.as.controller.RunningMode;
 
 /**

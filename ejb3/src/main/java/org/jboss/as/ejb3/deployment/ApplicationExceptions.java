@@ -27,8 +27,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.as.ejb3.tx.ApplicationExceptionDetails;
-
 /**
  * User: jpai
  */

@@ -22,7 +22,6 @@
 package org.jboss.as.osgi.parser;
 
 import java.util.Collections;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.jboss.as.controller.PathAddress;

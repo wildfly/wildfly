@@ -23,8 +23,7 @@
 package org.jboss.as.host.controller;
 
 import org.jboss.as.remoting.management.ManagementChannelRegistryService;
-import org.jboss.as.remoting.management.ManagementRemotingServices;
-import static org.jboss.msc.service.ServiceController.Mode.ACTIVE;
+
 import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
 import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
 

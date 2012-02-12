@@ -23,11 +23,7 @@ package org.jboss.as.threads;
 
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.threads.CommonAttributes.KEEPALIVE_TIME;
-import static org.jboss.as.threads.CommonAttributes.TIME;
-import static org.jboss.as.threads.CommonAttributes.UNIT;
 
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.OperationContext;

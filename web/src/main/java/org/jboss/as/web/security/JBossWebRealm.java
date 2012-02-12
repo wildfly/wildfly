@@ -52,7 +52,6 @@ import org.apache.catalina.realm.RealmBase;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.web.WebLogger;
 import org.jboss.as.web.deployment.WarMetaData;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.javaee.spec.SecurityRoleRefMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleRefsMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;

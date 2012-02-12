@@ -31,7 +31,6 @@ import org.jboss.msc.value.InjectedValue;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
-import java.util.concurrent.TimeUnit;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 

@@ -59,7 +59,6 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.SubjectFactory;
 
 import javax.naming.Reference;
-import javax.resource.spi.IllegalStateException;
 import javax.resource.spi.ResourceAdapter;
 import javax.transaction.TransactionManager;
 import java.io.File;

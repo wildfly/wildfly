@@ -22,7 +22,6 @@
 
 package org.jboss.as.connector.services;
 
-import javax.sql.DataSource;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReference;

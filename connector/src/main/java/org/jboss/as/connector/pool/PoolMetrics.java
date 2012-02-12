@@ -22,9 +22,7 @@
 
 package org.jboss.as.connector.pool;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.controller.OperationContext;
@@ -34,10 +32,7 @@ import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.dmr.ModelNode;
-import org.jboss.jca.core.api.management.Connector;
-import org.jboss.jca.core.api.management.DataSource;
 import org.jboss.jca.core.api.management.ManagementRepository;
-import org.jboss.jca.core.connectionmanager.pool.mcp.ManagedConnectionPoolStatisticsImpl;
 import org.jboss.jca.core.spi.statistics.StatisticsPlugin;
 import org.jboss.msc.service.ServiceController;
 

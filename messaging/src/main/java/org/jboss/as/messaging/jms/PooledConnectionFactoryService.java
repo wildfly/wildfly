@@ -101,7 +101,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import static org.jboss.as.messaging.CommonAttributes.*;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 /**

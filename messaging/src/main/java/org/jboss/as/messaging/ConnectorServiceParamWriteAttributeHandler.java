@@ -22,9 +22,7 @@
 
 package org.jboss.as.messaging;
 
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.dmr.ModelNode;
 
 /**
  * Write attribute handler for attributes that update a connector service parameter resource.

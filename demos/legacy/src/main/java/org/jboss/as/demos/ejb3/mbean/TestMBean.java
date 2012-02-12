@@ -21,8 +21,6 @@
  */
 package org.jboss.as.demos.ejb3.mbean;
 
-import java.util.concurrent.Callable;
-
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */

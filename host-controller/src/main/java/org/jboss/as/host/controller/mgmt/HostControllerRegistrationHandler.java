@@ -29,7 +29,7 @@ import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_CODENAME;
@@ -55,7 +55,6 @@ import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.dmr.ModelNode;
 
-import javax.management.StringValueExp;
 import java.io.DataInput;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;

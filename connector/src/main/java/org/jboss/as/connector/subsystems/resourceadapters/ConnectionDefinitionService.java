@@ -24,7 +24,6 @@ package org.jboss.as.connector.subsystems.resourceadapters;
 
 import static org.jboss.as.connector.ConnectorLogger.SUBSYSTEM_RA_LOGGER;
 
-import org.jboss.jca.common.api.metadata.common.CommonConnDef;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;

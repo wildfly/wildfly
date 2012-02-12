@@ -25,7 +25,6 @@ package org.jboss.as.messaging.jms;
 import java.util.Locale;
 
 import org.hornetq.api.core.management.ResourceNames;
-import org.hornetq.api.jms.management.ConnectionFactoryControl;
 import org.hornetq.api.jms.management.JMSQueueControl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.management.ManagementService;

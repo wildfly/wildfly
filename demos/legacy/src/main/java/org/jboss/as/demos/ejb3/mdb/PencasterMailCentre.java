@@ -23,7 +23,6 @@ package org.jboss.as.demos.ejb3.mdb;
 
 import org.jboss.as.demos.ejb3.rar.SimpleQueueResourceAdapter;
 
-import javax.ejb.LocalBean;
 import javax.ejb.Singleton;
 import javax.resource.spi.work.WorkException;
 

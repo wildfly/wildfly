@@ -23,7 +23,6 @@
 package org.jboss.as.cmp.component.interceptors;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;

@@ -25,7 +25,6 @@ package org.jboss.as.cmp.subsystem;
 import java.util.List;
 import org.jboss.as.cmp.keygenerator.KeyGeneratorFactory;
 import org.jboss.as.cmp.keygenerator.KeyGeneratorFactoryRegistry;
-import org.jboss.as.cmp.keygenerator.uuid.UUIDKeyGeneratorFactory;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;

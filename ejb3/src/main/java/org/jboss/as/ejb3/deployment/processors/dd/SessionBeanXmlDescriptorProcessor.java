@@ -36,7 +36,7 @@ import org.jboss.metadata.ejb.spec.BusinessLocalsMetaData;
 import org.jboss.metadata.ejb.spec.BusinessRemotesMetaData;
 import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 /**
  * @author Jaikiran Pai
  */

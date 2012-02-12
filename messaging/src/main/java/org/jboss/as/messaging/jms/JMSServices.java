@@ -68,7 +68,6 @@ import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
 

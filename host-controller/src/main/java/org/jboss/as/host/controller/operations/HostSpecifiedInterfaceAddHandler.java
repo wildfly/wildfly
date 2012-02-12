@@ -21,16 +21,9 @@
  */
 package org.jboss.as.host.controller.operations;
 
-import java.util.List;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ProcessType;
-import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
-import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceController;
 
 /**
  * Handler for adding a fully specified interface to a host.

@@ -30,7 +30,6 @@ import org.jboss.logging.Messages;
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.Target;
-import javax.enterprise.deploy.spi.TargetModuleID;
 import java.io.File;
 import java.net.URI;
 

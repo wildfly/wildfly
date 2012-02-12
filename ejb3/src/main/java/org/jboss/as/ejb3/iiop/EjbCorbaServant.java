@@ -29,11 +29,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.ejb.EJBMetaData;
-import javax.ejb.EJBObject;
-import javax.ejb.Handle;
 import javax.ejb.HomeHandle;
 import javax.management.MBeanException;
-import javax.rmi.PortableRemoteObject;
 import javax.transaction.Status;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;

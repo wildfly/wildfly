@@ -37,7 +37,6 @@ import org.jboss.as.cmp.jdbc.metadata.JDBCQlQueryMetaData;
 import org.jboss.as.cmp.jdbc.metadata.JDBCQueryMetaData;
 import org.jboss.as.cmp.jdbc.metadata.JDBCReadAheadMetaData;
 import org.jboss.logging.Logger;
-import org.w3c.dom.Element;
 
 /**
  * Maintains a map from a query method to query command.

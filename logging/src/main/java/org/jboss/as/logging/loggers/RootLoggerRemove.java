@@ -22,8 +22,6 @@
 
 package org.jboss.as.logging.loggers;
 
-import static org.jboss.as.logging.CommonAttributes.HANDLERS;
-import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER;
 import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER_NAME;
 
 import java.util.ArrayList;
