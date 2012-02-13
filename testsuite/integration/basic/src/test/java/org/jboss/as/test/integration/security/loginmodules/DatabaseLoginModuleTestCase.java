@@ -28,6 +28,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.loginmodules.common.Coding;
 import org.jboss.as.test.integration.security.loginmodules.common.WebAppDeployment;
@@ -44,6 +45,7 @@ import org.junit.runner.RunWith;
 
 import org.h2.tools.Server;
 
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -251,8 +253,8 @@ public class DatabaseLoginModuleTestCase {
     */
    @OperateOnDeployment(DEP1)
    @Test
-   public void testSuccesfullAuth() throws Exception {
-      Utils.makeCall(DEPLOYMENTS.get(DEP1).getUrl() + "/secured/", "anil", "anil", 200);
+   public void testSuccesfullAuth(@ArquillianResource URL url) throws Exception {
+      Utils.makeCall(url + "secured/", "anil", "anil", 200);
    }
 
    /**
@@ -262,8 +264,8 @@ public class DatabaseLoginModuleTestCase {
     */
    @OperateOnDeployment(DEP1)
    @Test
-   public void testUnsucessfulAuth() throws Exception {
-      Utils.makeCall(DEPLOYMENTS.get(DEP1).getUrl() + "/secured/", "marcus", "marcus", 403);
+   public void testUnsucessfulAuth(@ArquillianResource URL url) throws Exception {
+      Utils.makeCall(url + "secured/", "marcus", "marcus", 403);
    }
 
 
@@ -304,16 +306,16 @@ public class DatabaseLoginModuleTestCase {
 
    @OperateOnDeployment(DEP2)
    @Test
-   public void testHashedPassword() throws Exception {
-      HttpResponse response = authAndGetResponse(DEPLOYMENTS.get(DEP2).getUrl() + "/secured/", "anil", hash("anil", "MD5", Coding.BASE_64));
+   public void testHashedPassword(@ArquillianResource URL url) throws Exception {
+      HttpResponse response = authAndGetResponse(url + "secured/", "anil", hash("anil", "MD5", Coding.BASE_64));
       String pageContent = getContent(response);
       assertTrue(pageContent.contains("The username and password you supplied are not valid."));
    }
 
    @OperateOnDeployment(DEP2)
    @Test
-   public void testCleartextPassword() throws Exception {
-      HttpResponse response = authAndGetResponse(DEPLOYMENTS.get(DEP2).getUrl() + "/secured/", "anil", "anil");
+   public void testCleartextPassword(@ArquillianResource URL url) throws Exception {
+      HttpResponse response = authAndGetResponse(url + "secured/", "anil", "anil");
       String pageContent = getContent(response);
       assertTrue(pageContent.contains("GOOD"));
    }
@@ -356,16 +358,16 @@ public class DatabaseLoginModuleTestCase {
 
    @OperateOnDeployment(DEP3)
    @Test
-   public void testHashedPassword3() throws Exception {
-      HttpResponse response = authAndGetResponse(DEPLOYMENTS.get(DEP3).getUrl() + "/secured/", "anil", hash("anil", "MD5", Coding.BASE_64));
+   public void testHashedPassword3(@ArquillianResource URL url) throws Exception {
+      HttpResponse response = authAndGetResponse(url + "secured/", "anil", hash("anil", "MD5", Coding.BASE_64));
       String pageContent = getContent(response);
       assertTrue(pageContent.contains("The username and password you supplied are not valid."));
    }
 
    @OperateOnDeployment(DEP3)
    @Test
-   public void testCleartextPassword3() throws Exception {
-      HttpResponse response = authAndGetResponse(DEPLOYMENTS.get(DEP3).getUrl() + "/secured/", "anil", "anil");
+   public void testCleartextPassword3(@ArquillianResource URL url) throws Exception {
+      HttpResponse response = authAndGetResponse(url + "secured/", "anil", "anil");
       String pageContent = getContent(response);
       assertTrue(pageContent.contains("GOOD"));
    }
@@ -407,16 +409,16 @@ public class DatabaseLoginModuleTestCase {
 
    @OperateOnDeployment(DEP4)
    @Test
-   public void testHashedPassword4() throws Exception {
-      HttpResponse response = authAndGetResponse(DEPLOYMENTS.get(DEP4).getUrl() + "/secured/", "anil", hash("anil", "MD5", HEX));
+   public void testHashedPassword4(@ArquillianResource URL url) throws Exception {
+      HttpResponse response = authAndGetResponse(url + "secured/", "anil", hash("anil", "MD5", HEX));
       String pageContent = getContent(response);
       assertTrue(pageContent.contains("The username and password you supplied are not valid."));
    }
 
    @OperateOnDeployment(DEP4)
    @Test
-   public void testCleartextPassword2() throws Exception {
-      HttpResponse response = authAndGetResponse(DEPLOYMENTS.get(DEP4).getUrl() + "/secured/", "anil", "anil");
+   public void testCleartextPassword2(@ArquillianResource URL url) throws Exception {
+      HttpResponse response = authAndGetResponse(url + "secured/", "anil", "anil");
       String pageContent = getContent(response);
       assertTrue(pageContent.contains("GOOD"));
    }
