@@ -23,9 +23,6 @@
   -->
 
 <module xmlns="urn:jboss:module:1.1" name="com.h2database.h2">
-    <properties>
-        <property name="jboss.api" value="unsupported"/>
-    </properties>
 
     <resources>
         <!-- Insert resources here -->
