@@ -13,11 +13,11 @@
             <init-on-startup>true</init-on-startup>
             <concurrency-management-type>Container</concurrency-management-type>
 	        <concurrent-method>
-	        	<lock>Read</lock> 
+	        	<lock>Read</lock>
             	<method>
             		<method-name>twoSecondEcho</method-name>
             		<method-params>
-            			<method-param>String</method-param>
+            			<method-param>java.lang.String</method-param>
             		</method-params>
             	</method>
 	            <access-timeout>

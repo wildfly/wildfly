@@ -25,7 +25,6 @@ package org.jboss.as.ejb3.deployment.processors.merging;
 import java.util.Set;
 
 import javax.ejb.DependsOn;
-import javax.persistence.criteria.Root;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -38,11 +37,11 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * @author Stuart Douglas
  * @author James R. Perkins Jr. (jrp)
@@ -90,7 +89,7 @@ public class EjbDependsOnMergingProcessor extends AbstractMergingProcessor<Singl
 
 
     private void setupDependencies(final SingletonComponentDescription description, final EEApplicationDescription applicationDescription, final ResourceRoot deploymentRoot, final String[] annotationValues) throws DeploymentUnitProcessingException {
-        for (String annotationValue : annotationValues) {
+        for (final String annotationValue : annotationValues) {
 
             final Set<ComponentDescription> components = applicationDescription.getComponents(annotationValue, deploymentRoot.getRoot());
             if (components.isEmpty()) {
