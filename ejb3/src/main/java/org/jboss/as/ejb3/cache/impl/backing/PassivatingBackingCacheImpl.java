@@ -296,7 +296,7 @@ public class PassivatingBackingCacheImpl<K extends Serializable, V extends Cache
         try {
             store.start();
             if (this.threadFactory != null) {
-                this.executor = Executors.newScheduledThreadPool(1, this.threadFactory);
+                this.executor = Executors.newSingleThreadScheduledExecutor(this.threadFactory);
             }
             notifyLifecycleListeners(LifecycleState.STARTED);
         } catch (RuntimeException e) {

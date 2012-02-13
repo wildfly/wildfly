@@ -30,6 +30,7 @@ import org.jboss.metadata.ejb.parser.jboss.ejb3.AbstractEJBBoundMetaData;
  * @author Jaikiran Pai
  */
 public class EJBBoundCacheMetaData extends AbstractEJBBoundMetaData {
+    private static final long serialVersionUID = -3246398329247802494L;
 
     private String cacheName;
 
