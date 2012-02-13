@@ -1286,14 +1286,15 @@
     <interfaces>
         <interface name="management"/>
         <interface name="public"/>
+        <interface name="unsecure"/>
     </interfaces>
 
     <socket-binding-groups>
         <socket-binding-group name="standard-sockets" default-interface="public">
             <socket-binding name="http" port="8080"/>
             <socket-binding name="https" port="8443"/>
-            <socket-binding name="jacorb" port="3528"/>
-            <socket-binding name="jacorb-ssl" port="3529"/>
+            <socket-binding name="jacorb" interface="unsecure" port="3528"/>
+            <socket-binding name="jacorb-ssl" interface="unsecure" port="3529"/>
             <socket-binding name="messaging" port="5445"/>
             <socket-binding name="messaging-throughput" port="5455"/>
             <socket-binding name="osgi-http" interface="management" port="8090"/>
@@ -1307,8 +1308,8 @@
         <socket-binding-group name="ha-sockets" default-interface="public">
             <socket-binding name="http" port="8080"/>
             <socket-binding name="https" port="8443"/>
-            <socket-binding name="jacorb" port="3528"/>
-            <socket-binding name="jacorb-ssl" port="3529"/>
+            <socket-binding name="jacorb" interface="unsecure" port="3528"/>
+            <socket-binding name="jacorb-ssl" interface="unsecure" port="3529"/>
             <socket-binding name="jgroups-diagnostics" port="0" multicast-address="224.0.75.75" multicast-port="7500"/>
             <socket-binding name="jgroups-mping" port="0" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45700"/>
             <socket-binding name="jgroups-tcp" port="7600"/>

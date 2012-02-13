@@ -33,6 +33,11 @@
         <interface name="public">
            <inet-address value="${jboss.bind.address:127.0.0.1}"/>
         </interface>
+        <interface name="unsecure">
+            <!-- Used for IIOP sockets in the standarad configuration.
+                 To secure JacORB you need to setup SSL -->
+            <inet-address value="127.0.0.1"/>
+        </interface>
     </interfaces>
 
     <jvms>
