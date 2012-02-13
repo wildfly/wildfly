@@ -40,53 +40,47 @@ import org.junit.Ignore;
 
 /**
  * Tests an ability to deploy *-ds.xml datasource definition JBQA-5872
- *
+ * 
  * @author Vladimir Rastseluev
  */
 
 @RunWith(Arquillian.class)
-
 public class DsDeploymentTestCase {
-	private String user1 = "SA";
-
+    private String user1 = "SA";
 
     @Deployment
-    public static Archive<?> deploy() throws Exception{
-        
-    	JavaArchive ja = ShrinkWrap.create(JavaArchive.class,"test.jar").addClasses(DsDeploymentTestCase.class,DsUtil.class);
-    	final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class,"test.ear").addAsLibrary(ja).addAsManifestResource("ds/h2-ds.xml", "h2-ds.xml");
+    public static Archive<?> deploy() throws Exception {
+
+        JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "test.jar")
+            .addClasses(DsDeploymentTestCase.class, DsUtil.class);
+        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "test.ear")
+            .addAsLibrary(ja)
+            .addAsManifestResource("ds/h2-ds.xml", "h2-ds.xml");
         return ear;
     }
-    
 
     @ArquillianResource
     private InitialContext ctx;
 
-
-    @Test 
+    @Test
     public void testDataSourceDefinition() throws Exception {
-    	
-    	DataSource ds = (DataSource)ctx.lookup("java:jboss/datasources/DDs");
-    	Connection conn = null;
-    	
-    	try{
-        	conn = ds.getConnection();
-         	testConnection(conn,"select current_user()",user1);
-    	
-        }
-    	finally{
-					  if (conn != null)
-					  {
-					     try
-					     {
-					        conn.close();
-					     }
-					     catch (SQLException ignore)
-					     {
-					        // Ignore
-					     }
 
-					  }
-    	}
+        DataSource ds = (DataSource) ctx.lookup("java:jboss/datasources/DDs");
+        Connection conn = null;
+
+        try {
+            conn = ds.getConnection();
+            testConnection(conn, "select current_user()", user1);
+
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException ignore) {
+                    // Ignore
+                }
+
+            }
+        }
     }
 }
