@@ -80,6 +80,22 @@
                                     <workDirectory>target/assembly/work</workDirectory>
                                 </configuration>
                             </execution>
+                            <execution>
+                                <id>assemble-src</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <configuration>
+                                    <descriptors>
+                                        <descriptor>assembly-src.xml</descriptor>
+                                    </descriptors>
+                                    <finalName>jboss-as-${project.version}</finalName>
+                                    <appendAssemblyId>true</appendAssemblyId>
+                                    <outputDirectory>target/</outputDirectory>
+                                    <workDirectory>target/assembly-src/work</workDirectory>
+                                </configuration>
+                            </execution>
                         </executions>
                     </plugin>
                 </plugins>
