@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.integration.security.loginmodules;
 
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.security.loginmodules.common.servlets.PrincipalPrintingServlet;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -39,6 +40,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -76,7 +78,7 @@ public class IdentityLoginModuleTestCase {
       moduleOptionsMap.put("roles", "role1,role2");
 
       log.info("creating security domain: TestIdentityLoginDomain");
-      Utils.createSecurityDomain("TestIdentityLoginDomain","localhost", 9999, IdentityLoginModule.class, moduleOptionsMap);
+      Utils.createSecurityDomain("TestIdentityLoginDomain", "localhost", 9999, IdentityLoginModule.class, moduleOptionsMap);
       log.info("security domain created");
 
       return war;
@@ -111,6 +113,10 @@ public class IdentityLoginModuleTestCase {
       return war;
    }
 
+   @OperateOnDeployment(DEP1)
+   @ArquillianResource
+   URL URL1;
+
    /**
     * Tests assignment of default principal name to the caller
     */
@@ -120,7 +126,7 @@ public class IdentityLoginModuleTestCase {
 
       DefaultHttpClient httpclient = new DefaultHttpClient();
       HttpResponse response;
-      HttpGet httpget = new HttpGet("http://localhost:8080/IdentityLoginModule-defaultPrincipal/");
+      HttpGet httpget = new HttpGet(URL1.toString());
       httpget.addHeader("Authorization", "Basic Yzpj");  //I'm not sure why this have to be here, however it does not work without it
       String text;
 
@@ -135,6 +141,10 @@ public class IdentityLoginModuleTestCase {
          text, text.contains("guest"));
    }
 
+   @OperateOnDeployment(DEP2)
+   @ArquillianResource
+   URL URL2;
+
    /**
     * Tests assignment of custom principal name to the caller
     */
@@ -144,7 +154,8 @@ public class IdentityLoginModuleTestCase {
 
       DefaultHttpClient httpclient = new DefaultHttpClient();
       HttpResponse response;
-      HttpGet httpget = new HttpGet("http://localhost:8080/" + DEP2 + "/");
+      //HttpGet httpget = new HttpGet("http://localhost:8080/" + DEP2 + "/");
+      HttpGet httpget = new HttpGet(URL2.toString());
       httpget.addHeader("Authorization", "Basic Yzpj");//I'm not sure why this have to be here, however it does not work without it
       String text;
 
