@@ -134,10 +134,10 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
 
     private void processClass(final DeploymentUnit deploymentUnit, final EJBResourceWrapper annotation, final ClassInfo classInfo, final EEModuleDescription eeModuleDescription) throws DeploymentUnitProcessingException {
         if (isEmpty(annotation.name())) {
-            throw new DeploymentUnitProcessingException("@EJB attribute 'name' is required fo class level annotations. Class: " + classInfo.name());
+            throw new DeploymentUnitProcessingException("@EJB attribute 'name' is required for class level annotations. Class: " + classInfo.name());
         }
         if (isEmpty(annotation.beanInterface())) {
-            throw new DeploymentUnitProcessingException("@EJB attribute 'beanInterface' is required fo class level annotations. Class: " + classInfo.name());
+            throw new DeploymentUnitProcessingException("@EJB attribute 'beanInterface' is required for class level annotations. Class: " + classInfo.name());
         }
         process(deploymentUnit, annotation.beanInterface(), annotation.beanName(), annotation.lookup(), classInfo, null, annotation.name(), eeModuleDescription);
     }

@@ -145,10 +145,10 @@ public interface WSMessages {
     @Message(id = 15534, value = "@WebServiceRef injection target is invalid.  Only setter methods are allowed: %s")
     DeploymentUnitProcessingException invalidServiceRefSetterMethodName(Object o);
 
-    @Message(id = 15535, value = "@WebServiceRef attribute 'name' is required fo class level annotations.")
+    @Message(id = 15535, value = "@WebServiceRef attribute 'name' is required for class level annotations.")
     DeploymentUnitProcessingException requiredServiceRefName();
 
-    @Message(id = 15536, value = "@WebServiceRef attribute 'type' is required fo class level annotations.")
+    @Message(id = 15536, value = "@WebServiceRef attribute 'type' is required for class level annotations.")
     DeploymentUnitProcessingException requiredServiceRefType();
 
     @Message(id = 15585, value = "Endpoint config %s doesn't exist")
