@@ -45,7 +45,7 @@ import org.jboss.logging.Logger;
 @Stateful
 @Remote(TestPassivationRemote.class)
 @Cache("passivating")
-public class TestPassivationBean implements TestPassivationRemote {
+public class TestPassivationBean extends PassivationSuperClass implements TestPassivationRemote {
     private static final Logger log = Logger.getLogger(TestPassivationBean.class);
 
     @PersistenceContext(type = PersistenceContextType.EXTENDED)
@@ -126,4 +126,6 @@ public class TestPassivationBean implements TestPassivationRemote {
     public void remove() {
         log.info("Bean [" +  this.identificator + "] removing");
     }
+
+
 }

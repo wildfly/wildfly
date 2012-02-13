@@ -55,4 +55,6 @@ public interface TestPassivationRemote {
      * Annotate for removing.
      */
     void remove();
+
+    Employee getSuperEmployee();
 }
