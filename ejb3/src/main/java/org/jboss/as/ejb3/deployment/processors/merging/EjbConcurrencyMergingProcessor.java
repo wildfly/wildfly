@@ -21,6 +21,15 @@
  */
 package org.jboss.as.ejb3.deployment.processors.merging;
 
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
+import javax.ejb.AccessTimeout;
+import javax.ejb.Lock;
+import javax.ejb.LockType;
+
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.metadata.MethodAnnotationAggregator;
 import org.jboss.as.ee.metadata.RuntimeAnnotationInformation;
@@ -37,13 +46,6 @@ import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 
-import javax.ejb.AccessTimeout;
-import javax.ejb.Lock;
-import javax.ejb.LockType;
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Class that can merge {@link javax.ejb.Lock} and {@link javax.ejb.AccessTimeout} metadata
@@ -108,7 +110,7 @@ public class EjbConcurrencyMergingProcessor extends AbstractMergingProcessor<Ses
             final ConcurrentMethodsMetaData methods = descriptor.getConcurrentMethods();
             if (methods != null) {
                 for (final ConcurrentMethodMetaData method : methods) {
-                    final Method realMethod = resolveMethod(deploymentReflectionIndex, componentClass, method.getMethod());
+                    final Method realMethod = resolveMethod(deploymentReflectionIndex, componentClass, componentClass, method.getMethod());
                     final MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifierForMethod(realMethod);
                     if (method.getLockType() != null) {
                         componentConfiguration.setLockType(method.getLockType(), methodIdentifier);
@@ -125,18 +127,18 @@ public class EjbConcurrencyMergingProcessor extends AbstractMergingProcessor<Ses
     }
 
 
-    private Method resolveMethod(final DeploymentReflectionIndex index, final Class<?> componentClass, final NamedMethodMetaData methodData) throws DeploymentUnitProcessingException {
-        if (componentClass == null) {
+    private Method resolveMethod(final DeploymentReflectionIndex index, final Class<?> currentClass, final Class<?> componentClass, final NamedMethodMetaData methodData) throws DeploymentUnitProcessingException {
+        if (currentClass == null) {
             throw MESSAGES.failToFindMethodWithParameterTypes(componentClass.getName(), methodData.getMethodName(), methodData.getMethodParams());
         }
-        final ClassReflectionIndex<?> classIndex = index.getClassIndex(componentClass);
+        final ClassReflectionIndex<?> classIndex = index.getClassIndex(currentClass);
 
         if (methodData.getMethodParams() == null) {
             final Collection<Method> methods = classIndex.getAllMethods(methodData.getMethodName());
             if (methods.isEmpty()) {
-                return resolveMethod(index, componentClass.getSuperclass(), methodData);
+                return resolveMethod(index, currentClass.getSuperclass(), componentClass, methodData);
             } else if (methods.size() > 1) {
-                throw MESSAGES.multipleMethodReferencedInEjbJarXml( methodData.getMethodName(),componentClass.getName());
+                throw MESSAGES.multipleMethodReferencedInEjbJarXml( methodData.getMethodName(),currentClass.getName());
             }
             return methods.iterator().next();
         } else {
@@ -154,7 +156,7 @@ public class EjbConcurrencyMergingProcessor extends AbstractMergingProcessor<Ses
                 }
             }
         }
-        return resolveMethod(index, componentClass.getSuperclass(), methodData);
+        return resolveMethod(index, currentClass.getSuperclass(), componentClass, methodData);
     }
 
     @Override

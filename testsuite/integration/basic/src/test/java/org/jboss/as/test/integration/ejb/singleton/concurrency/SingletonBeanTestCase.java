@@ -62,7 +62,10 @@ public class SingletonBeanTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ejb3-singleton-bean-example.jar");
         jar.addClass(ReadOnlySingletonBean.class);
         jar.addClass(LongWritesSingletonBean.class);
+        jar.addClass(ReadOnlySingleton.class);
         jar.addClass(SingletonBeanTestCase.class);
+        jar.addClass(ReadOnlySingletonBeanDescriptor.class);
+        jar.addAsManifestResource(SingletonBeanTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
         log.info(jar.toString(true));
         return jar;
     }
@@ -72,6 +75,9 @@ public class SingletonBeanTestCase {
 
     @EJB(mappedName = "java:global/ejb3-singleton-bean-example/LongWritesSingletonBean!org.jboss.as.test.integration.ejb.singleton.concurrency.LongWritesSingletonBean")
     private LongWritesSingletonBean longWritesSingletonBean;
+    
+    @EJB(mappedName = "java:global/ejb3-singleton-bean-example/ReadOnlySingletonBeanDescriptor!org.jboss.as.test.integration.ejb.singleton.concurrency.ReadOnlySingletonBeanDescriptor")
+    private ReadOnlySingletonBeanDescriptor readOnlySingletonBeanDescriptor;
 
 
     /**
@@ -80,20 +86,29 @@ public class SingletonBeanTestCase {
      * @throws Exception
      */
     @Test
-    public void testReadOnlySingleton() throws Exception {
+    public void testReadOnlySingletonBean() throws Exception {
+        testReadOnlySingleton(readOnlySingletonBean);
+    }
+
+    @Test
+    public void testReadOnlySingletonDescriptor() throws Exception {
+        testReadOnlySingleton(readOnlySingletonBeanDescriptor);
+    }
+    
+    public void testReadOnlySingleton(ReadOnlySingleton readOnlySingleton) throws Exception {
         final int NUM_THREADS = 10;
         ExecutorService executor = Executors.newFixedThreadPool(NUM_THREADS);
         @SuppressWarnings("unchecked")
         Future<String>[] results = new Future[NUM_THREADS];
         for (int i = 0; i < NUM_THREADS; i++) {
-            results[i] = executor.submit(new ReadOnlySingletonBeanInvoker(readOnlySingletonBean, i));
+            results[i] = executor.submit(new ReadOnlySingletonBeanInvoker(readOnlySingleton, i));
         }
         for (int i = 0; i < NUM_THREADS; i++) {
             String result = results[i].get(10, TimeUnit.SECONDS);
             Assert.assertEquals("Unexpected value from singleton bean", String.valueOf(i), result);
         }
     }
-
+    
     /**
      * Tests that invocation on a singleton bean method with write lock results in ConcurrentAccessTimeoutException
      * for subsequent invocations, if the previous invocation(s) hasn't yet completed.
@@ -143,17 +158,18 @@ public class SingletonBeanTestCase {
 
     private class ReadOnlySingletonBeanInvoker implements Callable<String> {
 
-        private ReadOnlySingletonBean bean;
+        private ReadOnlySingleton bean;
 
         private int num;
 
-        ReadOnlySingletonBeanInvoker(ReadOnlySingletonBean bean, int num) {
+        ReadOnlySingletonBeanInvoker(ReadOnlySingleton bean, int num) {
             this.bean = bean;
             this.num = num;
         }
 
         @Override
         public String call() throws Exception {
+            log.info("Bean: " + bean.toString());
             return bean.twoSecondEcho(String.valueOf(this.num));
         }
     }

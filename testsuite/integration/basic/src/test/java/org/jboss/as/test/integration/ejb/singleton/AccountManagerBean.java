@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.ejb.singleton;
 
 import javax.ejb.EJB;
+import javax.ejb.LocalBean;
 import javax.ejb.Remote;
 import javax.ejb.Singleton;
 
@@ -32,6 +33,7 @@ import javax.ejb.Singleton;
  * @author Jaikiran Pai
  */
 @Singleton
+@LocalBean
 @Remote(AccountManager.class)
 public class AccountManagerBean implements AccountManager {
     /**
@@ -59,6 +61,10 @@ public class AccountManagerBean implements AccountManager {
 
     public int balance() {
         return this.balance;
+    }
+    
+    public void throwException() {
+        throw new IllegalArgumentException();
     }
 
 }
