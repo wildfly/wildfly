@@ -25,6 +25,7 @@ package org.jboss.as.ejb3.component.stateful;
 import java.lang.reflect.Method;
 import java.util.Set;
 
+import org.jboss.as.clustering.SimpleClassResolver;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.TCCLInterceptor;
@@ -40,7 +41,6 @@ import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
 import org.jboss.marshalling.MarshallingConfiguration;
-import org.jboss.marshalling.SimpleClassResolver;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.value.InjectedValue;
 
