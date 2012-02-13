@@ -22,9 +22,6 @@
 
 package org.jboss.as.jpa.hibernate3;
 
-import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
-
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.net.URISyntaxException;
@@ -46,6 +43,9 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
+
+import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
 /**
  * Annotation scanner for Hibernate
@@ -134,8 +134,12 @@ public class HibernateAnnotationScanner implements Scanner {
     }
 
     static void cleanup(PersistenceUnitMetadata pu) {
-        CLASSES_IN_JAR_CACHE.remove(pu);
-        PACKAGES_IN_JAR_CACHE.remove(pu);
+        synchronized (CLASSES_IN_JAR_CACHE) {
+            CLASSES_IN_JAR_CACHE.remove(pu);
+        }
+        synchronized (PACKAGES_IN_JAR_CACHE) {
+            PACKAGES_IN_JAR_CACHE.remove(pu);
+        }
     }
 
     @Override

@@ -71,7 +71,9 @@ public class JBossPersistenceMetaDataFactory extends PersistenceMetaDataFactory 
     }
 
     static void cleanup(PersistenceUnitMetadata pu) {
-        CACHED_TYPENAMES.remove(pu);
+        synchronized (CACHED_TYPENAMES) {
+            CACHED_TYPENAMES.remove(pu);
+        }
     }
 
     private Set<String> findPersistenceTypeNames(PersistenceUnitMetadata pu) {
