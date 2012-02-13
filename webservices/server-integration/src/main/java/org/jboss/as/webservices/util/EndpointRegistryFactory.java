@@ -47,8 +47,7 @@ public final class EndpointRegistryFactory extends org.jboss.wsf.spi.management.
      */
     public EndpointRegistry getEndpointRegistry() {
         try {
-            EndpointRegistry registry = (EndpointRegistry) WSServices.getContainerRegistry()
-                    .getService(WSServices.REGISTRY_SERVICE).getService().getValue();
+            EndpointRegistry registry = ASHelper.getMSCService(WSServices.REGISTRY_SERVICE, EndpointRegistry.class);
             if (registry == null) {
                 registry = fallbackRegistry;
             }

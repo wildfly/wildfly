@@ -20,9 +20,7 @@ package org.jboss.as.webservices.publish;
 
 import org.jboss.as.web.VirtualHost;
 import org.jboss.as.web.WebSubsystemServices;
-import org.jboss.as.webservices.util.WSServices;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceController;
+import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.wsf.spi.publish.EndpointPublisher;
 import org.jboss.wsf.spi.publish.EndpointPublisherFactory;
 
@@ -33,12 +31,10 @@ import org.jboss.wsf.spi.publish.EndpointPublisherFactory;
  */
 public class EndpointPublisherFactoryImpl implements EndpointPublisherFactory {
 
-    @SuppressWarnings("unchecked")
     public EndpointPublisher newEndpointPublisher(String hostname) throws Exception {
-        ServiceController<?> controller = WSServices.getContainerRegistry().getService(
-                WebSubsystemServices.JBOSS_WEB_HOST.append(hostname));
-        Service<VirtualHost> service = (Service<VirtualHost>) controller.getService();
-        return new EndpointPublisherImpl(service.getValue().getHost());
+        VirtualHost virtualHost = ASHelper.getMSCService(WebSubsystemServices.JBOSS_WEB_HOST.append(hostname),
+                VirtualHost.class);
+        return new EndpointPublisherImpl(virtualHost.getHost());
     }
 
 }

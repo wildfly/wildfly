@@ -90,14 +90,6 @@ public final class WSRefDDProcessor extends AbstractDeploymentDescriptorBindings
         return serviceRefUMDM;
     }
 
-    private static String getServiceRefName(final ComponentDescription componentDescription, final ServiceReferenceMetaData serviceRefMD) {
-        if (componentDescription == null) {
-            return serviceRefMD.getName();
-        } else {
-            return componentDescription.getComponentClassName() + "/" + serviceRefMD.getName();
-        }
-    }
-
     private static String getCacheKey(final ComponentDescription componentDescription, final UnifiedServiceRefMetaData serviceRefUMMD) {
         if (componentDescription == null) {
             return serviceRefUMMD.getServiceRefName();

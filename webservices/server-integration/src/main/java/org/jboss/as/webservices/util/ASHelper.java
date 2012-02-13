@@ -72,8 +72,7 @@ public final class ASHelper {
      */
     public static List<EJBEndpoint> getJaxwsEjbs(final DeploymentUnit unit) {
         final JAXWSDeployment jaxwsDeployment = getOptionalAttachment(unit, WSAttachmentKeys.JAXWS_ENDPOINTS_KEY);
-        final boolean hasEjbEndpoints = jaxwsDeployment != null ? jaxwsDeployment.getEjbEndpoints().size() > 0 : false;
-        return hasEjbEndpoints ? jaxwsDeployment.getEjbEndpoints() : Collections.<EJBEndpoint>emptyList();
+        return jaxwsDeployment != null ? jaxwsDeployment.getEjbEndpoints() : Collections.<EJBEndpoint>emptyList();
     }
 
     /**
@@ -84,8 +83,7 @@ public final class ASHelper {
      */
     public static List<EJBEndpoint> getJaxrpcEjbs(final DeploymentUnit unit) {
         final JAXRPCDeployment jaxrpcDeployment = getOptionalAttachment(unit, WSAttachmentKeys.JAXRPC_ENDPOINTS_KEY);
-        final boolean hasEjbEndpoints = jaxrpcDeployment != null ? jaxrpcDeployment.getEjbEndpoints().size() > 0 : false;
-        return hasEjbEndpoints ? jaxrpcDeployment.getEjbEndpoints() : Collections.<EJBEndpoint>emptyList();
+        return jaxrpcDeployment != null ? jaxrpcDeployment.getEjbEndpoints() : Collections.<EJBEndpoint>emptyList();
     }
 
     /**
@@ -96,8 +94,7 @@ public final class ASHelper {
      */
     public static List<POJOEndpoint> getJaxwsPojos(final DeploymentUnit unit) {
         final JAXWSDeployment jaxwsDeployment = unit.getAttachment(WSAttachmentKeys.JAXWS_ENDPOINTS_KEY);
-        final boolean hasPojoEndpoints = jaxwsDeployment != null ? jaxwsDeployment.getPojoEndpoints().size() > 0 : false;
-        return hasPojoEndpoints ? jaxwsDeployment.getPojoEndpoints() : Collections.<POJOEndpoint>emptyList();
+        return jaxwsDeployment != null ? jaxwsDeployment.getPojoEndpoints() : Collections.<POJOEndpoint>emptyList();
     }
 
     /**
@@ -108,8 +105,7 @@ public final class ASHelper {
      */
     public static List<POJOEndpoint> getJaxrpcPojos(final DeploymentUnit unit) {
         final JAXRPCDeployment jaxrpcDeployment = unit.getAttachment(WSAttachmentKeys.JAXRPC_ENDPOINTS_KEY);
-        final boolean hasPojoEndpoints = jaxrpcDeployment != null ? jaxrpcDeployment.getPojoEndpoints().size() > 0 : false;
-        return hasPojoEndpoints ? jaxrpcDeployment.getPojoEndpoints() : Collections.<POJOEndpoint>emptyList();
+        return jaxrpcDeployment != null ? jaxrpcDeployment.getPojoEndpoints() : Collections.<POJOEndpoint>emptyList();
     }
 
     /**
@@ -225,7 +221,6 @@ public final class ASHelper {
         return result;
     }
 
-    // TODO: useful ?
     public static List<AnnotationInstance> getAnnotations(final DeploymentUnit unit, final DotName annotation) {
        final CompositeIndex compositeIndex = getRequiredAttachment(unit, Attachments.COMPOSITE_ANNOTATION_INDEX);
        return compositeIndex.getAnnotations(annotation);
