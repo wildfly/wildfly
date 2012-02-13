@@ -39,7 +39,12 @@ from time import time
 from itertools import *
 from collections import deque
 import logging
+import urllib2
 
+try:
+    import json
+except ImportError:
+    import simplejson as json
 
 def commonPrefix(l1, l2, common = None):
     """
@@ -299,6 +304,7 @@ class Plugin(object):
         any of the option names is returned."""
 
         def _check(key):
+            print "looking for", key, "in", optionname
             if hasattr(optionname, "__iter__"):
                 return key in optionname
             else:
@@ -604,6 +610,140 @@ class RedHatPlugin(object):
 class IndependentPlugin(object):
     """Tagging class that indicates this plugin can run on any platform"""
     pass
+
+class AS7Mixin(object):
+    """A mixin class that adds some helpful methods for AS7 related plugins"""
+
+    class Request(object):
+
+        def __init__(self, resource, operation="read-resource", parameters=None):
+            self.resource = resource
+            self.operation = operation
+            if parameters:
+                self.parameters = parameters
+            else:
+                self.parameters = {}
+
+        def url_parts(self):
+            """Generator function to split a url into (key, value) tuples. The url
+            should contain an even number of pairs.  In the case of / the generator
+            will immediately stop iteration."""
+            parts = self.resource.strip("/").split("/")
+
+            if parts == ['']:
+                raise StopIteration
+
+            while parts:
+                yield (parts.pop(0), parts.pop(0))
+
+    def get_jboss_home(self):
+        return self.getOption(('home', 'as7_home')) or os.getenv("JBOSS_HOME", None)
+
+    def query(self, request_obj):
+        try:
+            return self.query_java(request_obj)
+        except Exception, e:
+            self.addAlert("JBOSS API call failed, falling back to HTTP: %s" % e)
+            return self.query_http(request_obj)
+
+    def _get_opt(self, first, second, default=None):
+        val = self.getOption(first)
+        if val:
+            return val
+        val = self.getOption(second)
+        if val:
+            return val
+        return default
+
+    def query_java(self, request_obj):
+        from org.jboss.dmr import ModelNode
+        controller_client = self.getOption('controller_client_proxy')
+        if not controller_client:
+            raise AttributeError("Controller Client is not available")
+
+        request = ModelNode()
+        request.get("operation").set(request_obj.operation)
+
+        for key, val in request_obj.url_parts():
+            request.get('address').add(key,val)
+
+        if request_obj.parameters:
+            for key, value in request_obj.parameters.iteritems():
+                request.get(key).set(value)
+
+        return controller_client.execute(request).toJSONString(True)
+
+    def query_http(self, request_obj, postdata=None):
+        host = self._get_opt('host', 'as7_host')
+        port = self._get_opt('port', 'as7_port')
+
+        username = self._get_opt('user', 'as7_user')
+        password = self._get_opt('pass', 'as7_pass')
+
+        uri = "http://%s:%s/management" % (host,port)
+
+        json_data = {'operation': request_obj.operation,
+                     'address': []}
+
+        for key, val in request_obj.url_parts():
+            json_data['address'].append({key:val})
+
+        for key, val in request_obj.parameters.iteritems():
+            json_data[key] = val
+
+        postdata = json.dumps(json_data)
+        headers = {'Content-Type': 'application/json',
+                   'Accept': 'application/json'}
+
+        opener = urllib2.build_opener()
+
+        if username and password:
+            passwd_manager = urllib2.HTTPPasswordMgrWithDefaultRealm()
+            passwd_manager.add_password(realm="ManagementRealm",
+                                        uri=uri,
+                                        user=username,
+                                        passwd=password)
+            digest_auth_handler = urllib2.HTTPDigestAuthHandler(passwd_manager)
+            basic_auth_handler = urllib2.HTTPBasicAuthHandler(passwd_manager)
+
+            opener.add_handler(digest_auth_handler)
+            opener.add_handler(basic_auth_handler)
+
+        req = urllib2.Request(uri, data=postdata, headers=headers)
+
+        try:
+            resp = opener.open(req)
+            return resp.read()
+        except Exception, e:
+            err_msg = "Could not query url: %s; error: %s" % (uri, e)
+            self.addAlert(err_msg)
+            return err_msg
+
+    def set_domain_info(self, parameters=None):
+        """This function will add host controller and server instance
+        name data if it is present to the desired resource. This is to support
+        domain-mode operation in AS7"""
+        host_controller_name = self.getOption("as7_host_controller_name")
+        server_name = self.getOption("as7_server_name")
+
+        if host_controller_name and server_name:
+            if not parameters:
+                parameters = {}
+
+            parameters['host'] = host_controller_name
+            parameters['server'] = server_name
+
+        return parameters
+
+
+    def resource_to_file(self, resource=None, parameters=None, operation='read-resource', outfile=None):
+        parameters = self.set_domain_info(parameters)
+
+        r = self.Request(resource=resource,
+                    parameters=parameters,
+                    operation=operation)
+        self.addStringAsFile(self.query(r), filename=outfile)
+
 
 def import_plugin(name):
     """Import name as a module and return a list of all classes defined in that
