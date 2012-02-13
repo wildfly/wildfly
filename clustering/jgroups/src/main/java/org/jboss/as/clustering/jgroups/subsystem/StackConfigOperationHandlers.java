@@ -248,10 +248,6 @@ public class StackConfigOperationHandlers {
             reloadRequiredStep(context);
             context.completeStep();
         }
-
-        void process(ModelNode subModel, ModelNode operation) {
-            //
-        };
     }
 
 
