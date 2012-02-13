@@ -153,7 +153,7 @@ public class DigestAuthenticator extends Authenticator {
     private Result digestAuth(HttpExchange httpExchange) {
 
         // If authentication has already completed for this connection re-use it.
-        DigestContext context = getOrCreateNegotiationContext(httpExchange);
+        DigestContext context = getOrCreateNegotiationContext(httpExchange, theNonceFactory, false);
         if (context.isAuthenticated()) {
             return new Authenticator.Success(context.getPrincipal());
         }
@@ -163,7 +163,7 @@ public class DigestAuthenticator extends Authenticator {
         if (requestHeaders.containsKey(AUTHORIZATION_HEADER) == false) {
             Headers responseHeaders = httpExchange.getResponseHeaders();
 
-            responseHeaders.add(WWW_AUTHENTICATE_HEADER, CHALLENGE + " " + createChallenge(context, false));
+            responseHeaders.add(WWW_AUTHENTICATE_HEADER, CHALLENGE + " " + createChallenge(context, realm, false));
 
             return new Authenticator.Retry(UNAUTHORIZED);
         }
@@ -176,7 +176,6 @@ public class DigestAuthenticator extends Authenticator {
         Map<String, String> challengeParameters = parseDigestChallenge(challenge);
 
         // Validate Challenge, expect one of 3 responses VALID, INVALID, STALE
-
         HttpPrincipal principal = validateUser(httpExchange, challengeParameters);
 
         // INVALID - Username / Password verification failed - Nonce is irrelevant.
@@ -186,7 +185,7 @@ public class DigestAuthenticator extends Authenticator {
             }
 
             Headers responseHeaders = httpExchange.getResponseHeaders();
-            responseHeaders.add(WWW_AUTHENTICATE_HEADER, CHALLENGE + " " + createChallenge(context, false));
+            responseHeaders.add(WWW_AUTHENTICATE_HEADER, CHALLENGE + " " + createChallenge(context, realm, false));
             return new Authenticator.Retry(UNAUTHORIZED);
         }
 
@@ -199,7 +198,7 @@ public class DigestAuthenticator extends Authenticator {
 
         // STALE - Verification of username and password succeeded but Nonce now stale.
         Headers responseHeaders = httpExchange.getResponseHeaders();
-        responseHeaders.add(WWW_AUTHENTICATE_HEADER, CHALLENGE + " " + createChallenge(context, true));
+        responseHeaders.add(WWW_AUTHENTICATE_HEADER, CHALLENGE + " " + createChallenge(context, realm, true));
         return new Authenticator.Retry(UNAUTHORIZED);
     }
 
@@ -221,15 +220,11 @@ public class DigestAuthenticator extends Authenticator {
         // Step 2 - Call CallbackHandler
         try {
             callbackHandler.get().handle(callbacks);
-        } catch (UserNotFoundException e) {
+        } catch (Exception e) {
             if (ROOT_LOGGER.isDebugEnabled()) {
-                ROOT_LOGGER.debug(e.getMessage());
+                ROOT_LOGGER.debug("Callback handler failed", e);
             }
             return null;
-        } catch (IOException e) {
-            throw MESSAGES.invalidCallbackHandler();
-        } catch (UnsupportedCallbackException e) {
-            throw MESSAGES.invalidCallbackHandler();
         }
 
         // TODO - Verify that a password was set (Depending on if multiple CallbackHandlers are supported)
@@ -281,7 +276,7 @@ public class DigestAuthenticator extends Authenticator {
         return null;
     }
 
-    private String createChallenge(DigestContext context, boolean stale) {
+    public static String createChallenge(DigestContext context, String realm, boolean stale) {
         StringBuilder challenge = new StringBuilder();
         challenge.append("realm=\"").append(realm).append("\",");
         challenge.append("nonce=\"").append(context.createNonce()).append("\"");
@@ -423,18 +418,18 @@ public class DigestAuthenticator extends Authenticator {
     }
 
 
-    private DigestContext getOrCreateNegotiationContext(HttpExchange httpExchange) {
+    public static DigestContext getOrCreateNegotiationContext(HttpExchange httpExchange, NonceFactory nonceFactory, boolean forceCreate) {
         Headers headers = httpExchange.getRequestHeaders();
         boolean proxied = headers.containsKey(VIA);
 
-        if (proxied) {
+        if (proxied || forceCreate) {
             // If proxied we have to assume connections could be re-used so need a fresh DigestContext
             // each time and use of the central nonce store.
-            return new DigestContext(false);
+            return new DigestContext(nonceFactory, false);
         } else {
             DigestContext context = (DigestContext) httpExchange.getAttribute(DigestContext.KEY, HttpExchange.AttributeScope.CONNECTION);
             if (context == null) {
-                context = new DigestContext(USE_CONNECTION_LOCAL_NONCES);
+                context = new DigestContext(nonceFactory, USE_CONNECTION_LOCAL_NONCES);
                 httpExchange.setAttribute(DigestContext.KEY, context, HttpExchange.AttributeScope.CONNECTION);
             }
             return context;
@@ -442,14 +437,17 @@ public class DigestAuthenticator extends Authenticator {
 
     }
 
-    private class DigestContext {
+    public static class DigestContext {
 
         private static final String KEY = "DIGEST_CONTEXT";
 
+        private final NonceFactory theNonceFactory;
+
         private final boolean localStore;
 
-        DigestContext(final boolean localStore) {
+        DigestContext(NonceFactory theNonceFactory, final boolean localStore) {
             this.localStore = localStore;
+            this.theNonceFactory = theNonceFactory;
         }
 
         private HttpPrincipal principal = null;
