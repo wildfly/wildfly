@@ -75,7 +75,7 @@ public final class WSIntegrationProcessorJAXRPC_EJB implements DeploymentUnitPro
         if (isJaxwsEjbDeployment(unit)) return;
         final EjbJarMetaData ejbJarMD = getOptionalAttachment(unit, EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
         final WebservicesMetaData webservicesMD = getOptionalAttachment(unit, WEBSERVICES_METADATA_KEY);
-        if (ejbJarMD != null && webservicesMD != null) {
+        if (ejbJarMD != null && webservicesMD != null && hasJaxRpcMapping(webservicesMD)) {
             final EEModuleDescription moduleDescription = getRequiredAttachment(unit, EE_MODULE_DESCRIPTION);
             createJaxrpcDeployment(unit, webservicesMD, moduleDescription);
         }
@@ -201,6 +201,15 @@ public final class WSIntegrationProcessorJAXRPC_EJB implements DeploymentUnitPro
             }
         }
 
+    }
+
+    private boolean hasJaxRpcMapping(WebservicesMetaData webservicesMD) {
+        for (WebserviceDescriptionMetaData wsdmd : webservicesMD.getWebserviceDescriptions()) {
+            if (wsdmd.getJaxrpcMappingFile() != null) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

@@ -60,8 +60,8 @@ final class WSDeploymentActivator {
             processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEBSERVICES_XML, new WebservicesDescriptorDeploymentProcessor());
             processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_JBOSS_WEBSERVICES_XML, new JBossWebservicesDescriptorDeploymentProcessor());
             processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_JAXWS_EJB_INTEGRATION, new WSIntegrationProcessorJAXWS_EJB());
-            processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_JAXRPC_EJB_INTEGRATION, new WSIntegrationProcessorJAXRPC_EJB());
             processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_JAXRPC_POJO_INTEGRATION, new WSIntegrationProcessorJAXRPC_POJO());
+            processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_JAXRPC_EJB_INTEGRATION, new WSIntegrationProcessorJAXRPC_EJB());
             processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_JAXWS_HANDLER_CHAIN_ANNOTATION, new WSHandlerChainAnnotationProcessor());
             processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WS_JMS_INTEGRATION, new WSIntegrationProcessorJAXWS_JMS());
             processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_JAXWS_ENDPOINT_CREATE_COMPONENT_DESCRIPTIONS, new WSIntegrationProcessorJAXWS_POJO());
