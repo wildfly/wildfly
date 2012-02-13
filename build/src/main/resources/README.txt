@@ -12,27 +12,66 @@ Go to the above link for documentation, and additional downloads.
 Also, once JBoss AS7 is started you can go to http://localhost:8080
 for additional information.
 
-Important Notes
----------------
-JBoss AS now has two distributions:
-
-1. jboss-as-web
-   The Java EE Web Profile "certified" web profile disribution 
-      (includes Servlet 3.0 + JAX-RS/RestEasy + CDI/Weld + 
-       EJB 3 Lite + Bean Validation + JCA + JPA/Hibernate)
-
-2. jboss-as
-   The everything distribution. This distribution is not certified. It includes
-    all of the specs in 1 but also adds JMS/HornetQ, and JAX-WS/JBoss Web Services
-
 
 Key Features
-------------
-
+--------------
+* Java EE 6
 * Fast Startup
 * Small Footprint
 * Modular Design
 * Unified Configuration and Management
+* Distributed Domain Management
 * OSGi
 
-And of course Java EE!
+
+Getting Started
+----------------
+JBoss AS 7 requires JDK 1.6 or later.  For information regarding installation
+of the JDK, see http://www.oracle.com/technetwork/java/index.html
+
+JBoss AS 7 has two modes of operation: Standalone and Domain.  For more
+information regarding these modes, please refer to the documentation 
+available on the JBoss.org site:
+
+https://docs.jboss.org/author/display/AS71/Documentation
+
+
+Starting a Standalone Server
+----------------------------
+An AS7 standalone server runs a single instance of AS7.
+
+<JBOSS_HOME>/bin/standalone.sh      (Unix / Linux)
+
+<JBOSS_HOME>\bin\standalone.bat     (Windows)
+
+
+Starting a Managed Domain
+--------------------------
+An AS7 managed domain allows you to control and configure multiple instances 
+of AS7, potentially across several physical (or virtual) machines.  The default 
+configuration includes a domain controller and a single server group with three 
+servers (two of which start automatically), all running on the localhost.
+
+<JBOSS_HOME>/bin/domain.sh      (Unix / Linux)
+
+<JBOSS_HOME>\bin\domain.bat     (Windows)
+ 
+
+Accessing the Web Console
+--------------------------
+Once the server has started you can access the landing page:
+
+http:/localhost:8080/
+
+This page includes links to online documentation, quick start guides, forums 
+and the administration console.
+
+
+Stopping the Server
+-------------------
+The JBoss AS7 server can be stopped by pressing Ctrl-C on the command line.
+If the server is running in a background process, the server can be stopped
+using the JBoss CLI:
+
+<JBOSS_HOME>/bin/jboss-cli.sh --connect --command=:shutdown
+
