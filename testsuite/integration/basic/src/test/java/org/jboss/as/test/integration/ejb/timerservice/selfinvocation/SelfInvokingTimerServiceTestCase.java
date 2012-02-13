@@ -98,5 +98,5 @@ public class SelfInvokingTimerServiceTestCase {
         SelfCdiInterceptedTimerServiceBean.awaitInterceptedMethod();
         Assert.assertTrue(EjbInterceptor.invoked);
     }
-    
+
 }

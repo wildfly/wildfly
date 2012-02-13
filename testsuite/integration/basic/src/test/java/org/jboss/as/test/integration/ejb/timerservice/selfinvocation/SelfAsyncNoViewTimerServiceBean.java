@@ -26,13 +26,9 @@ import javax.ejb.Asynchronous;
 import javax.ejb.Stateless;
 import javax.ejb.Timeout;
 import javax.ejb.TimerService;
-import javax.inject.Inject;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-/**
- * @author Stuart Douglas
- */
 @Stateless
 public class SelfAsyncNoViewTimerServiceBean {
 
@@ -67,7 +63,7 @@ public class SelfAsyncNoViewTimerServiceBean {
             throw new RuntimeException(e);
         }
     }
-    
+
     public static boolean awaitAsyncCall() {
         try {
             latch.await(TIMER_CALL_WAITING_MS * 2, TimeUnit.MILLISECONDS);
