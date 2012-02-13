@@ -87,10 +87,6 @@ public class WebAppDeployment {
       return deploymentName + "-domain";
    }
 
-   public String getUrl(){
-      return "http://localhost:8080/" + deploymentName;  
-   }
-
    private void setup(){
       log.debug("start setup()");
 
