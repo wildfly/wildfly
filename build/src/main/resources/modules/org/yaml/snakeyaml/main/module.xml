@@ -25,7 +25,7 @@
 <module xmlns="urn:jboss:module:1.1" name="org.yaml.snakeyaml">
 
     <properties>
-        <property name="jboss.api" value="unsupported"/>
+        <property name="jboss.api" value="private"/>
     </properties>
 
     <resources>
