@@ -64,13 +64,11 @@ public class InherritanceAnnSLSBTestCase extends AnnSBTest {
    }
 
    @Test
-   @Ignore("AS7-2999")
    public void testSingleMethodAnnotationsUser1() throws Exception {
       testSingleMethodAnnotationsUser1Template(MODULE, log, beanClass());
    }
 
    @Test
-   @Ignore("AS7-2999")
    public void testSingleMethodAnnotationsUser2() throws Exception {
       testSingleMethodAnnotationsUser2Template(MODULE, log, beanClass());
    }
