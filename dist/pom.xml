@@ -78,6 +78,7 @@
                                     <appendAssemblyId>false</appendAssemblyId>
                                     <outputDirectory>target/</outputDirectory>
                                     <workDirectory>target/assembly/work</workDirectory>
+                                    <tarLongFileMode>gnu</tarLongFileMode>
                                 </configuration>
                             </execution>
                             <execution>
@@ -94,6 +95,7 @@
                                     <appendAssemblyId>true</appendAssemblyId>
                                     <outputDirectory>target/</outputDirectory>
                                     <workDirectory>target/assembly-src/work</workDirectory>
+                                    <tarLongFileMode>gnu</tarLongFileMode>
                                 </configuration>
                             </execution>
                         </executions>
