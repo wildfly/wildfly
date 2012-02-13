@@ -41,6 +41,9 @@ public class StatefulSessionBeanSerializabilityChecker implements Serializabilit
      */
     @Override
     public boolean isSerializable(Class<?> clazz) {
-        return this.beanClass == clazz || DEFAULT.isSerializable(clazz);
+        if(clazz == Object.class) {
+            return false;
+        }
+        return DEFAULT.isSerializable(clazz) || clazz.isAssignableFrom(this.beanClass);
     }
 }

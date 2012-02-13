@@ -149,6 +149,8 @@ public class PassivationSucceedsUnitTestCase {
         Assert.assertTrue("@PrePassivate not called, check cache configuration and client sleep time", remote2.hasBeenPassivated());
         Assert.assertTrue(remote1.isPersistenceContextSame());
         Assert.assertTrue(remote2.isPersistenceContextSame());
+        Assert.assertEquals("Super", remote1.getSuperEmployee().getName());
+        Assert.assertEquals("Super", remote2.getSuperEmployee().getName());
 
         remote1.remove();
         remote2.remove();
