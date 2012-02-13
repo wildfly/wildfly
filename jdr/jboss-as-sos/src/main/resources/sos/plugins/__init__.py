@@ -304,7 +304,6 @@ class Plugin(object):
         any of the option names is returned."""
 
         def _check(key):
-            print "looking for", key, "in", optionname
             if hasattr(optionname, "__iter__"):
                 return key in optionname
             else:
