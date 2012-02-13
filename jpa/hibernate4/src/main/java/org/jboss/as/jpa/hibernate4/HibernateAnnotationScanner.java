@@ -36,7 +36,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 
 import org.hibernate.ejb.packaging.NamedInputStream;
 import org.hibernate.ejb.packaging.Scanner;
@@ -58,7 +57,7 @@ public class HibernateAnnotationScanner implements Scanner {
     private static final ThreadLocal<PersistenceUnitMetadata> PERSISTENCE_UNIT_METADATA_TLS = new ThreadLocal<PersistenceUnitMetadata>();
 
     /** Caches, used when restarting the persistence unit service */
-    private static final Map<PersistenceUnitMetadata, Map<URL, Set<Package>>> PACKAGES_IN_JAR_CACHE = new WeakHashMap<PersistenceUnitMetadata, Map<URL,Set<Package>>>();
+    private static final Map<PersistenceUnitMetadata, Map<URL, Set<Package>>> PACKAGES_IN_JAR_CACHE = new HashMap<PersistenceUnitMetadata, Map<URL,Set<Package>>>();
     private static final Map<PersistenceUnitMetadata, Map<URL, Map<Class<? extends Annotation>, Set<Class<?>>>>> CLASSES_IN_JAR_CACHE = new HashMap<PersistenceUnitMetadata, Map<URL, Map<Class<? extends Annotation>, Set<Class<?>>>>>();
 
     public static void setThreadLocalPersistenceUnitMetadata(final PersistenceUnitMetadata pu) {
@@ -135,6 +134,7 @@ public class HibernateAnnotationScanner implements Scanner {
 
     static void cleanup(PersistenceUnitMetadata pu) {
         CLASSES_IN_JAR_CACHE.remove(pu);
+        PACKAGES_IN_JAR_CACHE.remove(pu);
     }
 
     @Override
