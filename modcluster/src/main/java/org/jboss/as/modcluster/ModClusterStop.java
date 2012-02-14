@@ -47,7 +47,7 @@ public class ModClusterStop implements OperationStepHandler, DescriptionProvider
     @Override
     public void execute(OperationContext context, ModelNode operation)
             throws OperationFailedException {
-        if (context.isNormalServer()) {
+        if (context.isNormalServer() && context.getServiceRegistry(false).getService(ModClusterService.NAME)!=null) {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
