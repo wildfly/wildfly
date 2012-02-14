@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.smoke.embedded.demos.ejb3.jndi;
 
+import javax.ejb.EJB;
 import javax.ejb.Local;
 import javax.ejb.LocalBean;
 import javax.ejb.Remote;
@@ -34,6 +35,7 @@ import javax.ejb.Stateless;
 @LocalBean
 @Local (Echo.class)
 @Remote(RemoteEcho.class)
+@EJB(name = "java:global/Additional", beanName = "SampleSLSB", beanInterface = Echo.class)
 // TODO: Add all other views @LocalHome and @RemoteHome
 public class SampleSLSB implements Echo {
 

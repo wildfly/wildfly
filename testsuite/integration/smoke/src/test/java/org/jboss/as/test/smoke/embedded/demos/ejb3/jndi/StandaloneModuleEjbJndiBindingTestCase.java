@@ -33,6 +33,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.junit.Assert.assertNotNull;
+
 /**
  * Tests that the session beans are bound to all the jndi binding names mandated by the EJB3.1 spec, when the EJBs are
  * deployed in a standalone jar file
@@ -115,6 +117,11 @@ public class StandaloneModuleEjbJndiBindingTestCase {
         SampleSLSB noInterfaceViewInModuleNamespace = (SampleSLSB) ctx.lookup(JAVA_MODULE_NAMESPACE_PREFIX + ejbName + "!" + SampleSLSB.class.getName());
         Assert.assertNotNull("Null object returned for no-interface view lookup in java:module namespace", noInterfaceViewInModuleNamespace);
 
+        // additional binding
+        {
+            final Echo bean = (Echo) ctx.lookup(JAVA_GLOBAL_NAMESPACE_PREFIX + "Additional");
+            assertNotNull("Null object returned from java:global/Additional", bean);
+        }
     }
 
     /**
