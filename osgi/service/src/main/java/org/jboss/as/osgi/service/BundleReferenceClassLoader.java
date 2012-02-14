@@ -29,7 +29,7 @@ import org.osgi.framework.BundleReference;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 
 /**
- * A {@link ModuleClassLoader} that hosld a reference to the underlying bundle.
+ * A {@link ModuleClassLoader} that holds a reference to the underlying bundle.
  *
  * @author thomas.diesler@jboss.com
  * @since 16-Dec-2010

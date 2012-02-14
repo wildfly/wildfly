@@ -34,7 +34,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 /**
- * Tests that an @Timout method works when it is not part of any bean views
+ * Tests that an @Timeout method works when it is not part of any bean views
  *
  * @author Stuart Douglas
  */

@@ -169,7 +169,7 @@ public class BasicComponent implements Component {
     }
 
     /**
-     * Method that can be overriden to perform setup on the instance after it has been created
+     * Method that can be overridden to perform setup on the instance after it has been created
      * @param basicComponentInstance The component instance
      * @param context The interceptor factory context used to construct the instance
      */

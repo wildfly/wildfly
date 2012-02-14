@@ -318,7 +318,7 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
             }
         }
         if(!pathValid) {
-            ctx.error("Type '" + typeName + "' not found amoung child types of '" + ctx.getPrefixFormatter().format(typeAddress) + "'");
+            ctx.error("Type '" + typeName + "' not found among child types of '" + ctx.getPrefixFormatter().format(typeAddress) + "'");
             return false;
         }
 

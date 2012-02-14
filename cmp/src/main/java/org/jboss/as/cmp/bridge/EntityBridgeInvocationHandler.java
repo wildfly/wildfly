@@ -29,9 +29,9 @@ import org.jboss.as.cmp.component.CmpEntityBeanComponentInstance;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 
 /**
- * EntityBridgeInvocationHandler is the invocation hander used by the CMP 2.x
+ * EntityBridgeInvocationHandler is the invocation handler used by the CMP 2.x
  * dynamic proxy. This class only interacts with the EntityBridge. The main
- * job of this class is to deligate invocation of abstract methods to the
+ * job of this class is to delegate invocation of abstract methods to the
  * appropriate EntityBridge method.
  * <p/>
  * Life-cycle:

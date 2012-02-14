@@ -45,7 +45,7 @@ public class DefaultJspConfig {
         defaults.put(Constants.TAG_POOLING, new ModelNode().set(true));
         defaults.put(Constants.MAPPED_FILE, new ModelNode().set(true));
         defaults.put(Constants.CHECK_INTERVAL, new ModelNode().set(0));
-        defaults.put(Constants.MODIFIFICATION_TEST_INTERVAL, new ModelNode().set(4));
+        defaults.put(Constants.MODIFICATION_TEST_INTERVAL, new ModelNode().set(4));
         defaults.put(Constants.RECOMPILE_ON_FAIL, new ModelNode().set(false));
         defaults.put(Constants.SMAP, new ModelNode().set(true));
         defaults.put(Constants.DUMP_SMAP, new ModelNode().set(false));

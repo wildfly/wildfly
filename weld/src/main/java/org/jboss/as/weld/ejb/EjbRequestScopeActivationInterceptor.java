@@ -40,10 +40,10 @@ import org.jboss.weld.manager.BeanManagerImpl;
 /**
  * Interceptor for activating the CDI request scope on some EJB invocations.
  * <p/>
- * For efficency reasons we do not check to see if the scope is already active. For this reason this interceptor
+ * For efficiency reasons we do not check to see if the scope is already active. For this reason this interceptor
  * can only be used for request paths where we know that the scope is not active, such as MDB's and the timer service.
  * <p/>
- * Remote EJB invocations must also have the reqest scope active, but it may already be active for in-VM requests.
+ * Remote EJB invocations must also have the request scope active, but it may already be active for in-VM requests.
  * <p/>
  * This interceptor is largely stateless, and can be re-used
  *

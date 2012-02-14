@@ -40,7 +40,7 @@ public enum JaxrsAnnotations {
     GET("GET"),
     HEAD("HEAD"),
     HEADER_PARAM("HeaderParam"),
-    HTTP_MTHOD("HttpMethod"),
+    HTTP_METHOD("HttpMethod"),
     MATRIX_PARAM("MatrixParam"),
     PATH("Path"),
     PATH_PARAM("PathParam"),

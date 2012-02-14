@@ -132,7 +132,7 @@ public class ClusteredSessionValve extends ValveBase implements Lifecycle {
                 if (ctx.getSoleSnapshotManager() != null) {
                     ctx.getSoleSnapshotManager().snapshot(ctx.getSoleSession());
                 } else {
-                    // Cross-context request touched multiple sesssions;
+                    // Cross-context request touched multiple sessions;
                     // need to replicate them all
                     handleCrossContextSessions(ctx);
 
@@ -146,7 +146,7 @@ public class ClusteredSessionValve extends ValveBase implements Lifecycle {
         }
     }
 
-    // Lifecylce-interface
+    // Lifecycle-interface
     @Override
     public void addLifecycleListener(LifecycleListener listener) {
         support.addLifecycleListener(listener);

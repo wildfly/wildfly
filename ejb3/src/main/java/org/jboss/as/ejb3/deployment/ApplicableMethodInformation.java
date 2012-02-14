@@ -11,7 +11,7 @@ import org.jboss.as.ejb3.component.MethodIntf;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
- * Metadata store for method level information that can be applied to a method via versious different deployment
+ * Metadata store for method level information that can be applied to a method via various different deployment
  * descriptor styles
  *
  * @author Stuart Douglas

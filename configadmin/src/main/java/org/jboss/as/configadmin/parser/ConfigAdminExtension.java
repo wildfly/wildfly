@@ -56,7 +56,7 @@ public class ConfigAdminExtension implements Extension {
         registration.registerOperationHandler(ModelDescriptionConstants.DESCRIBE, ConfigAdminDescribeHandler.INSTANCE, ConfigAdminAdd.DESCRIPTION, false, OperationEntry.EntryType.PRIVATE);
         registration.registerOperationHandler(ModelDescriptionConstants.REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, ConfigAdminProviders.SUBSYSTEM_REMOVE, false);
 
-        // Configuration Admin Setings
+        // Configuration Admin Settings
         ManagementResourceRegistration configuration = registration.registerSubModel(PathElement.pathElement(ModelConstants.CONFIGURATION), ConfigAdminProviders.CONFIGURATION_DESCRIPTION);
         configuration.registerOperationHandler(ModelDescriptionConstants.ADD, ConfigurationAdd.INSTANCE, ConfigurationAdd.DESCRIPTION, false);
         configuration.registerOperationHandler(ModelDescriptionConstants.REMOVE, ConfigurationRemove.INSTANCE, ConfigurationRemove.DESCRIPTION, false);

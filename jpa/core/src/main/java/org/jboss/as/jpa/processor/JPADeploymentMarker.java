@@ -47,7 +47,7 @@ public class JPADeploymentMarker {
     }
 
     /**
-     * retuns true if the {@link DeploymentUnit} is part of a JPA deployment
+     * return true if the {@link DeploymentUnit} is part of a JPA deployment
      */
     public static boolean isJPADeployment(DeploymentUnit unit) {
         if (unit.getParent() == null) {

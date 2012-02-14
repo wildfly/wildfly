@@ -94,7 +94,7 @@ public class ConnectionFactoryWriteAttributeHandler extends AbstractWriteAttribu
                 return false;
             } else if (hqService.getState() != ServiceController.State.UP) {
                 // Service is installed but not up?
-                //throw new IllegalStateException(String.format("Cannot apply attribue %s to runtime; service %s is not in state %s, it is in state %s",
+                //throw new IllegalStateException(String.format("Cannot apply attribute %s to runtime; service %s is not in state %s, it is in state %s",
                 //            attributeName, MessagingServices.JBOSS_MESSAGING, ServiceController.State.UP, hqService.getState()));
                 // No, don't barf; just let the update apply to the model and put the server in a reload-required state
                 return true;

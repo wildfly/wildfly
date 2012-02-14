@@ -24,7 +24,7 @@ package org.jboss.as.ee.component.serialization;
 import java.io.IOException;
 
 /**
- * Interface used to allow the proxy to supprt serialization. Currently used to work around
+ * Interface used to allow the proxy to support serialization. Currently used to work around
  * a limitation in the ProxyFactory
  * @author Stuart Douglas
  */

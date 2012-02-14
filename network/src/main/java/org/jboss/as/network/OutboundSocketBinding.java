@@ -162,7 +162,7 @@ public class OutboundSocketBinding {
      *
      * @return
      */
-    public InetAddress getSourceAddresss() {
+    public InetAddress getSourceAddress() {
         return this.sourceNetworkInterface != null ? this.sourceNetworkInterface.getAddress() : this.socketBindingManager.getDefaultInterfaceAddress();
     }
 
@@ -233,7 +233,7 @@ public class OutboundSocketBinding {
     }
 
     private SocketAddress getOptionalSourceSocketAddress() {
-        final InetAddress sourceAddress = this.getSourceAddresss();
+        final InetAddress sourceAddress = this.getSourceAddress();
         final Integer absoluteSourcePort = this.getAbsoluteSourcePort();
         if (sourceAddress == null && absoluteSourcePort == null) {
             return null;

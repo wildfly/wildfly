@@ -44,7 +44,7 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
- * Merging procesor for home and local home views
+ * Merging processor for home and local home views
  *
  * @author Stuart Douglas
  */
@@ -157,7 +157,7 @@ public class HomeViewMergingProcessor implements DeploymentUnitProcessor {
                 }
             }
         }
-        //now allow the annotations to be overriden by the DD
+        //now allow the annotations to be overridden by the DD
         final SessionBeanMetaData descriptorData = description.getDescriptorData();
         if (descriptorData != null) {
 

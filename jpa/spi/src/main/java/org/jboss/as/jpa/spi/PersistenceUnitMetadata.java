@@ -64,7 +64,7 @@ public interface PersistenceUnitMetadata extends PersistenceUnitInfo {
 
     void setPersistenceUnitRootUrl(URL persistenceUnitRootUrl);
 
-    void setAnnotationIndex(Map<URL, Index> indexs);
+    void setAnnotationIndex(Map<URL, Index> indexes);
 
     Map<URL, Index> getAnnotationIndex();
 
@@ -76,7 +76,7 @@ public interface PersistenceUnitMetadata extends PersistenceUnitInfo {
 
     void setMappingFiles(List<String> mappingFiles);
 
-    void setJarFileUrls(List<URL> jarfilesUrls);
+    void setJarFileUrls(List<URL> jarFilesUrls);
 
     List<String> getJarFiles();
 

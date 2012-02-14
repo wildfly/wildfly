@@ -55,7 +55,7 @@ public class WeldModuleResourceLoader implements ResourceLoader {
     }
 
     /**
-     * If the class name is found in addtionalClasses then return it.
+     * If the class name is found in additionalClasses then return it.
      *
      * Otherwise the class will be loaded from the module ClassLoader
      */

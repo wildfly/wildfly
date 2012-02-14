@@ -201,9 +201,9 @@ class WebSubsystemDescriptions {
         node.get(type, Constants.SENDFILE, REQUIRED).set(false);
         node.get(type, Constants.SENDFILE, DEFAULT).set(49152);
 
-        node.get(type, Constants.FILE_ENCONDING, TYPE).set(ModelType.STRING);
-        node.get(type, Constants.FILE_ENCONDING, DESCRIPTION).set(bundle.getString("web.configuration.static.file-encoding"));
-        node.get(type, Constants.FILE_ENCONDING, REQUIRED).set(false);
+        node.get(type, Constants.FILE_ENCODING, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.FILE_ENCODING, DESCRIPTION).set(bundle.getString("web.configuration.static.file-encoding"));
+        node.get(type, Constants.FILE_ENCODING, REQUIRED).set(false);
 
         node.get(type, Constants.READ_ONLY, TYPE).set(ModelType.BOOLEAN);
         node.get(type, Constants.READ_ONLY, DESCRIPTION).set(bundle.getString("web.configuration.static.read-only"));
@@ -271,10 +271,10 @@ class WebSubsystemDescriptions {
         node.get(type, Constants.CHECK_INTERVAL, REQUIRED).set(false);
         node.get(type, Constants.CHECK_INTERVAL, DEFAULT).set(0);
 
-        node.get(type, Constants.MODIFIFICATION_TEST_INTERVAL, TYPE).set(ModelType.INT);
-        node.get(type, Constants.MODIFIFICATION_TEST_INTERVAL, DESCRIPTION).set(bundle.getString("web.configuration.jsp.modification-test-interval"));
-        node.get(type, Constants.MODIFIFICATION_TEST_INTERVAL, REQUIRED).set(false);
-        node.get(type, Constants.MODIFIFICATION_TEST_INTERVAL, DEFAULT).set(4);
+        node.get(type, Constants.MODIFICATION_TEST_INTERVAL, TYPE).set(ModelType.INT);
+        node.get(type, Constants.MODIFICATION_TEST_INTERVAL, DESCRIPTION).set(bundle.getString("web.configuration.jsp.modification-test-interval"));
+        node.get(type, Constants.MODIFICATION_TEST_INTERVAL, REQUIRED).set(false);
+        node.get(type, Constants.MODIFICATION_TEST_INTERVAL, DEFAULT).set(4);
 
         node.get(type, Constants.RECOMPILE_ON_FAIL, TYPE).set(ModelType.BOOLEAN);
         node.get(type, Constants.RECOMPILE_ON_FAIL, DESCRIPTION).set(bundle.getString("web.configuration.jsp.recompile-on-fail"));

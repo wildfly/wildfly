@@ -27,7 +27,7 @@ public class EarMessageDestinationProcessor implements DeploymentUnitProcessor {
                 if (metadata.getEarEnvironmentRefsGroup() != null) {
                     if (metadata.getEarEnvironmentRefsGroup().getMessageDestinations() != null) {
                         for (final MessageDestinationMetaData destination : metadata.getEarEnvironmentRefsGroup().getMessageDestinations()) {
-                            //TODO: should these be two seperate metadata attributes?
+                            //TODO: should these be two separate metadata attributes?
                             if (destination.getJndiName() != null) {
                                 eeModuleDescription.addMessageDestination(destination.getName(), destination.getJndiName());
                             } else if (destination.getLookupName() != null) {

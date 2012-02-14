@@ -32,7 +32,7 @@ import org.jboss.as.cmp.jdbc.metadata.parser.ParsedRelationshipRole;
 import org.jboss.metadata.ejb.spec.RelationRoleMetaData;
 
 /**
- * Imutable class which represents one ejb-relationship-role element found in
+ * Immutable class which represents one ejb-relationship-role element found in
  * the ejb-jar.xml file's ejb-relation elements.
  *
  * @author <a href="mailto:dain@daingroup.com">Dain Sundstrom</a>
@@ -231,7 +231,7 @@ public final class JDBCRelationshipRoleMetaData {
     /**
      * Should this role use a foreign key constraint.
      *
-     * @return true if the store mananager will execute an ALTER TABLE ADD
+     * @return true if the store manager will execute an ALTER TABLE ADD
      *         CONSTRAINT statement to add a foreign key constraint.
      */
     public boolean hasForeignKeyConstraint() {
@@ -417,10 +417,10 @@ public final class JDBCRelationshipRoleMetaData {
             fields.put(cmpField.getFieldName(), cmpField);
         }
 
-        // all fields must be overriden
+        // all fields must be overridden
         if (!defaultFields.isEmpty()) {
             throw new RuntimeException("Mappings were not provided for all " +
-                    "fields: unmaped fields=" + defaultFields.keySet() +
+                    "fields: unmapped fields=" + defaultFields.keySet() +
                     " in role=" + relationshipRoleName);
         }
         return Collections.unmodifiableMap(fields);

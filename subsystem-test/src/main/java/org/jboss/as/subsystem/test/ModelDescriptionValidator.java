@@ -396,7 +396,7 @@ public class ModelDescriptionValidator {
             if (currentNode.hasDefined(descriptor)) {
                 if (currentType != ModelType.BIG_DECIMAL && currentType != ModelType.BIG_INTEGER &&
                         currentType != ModelType.DOUBLE && currentType != ModelType.INT && currentType != ModelType.LONG) {
-                    return "Unecessary '" + descriptor + "' for non-numeric type=" + currentType;
+                    return "Unnecessary '" + descriptor + "' for non-numeric type=" + currentType;
                 }
                 if (!descriptor.equals(UNIT)) {
                     try {
@@ -429,7 +429,7 @@ public class ModelDescriptionValidator {
             if (currentNode.hasDefined(descriptor)) {
                 if (currentType != ModelType.LIST && currentType != ModelType.STRING &&
                         currentType != ModelType.BYTES) {
-                    return "Unecessary '" + descriptor + "' for non-numeric type=" + currentType;
+                    return "Unnecessary '" + descriptor + "' for non-numeric type=" + currentType;
                 }
                 try {
                     currentNode.get(descriptor).asLong();
@@ -680,7 +680,7 @@ public class ModelDescriptionValidator {
         }
 
 
-        private AttributeOrParameterArbitraryDescriptorValidator getAttribibuteValidator(ModelNode address, String name, String descriptor) {
+        private AttributeOrParameterArbitraryDescriptorValidator getAttributeValidator(ModelNode address, String name, String descriptor) {
             Map<String, Map<String, AttributeOrParameterArbitraryDescriptorValidator>>  byName = attributeDescriptors.get(address);
             if (byName == null) {
                 return null;
@@ -943,7 +943,7 @@ public class ModelDescriptionValidator {
         }
 
         AttributeOrParameterArbitraryDescriptorValidator getExtraValidator(String key) {
-            return validationConfiguration.getAttribibuteValidator(address, name, key);
+            return validationConfiguration.getAttributeValidator(address, name, key);
         }
 
         boolean allowNullValueTypeForObject() {

@@ -24,7 +24,7 @@ package org.jboss.as.cmp.jdbc.metadata;
 import org.jboss.logging.Logger;
 
 /**
- * Imutable class which holds a mapping between a Java Class and a JDBC type
+ * Immutable class which holds a mapping between a Java Class and a JDBC type
  * and a SQL type.
  *
  * @author <a href="mailto:dain@daingroup.com">Dain Sundstrom</a>

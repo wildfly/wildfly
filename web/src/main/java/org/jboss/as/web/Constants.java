@@ -57,7 +57,7 @@ interface Constants {
     String ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUTE = "error-on-use-bean-invalid-class-attribute";
     String EXECUTOR = "executor";
     String EXTENDED = "extended";
-    String FILE_ENCONDING = "file-encoding";
+    String FILE_ENCODING = "file-encoding";
     String FLAGS = "flags";
     String GENERATE_STRINGS_AS_CHAR_ARRAYS = "generate-strings-as-char-arrays";
     String INSTANCE_ID = "instance-id";
@@ -73,7 +73,7 @@ interface Constants {
     String MAX_POST_SIZE = "max-post-size";
     String MAX_SAVE_POST_SIZE = "max-save-post-size";
     String MIME_MAPPING = "mime-mapping";
-    String MODIFIFICATION_TEST_INTERVAL = "modification-test-interval";
+    String MODIFICATION_TEST_INTERVAL = "modification-test-interval";
     String NAME = "name";
     String NATIVE = "native";
     String PASSWORD = "password";

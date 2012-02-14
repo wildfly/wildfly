@@ -128,7 +128,7 @@ public final class ProtocolServer {
         final Thread thread = this.thread;
         boundAddress = null;
         if (thread != null) {
-            // thread.interupt may not actually interupt socket.accept()
+            // thread.interrupt may not actually interrupt socket.accept()
             thread.interrupt();
         }
         StreamUtils.safeClose(serverSocket);

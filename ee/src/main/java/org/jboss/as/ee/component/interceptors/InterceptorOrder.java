@@ -135,7 +135,7 @@ public class InterceptorOrder {
         public static final int EJB_SECURITY_AUTHORIZATION_INTERCEPTOR = 0x300;
         public static final int INVOCATION_CONTEXT_INTERCEPTOR = 0x400;
         // should happen before the CMT/BMT interceptors
-        public static final int REMOTE_TRANSACTION_PROPOGATION_INTERCEPTOR = 0x450;
+        public static final int REMOTE_TRANSACTION_PROPAGATION_INTERCEPTOR = 0x450;
         public static final int CMT_TRANSACTION_INTERCEPTOR = 0x500;
         public static final int HOME_METHOD_INTERCEPTOR = 0x600;
         public static final int ASSOCIATING_INTERCEPTOR = 0x700;

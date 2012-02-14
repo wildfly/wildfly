@@ -88,17 +88,17 @@ public class DescriptorUtils {
 
     /**
      * returns an array of String representations of the parameter types. Primitives are returned as their native
-     * representations, while clases are returned in the internal descriptor form e.g. Ljava/lang/Integer;
+     * representations, while classes are returned in the internal descriptor form e.g. Ljava/lang/Integer;
      */
     public static String[] parameterDescriptors(String methodDescriptor) {
         int i = 1; // char 0 is a '('
         List<String> ret = new ArrayList<String>();
-        int arraystart = -1;
+        int arrayStart = -1;
         while (methodDescriptor.charAt(i) != ')') {
             String type = null;
             if (methodDescriptor.charAt(i) == '[') {
-                if (arraystart == -1) {
-                    arraystart = i;
+                if (arrayStart == -1) {
+                    arrayStart = i;
                 }
             } else {
                 if (methodDescriptor.charAt(i) == 'L') {
@@ -107,19 +107,19 @@ public class DescriptorUtils {
                     while (methodDescriptor.charAt(i) != ';') {
                         ++i;
                     }
-                    if (arraystart == -1) {
+                    if (arrayStart == -1) {
                         type = methodDescriptor.substring(start, i);
                     } else {
-                        type = methodDescriptor.substring(arraystart, i);
+                        type = methodDescriptor.substring(arrayStart, i);
                     }
                 } else {
-                    if (arraystart == -1) {
+                    if (arrayStart == -1) {
                         type = methodDescriptor.charAt(i) + "";
                     } else {
-                        type = methodDescriptor.substring(arraystart, i + 1);
+                        type = methodDescriptor.substring(arrayStart, i + 1);
                     }
                 }
-                arraystart = -1;
+                arrayStart = -1;
                 ret.add(type);
             }
             ++i;

@@ -31,7 +31,7 @@ import org.jboss.as.cmp.jdbc.metadata.parser.ParsedCmpField;
 import org.jboss.logging.Logger;
 
 /**
- * Imutable class which holds all the information jbosscmp-jdbc needs to know
+ * Immutable class which holds all the information jbosscmp-jdbc needs to know
  * about a CMP field It loads its data from standardjbosscmp-jdbc.xml and
  * jbosscmp-jdbc.xml
  *
@@ -90,7 +90,7 @@ public final class JDBCCMPFieldMetaData {
     private final int readTimeOut;
 
     /**
-     * Is this field a memeber of the primary keys or the sole prim-key-field.
+     * Is this field a member of the primary keys or the sole prim-key-field.
      */
     private final boolean primaryKeyMember;
 
@@ -450,7 +450,7 @@ public final class JDBCCMPFieldMetaData {
         }
 
         // Field type
-        // must be set for unknow-pk
+        // must be set for unknown-pk
 
         if (parsedField.getUnknownPk() == null) {
             fieldType = defaultValues.getFieldType();
@@ -562,10 +562,10 @@ public final class JDBCCMPFieldMetaData {
 
     /**
      * Gets the column name the property should use or null if the
-     * column name is not overriden.
+     * column name is not overridden.
      *
      * @return the name to which this field is persisted or null if the
-     *         column name is not overriden
+     *         column name is not overridden
      */
     public String getColumnName() {
         return columnName;
@@ -573,7 +573,7 @@ public final class JDBCCMPFieldMetaData {
 
     /**
      * Gets the JDBC type the property should use or Integer.MIN_VALUE
-     * if not overriden.
+     * if not overridden.
      *
      * @return the jdbc type of this field
      */
@@ -583,7 +583,7 @@ public final class JDBCCMPFieldMetaData {
 
     /**
      * Gets the SQL type the property should use or null
-     * if not overriden.
+     * if not overridden.
      *
      * @return the sql data type string used in create table statements
      */

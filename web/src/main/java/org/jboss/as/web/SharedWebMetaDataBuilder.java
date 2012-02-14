@@ -139,8 +139,8 @@ class SharedWebMetaDataBuilder {
         } else {
             initParams.add(createParameter("sendfile", "49152"));
         }
-        if (resourcesConfig.has(FILE_ENCONDING)) {
-            initParams.add(createParameter("file-encoding", resourcesConfig.get(FILE_ENCONDING).asString()));
+        if (resourcesConfig.has(FILE_ENCODING)) {
+            initParams.add(createParameter("file-encoding", resourcesConfig.get(FILE_ENCODING).asString()));
         }
         if (resourcesConfig.has(SECRET)) {
             initParams.add(createParameter("secret", resourcesConfig.get(SECRET).asString()));
@@ -203,8 +203,8 @@ class SharedWebMetaDataBuilder {
         } else {
             initParams.add(createParameter("checkInterval", "0"));
         }
-        if (config.has(MODIFIFICATION_TEST_INTERVAL)) {
-            initParams.add(createParameter("modificationTestInterval", config.get(MODIFIFICATION_TEST_INTERVAL).asString()));
+        if (config.has(MODIFICATION_TEST_INTERVAL)) {
+            initParams.add(createParameter("modificationTestInterval", config.get(MODIFICATION_TEST_INTERVAL).asString()));
         } else {
             initParams.add(createParameter("modificationTestInterval", "4"));
         }

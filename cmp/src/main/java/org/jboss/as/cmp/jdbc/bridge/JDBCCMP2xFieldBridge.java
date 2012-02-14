@@ -475,7 +475,7 @@ public class JDBCCMP2xFieldBridge extends JDBCAbstractCMPFieldBridge {
         /**
          * Going down the chain current related id is calculated and stored in oldRelatedId.
          * When the next link is originator, the flow is going backward:
-         * - field state is updated with new vaue;
+         * - field state is updated with new value;
          * - new related id is calculated;
          * - old relationship is destroyed (if there is one);
          * - new relationship is established (if it is valid).

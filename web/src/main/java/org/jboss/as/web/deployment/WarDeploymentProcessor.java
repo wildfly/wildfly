@@ -325,7 +325,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
             final EEModuleDescription description = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
             if(description != null) {
                 //if there is a EEModuleDescription we need to take into account that the module name
-                //may have been overriden
+                //may have been overridden
                 pathName = "/" + description.getModuleName();
             } else {
                 pathName = "/" + deploymentUnit.getName().substring(0, deploymentUnit.getName().length() - 4);
@@ -349,7 +349,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
                 node.get("servlet-class").set(servlet.getServletClass());
                 node.get("servlet-name").set(servlet.getServletName());
             } catch (Exception e) {
-                // Should a failure in creating the mgmt view also make to the deploymen to fail?
+                // Should a failure in creating the mgmt view also make to the deployment to fail?
                 continue;
             }
         }

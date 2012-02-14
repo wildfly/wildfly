@@ -744,21 +744,21 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         if(idProperty == null) {
             buf.append("is the name of the resource that completes the path ").append(nodeType).append(" and \n");
         } else {
-            buf.append("corresponds to a property of the resourse which \n");
+            buf.append("corresponds to a property of the resource which \n");
         }
         for(int i = 0; i < name.getFullName().length() + 5; ++i) {
             buf.append(' ');
         }
-        buf.append("is used to identify the resourse against which the command should be executed.");
+        buf.append("is used to identify the resource against which the command should be executed.");
 
-        buf.append("\n\n<property>   - property name of the resourse whose value should be updated.");
+        buf.append("\n\n<property>   - property name of the resource whose value should be updated.");
         buf.append("\n               For a complete list of available property names, their types and descriptions,");
         buf.append("\n               execute ").append(commandName).append(" --help --properties.");
 
-        buf.append("\n\n<command>    - command name provided by the resourse. For a complete list of available commands,");
+        buf.append("\n\n<command>    - command name provided by the resource. For a complete list of available commands,");
         buf.append("\n               execute ").append(commandName).append(" --help --commands.");
 
-        buf.append("\n\n<parameter>  - parameter name of the <command> provided by the resourse.");
+        buf.append("\n\n<parameter>  - parameter name of the <command> provided by the resource.");
         buf.append("\n               For a complete list of available parameter names of a specific <command>,");
         buf.append("\n               their types and descriptions, execute ").append(commandName).append(" <command> --help.");
 

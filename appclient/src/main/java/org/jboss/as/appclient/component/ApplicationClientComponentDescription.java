@@ -53,8 +53,8 @@ public final class ApplicationClientComponentDescription extends ComponentDescri
     }
 
     @Override
-    public ComponentConfiguration createConfiguration(final ClassIndex classIndex, final ClassLoader moduleClassLoder, final ModuleLoader moduleLoader) {
-        final ComponentConfiguration configuration =  super.createConfiguration(classIndex, moduleClassLoder, moduleLoader);
+    public ComponentConfiguration createConfiguration(final ClassIndex classIndex, final ClassLoader moduleClassLoader, final ModuleLoader moduleLoader) {
+        final ComponentConfiguration configuration =  super.createConfiguration(classIndex, moduleClassLoader, moduleLoader);
         configuration.setInstanceFactory(new ManagedReferenceFactory() {
             @Override
             public ManagedReference getReference() {

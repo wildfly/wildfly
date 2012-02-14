@@ -59,7 +59,7 @@ class XidTransactionBeforeCompletionTask extends XidTransactionManagementTask {
             // do beforeCompletion()
             subordinateTransaction.doBeforeCompletion();
         } finally {
-            // disassociate the tx that was asssociated (resumed) on this thread.
+            // disassociate the tx that was associated (resumed) on this thread.
             // This needs to be done explicitly because the SubOrdinationManager isn't responsible
             // for clearing the tx context from the thread
             this.transactionsRepository.getTransactionManager().suspend();

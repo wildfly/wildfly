@@ -84,8 +84,8 @@ public class DescriptorBasedEJBClientContextService implements Service<EJBClient
         }
         // now process the remoting receivers
         final Collection<Connection> connections = this.createRemotingConnections();
-        for (final Connection conection : connections) {
-            context.registerConnection(conection);
+        for (final Connection connection : connections) {
+            context.registerConnection(connection);
         }
         logger.debug("Added " + connections.size() + " remoting EJB receivers to descriptor based EJB client context named " + startContext.getController().getName());
         this.ejbClientContext = context;

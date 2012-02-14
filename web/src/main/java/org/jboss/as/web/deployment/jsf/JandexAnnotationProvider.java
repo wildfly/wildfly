@@ -29,7 +29,7 @@ import java.util.Set;
 import javax.servlet.ServletContext;
 
 /**
- * {@link }AnnotationProvider} implementation which provides the JSF annations which we parsed from from a
+ * {@link }AnnotationProvider} implementation which provides the JSF annotations which we parsed from from a
  * Jandex index.
  *
  * @author John Bailey

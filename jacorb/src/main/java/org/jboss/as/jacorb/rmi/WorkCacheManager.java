@@ -47,7 +47,7 @@ import org.jboss.as.jacorb.JacORBMessages;
  * <p/>
  * Besides caching work already done, this caches work in progress,
  * as we need to know about this to handle cyclic graphs of analyses.
- * When a thread re-enters the <code>getAnalysis()</code> metohd, an
+ * When a thread re-enters the <code>getAnalysis()</code> method, an
  * unfinished analysis will be returned if the same thread is already
  * working on this analysis.
  *

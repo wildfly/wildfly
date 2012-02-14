@@ -54,17 +54,17 @@ public class ContextManager {
      * wrapped and thrown
      */
     public void setup(final Map<String, Object> properties) {
-        final List<SetupAction> sucessfulActions = new ArrayList<SetupAction>();
+        final List<SetupAction> successfulActions = new ArrayList<SetupAction>();
         for (final SetupAction action : setupActions) {
             try {
                 action.setup(properties);
-                sucessfulActions.add(action);
+                successfulActions.add(action);
             } catch (final Throwable e) {
-                for (SetupAction s : sucessfulActions) {
+                for (SetupAction s : successfulActions) {
                     try {
                         s.teardown(properties);
                     } catch (final Throwable t) {
-                        // we ignore these, and just propegate the exception that caused the setup to fail
+                        // we ignore these, and just propagate the exception that caused the setup to fail
                     }
                 }
                 throw new RuntimeException(e);
@@ -76,10 +76,10 @@ public class ContextManager {
      * Tears down the contexts. If an exception is thrown by a {@link SetupAction} it is wrapped and re-thrown after all
      * {@link SetupAction#teardown(java.util.Map)} methods have been called.
      * <p>
-     * Contexts are torn down in the oposite order to which they are set up (i.e. the first context set up is the last to be
+     * Contexts are torn down in the opposite order to which they are set up (i.e. the first context set up is the last to be
      * torn down).
      * <p>
-     * If more than one teardown() method thrown an exception then only the first is propegated.
+     * If more than one teardown() method thrown an exception then only the first is propagated.
      */
     public void teardown(final Map<String, Object> properties) {
         Throwable exceptionToThrow = null;

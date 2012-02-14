@@ -84,7 +84,7 @@ public abstract class AbstractJBossConfigBean implements DConfigBean {
     }
 
     /**
-     * Removes the xpath of a given configbean from the list of this bean's xpaths (children so to speak). Then calls death.
+     * Removes the xpath of a given config bean from the list of this bean's xpaths (children so to speak). Then calls death.
      */
     public void removeDConfigBean(DConfigBean bean) throws BeanNotFoundException {
         // childList.remove(bean);

@@ -116,7 +116,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
     private static final List<LocalizedXsdString> EMPTY_LOCL = Collections.emptyList();
     private static final String CONNECTOR_CLASSNAME = "ConnectorClassName";
     private static final String CONNECTION_PARAMETERS = "ConnectionParameters";
-    private static final String HQ_ACTIVIATION = "org.hornetq.ra.inflow.HornetQActivationSpec";
+    private static final String HQ_ACTIVATION = "org.hornetq.ra.inflow.HornetQActivationSpec";
     private static final String HQ_CONN_DEF = "HornetQConnectionDefinition";
     private static final String HQ_ADAPTER = "org.hornetq.ra.HornetQResourceAdapter";
     private static final String RAMANAGED_CONN_FACTORY = "org.hornetq.ra.HornetQRAManagedConnectionFactory";
@@ -262,9 +262,9 @@ public class PooledConnectionFactoryService implements Service<Void> {
                     .addService(ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE.append(name), activator)
                     .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class,
                             activator.getMdrInjector())
-                    .addDependency(ConnectorServices.RA_REPOSISTORY_SERVICE, ResourceAdapterRepository.class,
+                    .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class,
                             activator.getRaRepositoryInjector())
-                    .addDependency(ConnectorServices.MANAGEMENT_REPOSISTORY_SERVICE, ManagementRepository.class,
+                    .addDependency(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, ManagementRepository.class,
                             activator.getManagementRepositoryInjector())
                     .addDependency(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE,
                             ResourceAdapterDeploymentRegistry.class, activator.getRegistryInjector())
@@ -328,7 +328,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
             final ConfigProperty configProp = new ConfigPropertyImpl(EMPTY_LOCL, str(activationConfigProp), str(STRING_TYPE), null, null);
             jmsActivationConfigProps.add(configProp);
         }
-        Activationspec16Impl activation = new Activationspec16Impl(str(HQ_ACTIVIATION), destination, jmsActivationConfigProps, null);
+        Activationspec16Impl activation = new Activationspec16Impl(str(HQ_ACTIVATION), destination, jmsActivationConfigProps, null);
         List<MessageListener> messageListeners = Collections.<MessageListener>singletonList(new MessageListenerImpl(str(JMS_MESSAGE_LISTENER), activation, null));
         Messageadapter message = new MessageAdapterImpl(messageListeners, null);
 

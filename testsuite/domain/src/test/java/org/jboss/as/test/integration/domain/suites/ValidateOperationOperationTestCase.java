@@ -158,7 +158,7 @@ public class ValidateOperationOperationTestCase extends AbstractMgmtTestBase {
     private void executeInvalidOperation(ModelNode operation) throws IOException {
         try {
             executeOperation(createValidateOperation(operation));
-            Assert.fail("Should have failed on no required paramter included");
+            Assert.fail("Should have failed on no required parameter included");
         } catch (MgmtOperationException expected) {
         }
     }

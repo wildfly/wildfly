@@ -115,7 +115,7 @@ public class LocalHostControllerInfoImpl implements LocalHostControllerInfo {
         return remoteDcHost;
     }
 
-    public int getRemoteDomainControllertPort() {
+    public int getRemoteDomainControllerPort() {
         return remoteDcPort;
     }
 

@@ -21,7 +21,7 @@ public final class WebSubsystemServices {
     public static final ServiceName JBOSS_WEB_CONNECTOR = JBOSS_WEB.append("connector");
     /** The base name for jboss.web host services. */
     public static final ServiceName JBOSS_WEB_HOST = JBOSS_WEB.append("host");
-    /** The base name for jboss.web deployemnts. */
+    /** The base name for jboss.web deployments. */
     static final ServiceName JBOSS_WEB_DEPLOYMENT_BASE = JBOSS_WEB.append("deployment");
 
     public static ServiceName deploymentServiceName(final String virtualHost, final String contextPath) {

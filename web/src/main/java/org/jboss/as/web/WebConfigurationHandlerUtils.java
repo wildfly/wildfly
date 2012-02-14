@@ -33,7 +33,7 @@ import static org.jboss.as.web.Constants.DISABLED;
 import static org.jboss.as.web.Constants.DISPLAY_SOURCE_FRAGMENT;
 import static org.jboss.as.web.Constants.DUMP_SMAP;
 import static org.jboss.as.web.Constants.ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUTE;
-import static org.jboss.as.web.Constants.FILE_ENCONDING;
+import static org.jboss.as.web.Constants.FILE_ENCODING;
 import static org.jboss.as.web.Constants.GENERATE_STRINGS_AS_CHAR_ARRAYS;
 import static org.jboss.as.web.Constants.JAVA_ENCODING;
 import static org.jboss.as.web.Constants.JSP_CONFIGURATION;
@@ -42,7 +42,7 @@ import static org.jboss.as.web.Constants.LISTINGS;
 import static org.jboss.as.web.Constants.MAPPED_FILE;
 import static org.jboss.as.web.Constants.MAX_DEPTH;
 import static org.jboss.as.web.Constants.MIME_MAPPING;
-import static org.jboss.as.web.Constants.MODIFIFICATION_TEST_INTERVAL;
+import static org.jboss.as.web.Constants.MODIFICATION_TEST_INTERVAL;
 import static org.jboss.as.web.Constants.READ_ONLY;
 import static org.jboss.as.web.Constants.RECOMPILE_ON_FAIL;
 import static org.jboss.as.web.Constants.REWRITE;
@@ -263,7 +263,7 @@ class WebConfigurationHandlerUtils {
         jsp.registerReadWriteAttribute(TAG_POOLING, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN), Storage.CONFIGURATION);
         jsp.registerReadWriteAttribute(MAPPED_FILE, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN), Storage.CONFIGURATION);
         jsp.registerReadWriteAttribute(CHECK_INTERVAL, null, new WriteAttributeHandlers.IntRangeValidatingHandler(-1), Storage.CONFIGURATION);
-        jsp.registerReadWriteAttribute(MODIFIFICATION_TEST_INTERVAL, null, new WriteAttributeHandlers.IntRangeValidatingHandler(-1), Storage.CONFIGURATION);
+        jsp.registerReadWriteAttribute(MODIFICATION_TEST_INTERVAL, null, new WriteAttributeHandlers.IntRangeValidatingHandler(-1), Storage.CONFIGURATION);
         jsp.registerReadWriteAttribute(RECOMPILE_ON_FAIL, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN), Storage.CONFIGURATION);
         jsp.registerReadWriteAttribute(SMAP, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN), Storage.CONFIGURATION);
         jsp.registerReadWriteAttribute(DUMP_SMAP, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN), Storage.CONFIGURATION);
@@ -277,10 +277,10 @@ class WebConfigurationHandlerUtils {
         jsp.registerReadWriteAttribute(DISPLAY_SOURCE_FRAGMENT, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN), Storage.CONFIGURATION);
     }
 
-    static void initResourcesAttribtues(final ManagementResourceRegistration resources) {
+    static void initResourcesAttributes(final ManagementResourceRegistration resources) {
         resources.registerReadWriteAttribute(LISTINGS, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN), Storage.CONFIGURATION);
         resources.registerReadWriteAttribute(SENDFILE, null, new WriteAttributeHandlers.IntRangeValidatingHandler(1), Storage.CONFIGURATION);
-        resources.registerReadWriteAttribute(FILE_ENCONDING, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1), Storage.CONFIGURATION);
+        resources.registerReadWriteAttribute(FILE_ENCODING, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1), Storage.CONFIGURATION);
         resources.registerReadWriteAttribute(READ_ONLY, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN), Storage.CONFIGURATION);
         resources.registerReadWriteAttribute(WEBDAV, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN), Storage.CONFIGURATION);
         resources.registerReadWriteAttribute(MAX_DEPTH, null, new WriteAttributeHandlers.IntRangeValidatingHandler(1), Storage.CONFIGURATION);

@@ -100,7 +100,7 @@ public class ThreadMXBeanThreadInfosHandler implements OperationStepHandler, Des
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return PlatformMBeanDescriptions.getGetThreadInfosDescripton(locale);
+        return PlatformMBeanDescriptions.getGetThreadInfosDescription(locale);
     }
 
     private long[] getIds(final ModelNode operation) throws OperationFailedException {

@@ -80,7 +80,7 @@ public interface DeploymentMessages {
     String moduleTypeNotSupported(ModuleType type);
 
     @Message(id = 16162, value = "Deployment plan does not contain entry: %s")
-    String deployementPlanDoesNotContainEntry(String entryname);
+    String deploymentPlanDoesNotContainEntry(String entryName);
 
     @Message(id = 16163, value = "Opaque deployment URI not implemented")
     String opaqueDeploymentUriNotImplemented();

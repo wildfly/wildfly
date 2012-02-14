@@ -284,7 +284,7 @@ class ManagedServer {
                         PathAddress.pathAddress(PathElement.pathElement(HOST, hostControllerName), serverPath),
                         ProxyOperationAddressTranslator.SERVER);
             }
-        // TODO we just check that we are in the correct state, perhaps introuce a new state
+        // TODO we just check that we are in the correct state, perhaps introduce a new state
         }, InternalState.SERVER_STARTING, InternalState.SERVER_STARTING);
         return proxyController;
     }
@@ -624,7 +624,7 @@ class ManagedServer {
             // Get the standalone boot updates
             final List<ModelNode> bootUpdates = bootConfiguration.getBootUpdates();
             // Send std.in
-            final ServiceActivator hostControllerCommActivator = HostCommunicationServices.createServerCommuncationActivator(managementSocket, serverName, serverProcessName, authKey, bootConfiguration.isManagementSubsystemEndpoint());
+            final ServiceActivator hostControllerCommActivator = HostCommunicationServices.createServerCommunicationActivator(managementSocket, serverName, serverProcessName, authKey, bootConfiguration.isManagementSubsystemEndpoint());
             final ServerStartTask startTask = new ServerStartTask(hostControllerName, serverName, 0, Collections.<ServiceActivator>singletonList(hostControllerCommActivator), bootUpdates);
             final Marshaller marshaller = MARSHALLER_FACTORY.createMarshaller(CONFIG);
             final OutputStream os = processControllerClient.sendStdin(serverProcessName);

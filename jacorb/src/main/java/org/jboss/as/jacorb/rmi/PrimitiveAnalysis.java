@@ -50,7 +50,7 @@ public class PrimitiveAnalysis extends ClassAnalysis {
 
 
     /**
-     * Get a singleton instance representing one of the peimitive types.
+     * Get a singleton instance representing one of the primitive types.
      */
     public static PrimitiveAnalysis getPrimitiveAnalysis(final Class cls) {
         if (cls == null)

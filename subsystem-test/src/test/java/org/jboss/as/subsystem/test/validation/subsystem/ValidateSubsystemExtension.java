@@ -38,7 +38,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  */
 public class ValidateSubsystemExtension implements Extension {
 
-    /** The name space used for the {@code substystem} element */
+    /** The name space used for the {@code subsystem} element */
     public static final String NAMESPACE = "urn:mycompany:mysubsystem:1.0";
 
     /** The name of our subsystem within the model. */

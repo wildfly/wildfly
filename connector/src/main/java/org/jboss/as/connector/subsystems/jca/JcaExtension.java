@@ -609,11 +609,11 @@ public class JcaExtension implements Extension {
                             }
                         }
 
-                        final ModelNode bootStrapCOntextAddress = parentAddress.clone();
-                        bootStrapCOntextAddress.add(BOOTSTRAP_CONTEXT, name);
-                        bootStrapCOntextAddress.protect();
+                        final ModelNode bootstrapContextAddress = parentAddress.clone();
+                        bootstrapContextAddress.add(BOOTSTRAP_CONTEXT, name);
+                        bootstrapContextAddress.protect();
 
-                        bootstrapContextOperation.get(OP_ADDR).set(bootStrapCOntextAddress);
+                        bootstrapContextOperation.get(OP_ADDR).set(bootstrapContextAddress);
 
                         // Handle elements
                         requireNoContent(reader);
@@ -629,9 +629,9 @@ public class JcaExtension implements Extension {
         }
 
         public String rawElementText(XMLStreamReader reader) throws XMLStreamException {
-            String elementtext = reader.getElementText();
-            elementtext = elementtext == null || elementtext.trim().length() == 0 ? null : elementtext.trim();
-            return elementtext;
+            String elementText = reader.getElementText();
+            elementText = elementText == null || elementText.trim().length() == 0 ? null : elementText.trim();
+            return elementText;
         }
 
         public String rawAttributeText(XMLStreamReader reader, String attributeName) {

@@ -41,7 +41,7 @@ import static org.jboss.as.jmx.CommonAttributes.REMOTING_CONNECTOR;
 public class RemotingConnectorResource extends SimpleResourceDefinition {
 
     static final PathElement REMOTE_CONNECTOR_CONFIG_PATH = PathElement.pathElement(REMOTING_CONNECTOR, JMX);
-    static final SimpleAttributeDefinition USE_MANAGEMENT_ENDPOINT = new SimpleAttributeDefinitionBuilder(CommonAttributes.USE_MANAGMENT_ENDPOINT, ModelType.BOOLEAN, true)
+    static final SimpleAttributeDefinition USE_MANAGEMENT_ENDPOINT = new SimpleAttributeDefinitionBuilder(CommonAttributes.USE_MANAGEMENT_ENDPOINT, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode(true)).build();
     static final RemotingConnectorResource INSTANCE = new RemotingConnectorResource();
 

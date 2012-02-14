@@ -122,7 +122,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     private String runAsPrincipal;
 
     /**
-     * Roles mapped with secuirty-role
+     * Roles mapped with security-role
      */
     private SecurityRolesMetaData securityRoles;
 
@@ -234,7 +234,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     if(!ejbSetupActions.isEmpty()) {
                         configuration.addTimeoutViewInterceptor(AdditionalSetupInterceptor.factory(ejbSetupActions), InterceptorOrder.View.EE_SETUP);
                     }
-                    configuration.addTimeoutViewInterceptor(new ImmediateInterceptorFactory(new TCCLInterceptor(configuration.getModuleClassLoder())), InterceptorOrder.View.TCCL_INTERCEPTOR);
+                    configuration.addTimeoutViewInterceptor(new ImmediateInterceptorFactory(new TCCLInterceptor(configuration.getModuleClassLoader())), InterceptorOrder.View.TCCL_INTERCEPTOR);
                     configuration.addTimeoutViewInterceptor(configuration.getNamespaceContextInterceptorFactory(), InterceptorOrder.View.JNDI_NAMESPACE_INTERCEPTOR);
                     configuration.addTimeoutViewInterceptor(CurrentInvocationContextInterceptor.FACTORY, InterceptorOrder.View.INVOCATION_CONTEXT_INTERCEPTOR);
                     if (isSecurityEnabled()) {
@@ -309,7 +309,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration viewConfiguration) throws DeploymentUnitProcessingException {
                 viewConfiguration.addViewInterceptor(LoggingInterceptor.FACTORY, InterceptorOrder.View.EJB_EXCEPTION_LOGGING_INTERCEPTOR);
-                viewConfiguration.addViewInterceptor(new ImmediateInterceptorFactory(new TCCLInterceptor(componentConfiguration.getModuleClassLoder())), InterceptorOrder.View.TCCL_INTERCEPTOR);
+                viewConfiguration.addViewInterceptor(new ImmediateInterceptorFactory(new TCCLInterceptor(componentConfiguration.getModuleClassLoader())), InterceptorOrder.View.TCCL_INTERCEPTOR);
 
                 //If this is the EJB 2.x local or home view add the exception transformer interceptor
                 if (view.getMethodIntf() == MethodIntf.LOCAL && EJBLocalObject.class.isAssignableFrom(viewConfiguration.getViewClass())) {
@@ -354,7 +354,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     }
                 });
             }
-            // add the remote tx propogating interceptor
+            // add the remote tx propagating interceptor
             view.getConfigurators().add(new EJBRemoteTransactionsViewConfigurator());
         }
 

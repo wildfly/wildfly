@@ -99,7 +99,7 @@ public class GlobalCharacterHandlers {
 
     //private static void addHandler(char start, )
     static {
-        addHandler("STRING_IN_PARANTHESIS", '(', ')');
+        addHandler("STRING_IN_PARENTHESIS", '(', ')');
         addHandler("STRING_IN_BRACKETS", '[', ']');
         addHandler("STRING_IN_BRACES", '{', '}');
         //addHandler("STRING_IN_CHEVRONS", '<', '>', "The closing '>' is missing.");

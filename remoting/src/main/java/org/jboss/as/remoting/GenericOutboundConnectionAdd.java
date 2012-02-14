@@ -104,7 +104,7 @@ class GenericOutboundConnectionAdd extends AbstractOutboundConnectionAddHandler 
         final ServiceName aliasServiceName = GenericOutboundConnectionService.GENERIC_OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(connectionName);
         final ServiceBuilder<GenericOutboundConnectionService> svcBuilder = context.getServiceTarget().addService(serviceName, outboundRemotingConnectionService)
                 .addAliases(aliasServiceName)
-                .addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, outboundRemotingConnectionService.getEnpointInjector());
+                .addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, outboundRemotingConnectionService.getEndpointInjector());
 
         if (verificationHandler != null) {
             svcBuilder.addListener(verificationHandler);

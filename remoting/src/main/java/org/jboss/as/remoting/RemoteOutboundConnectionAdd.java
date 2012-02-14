@@ -55,9 +55,9 @@ class RemoteOutboundConnectionAdd extends AbstractOutboundConnectionAddHandler {
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         super.populateModel(operation, model);
 
-        RemoteOutboundConnnectionResourceDefinition.OUTBOUND_SOCKET_BINDING_REF.validateAndSet(operation, model);
-        RemoteOutboundConnnectionResourceDefinition.USERNAME.validateAndSet(operation, model);
-        RemoteOutboundConnnectionResourceDefinition.SECURITY_REALM.validateAndSet(operation, model);
+        RemoteOutboundConnectionResourceDefinition.OUTBOUND_SOCKET_BINDING_REF.validateAndSet(operation, model);
+        RemoteOutboundConnectionResourceDefinition.USERNAME.validateAndSet(operation, model);
+        RemoteOutboundConnectionResourceDefinition.SECURITY_REALM.validateAndSet(operation, model);
     }
 
     @Override
@@ -72,7 +72,7 @@ class RemoteOutboundConnectionAdd extends AbstractOutboundConnectionAddHandler {
         final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
         final String connectionName = address.getLastElement().getValue();
 
-        final String outboundSocketBindingRef = RemoteOutboundConnnectionResourceDefinition.OUTBOUND_SOCKET_BINDING_REF.resolveModelAttribute(context, operation).asString();
+        final String outboundSocketBindingRef = RemoteOutboundConnectionResourceDefinition.OUTBOUND_SOCKET_BINDING_REF.resolveModelAttribute(context, operation).asString();
         final ServiceName outboundSocketBindingDependency = OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(outboundSocketBindingRef);
         // fetch the connection creation options from the model
         final OptionMap connectionCreationOptions = ConnectorResource.getOptions(fullModel.get(CommonAttributes.PROPERTY));
@@ -86,7 +86,7 @@ class RemoteOutboundConnectionAdd extends AbstractOutboundConnectionAddHandler {
         final ServiceName aliasServiceName = RemoteOutboundConnectionService.REMOTE_OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(connectionName);
         final ServiceBuilder<RemoteOutboundConnectionService> svcBuilder = context.getServiceTarget().addService(serviceName, outboundConnectionService)
                 .addAliases(aliasServiceName)
-                .addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, outboundConnectionService.getEnpointInjector())
+                .addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, outboundConnectionService.getEndpointInjector())
                 .addDependency(outboundSocketBindingDependency, OutboundSocketBinding.class, outboundConnectionService.getDestinationOutboundSocketBindingInjector());
 
         if (securityRealm != null) {

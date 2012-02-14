@@ -215,7 +215,7 @@ class ExtensibleFilter implements FileFilter {
             // The < 0 index gives the first index greater than name
             int firstLessIndex = -2 - index;
             String prefix = prefixes.get(firstLessIndex);
-            // If name starts with an ingored prefix ignore name
+            // If name starts with an ignored prefix ignore name
             if (name.startsWith(prefix))
                 return false;
         }
@@ -227,7 +227,7 @@ class ExtensibleFilter implements FileFilter {
             // The < 0 index gives the first index greater than name
             int firstLessIndex = -2 - index;
             String suffix = suffixes.get(firstLessIndex);
-            // If name ends with an ingored suffix ignore name
+            // If name ends with an ignored suffix ignore name
             if (name.endsWith(suffix))
                 return false;
         }

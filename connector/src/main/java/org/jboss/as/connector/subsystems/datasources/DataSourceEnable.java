@@ -122,14 +122,14 @@ public class DataSourceEnable implements OperationStepHandler {
             int propertiesCount = 0;
             for (ServiceName name : serviceNames) {
                 if (xaDataSourceConfigServiceName.append("xa-datasource-properties").isParentOf(name)) {
-                    final ServiceController<?> xaConfigProperyController = registry.getService(name);
-                    XaDataSourcePropertiesService xaPropService = (XaDataSourcePropertiesService) xaConfigProperyController.getService();
+                    final ServiceController<?> xaConfigPropertyController = registry.getService(name);
+                    XaDataSourcePropertiesService xaPropService = (XaDataSourcePropertiesService) xaConfigPropertyController.getService();
 
-                    if (xaConfigProperyController != null) {
+                    if (xaConfigPropertyController != null) {
 
-                        if (!ServiceController.State.UP.equals(xaConfigProperyController.getState())) {
+                        if (!ServiceController.State.UP.equals(xaConfigPropertyController.getState())) {
                             propertiesCount++;
-                            xaConfigProperyController.setMode(ServiceController.Mode.ACTIVE);
+                            xaConfigPropertyController.setMode(ServiceController.Mode.ACTIVE);
                             builder.addDependency(name, String.class, xaDataSourceConfigService.getXaDataSourcePropertyInjector(xaPropService.getName()));
 
                         } else {

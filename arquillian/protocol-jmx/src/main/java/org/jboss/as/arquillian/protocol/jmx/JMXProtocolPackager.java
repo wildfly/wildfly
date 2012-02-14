@@ -106,11 +106,11 @@ public class JMXProtocolPackager implements DeploymentPackager {
         archive.addPackage(ArquillianService.class.getPackage());
         archive.addPackage(AbstractJMXProtocol.class.getPackage());
 
-        // Merge the auxilliary archives and collect the loadable extensions
+        // Merge the auxiliary archives and collect the loadable extensions
         final Set<String> loadableExtensions = new HashSet<String>();
-        final String loadableExtentionsPath = "META-INF/services/" + RemoteLoadableExtension.class.getName();
+        final String loadableExtensionsPath = "META-INF/services/" + RemoteLoadableExtension.class.getName();
         for (Archive<?> aux : auxArchives) {
-            Node node = aux.get(loadableExtentionsPath);
+            Node node = aux.get(loadableExtensionsPath);
             if (node != null) {
                 BufferedReader br = new BufferedReader(new InputStreamReader(node.getAsset().openStream()));
                 try {
@@ -156,7 +156,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
         archive.addAsResource(new UrlAsset(serviceActivatorURL), serviceActivatorPath);
 
         // Replace the loadable extensions with the collected set
-        archive.delete(ArchivePaths.create(loadableExtentionsPath));
+        archive.delete(ArchivePaths.create(loadableExtensionsPath));
         archive.addAsResource(new Asset() {
             @Override
             public InputStream openStream() {
@@ -168,7 +168,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
                 pw.close();
                 return new ByteArrayInputStream(baos.toByteArray());
             }
-        }, loadableExtentionsPath);
+        }, loadableExtensionsPath);
 
         log.debugf("Loadable extensions: %s", loadableExtensions);
         log.tracef("Archive content: %s\n%s", archive, archive.toString(true));

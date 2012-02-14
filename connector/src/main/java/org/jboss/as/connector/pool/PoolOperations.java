@@ -44,7 +44,7 @@ public abstract class PoolOperations implements OperationStepHandler {
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     final ServiceController<?> managementRepoService = context.getServiceRegistry(false).getService(
-                            ConnectorServices.MANAGEMENT_REPOSISTORY_SERVICE);
+                            ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE);
                     if (managementRepoService != null) {
                         ModelNode operationResult = null;
                         try {

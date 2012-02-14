@@ -33,7 +33,7 @@ import org.jboss.util.Classes;
 
 /**
  * JDBCQueryMetaDataFactory constructs a JDBCQueryMetaData object based
- * on the query specifiection type.
+ * on the query specification type.
  *
  * @author <a href="mailto:dain@daingroup.com">Dain Sundstrom</a>
  * @version $Revision: 81030 $

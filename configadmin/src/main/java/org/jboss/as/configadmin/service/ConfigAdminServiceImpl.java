@@ -53,7 +53,7 @@ import java.util.concurrent.Executors;
 import static org.jboss.as.configadmin.ConfigAdminLogger.ROOT_LOGGER;
 
 /**
- * Maintains a set of {@link Dictionary}s in the domain model keyd be persistent ID (PID).
+ * Maintains a set of {@link Dictionary}s in the domain model keyed be persistent ID (PID).
  *
  * @author Thomas.Diesler@jboss.com
  * @since 29-Nov-2010
@@ -94,11 +94,11 @@ public class ConfigAdminServiceImpl implements ConfigAdminService {
     }
 
     @Override
-    public Dictionary<String, String> putConfiguration(String pid, Dictionary<String, String> newconfig) {
+    public Dictionary<String, String> putConfiguration(String pid, Dictionary<String, String> newConfig) {
         ModelNode address = getSubsystemAddress();
         address.add(new ModelNode().set(ModelConstants.CONFIGURATION, pid));
-        Dictionary<String, String> oldconfig = getConfiguration(pid);
-        if (oldconfig != null) {
+        Dictionary<String, String> oldConfig = getConfiguration(pid);
+        if (oldConfig != null) {
             ModelNode op = Util.getEmptyOperation(ModelDescriptionConstants.REMOVE, address);
             try {
                 controllerClient.execute(op);
@@ -107,10 +107,10 @@ public class ConfigAdminServiceImpl implements ConfigAdminService {
             }
         }
         ModelNode entries = new ModelNode();
-        Enumeration<String> keys = newconfig.keys();
+        Enumeration<String> keys = newConfig.keys();
         while (keys.hasMoreElements()) {
             String key = keys.nextElement();
-            entries.get(key).set(newconfig.get(key));
+            entries.get(key).set(newConfig.get(key));
         }
         ModelNode op = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
         op.get(ModelConstants.ENTRIES).set(entries);
@@ -118,20 +118,20 @@ public class ConfigAdminServiceImpl implements ConfigAdminService {
             ModelNode node = controllerClient.execute(op);
             ModelNode outcome = node.get(ModelDescriptionConstants.OUTCOME);
             if (ModelDescriptionConstants.SUCCESS.equals(outcome.asString())) {
-                executor.execute(new ConfigurationModifiedService(pid, newconfig));
+                executor.execute(new ConfigurationModifiedService(pid, newConfig));
             } else {
                 ROOT_LOGGER.cannotAddConfiguration(pid, node);
             }
         } catch (IOException ex) {
             ROOT_LOGGER.cannotAddConfiguration(ex, pid);
         }
-        return oldconfig;
+        return oldConfig;
     }
 
     @Override
     public Dictionary<String, String> removeConfiguration(String pid) {
-        Dictionary<String, String> oldconfig = getConfiguration(pid);
-        if (oldconfig != null) {
+        Dictionary<String, String> oldConfig = getConfiguration(pid);
+        if (oldConfig != null) {
             ModelNode address = getSubsystemAddress();
             address.add(new ModelNode().set(ModelConstants.CONFIGURATION, pid));
             ModelNode op = Util.getEmptyOperation(ModelDescriptionConstants.REMOVE, address);
@@ -139,7 +139,7 @@ public class ConfigAdminServiceImpl implements ConfigAdminService {
                 ModelNode node = controllerClient.execute(op);
                 ModelNode outcome = node.get(ModelDescriptionConstants.OUTCOME);
                 if (ModelDescriptionConstants.SUCCESS.equals(outcome.asString())) {
-                    executor.execute(new ConfigurationModifiedService(pid, oldconfig));
+                    executor.execute(new ConfigurationModifiedService(pid, oldConfig));
                 } else {
                     ROOT_LOGGER.cannotRemoveConfiguration(pid, node);
                 }
@@ -147,7 +147,7 @@ public class ConfigAdminServiceImpl implements ConfigAdminService {
                 ROOT_LOGGER.cannotRemoveConfiguration(ex, pid);
             }
         }
-        return oldconfig;
+        return oldConfig;
     }
 
     @Override
@@ -174,7 +174,7 @@ public class ConfigAdminServiceImpl implements ConfigAdminService {
         ROOT_LOGGER.debugf("Add listener: %s", listener);
         listeners.add(listener);
 
-        // Call the newly registered listener with a potentially null dictionaly for every registered pid
+        // Call the newly registered listener with a potentially null dictionary for every registered pid
         Set<String> pids = listener.getPIDs();
         if (pids != null) {
             for (String pid : pids) {
@@ -197,7 +197,7 @@ public class ConfigAdminServiceImpl implements ConfigAdminService {
     }
 
     /**
-     * Asynchronously update the persistet configuration and call the set of registered listeners
+     * Asynchronously update the persistent configuration and call the set of registered listeners
      */
     class ConfigurationModifiedService implements Runnable {
 

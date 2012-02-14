@@ -101,7 +101,7 @@ public interface JDBCFieldBridge extends FieldBridge {
     int loadInstanceResults(ResultSet rs, int parameterIndex, CmpEntityBeanContext ctx);
 
     /**
-     * Loads the value of this cmp field from result set into argument referance.
+     * Loads the value of this cmp field from result set into argument reference.
      */
     int loadArgumentResults(ResultSet rs, int parameterIndex, Object[] argumentRef);
 

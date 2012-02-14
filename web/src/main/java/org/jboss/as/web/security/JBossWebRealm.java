@@ -118,7 +118,7 @@ public class JBossWebRealm extends RealmBase {
     /**
      * The {@code DeploymentUnit} associated with the Realm
      */
-    protected DeploymentUnit deploymnetUnit;
+    protected DeploymentUnit deploymentUnit;
 
     /**
      * MetaData associated with the DeploymentUnit
@@ -182,7 +182,7 @@ public class JBossWebRealm extends RealmBase {
      * @param deploymentUnit
      */
     public void setDeploymentUnit(DeploymentUnit deploymentUnit) {
-        this.deploymnetUnit = deploymentUnit;
+        this.deploymentUnit = deploymentUnit;
         metaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY).getMergedJBossWebMetaData();
         principalVersusRolesMap = metaData.getSecurityRoles().getPrincipalVersusRolesMap();
         useJBossAuthorization = metaData.isUseJBossAuthorization();

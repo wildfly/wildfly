@@ -449,7 +449,7 @@ public final class JDBCEntityMetaData {
 
     public JDBCEntityMetaData(JDBCApplicationMetaData jdbcApplication, ParsedEntity parsed, JDBCEntityMetaData defaultValues) {
         // store passed in application... application in defaultValues may
-        // be different because jdbcApplication is imutable
+        // be different because jdbcApplication is immutable
         this.jdbcApplication = jdbcApplication;
 
         // set default values
@@ -724,7 +724,7 @@ public final class JDBCEntityMetaData {
     /**
      * Gets the meta data for the application of which this entity is a member.
      *
-     * @return the meta data for the application that this entity is a memeber
+     * @return the meta data for the application that this entity is a member
      */
     public JDBCApplicationMetaData getJDBCApplication() {
         return jdbcApplication;
@@ -767,7 +767,7 @@ public final class JDBCEntityMetaData {
     }
 
     /**
-     * Gets the abstract shcema name of this entity. The name come from
+     * Gets the abstract schema name of this entity. The name come from
      * the ejb-jar.xml file.
      *
      * @return the abstract schema name of this entity
@@ -859,7 +859,7 @@ public final class JDBCEntityMetaData {
     }
 
     /**
-     * Gets the map from load grou name to a List of field names, which
+     * Gets the map from load group name to a List of field names, which
      * forms a logical load group.
      *
      * @return an unmodifiable map of load groups (Lists) by group name.
@@ -943,7 +943,7 @@ public final class JDBCEntityMetaData {
     }
 
     /**
-     * Get the (user-defined) SQL commands that sould be issued after table
+     * Get the (user-defined) SQL commands that should be issued after table
      * creation
      *
      * @return the SQL command to issue to the DB-server
@@ -954,7 +954,7 @@ public final class JDBCEntityMetaData {
 
     /**
      * Gets the flag used to determine if the store manager should add a
-     * priary key constraint when creating the table
+     * primary key constraint when creating the table
      *
      * @return true if the store manager should add a primary key constraint to
      *         the create table sql statement
@@ -975,7 +975,7 @@ public final class JDBCEntityMetaData {
     }
 
     /**
-     * The maximum number of qurey result lists that will be tracked.
+     * The maximum number of query result lists that will be tracked.
      */
     public int getListCacheMax() {
         return listCacheMax;
@@ -1007,7 +1007,7 @@ public final class JDBCEntityMetaData {
     }
 
     /**
-     * Get the relationsip roles of this entity.
+     * Get the relationship roles of this entity.
      * Items are instance of JDBCRelationshipRoleMetaData.
      *
      * @return an unmodifiable collection of the relationship roles defined

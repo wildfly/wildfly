@@ -77,7 +77,7 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         super(componentConfiguration, ejbJarConfiguration);
 
         final StatefulComponentDescription componentDescription = (StatefulComponentDescription) componentConfiguration.getComponentDescription();
-        final InterceptorFactory tcclInterceptorFactory = new ImmediateInterceptorFactory(new TCCLInterceptor(componentConfiguration.getModuleClassLoder()));
+        final InterceptorFactory tcclInterceptorFactory = new ImmediateInterceptorFactory(new TCCLInterceptor(componentConfiguration.getModuleClassLoader()));
         final InterceptorFactory namespaceContextInterceptorFactory = componentConfiguration.getNamespaceContextInterceptorFactory();
 
         this.afterBeginMethod = componentDescription.getAfterBegin();
@@ -95,7 +95,7 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         this.marshallingConfiguration = new MarshallingConfiguration();
         this.marshallingConfiguration.setSerializedCreator(new SunReflectiveCreator());
         this.marshallingConfiguration.setExternalizerCreator(new ReflectiveCreator());
-        this.marshallingConfiguration.setClassResolver(new ClassLoaderAwareClassResolver(ModularClassResolver.getInstance(componentConfiguration.getModuleLoader()), componentConfiguration.getModuleClassLoder()));
+        this.marshallingConfiguration.setClassResolver(new ClassLoaderAwareClassResolver(ModularClassResolver.getInstance(componentConfiguration.getModuleLoader()), componentConfiguration.getModuleClassLoader()));
         this.marshallingConfiguration.setSerializabilityChecker(new StatefulSessionBeanSerializabilityChecker(componentConfiguration.getComponentClass()));
         this.marshallingConfiguration.setClassTable(new StatefulSessionBeanClassTable());
         this.serializableInterceptorContextKeys = componentConfiguration.getInterceptorContextKeys();

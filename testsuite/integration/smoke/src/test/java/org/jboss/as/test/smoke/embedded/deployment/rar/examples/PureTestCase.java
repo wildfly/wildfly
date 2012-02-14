@@ -111,7 +111,7 @@ public class PureTestCase extends AbstractMgmtTestBase {
      */
     @Test
     public void testRegistryConfiguration() throws Throwable {
-    	ServiceController<?> controller=serviceContainer.getService( ConnectorServices.RA_REPOSISTORY_SERVICE);
+    	ServiceController<?> controller=serviceContainer.getService( ConnectorServices.RA_REPOSITORY_SERVICE);
     	assertNotNull(controller);
     	ResourceAdapterRepository repository=(ResourceAdapterRepository)controller.getValue();
     	assertNotNull(repository);

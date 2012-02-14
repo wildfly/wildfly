@@ -90,7 +90,7 @@ public interface JmxMessages {
      * @param cause the cause of the error.
      * @param name  the name of the attribute.
      *
-     * @return a {@link ReflectionException} for the errror.
+     * @return a {@link ReflectionException} for the error.
      */
     @Message(id = 11333, value = "Could not set %s")
     ReflectionException cannotSetAttribute(@Cause Exception cause, String name);

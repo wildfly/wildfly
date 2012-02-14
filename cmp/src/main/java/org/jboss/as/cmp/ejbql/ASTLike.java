@@ -24,7 +24,7 @@ package org.jboss.as.cmp.ejbql;
 import org.jboss.as.cmp.jdbc.SQLUtil;
 
 /**
- * This abstract syntax node represents a like opperator.
+ * This abstract syntax node represents a like operator.
  *
  * @author <a href="mailto:dain@daingroup.com">Dain Sundstrom</a>
  * @version $Revision: 81030 $

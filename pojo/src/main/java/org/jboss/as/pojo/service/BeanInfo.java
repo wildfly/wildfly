@@ -30,7 +30,7 @@ import java.lang.reflect.Method;
  * Bean info API.
  * It checks the whole bean's class hierarchy.
  *
- * @param <T> the exacty bean type
+ * @param <T> the exact bean type
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public interface BeanInfo<T> {

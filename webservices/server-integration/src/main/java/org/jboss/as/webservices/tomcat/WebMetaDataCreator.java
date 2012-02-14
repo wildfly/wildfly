@@ -210,7 +210,7 @@ final class WebMetaDataCreator {
      * &lt;/security-constraint&gt;
      * </pre>
      *
-     * @param dep        webservice deployemnt
+     * @param dep        webservice deployment
      * @param jbossWebMD jboss web meta data
      */
     private void createSecurityConstraints(final Deployment dep, final JBossWebMetaData jbossWebMD) {

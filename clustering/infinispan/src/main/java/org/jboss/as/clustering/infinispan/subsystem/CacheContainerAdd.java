@@ -78,7 +78,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
     }
 
     private static void populate(ModelNode source, ModelNode target) {
-        // AS7-3488 make default-cache non required attrinbute
+        // AS7-3488 make default-cache non required attribute
         // target.get(ModelKeys.DEFAULT_CACHE).set(source.get(ModelKeys.DEFAULT_CACHE));
         if (source.hasDefined(ModelKeys.DEFAULT_CACHE)) {
             target.get(ModelKeys.DEFAULT_CACHE).set(source.get(ModelKeys.DEFAULT_CACHE));

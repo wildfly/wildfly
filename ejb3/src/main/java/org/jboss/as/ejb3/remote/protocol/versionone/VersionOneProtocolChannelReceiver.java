@@ -187,7 +187,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         final Map<DeploymentModuleIdentifier, ModuleDeployment> availableModules = this.deploymentRepository.getModules();
         if (availableModules != null && !availableModules.isEmpty()) {
             try {
-                logger.debug("Sending initial module availabilty message, containing " + availableModules.size() + " module(s) to channel " + this.channel);
+                logger.debug("Sending initial module availability message, containing " + availableModules.size() + " module(s) to channel " + this.channel);
                 this.sendModuleAvailability(availableModules.keySet().toArray(new DeploymentModuleIdentifier[availableModules.size()]));
             } catch (IOException e) {
                 logger.warn("Could not send initial module availability report to channel " + this.channel, e);

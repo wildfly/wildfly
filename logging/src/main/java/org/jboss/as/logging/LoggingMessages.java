@@ -118,7 +118,7 @@ public interface LoggingMessages {
     String failedToSetHandlerEncoding();
 
     /**
-     * A message indicating the handler, represented by the {@code name} parameter, is alredy assigned.
+     * A message indicating the handler, represented by the {@code name} parameter, is already assigned.
      *
      * @param name the handler name.
      *

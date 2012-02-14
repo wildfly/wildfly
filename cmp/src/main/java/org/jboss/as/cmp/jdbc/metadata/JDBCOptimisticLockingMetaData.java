@@ -49,7 +49,7 @@ public final class JDBCOptimisticLockingMetaData {
     private final String groupName;
 
     /**
-     * locking field for verion- or timestamp-column strategy
+     * locking field for version- or timestamp-column strategy
      */
     private final JDBCCMPFieldMetaData lockingField;
 
@@ -107,7 +107,7 @@ public final class JDBCOptimisticLockingMetaData {
                 break;
             }
             default: {
-                throw new RuntimeException("Unexpected error: entity " + entity.getName() + " has unkown/incorrect optimistic locking configuration. -- " + lockingStrategy);
+                throw new RuntimeException("Unexpected error: entity " + entity.getName() + " has unknown/incorrect optimistic locking configuration. -- " + lockingStrategy);
             }
         }
     }

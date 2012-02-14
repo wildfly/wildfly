@@ -173,7 +173,7 @@ public abstract class AbstractQueryCommand implements QueryCommand {
         ResultSet rs = null;
         boolean throwRuntimeExceptions = entity.getMetaData().getThrowRuntimeExceptions();
 
-        // if metadata is true, the getconnection is done inside
+        // if metadata is true, the getConnection is done inside
         // its own try catch block to throw a runtime exception (EJBException)
         if (throwRuntimeExceptions) {
             try {
@@ -189,7 +189,7 @@ public abstract class AbstractQueryCommand implements QueryCommand {
                 log.debug("executing: " + sql);
             }
 
-            // if metadata is false, the getconnection is done inside this try catch block
+            // if metadata is false, the getConnection is done inside this try catch block
             if (!throwRuntimeExceptions) {
                 con = entity.getDataSource().getConnection();
             }
@@ -239,7 +239,7 @@ public abstract class AbstractQueryCommand implements QueryCommand {
         ResultSet rs = null;
         boolean throwRuntimeExceptions = entity.getMetaData().getThrowRuntimeExceptions();
 
-        // if metadata is true, the getconnection is done inside
+        // if metadata is true, the getConnection is done inside
         // its own try catch block to throw a runtime exception (EJBException)
         if (throwRuntimeExceptions) {
             try {
@@ -255,7 +255,7 @@ public abstract class AbstractQueryCommand implements QueryCommand {
                 log.debug("executing: " + sql);
             }
 
-            // if metadata is false, the getconnection is done inside this try catch block
+            // if metadata is false, the getConnection is done inside this try catch block
             if (!throwRuntimeExceptions) {
                 con = entity.getDataSource().getConnection();
             }

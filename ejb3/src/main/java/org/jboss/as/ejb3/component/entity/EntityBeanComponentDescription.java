@@ -125,8 +125,8 @@ public class EntityBeanComponentDescription extends EJBComponentDescription {
 
 
     @Override
-    public final ComponentConfiguration createConfiguration(final ClassIndex classIndex, final ClassLoader moduleClassLoder, final ModuleLoader moduleLoader) {
-        final ComponentConfiguration configuration = createEntityBeanConfiguration(classIndex, moduleClassLoder, moduleLoader);
+    public final ComponentConfiguration createConfiguration(final ClassIndex classIndex, final ClassLoader moduleClassLoader, final ModuleLoader moduleLoader) {
+        final ComponentConfiguration configuration = createEntityBeanConfiguration(classIndex, moduleClassLoader, moduleLoader);
         configuration.getCreateDependencies().add(new ConfigInjectingConfigurator(this));
         // add the timer interceptor
         getConfigurators().add(new ComponentConfigurator() {
@@ -138,8 +138,8 @@ public class EntityBeanComponentDescription extends EJBComponentDescription {
         return configuration;
     }
 
-    protected ComponentConfiguration createEntityBeanConfiguration(final ClassIndex classIndex, final ClassLoader moduleClassLoder, final ModuleLoader moduleLoader) {
-        final ComponentConfiguration configuration = new ComponentConfiguration(this, classIndex, moduleClassLoder, moduleLoader);
+    protected ComponentConfiguration createEntityBeanConfiguration(final ClassIndex classIndex, final ClassLoader moduleClassLoader, final ModuleLoader moduleLoader) {
+        final ComponentConfiguration configuration = new ComponentConfiguration(this, classIndex, moduleClassLoader, moduleLoader);
         // setup the component create service
         configuration.setComponentCreateServiceFactory(EntityBeanComponentCreateService.FACTORY);
         return configuration;

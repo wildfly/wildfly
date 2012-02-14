@@ -494,7 +494,7 @@ public interface OperationContext {
     /**
      * Marks a resource to indicate that it's backing service(s) will be restarted.
      * This is to ensure that a restart only occurs once, even if there are multiple updates.
-     * When true is returned the caller has "aquired" the mark and should proceed with the
+     * When true is returned the caller has "acquired" the mark and should proceed with the
      * restart, when false, the caller should take no additional action.
      *
      * The passed owner is compared by instance when a call to {@link #revertReloadRequired()}.

@@ -113,7 +113,7 @@ public final class ExtensionIndexService implements Service<ExtensionIndex>, Ext
                                 // different places
                                 continue;
                             // now register a module spec service for this extension
-                            // this makes it availble for loading
+                            // this makes it available for loading
                             ExternalModuleSpecService service = new ExternalModuleSpecService(moduleIdentifier, jar);
                             serviceContainer.addService(ServiceModuleLoader.moduleSpecServiceName(moduleIdentifier), service)
                                     .addDependency(org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT_EXTENSION_INDEX)

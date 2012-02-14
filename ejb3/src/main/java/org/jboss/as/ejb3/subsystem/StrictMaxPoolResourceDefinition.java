@@ -60,7 +60,7 @@ public class StrictMaxPoolResourceDefinition extends SimpleResourceDefinition {
                     .build();
     public static final SimpleAttributeDefinition INSTANCE_ACQUISITION_TIMEOUT =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT, ModelType.LONG, true)
-                    .setXmlName(EJB3SubsystemXMLAttribute.INSTANCE_AQUISITION_TIMEOUT.getLocalName())
+                    .setXmlName(EJB3SubsystemXMLAttribute.INSTANCE_ACQUISITION_TIMEOUT.getLocalName())
                     .setDefaultValue(new ModelNode().set(StrictMaxPoolConfig.DEFAULT_TIMEOUT))
                     .setAllowExpression(true)
                     .setValidator(new LongRangeValidator(1, Integer.MAX_VALUE, true, true))
@@ -68,7 +68,7 @@ public class StrictMaxPoolResourceDefinition extends SimpleResourceDefinition {
                     .build();
     public static final SimpleAttributeDefinition INSTANCE_ACQUISITION_TIMEOUT_UNIT =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT_UNIT, ModelType.STRING, true)
-                    .setXmlName(EJB3SubsystemXMLAttribute.INSTANCE_AQUISITION_TIMEOUT_UNIT.getLocalName())
+                    .setXmlName(EJB3SubsystemXMLAttribute.INSTANCE_ACQUISITION_TIMEOUT_UNIT.getLocalName())
                     .setValidator(TimeUnitValidator.ANY_OPTIONAL)
                     .setDefaultValue(new ModelNode().set(StrictMaxPoolConfig.DEFAULT_TIMEOUT_UNIT.name()))
                     .setFlags(AttributeAccess.Flag.RESTART_NONE)

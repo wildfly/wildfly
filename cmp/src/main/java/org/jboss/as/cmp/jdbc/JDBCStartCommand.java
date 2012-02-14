@@ -383,7 +383,7 @@ public final class JDBCStartCommand {
                 statement.executeUpdate(sql);
             } finally {
                 // make sure to close the connection and statement before
-                // comitting the transaction or XA will break
+                // committing the transaction or XA will break
                 JDBCUtil.safeClose(statement);
                 JDBCUtil.safeClose(con);
             }
@@ -438,7 +438,7 @@ public final class JDBCStartCommand {
                 statement.executeUpdate(sql);
             } finally {
                 // make sure to close the connection and statement before
-                // comitting the transaction or XA will break
+                // committing the transaction or XA will break
                 JDBCUtil.safeClose(statement);
                 JDBCUtil.safeClose(con);
             }
@@ -494,7 +494,7 @@ public final class JDBCStartCommand {
                 statement.executeUpdate(sql);
             } finally {
                 // make sure to close the connection and statement before
-                // comitting the transaction or XA will break
+                // committing the transaction or XA will break
                 JDBCUtil.safeClose(statement);
                 JDBCUtil.safeClose(con);
             }
@@ -560,7 +560,7 @@ public final class JDBCStartCommand {
                 }
             } finally {
                 // make sure to close the connection and statement before
-                // comitting the transaction or XA will break
+                // committing the transaction or XA will break
                 JDBCUtil.safeClose(statement);
                 JDBCUtil.safeClose(con);
             }
@@ -658,7 +658,7 @@ public final class JDBCStartCommand {
     }
 
     /**
-     * Create indix for one specific field
+     * Create index for one specific field
      *
      * @param dataSource
      * @param field      to create index for
@@ -857,7 +857,7 @@ public final class JDBCStartCommand {
                 statement.executeUpdate(sql);
             } finally {
                 // make sure to close the connection and statement before
-                // comitting the transaction or XA will break
+                // committing the transaction or XA will break
                 JDBCUtil.safeClose(statement);
                 JDBCUtil.safeClose(con);
             }

@@ -48,7 +48,7 @@ import org.jboss.msc.value.ImmediateValue;
 
 /**
  * Represents the PersistenceUnit injected into a component.
- * TODO:  support injecting into a HibernateSessionFactory.  Initially, hack it by checknig injectionTypeName parameter
+ * TODO:  support injecting into a HibernateSessionFactory.  Initially, hack it by checking injectionTypeName parameter
  * for HibernateSessionFactory.  If/when JPA supports unwrap on the EMF, switch to that.
  *
  * @author Scott Marlow

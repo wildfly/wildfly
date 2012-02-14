@@ -64,28 +64,28 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-        addDepdenency(moduleSpecification, moduleLoader, JAXB_API);
+        addDependency(moduleSpecification, moduleLoader, JAXB_API);
 
         if (!JaxrsDeploymentMarker.isJaxrsDeployment(deploymentUnit)) {
             return;
         }
-        addDepdenency(moduleSpecification, moduleLoader, RESTEASY_ATOM);
-        addDepdenency(moduleSpecification, moduleLoader, RESTEASY_JAXRS);
-        addDepdenency(moduleSpecification, moduleLoader, RESTEASY_JAXB);
-        addDepdenency(moduleSpecification, moduleLoader, RESTEASY_JACKSON);
-        addDepdenency(moduleSpecification, moduleLoader, RESTEASY_JETTISON);
-        addDepdenency(moduleSpecification, moduleLoader, RESTEASY_JSAPI);
-        addDepdenency(moduleSpecification, moduleLoader, RESTEASY_MULTIPART);
-        addDepdenency(moduleSpecification, moduleLoader, RESTEASY_YAML);
-        addDepdenency(moduleSpecification, moduleLoader, JACKSON_CORE_ASL);
+        addDependency(moduleSpecification, moduleLoader, RESTEASY_ATOM);
+        addDependency(moduleSpecification, moduleLoader, RESTEASY_JAXRS);
+        addDependency(moduleSpecification, moduleLoader, RESTEASY_JAXB);
+        addDependency(moduleSpecification, moduleLoader, RESTEASY_JACKSON);
+        addDependency(moduleSpecification, moduleLoader, RESTEASY_JETTISON);
+        addDependency(moduleSpecification, moduleLoader, RESTEASY_JSAPI);
+        addDependency(moduleSpecification, moduleLoader, RESTEASY_MULTIPART);
+        addDependency(moduleSpecification, moduleLoader, RESTEASY_YAML);
+        addDependency(moduleSpecification, moduleLoader, JACKSON_CORE_ASL);
 
         if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
-            addDepdenency(moduleSpecification, moduleLoader, RESTEASY_CDI);
+            addDependency(moduleSpecification, moduleLoader, RESTEASY_CDI);
         }
 
     }
 
-    private void addDepdenency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
+    private void addDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
                                ModuleIdentifier moduleIdentifier) {
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, true, false));
     }

@@ -23,7 +23,7 @@
 package org.jboss.as.web.session.notification;
 
 /**
- * Encapsulates information about the container's capability to issue servlet spec notifications under different condititions.
+ * Encapsulates information about the container's capability to issue servlet spec notifications under different conditions.
  * Implementations of {@link ClusteredSessionNotificationPolicy} can use this information to get a sense of the capabilities of
  * the container.
  * @author Brian Stansberry

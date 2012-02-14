@@ -188,7 +188,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
         moduleSpec.addUserDependencies(rootDeploymentSpecification.getModuleDependencies());
         moduleSpec.addExclusions(rootDeploymentSpecification.getExclusions());
         moduleSpec.addAliases(rootDeploymentSpecification.getAliases());
-        moduleSpec.addModuleSystemDependencies(rootDeploymentSpecification.getSytemDependencies());
+        moduleSpec.addModuleSystemDependencies(rootDeploymentSpecification.getSystemDependencies());
         for (final ResourceRoot additionalResourceRoot : rootDeploymentSpecification.getResourceRoots()) {
 
             final ResourceRoot existingRoot = resourceRoots.get(additionalResourceRoot.getRoot());

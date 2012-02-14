@@ -52,7 +52,7 @@ public abstract class PoolMetrics implements OperationStepHandler {
                     final String attributeName = operation.require(NAME).asString();
 
                     final ServiceController<?> managementRepoService = context.getServiceRegistry(false).getService(
-                            ConnectorServices.MANAGEMENT_REPOSISTORY_SERVICE);
+                            ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE);
                     if (managementRepoService != null) {
                         try {
                             final ManagementRepository repository = (ManagementRepository) managementRepoService.getValue();
@@ -93,7 +93,7 @@ public abstract class PoolMetrics implements OperationStepHandler {
                         final String attributeName = operation.require(NAME).asString();
 
                         final ServiceController<?> managementRepoService = context.getServiceRegistry(false).getService(
-                                ConnectorServices.MANAGEMENT_REPOSISTORY_SERVICE);
+                                ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE);
                         if (managementRepoService != null) {
                             try {
                                 final ModelNode result = context.getResult();

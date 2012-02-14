@@ -53,7 +53,7 @@ public class WebCtxLoader implements Lifecycle, Loader {
     }
 
     public void backgroundProcess() {
-        // FIXME backgroudProcess
+        // FIXME backgroundProcess
     }
 
     public ClassLoader getClassLoader() {

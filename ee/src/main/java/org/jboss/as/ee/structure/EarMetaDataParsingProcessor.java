@@ -45,7 +45,7 @@ import org.jboss.vfs.VirtualFile;
 import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
- * Deployment processor responsible for parsing the applicaiton.xml file of an ear.
+ * Deployment processor responsible for parsing the application.xml file of an ear.
  *
  * @author John Bailey
  */

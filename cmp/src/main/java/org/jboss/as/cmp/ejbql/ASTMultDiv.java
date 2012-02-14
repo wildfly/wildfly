@@ -26,7 +26,7 @@ import java.util.List;
 
 /**
  * This abstract syntax node represents a series of multiplication and
- * divide opperators.
+ * divide operators.
  *
  * @author <a href="mailto:dain@daingroup.com">Dain Sundstrom</a>
  * @version $Revision: 81030 $

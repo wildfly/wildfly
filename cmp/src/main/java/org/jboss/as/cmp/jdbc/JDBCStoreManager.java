@@ -74,8 +74,8 @@ import org.jboss.tm.TransactionLocal;
  * Tied to the life-cycle of the entity container.
  * <p/>
  * Multiplicity:
- * One per cmp entity bean. This could be less if another implementaion of
- * EntityPersistenceStore is created and thoes beans use the implementation
+ * One per cmp entity bean. This could be less if another implementation of
+ * EntityPersistenceStore is created and those beans use the implementation
  *
  * @author <a href="mailto:dain@daingroup.com">Dain Sundstrom</a>
  * @author <a href="mailto:alex@jboss.org">Alex Loubyansky</a>
@@ -195,7 +195,7 @@ public final class JDBCStoreManager implements JDBCEntityPersistenceStore {
                 try {
                     return transactionManager.getTransaction();
                 } catch (SystemException e) {
-                    throw new IllegalStateException("An error occured while getting the " +
+                    throw new IllegalStateException("An error occurred while getting the " +
                             "transaction associated with the current thread: " + e);
                 }
             }
@@ -233,9 +233,9 @@ public final class JDBCStoreManager implements JDBCEntityPersistenceStore {
         startCommand.execute();
 
         // Start the query manager. At this point is creates all of the
-        // query commands. The must occure in the start phase, as
-        // queries can opperate on other entities in the application, and
-        // all entities are gaurenteed to be createed until the start phase.
+        // query commands. The must occur in the start phase, as
+        // queries can operate on other entities in the application, and
+        // all entities are guaranteed to be created until the start phase.
         queryManager.start();
 
         readAheadCache.start();
@@ -400,7 +400,7 @@ public final class JDBCStoreManager implements JDBCEntityPersistenceStore {
     //
 
     /**
-     * Returns a new instance of a class which implemnts the bean class.
+     * Returns a new instance of a class which implements the bean class.
      *
      * @return the new instance
      */

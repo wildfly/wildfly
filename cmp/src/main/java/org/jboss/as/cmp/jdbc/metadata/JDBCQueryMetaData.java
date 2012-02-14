@@ -25,7 +25,7 @@ import java.lang.reflect.Method;
 
 /**
  * This interface is used to identify a query that will be invoked in
- * responce to the invocation of a finder method in a home interface or
+ * response to the invocation of a finder method in a home interface or
  * an ejbSelect method in a bean implementation class.
  *
  * @author <a href="mailto:dain@daingroup.com">Dain Sundstrom</a>

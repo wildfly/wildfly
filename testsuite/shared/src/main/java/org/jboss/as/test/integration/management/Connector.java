@@ -37,7 +37,7 @@ public enum Connector {
         return scheme;
     }
 
-    public final String getProtrocol() {
+    public final String getProtocol() {
         return protocol;
     }
 

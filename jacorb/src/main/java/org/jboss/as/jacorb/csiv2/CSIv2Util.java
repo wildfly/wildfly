@@ -384,7 +384,7 @@ public final class CSIv2Util {
      * @return the constructed {@code TransportAddress} array.
      */
     public static TransportAddress[] createTransportAddress(String host, int port) {
-        // idl type is unsighned sort, so we need this trick
+        // idl type is unsigned sort, so we need this trick
         short short_port = (port > 32767) ? (short) (port - 65536) : (short) port;
 
         TransportAddress ta = new TransportAddress(host, short_port);

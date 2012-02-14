@@ -24,7 +24,7 @@ package org.jboss.as.cmp.jdbc.metadata;
 import java.lang.reflect.Method;
 
 /**
- * Imutable class which holds information about a raw sql query.
+ * Immutable class which holds information about a raw sql query.
  * A raw sql query allows you to do anything sql allows you to do.
  *
  * @author <a href="mailto:dain@daingroup.com">Dain Sundstrom</a>

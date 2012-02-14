@@ -26,7 +26,7 @@ import java.util.HashMap;
 
 
 /**
- * Imutable class which holds a map between Java Classes and JDBCMappingMetaData.
+ * Immutable class which holds a map between Java Classes and JDBCMappingMetaData.
  *
  * @author John Bailey
  * @author <a href="mailto:dain@daingroup.com">Dain Sundstrom</a>
@@ -115,7 +115,7 @@ public final class JDBCTypeMappingMetaData {
     /**
      * Gets the prefix for that is used when generating an alias header.  An
      * alias header is prepended to a generated table alias to prevent name
-     * collisions. An alias header is constructed as folows:
+     * collisions. An alias header is constructed as follows:
      * aliasHeaderPrefix + int_counter + aliasHeaderSuffix
      *
      * @return the prefix for alias headers
@@ -127,7 +127,7 @@ public final class JDBCTypeMappingMetaData {
     /**
      * Gets the suffix for that is used when generating an alias header.  An
      * alias header is prepended to a generated table alias to prevent name
-     * collisions. An alias header is constructed as folows:
+     * collisions. An alias header is constructed as follows:
      * aliasHeaderPrefix + int_counter + aliasHeaderSuffix
      *
      * @return the suffix for alias headers
@@ -138,7 +138,7 @@ public final class JDBCTypeMappingMetaData {
 
     /**
      * Gets maximum length of a table alias.
-     * An alias is constructed as folows: aliasHeader + ejb_ql_identifier_path
+     * An alias is constructed as follows: aliasHeader + ejb_ql_identifier_path
      *
      * @return the maximum length that a table alias can be
      */
@@ -259,7 +259,7 @@ public final class JDBCTypeMappingMetaData {
         this.name = name;
     }
 
-    public void setAddColomnTemplate(final JDBCFunctionMappingMetaData addColumn) {
+    public void setAddColumnTemplate(final JDBCFunctionMappingMetaData addColumn) {
         this.addColumn = addColumn;
     }
 
@@ -275,7 +275,7 @@ public final class JDBCTypeMappingMetaData {
         this.fkConstraint = fkConstraint;
     }
 
-    public void setAlterColomnTemplate(final JDBCFunctionMappingMetaData alterColumn) {
+    public void setAlterColumnTemplate(final JDBCFunctionMappingMetaData alterColumn) {
         this.alterColumn = alterColumn;
     }
 
@@ -295,7 +295,7 @@ public final class JDBCTypeMappingMetaData {
         this.autoIncrement = autoIncrement;
     }
 
-    public void setDropColomnTemplate(final JDBCFunctionMappingMetaData dropColumn) {
+    public void setDropColumnTemplate(final JDBCFunctionMappingMetaData dropColumn) {
         this.dropColumn = dropColumn;
     }
 

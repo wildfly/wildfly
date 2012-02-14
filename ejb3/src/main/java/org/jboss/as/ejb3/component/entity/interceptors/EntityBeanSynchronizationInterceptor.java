@@ -89,7 +89,7 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
                         final Object primaryKey = context.getPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY);
                         component.getCache().release(instance, true);
                         lock.unlock();
-                        throw MESSAGES.instaceWasRemoved(component.getComponentName(), primaryKey);
+                        throw MESSAGES.instanceWasRemoved(component.getComponentName(), primaryKey);
                     }
                 }
 

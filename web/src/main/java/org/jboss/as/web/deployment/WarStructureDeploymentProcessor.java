@@ -91,7 +91,7 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
             return;
         }
 
-        // set the child first behavoiur
+        // set the child first behaviour
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         if (moduleSpecification == null) {
             return;

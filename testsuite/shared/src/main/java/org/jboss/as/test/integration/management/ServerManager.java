@@ -96,7 +96,7 @@ public class ServerManager extends AbstractMgmtTestBase {
         ModelNode op = createOpNode("subsystem=web/connector=test-" + conn.getName() + "-connector", "add");
         op.get("socket-binding").set("test-" + conn.getName());
         op.get("scheme").set(conn.getScheme());
-        op.get("protocol").set(conn.getProtrocol());
+        op.get("protocol").set(conn.getProtocol());
         op.get("secure").set(conn.isSecure());
         op.get("enabled").set(true);
         if (conn.isSecure()) {

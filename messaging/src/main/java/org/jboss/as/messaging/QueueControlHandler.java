@@ -75,8 +75,8 @@ public class QueueControlHandler extends AbstractQueueControlHandler<QueueContro
     }
 
     @Override
-    protected Object handleAdditonalOperation(String operationName, ModelNode operation, OperationContext context,
-                                            QueueControl queueControl) throws OperationFailedException {
+    protected Object handleAdditionalOperation(String operationName, ModelNode operation, OperationContext context,
+                                               QueueControl queueControl) throws OperationFailedException {
         try {
             if (LIST_SCHEDULED_MESSAGES.equals(operationName)) {
                 String json = queueControl.listScheduledMessagesAsJSON();
@@ -97,7 +97,7 @@ public class QueueControlHandler extends AbstractQueueControlHandler<QueueContro
     }
 
     @Override
-    protected void revertAdditonalOperation(String operationName, ModelNode operation, OperationContext context, QueueControl queueControl, Object handback) {
+    protected void revertAdditionalOperation(String operationName, ModelNode operation, OperationContext context, QueueControl queueControl, Object handback) {
         // no-op
     }
 

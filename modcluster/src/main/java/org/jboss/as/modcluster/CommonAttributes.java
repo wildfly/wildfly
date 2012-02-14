@@ -46,7 +46,7 @@ interface CommonAttributes {
     String STICKY_SESSION_REMOVE = "sticky-session-remove";
     String STICKY_SESSION_FORCE = "sticky-session-force";
     String WORKER_TIMEOUT = "worker-timeout";
-    String MAX_ATTEMPTS = "max-attemps";
+    String MAX_ATTEMPTS = "max-attempts";
     String FLUSH_PACKETS = "flush-packets";
     String FLUSH_WAIT = "flush-wait";
     String PING = "ping";

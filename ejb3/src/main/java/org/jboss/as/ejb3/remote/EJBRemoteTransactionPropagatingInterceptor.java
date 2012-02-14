@@ -39,14 +39,14 @@ import org.jboss.invocation.InterceptorContext;
  *
  * @author Jaikiran Pai
  */
-class EJBRemoteTransactionPropogatingInterceptor implements Interceptor {
+class EJBRemoteTransactionPropagatingInterceptor implements Interceptor {
 
     /**
      * Remote transactions repository
      */
     private final EJBRemoteTransactionsRepository ejbRemoteTransactionsRepository;
 
-    EJBRemoteTransactionPropogatingInterceptor(final EJBRemoteTransactionsRepository ejbRemoteTransactionsRepository) {
+    EJBRemoteTransactionPropagatingInterceptor(final EJBRemoteTransactionsRepository ejbRemoteTransactionsRepository) {
         this.ejbRemoteTransactionsRepository = ejbRemoteTransactionsRepository;
     }
 
@@ -76,7 +76,7 @@ class EJBRemoteTransactionPropogatingInterceptor implements Interceptor {
             originatingRemoteTx = transactionManager.getTransaction();
         }
         try {
-            // we are done with any tx propogation setup, let's move on
+            // we are done with any tx propagation setup, let's move on
             return context.proceed();
         } finally {
             // suspend the originating remote tx on this thread now that the invocation has been done

@@ -65,7 +65,7 @@ public interface EjbLogger extends BasicLogger {
     EjbLogger EJB3_LOGGER = Logger.getMessageLogger(EjbLogger.class, "org.jboss.ejb3");
 
     /**
-     * logger use to log EJB invocation eorrors
+     * logger use to log EJB invocation errors
      */
     EjbLogger EJB3_INVOCATION_LOGGER = Logger.getMessageLogger(EjbLogger.class, "org.jboss.ejb3.invocation");
 
@@ -244,7 +244,7 @@ public interface EjbLogger extends BasicLogger {
      * Logs an error message indicating an error during retyring timeout for timer
      */
     @LogMessage(level = ERROR)
-    @Message(id = 14122, value = "Error during retyring timeout for timer: %s")
+    @Message(id = 14122, value = "Error during retrying timeout for timer: %s")
     void errorDuringRetryTimeout(Timer timer, @Cause Throwable e);
 
     /**

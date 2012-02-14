@@ -92,7 +92,7 @@ module CSI {
     // shall directly certify the one preceding it. The first certificate
     // in the chain shall certify the attribute certificate. The ASN.1
     // representation of (X.509) Certificate is as defined in [IETF RFC 2459].
-    // The ASN.1 representation of (X.509) AtributeCertificate is as defined
+    // The ASN.1 representation of (X.509) AttributeCertificate is as defined
     // in [IETF ID PKIXAC].  
 
     const AuthorizationElementType X509AttributeCertChain = OMGVMCID | 1;

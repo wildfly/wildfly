@@ -29,7 +29,7 @@ import org.jboss.as.cmp.context.CmpEntityBeanContext;
 
 
 /**
- * JDBCFindEntityCommand finds a single entity, by deligating to
+ * JDBCFindEntityCommand finds a single entity, by delegating to
  * find entities and checking that only entity is returned.
  *
  * @author <a href="mailto:dain@daingroup.com">Dain Sundstrom</a>

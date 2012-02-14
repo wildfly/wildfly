@@ -170,7 +170,7 @@ public abstract class JDBCAbstractQueryCommand implements JDBCQueryCommand {
         final JDBCEntityBridge entityBridge = (JDBCEntityBridge) selectManager.getEntityBridge();
         boolean throwRuntimeExceptions = entityBridge.getMetaData().getThrowRuntimeExceptions();
 
-        // if metadata is true, the getconnection is done inside
+        // if metadata is true, the getConnection is done inside
         // its own try catch block to throw a runtime exception (EJBException)
         if (throwRuntimeExceptions) {
             try {
@@ -192,7 +192,7 @@ public abstract class JDBCAbstractQueryCommand implements JDBCQueryCommand {
                 }
             }
 
-            // if metadata is false, the getconnection is done inside this try catch block
+            // if metadata is false, the getConnection is done inside this try catch block
             if (!throwRuntimeExceptions) {
                 con = entityBridge.getDataSource().getConnection();
             }
@@ -320,7 +320,7 @@ public abstract class JDBCAbstractQueryCommand implements JDBCQueryCommand {
     }
 
     /**
-     * Replaces the parameters in the specifiec sql with question marks, and
+     * Replaces the parameters in the specific sql with question marks, and
      * initializes the parameter setting code. Parameters are encoded in curly
      * brackets use a zero based index.
      *

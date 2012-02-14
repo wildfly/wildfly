@@ -106,7 +106,7 @@ public interface NamingMessages {
     IllegalStateException cannotObtain(@Cause Throwable cause, String name);
 
     /**
-     * Creates an exception indicating the service name could not be resoloved.
+     * Creates an exception indicating the service name could not be resolved.
      *
      * @param serviceName the service name.
      *

@@ -86,7 +86,7 @@ public class HelloWorldManagedConnection implements ManagedConnection {
 
    /**
     * Used by the container to change the association of an
-    * application-level connection handle with a ManagedConneciton instance.
+    * application-level connection handle with a ManagedConnection instance.
     *
     * @param   connection  Application-level connection handle
     * @throws  ResourceException     generic exception if operation fails
@@ -139,7 +139,7 @@ public class HelloWorldManagedConnection implements ManagedConnection {
    /**
     * Gets the log writer for this ManagedConnection instance.
     *
-    * @return  Character ourput stream associated with this Managed-Connection instance
+    * @return  Character output stream associated with this Managed-Connection instance
     * @throws ResourceException     generic exception if operation fails
     */
    public PrintWriter getLogWriter() throws ResourceException {
@@ -167,7 +167,7 @@ public class HelloWorldManagedConnection implements ManagedConnection {
    }
 
    /**
-    * Returns an <code>javax.transaction.xa.XAresource</code> instance.
+    * Returns an <code>javax.transaction.xa.XAResource</code> instance.
     *
     * @return     XAResource instance
     * @throws ResourceException     generic exception if operation fails

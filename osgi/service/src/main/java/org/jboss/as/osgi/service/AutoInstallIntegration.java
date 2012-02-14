@@ -199,14 +199,14 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
         if (isValidModuleIdentifier(identifier)) {
             ModuleIdentifier moduleId = ModuleIdentifier.fromString(identifier);
 
-            // Attempt to install the bundle from the bundles hirarchy
+            // Attempt to install the bundle from the bundles hierarchy
             File bundleFile = ModuleIdentityArtifactProvider.getRepositoryEntry(bundlesDir, moduleId);
             if (bundleFile != null) {
                 URL bundleURL = bundleFile.toURI().toURL();
                 return installBundleFromURL(bundleManager, bundleURL, startLevel);
             }
 
-            // Attempt to load the module from the modules hirarchy
+            // Attempt to load the module from the modules hierarchy
             try {
                 ModuleLoader moduleLoader = Module.getBootModuleLoader();
                 Module module = moduleLoader.loadModule(moduleId);

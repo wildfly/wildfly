@@ -208,7 +208,7 @@ public final class Attachments {
     // CONFIGURE
     //
     /**
-     * The module idetifier.
+     * The module identifier.
      */
 
     public static final AttachmentKey<ModuleIdentifier> MODULE_IDENTIFIER = AttachmentKey.create(ModuleIdentifier.class);
@@ -233,7 +233,7 @@ public final class Attachments {
     public static final AttachmentKey<ServiceModuleLoader> SERVICE_MODULE_LOADER  = AttachmentKey.create(ServiceModuleLoader.class);
 
     /**
-     * The extenal module service
+     * The external module service
      */
     public static final AttachmentKey<ExternalModuleService> EXTERNAL_MODULE_SERVICE  = AttachmentKey.create(ExternalModuleService.class);
 
@@ -277,7 +277,7 @@ public final class Attachments {
      */
     public static final AttachmentKey<DeploymentClassIndex> CLASS_INDEX = AttachmentKey.create(DeploymentClassIndex.class);
     /**
-     * The reflection index used to generate jboss-invoation proxies
+     * The reflection index used to generate jboss-invocation proxies
      */
     public static final AttachmentKey<ProxyMetadataSource> PROXY_REFLECTION_INDEX = AttachmentKey.create(ProxyMetadataSource.class);
 

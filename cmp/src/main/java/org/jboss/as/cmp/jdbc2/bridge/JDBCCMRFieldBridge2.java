@@ -604,7 +604,7 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
                         +
                         getFieldName()
                         +
-                        " single-valued CMR field is already loaded. Check the database for consistancy. "
+                        " single-valued CMR field is already loaded. Check the database for consistency. "
                         + " current value=" + value + ", loaded value=" + pk
                 );
             }
@@ -781,7 +781,7 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
                         +
                         getFieldName()
                         +
-                        " collection-valued CMR field is already loaded. Check the database for consistancy. "
+                        " collection-valued CMR field is already loaded. Check the database for consistency. "
                         + " current value=" + value + ", loaded value=" + pk
                 );
             }

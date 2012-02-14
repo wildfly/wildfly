@@ -435,10 +435,10 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
         @Override
         protected String registerResourceAdapterToResourceAdapterRepository(ResourceAdapter instance) {
-            final String raIdentifer = raRepository.getValue().registerResourceAdapter(instance);
+            final String raIdentifier = raRepository.getValue().registerResourceAdapter(instance);
             // make a note of this identifier for future use
-            ConnectorServices.registerResourceAdapterIdentifier(this.deploymentName, raIdentifer);
-            return raIdentifer;
+            ConnectorServices.registerResourceAdapterIdentifier(this.deploymentName, raIdentifier);
+            return raIdentifier;
 
         }
 

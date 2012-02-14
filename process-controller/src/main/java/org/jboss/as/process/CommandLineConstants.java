@@ -88,7 +88,7 @@ public class CommandLineConstants {
     public static final String PROCESS_CONTROLLER_BIND_ADDR = "--pc-address";
 
     /** Port on which the process controller listens */
-    public static final String OLD_PROCESS_CONROLLER_BIND_PORT = "-bind-port";
+    public static final String OLD_PROCESS_CONTROLLER_BIND_PORT = "-bind-port";
     public static final String PROCESS_CONTROLLER_BIND_PORT = "--pc-port";
 
     public static final String SYS_PROP = "-D";

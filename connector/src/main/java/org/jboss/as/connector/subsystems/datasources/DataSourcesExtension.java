@@ -832,10 +832,10 @@ public class DataSourcesExtension implements Extension {
 
                     if (dataSource.hasDefined(CONNECTION_PROPERTIES.getName())) {
                         for (final Property prop : dataSource.get(CONNECTION_PROPERTIES.getName()).asPropertyList()) {
-                            final ModelNode propAdrress = address.clone();
+                            final ModelNode propAddress = address.clone();
 
-                            propAdrress.add(CONNECTION_PROPERTIES.getName(), prop.getName());
-                            final ModelNode addPropOperation = Util.getEmptyOperation(ADD, propAdrress);
+                            propAddress.add(CONNECTION_PROPERTIES.getName(), prop.getName());
+                            final ModelNode addPropOperation = Util.getEmptyOperation(ADD, propAddress);
                             addPropOperation.get("value").set(prop.getValue().get(VALUE).asString());
                             result.add(addPropOperation);
                         }
@@ -866,10 +866,10 @@ public class DataSourcesExtension implements Extension {
 
                     if (dataSource.hasDefined(XADATASOURCE_PROPERTIES.getName())) {
                         for (final Property prop : dataSource.get(XADATASOURCE_PROPERTIES.getName()).asPropertyList()) {
-                            final ModelNode propAdrress = address.clone();
+                            final ModelNode propAddress = address.clone();
 
-                            propAdrress.add(XADATASOURCE_PROPERTIES.getName(), prop.getName());
-                            final ModelNode addPropOperation = Util.getEmptyOperation(ADD, propAdrress);
+                            propAddress.add(XADATASOURCE_PROPERTIES.getName(), prop.getName());
+                            final ModelNode addPropOperation = Util.getEmptyOperation(ADD, propAddress);
                             addPropOperation.get("value").set(prop.getValue().get(VALUE).asString());
                             result.add(addPropOperation);
                         }

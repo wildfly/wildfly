@@ -82,7 +82,7 @@ public class EntityBeanComponentCreateService extends EJBComponentCreateService 
         remoteClass = (Class<EJBObject>) load(classLoader, beanMetaData.getRemote());
         primaryKeyClass = (Class<Object>) load(classLoader, beanMetaData.getPrimKeyClass());
 
-        final InterceptorFactory tcclInterceptorFactory = new ImmediateInterceptorFactory(new TCCLInterceptor(componentConfiguration.getModuleClassLoder()));
+        final InterceptorFactory tcclInterceptorFactory = new ImmediateInterceptorFactory(new TCCLInterceptor(componentConfiguration.getModuleClassLoader()));
         final InterceptorFactory namespaceContextInterceptorFactory = componentConfiguration.getNamespaceContextInterceptorFactory();
 
 

@@ -35,7 +35,7 @@ import java.sql.SQLException;
  * getting the length of an SQL <code>BLOB</code> (Binary Large Object) value,
  * for materializing a <code>BLOB</code> value on the client, and for
  * determining the position of a pattern of bytes within a <code>BLOB</code>
- * value. The ByteArrayBlob has static factory methods for construting an
+ * value. The ByteArrayBlob has static factory methods for constructing an
  * <code>BLOB</code> using either an existing serializable object, or an array
  * of bytes. This is a nice way to store serialized objects in a relational
  * field of type SQL <code>BLOB</code>.

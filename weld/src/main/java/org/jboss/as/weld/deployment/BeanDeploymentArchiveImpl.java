@@ -105,7 +105,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
     }
 
     /**
-     * returns an unmoddifiable copy of the bean classes in this BDA
+     * returns an unmodifiable copy of the bean classes in this BDA
      */
     @Override
     public Collection<String> getBeanClasses() {

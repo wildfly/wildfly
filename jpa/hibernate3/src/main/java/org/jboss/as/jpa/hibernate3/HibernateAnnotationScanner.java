@@ -69,24 +69,24 @@ public class HibernateAnnotationScanner implements Scanner {
     }
 
 
-    private static void cachePackages(PersistenceUnitMetadata pu, URL jartoScan, Set<Package> packages) {
+    private static void cachePackages(PersistenceUnitMetadata pu, URL jarToScan, Set<Package> packages) {
         synchronized (PACKAGES_IN_JAR_CACHE) {
             Map<URL, Set<Package>> packagesByUrl = PACKAGES_IN_JAR_CACHE.get(pu);
             if (packagesByUrl == null) {
                 packagesByUrl = new HashMap<URL, Set<Package>>();
                 PACKAGES_IN_JAR_CACHE.put(pu, packagesByUrl);
             }
-            packagesByUrl.put(jartoScan, packages);
+            packagesByUrl.put(jarToScan, packages);
         }
     }
 
-    private static Set<Package> getCachedPackages(PersistenceUnitMetadata pu, URL jartoScan){
+    private static Set<Package> getCachedPackages(PersistenceUnitMetadata pu, URL jarToScan){
         synchronized (PACKAGES_IN_JAR_CACHE) {
             Map<URL, Set<Package>> packagesByUrl = PACKAGES_IN_JAR_CACHE.get(pu);
             if (packagesByUrl == null) {
                 return Collections.emptySet();
             }
-            Set<Package> packages = packagesByUrl.get(jartoScan);
+            Set<Package> packages = packagesByUrl.get(jarToScan);
             if (packages == null) {
                 return Collections.emptySet();
             }
@@ -95,17 +95,17 @@ public class HibernateAnnotationScanner implements Scanner {
         }
     }
 
-    private static void cacheClasses(PersistenceUnitMetadata pu, URL jartoScan, Class<? extends Annotation> annotation, Set<Class<?>> classes){
+    private static void cacheClasses(PersistenceUnitMetadata pu, URL jarToScan, Class<? extends Annotation> annotation, Set<Class<?>> classes){
         synchronized (CLASSES_IN_JAR_CACHE) {
             Map<URL, Map<Class<? extends Annotation>, Set<Class<?>>>> classesByURL = CLASSES_IN_JAR_CACHE.get(pu);
             if (classesByURL == null) {
                 classesByURL = new HashMap<URL, Map<Class<? extends Annotation>, Set<Class<?>>>>();
                 CLASSES_IN_JAR_CACHE.put(pu, classesByURL);
             }
-            Map<Class<? extends Annotation>, Set<Class<?>>> classesByAnnotation = classesByURL.get(jartoScan);
+            Map<Class<? extends Annotation>, Set<Class<?>>> classesByAnnotation = classesByURL.get(jarToScan);
             if (classesByAnnotation == null) {
                 classesByAnnotation = new HashMap<Class<? extends Annotation>, Set<Class<?>>>();
-                classesByURL.put(jartoScan, classesByAnnotation);
+                classesByURL.put(jarToScan, classesByAnnotation);
             }
             classesByAnnotation.put(annotation, classes);
         }
@@ -143,11 +143,11 @@ public class HibernateAnnotationScanner implements Scanner {
     }
 
     @Override
-    public Set<Package> getPackagesInJar(URL jartoScan, Set<Class<? extends Annotation>> annotationsToLookFor) {
-        if (jartoScan == null) {
-            throw MESSAGES.nullVar("jartoScan");
+    public Set<Package> getPackagesInJar(URL jarToScan, Set<Class<? extends Annotation>> annotationsToLookFor) {
+        if (jarToScan == null) {
+            throw MESSAGES.nullVar("jarToScan");
         }
-        JPA_LOGGER.tracef("getPackagesInJar url=%s annotations=%s", jartoScan.getPath(), annotationsToLookFor);
+        JPA_LOGGER.tracef("getPackagesInJar url=%s annotations=%s", jarToScan.getPath(), annotationsToLookFor);
         Set<Class<?>> resultClasses = new HashSet<Class<?>>();
 
         PersistenceUnitMetadata pu = persistenceUnitMetadataTLS.get();
@@ -156,13 +156,13 @@ public class HibernateAnnotationScanner implements Scanner {
         }
 
         if (annotationsToLookFor.size() > 0) {  // Hibernate doesn't pass any annotations currently
-            resultClasses = getClassesInJar(jartoScan, annotationsToLookFor);
+            resultClasses = getClassesInJar(jarToScan, annotationsToLookFor);
         } else {
             if (pu.getAnnotationIndex() != null) {
-                Index index = getJarFileIndex(jartoScan, pu);
+                Index index = getJarFileIndex(jarToScan, pu);
                 if (index == null) {
                     JPA_LOGGER.tracef("No classes to scan for annotations in jar '%s' (jars with classes '%s')",
-                        jartoScan, pu.getAnnotationIndex().keySet());
+                        jarToScan, pu.getAnnotationIndex().keySet());
                     return new HashSet<Package>();
                 }
                 Collection<ClassInfo> allClasses = index.getKnownClasses();
@@ -189,10 +189,10 @@ public class HibernateAnnotationScanner implements Scanner {
                 }
             }
             Set<Package> packages = new HashSet<Package>(uniquePackages.values());
-            cachePackages(pu, jartoScan, packages);
+            cachePackages(pu, jarToScan, packages);
             return new HashSet<Package>(packages);
         } else {
-            return getCachedPackages(pu, jartoScan);
+            return getCachedPackages(pu, jarToScan);
         }
     }
 

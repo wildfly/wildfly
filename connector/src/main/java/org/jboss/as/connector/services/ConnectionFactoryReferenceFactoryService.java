@@ -43,7 +43,7 @@ import org.jboss.msc.value.InjectedValue;
  *         Maestri</a>
  */
 public class ConnectionFactoryReferenceFactoryService implements Service<ManagedReferenceFactory>, ManagedReferenceFactory {
-    public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("conection-factory").append(
+    public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("connection-factory").append(
             "reference-factory");
     private final InjectedValue<Object> connectionFactoryValue = new InjectedValue<Object>();
 

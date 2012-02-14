@@ -65,7 +65,7 @@ public class EJBRemotingConnectorClientMappingsEntryProviderService implements S
         final ServiceContainer serviceContainer = context.getController().getServiceContainer();
         final ServiceController streamServerServiceController = serviceContainer.getRequiredService(this.remotingConnectorServiceName);
         final AbstractStreamServerService streamServerService = (AbstractStreamServerService) streamServerServiceController.getService();
-        // we can only work off a remoting connector which is backed by a socketbinding
+        // we can only work off a remoting connector which is backed by a socket binding
         if (streamServerService instanceof InjectedSocketBindingStreamServerService) {
             this.remotingServer = (InjectedSocketBindingStreamServerService) streamServerService;
         }

@@ -232,7 +232,7 @@ public abstract class JDBCAbstractCreateCommand implements JDBCCreateCommand {
         PreparedStatement ps = null;
         boolean throwRuntimeExceptions = entity.getMetaData().getThrowRuntimeExceptions();
 
-        // if metadata is true, the getconnection is done inside
+        // if metadata is true, the getConnection is done inside
         // its own try catch block to throw a runtime exception (EJBException)
         if (throwRuntimeExceptions) {
             try {
@@ -250,7 +250,7 @@ public abstract class JDBCAbstractCreateCommand implements JDBCCreateCommand {
             }
 
 
-            // if metadata is false, the getconnection is done inside this try catch block
+            // if metadata is false, the getConnection is done inside this try catch block
             if (!throwRuntimeExceptions) {
                 c = entity.getDataSource().getConnection();
             }

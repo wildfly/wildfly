@@ -299,7 +299,7 @@ public interface HostControllerLogger extends BasicLogger {
     void stoppingServer(String serverName);
 
     /**
-     * Logs a warning message indicating the server is not in the exepected state.
+     * Logs a warning message indicating the server is not in the expected state.
      *
      * @param serverName the name of the server.
      * @param expected   the expected state.

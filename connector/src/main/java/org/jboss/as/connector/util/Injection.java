@@ -40,7 +40,7 @@ public class Injection {
 
     /**
      * Inject a value into an object property
-     * @param propertyType The property type as a fully quilified class name
+     * @param propertyType The property type as a fully qualified class name
      * @param propertyName The property name
      * @param propertyValue The property value
      * @param object The object
@@ -81,43 +81,43 @@ public class Injection {
         Class parameterClass = null;
         Object parameterValue = null;
 
-        String substituredValue = getSubstitutionValue(propertyValue);
+        String substitutedValue = getSubstitutionValue(propertyValue);
 
         if (propertyType.equals("java.lang.String")) {
             parameterClass = String.class;
-            parameterValue = substituredValue;
+            parameterValue = substitutedValue;
         } else if (propertyType.equals("byte") || propertyType.equals("java.lang.Byte")) {
             parameterClass = Byte.class;
-            if (substituredValue != null && !substituredValue.trim().equals(""))
-                parameterValue = Byte.valueOf(substituredValue);
+            if (substitutedValue != null && !substitutedValue.trim().equals(""))
+                parameterValue = Byte.valueOf(substitutedValue);
         } else if (propertyType.equals("short") || propertyType.equals("java.lang.Short")) {
             parameterClass = Short.class;
-            if (substituredValue != null && !substituredValue.trim().equals(""))
-                parameterValue = Short.valueOf(substituredValue);
+            if (substitutedValue != null && !substitutedValue.trim().equals(""))
+                parameterValue = Short.valueOf(substitutedValue);
         } else if (propertyType.equals("int") || propertyType.equals("java.lang.Integer")) {
             parameterClass = Integer.class;
-            if (substituredValue != null && !substituredValue.trim().equals(""))
-                parameterValue = Integer.valueOf(substituredValue);
+            if (substitutedValue != null && !substitutedValue.trim().equals(""))
+                parameterValue = Integer.valueOf(substitutedValue);
         } else if (propertyType.equals("long") || propertyType.equals("java.lang.Long")) {
             parameterClass = Long.class;
-            if (substituredValue != null && !substituredValue.trim().equals(""))
-                parameterValue = Long.valueOf(substituredValue);
+            if (substitutedValue != null && !substitutedValue.trim().equals(""))
+                parameterValue = Long.valueOf(substitutedValue);
         } else if (propertyType.equals("float") || propertyType.equals("java.lang.Float")) {
             parameterClass = Float.class;
-            if (substituredValue != null && !substituredValue.trim().equals(""))
-                parameterValue = Float.valueOf(substituredValue);
+            if (substitutedValue != null && !substitutedValue.trim().equals(""))
+                parameterValue = Float.valueOf(substitutedValue);
         } else if (propertyType.equals("double") || propertyType.equals("java.lang.Double")) {
             parameterClass = Double.class;
-            if (substituredValue != null && !substituredValue.trim().equals(""))
-                parameterValue = Double.valueOf(substituredValue);
+            if (substitutedValue != null && !substitutedValue.trim().equals(""))
+                parameterValue = Double.valueOf(substitutedValue);
         } else if (propertyType.equals("boolean") || propertyType.equals("java.lang.Boolean")) {
             parameterClass = Boolean.class;
-            if (substituredValue != null && !substituredValue.trim().equals(""))
-                parameterValue = Boolean.valueOf(substituredValue);
+            if (substitutedValue != null && !substitutedValue.trim().equals(""))
+                parameterValue = Boolean.valueOf(substitutedValue);
         } else if (propertyType.equals("char") || propertyType.equals("java.lang.Character")) {
             parameterClass = Character.class;
-            if (substituredValue != null && !substituredValue.trim().equals(""))
-                parameterValue = Character.valueOf(substituredValue.charAt(0));
+            if (substitutedValue != null && !substitutedValue.trim().equals(""))
+                parameterValue = Character.valueOf(substitutedValue.charAt(0));
         } else {
             throw MESSAGES.unknownPropertyType(propertyType, propertyName);
         }

@@ -39,7 +39,7 @@ public final class JDBCInitEntityCommand {
 
     /**
      * Called before ejbCreate. In the JDBCStoreManager we need to
-     * initialize the presistence context. The persistence context is where
+     * initialize the persistence context. The persistence context is where
      * where bean data is stored. If CMP 1.x, original values are store
      * and for CMP 2.x actual values are stored int the context. Then we
      * initialize the data. In CMP 1.x fields are reset to Java defaults, and

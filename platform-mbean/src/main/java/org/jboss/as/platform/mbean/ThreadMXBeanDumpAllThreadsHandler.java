@@ -82,6 +82,6 @@ public class ThreadMXBeanDumpAllThreadsHandler implements OperationStepHandler, 
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return PlatformMBeanDescriptions.getDumpThreadsDescripton(locale);
+        return PlatformMBeanDescriptions.getDumpThreadsDescription(locale);
     }
 }

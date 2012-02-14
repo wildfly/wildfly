@@ -44,7 +44,7 @@ import static org.jboss.as.remoting.RemotingLogger.*;
 import static org.jboss.as.remoting.RemotingMessages.*;
 
 /**
- * Contains the remoting strem server
+ * Contains the remoting stream server
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $

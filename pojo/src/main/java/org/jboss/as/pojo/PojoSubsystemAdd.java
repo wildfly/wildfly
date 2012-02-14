@@ -34,7 +34,7 @@ import org.jboss.msc.service.ServiceController;
 import java.util.List;
 
 /**
- * Pojo substem add.
+ * Pojo subsystem add.
  * Define processors for POJO config handling.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>

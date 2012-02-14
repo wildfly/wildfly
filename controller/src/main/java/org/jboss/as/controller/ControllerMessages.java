@@ -2229,7 +2229,7 @@ public interface ControllerMessages {
      * @param type the required type
      * @param operation the operation as a string. May be empty
      */
-    @Message(id = 14824, value = "Could not convert the paramter '%s' to a %s. %s")
+    @Message(id = 14824, value = "Could not convert the parameter '%s' to a %s. %s")
     IllegalArgumentException validationFailedCouldNotConvertParamToType(String paramName, ModelType type, String operation);
 
     /**
@@ -2345,7 +2345,7 @@ public interface ControllerMessages {
 
     /**
      * Creates a string for use in an IllegalArgumentException or a warning message indicating that
-     * a parameter has a min-length or max-lenght attribute value that is not an integer.
+     * a parameter has a min-length or max-length attribute value that is not an integer.
      *
      * @param minOrMaxLength {@code min} or {@code max}
      * @param paramName the name of the parameter

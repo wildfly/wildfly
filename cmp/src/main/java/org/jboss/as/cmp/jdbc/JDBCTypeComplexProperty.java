@@ -24,7 +24,7 @@ package org.jboss.as.cmp.jdbc;
 import java.lang.reflect.Method;
 
 /**
- * Immutable class which contins the mapping between a single Java Bean
+ * Immutable class which contains the mapping between a single Java Bean
  * (not an EJB) property and a column. This class has a flattened view of
  * the Java Bean property, which may be several properties deep in the
  * base Java Bean. The details of how a property is mapped to a column
@@ -44,7 +44,7 @@ public final class JDBCTypeComplexProperty {
     private final int jdbcType;
     private final String sqlType;
     private final boolean notNull;
-    private final JDBCResultSetReader resulSetReader;
+    private final JDBCResultSetReader resultSetReader;
     private final JDBCParameterSetter paramSetter;
 
     private final Method[] getters;
@@ -68,7 +68,7 @@ public final class JDBCTypeComplexProperty {
         this.notNull = notNull;
         this.getters = getters;
         this.setters = setters;
-        this.resulSetReader = JDBCUtil.getResultSetReader(jdbcType, javaType);
+        this.resultSetReader = JDBCUtil.getResultSetReader(jdbcType, javaType);
         this.paramSetter = JDBCUtil.getParameterSetter(jdbcType, javaType);
     }
 
@@ -87,7 +87,7 @@ public final class JDBCTypeComplexProperty {
         this.notNull = notNull;
         this.getters = defaultProperty.getters;
         this.setters = defaultProperty.setters;
-        this.resulSetReader = JDBCUtil.getResultSetReader(jdbcType, javaType);
+        this.resultSetReader = JDBCUtil.getResultSetReader(jdbcType, javaType);
         this.paramSetter = JDBCUtil.getParameterSetter(jdbcType, javaType);
     }
 
@@ -115,8 +115,8 @@ public final class JDBCTypeComplexProperty {
         return notNull;
     }
 
-    public JDBCResultSetReader getResulSetReader() {
-        return resulSetReader;
+    public JDBCResultSetReader getResultSetReader() {
+        return resultSetReader;
     }
 
     public JDBCParameterSetter getParameterSetter() {
@@ -151,7 +151,7 @@ public final class JDBCTypeComplexProperty {
             // get the next object in chain
             Object next = getters[i].invoke(value, noArgs);
 
-            // the next object is null creat it
+            // the next object is null create it
             if (next == null) {
                 // new type based on getter
                 next = getters[i].getReturnType().newInstance();

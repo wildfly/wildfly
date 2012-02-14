@@ -35,7 +35,7 @@ import org.jboss.dmr.ModelType;
 /**
  * @author Jaikiran Pai
  */
-class RemoteOutboundConnnectionResourceDefinition extends AbstractOutboundConnectionResourceDefinition {
+class RemoteOutboundConnectionResourceDefinition extends AbstractOutboundConnectionResourceDefinition {
 
     static final PathElement ADDRESS = PathElement.pathElement(CommonAttributes.REMOTE_OUTBOUND_CONNECTION);
 
@@ -54,9 +54,9 @@ class RemoteOutboundConnnectionResourceDefinition extends AbstractOutboundConnec
         OUTBOUND_SOCKET_BINDING_REF, USERNAME, SECURITY_REALM
     };
 
-    static final RemoteOutboundConnnectionResourceDefinition INSTANCE = new RemoteOutboundConnnectionResourceDefinition();
+    static final RemoteOutboundConnectionResourceDefinition INSTANCE = new RemoteOutboundConnectionResourceDefinition();
 
-    private RemoteOutboundConnnectionResourceDefinition() {
+    private RemoteOutboundConnectionResourceDefinition() {
         super(ADDRESS, RemotingExtension.getResourceDescriptionResolver(CommonAttributes.REMOTE_OUTBOUND_CONNECTION),
                 RemoteOutboundConnectionAdd.INSTANCE, RemoteOutboundConnectionRemoveHandler.INSTANCE);
     }

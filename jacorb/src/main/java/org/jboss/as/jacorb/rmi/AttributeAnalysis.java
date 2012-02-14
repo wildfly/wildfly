@@ -88,7 +88,7 @@ public class AttributeAnalysis extends AbstractAnalysis {
                 mutatorAnalysis = new OperationAnalysis(mutator);
             }
 
-            setIDLName(getIDLName()); // Fixup operation names
+            setIDLName(getIDLName()); // Fix operation names
         }
     }
 

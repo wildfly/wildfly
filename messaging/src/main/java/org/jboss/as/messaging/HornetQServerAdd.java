@@ -143,7 +143,7 @@ class HornetQServerAdd implements OperationStepHandler {
 
     static final String DEFAULT_BINDINGS_DIR = "bindings";
     static final String DEFAULT_JOURNAL_DIR = "journal";
-    static final String DEFAULT_LARGE_MESSSAGE_DIR = "largemessages";
+    static final String DEFAULT_LARGE_MESSAGE_DIR = "largemessages";
     static final String DEFAULT_PAGING_DIR = "paging";
 
     public static final HornetQServerAdd INSTANCE = new HornetQServerAdd();
@@ -209,7 +209,7 @@ class HornetQServerAdd implements OperationStepHandler {
 
                 final ServiceName bindingsPath = createDirectoryService(DEFAULT_BINDINGS_DIR, model.get(PATH, BINDINGS_DIRECTORY), serviceTarget, operation, newControllers, verificationHandler);
                 final ServiceName journalPath = createDirectoryService(DEFAULT_JOURNAL_DIR, model.get(PATH, JOURNAL_DIRECTORY), serviceTarget, operation, newControllers, verificationHandler);
-                final ServiceName largeMessagePath = createDirectoryService(DEFAULT_LARGE_MESSSAGE_DIR, model.get(PATH, LARGE_MESSAGES_DIRECTORY), serviceTarget, operation, newControllers, verificationHandler);
+                final ServiceName largeMessagePath = createDirectoryService(DEFAULT_LARGE_MESSAGE_DIR, model.get(PATH, LARGE_MESSAGES_DIRECTORY), serviceTarget, operation, newControllers, verificationHandler);
                 final ServiceName pagingPath = createDirectoryService(DEFAULT_PAGING_DIR, model.get(PATH, PAGING_DIRECTORY), serviceTarget, operation, newControllers, verificationHandler);
 
                 // Create the HornetQ Service
@@ -223,7 +223,7 @@ class HornetQServerAdd implements OperationStepHandler {
 
                 serviceBuilder.addDependency(bindingsPath, String.class, hqService.getPathInjector(DEFAULT_BINDINGS_DIR));
                 serviceBuilder.addDependency(journalPath, String.class, hqService.getPathInjector(DEFAULT_JOURNAL_DIR));
-                serviceBuilder.addDependency(largeMessagePath, String.class, hqService.getPathInjector(DEFAULT_LARGE_MESSSAGE_DIR));
+                serviceBuilder.addDependency(largeMessagePath, String.class, hqService.getPathInjector(DEFAULT_LARGE_MESSAGE_DIR));
                 serviceBuilder.addDependency(pagingPath, String.class, hqService.getPathInjector(DEFAULT_PAGING_DIR));
 
                 // Add security

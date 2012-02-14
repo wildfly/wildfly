@@ -602,7 +602,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
                 }
                 if (!found) {
                     // Unknown name
-                    throw new IllegalStateException(MESSAGES.invalidRelativeOrderingUnkownName(webOrdering.getJar()));
+                    throw new IllegalStateException(MESSAGES.invalidRelativeOrderingUnknownName(webOrdering.getJar()));
                 }
             }
             Iterator<String> before = webOrdering.getBefore().iterator();
@@ -624,7 +624,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
                 }
                 if (!found) {
                     // Unknown name
-                    throw new IllegalStateException(MESSAGES.invalidRelativeOrderingUnkownName(webOrdering.getJar()));
+                    throw new IllegalStateException(MESSAGES.invalidRelativeOrderingUnknownName(webOrdering.getJar()));
                 }
             }
         }

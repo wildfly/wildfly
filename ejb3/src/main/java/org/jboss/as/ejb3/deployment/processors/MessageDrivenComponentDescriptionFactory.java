@@ -129,7 +129,7 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
                         }
                     }
                 } else if (beanMetaData instanceof JBossGenericBeanMetaData) {
-                    //TODO: fix the heirachy so this is not needed
+                    //TODO: fix the hierarchy so this is not needed
                     final JBossGenericBeanMetaData mdb = (JBossGenericBeanMetaData) beanMetaData;
                     messagingType = mdb.getMessagingType();
                     final ActivationConfigMetaData activationConfigMetaData = mdb.getActivationConfig();
@@ -259,7 +259,7 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
     }
 
     /**
-     * Returns the name of the resource adapter which will be used as the default RA for MDBs (unless overriden by
+     * Returns the name of the resource adapter which will be used as the default RA for MDBs (unless overridden by
      * the MDBs).
      *
      * @param serviceRegistry

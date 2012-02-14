@@ -1597,7 +1597,7 @@ public class CoreGroupCommunicationService extends AsynchronousService<CoreGroup
             }
 
             @Override
-            protected int tryAcquireShared(int ingored) {
+            protected int tryAcquireShared(int ignored) {
                 return this.getState();
             }
 

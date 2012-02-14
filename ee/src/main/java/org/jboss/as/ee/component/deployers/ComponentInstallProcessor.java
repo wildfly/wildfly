@@ -143,7 +143,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         //don't start components until all bindings are up
         startBuilder.addDependency(bindingDependencyService);
         final ServiceName contextServiceName;
-        //set up the naming context if nessesary
+        //set up the naming context if necessary
         if (configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE) {
             final NamingStoreService contextService = new NamingStoreService();
             contextServiceName = configuration.getComponentDescription().getContextServiceName();

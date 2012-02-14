@@ -135,12 +135,12 @@ public class WebSecurityCERTTestCase {
     }
 
     @Test
-    public void testClientCertSucessfulAuth() throws Exception {
+    public void testClientCertSuccessfulAuth() throws Exception {
         makeCall("test", 200);
     }
 
     @Test
-    public void testClientCertUnsucessfulAuth() throws Exception {
+    public void testClientCertUnsuccessfulAuth() throws Exception {
         makeCall("test2", 403);
     }
 

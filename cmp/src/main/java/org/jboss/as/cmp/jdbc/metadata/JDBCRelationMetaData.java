@@ -224,8 +224,8 @@ public final class JDBCRelationMetaData {
     }
 
     public JDBCRelationMetaData(JDBCApplicationMetaData jdbcApplication, ParsedEntity defaultEntity, JDBCRelationMetaData defaultValues) {
-        String perferredRelationMapping = defaultEntity.getPreferredMappingStyle();
-        if ("relation-table".equals(perferredRelationMapping) || defaultValues.isManyToMany()) {
+        String preferredRelationMapping = defaultEntity.getPreferredMappingStyle();
+        if ("relation-table".equals(preferredRelationMapping) || defaultValues.isManyToMany()) {
             mappingStyle = MappingStyle.TABLE;
         } else {
             mappingStyle = MappingStyle.FOREIGN_KEY;
@@ -579,8 +579,8 @@ public final class JDBCRelationMetaData {
 
     /**
      * Does the table exist yet? This does not mean that table has been created
-     * by the appilcation, or the the database metadata has been checked for the
-     * existance of the table, but that at this point the table is assumed to
+     * by the application, or the the database metadata has been checked for the
+     * existence of the table, but that at this point the table is assumed to
      * exist.
      *
      * @return true if the table exists
@@ -607,7 +607,7 @@ public final class JDBCRelationMetaData {
     /**
      * Should the relation table be created on startup.
      *
-     * @return true if the store mananager should attempt to create the relation
+     * @return true if the store manager should attempt to create the relation
      *         table
      */
     public boolean getCreateTable() {
@@ -617,7 +617,7 @@ public final class JDBCRelationMetaData {
     /**
      * Should the relation table be removed on shutdown.
      *
-     * @return true if the store mananager should attempt to remove the relation
+     * @return true if the store manager should attempt to remove the relation
      *         table
      */
     public boolean getRemoveTable() {
@@ -635,7 +635,7 @@ public final class JDBCRelationMetaData {
      * When the relation table is created, should it have a primary key
      * constraint.
      *
-     * @return true if the store mananager should add a primary key constraint
+     * @return true if the store manager should add a primary key constraint
      *         to the the create table sql statement
      */
     public boolean hasPrimaryKeyConstraint() {

@@ -55,7 +55,7 @@ public class DisableRequiredWriteAttributeHandler extends AbstractWriteAttribute
                 Constants.JNDINAME.getName().equals(attributeName)) {
            return true;
         } else {
-            //do thejob
+            //do the job
             return false;
         }
     }

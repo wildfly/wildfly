@@ -43,7 +43,7 @@ import static org.jboss.logging.Logger.Level.WARN;
 public interface ConnectorLogger extends BasicLogger {
 
     /**
-     * The root logger with a category of the default pacakge.
+     * The root logger with a category of the default package.
      */
     ConnectorLogger ROOT_LOGGER = Logger.getMessageLogger(ConnectorLogger.class, ConnectorLogger.class.getPackage().getName());
 
@@ -146,7 +146,7 @@ public interface ConnectorLogger extends BasicLogger {
     /**
      * Logs an informational message indicating the JNDI connection factory was registered.
      *
-     * @param jndiName the JNDI connectory factory.
+     * @param jndiName the JNDI connection factory.
      */
     @LogMessage(level = INFO)
     @Message(id = 10406, value = "Registered connection factory %s")

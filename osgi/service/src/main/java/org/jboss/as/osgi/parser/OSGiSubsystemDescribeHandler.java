@@ -27,7 +27,7 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.dmr.ModelNode;
 
 /**
- * Descibe and handle subsystem operations.
+ * Describe and handle subsystem operations.
  *
  * @author Thomas.Diesler@jboss.com
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>

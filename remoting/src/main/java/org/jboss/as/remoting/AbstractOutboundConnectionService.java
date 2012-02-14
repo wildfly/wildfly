@@ -70,7 +70,7 @@ public abstract class AbstractOutboundConnectionService<T extends AbstractOutbou
     public void stop(StopContext context) {
     }
 
-    Injector<Endpoint> getEnpointInjector() {
+    Injector<Endpoint> getEndpointInjector() {
         return this.endpointInjectedValue;
     }
 

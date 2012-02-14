@@ -107,7 +107,7 @@ public final class JDBCRemoveEntityCommand {
                     log.trace("Instance is scheduled for cascade delete. id=" + ctx.getPrimaryKey());
             }
         }
-        // cascate-delete to old relations, if relation uses cascade.
+        // cascade-delete to old relations, if relation uses cascade.
         if (oldRelationsRef[0] != null) {
             Map oldRelations = (Map) oldRelationsRef[0];
             entity.cascadeDelete(ctx, oldRelations);

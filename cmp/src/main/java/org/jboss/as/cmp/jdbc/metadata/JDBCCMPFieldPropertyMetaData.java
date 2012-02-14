@@ -22,7 +22,7 @@
 package org.jboss.as.cmp.jdbc.metadata;
 
 /**
- * This immutable class contains information about the an overriden field property.
+ * This immutable class contains information about the an overridden field property.
  *
  * @author <a href="mailto:dain@daingroup.com">Dain Sundstrom</a>
  * @version $Revision: 81030 $
@@ -59,7 +59,7 @@ public final class JDBCCMPFieldPropertyMetaData {
     private boolean notNull;
 
     /**
-     * Gets the name of the property to be overriden.
+     * Gets the name of the property to be overridden.
      */
     public String getPropertyName() {
         return propertyName;
@@ -67,7 +67,7 @@ public final class JDBCCMPFieldPropertyMetaData {
 
     /**
      * Gets the column name the property should use or null if the
-     * column name is not overriden.
+     * column name is not overridden.
      */
     public String getColumnName() {
         return columnName;
@@ -75,7 +75,7 @@ public final class JDBCCMPFieldPropertyMetaData {
 
     /**
      * Gets the JDBC type the property should use or Integer.MIN_VALUE
-     * if not overriden.
+     * if not overridden.
      */
     public int getJDBCType() {
         return jdbcType;
@@ -83,7 +83,7 @@ public final class JDBCCMPFieldPropertyMetaData {
 
     /**
      * Gets the SQL type the property should use or null
-     * if not overriden.
+     * if not overridden.
      */
     public String getSQLType() {
         return sqlType;

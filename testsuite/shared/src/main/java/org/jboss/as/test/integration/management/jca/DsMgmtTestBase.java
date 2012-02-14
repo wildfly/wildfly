@@ -62,7 +62,7 @@ public class DsMgmtTestBase extends AbstractMgmtTestBase {
     }
 
     /*
-    * Bad model must throw an Exception during setModel methos call. To work around wrong test case
+    * Bad model must throw an Exception during setModel method call. To work around wrong test case
     * removeDs() method is added.
     */
     protected void setBadModel(String filename) throws Exception {

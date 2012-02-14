@@ -41,7 +41,7 @@ import java.util.Set;
 /**
  * Class which can turn a pre-runtime description of annotations into a runtime description.
  * <p/>
- * This correctly handles overriden methods, so the annotations on overriden methods will not show up in the result
+ * This correctly handles overridden methods, so the annotations on overridden methods will not show up in the result
  *
  * @author Stuart Douglas
  */
@@ -70,7 +70,7 @@ public class MethodAnnotationAggregator {
                     for (Map.Entry<MethodIdentifier, List<T>> entry : annotationData.getMethodLevelAnnotations().entrySet()) {
                         final Method method = classIndex.getMethod(entry.getKey());
                         if (method != null) {
-                            //we do not have to worry about private methods being overriden
+                            //we do not have to worry about private methods being overridden
                             if (Modifier.isPrivate(method.getModifiers()) || !methodIdentifiers.contains(entry.getKey())) {
                                 methods.put(method, entry.getValue());
                             }
@@ -86,7 +86,7 @@ public class MethodAnnotationAggregator {
             //we store all the method identifiers
             //so we can check if a method is overriden
             for (Method method : classIndex.getMethods()) {
-                //we do not have to worry about private methods being overriden
+                //we do not have to worry about private methods being overridden
                 if (!Modifier.isPrivate(method.getModifiers())) {
                     methodIdentifiers.add(MethodIdentifier.getIdentifierForMethod(method));
                 }

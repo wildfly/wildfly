@@ -49,7 +49,7 @@ public class JacORBDependencyProcessor implements DeploymentUnitProcessor {
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, CORBA_ID, false, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAVAX_RMI_API_ID, false, false, false, false));
-        //we need to add jacorb, as the orb is initaled from the context class loader of the deployment
+        //we need to add jacorb, as the orb is initialized from the context class loader of the deployment
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JACORB_ID, false, false, false, false));
     }
 

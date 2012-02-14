@@ -659,7 +659,7 @@ public class JDBCEntityBridge implements JDBCAbstractEntityBridge {
                 Object fieldValue = pkField.getInstanceValue(ctx);
 
                 // updated pk object with return form set primary key value to
-                // handle single valued non-composit pks and more complicated behivors.
+                // handle single valued non-composite pks and more complicated behivors.
                 pk = pkField.setPrimaryKeyValue(pk, fieldValue);
             }
             return pk;
@@ -933,7 +933,7 @@ public class JDBCEntityBridge implements JDBCAbstractEntityBridge {
 
     private void loadSelectors(JDBCEntityMetaData metadata) {
         // Don't know if this is the best way to do this.  Another way would be
-        // to deligate seletors to the JDBCFindEntitiesCommand, but this is
+        // to delegate selectors to the JDBCFindEntitiesCommand, but this is
         // easier now.
         selectorsByMethod = new HashMap(metadata.getQueries().size());
         Iterator definedFinders = manager.getMetaData().getQueries().iterator();

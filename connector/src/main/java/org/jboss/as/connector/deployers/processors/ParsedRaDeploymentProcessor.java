@@ -137,20 +137,20 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
             }
 
             final ServiceName deployerServiceName = ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(connectorXmlDescriptor.getDeploymentName());
-            final ResourceAdapterDeploymentService raDeployementService = new ResourceAdapterDeploymentService(connectorXmlDescriptor, cmd, ijmd, module, null);
+            final ResourceAdapterDeploymentService raDeploymentService = new ResourceAdapterDeploymentService(connectorXmlDescriptor, cmd, ijmd, module, null);
 
             final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 
             // Create the service
-            ServiceBuilder builder = serviceTarget.addService(deployerServiceName, raDeployementService)
-                    .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, raDeployementService.getMdrInjector())
-                    .addDependency(ConnectorServices.RA_REPOSISTORY_SERVICE, ResourceAdapterRepository.class, raDeployementService.getRaRepositoryInjector())
-                    .addDependency(ConnectorServices.MANAGEMENT_REPOSISTORY_SERVICE, ManagementRepository.class, raDeployementService.getManagementRepositoryInjector())
-                    .addDependency(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, ResourceAdapterDeploymentRegistry.class, raDeployementService.getRegistryInjector())
-                    .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class, raDeployementService.getTxIntegrationInjector())
-                    .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE, JcaSubsystemConfiguration.class, raDeployementService.getConfigInjector())
-                    .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class, raDeployementService.getSubjectFactoryInjector())
-                    .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class, raDeployementService.getCcmInjector())
+            ServiceBuilder builder = serviceTarget.addService(deployerServiceName, raDeploymentService)
+                    .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, raDeploymentService.getMdrInjector())
+                    .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class, raDeploymentService.getRaRepositoryInjector())
+                    .addDependency(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, ManagementRepository.class, raDeploymentService.getManagementRepositoryInjector())
+                    .addDependency(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, ResourceAdapterDeploymentRegistry.class, raDeploymentService.getRegistryInjector())
+                    .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class, raDeploymentService.getTxIntegrationInjector())
+                    .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE, JcaSubsystemConfiguration.class, raDeploymentService.getConfigInjector())
+                    .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class, raDeploymentService.getSubjectFactoryInjector())
+                    .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class, raDeploymentService.getCcmInjector())
                     .addDependency(ConnectorServices.IDLE_REMOVER_SERVICE)
                     .addDependency(ConnectorServices.CONNECTION_VALIDATOR_SERVICE)
                     .addDependency(NamingService.SERVICE_NAME);

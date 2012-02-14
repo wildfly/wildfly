@@ -82,15 +82,15 @@ public class InterceptorClassDeploymentDescriptorProcessor implements Deployment
 
             AroundTimeoutsMetaData aroundTimeouts = interceptor.getAroundTimeouts();
             if (aroundTimeouts != null) {
-                for (AroundTimeoutMetaData arountTimeout : aroundTimeouts) {
+                for (AroundTimeoutMetaData aroundTimeout : aroundTimeouts) {
                     final InterceptorClassDescription.Builder builder = InterceptorClassDescription.builder();
-                    String methodName = arountTimeout.getMethodName();
+                    String methodName = aroundTimeout.getMethodName();
                     MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(Object.class, methodName, InvocationContext.class);
                     builder.setAroundTimeout(methodIdentifier);
-                    if (arountTimeout.getClassName() == null || arountTimeout.getClassName().isEmpty()) {
+                    if (aroundTimeout.getClassName() == null || aroundTimeout.getClassName().isEmpty()) {
                         eeModuleDescription.addInterceptorMethodOverride(interceptorClassName, builder.build());
                     } else {
-                        eeModuleDescription.addInterceptorMethodOverride(arountTimeout.getClassName(), builder.build());
+                        eeModuleDescription.addInterceptorMethodOverride(aroundTimeout.getClassName(), builder.build());
                     }
                 }
             }

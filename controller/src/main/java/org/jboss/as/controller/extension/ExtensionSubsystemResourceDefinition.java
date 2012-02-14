@@ -50,7 +50,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * {@link ResourceDefinition} for an {@link Extension}'s subsytem child resources.
+ * {@link ResourceDefinition} for an {@link Extension}'s subsystem child resources.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

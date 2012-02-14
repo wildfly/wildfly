@@ -69,7 +69,7 @@ public final class ConnectorXmlDescriptor implements Serializable {
 
     /**
      * get file root of this deployment
-     * @return the root direcvtory
+     * @return the root directory
      */
     public File getRoot() {
         return root;

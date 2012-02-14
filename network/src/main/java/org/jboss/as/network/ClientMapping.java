@@ -68,7 +68,7 @@ public class ClientMapping implements Serializable {
 
     /**
      * Source network the client connection binds on. A client should match this value with the ip returned by
-     * {@link #getSourceNetworkAddress()} against the desiered client host network interface,  and if matched the
+     * {@link #getSourceNetworkAddress()} against the desired client host network interface,  and if matched the
      * client should connect to the corresponding destination values.
      *
      * @return the number of mask bits starting from the LSB

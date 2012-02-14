@@ -180,7 +180,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
                     throw MESSAGES.connectionToMasterTimeout(e, retries, timeout);
                 }
                 try {
-                    HostControllerLogger.ROOT_LOGGER.cannotConnect(localHostInfo.getRemoteDomainControllerHost(), localHostInfo.getRemoteDomainControllertPort());
+                    HostControllerLogger.ROOT_LOGGER.cannotConnect(localHostInfo.getRemoteDomainControllerHost(), localHostInfo.getRemoteDomainControllerPort());
                     ReconnectPolicy.CONNECT.wait(retries);
                 } catch (InterruptedException ie) {
                     throw MESSAGES.connectionToMasterInterrupted();
@@ -261,7 +261,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
 
             // Gather the required information to connect to the remote DC
             final ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
-            configuration.setUri(new URI("remote://" + NetworkUtils.formatPossibleIpv6Address(localHostInfo.getRemoteDomainControllerHost()) + ":" + localHostInfo.getRemoteDomainControllertPort()));
+            configuration.setUri(new URI("remote://" + NetworkUtils.formatPossibleIpv6Address(localHostInfo.getRemoteDomainControllerHost()) + ":" + localHostInfo.getRemoteDomainControllerPort()));
             configuration.setEndpoint(endpointInjector.getValue());
 
             final SecurityRealm realm = securityRealmInjector.getOptionalValue();

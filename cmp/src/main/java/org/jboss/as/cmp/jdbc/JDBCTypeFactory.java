@@ -43,7 +43,7 @@ import org.jboss.as.cmp.jdbc.metadata.JDBCValuePropertyMetaData;
 //import org.jboss.logging.Logger;
 
 /**
- * JDBCTypeFactory mapps Java Classes to JDBCType objects.  The main job of
+ * JDBCTypeFactory maps Java Classes to JDBCType objects.  The main job of
  * this class is to flatten the JDBCValueClassMetaData into columns.
  *
  * @author <a href="mailto:dain@daingroup.com">Dain Sundstrom</a>
@@ -525,7 +525,7 @@ public final class JDBCTypeFactory {
             overrides.put(p.getPropertyName(), p);
         }
 
-        // array that will hold the final properites after overrides
+        // array that will hold the final properties after overrides
         JDBCTypeComplexProperty[] finalProperties = new JDBCTypeComplexProperty[defaultProperties.length];
 
         // override property default values
@@ -573,7 +573,7 @@ public final class JDBCTypeFactory {
             }
         }
 
-        // did we find all overriden properties
+        // did we find all overridden properties
         if (overrides.size() > 0) {
             String propertyName = (String) overrides.keySet().iterator().next();
             throw new EJBException("Property " + propertyName + " in field " +
@@ -686,7 +686,7 @@ public final class JDBCTypeFactory {
             setters.add(propertyMetaData.getSetter());
 
             if (properties.contains(propertyMetaData)) {
-                throw new EJBException("Circular reference discoverd at " +
+                throw new EJBException("Circular reference discovered at " +
                         "property: " + getPropertyName());
             }
             properties.add(propertyMetaData);

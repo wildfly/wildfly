@@ -56,7 +56,7 @@ public final class JDBCJBossQLQueryMetaData implements JDBCQueryMetaData {
 
     /**
      * Constructs a JDBCJBossQLQueryMetaData with JBossQL declared in the
-     * jboss-ql elemnt and is invoked by the specified method.
+     * jboss-ql element and is invoked by the specified method.
      */
     public JDBCJBossQLQueryMetaData(JDBCJBossQLQueryMetaData defaults,
                                     JDBCReadAheadMetaData readAhead,

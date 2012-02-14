@@ -33,7 +33,7 @@ import org.jboss.as.cmp.jdbc.SQLUtil;
 import org.jboss.as.cmp.jdbc.metadata.JDBCEntityCommandMetaData;
 
 /**
- * Create command for use with Oracle that uses a sequence in conjuction with
+ * Create command for use with Oracle that uses a sequence in conjunction with
  * a RETURNING clause to generate keys in a single statement
  *
  * @author <a href="mailto:jeremy@boynes.com">Jeremy Boynes</a>

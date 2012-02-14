@@ -28,7 +28,7 @@ import java.util.Set;
 import org.jboss.as.server.deployment.AttachmentKey;
 
 /**
- * Information about a Weld delpoyment that is attached to the deployment
+ * Information about a Weld deployment that is attached to the deployment
  * <p>
  * Thread Safety: This class is immutable and does not require a happens before event between construction and usage
  *

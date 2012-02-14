@@ -65,8 +65,8 @@ public class ApplicationClientConfigurationPersister extends XmlConfigurationPer
      */
     private final String hostUrl;
 
-    public ApplicationClientConfigurationPersister(final String filePath, final String deploymentName, final String hostUrl, final List<String> parameters, final File configFile, final QName element, final XMLElementReader<List<ModelNode>> xmlparser) {
-        super(configFile, element, xmlparser, null);
+    public ApplicationClientConfigurationPersister(final String filePath, final String deploymentName, final String hostUrl, final List<String> parameters, final File configFile, final QName element, final XMLElementReader<List<ModelNode>> xmlParser) {
+        super(configFile, element, xmlParser, null);
         this.filePath = filePath;
         this.deploymentName = deploymentName;
         this.hostUrl = hostUrl;

@@ -213,7 +213,7 @@ public abstract class JDBCAbstractCMPFieldBridge implements JDBCCMPFieldBridge {
 
         if (ctx.isValid()) {
             if (!isLoaded(ctx)) {
-                // the field must be loaded for dirty cheking to work properly
+                // the field must be loaded for dirty checking to work properly
                 manager.loadField(this, ctx);
             }
             lockingStrategy.changed(this, ctx);
@@ -246,7 +246,7 @@ public abstract class JDBCAbstractCMPFieldBridge implements JDBCCMPFieldBridge {
             throws IllegalArgumentException {
         try {
             if (primaryKeyField != null) {
-                // if we are tring to set a null value
+                // if we are trying to set a null value
                 // into a null pk, we are already done.
                 if (value == null && primaryKey == null) {
                     return null;
@@ -360,7 +360,7 @@ public abstract class JDBCAbstractCMPFieldBridge implements JDBCCMPFieldBridge {
         // set the value of this field into the pk
         pkRef[0] = argumentRef[0] == null ? null : setPrimaryKeyValue(pkRef[0], argumentRef[0]);
 
-        // retrun the updated parameterIndex
+        // return the updated parameterIndex
         return parameterIndex;
     }
 
@@ -416,7 +416,7 @@ public abstract class JDBCAbstractCMPFieldBridge implements JDBCCMPFieldBridge {
                 argumentRef[0] = jdbcType.setColumnValue(i, argumentRef[0], columnValue);
             }
 
-            // retrun the updated parameterIndex
+            // return the updated parameterIndex
             return parameterIndex;
         } catch (SQLException e) {
             // Non recoverable internal exception

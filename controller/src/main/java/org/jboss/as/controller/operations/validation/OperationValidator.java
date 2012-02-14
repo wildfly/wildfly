@@ -51,7 +51,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * Validates operations against the model controllers descripton providers
+ * Validates operations against the model controllers description providers
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */

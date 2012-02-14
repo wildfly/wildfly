@@ -53,7 +53,7 @@ public class CalendarTimer extends TimerImpl {
 
     /**
      * Represents whether this is an auto-timer or a normal
-     * programatically created timer
+     * programmatically created timer
      */
     private final boolean autoTimer;
 

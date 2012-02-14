@@ -117,14 +117,14 @@ public class JDBCReadAheadMetaData {
     }
 
     /**
-     * Is the read ahead stratey on-load
+     * Is the read ahead strategy on-load
      */
     public boolean isOnLoad() {
         return (strategy == ON_LOAD);
     }
 
     /**
-     * Is the read ahead stratey on-find
+     * Is the read ahead strategy on-find
      */
     public boolean isOnFind() {
         return (strategy == ON_FIND);

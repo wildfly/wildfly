@@ -109,7 +109,7 @@ public interface DistributableSessionManagerMBean extends SessionManagerMBean {
      * Default value is <code>-1</code>.
      * <p/>
      * The cost of the metadata replication depends on the configured {@link #setReplicationGranularityString(String)
-     * replication granularity}. With <code>SESSION</code>, the sesssion's attribute map is replicated along with the metadata,
+     * replication granularity}. With <code>SESSION</code>, the session's attribute map is replicated along with the metadata,
      * so it can be fairly costly. With other granularities, the metadata object is replicated separately from the attributes
      * and only contains a String, and a few longs, ints and booleans.
      *
