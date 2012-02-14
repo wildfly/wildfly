@@ -26,7 +26,7 @@
 
     <property name="output.dir" value="target/jboss-as-${jboss.as.release.version}"/>
 
-    <target name="base" depends="clean-target, modules-minimalistic, copy-files, make-dirs, copy-client"/>
+    <target name="base" depends="clean-target, modules-minimalistic, copy-files, make-dirs"/>
 
     <target name="copy-files">
         <copy todir="${output.dir}">
@@ -51,15 +51,6 @@
         <!-- These files contain digested passwords, which should not be visible to external users -->
         <chmod perm="600" file="${output.dir}/domain/configuration/mgmt-users.properties"/>
         <chmod perm="600" file="${output.dir}/standalone/configuration/mgmt-users.properties"/>
-
-        <!-- Copy the JBoss AS7 EJB specific schemas to the JBOSS_HOME/docs/schema folder -->
-        <unzip src="${org.jboss.as:jboss-as-ejb3:jar}" dest="${output.dir}/docs/schema/">
-            <patternset>
-                <include name="*.xsd"/>
-            </patternset>
-            <mapper type="flatten"/>
-        </unzip>
-
     </target>
 
     <target name="copy-standalone" description="Copy all standard configurations">
@@ -102,6 +93,14 @@
             </patternset>
             <mapper type="flatten"/>
         </unzip>
+        <!-- Copy the JBoss AS7 EJB specific schemas to the JBOSS_HOME/docs/schema folder -->
+        <unzip src="${org.jboss.as:jboss-as-ejb3:jar}" dest="${output.dir}/docs/schema/">
+            <patternset>
+                <include name="*.xsd"/>
+            </patternset>
+            <mapper type="flatten"/>
+        </unzip>
+
     </target>
 
     <target name="copy-client">
@@ -1232,5 +1231,5 @@
         <delete file="maven-ant-tasks.jar"/>
     </target>
 
-    <target name="all" depends="base, copy-standalone, modules, bundles, create-ext-content"/>
+    <target name="all" depends="base, copy-standalone, modules, bundles, create-ext-content, copy-client"/>
 </project>
