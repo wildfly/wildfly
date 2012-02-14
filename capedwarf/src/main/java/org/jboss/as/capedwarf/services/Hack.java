@@ -2,34 +2,98 @@ package org.jboss.as.capedwarf.services;
 
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.RequestFacade;
+import org.apache.catalina.connector.Response;
 import org.apache.catalina.core.ApplicationFilterChain;
 import org.apache.catalina.core.ApplicationFilterFactory;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletInputStream;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Method;
+import java.security.AccessController;
 import java.security.Principal;
+import java.security.PrivilegedExceptionAction;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Map;
 
 /**
- * Hack around to get StandardContext, Wrapper, etc.
+ * Hack around to dispatch custom request from static view.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 class Hack {
 
-    static HttpServletRequest wrap(HttpServletRequest delegate) {
+    private static final HttpServletResponse NOOP = new NoopServletResponse();
+    private static final Method invoke;
+
+    static {
+        try {
+            final SecurityManager sm = System.getSecurityManager();
+            if (sm == null) {
+                invoke = getInvoke();
+            } else {
+                invoke = AccessController.doPrivileged(new PrivilegedExceptionAction<Method>() {
+                    public Method run() throws Exception {
+                        return getInvoke();
+                    }
+                });
+            }
+        } catch (Throwable t) {
+            throw new IllegalArgumentException("Error finding *invoke* on ApplicationDispatcher.", t);
+        }
+    }
+
+    static void invoke(final RequestDispatcher dispatcher, final HttpServletRequest delegate) throws IOException {
+        final SecurityManager sm = System.getSecurityManager();
+        try {
+            if (sm == null) {
+                invoke.invoke(dispatcher, wrap(delegate), NOOP);
+            } else {
+                AccessController.doPrivileged(new PrivilegedExceptionAction<Object>() {
+                    public Object run() throws Exception {
+                        invoke.invoke(dispatcher, wrap(delegate), NOOP);
+                        return null;
+                    }
+                });
+            }
+        } catch (Exception e) {
+            throw new IOException(e);
+        }
+        // check for dispatch error
+        final Object attribute = delegate.getAttribute(RequestDispatcher.ERROR_EXCEPTION);
+        if (attribute instanceof RuntimeException) {
+            throw RuntimeException.class.cast(attribute);
+        } else if (attribute instanceof IOException) {
+            throw IOException.class.cast(attribute);
+        } else {
+            throw new IOException("Dispatch error: " + attribute);
+        }
+    }
+    
+    private static HttpServletRequest wrap(HttpServletRequest delegate) {
         // see AppDispatcher::processRequest
         delegate.setAttribute(ApplicationFilterFactory.DISPATCHER_TYPE_ATTR, ApplicationFilterFactory.REQUEST_INTEGER);
         return new HttpServletRequestWrapper(new RequestFacadeHack(delegate));
+    }
+
+    private static Method getInvoke() throws Exception {
+        final Class<?> clazz = Hack.class.getClassLoader().loadClass("org.apache.catalina.core.ApplicationDispatcher");
+        final Method m = clazz.getDeclaredMethod("invoke", ServletRequest.class, ServletResponse.class);
+        m.setAccessible(true);
+        return m;
     }
 
     private static class RequestFacadeHack extends RequestFacade {
@@ -269,6 +333,159 @@ class Hack {
 
         public String getLocalAddr() {
             return delegate.getLocalAddr();
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    static class ResponseHack extends Response {
+        private HttpServletResponse delegate;
+
+        public ResponseHack(HttpServletResponse delegate) {
+            this.delegate = delegate;
+        }
+
+        public void addCookie(Cookie cookie) {
+            delegate.addCookie(cookie);
+        }
+
+        public boolean containsHeader(String name) {
+            return delegate.containsHeader(name);
+        }
+
+        public String encodeURL(String url) {
+            return delegate.encodeURL(url);
+        }
+
+        public String encodeRedirectURL(String url) {
+            return delegate.encodeRedirectURL(url);
+        }
+
+        public String encodeUrl(String url) {
+            return delegate.encodeUrl(url);
+        }
+
+        public String encodeRedirectUrl(String url) {
+            return delegate.encodeRedirectUrl(url);
+        }
+
+        public void sendError(int sc, String msg) throws IOException {
+            delegate.sendError(sc, msg);
+        }
+
+        public void sendError(int sc) throws IOException {
+            delegate.sendError(sc);
+        }
+
+        public void sendRedirect(String location) throws IOException {
+            delegate.sendRedirect(location);
+        }
+
+        public void setDateHeader(String name, long date) {
+            delegate.setDateHeader(name, date);
+        }
+
+        public void addDateHeader(String name, long date) {
+            delegate.addDateHeader(name, date);
+        }
+
+        public void setHeader(String name, String value) {
+            delegate.setHeader(name, value);
+        }
+
+        public void addHeader(String name, String value) {
+            delegate.addHeader(name, value);
+        }
+
+        public void setIntHeader(String name, int value) {
+            delegate.setIntHeader(name, value);
+        }
+
+        public void addIntHeader(String name, int value) {
+            delegate.addIntHeader(name, value);
+        }
+
+        public void setStatus(int sc) {
+            delegate.setStatus(sc);
+        }
+
+        public void setStatus(int sc, String sm) {
+            delegate.setStatus(sc, sm);
+        }
+
+        public int getStatus() {
+            return delegate.getStatus();
+        }
+
+        public String getHeader(String name) {
+            return delegate.getHeader(name);
+        }
+
+        public Collection<String> getHeaders(String name) {
+            return delegate.getHeaders(name);
+        }
+
+        public Collection<String> getHeaderNames() {
+            return delegate.getHeaderNames();
+        }
+
+        public String getCharacterEncoding() {
+            return delegate.getCharacterEncoding();
+        }
+
+        public String getContentType() {
+            return delegate.getContentType();
+        }
+
+        public ServletOutputStream getOutputStream() throws IOException {
+            return delegate.getOutputStream();
+        }
+
+        public PrintWriter getWriter() throws IOException {
+            return delegate.getWriter();
+        }
+
+        public void setCharacterEncoding(String charset) {
+            delegate.setCharacterEncoding(charset);
+        }
+
+        public void setContentLength(int len) {
+            delegate.setContentLength(len);
+        }
+
+        public void setContentType(String type) {
+            delegate.setContentType(type);
+        }
+
+        public void setBufferSize(int size) {
+            delegate.setBufferSize(size);
+        }
+
+        public int getBufferSize() {
+            return delegate.getBufferSize();
+        }
+
+        public void flushBuffer() throws IOException {
+            delegate.flushBuffer();
+        }
+
+        public void resetBuffer() {
+            delegate.resetBuffer();
+        }
+
+        public boolean isCommitted() {
+            return delegate.isCommitted();
+        }
+
+        public void reset() {
+            delegate.reset();
+        }
+
+        public void setLocale(Locale loc) {
+            delegate.setLocale(loc);
+        }
+
+        public Locale getLocale() {
+            return delegate.getLocale();
         }
     }
 }

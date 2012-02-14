@@ -25,7 +25,6 @@ package org.jboss.as.capedwarf.services;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Map;
@@ -39,7 +38,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ServletExecutor {
 
     private static Map<String, ServletContext> contexts = new ConcurrentHashMap<String, ServletContext>();
-    private static ServletResponse NOOP = new NoopServletResponse();
 
     public static ServletContext registerContext(final String appId, final ServletContext context) {
         return contexts.put(appId, context);
@@ -90,7 +88,6 @@ public class ServletExecutor {
         if (dispatcher == null)
             throw new IllegalArgumentException("No dispatcher for path: " + path);
 
-        final HttpServletRequest hsr = Hack.wrap(request);
-        dispatcher.forward(hsr, NOOP);
+        Hack.invoke(dispatcher, request);
     }
 }

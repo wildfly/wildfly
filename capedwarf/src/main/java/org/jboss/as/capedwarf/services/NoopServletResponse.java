@@ -23,10 +23,13 @@
 package org.jboss.as.capedwarf.services;
 
 import javax.servlet.ServletOutputStream;
-import javax.servlet.ServletResponse;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Locale;
 
 /**
@@ -34,7 +37,7 @@ import java.util.Locale;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-class NoopServletResponse implements ServletResponse {
+class NoopServletResponse implements HttpServletResponse {
 
     private static ServletOutputStream NOOP_SOS = new NoopServletOutputStream();
     private static PrintWriter NOOP_PW = new PrintWriter(new NoopOutputStream());
@@ -99,6 +102,78 @@ class NoopServletResponse implements ServletResponse {
     private static class NoopServletOutputStream extends ServletOutputStream {
         public void write(int b) throws IOException {
         }
+    }
+
+    public void addCookie(Cookie cookie) {
+    }
+
+    public boolean containsHeader(String name) {
+        return false;
+    }
+
+    public String encodeURL(String url) {
+        return url;
+    }
+
+    public String encodeRedirectURL(String url) {
+        return url;
+    }
+
+    public String encodeUrl(String url) {
+        return url;
+    }
+
+    public String encodeRedirectUrl(String url) {
+        return url;
+    }
+
+    public void sendError(int sc, String msg) throws IOException {
+    }
+
+    public void sendError(int sc) throws IOException {
+    }
+
+    public void sendRedirect(String location) throws IOException {
+    }
+
+    public void setDateHeader(String name, long date) {
+    }
+
+    public void addDateHeader(String name, long date) {
+    }
+
+    public void setHeader(String name, String value) {
+    }
+
+    public void addHeader(String name, String value) {
+    }
+
+    public void setIntHeader(String name, int value) {
+    }
+
+    public void addIntHeader(String name, int value) {
+    }
+
+    public void setStatus(int sc) {
+    }
+
+    public void setStatus(int sc, String sm) {
+    }
+
+    public int getStatus() {
+        return 0;
+    }
+
+    public String getHeader(String name) {
+        return null;
+    }
+
+    public Collection<String> getHeaders(String name) {
+        return null;
+    }
+
+    public Collection<String> getHeaderNames() {
+        return Collections.emptySet();
     }
 }
 
