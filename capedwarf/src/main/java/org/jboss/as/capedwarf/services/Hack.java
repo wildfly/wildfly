@@ -74,6 +74,9 @@ class Hack {
         }
         // check for dispatch error
         final Object attribute = delegate.getAttribute(RequestDispatcher.ERROR_EXCEPTION);
+        if (attribute == null)
+            return;
+
         if (attribute instanceof RuntimeException) {
             throw RuntimeException.class.cast(attribute);
         } else if (attribute instanceof IOException) {
