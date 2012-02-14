@@ -69,7 +69,6 @@ public class SendToCustomJMSTopicTest {
             adminOperations.removeJmsTopic("myAwesomeTopic");
             adminOperations.close();
         }
-
     }
 
     @Deployment
