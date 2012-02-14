@@ -97,7 +97,7 @@ public final class ModelParser {
             final boolean maxInclusive = CommonAttributes.MAX_INCLUSIVE.resolveModelAttribute(context, node).asBoolean();
             return new LevelRangeFilter(min, minInclusive, max, maxInclusive);
         } else if (node.hasDefined(CommonAttributes.MATCH.getName())) {
-            return new RegexFilter(CommonAttributes.PATTERN.resolveModelAttribute(context, node).asString());
+            return new RegexFilter(CommonAttributes.MATCH.resolveModelAttribute(context, node).asString());
         } else if (node.hasDefined(CommonAttributes.NOT.getName())) {
             return new InvertFilter(parseFilter(context, CommonAttributes.NOT.resolveModelAttribute(context, node)));
         } else if (node.hasDefined(CommonAttributes.REPLACE.getName())) {
