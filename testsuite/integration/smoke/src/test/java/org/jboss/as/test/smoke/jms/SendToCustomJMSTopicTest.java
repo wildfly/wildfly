@@ -1,0 +1,150 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2010, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
+package org.jboss.as.test.smoke.jms;
+
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.integration.common.JMSAdminOperations;
+import org.jboss.logging.Logger;
+import org.jboss.shrinkwrap.api.ArchivePaths;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import javax.annotation.Resource;
+import javax.jms.*;
+
+/**
+ * Basic JMS test using a customly created JMS topic
+ *
+ * @author <a href="jmartisk@redhat.com">Jan Martiska</a>
+ */
+@RunWith(Arquillian.class)
+public class SendToCustomJMSTopicTest {
+
+    private static final Logger logger = Logger.getLogger(SendToCustomJMSTopicTest.class);
+
+    @Resource(mappedName = "/topic/myAwesomeTopic")
+    private Topic topic;
+
+    @Resource(mappedName = "/ConnectionFactory")
+    private ConnectionFactory factory;
+
+    private static JMSAdminOperations adminOperations;
+
+    @BeforeClass
+    public static void deployQueue() throws Exception {
+        adminOperations = new JMSAdminOperations();
+        adminOperations.createJmsTopic("myAwesomeTopic", "topic/myAwesomeTopic");
+    }
+
+    @AfterClass
+    public static void removeQueue() throws Exception {
+        if (adminOperations != null) {
+            adminOperations.removeJmsTopic("myAwesomeTopic");
+            adminOperations.close();
+        }
+
+    }
+
+    @Deployment
+    public static JavaArchive createTestArchive() {
+        return ShrinkWrap.create(JavaArchive.class, "test.jar")
+                .addClass(JMSAdminOperations.class)
+                .addAsManifestResource(
+                        EmptyAsset.INSTANCE,
+                        ArchivePaths.create("beans.xml"));
+    }
+
+    @Test
+    public void sendMessage() throws Exception {
+        Connection senderConnection = null;
+        Connection consumerConnection = null;
+        Session senderSession = null;
+        Session consumerSession = null;
+        MessageConsumer consumer = null;
+        try {
+            // CREATE SUBSCRIBER
+            logger.info("******* Creating connection for consumer");
+            consumerConnection = factory.createConnection();
+            logger.info("Creating session for consumer");
+            consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            logger.info("Creating consumer");
+            consumer = consumerSession.createConsumer(topic);
+            logger.info("Start session");
+            consumerConnection.start();
+
+            // SEND A MESSAGE
+            logger.info("***** Start - sending message to topic");
+            senderConnection = factory.createConnection();
+            logger.info("Creating session..");
+            senderSession = senderConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            MessageProducer producer = senderSession.createProducer(topic);
+            TextMessage message = senderSession.createTextMessage("Hello world!");
+            logger.info("Sending..");
+            producer.send(message);
+            logger.info("Message sent");
+            senderConnection.start();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        } finally {
+            logger.info("Closing connections and sessions");
+            if (senderSession != null) {
+                senderSession.close();
+            }
+            if (senderConnection != null) {
+                senderConnection.close();
+            }
+        }
+
+        Message receivedMessage = null;
+        try {
+            logger.info("Receiving");
+            receivedMessage = consumer.receive(5000);
+            logger.info("Received: " + ((TextMessage) receivedMessage).getText());
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        } finally {
+            if (receivedMessage == null) {
+                Assert.fail("received null instead of a TextMessage");
+            }
+            if (consumerSession != null) {
+                consumerSession.close();
+            }
+            if (consumerConnection != null) {
+                consumerConnection.close();
+            }
+        }
+
+        Assert.assertTrue("received a " + receivedMessage.getClass().getName() + " instead of a TextMessage", receivedMessage instanceof TextMessage);
+        Assert.assertEquals(((TextMessage) receivedMessage).getText(), "Hello world!");
+    }
+
+
+}
