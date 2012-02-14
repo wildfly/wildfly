@@ -94,6 +94,7 @@ import org.jboss.as.cli.handlers.PrefixHandler;
 import org.jboss.as.cli.handlers.PrintWorkingNodeHandler;
 import org.jboss.as.cli.handlers.QuitHandler;
 import org.jboss.as.cli.handlers.ReadAttributeHandler;
+import org.jboss.as.cli.handlers.ReadOperationHandler;
 import org.jboss.as.cli.handlers.UndeployHandler;
 import org.jboss.as.cli.handlers.VersionHandler;
 import org.jboss.as.cli.handlers.batch.BatchClearHandler;
@@ -145,6 +146,9 @@ import org.jboss.sasl.util.HexConverter;
  */
 class CommandContextImpl implements CommandContext {
 
+    static final String DEFAULT_CONTROLLER_HOST = "localhost";
+    static final int DEFAULT_CONTROLLER_PORT = 9999;
+
     /** the cli configuration */
     private final CliConfig config;
 
@@ -165,9 +169,9 @@ class CommandContextImpl implements CommandContext {
     /** the controller client */
     private ModelControllerClient client;
     /** the default controller host */
-    private String defaultControllerHost = "localhost";
+    private String defaultControllerHost = DEFAULT_CONTROLLER_HOST;
     /** the default controller port */
-    private int defaultControllerPort = 9999;
+    private int defaultControllerPort = DEFAULT_CONTROLLER_PORT;
     /** the host of the controller */
     private String controllerHost;
     /** the port of the controller */
@@ -217,14 +221,19 @@ class CommandContextImpl implements CommandContext {
         operationHandler = new OperationRequestHandler();
         initCommands();
         config = CliConfigImpl.load(this);
+        initSSLContext();
+    }
+
+    CommandContextImpl(String username, char[] password) throws CliInitializationException {
+        this(DEFAULT_CONTROLLER_HOST, DEFAULT_CONTROLLER_PORT, username, password, false);
     }
 
     /**
      * Default constructor used for both interactive and non-interactive mode.
      *
      */
-    CommandContextImpl(String defaultControllerHost, int defaultControllerPort, String username, char[] password,
-            boolean initConsole) throws CliInitializationException {
+    CommandContextImpl(String defaultControllerHost, int defaultControllerPort, String username, char[] password, boolean initConsole)
+            throws CliInitializationException {
         operationHandler = new OperationRequestHandler();
 
         this.username = username;
@@ -264,6 +273,7 @@ class CommandContextImpl implements CommandContext {
         cmdRegistry.registerHandler(new PrintWorkingNodeHandler(), "pwd", "pwn");
         cmdRegistry.registerHandler(new QuitHandler(), "quit", "q", "exit");
         cmdRegistry.registerHandler(new ReadAttributeHandler(this), "read-attribute");
+        cmdRegistry.registerHandler(new ReadOperationHandler(this), "read-operation");
         cmdRegistry.registerHandler(new VersionHandler(), "version");
 
         // deployment
@@ -453,7 +463,7 @@ class CommandContextImpl implements CommandContext {
         }
     }
 
-    void processLine(String line) {
+    public void handleSafe(String line) {
         exitCode = 0;
         try {
             handle(line);
@@ -796,9 +806,9 @@ class CommandContextImpl implements CommandContext {
             this.controllerHost = null;
             this.controllerPort = -1;
             domainMode = false;
+            notifyListeners(CliEvent.DISCONNECTED);
         }
         promptConnectPart = null;
-        notifyListeners(CliEvent.DISCONNECTED);
     }
 
     @Override
@@ -891,9 +901,18 @@ class CommandContextImpl implements CommandContext {
 
     @Override
     public BatchedCommand toBatchedCommand(String line) throws CommandFormatException {
+        return new DefaultBatchedCommand(line, buildRequest(line, true));
+    }
 
-        if (line.isEmpty()) {
-            throw new IllegalArgumentException("Null command line.");
+    @Override
+    public ModelNode buildRequest(String line) throws CommandFormatException {
+        return buildRequest(line, false);
+    }
+
+    protected ModelNode buildRequest(String line, boolean batchMode) throws CommandFormatException {
+
+        if (line == null || line.isEmpty()) {
+            throw new OperationFormatException("The line is null or empty.");
         }
 
         final DefaultCallbackHandler originalParsedArguments = this.parsedCmd;
@@ -907,27 +926,30 @@ class CommandContextImpl implements CommandContext {
 
         if (parsedCmd.getFormat() == OperationFormat.INSTANCE) {
             try {
-                ModelNode request = this.parsedCmd.toOperationRequest(this);
+                final ModelNode request = this.parsedCmd.toOperationRequest(this);
                 StringBuilder op = new StringBuilder();
                 op.append(prefixFormatter.format(parsedCmd.getAddress()));
                 op.append(line.substring(line.indexOf(':')));
-                return new DefaultBatchedCommand(op.toString(), request);
+                return request;
             } finally {
                 this.parsedCmd = originalParsedArguments;
             }
         }
 
-        CommandHandler handler = cmdRegistry.getCommandHandler(parsedCmd.getOperationName());
+        final CommandHandler handler = cmdRegistry.getCommandHandler(parsedCmd.getOperationName());
         if (handler == null) {
             throw new OperationFormatException("No command handler for '" + parsedCmd.getOperationName() + "'.");
         }
-        if (!handler.isBatchMode(this)) {
-            throw new OperationFormatException("The command is not allowed in a batch.");
+        if(batchMode) {
+            if(!handler.isBatchMode(this)) {
+                throw new OperationFormatException("The command is not allowed in a batch.");
+            }
+        } else if (handler instanceof OperationCommand) {
+            throw new OperationFormatException("The command does not translate to an operation request.");
         }
 
         try {
-            final ModelNode request = ((OperationCommand) handler).buildRequest(this);
-            return new DefaultBatchedCommand(line, request);
+            return ((OperationCommand) handler).buildRequest(this);
         } finally {
             this.parsedCmd = originalParsedArguments;
         }
@@ -982,18 +1004,14 @@ class CommandContextImpl implements CommandContext {
         }
     }
 
-    void interact(boolean connect) {
-        SecurityActions.addShutdownHook(new Thread(new Runnable() {
-            @Override
-            public void run() {
-                disconnectController();
-            }
-        }));
+    @Override
+    public void interact() {
+        if(cmdCompleter == null) {
+            throw new IllegalStateException("The console hasn't been initialized at construction time.");
+        }
 
-        if (connect) {
-            connectController(null, -1);
-        } else {
-            printLine("You are disconnected at the moment." + " Type 'connect' to connect to the server or"
+        if (this.client == null) {
+            printLine("You are disconnected at the moment. Type 'connect' to connect to the server or"
                     + " 'help' for the list of supported commands.");
         }
 
@@ -1003,7 +1021,7 @@ class CommandContextImpl implements CommandContext {
                 if (line == null) {
                     terminateSession();
                 } else {
-                    processLine(line.trim());
+                    handleSafe(line.trim());
                 }
             }
             printLine("");

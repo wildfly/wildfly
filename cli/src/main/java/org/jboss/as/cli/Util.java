@@ -87,6 +87,7 @@ public class Util {
     public static final String READ_WRITE = "read-write";
     public static final String READ_RESOURCE = "read-resource";
     public static final String READ_RESOURCE_DESCRIPTION = "read-resource-description";
+    public static final String REPLY_PROPERTIES = "reply-properties";
     public static final String REQUEST_PROPERTIES = "request-properties";
     public static final String REQUIRED = "required";
     public static final String RESTART_REQUIRED = "restart-required";

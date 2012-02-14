@@ -88,7 +88,7 @@ public class GroupAwareCacheFactory<K extends Serializable, V extends Cacheable<
         container.setBackingCacheEntryStore(store);
 
         // Set up the backing cache with the store and group cache
-        GroupAwareBackingCache<K, V, UUID, SerializationGroupMember<K, V, UUID>> backingCache = new GroupAwareBackingCacheImpl<K, V, UUID>(factory, container, groupCache, Executors.newScheduledThreadPool(1, Executors.defaultThreadFactory()));
+        GroupAwareBackingCache<K, V, UUID, SerializationGroupMember<K, V, UUID>> backingCache = new GroupAwareBackingCacheImpl<K, V, UUID>(factory, container, groupCache, Executors.defaultThreadFactory());
 
         // Listen for backing cache lifecycle changes so we know when to start/stop groupCache
         backingCache.addLifecycleListener(this);

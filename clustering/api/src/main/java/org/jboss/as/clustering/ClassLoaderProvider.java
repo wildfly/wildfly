@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,25 +20,12 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ejb3.cache;
-
-import org.jboss.metadata.ejb.parser.jboss.ejb3.AbstractEJBBoundMetaData;
+package org.jboss.as.clustering;
 
 /**
- * Metadata represents the pool name configured for EJBs via the jboss-ejb3.xml deployment descriptor
- *
- * @author Jaikiran Pai
+ * Used for AS7-2496 workaround
+ * @author Paul Ferraro
  */
-public class EJBBoundCacheMetaData extends AbstractEJBBoundMetaData {
-    private static final long serialVersionUID = -3246398329247802494L;
-
-    private String cacheName;
-
-    public String getCacheName() {
-        return cacheName;
-    }
-
-    public void setCacheName(final String cacheName) {
-        this.cacheName = cacheName;
-    }
+public interface ClassLoaderProvider {
+    ClassLoader getClassLoader();
 }

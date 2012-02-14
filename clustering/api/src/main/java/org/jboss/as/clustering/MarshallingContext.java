@@ -23,9 +23,6 @@
 package org.jboss.as.clustering;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 
 import org.jboss.marshalling.ClassResolver;
 import org.jboss.marshalling.Marshaller;
@@ -56,28 +53,6 @@ public class MarshallingContext {
     // AS7-2496 Workaround
     public ClassLoader getContextClassLoader() {
         final ClassResolver resolver = configuration.getClassResolver();
-        if (resolver != null) {
-            PrivilegedAction<Method> action = new PrivilegedAction<Method>() {
-                @Override
-                public Method run() {
-                    try {
-                        Method method = resolver.getClass().getDeclaredMethod("getClassLoader");
-                        method.setAccessible(true);
-                        return method;
-                    } catch (NoSuchMethodException e) {
-                        return null;
-                    }
-                }
-            };
-            Method method = AccessController.doPrivileged(action);
-            if (method != null) {
-                try {
-                    return (ClassLoader) method.invoke(resolver);
-                } catch (Exception e) {
-                    // Ignore
-                }
-            }
-        }
-        return null;
+        return (resolver instanceof ClassLoaderProvider) ? ((ClassLoaderProvider) resolver).getClassLoader() : null;
     }
 }

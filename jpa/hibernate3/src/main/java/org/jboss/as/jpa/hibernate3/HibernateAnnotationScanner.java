@@ -22,9 +22,6 @@
 
 package org.jboss.as.jpa.hibernate3;
 
-import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
-
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.net.URISyntaxException;
@@ -36,7 +33,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 
 import org.hibernate.ejb.packaging.NamedInputStream;
 import org.hibernate.ejb.packaging.Scanner;
@@ -48,6 +44,9 @@ import org.jboss.jandex.Index;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 
+import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+
 /**
  * Annotation scanner for Hibernate
  *
@@ -58,7 +57,7 @@ public class HibernateAnnotationScanner implements Scanner {
     private static final ThreadLocal<PersistenceUnitMetadata> persistenceUnitMetadataTLS = new ThreadLocal<PersistenceUnitMetadata>();
 
     /** Caches, used when restarting the persistence unit service */
-    private static final Map<PersistenceUnitMetadata, Map<URL, Set<Package>>> PACKAGES_IN_JAR_CACHE = new WeakHashMap<PersistenceUnitMetadata, Map<URL,Set<Package>>>();
+    private static final Map<PersistenceUnitMetadata, Map<URL, Set<Package>>> PACKAGES_IN_JAR_CACHE = new HashMap<PersistenceUnitMetadata, Map<URL,Set<Package>>>();
     private static final Map<PersistenceUnitMetadata, Map<URL, Map<Class<? extends Annotation>, Set<Class<?>>>>> CLASSES_IN_JAR_CACHE = new HashMap<PersistenceUnitMetadata, Map<URL, Map<Class<? extends Annotation>, Set<Class<?>>>>>();
 
     public static void setThreadLocalPersistenceUnitMetadata(final PersistenceUnitMetadata pu) {
@@ -135,7 +134,12 @@ public class HibernateAnnotationScanner implements Scanner {
     }
 
     static void cleanup(PersistenceUnitMetadata pu) {
-        CLASSES_IN_JAR_CACHE.remove(pu);
+        synchronized (CLASSES_IN_JAR_CACHE) {
+            CLASSES_IN_JAR_CACHE.remove(pu);
+        }
+        synchronized (PACKAGES_IN_JAR_CACHE) {
+            PACKAGES_IN_JAR_CACHE.remove(pu);
+        }
     }
 
     @Override

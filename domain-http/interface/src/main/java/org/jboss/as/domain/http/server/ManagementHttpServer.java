@@ -48,8 +48,6 @@ import org.jboss.com.sun.net.httpserver.HttpsServer;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.sasl.callback.DigestHashCallback;
 
-import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
-
 /**
  * The general HTTP server for handling management API requests.
  *
@@ -191,6 +189,8 @@ public class ManagementHttpServer {
         } catch (ModuleLoadException e) {
             throw new IOException("Unable to load resource handler", e);
         }
+
+        managementHttpServer.addHandler(new LogoutHandler());
 
         return managementHttpServer;
     }

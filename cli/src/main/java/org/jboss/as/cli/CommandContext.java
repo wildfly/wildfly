@@ -32,6 +32,7 @@ import org.jboss.as.cli.operation.CommandLineParser;
 import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.cli.operation.PrefixFormatter;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.dmr.ModelNode;
 
 
 /**
@@ -217,12 +218,28 @@ public interface CommandContext {
 
     /**
      * Builds an operation request from the passed in command line.
+     * If the line contains a command, the command must supported the batch mode,
+     * otherwise an exception will thrown.
      *
      * @param line the command line which can be an operation request or a command that can be translated into an operation request.
      * @return  the operation request
      * @throws CommandFormatException  if the operation request couldn't be built.
      */
     BatchedCommand toBatchedCommand(String line) throws CommandFormatException;
+
+    /**
+     * Builds a DMR request corresponding to the command or the operation.
+     * If the line contains a command, the corresponding command handler
+     * must implement org.jboss.cli.OperationCommand interface,
+     * in other words the command must translate into an operation request,
+     * otherwise an exception will be thrown.
+     *
+     * @param line  command or an operation to build a DMR request for
+     * @return  DMR request corresponding to the line
+     * @throws CommandFormatException  thrown in case the line couldn't be
+     * translated into a DMR request
+     */
+    ModelNode buildRequest(String line) throws CommandFormatException;
 
     /**
      * Returns the default command line completer.
@@ -250,9 +267,9 @@ public interface CommandContext {
     int getExitCode();
 
     /**
-     * Executes the command or operation. Or, if the context is in the batch mode
-     * and the command is allowed in the batch, adds the command (or operation) to the
-     * currently active batch.
+     * Executes a command or an operation. Or, if the context is in the batch mode
+     * and the command is allowed in the batch, adds the command (or the operation)
+     * to the currently active batch.
      * NOTE: errors are not handled by this method, they won't affect the exit code or
      * even be logged. Error handling is the responsibility of the caller.
      *
@@ -260,6 +277,27 @@ public interface CommandContext {
      * @throws CommandFormatException  in case there was an error handling the command or operation
      */
     void handle(String line) throws CommandLineException;
+
+    /**
+     * Executes a command or an operation. Or, if the context is in the batch mode
+     * and the command is allowed in the batch, adds the command (or the operation)
+     * to the currently active batch.
+     * NOTE: unlike handle(String line), this method catches CommandLineException
+     * exceptions thrown by command handlers, logs them and sets the exit code
+     * status to indicate that the command or the operation has failed.
+     * It's up to the caller to check the exit code with getExitCode()
+     * to find out whether the command or the operation succeeded or failed.
+     *
+     * @param line  command or operation to handle
+     * @throws CommandFormatException  in case there was an error handling the command or operation
+     */
+    void handleSafe(String line);
+
+    /**
+     * This method will start an interactive session.
+     * It requires an initialized at the construction time console.
+     */
+    void interact();
 
     /**
      * Returns current default filesystem directory.

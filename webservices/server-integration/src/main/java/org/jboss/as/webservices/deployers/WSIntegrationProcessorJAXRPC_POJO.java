@@ -53,7 +53,7 @@ public final class WSIntegrationProcessorJAXRPC_POJO implements DeploymentUnitPr
         if (isJaxwsPojoDeployment(unit)) return;
         final JBossWebMetaData jbossWebMD = getJBossWebMetaData(unit);
         final WebservicesMetaData webservicesMD = getOptionalAttachment(unit, WEBSERVICES_METADATA_KEY);
-        if (jbossWebMD != null && webservicesMD != null) {
+        if (jbossWebMD != null && webservicesMD != null && hasJaxRpcMapping(webservicesMD)) {
             createJaxrpcDeployment(unit, webservicesMD, jbossWebMD);
         }
     }
@@ -94,6 +94,15 @@ public final class WSIntegrationProcessorJAXRPC_POJO implements DeploymentUnitPr
             }
         }
         throw new IllegalStateException();
+    }
+
+    private boolean hasJaxRpcMapping(WebservicesMetaData webservicesMD) {
+        for (WebserviceDescriptionMetaData wsdmd : webservicesMD.getWebserviceDescriptions()) {
+            if (wsdmd.getJaxrpcMappingFile() != null) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
