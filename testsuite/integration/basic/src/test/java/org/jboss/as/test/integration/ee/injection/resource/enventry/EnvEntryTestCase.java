@@ -36,7 +36,8 @@ import javax.naming.InitialContext;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.integration.common.JMSAdminOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -61,7 +62,7 @@ public class EnvEntryTestCase {
     @ArquillianResource
     InitialContext ctx;
 
-    private static JMSAdminOperations adminOps;
+    private static JMSOperations adminOps;
 
     @Deployment
     public static Archive<?> deploymentOptional() {
@@ -74,16 +75,16 @@ public class EnvEntryTestCase {
                         TestEnvEntryBean.class,
                         TestEnvEntryBeanBase.class,
                         TestEnvEntryMDBean.class,
-                        EnvEntryTestCase.class,
-                        JMSAdminOperations.class);
+                        EnvEntryTestCase.class)
+                .addPackage(JMSOperations.class.getPackage());
         jar.addAsManifestResource(EnvEntryTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
         log.info(jar.toString(true));
         return jar;
     }
     
-    private static JMSAdminOperations getAdminOps() {
+    private static JMSOperations getAdminOps() {
         if(adminOps == null) {
-            adminOps = new JMSAdminOperations();
+            adminOps = JMSOperationsProvider.getInstance();
         }
         return adminOps;
     }

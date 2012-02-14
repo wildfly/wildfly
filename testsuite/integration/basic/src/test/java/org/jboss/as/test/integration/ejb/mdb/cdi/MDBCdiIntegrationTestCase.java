@@ -30,7 +30,8 @@ import javax.jms.TextMessage;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.common.JMSAdminOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.integration.ejb.mdb.JMSMessagingUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -66,13 +67,14 @@ public class MDBCdiIntegrationTestCase {
     @Resource(mappedName = QUEUE_JNDI_NAME)
     private Queue queue;
 
-    private static JMSAdminOperations jmsAdminOperations;
+    private static JMSOperations jmsAdminOperations;
 
     @Deployment
     public static Archive getDeployment() {
 
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "mdb-cdi-integration-test.jar");
-        ejbJar.addClasses(CdiIntegrationMDB.class, RequestScopedCDIBean.class, JMSMessagingUtil.class, JMSAdminOperations.class, MDBCdiIntegrationTestCase.class);
+        ejbJar.addClasses(CdiIntegrationMDB.class, RequestScopedCDIBean.class, JMSMessagingUtil.class, MDBCdiIntegrationTestCase.class)
+           .addPackage(JMSOperations.class.getPackage());
         ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF");
         ejbJar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
         logger.info(ejbJar.toString(true));
@@ -82,7 +84,7 @@ public class MDBCdiIntegrationTestCase {
 
     @BeforeClass
     public static void createJmsDestinations() {
-        jmsAdminOperations = new JMSAdminOperations();
+        jmsAdminOperations = JMSOperationsProvider.getInstance();
         jmsAdminOperations.createJmsQueue("mdb-cdi-test/queue", QUEUE_JNDI_NAME);
         jmsAdminOperations.createJmsQueue("mdb-cdi-test/reply-queue", REPLY_QUEUE_JNDI_NAME);
     }

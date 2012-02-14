@@ -34,8 +34,9 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.common.JMSAdminOperations;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.integration.common.jms.JMSOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -54,12 +55,12 @@ import org.junit.runner.RunWith;
 //@Ignore("Ignore failing tests")
 public class AddressControlManagementTestCase {
 
-    private static JMSAdminOperations adminSupport;
+    private static JMSOperations adminSupport;
     private static long count = System.currentTimeMillis();
 
     @BeforeClass
     public static void setup() throws Exception {
-        adminSupport = new JMSAdminOperations();
+        adminSupport = JMSOperationsProvider.getInstance();
 
         count++;
 

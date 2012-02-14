@@ -27,7 +27,8 @@ import javax.jms.Message;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.common.JMSAdminOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -50,7 +51,7 @@ public class MessageDestinationTestCase {
     @EJB (mappedName = "java:module/MessagingEjb")
     private MessagingEjb messagingMdb;
 
-    private static JMSAdminOperations jmsAdminOperations;
+    private static JMSOperations jmsAdminOperations;
 
     @Deployment
     public static Archive getDeployment() {
@@ -59,7 +60,7 @@ public class MessageDestinationTestCase {
 
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "mdb.jar");
         ejbJar.addPackage(MessageDestinationTestCase.class.getPackage());
-        ejbJar.addClass(JMSAdminOperations.class);
+        ejbJar.addPackage(JMSOperations.class.getPackage());
         ejbJar.addAsManifestResource(MessageDestinationTestCase.class.getPackage(),  "ejb-jar.xml", "ejb-jar.xml");
         ejbJar.addAsManifestResource(MessageDestinationTestCase.class.getPackage(),  "jboss-ejb3.xml", "jboss-ejb3.xml");
         ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF");
@@ -68,7 +69,7 @@ public class MessageDestinationTestCase {
     }
 
     private static void createJmsDestinations() {
-        jmsAdminOperations = new JMSAdminOperations();
+        jmsAdminOperations = JMSOperationsProvider.getInstance();
         jmsAdminOperations.createJmsQueue("messagedestinationtest/queue", "java:jboss/mdbtest/messageDestinationQueue");
         jmsAdminOperations.createJmsQueue("messagedestinationtest/replyQueue", "java:jboss/mdbtest/messageDestinationReplyQueue");
     }
