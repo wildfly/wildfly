@@ -25,7 +25,7 @@ class LogoutHandler implements ManagementHttpHandler {
     @Override
     public void start(HttpServer httpServer, SecurityRealm securityRealm) {
         httpServer.createContext("/logout", this);
-        realm = securityRealm.getName();
+        realm = securityRealm != null ? securityRealm.getName() : null;
     }
 
     @Override
@@ -37,6 +37,13 @@ class LogoutHandler implements ManagementHttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         final Headers requestHeaders = exchange.getRequestHeaders();
         final Headers responseHeaders = exchange.getResponseHeaders();
+
+        // Redirect back if there is no realm to log out of
+        if (realm == null) {
+            responseHeaders.set(LOCATION, "/");
+            exchange.sendResponseHeaders(307, -1);
+        }
+
         String authorization = requestHeaders.getFirst("Authorization");
         String rawQuery = exchange.getRequestURI().getRawQuery();
         boolean query = rawQuery != null && rawQuery.contains("logout");
