@@ -32,7 +32,8 @@ import javax.jms.Queue;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.common.JMSAdminOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.integration.ejb.mdb.JMSMessagingUtil;
 import org.jboss.as.test.integration.ejb.mdb.objectmessage.MDBAcceptingObjectMessage;
 import org.jboss.as.test.integration.ejb.mdb.objectmessage.MDBAcceptingObjectMessageOfArrayType;
@@ -79,7 +80,7 @@ public class ObjectMessageTestCase {
     private Queue objectMessageReplyQueue;
 
 
-    private static JMSAdminOperations jmsAdminOperations;
+    private static JMSOperations jmsAdminOperations;
 
     /**
      * .ear
@@ -103,7 +104,8 @@ public class ObjectMessageTestCase {
         logger.info(ejbJar.toString(true));
 
         final JavaArchive libJar = ShrinkWrap.create(JavaArchive.class, "util.jar");
-        libJar.addClasses(SimpleMessageInEarLibJar.class, JMSAdminOperations.class);
+        libJar.addClasses(SimpleMessageInEarLibJar.class);
+        libJar.addPackage(JMSOperations.class.getPackage());
         logger.info(libJar.toString(true));
 
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "mdb-objectmessage-test.ear");
@@ -117,7 +119,7 @@ public class ObjectMessageTestCase {
 
     @BeforeClass
     public static void createJmsDestinations() {
-        jmsAdminOperations = new JMSAdminOperations();
+        jmsAdminOperations = JMSOperationsProvider.getInstance();
         jmsAdminOperations.createJmsQueue("mdbtest/objectmessage-queue", MDBAcceptingObjectMessage.QUEUE_JNDI_NAME);
         jmsAdminOperations.createJmsQueue("mdbtest/objectmessage-replyQueue", OBJECT_MESSAGE_REPLY_QUEUE_JNDI_NAME);
         jmsAdminOperations.createJmsQueue("mdbtest/objectmessage-array-queue", MDBAcceptingObjectMessageOfArrayType.QUEUE_JNDI_NAME);

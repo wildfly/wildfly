@@ -42,8 +42,9 @@ import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.common.JMSAdminOperations;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.integration.common.jms.JMSOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.junit.After;
@@ -62,12 +63,12 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class JMSQueueManagementTestCase {
 
-    private static JMSAdminOperations adminSupport;
+    private static JMSOperations adminSupport;
     private static long count = System.currentTimeMillis();
 
     @BeforeClass
     public static void connectManagmentClient() {
-        adminSupport = new JMSAdminOperations();
+        adminSupport = JMSOperationsProvider.getInstance();
     }
 
     @AfterClass

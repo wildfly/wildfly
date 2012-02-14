@@ -64,7 +64,11 @@
                                 <goals><goal>test</goal></goals>
                                 <configuration>
                                     <includes>
-                                        <include>org/jboss/as/test/smoke/messaging/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/smoke/embedded/demos/client/jms/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/smoke/embedded/demos/client/messaging/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/smoke/embedded/demos/jms/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/smoke/embedded/demos/messaging/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/smoke/jms/**/*Test.java</include>
                                     </includes>
 
                                     <!-- Parameters to test cases. -->
@@ -83,6 +87,11 @@
                                 <configuration>
                                     <excludes>
                                         <exclude>org/jboss/as/test/smoke/messaging/**/*</exclude>
+                                        <exclude>org/jboss/as/test/smoke/embedded/demos/client/jms/**/*</exclude>
+                                        <exclude>org/jboss/as/test/smoke/embedded/demos/client/messaging/**/*</exclude>
+                                        <exclude>org/jboss/as/test/smoke/embedded/demos/jms/**/*</exclude>
+                                        <exclude>org/jboss/as/test/smoke/embedded/demos/messaging/**/*</exclude>
+                                        <exclude>org/jboss/as/test/smoke/jms/**/*</exclude>
                                     </excludes>
 
                                     <!-- Parameters to test cases. -->
