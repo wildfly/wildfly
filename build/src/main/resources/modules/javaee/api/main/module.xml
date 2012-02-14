@@ -28,7 +28,6 @@
     </resources>
 
     <dependencies>
-        <module name="javax.activation.api" export="true"/>
         <module name="javax.annotation.api" export="true"/>
         <module name="javax.ejb.api" export="true"/>
         <module name="javax.el.api" export="true"/>

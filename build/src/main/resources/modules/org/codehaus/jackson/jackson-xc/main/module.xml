@@ -32,7 +32,6 @@
 
     <dependencies>
         <module name="javax.api"/>
-        <module name="javax.activation.api"/>
         <module name="javax.xml.bind.api"/>
         <module name="org.codehaus.jackson.jackson-mapper-asl"/>
         <module name="org.codehaus.jackson.jackson-core-asl"/>

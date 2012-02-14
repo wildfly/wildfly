@@ -24,7 +24,7 @@
 
 <module xmlns="urn:jboss:module:1.1" name="javax.xml.registry.api">
     <dependencies>
-        <module name="javax.activation.api" export="true"/>
+        <module name="javax.api" export="true"/>
     </dependencies>
 
     <resources>

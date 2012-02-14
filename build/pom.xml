@@ -269,11 +269,6 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>javax.activation</groupId>
-                    <artifactId>activation</artifactId>
-                </dependency>
-
-                <dependency>
                     <groupId>javax.enterprise</groupId>
                     <artifactId>cdi-api</artifactId>
                 </dependency>
