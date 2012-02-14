@@ -25,7 +25,7 @@ class LogoutHandler implements ManagementHttpHandler {
     @Override
     public void start(HttpServer httpServer, SecurityRealm securityRealm) {
         httpServer.createContext("/logout", this);
-        realm = securityRealm.getName();
+        realm = securityRealm!=null ? securityRealm.getName() : "";
     }
 
     @Override
