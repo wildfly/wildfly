@@ -72,6 +72,7 @@ class Hack {
         } catch (Exception e) {
             throw new IOException(e);
         }
+
         // check for dispatch error
         final Object attribute = delegate.getAttribute(RequestDispatcher.ERROR_EXCEPTION);
         if (attribute == null)

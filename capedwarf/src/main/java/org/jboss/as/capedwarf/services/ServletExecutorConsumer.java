@@ -93,18 +93,18 @@ class ServletExecutorConsumer implements MessageListener {
                 return;
             }
 
-            final ClassLoader previous = Thread.currentThread().getContextClassLoader();
-            final ClassLoader cl = module.getClassLoader();
-            Thread.currentThread().setContextClassLoader(cl);
-            try {
-                final String appId = getValue(message, "appId");
-                final String path = getValue(message, "path");
-                final ServletContext context = ServletExecutor.getContext(appId);
-                final HttpServletRequest request = createServletRequest(cl, message, context);
-                ServletExecutor.dispatch(appId, path, context, request);
-            } finally {
-                Thread.currentThread().setContextClassLoader(previous);
+            final String appId = getValue(message, "appId");
+            final ServletContext context = ServletExecutor.getContext(appId);
+            if (context == null) {
+                log.warn("No matching ServletContext, app (" + appId + ") already undeployed?");
+                return;
             }
+
+            final ClassLoader cl = module.getClassLoader();
+            final HttpServletRequest request = createServletRequest(cl, message, context);
+
+            final String path = getValue(message, "path");
+            ServletExecutor.dispatch(appId, path, context, request);
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
