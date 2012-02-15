@@ -568,4 +568,7 @@ public interface HostControllerMessages {
 
     @Message(id = 10991, value = "An '%s' element whose '%s' attribute is has already been found")
     XMLStreamException duplicateIgnoredResourceType(String element, String value, @Param Location location);
+
+    @Message(id = 10992, value = "The JVM input arguments cannot be accessed so system properties passed directly to this Host Controller JVM will not be passed through to server processes. Cause of the problem: %s")
+    String cannotAccessJvmInputArgument(Exception cause);
 }

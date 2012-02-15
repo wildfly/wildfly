@@ -30,6 +30,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -165,7 +167,7 @@ public final class Main {
         String domainConfig = null;
         String hostConfig = null;
         RunningMode initialRunningMode = RunningMode.NORMAL;
-        Map<String, String> hostSystemProperties = new HashMap<String, String>();
+        Map<String, String> hostSystemProperties = getHostSystemProperties();
         ProductConfig productConfig;
 
 
@@ -467,6 +469,26 @@ public final class Main {
         }
 
         return url;
+    }
+
+    private static Map<String, String> getHostSystemProperties() {
+        final Map<String, String> hostSystemProperties = new HashMap<String, String>();
+        try {
+            RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
+            for (String arg : runtime.getInputArguments()) {
+                if (arg != null && arg.length() > 2 && arg.startsWith("-D")) {
+                    arg = arg.substring(2);
+                    String[] split = arg.split("=");
+                    if (!hostSystemProperties.containsKey(split[0])) {
+                        String val = split.length == 2 ? split[1] : null;
+                        hostSystemProperties.put(split[0], val);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println(MESSAGES.cannotAccessJvmInputArgument(e));
+        }
+        return hostSystemProperties;
     }
 
     private static class PCSocketConfig {
