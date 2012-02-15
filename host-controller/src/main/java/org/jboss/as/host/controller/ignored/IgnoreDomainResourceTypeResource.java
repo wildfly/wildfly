@@ -49,10 +49,13 @@ public class IgnoreDomainResourceTypeResource extends PlaceholderResource.Placeh
      * @param type the name of the type some of whose resources are to be ignored
      * @param names the specific instances of type that should be ignored. Either {@link ModelType#LIST}
      *              or {@link ModelType#UNDEFINED}; cannot be {@code null}
+     * @param wildcard {@code true} if all resources of the type should be matched. Use {@code null} to indicate
+     *                 this is undefined by the user, meaning {@code false} in practical effect
      */
-    public IgnoreDomainResourceTypeResource(String type, final ModelNode names) {
+    public IgnoreDomainResourceTypeResource(String type, final ModelNode names, final Boolean wildcard) {
         super(ModelDescriptionConstants.IGNORED_RESOURCE_TYPE, type);
         setNames(names);
+        setWildcard(wildcard);
     }
 
     private IgnoreDomainResourceTypeResource(IgnoreDomainResourceTypeResource toCopy) {
@@ -60,7 +63,13 @@ public class IgnoreDomainResourceTypeResource extends PlaceholderResource.Placeh
         synchronized (toCopy.model) {
             model.addAll(toCopy.model);
         }
+        this.hasWildcard = toCopy.hasWildcard;
         this.parent = toCopy.parent;
+    }
+
+    @Override
+    public boolean isRuntime() {
+        return false;
     }
 
     /** {@inheritDoc */
@@ -132,7 +141,7 @@ public class IgnoreDomainResourceTypeResource extends PlaceholderResource.Placeh
         }
     }
 
-    public void setWildcard(boolean wildcard) {
+    public void setWildcard(Boolean wildcard) {
         synchronized (model) {
             this.hasWildcard = wildcard;
         }

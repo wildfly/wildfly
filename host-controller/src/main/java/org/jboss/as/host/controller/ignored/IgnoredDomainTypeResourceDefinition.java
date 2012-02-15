@@ -31,6 +31,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.ListAttributeDefinition;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -91,6 +92,8 @@ public class IgnoredDomainTypeResourceDefinition extends SimpleResourceDefinitio
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadWriteAttribute(NAMES, null, new IgnoredDomainTypeWriteAttributeHandler());
+        OperationStepHandler writeHandler = new IgnoredDomainTypeWriteAttributeHandler();
+        resourceRegistration.registerReadWriteAttribute(WILDCARD, null, writeHandler);
+        resourceRegistration.registerReadWriteAttribute(NAMES, null, writeHandler);
     }
 }
