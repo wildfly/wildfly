@@ -172,8 +172,9 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
 
         if (modelNode.hasDefined(DOMAIN_CONTROLLER)) {
             ModelNode ignoredResources = null;
-            if (hasCoreServices && modelNode.get(CORE_SERVICE).hasDefined(IGNORED_RESOURCES)) {
-                ignoredResources = modelNode.get(CORE_SERVICE, IGNORED_RESOURCES);
+            if (hasCoreServices && modelNode.get(CORE_SERVICE).hasDefined(IGNORED_RESOURCES)
+                    && modelNode.get(CORE_SERVICE, IGNORED_RESOURCES).hasDefined(IGNORED_RESOURCE_TYPE)) {
+                ignoredResources = modelNode.get(CORE_SERVICE, IGNORED_RESOURCES, IGNORED_RESOURCE_TYPE);
             }
             writeDomainController(writer, modelNode.get(DOMAIN_CONTROLLER), ignoredResources);
             writeNewLine(writer);
@@ -1214,8 +1215,8 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
         writer.writeEndElement();
     }
 
-    private void writeIgnoredResources(XMLExtendedStreamWriter writer, ModelNode modelNode) throws XMLStreamException {
-        for (Property property : modelNode.asPropertyList()) {
+    private void writeIgnoredResources(XMLExtendedStreamWriter writer, ModelNode ignoredTypes) throws XMLStreamException {
+        for (Property property : ignoredTypes.asPropertyList()) {
 
             ModelNode ignored = property.getValue();
 

@@ -49,7 +49,9 @@ class IgnoredDomainTypeAddHandler implements OperationStepHandler {
         }
 
         ModelNode names = IgnoredDomainTypeResourceDefinition.NAMES.validateOperation(operation);
-        IgnoreDomainResourceTypeResource resource = new IgnoreDomainResourceTypeResource(type, names);
+        ModelNode wildcardNode = IgnoredDomainTypeResourceDefinition.WILDCARD.validateOperation(operation);
+        Boolean wildcard = wildcardNode.isDefined() ? wildcardNode.asBoolean() : null;
+        IgnoreDomainResourceTypeResource resource = new IgnoreDomainResourceTypeResource(type, names, wildcard);
         context.addResource(PathAddress.EMPTY_ADDRESS, resource);
 
         boolean booting = context.isBooting();

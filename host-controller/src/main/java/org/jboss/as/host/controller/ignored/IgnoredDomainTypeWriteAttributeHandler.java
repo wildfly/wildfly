@@ -60,8 +60,9 @@ class IgnoredDomainTypeWriteAttributeHandler implements OperationStepHandler {
         } else if (IgnoredDomainTypeResourceDefinition.WILDCARD.getName().equals(attribute)) {
 
             IgnoredDomainTypeResourceDefinition.WILDCARD.validateOperation(mockOp);
-
-            resource.setWildcard(IgnoredDomainTypeResourceDefinition.WILDCARD.resolveModelAttribute(context, mockOp).asBoolean());
+            ModelNode wildcardNode =  IgnoredDomainTypeResourceDefinition.WILDCARD.resolveModelAttribute(context, mockOp);
+            Boolean wildcard = wildcardNode.isDefined() ? wildcardNode.asBoolean() : null;
+            resource.setWildcard(wildcard);
         }
 
         boolean booting = context.isBooting();
