@@ -28,6 +28,7 @@ import java.io.OutputStream;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -286,6 +287,10 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
                                 } else {*/
                                     task.execute(context);
                                 //}
+                            } catch (RejectedExecutionException e) {
+                                if(resultHandler.failed(e)) {
+                                    safeWriteErrorResponse(channel, header, e);
+                                }
                             } catch (Exception e) {
                                 ProtocolLogger.ROOT_LOGGER.errorf(e, " failed to process async request for %s on channel %s", task, channel);
                                 if(resultHandler.failed(e)) {
