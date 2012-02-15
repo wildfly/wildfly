@@ -36,7 +36,7 @@
         <module name="javax.interceptor.api"/>
         <module name="javax.transaction.api"/>
         <module name="javax.validation.api"/>
-        <module name="javax.xml.ws.api"/>
+        <module name="javax.xml.ws.api" optional="true"/>
         <module name="org.hibernate.validator"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.as.controller"/>
