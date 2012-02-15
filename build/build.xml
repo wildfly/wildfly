@@ -333,10 +333,6 @@
 
         <module-def name="javaee.api"/>
 
-        <module-def name="javax.activation.api">
-            <maven-resource group="javax.activation" artifact="activation"/>
-        </module-def>
-
         <module-def name="javax.annotation.api">
             <maven-resource group="org.jboss.spec.javax.annotation" artifact="jboss-annotations-api_1.1_spec"/>
         </module-def>

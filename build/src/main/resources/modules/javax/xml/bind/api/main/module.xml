@@ -26,7 +26,6 @@
 
 
     <dependencies>
-        <module name="javax.activation.api" export="true"/>
         <module name="javax.xml.stream.api"/>
         <module name="com.sun.xml.bind" services="import"/>
         <module name="javax.api"/>

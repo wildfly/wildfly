@@ -15,16 +15,6 @@ public class MailSessionServer {
         this.sslEnabled = ssl;
     }
 
-    public MailSessionServer(final String outgoingSocketBinding, String username, String password, boolean ssl) {
-        this.outgoingSocketBinding = outgoingSocketBinding;
-        this.sslEnabled = ssl;
-        if (username != null) {
-            this.credentials = new Credentials(username, password);
-        } else {
-            credentials = null;
-        }
-    }
-
     public String getOutgoingSocketBinding() {
         return outgoingSocketBinding;
     }

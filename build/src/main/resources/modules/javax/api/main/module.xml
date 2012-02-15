@@ -27,6 +27,7 @@
             <paths>
                 <path name="javax/accessibility"/>
                 <path name="javax/activity"/>
+                <path name="javax/activation"/>
                 <path name="javax/crypto"/>
                 <path name="javax/crypto/interfaces"/>
                 <path name="javax/crypto/spec"/>

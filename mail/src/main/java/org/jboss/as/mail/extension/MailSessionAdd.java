@@ -23,7 +23,13 @@ import org.jboss.msc.value.ImmediateValue;
 
 import java.util.List;
 
-import static org.jboss.as.mail.extension.MailSubsystemModel.*;
+import static org.jboss.as.mail.extension.MailSubsystemModel.IMAP;
+import static org.jboss.as.mail.extension.MailSubsystemModel.JNDI_NAME;
+import static org.jboss.as.mail.extension.MailSubsystemModel.OUTBOUND_SOCKET_BINDING_REF;
+import static org.jboss.as.mail.extension.MailSubsystemModel.POP3;
+import static org.jboss.as.mail.extension.MailSubsystemModel.SERVER_TYPE;
+import static org.jboss.as.mail.extension.MailSubsystemModel.SMTP;
+import static org.jboss.as.mail.extension.MailSubsystemModel.USER_NAME;
 
 /**
  * @author Tomaz Cerar
@@ -120,23 +126,24 @@ public class MailSessionAdd extends AbstractAddStepHandler {
         controllers.add(mailSessionBuilder.install());
         controllers.add(binderBuilder.install());
     }
+
     /**
-         * Extracts the raw JNDI_NAME value from the given model node, and depending on the value and
-         * the value of any USE_JAVA_CONTEXT child node, converts the raw name into a compliant jndi name.
-         *
-         * @param modelNode the model node; either an operation or the model behind a mail session resource
-         * @return the compliant jndi name
-         */
-        public static String getJndiName(final ModelNode modelNode) {
-            final String rawJndiName = modelNode.require(JNDI_NAME).asString();
-            final String jndiName;
-            if (!rawJndiName.startsWith("java:")) {
-                jndiName = "java:jboss/mail/" + rawJndiName;
-            } else {
-                jndiName = rawJndiName;
-            }
-            return jndiName;
+     * Extracts the raw JNDI_NAME value from the given model node, and depending on the value and
+     * the value of any USE_JAVA_CONTEXT child node, converts the raw name into a compliant jndi name.
+     *
+     * @param modelNode the model node; either an operation or the model behind a mail session resource
+     * @return the compliant jndi name
+     */
+    public static String getJndiName(final ModelNode modelNode) {
+        final String rawJndiName = modelNode.require(JNDI_NAME).asString();
+        final String jndiName;
+        if (!rawJndiName.startsWith("java:")) {
+            jndiName = "java:jboss/mail/" + rawJndiName;
+        } else {
+            jndiName = rawJndiName;
         }
+        return jndiName;
+    }
 
 
     private void addOutboundSocketDependency(MailSessionService service, ServiceBuilder<?> mailSessionBuilder, MailSessionServer server) {
@@ -149,10 +156,12 @@ public class MailSessionAdd extends AbstractAddStepHandler {
 
     static MailSessionConfig from(final OperationContext operationContext, final ModelNode model) throws OperationFailedException {
         MailSessionConfig cfg = new MailSessionConfig();
-        cfg.setJndiName(model.require(JNDI_NAME).asString());
-        cfg.setDebug(model.get(DEBUG).asBoolean(false));
-        cfg.setFrom(model.get(FROM).asString());
 
+        cfg.setJndiName(MailSessionDefinition.JNDI_NAME.resolveModelAttribute(operationContext, model).asString());
+        cfg.setDebug(MailSessionDefinition.DEBUG.resolveModelAttribute(operationContext, model).asBoolean());
+        if (MailSessionDefinition.FROM.resolveModelAttribute(operationContext, model).isDefined()){
+            cfg.setFrom(MailSessionDefinition.FROM.resolveModelAttribute(operationContext, model).asString());
+        }
         if (model.hasDefined(SERVER_TYPE)) {
             ModelNode server = model.get(SERVER_TYPE);
             if (server.hasDefined(SMTP)) {
@@ -169,16 +178,16 @@ public class MailSessionAdd extends AbstractAddStepHandler {
     }
 
     private static MailSessionServer readServerConfig(final OperationContext operationContext, final ModelNode model) throws OperationFailedException {
-        final String socket = model.require(OUTBOUND_SOCKET_BINDING_REF).asString();
+        final String socket = MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF.resolveModelAttribute(operationContext,model).asString();
         final Credentials credentials = readCredentials(operationContext, model);
-        boolean ssl = model.get(SSL).asBoolean(false);
+        boolean ssl = MailServerDefinition.SSL.resolveModelAttribute(operationContext, model).asBoolean();
         return new MailSessionServer(socket, credentials, ssl);
     }
 
     private static Credentials readCredentials(final OperationContext operationContext, final ModelNode model) throws OperationFailedException {
-        if (model.get(USER_NAME).isDefined()){
-            String un = model.get(USER_NAME).asString();
-            String pw = operationContext.resolveExpressions((model.get(PASSWORD))).asString();
+        if (model.get(USER_NAME).isDefined()) {
+            String un = MailServerDefinition.USERNAME.resolveModelAttribute(operationContext, model).asString();
+            String pw = MailServerDefinition.PASSWORD.resolveModelAttribute(operationContext, model).asString();
             return new Credentials(un, pw);
         }
         return null;
