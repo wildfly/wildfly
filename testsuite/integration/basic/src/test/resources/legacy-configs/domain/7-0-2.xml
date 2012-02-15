@@ -137,7 +137,6 @@
                     </local-cache>
                 </cache-container>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
             <subsystem xmlns="urn:jboss:domain:jca:1.0">
                 <archive-validation enabled="true"/>
                 <bean-validation enabled="true"/>

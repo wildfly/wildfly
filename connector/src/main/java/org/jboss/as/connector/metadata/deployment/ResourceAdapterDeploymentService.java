@@ -99,6 +99,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
             SecurityActions.setThreadContextClassLoader(module.getClassLoader());
             raDeployment = raDeployer.doDeploy();
         } catch (Throwable t) {
+            unregisterAll(deploymentName);
             throw MESSAGES.failedToStartRaDeployment(t, deploymentName);
         } finally {
             SecurityActions.setThreadContextClassLoader(old);
@@ -120,13 +121,21 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
         }
     }
 
+
     /**
      * Stop
      */
     @Override
     public void stop(StopContext context) {
+        String deploymentName = value.getDeployment() != null ? value.getDeployment().getDeploymentName() : "";
         DEPLOYMENT_CONNECTOR_LOGGER.debugf("Stopping sevice %s",
-            ConnectorServices.RESOURCE_ADAPTER_DEPLOYMENT_SERVICE_PREFIX.append(this.value.getDeployment().getDeploymentName()));
+                        ConnectorServices.RESOURCE_ADAPTER_DEPLOYMENT_SERVICE_PREFIX.append(deploymentName));
+
+        unregisterAll(deploymentName);
+    }
+
+    @Override
+    public void unregisterAll(String deploymentName) {
 
         if (raName != null && deploymentServiceName != null) {
             ConnectorServices.unregisterDeployment(raName, deploymentServiceName);
@@ -136,15 +145,8 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
             ConnectorServices.unregisterResourceAdapterIdentifier(raName);
         }
 
-        managementRepository.getValue().getConnectors().remove(value.getDeployment().getConnector());
-        if (mdr != null && mdr.getValue() != null) {
-            try {
-                mdr.getValue().unregisterResourceAdapter(value.getDeployment().getDeploymentName());
-            } catch (Throwable t) {
-                DEPLOYMENT_CONNECTOR_LOGGER.debug("Exception during unregistering deployment", t);
-            }
-        }
-        super.stop(context);
+
+        super.unregisterAll(deploymentName);
     }
 
     public CommonDeployment getRaDeployment() {

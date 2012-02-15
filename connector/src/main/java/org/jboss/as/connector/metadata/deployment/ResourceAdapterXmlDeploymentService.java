@@ -107,6 +107,7 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
                     WritableServiceBasedNamingStore.popOwner();
                 }
             } catch (Throwable t) {
+                unregisterAll(raName);
                 throw MESSAGES.failedToStartRaDeployment(t, raName);
             }
 
@@ -133,7 +134,12 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
     @Override
     public void stop(StopContext context) {
         DEPLOYMENT_CONNECTOR_LOGGER.debugf("Stopping service %s",
-            ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(this.value.getDeployment().getDeploymentName()));
+                        ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(this.value.getDeployment().getDeploymentName()));
+        unregisterAll(raName);
+    }
+
+    @Override
+    public void unregisterAll(String deploymentName) {
 
         if (raName != null && deploymentServiceName != null) {
             ConnectorServices.unregisterDeployment(raName, deploymentServiceName);
@@ -143,8 +149,7 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
             ConnectorServices.unregisterResourceAdapterIdentifier(raName);
         }
 
-        managementRepository.getValue().getConnectors().remove(value.getDeployment().getConnector());
-        super.stop(context);
+        super.unregisterAll(deploymentName);
     }
 
     public CommonDeployment getRaxmlDeployment() {

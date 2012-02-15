@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ironjacamar>
+	<config-property name="raProperty">4</config-property>
+	<connection-definitions>
+		<connection-definition
+			class-name="org.jboss.as.test.integration.beanvalidation.jca.ra.ValidManagedConnectionFactory"
+			jndi-name="java:jboss/VCF" pool-name="VCF" >
+			<config-property name="cfProperty">prop</config-property>
+		</connection-definition>
+	</connection-definitions>
+	<admin-objects>
+		<admin-object class-name="org.jboss.as.test.integration.beanvalidation.jca.ra.ValidAdminObjectImpl"
+		jndi-name="java:jboss/VAO" pool-name="VAO">
+			<config-property name="aoProperty">admin</config-property>
+		</admin-object>
+	</admin-objects>
+
+</ironjacamar>

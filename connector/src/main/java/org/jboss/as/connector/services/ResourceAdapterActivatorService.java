@@ -96,6 +96,7 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
                Thread.currentThread().setContextClassLoader(old);
             }
         } catch (Throwable e) {
+            unregisterAll(deploymentName);
             throw MESSAGES.failedToStartRaDeployment(e, deploymentName);
         }
 
@@ -118,16 +119,14 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
      * Stop
      */
     @Override
-    public void stop(StopContext context) {
+        public void stop(StopContext context) {
         DEPLOYMENT_CONNECTOR_LOGGER.debugf("Stopping service %s", ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE);
-        super.stop(context);
-        if (mdr != null && mdr.getValue() != null) {
-            try {
-                mdr.getValue().unregisterResourceAdapter(value.getDeployment().getDeploymentName());
-            } catch (Throwable t) {
-                DEPLOYMENT_CONNECTOR_LOGGER.debug("Exception during unregistering deployment", t);
-            }
-        }
+        unregisterAll(deploymentName);
+    }
+    @Override
+    public void unregisterAll(String deploymentName) {
+        super.unregisterAll(deploymentName);
+
     }
 
     public CommonDeployment getDeploymentMD() {
