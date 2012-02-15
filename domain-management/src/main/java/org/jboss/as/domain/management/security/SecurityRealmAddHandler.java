@@ -21,6 +21,27 @@
  */
 package org.jboss.as.domain.management.security;
 
+import java.security.KeyStore;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.domain.management.CallbackHandlerFactory;
+import org.jboss.as.domain.management.connections.ConnectionManager;
+import org.jboss.as.domain.management.connections.ldap.LdapConnectionManagerService;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONNECTION;
@@ -42,27 +63,6 @@ import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYSTORE_
 import static org.jboss.as.domain.management.ModelDescriptionConstants.PASSWORD;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
-
-import java.security.KeyStore;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.management.CallbackHandlerFactory;
-import org.jboss.as.domain.management.connections.ConnectionManager;
-import org.jboss.as.domain.management.connections.ldap.LdapConnectionManagerService;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Handler to add security realm definitions and register the service.
@@ -186,8 +186,11 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         String connectionManager = ldap.require(CONNECTION).asString();
         ldapBuilder.addDependency(LdapConnectionManagerService.BASE_SERVICE_NAME.append(connectionManager), ConnectionManager.class, ldapCallbackHandler.getConnectionManagerInjector());
 
-        newControllers.add(ldapBuilder.setInitialMode(ON_DEMAND)
-                .install());
+        final ServiceController<?> serviceController = ldapBuilder.setInitialMode(ON_DEMAND)
+                .install();
+        if(newControllers != null) {
+            newControllers.add(serviceController);
+        }
 
         return ldapServiceName;
     }
@@ -201,8 +204,12 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
             propsBuilder.addDependency(pathName(properties.get(RELATIVE_TO).asString()), String.class, propsCallbackHandler.getRelativeToInjector());
         }
 
-        newControllers.add(propsBuilder.setInitialMode(ON_DEMAND)
-                .install());
+        final ServiceController<?> serviceController = propsBuilder.setInitialMode(ON_DEMAND)
+                .install();
+
+        if(newControllers != null) {
+            newControllers.add(serviceController);
+        }
 
         return propsServiceName;
     }
@@ -218,7 +225,10 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
                     propsSubjectSupplemental.getRelativeToInjector());
         }
 
-        newControllers.add(propsBuilder.setInitialMode(ON_DEMAND).install());
+        final ServiceController<?> serviceController = propsBuilder.setInitialMode(ON_DEMAND).install();
+        if(newControllers != null) {
+            newControllers.add(serviceController);
+        }
 
         return propsServiceName;
     }
@@ -255,7 +265,10 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
             sslBuilder.addDependency(truststoreServiceName, KeyStore.class, sslIdentityService.getTrustStoreInjector());
         }
 
-        newControllers.add(sslBuilder.setInitialMode(ON_DEMAND).install());
+        final ServiceController<?> serviceController = sslBuilder.setInitialMode(ON_DEMAND).install();
+        if(newControllers != null) {
+            newControllers.add(serviceController);
+        }
 
         return sslServiceName;
     }
@@ -272,7 +285,10 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
                     fileKeystoreService.getRelativeToInjector());
         }
 
-        newControllers.add(serviceBuilder.setInitialMode(ON_DEMAND).install());
+        final ServiceController<?> serviceController = serviceBuilder.setInitialMode(ON_DEMAND).install();
+        if(newControllers != null) {
+            newControllers.add(serviceController);
+        }
 
         return password;
     }
@@ -283,9 +299,12 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         String secretValue = secret.require(VALUE).asString();
 
         SecretIdentityService sis = new SecretIdentityService(secretValue);
-        serviceTarget.addService(secretServiceName, sis)
+        final ServiceController<CallbackHandlerFactory> serviceController = serviceTarget.addService(secretServiceName, sis)
                 .setInitialMode(ON_DEMAND)
                 .install();
+        if(newControllers != null) {
+            newControllers.add(serviceController);
+        }
 
         return secretServiceName;
     }
@@ -298,8 +317,11 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         ServiceBuilder<?> usersBuilder = serviceTarget.addService(usersServiceName, usersCallbackHandler);
 
 
-        newControllers.add(usersBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .install());
+        final ServiceController<?> serviceController = usersBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .install();
+        if(newControllers != null) {
+            newControllers.add(serviceController);
+        }
 
         return usersServiceName;
     }
