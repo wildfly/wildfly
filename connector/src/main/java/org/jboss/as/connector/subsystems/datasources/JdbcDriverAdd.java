@@ -89,7 +89,7 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final String driverName = operation.require(DRIVER_NAME.getName()).asString();
-        final String moduleName = operation.require(DRIVER_MODULE_NAME.getName()).asString();
+        String moduleName = operation.require(DRIVER_MODULE_NAME.getName()).asString();
         final Integer majorVersion = operation.hasDefined(DRIVER_MAJOR_VERSION.getName()) ? operation.get(DRIVER_MAJOR_VERSION.getName()).asInt() : null;
         final Integer minorVersion = operation.hasDefined(DRIVER_MINOR_VERSION.getName()) ? operation.get(DRIVER_MINOR_VERSION.getName()).asInt() : null;
         final String driverClassName = operation.hasDefined(DRIVER_CLASS_NAME.getName()) ? operation.get(DRIVER_CLASS_NAME.getName()).asString() : null;
@@ -101,8 +101,14 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
 
         final ModuleIdentifier moduleId;
         final Module module;
+        String slot = null;
+        if (moduleName.contains(":")) {
+            slot = moduleName.substring(moduleName.indexOf(":") + 1);
+            moduleName = moduleName.substring(0, moduleName.indexOf(":"));
+        }
+
         try {
-            moduleId = ModuleIdentifier.create(moduleName);
+            moduleId = ModuleIdentifier.create(moduleName, slot);
             module = Module.getCallerModuleLoader().loadModule(moduleId);
         } catch (ModuleLoadException e) {
             context.getFailureDescription().set(MESSAGES.failedToLoadModuleDriver(moduleName));
