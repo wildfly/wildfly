@@ -49,6 +49,7 @@ import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.annotation.ResourceRootIndexer;
 import org.jboss.as.server.deployment.module.AdditionalModuleSpecification;
+import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
@@ -199,6 +200,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                 deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, additionalResourceRoot);
                 //compute the annotation index for the root
                 ResourceRootIndexer.indexResourceRoot(additionalResourceRoot);
+                ModuleRootMarker.mark(additionalResourceRoot);
             }
         }
         for (final String classFileTransformer : rootDeploymentSpecification.getClassFileTransformers()) {

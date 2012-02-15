@@ -23,6 +23,7 @@
     <deployment>
         <resources>
             <resource-root path="/"  use-physical-code-source="true"/>
+            <resource-root path="other/otherJar.jar" />
         </resources>
         <dependencies>
             <module name="deployment.module.ignored"/>
