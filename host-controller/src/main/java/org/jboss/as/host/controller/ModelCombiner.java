@@ -241,13 +241,20 @@ class ModelCombiner implements ManagedServerBootConfiguration {
 
         Map<String, String> bootTimeProperties = getAllSystemProperties(true);
         // Add in properties passed in to the ProcessController command line
-        bootTimeProperties.putAll(environment.getHostSystemProperties());
+        for (Map.Entry<String, String> hostProp : environment.getHostSystemProperties().entrySet()) {
+            if (!bootTimeProperties.containsKey(hostProp.getKey())) {
+                bootTimeProperties.put(hostProp.getKey(), hostProp.getValue());
+            }
+        }
         for (Entry<String, String> entry : bootTimeProperties.entrySet()) {
-            final StringBuilder sb = new StringBuilder("-D");
-            sb.append(entry.getKey());
-            sb.append('=');
-            sb.append(entry.getValue() == null ? "true" : entry.getValue());
-            command.add(sb.toString());
+            String property = entry.getKey();
+            if (!"org.jboss.boot.log.file".equals(property) && !"logging.configuration".equals(property)) {
+                final StringBuilder sb = new StringBuilder("-D");
+                sb.append(property);
+                sb.append('=');
+                sb.append(entry.getValue() == null ? "true" : entry.getValue());
+                command.add(sb.toString());
+            }
         }
 
         command.add("-Dorg.jboss.boot.log.file=" + getAbsolutePath(environment.getDomainServersDir(), serverName, "log", "boot.log"));
