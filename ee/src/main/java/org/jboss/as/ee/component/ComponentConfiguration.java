@@ -37,6 +37,7 @@ import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.deployment.reflect.ClassIndex;
 import org.jboss.invocation.InterceptorFactory;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.Service;
 
 import static org.jboss.as.ee.EeMessages.MESSAGES;
@@ -56,7 +57,7 @@ public class ComponentConfiguration {
 
     // Core component config
     private final ClassIndex classIndex;
-
+    private final ModuleLoader moduleLoader;
     private final ClassLoader moduleClassLoder;
 
     private ComponentCreateServiceFactory componentCreateServiceFactory = ComponentCreateServiceFactory.BASIC;
@@ -86,10 +87,11 @@ public class ComponentConfiguration {
 
     private final Set<Object> interceptorContextKeys = new HashSet<Object>();
 
-    public ComponentConfiguration(final ComponentDescription componentDescription, final ClassIndex classIndex, final ClassLoader moduleClassLoder) {
+    public ComponentConfiguration(final ComponentDescription componentDescription, final ClassIndex classIndex, final ClassLoader moduleClassLoder, final ModuleLoader moduleLoader) {
         this.componentDescription = componentDescription;
         this.classIndex = classIndex;
         this.moduleClassLoder = moduleClassLoder;
+        this.moduleLoader = moduleLoader;
     }
 
     /**
@@ -415,6 +417,10 @@ public class ComponentConfiguration {
 
     public ClassLoader getModuleClassLoder() {
         return moduleClassLoder;
+    }
+
+    public ModuleLoader getModuleLoader() {
+        return moduleLoader;
     }
 
     /**

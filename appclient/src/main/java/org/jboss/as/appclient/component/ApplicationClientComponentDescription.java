@@ -30,6 +30,7 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.reflect.ClassIndex;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -52,8 +53,8 @@ public final class ApplicationClientComponentDescription extends ComponentDescri
     }
 
     @Override
-    public ComponentConfiguration createConfiguration(final ClassIndex classIndex, final ClassLoader moduleClassLoder) {
-        final ComponentConfiguration configuration =  super.createConfiguration(classIndex, moduleClassLoder);
+    public ComponentConfiguration createConfiguration(final ClassIndex classIndex, final ClassLoader moduleClassLoder, final ModuleLoader moduleLoader) {
+        final ComponentConfiguration configuration =  super.createConfiguration(classIndex, moduleClassLoder, moduleLoader);
         configuration.setInstanceFactory(new ManagedReferenceFactory() {
             @Override
             public ManagedReference getReference() {

@@ -6,7 +6,6 @@ import org.jboss.as.test.clustering.cluster.web.ClusteredWebTestCase;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 public class DistributionWebFailoverTestCase extends ClusteredWebFailoverTestCase {

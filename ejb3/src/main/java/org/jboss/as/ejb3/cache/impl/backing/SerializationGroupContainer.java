@@ -63,7 +63,6 @@ public class SerializationGroupContainer<K extends Serializable, V extends Cache
         this.marshallingConfiguration.setClassTable(config.getClassTable());
         this.marshallingConfiguration.setExceptionListener(config.getExceptionListener());
         this.marshallingConfiguration.setExternalizerCreator(config.getExternalizerCreator());
-        this.marshallingConfiguration.setExternalizerCreator(config.getExternalizerCreator());
         this.marshallingConfiguration.setInstanceCount(config.getInstanceCount());
         this.marshallingConfiguration.setObjectResolver(config.getObjectResolver());
         this.marshallingConfiguration.setObjectTable(config.getObjectTable());

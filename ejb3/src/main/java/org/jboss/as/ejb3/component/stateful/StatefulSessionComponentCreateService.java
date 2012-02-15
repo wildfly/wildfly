@@ -25,7 +25,7 @@ package org.jboss.as.ejb3.component.stateful;
 import java.lang.reflect.Method;
 import java.util.Set;
 
-import org.jboss.as.clustering.SimpleClassResolver;
+import org.jboss.as.clustering.ClassLoaderAwareClassResolver;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.TCCLInterceptor;
@@ -41,6 +41,9 @@ import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
 import org.jboss.marshalling.MarshallingConfiguration;
+import org.jboss.marshalling.ModularClassResolver;
+import org.jboss.marshalling.reflect.ReflectiveCreator;
+import org.jboss.marshalling.reflect.SunReflectiveCreator;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.value.InjectedValue;
 
@@ -90,7 +93,9 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         this.ejb2XRemoveMethod = Interceptors.getChainedInterceptorFactory(StatefulSessionSynchronizationInterceptor.factory(componentDescription.getTransactionManagementType()), new ImmediateInterceptorFactory(new StatefulRemoveInterceptor(false)), Interceptors.getTerminalInterceptorFactory());
         this.cache = componentDescription.getCache();
         this.marshallingConfiguration = new MarshallingConfiguration();
-        this.marshallingConfiguration.setClassResolver(new SimpleClassResolver(componentConfiguration.getModuleClassLoder()));
+        this.marshallingConfiguration.setSerializedCreator(new SunReflectiveCreator());
+        this.marshallingConfiguration.setExternalizerCreator(new ReflectiveCreator());
+        this.marshallingConfiguration.setClassResolver(new ClassLoaderAwareClassResolver(ModularClassResolver.getInstance(componentConfiguration.getModuleLoader()), componentConfiguration.getModuleClassLoder()));
         this.marshallingConfiguration.setSerializabilityChecker(new StatefulSessionBeanSerializabilityChecker(componentConfiguration.getComponentClass()));
         this.marshallingConfiguration.setClassTable(new StatefulSessionBeanClassTable());
         this.serializableInterceptorContextKeys = componentConfiguration.getInterceptorContextKeys();

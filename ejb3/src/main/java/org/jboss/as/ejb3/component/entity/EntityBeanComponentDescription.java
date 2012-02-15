@@ -56,6 +56,7 @@ import org.jboss.as.server.deployment.reflect.ClassIndex;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.metadata.ejb.spec.EntityBeanMetaData;
 import org.jboss.metadata.ejb.spec.PersistenceType;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -124,8 +125,8 @@ public class EntityBeanComponentDescription extends EJBComponentDescription {
 
 
     @Override
-    public final ComponentConfiguration createConfiguration(final ClassIndex classIndex, final ClassLoader moduleClassLoder) {
-        final ComponentConfiguration configuration = createEntityBeanConfiguration(classIndex, moduleClassLoder);
+    public final ComponentConfiguration createConfiguration(final ClassIndex classIndex, final ClassLoader moduleClassLoder, final ModuleLoader moduleLoader) {
+        final ComponentConfiguration configuration = createEntityBeanConfiguration(classIndex, moduleClassLoder, moduleLoader);
         configuration.getCreateDependencies().add(new ConfigInjectingConfigurator(this));
         // add the timer interceptor
         getConfigurators().add(new ComponentConfigurator() {
@@ -137,8 +138,8 @@ public class EntityBeanComponentDescription extends EJBComponentDescription {
         return configuration;
     }
 
-    protected ComponentConfiguration createEntityBeanConfiguration(final ClassIndex classIndex, final ClassLoader moduleClassLoder) {
-        final ComponentConfiguration configuration = new ComponentConfiguration(this, classIndex, moduleClassLoder);
+    protected ComponentConfiguration createEntityBeanConfiguration(final ClassIndex classIndex, final ClassLoader moduleClassLoder, final ModuleLoader moduleLoader) {
+        final ComponentConfiguration configuration = new ComponentConfiguration(this, classIndex, moduleClassLoder, moduleLoader);
         // setup the component create service
         configuration.setComponentCreateServiceFactory(EntityBeanComponentCreateService.FACTORY);
         return configuration;
