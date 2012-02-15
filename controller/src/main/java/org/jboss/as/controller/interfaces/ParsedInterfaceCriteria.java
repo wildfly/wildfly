@@ -186,13 +186,13 @@ public final class ParsedInterfaceCriteria {
                 ModelNode value = property.getValue();
                 value = parsePossibleExpression(value);
                 checkStringType(value, element.getLocalName(), true);
-                return createInetAddressCriteria(property.getValue());
+                return createInetAddressCriteria(value);
             }
             case LOOPBACK_ADDRESS: {
                 ModelNode value = property.getValue();
                 value = parsePossibleExpression(value);
                 checkStringType(value, element.getLocalName(), true);
-                return new LoopbackAddressInterfaceCriteria(property.getValue());
+                return new LoopbackAddressInterfaceCriteria(value);
             }
             case NIC: {
                 checkStringType(property.getValue(), element.getLocalName());
