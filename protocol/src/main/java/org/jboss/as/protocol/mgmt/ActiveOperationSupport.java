@@ -358,10 +358,14 @@ class ActiveOperationSupport {
             final List<Cancellable> cancellables;
             synchronized (this) {
                 cancellables = this.cancellables;
-                if (cancellables == null || cancellables == CANCEL_REQUESTED) {
+                if (cancellables == CANCEL_REQUESTED) {
                     return;
                 }
                 this.cancellables = CANCEL_REQUESTED;
+                if(cancellables == null) {
+                    setCancelled();
+                    return;
+                }
             }
             executor.execute(new Runnable() {
                 @Override
