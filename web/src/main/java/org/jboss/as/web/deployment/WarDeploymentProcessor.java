@@ -34,9 +34,14 @@ import java.util.Set;
 
 import javax.security.jacc.PolicyConfiguration;
 
+import org.apache.catalina.ContainerListener;
+import org.apache.catalina.Lifecycle;
+import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Loader;
 import org.apache.catalina.Realm;
+import org.apache.catalina.Valve;
 import org.apache.catalina.core.StandardContext;
+import org.apache.tomcat.util.IntrospectionUtils;
 import org.jboss.as.clustering.web.DistributedCacheManagerFactory;
 import org.jboss.as.clustering.web.DistributedCacheManagerFactoryService;
 import org.jboss.as.controller.PathElement;
@@ -59,10 +64,13 @@ import org.jboss.as.web.security.JBossWebRealmService;
 import org.jboss.as.web.security.SecurityContextAssociationValve;
 import org.jboss.as.web.security.WarJaccService;
 import org.jboss.dmr.ModelNode;
+import org.jboss.metadata.javaee.spec.ParamValueMetaData;
+import org.jboss.metadata.web.jboss.ContainerListenerMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.jboss.ValveMetaData;
 import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController;
@@ -142,13 +150,8 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         final StandardContext webContext = new StandardContext();
         final JBossContextConfig config = new JBossContextConfig(deploymentUnit);
 
-        // add SecurityAssociationValve right at the beginning
+        // Add SecurityAssociationValve right at the beginning
         webContext.addValve(new SecurityContextAssociationValve(deploymentUnit));
-
-        List<ValveMetaData> valves = metaData.getValves();
-        if (valves == null) {
-            metaData.setValves(valves = new ArrayList<ValveMetaData>());
-        }
 
         // Set the deployment root
         try {
@@ -187,6 +190,44 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
 
         final Loader loader = new WebCtxLoader(classLoader);
         webContext.setLoader(loader);
+
+        // Valves
+        List<ValveMetaData> valves = metaData.getValves();
+        if (valves == null) {
+            metaData.setValves(valves = new ArrayList<ValveMetaData>());
+        }
+        for (ValveMetaData valve : valves) {
+            Valve valveInstance = (Valve) getInstance(module, valve.getModule(), valve.getValveClass(), valve.getParams());
+            webContext.getPipeline().addValve(valveInstance);
+        }
+
+        // Container listeners
+        List<ContainerListenerMetaData> listeners = metaData.getContainerListeners();
+        if (listeners != null) {
+            for (ContainerListenerMetaData listener : listeners) {
+                switch (listener.getListenerType()) {
+                    case CONTAINER:
+                        ContainerListener containerListener = (ContainerListener) getInstance(module, listener.getModule(), listener.getListenerClass(), listener.getParams());
+                        webContext.addContainerListener(containerListener);
+                        break;
+                    case LIFECYCLE:
+                        LifecycleListener lifecycleListener = (LifecycleListener) getInstance(module, listener.getModule(), listener.getListenerClass(), listener.getParams());
+                        if (webContext instanceof Lifecycle) {
+                            ((Lifecycle) webContext).addLifecycleListener(lifecycleListener);
+                        }
+                        break;
+                   case SERVLET_INSTANCE:
+                       webContext.addInstanceListener(listener.getListenerClass());
+                        break;
+                    case SERVLET_CONTAINER:
+                        webContext.addWrapperListener(listener.getListenerClass());
+                        break;
+                    case SERVLET_LIFECYCLE:
+                        webContext.addWrapperLifecycle(listener.getListenerClass());
+                        break;
+                }
+            }
+        }
 
         // Set the session cookies flag according to metadata
         switch (metaData.getSessionCookies()) {
@@ -314,4 +355,26 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
     }
+
+    protected Object getInstance(Module module, String moduleName, String className, List<ParamValueMetaData> params)
+        throws DeploymentUnitProcessingException {
+        try {
+            ClassLoader moduleClassLoader = null;
+            if (moduleName == null) {
+                moduleClassLoader = module.getClassLoader();
+            } else {
+                moduleClassLoader = module.getModule(ModuleIdentifier.create(moduleName)).getClassLoader();
+            }
+            Object instance = moduleClassLoader.loadClass(className).newInstance();
+            if (params != null) {
+                for (ParamValueMetaData param : params) {
+                    IntrospectionUtils.setProperty(instance, param.getParamName(), param.getParamValue());
+                }
+            }
+            return instance;
+        } catch (Throwable t) {
+            throw new DeploymentUnitProcessingException(MESSAGES.failToCreateContainerComponentInstance(className), t);
+        }
+    }
+
 }
