@@ -165,24 +165,41 @@ public final class InstalledDriver {
     }
 
     @Override
-    public int hashCode() {
-        int result = 17;
-        result = 37 * result + driverClassName.hashCode();
-        result = 37 * result + majorVersion;
-        result = 37 * result + minorVersion;
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        InstalledDriver that = (InstalledDriver) o;
+
+        if (jdbcCompliant != that.jdbcCompliant) return false;
+        if (majorVersion != that.majorVersion) return false;
+        if (minorVersion != that.minorVersion) return false;
+        if (dataSourceClassName != null ? !dataSourceClassName.equals(that.dataSourceClassName) : that.dataSourceClassName != null)
+            return false;
+        if (deploymentUnitName != null ? !deploymentUnitName.equals(that.deploymentUnitName) : that.deploymentUnitName != null)
+            return false;
+        if (driverClassName != null ? !driverClassName.equals(that.driverClassName) : that.driverClassName != null)
+            return false;
+        if (driverName != null ? !driverName.equals(that.driverName) : that.driverName != null) return false;
+        if (moduleName != null ? !moduleName.equals(that.moduleName) : that.moduleName != null) return false;
+        if (xaDataSourceClassName != null ? !xaDataSourceClassName.equals(that.xaDataSourceClassName) : that.xaDataSourceClassName != null)
+            return false;
+
+        return true;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == this)
-            return true;
-        if (obj instanceof InstalledDriver) {
-            InstalledDriver other = (InstalledDriver) obj;
-            return driverClassName.equals(other.driverClassName) && majorVersion == other.majorVersion
-                    && minorVersion == other.minorVersion;
-        }
-        return false;
+    public int hashCode() {
+        int result = driverName != null ? driverName.hashCode() : 0;
+        result = 31 * result + (moduleName != null ? moduleName.hashCode() : 0);
+        result = 31 * result + (deploymentUnitName != null ? deploymentUnitName.hashCode() : 0);
+        result = 31 * result + (driverClassName != null ? driverClassName.hashCode() : 0);
+        result = 31 * result + (dataSourceClassName != null ? dataSourceClassName.hashCode() : 0);
+        result = 31 * result + (xaDataSourceClassName != null ? xaDataSourceClassName.hashCode() : 0);
+        result = 31 * result + majorVersion;
+        result = 31 * result + minorVersion;
+        result = 31 * result + (jdbcCompliant ? 1 : 0);
+        return result;
     }
 
     @Override
@@ -201,6 +218,7 @@ public final class InstalledDriver {
         sb.append(minorVersion);
 
         return sb.toString();
+
     }
 
     public String getDriverName() {

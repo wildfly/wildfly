@@ -36,7 +36,7 @@ public class GetInstalledDriverOperationHandler implements OperationStepHandler 
     private final ParametersValidator validator = new ParametersValidator();
 
     private GetInstalledDriverOperationHandler() {
-        validator.registerValidator(JDBC_DRIVER_NAME, new StringLengthValidator(1));
+        validator.registerValidator(DRIVER_NAME.getName(), new StringLengthValidator(1));
     }
 
     @Override
