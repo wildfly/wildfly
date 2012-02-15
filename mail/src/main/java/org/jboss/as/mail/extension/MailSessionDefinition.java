@@ -7,6 +7,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -25,16 +26,22 @@ public class MailSessionDefinition extends SimpleResourceDefinition {
     protected static final SimpleAttributeDefinition JNDI_NAME =
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.JNDI_NAME, ModelType.STRING, true)
                     .setAllowExpression(true)
+                    .setXmlName(MailSubsystemModel.JNDI_NAME)
                     .setRestartAllServices()
                     .build();
     protected static final SimpleAttributeDefinition FROM =
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.FROM, ModelType.STRING, true)
                     .setAllowExpression(true)
+                    .setDefaultValue(null)
+                    .setXmlName(MailSubsystemModel.FROM)
                     .setRestartAllServices()
+                    .setAllowNull(true)
                     .build();
     protected static final SimpleAttributeDefinition DEBUG =
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.DEBUG, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
+                    .setXmlName(MailSubsystemModel.DEBUG)
+                    .setDefaultValue(new ModelNode(false))
                     .setRestartAllServices()
                     .build();
 
