@@ -535,9 +535,10 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             case LOOPBACK_ADDRESS: {
                 requireSingleAttribute(reader, Attribute.VALUE.getLocalName());
                 final String value = reader.getAttributeValue(0);
+                ModelNode valueNode = parsePossibleExpression(value);
                 requireNoContent(reader);
                 // todo: validate IP address
-                subModel.get(localName).set(value);
+                subModel.get(localName).set(valueNode);
                 break;
             }
             case LINK_LOCAL_ADDRESS:
