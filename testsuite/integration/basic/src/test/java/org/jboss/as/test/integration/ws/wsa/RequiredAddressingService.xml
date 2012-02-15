@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='UTF-8'?><wsdl:definitions name="AddressingService" targetNamespace="http://www.jboss.org/jbossws/ws-extensions/wsaddressing" xmlns:ns1="http://schemas.xmlsoap.org/soap/http" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://www.jboss.org/jbossws/ws-extensions/wsaddressing" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsp="http://www.w3.org/ns/ws-policy" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <wsdl:types>
+<xs:schema elementFormDefault="unqualified" targetNamespace="http://www.jboss.org/jbossws/ws-extensions/wsaddressing" version="1.0" xmlns:tns="http://www.jboss.org/jbossws/ws-extensions/wsaddressing" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+<xs:element name="sayHello" type="tns:sayHello"/>
+<xs:element name="sayHelloResponse" type="tns:sayHelloResponse"/>
+<xs:complexType name="sayHello">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="arg0" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+<xs:complexType name="sayHelloResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="return" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+  </wsdl:types>
+  <wsdl:message name="sayHelloResponse">
+    <wsdl:part element="tns:sayHelloResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="sayHello">
+    <wsdl:part element="tns:sayHello" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="ServiceIface">
+    <wsdl:operation name="sayHello">
+      <wsdl:input message="tns:sayHello" name="sayHello">
+    </wsdl:input>
+      <wsdl:output message="tns:sayHelloResponse" name="sayHelloResponse">
+    </wsdl:output>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="AddressingServiceSoapBinding" type="tns:ServiceIface">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsaw:UsingAddressing wsdl:required="true"/>
+    <wsp:PolicyReference URI="#AddressingServiceSoapBinding_WSAM_Addressing_Policy"/>
+    <wsdl:operation name="sayHello">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="sayHello">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="sayHelloResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="AddressingService">
+    <wsdl:port binding="tns:AddressingServiceSoapBinding" name="AddressingServicePort">
+      <soap:address location="http://server.domain:8080/jaxws-wsa/AddressingService"/>
+    </wsdl:port>
+  </wsdl:service>
+    <wsp:Policy wsu:Id="AddressingServiceSoapBinding_WSAM_Addressing_Policy" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"><wsam:Addressing xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata"><wsp:Policy/></wsam:Addressing></wsp:Policy>
+</wsdl:definitions>
