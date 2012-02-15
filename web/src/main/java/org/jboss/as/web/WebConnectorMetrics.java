@@ -83,12 +83,12 @@ class WebConnectorMetrics implements OperationStepHandler {
                     } else {
                         context.getResult().set(MESSAGES.noMetricsAvailable());
                     }
-                    context.completeStep();
+                    context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                 }
             }, OperationContext.Stage.RUNTIME);
         } else {
             context.getResult().set(MESSAGES.noMetricsAvailable());
         }
-        context.completeStep();
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 }

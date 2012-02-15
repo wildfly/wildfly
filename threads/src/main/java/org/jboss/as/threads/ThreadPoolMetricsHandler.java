@@ -75,7 +75,7 @@ public abstract class ThreadPoolMetricsHandler extends AbstractRuntimeOnlyHandle
     protected ServiceController<?> getService(final OperationContext context, final ModelNode operation)
             throws OperationFailedException {
                 final String name = Util.getNameFromAddress(operation.require(OP_ADDR));
-                ServiceController<?> controller = context.getServiceRegistry(true).getService(serviceNameBase.append(name));
+                ServiceController<?> controller = context.getServiceRegistry(false).getService(serviceNameBase.append(name));
                 if(controller == null) {
                     throw ThreadsMessages.MESSAGES.threadPoolServiceNotFoundForMetrics(serviceNameBase.append(name));
                 }
