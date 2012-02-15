@@ -40,14 +40,19 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
  */
 public class PlaceholderResource implements Resource {
 
+    private static final ModelNode MODEL = new ModelNode();
     public static PlaceholderResource INSTANCE = new PlaceholderResource();
+
+    static {
+        MODEL.protect();
+    }
 
     private PlaceholderResource() {
     }
 
     @Override
     public ModelNode getModel() {
-        return new ModelNode();
+        return MODEL;
     }
 
     @Override
@@ -122,7 +127,7 @@ public class PlaceholderResource implements Resource {
 
     @Override
     public Resource clone() {
-        return new PlaceholderResource();
+        return INSTANCE;
     }
 
     public static class PlaceholderResourceEntry extends PlaceholderResource implements ResourceEntry {
@@ -145,7 +150,7 @@ public class PlaceholderResource implements Resource {
 
         @Override
         public PlaceholderResourceEntry clone() {
-            return new PlaceholderResourceEntry(path.getKey(), path.getValue());
+            return this;
         }
     }
 }
