@@ -60,6 +60,7 @@ import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.web.VirtualHost;
 import org.jboss.as.web.WebSubsystemServices;
 import org.jboss.as.web.deployment.component.ComponentInstantiator;
+import org.jboss.as.web.ext.WebContextFactory;
 import org.jboss.as.web.security.JBossWebRealmService;
 import org.jboss.as.web.security.SecurityContextAssociationValve;
 import org.jboss.as.web.security.WarJaccService;
@@ -146,8 +147,14 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         final List<SetupAction> setupActions = deploymentUnit
                 .getAttachmentList(org.jboss.as.ee.component.Attachments.WEB_SETUP_ACTIONS);
 
+        // Resolve the context factory
+        WebContextFactory contextFactory = deploymentUnit.getAttachment(WebContextFactory.ATTACHMENT);
+        if (contextFactory == null) {
+            contextFactory = WebContextFactory.DEFAULT;
+        }
+
         // Create the context
-        final StandardContext webContext = new StandardContext();
+        final StandardContext webContext = contextFactory.createContext(deploymentUnit);
         final JBossContextConfig config = new JBossContextConfig(deploymentUnit);
 
         // Add SecurityAssociationValve right at the beginning
@@ -165,6 +172,9 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         webContext.setPath(pathName);
         webContext.setIgnoreAnnotations(true);
         webContext.setCrossContext(!metaData.isDisableCrossContext());
+
+        // Hook for post processing the web context (e.g. for SIP)
+        contextFactory.postProcessContext(deploymentUnit, webContext);
 
         final WebInjectionContainer injectionContainer = new WebInjectionContainer(module.getClassLoader());
 
@@ -378,3 +388,4 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
     }
 
 }
+
