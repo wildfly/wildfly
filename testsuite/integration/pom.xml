@@ -201,10 +201,7 @@
                             <resources>
                                 <resource>
                                     <directory>../shared/src/main/resources</directory>
-                                    <includes>
-                                        <include>application-*.properties</include>
-                                        <include>messaging-*.properties</include>
-                                    </includes>
+                                    <includes><include>*.properties</include></includes>
                                 </resource>
                             </resources>
                         </configuration>
