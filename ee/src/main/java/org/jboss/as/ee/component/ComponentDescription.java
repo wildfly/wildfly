@@ -65,6 +65,7 @@ import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.invocation.proxy.ProxyConfiguration;
 import org.jboss.invocation.proxy.ProxyFactory;
 import org.jboss.modules.Module;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.ConstructedValue;
@@ -153,8 +154,8 @@ public class ComponentDescription implements ResourceInjectionTarget {
         configurators.addLast(FIRST_CONFIGURATOR);
     }
 
-    public ComponentConfiguration createConfiguration(final ClassIndex classIndex, final ClassLoader moduleClassLoder) {
-        return new ComponentConfiguration(this, classIndex, moduleClassLoder);
+    public ComponentConfiguration createConfiguration(final ClassIndex classIndex, final ClassLoader moduleClassLoder, final ModuleLoader moduleLoader) {
+        return new ComponentConfiguration(this, classIndex, moduleClassLoder, moduleLoader);
     }
 
     /**

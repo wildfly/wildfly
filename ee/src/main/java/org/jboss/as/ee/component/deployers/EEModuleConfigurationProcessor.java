@@ -76,7 +76,7 @@ public class EEModuleConfigurationProcessor implements DeploymentUnitProcessor {
                         componentDescription.getComponentName());
                 final ComponentConfiguration componentConfiguration;
                 try {
-                    componentConfiguration = componentDescription.createConfiguration(classIndex.classIndex(componentDescription.getComponentClassName()), module.getClassLoader());
+                    componentConfiguration = componentDescription.createConfiguration(classIndex.classIndex(componentDescription.getComponentClassName()), module.getClassLoader(), module.getModuleLoader());
                     for (final ComponentConfigurator componentConfigurator : componentDescription.getConfigurators()) {
                         componentConfigurator.configure(phaseContext, componentDescription, componentConfiguration);
                     }
