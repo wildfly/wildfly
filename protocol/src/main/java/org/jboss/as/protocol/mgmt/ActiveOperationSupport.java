@@ -45,6 +45,8 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 class ActiveOperationSupport {
 
+    // All active operations have to use the direct executor for now. At least we need to make sure
+    // completion/cancellation/cleanup are executed before further requests are handled.
     private static final Executor directExecutor = new Executor() {
 
         @Override
@@ -71,7 +73,6 @@ class ActiveOperationSupport {
         }
     };
 
-    private final Executor executor;
     private final ConcurrentMap<Integer, ActiveOperationImpl<?, ?>> activeRequests = new ConcurrentHashMap<Integer, ActiveOperationImpl<?, ?>> (16, 0.75f, Runtime.getRuntime().availableProcessors());
     private final ManagementBatchIdManager operationIdManager = new ManagementBatchIdManager.DefaultManagementBatchIdManager();
 
@@ -81,8 +82,8 @@ class ActiveOperationSupport {
     private int activeCount = 0;
     private volatile boolean shutdown = false;
 
-    protected ActiveOperationSupport(final Executor executor) {
-        this.executor = executor != null ? executor : directExecutor;
+    protected ActiveOperationSupport() {
+        //
     }
 
     static <T> ActiveOperation.CompletedCallback<T> getDefaultCallback() {
@@ -302,7 +303,7 @@ class ActiveOperationSupport {
         };
 
         private ActiveOperationImpl(final Integer operationId, final A attachment, final CompletedCallback<T> callback) {
-            super(executor);
+            super(directExecutor);
             this.operationId = operationId;
             this.attachment = attachment;
             addListener(new Listener<T, Object>() {
@@ -313,6 +314,7 @@ class ActiveOperationSupport {
                     } catch (Exception e) {
                         //
                     }
+
                 }
 
                 @Override
@@ -367,15 +369,10 @@ class ActiveOperationSupport {
                     return;
                 }
             }
-            executor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    for (Cancellable cancellable : cancellables) {
-                        cancellable.cancel();
-                    }
-                    setCancelled();
-                }
-            });
+            for (Cancellable cancellable : cancellables) {
+                cancellable.cancel();
+            }
+            setCancelled();
         }
 
         @Override

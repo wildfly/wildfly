@@ -51,6 +51,10 @@ public class MasterDomainControllerOperationHandlerService extends AbstractModel
         this.domainController = domainController;
     }
 
+    protected String getThreadGroupName() {
+        return "domain-mgmt-handler-thread";
+    }
+
     @Override
     public Channel.Key startReceiving(final Channel channel) {
         final ManagementChannelHandler handler = new ManagementChannelHandler(ManagementClientChannelStrategy.create(channel), getExecutor());
