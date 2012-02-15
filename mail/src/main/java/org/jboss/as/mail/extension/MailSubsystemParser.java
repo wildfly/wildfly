@@ -13,15 +13,29 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
-import java.util.Collections;
-import java.util.LinkedList;
+import java.util.EnumSet;
 import java.util.List;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.mail.extension.MailSubsystemModel.*;
+import static org.jboss.as.mail.extension.MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF;
+import static org.jboss.as.mail.extension.MailServerDefinition.PASSWORD;
+import static org.jboss.as.mail.extension.MailServerDefinition.SSL;
+import static org.jboss.as.mail.extension.MailServerDefinition.USERNAME;
+import static org.jboss.as.mail.extension.MailSessionDefinition.DEBUG;
+import static org.jboss.as.mail.extension.MailSessionDefinition.FROM;
+import static org.jboss.as.mail.extension.MailSessionDefinition.JNDI_NAME;
+import static org.jboss.as.mail.extension.MailSubsystemModel.IMAP;
+import static org.jboss.as.mail.extension.MailSubsystemModel.IMAP_SERVER;
+import static org.jboss.as.mail.extension.MailSubsystemModel.MAIL_SESSION;
+import static org.jboss.as.mail.extension.MailSubsystemModel.POP3;
+import static org.jboss.as.mail.extension.MailSubsystemModel.POP3_SERVER;
+import static org.jboss.as.mail.extension.MailSubsystemModel.SERVER_TYPE;
+import static org.jboss.as.mail.extension.MailSubsystemModel.SMTP;
+import static org.jboss.as.mail.extension.MailSubsystemModel.SMTP_SERVER;
+import static org.jboss.as.mail.extension.MailSubsystemModel.USER_NAME;
 
 /**
  * The subsystem parser, which uses stax to read and write to and from xml
@@ -40,7 +54,7 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
 
         log.tracef("model node: %s", context.getModelNode());
         ModelNode model = context.getModelNode();
-        List<Property> sessions = model.get(MailSubsystemModel.MAIL_SESSION).asPropertyList();
+        List<Property> sessions = model.get(MAIL_SESSION).asPropertyList();
 
         for (Property mailSession : sessions) {
             String jndi = mailSession.getName();
@@ -48,46 +62,38 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
             ModelNode sessionData = mailSession.getValue();
             writer.writeStartElement(Element.MAIL_SESSION.getLocalName());
 
-            writer.writeAttribute(Attribute.JNDI_NAME.getLocalName(), jndi);
-            boolean debug = sessionData.get(DEBUG).asBoolean(false);
-            if (debug) {
-                writer.writeAttribute(Attribute.DEBUG.getLocalName(), sessionData.get(MailSubsystemModel.DEBUG).asString());
-            }
-            if (sessionData.hasDefined(MailSubsystemModel.FROM)) {
-                writer.writeAttribute(Attribute.FROM.getLocalName(), sessionData.get(MailSubsystemModel.FROM).asString());
-            }
+            JNDI_NAME.marshallAsAttribute(sessionData, writer);
+            DEBUG.marshallAsAttribute(sessionData, false, writer);
+            FROM.marshallAsAttribute(sessionData, false, writer);
             ModelNode server = sessionData.get(SERVER_TYPE);
             if (server.hasDefined(SMTP)) {
-                writeServerModel(writer, server, SMTP, SMTP_SERVER);
+                writeServerModel(writer, server.get(SMTP), SMTP_SERVER);
             }
             if (server.hasDefined(POP3)) {
-                writeServerModel(writer, server, POP3, POP3_SERVER);
+                writeServerModel(writer, server.get(POP3), POP3_SERVER);
             }
             if (server.hasDefined(IMAP)) {
-                writeServerModel(writer, server, IMAP, IMAP_SERVER);
+                writeServerModel(writer, server.get(IMAP), IMAP_SERVER);
             }
             writer.writeEndElement();
         }
         writer.writeEndElement();
     }
 
-    private void writeServerModel(XMLExtendedStreamWriter writer, ModelNode sessionData, final String name, final String elementName) throws XMLStreamException {
-        ModelNode server = sessionData.get(name);
-        boolean credentials = server.hasDefined(MailSubsystemModel.USER_NAME);
+    private void writeServerModel(final XMLExtendedStreamWriter writer, final ModelNode server, final String elementName) throws XMLStreamException {
+
+        boolean credentials = server.hasDefined(USER_NAME);
         if (credentials) {
             writer.writeStartElement(Element.forName(elementName).getLocalName());
         } else {
             writer.writeEmptyElement(Element.forName(elementName).getLocalName());
         }
-        boolean sslDefined = server.get(MailSubsystemModel.SSL).asBoolean(false);
-        if (sslDefined) {
-            writer.writeAttribute(Attribute.SSL.getLocalName(), server.get(MailSubsystemModel.SSL).asString());
-        }
-        writer.writeAttribute(Attribute.OUTBOUND_SOCKET_BINDING_REF.getLocalName(), server.get(MailSubsystemModel.OUTBOUND_SOCKET_BINDING_REF).asString());
+        SSL.marshallAsAttribute(server, false, writer);
+        OUTBOUND_SOCKET_BINDING_REF.marshallAsAttribute(server, false, writer);
         if (credentials) {
             writer.writeEmptyElement(Element.LOGIN.getLocalName());
-            writer.writeAttribute(Attribute.USERNAME.getLocalName(), server.get(MailSubsystemModel.USER_NAME).asString());
-            writer.writeAttribute(Attribute.PASSWORD.getLocalName(), server.get(MailSubsystemModel.PASSWORD).asString());
+            USERNAME.marshallAsAttribute(server, false, writer);
+            PASSWORD.marshallAsAttribute(server, false, writer);
             writer.writeEndElement();
         }
     }
@@ -98,14 +104,21 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
      */
 
     public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
-        List<MailSessionConfig> sessionConfigList = new LinkedList<MailSessionConfig>();
+        final ModelNode address = new ModelNode();
+        address.add(ModelDescriptionConstants.SUBSYSTEM, MailExtension.SUBSYSTEM_NAME);
+        address.protect();
+        final ModelNode subsystem = new ModelNode();
+        subsystem.get(OP).set(ADD);
+        subsystem.get(OP_ADDR).set(address);
+        list.add(subsystem);
+
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case MAIL_1_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case MAIL_SESSION: {
-                            sessionConfigList.add(parseMailSession(reader, list));
+                            parseMailSession(reader, list, address);
                             break;
                         }
                         default: {
@@ -120,106 +133,52 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
                 }
             }
         }
-
-        final ModelNode address = new ModelNode();
-        address.add(ModelDescriptionConstants.SUBSYSTEM, MailExtension.SUBSYSTEM_NAME);
-        address.protect();
-
-
-        final ModelNode subsystem = new ModelNode();
-        subsystem.get(OP).set(ADD);
-        subsystem.get(OP_ADDR).set(address);
-
-        list.add(subsystem);
-
-        for (MailSessionConfig c : sessionConfigList) {
-            final ModelNode dsAddress = address.clone();
-            dsAddress.add(MailSubsystemModel.MAIL_SESSION, c.getJndiName());
-            dsAddress.protect();
-
-            final ModelNode operation = new ModelNode();
-            operation.get(OP_ADDR).set(dsAddress);
-            operation.get(OP).set(ADD);
-            operation.get(JNDI_NAME).set(c.getJndiName());
-            operation.get(DEBUG).set(c.isDebug());
-            if (c.getFrom() != null) {
-                operation.get(FROM).set(c.getFrom());
-            }
-            list.add(operation);
-            fillSessionData(c, dsAddress, list);
-        }
-        log.tracef("parsing done, config is: %s", sessionConfigList);
         log.tracef("list is: %s", list);
-
     }
 
-    static void fillSessionData(final MailSessionConfig sessionConfig, final ModelNode address, List<ModelNode> list) {
-        if (sessionConfig.getSmtpServer() != null) {
-            addServerConfig(sessionConfig.getSmtpServer(), SMTP, address, list);
-        }
-        if (sessionConfig.getPop3Server() != null) {
-            addServerConfig(sessionConfig.getPop3Server(), POP3, address, list);
-        }
-        if (sessionConfig.getImapServer() != null) {
-            addServerConfig(sessionConfig.getImapServer(), IMAP, address, list);
-        }
-    }
-
-    private static void addServerConfig(final MailSessionServer server, final String name, final ModelNode parent, List<ModelNode> list) {
-        final ModelNode address = parent.clone();
-        address.add(MailSubsystemModel.SERVER_TYPE, name);
-        address.protect();
+    private void parseMailSession(final XMLExtendedStreamReader reader, List<ModelNode> list, final ModelNode parent) throws XMLStreamException {
+        String jndiName = null;
         final ModelNode operation = new ModelNode();
-        operation.get(OP_ADDR).set(address);
-        operation.get(OP).set(ADD);
-        operation.get(OUTBOUND_SOCKET_BINDING_REF).set(server.getOutgoingSocketBinding());
-        operation.get(SSL).set(server.isSslEnabled());
-        addCredentials(operation, server.getCredentials());
-        list.add(operation);
-    }
-
-    private static void addCredentials(final ModelNode operation, final Credentials credentials) {
-        if (credentials != null) {
-            operation.get(USER_NAME).set(credentials.getUsername());
-            operation.get(PASSWORD).set(credentials.getPassword());
-        }
-    }
-
-
-    private MailSessionConfig parseMailSession(final XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
-        log.debug("parsing mail session");
-        MailSessionConfig cfg = new MailSessionConfig();
-
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             Attribute attr = Attribute.forName(reader.getAttributeLocalName(i));
             String value = reader.getAttributeValue(i);
             if (attr == Attribute.JNDI_NAME) {
                 log.tracef("jndi name: %s", value);
-                cfg.setJndiName(value);
+                jndiName = value;
+                JNDI_NAME.parseAndSetParameter(value, operation, reader);
+
             }
             if (attr == Attribute.DEBUG) {
-                boolean debug = Boolean.parseBoolean(value.trim());
-                cfg.setDebug(debug);
+                DEBUG.parseAndSetParameter(value, operation, reader);
             }
             if (attr == Attribute.FROM) {
-                cfg.setFrom(value);
+                FROM.parseAndSetParameter(value, operation, reader);
             }
         }
+        if (jndiName == null) {
+            throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.JNDI_NAME));
+        }
+        final ModelNode dsAddress = parent.clone();
+        dsAddress.add(MAIL_SESSION, jndiName);
+        dsAddress.protect();
+        operation.get(OP_ADDR).set(dsAddress);
+        operation.get(OP).set(ADD);
+        list.add(operation);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case MAIL_1_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case SMTP_SERVER: {
-                            cfg.setSmtpServer(parseServerConfig(reader));
+                            parseServerConfig(reader, SMTP, dsAddress, list);
                             break;
                         }
                         case POP3_SERVER: {
-                            cfg.setPop3Server(parseServerConfig(reader));
+                            parseServerConfig(reader, POP3, dsAddress, list);
                             break;
                         }
                         case IMAP_SERVER: {
-                            cfg.setImapServer(parseServerConfig(reader));
+                            parseServerConfig(reader, IMAP, dsAddress, list);
                             break;
                         }
                         default: {
@@ -234,39 +193,43 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
                 }
             }
         }
-        return cfg;
     }
 
-    private MailSessionServer parseServerConfig(final XMLExtendedStreamReader reader) throws XMLStreamException {
+    private void parseServerConfig(final XMLExtendedStreamReader reader, final String name, final ModelNode parent, List<ModelNode> list) throws XMLStreamException {
+        final ModelNode address = parent.clone();
+        address.add(MailSubsystemModel.SERVER_TYPE, name);
+        address.protect();
+        final ModelNode operation = new ModelNode();
+        operation.get(OP_ADDR).set(address);
+        operation.get(OP).set(ADD);
+        list.add(operation);
+
         String socketBindingRef = null;
-        String username = null;
-        String password = null;
-        boolean ssl = false;
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             Attribute attr = Attribute.forName(reader.getAttributeLocalName(i));
             String value = reader.getAttributeValue(i);
             if (attr == Attribute.OUTBOUND_SOCKET_BINDING_REF) {
                 socketBindingRef = value;
+                OUTBOUND_SOCKET_BINDING_REF.parseAndSetParameter(value, operation, reader);
             }
             if (attr == Attribute.SSL) {
-                ssl = Boolean.parseBoolean(value.trim());
-
+                SSL.parseAndSetParameter(value, operation, reader);
             }
         }
         if (socketBindingRef == null) {
-            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.OUTBOUND_SOCKET_BINDING_REF.getLocalName()));
+            throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.OUTBOUND_SOCKET_BINDING_REF));
         }
-
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case LOGIN: {
                     for (int i = 0; i < reader.getAttributeCount(); i++) {
                         String att = reader.getAttributeLocalName(i);
+                        String value = reader.getAttributeValue(i);
                         if (att.equals(Attribute.USERNAME.getLocalName())) {
-                            username = reader.getAttributeValue(i);
+                            MailServerDefinition.USERNAME.parseAndSetParameter(value, operation, reader);
                         } else if (att.equals(Attribute.PASSWORD.getLocalName())) {
-                            password = reader.getAttributeValue(i);
+                            PASSWORD.parseAndSetParameter(value, operation, reader);
                         }
                     }
                     ParseUtils.requireNoContent(reader);
@@ -274,6 +237,5 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
                 }
             }
         }
-        return new MailSessionServer(socketBindingRef, username, password, ssl);
     }
 }
