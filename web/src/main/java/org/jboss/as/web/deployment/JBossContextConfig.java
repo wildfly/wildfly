@@ -180,46 +180,9 @@ public class JBossContextConfig extends ContextConfig {
     }
 
     protected void processJBossWebMetaData(JBossWebMetaData metaData) {
-        // Valves
-        List<ValveMetaData> valves = metaData.getValves();
-        if (valves != null) {
-            for (ValveMetaData valve : valves) {
-                Valve valveInstance = (Valve) getInstance(valve.getModule(), valve.getValveClass(), valve.getParams());
-                if (ok) {
-                    context.getPipeline().addValve(valveInstance);
-                }
-            }
-        }
         // Overlays
         if (metaData.getOverlays() != null) {
             overlays.addAll(metaData.getOverlays());
-        }
-        // Container listeners
-        List<ContainerListenerMetaData> listeners = metaData.getContainerListeners();
-        if (listeners != null) {
-            for (ContainerListenerMetaData listener : listeners) {
-                switch (listener.getListenerType()) {
-                    case CONTAINER:
-                        ContainerListener containerListener = (ContainerListener) getInstance(listener.getModule(), listener.getListenerClass(), listener.getParams());
-                        context.addContainerListener(containerListener);
-                        break;
-                    case LIFECYCLE:
-                        LifecycleListener lifecycleListener = (LifecycleListener) getInstance(listener.getModule(), listener.getListenerClass(), listener.getParams());
-                        if (context instanceof Lifecycle) {
-                            ((Lifecycle) context).addLifecycleListener(lifecycleListener);
-                        }
-                        break;
-                   case SERVLET_INSTANCE:
-                        context.addInstanceListener(listener.getListenerClass());
-                        break;
-                    case SERVLET_CONTAINER:
-                        context.addWrapperListener(listener.getListenerClass());
-                        break;
-                    case SERVLET_LIFECYCLE:
-                        context.addWrapperLifecycle(listener.getListenerClass());
-                        break;
-                }
-            }
         }
     }
 

@@ -328,4 +328,7 @@ public interface WebMessages {
     @Message(id = 18095, value = "Clustered SSO valve is not started")
     String valveNotStarted();
 
+    @Message(id = 18096, value = "Error instantiating container component: %s")
+    String failToCreateContainerComponentInstance(String className);
+
 }
