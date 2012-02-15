@@ -24,14 +24,17 @@ package org.jboss.as.txn.subsystem;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
 
@@ -62,6 +65,23 @@ public class TransactionExtension implements Extension {
 
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new TransactionSubsystemRootResourceDefinition(registerRuntimeOnly));
         registration.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE, GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+
+        PathElement logStorePath = PathElement.pathElement(LogStoreConstans.LOG_STORE, LogStoreConstans.LOG_STORE);
+        ManagementResourceRegistration logStoreChild = registration.registerSubModel(logStorePath, LogStoreProviders.LOG_STORE_MODEL_CHILD);
+        logStoreChild.registerOperationHandler(ModelDescriptionConstants.ADD, LogStoreAddHandler.INSTANCE, LogStoreProviders.ADD_LOG_STORE_MODEL_CHILD);
+        logStoreChild.registerOperationHandler(ModelDescriptionConstants.REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, LogStoreProviders.REMOVE_LOG_STORE_MODEL_CHILD);
+        logStoreChild.registerOperationHandler(LogStoreConstans.PROBE, LogStoreProbeHandler.INSTANCE, LogStoreProviders.PROBE_OPERATION);
+
+
+        PathElement transactionPath = PathElement.pathElement(LogStoreConstans.TRANSACTIONS);
+        ManagementResourceRegistration transactionChild = logStoreChild.registerSubModel(transactionPath, LogStoreProviders.TRANSACTION_CHILD);
+
+        PathElement partecipantPath = PathElement.pathElement(LogStoreConstans.PARTECIPANTS);
+        ManagementResourceRegistration partecipantChild = transactionChild.registerSubModel(partecipantPath, LogStoreProviders.PARTECIPANT_CHILD);
+
+        for (final SimpleAttributeDefinition attribute : LogStoreProviders.PARTECIPANT_RW_ATTRIBUTE) {
+            partecipantChild.registerReadWriteAttribute(attribute, null, new PartecipantWriteAttributeHandler(attribute));
+        }
 
         subsystem.registerXMLElementWriter(TransactionSubsystem11Parser.INSTANCE);
     }

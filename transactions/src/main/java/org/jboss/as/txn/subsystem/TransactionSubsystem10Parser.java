@@ -96,6 +96,16 @@ class TransactionSubsystem10Parser implements XMLStreamConstants, XMLElementRead
         if (!required.isEmpty()) {
             throw missingRequiredElement(reader, required);
         }
+
+        final ModelNode logStoreAddress = address.clone();
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(ADD);
+        logStoreAddress.add(LogStoreConstans.LOG_STORE, LogStoreConstans.LOG_STORE);
+
+        logStoreAddress.protect();
+
+        operation.get(OP_ADDR).set(logStoreAddress);
+        list.add(operation);
     }
 
     static void parseObjectStoreEnvironmentElementAndEnrichOperation(final XMLExtendedStreamReader reader, ModelNode operation) throws XMLStreamException {
