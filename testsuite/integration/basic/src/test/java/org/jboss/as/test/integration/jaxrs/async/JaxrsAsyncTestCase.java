@@ -60,7 +60,7 @@ public class JaxrsAsyncTestCase {
 
 
     private static String performCall(String urlPattern) throws Exception {
-        return HttpRequest.get("http://localhost:8080/jaxrsnoap/" + urlPattern, 5, TimeUnit.SECONDS);
+        return HttpRequest.get("http://localhost:8080/jaxrsnoap/" + urlPattern, 10, TimeUnit.SECONDS);
     }
 
     @Test
