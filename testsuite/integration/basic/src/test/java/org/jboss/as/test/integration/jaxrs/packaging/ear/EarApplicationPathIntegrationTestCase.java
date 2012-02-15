@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.jaxrs.packaging.ear;
 
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -32,8 +34,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 
@@ -50,7 +50,7 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class ApplicationPathIntegrationTestCase {
+public class EarApplicationPathIntegrationTestCase {
 
     @Deployment(testable = false)
     public static Archive<?> deploy() {
@@ -58,8 +58,12 @@ public class ApplicationPathIntegrationTestCase {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ejb.jar");
         jar.addPackage(HttpRequest.class.getPackage());
-        jar.addClasses(ApplicationPathIntegrationTestCase.class, HelloWorldResource.class, HelloWorldPathApplication.class);
+        jar.addClasses(EarApplicationPathIntegrationTestCase.class, HelloWorldResource.class, HelloWorldPathApplication.class);
         ear.addAsModule(jar);
+
+        JavaArchive jar2 = ShrinkWrap.create(JavaArchive.class, "ejb2.jar");
+        jar2.addClass(SimpleEjb.class);
+        ear.addAsModule(jar2);
 
         WebArchive war = ShrinkWrap.create(WebArchive.class, "jaxrsapp.war");
         war.addAsWebInfResource(WebXml.get(""), "web.xml");
