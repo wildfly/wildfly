@@ -1296,6 +1296,14 @@
             </dependency>
 
             <dependency>
+                <groupId>javax.activation</groupId>
+                <artifactId>activation</artifactId>
+                <version>1.1.1</version>
+                <!-- activation is part of JDK since version 6 on, keeping dependency here as many other artifacts depend on it -->
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
                 <groupId>javax.enterprise</groupId>
                 <artifactId>cdi-api</artifactId>
                 <version>${version.javax.enterprise}</version>
