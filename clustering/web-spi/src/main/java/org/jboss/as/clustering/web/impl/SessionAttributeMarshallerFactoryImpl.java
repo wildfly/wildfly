@@ -28,6 +28,8 @@ import org.jboss.as.clustering.web.SessionAttributeMarshallerFactory;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.MarshallingConfiguration;
+import org.jboss.marshalling.reflect.ReflectiveCreator;
+import org.jboss.marshalling.reflect.SunReflectiveCreator;
 
 /**
  * Default factory for creating session attribute marshallers.
@@ -54,6 +56,8 @@ public class SessionAttributeMarshallerFactoryImpl implements SessionAttributeMa
     public SessionAttributeMarshaller createMarshaller(LocalDistributableSessionManager manager) {
         MarshallingConfiguration configuration = new MarshallingConfiguration();
         configuration.setClassResolver(manager.getApplicationClassResolver());
+        configuration.setSerializedCreator(new SunReflectiveCreator());
+        configuration.setExternalizerCreator(new ReflectiveCreator());
         return new SessionAttributeMarshallerImpl(new MarshallingContext(this.factory, configuration));
     }
 }
