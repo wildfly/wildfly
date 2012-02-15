@@ -48,19 +48,14 @@ public abstract class AbstractManagementRequest<T, A> implements ManagementReque
 
     @Override
     public void sendRequest(final ActiveOperation.ResultHandler<T> resultHandler, final ManagementRequestContext<A> context) throws IOException {
-        context.executeAsync(new ManagementRequestContext.AsyncTask<A>() {
-            @Override
-            public void execute(final ManagementRequestContext<A> context) throws Exception {
-                final FlushableDataOutput output = context.writeMessage(context.getRequestHeader());
-                try {
-                    sendRequest(resultHandler, context, output);
-                    output.writeByte(ManagementProtocol.REQUEST_END);
-                    output.close();
-                } finally {
-                    StreamUtils.safeClose(output);
-                }
-            }
-        });
+        final FlushableDataOutput output = context.writeMessage(context.getRequestHeader());
+        try {
+            sendRequest(resultHandler, context, output);
+            output.writeByte(ManagementProtocol.REQUEST_END);
+            output.close();
+        } finally {
+            StreamUtils.safeClose(output);
+        }
     }
 
 }
