@@ -222,7 +222,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
                     try {
                         result.setSessionAttributes(DistributedCacheManager.this.attributeStorage.load(map));
                     } catch (Exception e) {
-                        throw MESSAGES.failedToStoreSessionAttributes(e, sessionId);
+                        throw MESSAGES.failedToLoadSessionAttributes(e, sessionId);
                     }
                 }
 
@@ -233,8 +233,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
         try {
             return this.invoke(operation);
         } catch (Exception e) {
-            ROOT_LOGGER.errorAccessingSession(e, sessionId, e.getLocalizedMessage());
-            ROOT_LOGGER.errorAccessingSession(sessionId, e.getLocalizedMessage());
+            ROOT_LOGGER.sessionLoadFailed(e, sessionId);
 
             // Clean up
             this.removeSessionLocal(sessionId);

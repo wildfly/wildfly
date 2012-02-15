@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.web.infinispan;
 
-import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
@@ -73,18 +72,8 @@ interface InfinispanWebLogger extends BasicLogger {
      * @param message   the error message.
      */
     @LogMessage(level = WARN)
-    @Message(id = 10322, value = "Problem accessing session [%s]: %s")
-    void errorAccessingSession(String sessionId, String message);
-
-    /**
-     * Logs a debug message indicating there was a problem accessing the session.
-     *
-     * @param cause     the cause of the error.
-     * @param sessionId the session id.
-     * @param message   the error message.
-     */
-    @LogMessage(level = DEBUG)
-    void errorAccessingSession(@Cause Throwable cause, String sessionId, String message);
+    @Message(id = 10322, value = "Failed to load session %s")
+    void sessionLoadFailed(@Cause Throwable cause, String sessionId);
 
     /**
      * Logs an informational message indicating a stale JVM route entry was removed from the web session on behalf of
