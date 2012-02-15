@@ -19,6 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.controller.test;
 
 import static junit.framework.Assert.assertEquals;
@@ -517,6 +518,8 @@ public class RemoteProxyControllerProtocolTestCase {
                 try {
                     channels.getClientChannel().writeShutdown();
                     channels.getClientChannel().awaitClosed();
+                } catch (InterruptedException e) {
+                    // closing a channel will cancel the controller.execute()
                 } catch (Exception e) {
                     errorRef.set(e);
                     throw new RuntimeException();
@@ -543,8 +546,8 @@ public class RemoteProxyControllerProtocolTestCase {
 
         CommitProxyOperationControl commitControl = new CommitProxyOperationControl();
         proxyController.execute(operation, null, commitControl, null);
-        latch.await(15, TimeUnit.SECONDS);
         Assert.assertNull(errorRef.get());
+        latch.await(15, TimeUnit.SECONDS);
         Assert.assertEquals(1, commitControl.txCompletionStatus.get());
     }
 
