@@ -53,7 +53,6 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
     private final Map<Integer, ActiveRequest<?, ?>> requests = new ConcurrentHashMap<Integer, ActiveRequest<?, ?>>(16, 0.75f, Runtime.getRuntime().availableProcessors());
 
     protected AbstractMessageHandler(final ExecutorService executorService) {
-        super(executorService);
         if(executorService == null) {
             throw ProtocolMessages.MESSAGES.nullExecutor();
         }
@@ -292,7 +291,7 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
                                     safeWriteErrorResponse(channel, header, e);
                                 }
                             } catch (Exception e) {
-                                ProtocolLogger.ROOT_LOGGER.errorf(e, " failed to process async request for %s on channel %s", task, channel);
+                                ProtocolLogger.ROOT_LOGGER.debugf(e, " failed to process async request for %s on channel %s", task, channel);
                                 if(resultHandler.failed(e)) {
                                     safeWriteErrorResponse(channel, header, e);
                                 }

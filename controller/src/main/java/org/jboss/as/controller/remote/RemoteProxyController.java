@@ -182,46 +182,40 @@ public class RemoteProxyController implements ManagementRequestHandlerFactory, P
             response.readExternal(input);
             // If not prepared the operation failed
             final boolean prepared = responseType == ModelControllerProtocol.PARAM_OPERATION_PREPARED;
-            context.executeAsync(new ManagementRequestContext.AsyncTask<ExecuteRequestContext>() {
+            final ExecuteRequestContext executeRequestContext = context.getAttachment();
+            if(prepared) {
+                // operation-prepared, this will allow RemoteProxyController#execute to proceed
+                executeRequestContext.operationPrepared(new ModelController.OperationTransaction() {
 
-                @Override
-                public void execute(ManagementRequestContext<ExecuteRequestContext> executeRequestContextManagementRequestContext) throws Exception {
-                    final ExecuteRequestContext executeRequestContext = context.getAttachment();
-                    if(prepared) {
-                        // operation-prepared, this will allow RemoteProxyController#execute to proceed
-                        executeRequestContext.operationPrepared(new ModelController.OperationTransaction() {
-
-                            @Override
-                            public void rollback() {
-                                done(false);
-                            }
-
-                            @Override
-                            public void commit() {
-                                done(true);
-                            }
-
-                            private void done(boolean commit) {
-                                final byte status = commit ? ModelControllerProtocol.PARAM_COMMIT : ModelControllerProtocol.PARAM_ROLLBACK;
-                                try {
-                                    // Send the CompleteTxRequest
-                                    final AsyncFuture<Void> result = channelAssociation.executeRequest(context.getOperationId(), new CompleteTxRequest(status));
-                                    /// Await the operation completed notification
-                                    result.await();
-                                } catch (InterruptedException e) {
-                                    throw MESSAGES.transactionTimeout(commit ? "commit" : "rollback");
-                                } catch (Exception e) {
-                                    resultHandler.failed(e);
-                                }
-                            }
-                        }, response);
-                    } else {
-                        // Failed
-                        executeRequestContext.operationFailed(response);
-                        resultHandler.done(null);
+                    @Override
+                    public void rollback() {
+                        done(false);
                     }
-                }
-            });
+
+                    @Override
+                    public void commit() {
+                        done(true);
+                    }
+
+                    private void done(boolean commit) {
+                        final byte status = commit ? ModelControllerProtocol.PARAM_COMMIT : ModelControllerProtocol.PARAM_ROLLBACK;
+                        try {
+                            // Send the CompleteTxRequest
+                            final AsyncFuture<Void> result = channelAssociation.executeRequest(context.getOperationId(), new CompleteTxRequest(status));
+                            /// Await the operation completed notification
+                            result.await();
+                        } catch (InterruptedException e) {
+                            throw MESSAGES.transactionTimeout(commit ? "commit" : "rollback");
+                        } catch (Exception e) {
+                            resultHandler.failed(e);
+                        }
+                    }
+                }, response);
+            } else {
+                // Failed
+                executeRequestContext.operationFailed(response);
+                resultHandler.done(null);
+            }
         }
     }
 

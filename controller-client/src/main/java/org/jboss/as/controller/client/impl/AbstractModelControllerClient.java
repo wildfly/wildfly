@@ -386,27 +386,27 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
                 throw new RuntimeException(e);
             }
         }
+    }
 
-        /**
-         * Request cancelling the remote operation.
-         */
-        private class CancelAsyncRequest extends AbstractManagementRequest<ModelNode, OperationExecutionContext> {
+    /**
+     * Request cancelling the remote operation.
+     */
+    private static class CancelAsyncRequest extends AbstractManagementRequest<ModelNode, OperationExecutionContext> {
 
-            @Override
-            public byte getOperationType() {
-                return ModelControllerProtocol.CANCEL_ASYNC_REQUEST;
-            }
+        @Override
+        public byte getOperationType() {
+            return ModelControllerProtocol.CANCEL_ASYNC_REQUEST;
+        }
 
-            @Override
-            protected void sendRequest(ActiveOperation.ResultHandler<ModelNode> resultHandler, ManagementRequestContext<OperationExecutionContext> context, FlushableDataOutput output) throws IOException {
-                //
-            }
+        @Override
+        protected void sendRequest(ActiveOperation.ResultHandler<ModelNode> resultHandler, ManagementRequestContext<OperationExecutionContext> context, FlushableDataOutput output) throws IOException {
+            //
+        }
 
-            @Override
-            public void handleRequest(DataInput input, ActiveOperation.ResultHandler<ModelNode> resultHandler, ManagementRequestContext<OperationExecutionContext> context) throws IOException {
-                // Once the remote operation returns, we can set the cancelled status
-                resultHandler.cancel();
-            }
+        @Override
+        public void handleRequest(DataInput input, ActiveOperation.ResultHandler<ModelNode> resultHandler, ManagementRequestContext<OperationExecutionContext> context) throws IOException {
+            // Once the remote operation returns, we can set the cancelled status
+            resultHandler.cancel();
         }
     }
 
