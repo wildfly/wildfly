@@ -86,7 +86,7 @@ class Hack {
             throw new IOException("Dispatch error: " + attribute);
         }
     }
-    
+
     private static HttpServletRequest wrap(HttpServletRequest delegate) {
         // see AppDispatcher::processRequest
         delegate.setAttribute(ApplicationFilterFactory.DISPATCHER_TYPE_ATTR, ApplicationFilterFactory.REQUEST_INTEGER);
