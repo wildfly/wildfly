@@ -35,6 +35,33 @@ class SecurityActions {
     }
 
     /**
+     * Get the thread context class loader
+     * @return The class loader
+     */
+    static ClassLoader getThreadContextClassLoader() {
+        return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+            @Override
+            public ClassLoader run() {
+                return Thread.currentThread().getContextClassLoader();
+            }
+        });
+    }
+
+    /**
+     * Set the thread context class loader
+     * @param cl The class loader
+     */
+    static void setThreadContextClassLoader(final ClassLoader cl) {
+        AccessController.doPrivileged(new PrivilegedAction<Object>() {
+            @Override
+            public Object run() {
+                Thread.currentThread().setContextClassLoader(cl);
+                return null;
+            }
+        });
+    }
+
+    /**
      * Get a system property
      * @param name The property name
      * @return The property value

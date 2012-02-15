@@ -29,6 +29,7 @@ import org.jboss.as.connector.services.AdminObjectService;
 import org.jboss.as.connector.services.ConnectionFactoryReferenceFactoryService;
 import org.jboss.as.connector.services.ConnectionFactoryService;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
+import org.jboss.as.connector.util.JCAValidatorFactory;
 import org.jboss.as.connector.util.Injection;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
@@ -47,6 +48,7 @@ import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.jca.core.spi.transaction.recovery.XAResourceRecovery;
 import org.jboss.jca.core.spi.transaction.recovery.XAResourceRecoveryRegistry;
 import org.jboss.jca.deployers.common.AbstractResourceAdapterDeployer;
+import org.jboss.jca.deployers.common.BeanValidation;
 import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.jca.deployers.common.DeployException;
 import org.jboss.msc.inject.Injector;
@@ -98,12 +100,10 @@ public abstract class AbstractResourceAdapterDeploymentService {
         return ConnectorServices.notNull(value);
     }
 
-    /**
-     * Stop
-     */
-    public void stop(StopContext context) {
+
+    public void unregisterAll(String deploymentName) {
         if (value != null) {
-            DEPLOYMENT_CONNECTOR_LOGGER.debugf("Undeploying: %s", value.getDeployment() != null ? value.getDeployment().getDeploymentName() : "");
+            DEPLOYMENT_CONNECTOR_LOGGER.debugf("Unregistering: %s", deploymentName);
 
             if (registry != null && registry.getValue() != null) {
                 registry.getValue().unregisterResourceAdapterDeployment(value);
@@ -178,6 +178,14 @@ public abstract class AbstractResourceAdapterDeploymentService {
                 }
             }
         }
+        if (mdr != null && mdr.getValue() != null && deploymentName != null) {
+            try {
+                mdr.getValue().unregisterResourceAdapter(deploymentName);
+            } catch (Throwable t) {
+                DEPLOYMENT_CONNECTOR_LOGGER.debug("Exception during unregistering deployment", t);
+            }
+        }
+
     }
 
     public Injector<MetadataRepository> getMdrInjector() {
@@ -481,6 +489,10 @@ public abstract class AbstractResourceAdapterDeploymentService {
             return jndiName;
         }
 
+        @Override
+        protected BeanValidation getBeanValidation() {
+            return new BeanValidation(new JCAValidatorFactory(cl));
+        }
     }
 
     private static final SetContextLoaderAction CLEAR_ACTION = new SetContextLoaderAction(null);

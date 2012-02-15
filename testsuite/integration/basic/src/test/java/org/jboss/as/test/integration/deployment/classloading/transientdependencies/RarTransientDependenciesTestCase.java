@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.deployment.classloading.transientdependencies;
 
+import org.jboss.as.test.integration.beanvalidation.jca.ra.ValidConnectionFactory;
+
 import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -28,6 +30,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -53,6 +56,10 @@ public class RarTransientDependenciesTestCase {
     @Deployment(name="rar", order=2)
     public static Archive<?> rar() {
         ResourceAdapterArchive rar = ShrinkWrap.create(ResourceAdapterArchive.class, "rardeployment.rar");
+        JavaArchive jar1 = ShrinkWrap.create(JavaArchive.class, "main.jar");
+        jar1.addPackage(ValidConnectionFactory.class.getPackage());
+        rar.add(jar1, "/", ZipExporter.class);
+
         rar.addAsManifestResource(new StringAsset(
                 "<jboss-deployment-structure>" +
                         "<deployment>" +
@@ -62,6 +69,7 @@ public class RarTransientDependenciesTestCase {
                         "</deployment>" +
                         "</jboss-deployment-structure>"),
                 "jboss-deployment-structure.xml");
+        rar.addAsManifestResource("jca/beanvalidation/ra.xml", "ra.xml");
         return rar;
     }
 

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<datasources>
+  <datasource jndi-name="java:jboss/datasources/MySqlDs" pool-name="MySqlPool" enabled="true">
+    <connection-url>jdbc:mysql://vmg02.mw.lab.eng.bos.redhat.com:3306/dsreauth</connection-url>
+    <datasource-class>com.mysql.jdbc.jdbc2.optional.MysqlDataSource</datasource-class>
+    <driver>test.ear</driver>
+    <security>
+    <user-name>dsreauth1</user-name>
+    <password>dsreauth1</password>
+    <reauth-plugin class-name="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLReauthPlugin"/>
+    </security>
+    <pool>
+    <min-pool-size>1</min-pool-size>
+    <max-pool-size>1</max-pool-size>
+    </pool>
+  </datasource>
+</datasources>
+
