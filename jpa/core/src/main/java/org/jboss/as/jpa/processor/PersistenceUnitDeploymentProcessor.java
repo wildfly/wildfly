@@ -270,6 +270,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                             for (PersistenceProvider persistenceProvider : providerList) {
                                 if (persistenceProvider.getClass().getName().equals(pu.getPersistenceProviderClassName())) {
                                     provider = persistenceProvider;
+                                    JPA_LOGGER.tracef("deployment %s is using its own copy of %s", deploymentUnit.getName(), pu.getPersistenceProviderClassName());
                                     break;
                                 }
                             }
