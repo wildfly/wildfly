@@ -21,6 +21,9 @@
  */
 package org.jboss.as.server.deployment.module;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -29,9 +32,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.filter.PathFilters;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Processor that set up a module dependency on the parent module
@@ -77,7 +77,7 @@ public class SubDeploymentDependencyProcessor implements DeploymentUnitProcessor
             }
             for (ModuleDependency identifier : accessibleModules) {
                 if (!identifier.equals(moduleIdentifier)) {
-                    moduleSpec.addLocalDependencies(accessibleModules);
+                    moduleSpec.addLocalDependency(identifier);
                 }
             }
         }

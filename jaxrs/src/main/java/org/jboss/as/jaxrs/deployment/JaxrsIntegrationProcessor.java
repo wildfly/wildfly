@@ -1,9 +1,11 @@
 package org.jboss.as.jaxrs.deployment;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.ws.rs.ApplicationPath;
 
@@ -90,9 +92,14 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         final List<ResteasyDeploymentData> additionalData = new ArrayList<ResteasyDeploymentData>();
         final ModuleSpecification moduleSpec = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         if (moduleSpec != null && attachmentMap != null) {
+            final Set<ModuleIdentifier> identifiers = new HashSet<ModuleIdentifier>();
             for (ModuleDependency dep : moduleSpec.getAllDependencies()) {
-                if (attachmentMap.containsKey(dep.getIdentifier())) {
-                    additionalData.add(attachmentMap.get(dep.getIdentifier()));
+                //make sure we don't double up
+                if (!identifiers.contains(dep.getIdentifier())) {
+                    identifiers.add(dep.getIdentifier());
+                    if (attachmentMap.containsKey(dep.getIdentifier())) {
+                        additionalData.add(attachmentMap.get(dep.getIdentifier()));
+                    }
                 }
             }
             resteasy.merge(additionalData);
