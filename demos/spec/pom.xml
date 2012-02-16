@@ -29,7 +29,7 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-demos</artifactId>
-        <version>7.1.0.Final</version>
+        <version>7.1.1.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>jboss-as-demos-spec</artifactId>

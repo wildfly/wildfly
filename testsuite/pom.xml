@@ -57,12 +57,12 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-parent</artifactId>
-        <version>7.1.0.Final</version>
+        <version>7.1.1.Final-SNAPSHOT</version>
     </parent>
 
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-testsuite</artifactId>
-    <version>7.1.0.Final</version>
+    <version>7.1.1.Final-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>JBoss Application Server Test Suite: Aggregator</name>
