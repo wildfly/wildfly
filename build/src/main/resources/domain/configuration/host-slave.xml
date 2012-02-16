@@ -6,7 +6,8 @@
         <security-realms>
             <security-realm name="ManagementRealm">
                 <server-identities>
-                     <secret value="set a base64 encoded password here which matches the user you created for this host" />
+                     <!-- Replace this with either a base64 password of your own, or use a vault with a vault expression -->
+                     <secret value="c2xhdmVfdXNlcl9wYXNzd29yZA=="/>
                 </server-identities>
 
                 <authentication>
