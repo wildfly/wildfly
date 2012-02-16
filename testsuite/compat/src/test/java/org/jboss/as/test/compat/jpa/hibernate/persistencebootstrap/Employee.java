@@ -20,39 +20,48 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.jpa.processor;
+package org.jboss.as.test.compat.jpa.hibernate.persistencebootstrap;
 
-import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUtils;
+import javax.persistence.Entity;
+import javax.persistence.Id;
 
 /**
- * JPA Deployment marker
+ * Employee entity class
  *
- * @author Scott Marlow (copied from WeldDeploymentMarker)
+ * @author Scott Marlow
  */
-public class JPADeploymentMarker {
+@Entity
+public class Employee {
 
-    private static final AttachmentKey<Boolean> MARKER = AttachmentKey.create(Boolean.class);
+    @Id
+    private int id;
 
-    /**
-     * Mark the top level deployment as being a JPA deployment. If the deployment is not a top level deployment the parent is
-     * marked instead
-     */
-    public static void mark(DeploymentUnit unit) {
-        unit = DeploymentUtils.getTopDeploymentUnit(unit);
-        unit.putAttachment(MARKER, Boolean.TRUE);
+    private String name;
+
+    private String address;
+
+    public String getName() {
+        return name;
     }
 
-    /**
-     * return true if the {@link DeploymentUnit} is part of a JPA deployment
-     */
-    public static boolean isJPADeployment(DeploymentUnit unit) {
-        unit = DeploymentUtils.getTopDeploymentUnit(unit);
-        return unit.getAttachment(MARKER) != null;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    private JPADeploymentMarker() {
+    public String getAddress() {
+        return address;
+    }
 
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public int getId() {
+
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 }

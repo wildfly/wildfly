@@ -80,23 +80,24 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-        addDependency(moduleSpecification, moduleLoader, JAVAX_PERSISTENCE_API_ID);
+
+        // all applications get the javax.persistence module added to their deplyoment by default
+        addDependency(moduleSpecification, moduleLoader, deploymentUnit, JAVAX_PERSISTENCE_API_ID);
 
         if (!JPADeploymentMarker.isJPADeployment(deploymentUnit)) {
-            ROOT_LOGGER.debugf("added javax.persistence.api dependency to %s", deploymentUnit.getName());
             return; // Skip if there are no persistence use in the deployment
         }
-        addDependency(moduleSpecification, moduleLoader, JAVAEE_API_ID);
-        addDependency(moduleSpecification, moduleLoader, JBOSS_AS_JPA_ID);
-        addDependency(moduleSpecification, moduleLoader, JBOSS_AS_JPA_SPI_ID);  // cover when adapter jar is in app
-        addDependency(moduleSpecification, moduleLoader, JAVASSIST_ID);
-        ROOT_LOGGER.debugf("added javax.persistence.api, javaee.api, org.jboss.as.jpa, org.javassist dependencies to %s", deploymentUnit.getName());
+        addDependency(moduleSpecification, moduleLoader, deploymentUnit, JAVAEE_API_ID, JBOSS_AS_JPA_ID, JBOSS_AS_JPA_SPI_ID, JAVASSIST_ID);
         addPersistenceProviderModuleDependencies(phaseContext, moduleSpecification, moduleLoader);
     }
 
+
     private void addDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
-                               ModuleIdentifier moduleIdentifier) {
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, false, false));
+                               DeploymentUnit deploymentUnit, ModuleIdentifier... moduleIdentifiers) {
+        for ( ModuleIdentifier moduleIdentifier : moduleIdentifiers) {
+            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, false, false));
+            ROOT_LOGGER.debugf("added %s dependency to %s", moduleIdentifier, deploymentUnit.getName());
+        }
     }
 
     @Override
@@ -127,14 +128,13 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
             ROOT_LOGGER.debugf("added (default provider) %s dependency to %s (since %d PU(s) didn't specify %s",
                 Configuration.PROVIDER_MODULE_DEFAULT, deploymentUnit.getName(),defaultProviderCount, Configuration.PROVIDER_MODULE + ")");
             // only inject default envers for default Hibernate module
-            addDependency(moduleSpecification, moduleLoader, HIBERNATE_ENVERS_ID);
+            addDependency(moduleSpecification, moduleLoader, deploymentUnit, HIBERNATE_ENVERS_ID);
         }
 
         // add persistence provider dependency
         for (String dependency : moduleDependencies) {
 
-            addDependency(moduleSpecification, moduleLoader, ModuleIdentifier.fromString(dependency));
-            ROOT_LOGGER.debugf("added %s dependency to application deployment", dependency);
+            addDependency(moduleSpecification, moduleLoader, deploymentUnit, ModuleIdentifier.fromString(dependency));
         }
     }
 
@@ -213,8 +213,7 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
 
             // hack in the dependencies which are part of hibernate3integration
             // TODO:  do this automatically (adding dependencies found in HIBERNATE_3_PROVIDER).
-            addDependency(moduleSpecification, moduleLoader, JBOSS_AS_NAMING_ID);
-            addDependency(moduleSpecification, moduleLoader, JBOSS_JANDEX_ID);
+            addDependency(moduleSpecification, moduleLoader, deploymentUnit, JBOSS_AS_NAMING_ID, JBOSS_JANDEX_ID);
         } catch (ModuleLoadException e) {
             throw MESSAGES.cannotLoadModule(e, HIBERNATE_3_PROVIDER, "hibernate 3");
         } catch (MalformedURLException e) {
