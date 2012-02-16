@@ -27,11 +27,14 @@ import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.spi.PersistenceProvider;
 
 import org.jboss.as.jpa.config.PersistenceProviderDeploymentHolder;
+import org.jboss.as.jpa.persistenceprovider.PersistenceProviderResolverImpl;
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.as.jpa.transaction.JtaManagerImpl;
 import org.jboss.as.server.deployment.Attachments;
@@ -39,6 +42,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.ServicesAttachment;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
@@ -50,6 +54,7 @@ import org.jboss.modules.ModuleClassLoader;
  */
 public class PersistenceProviderProcessor implements DeploymentUnitProcessor {
 
+    private static final String PERSISTENCE_PROVIDER_CLASSNAME = PersistenceProvider.class.getName();
     /**
      * {@inheritDoc}
      */
@@ -60,25 +65,37 @@ public class PersistenceProviderProcessor implements DeploymentUnitProcessor {
         final ServicesAttachment servicesAttachment = deploymentUnit.getAttachment(Attachments.SERVICES);
         if (module != null && servicesAttachment != null) {
             final ModuleClassLoader deploymentModuleClassLoader = module.getClassLoader();
-            List<PersistenceProvider> providerList = new ArrayList<PersistenceProvider>();
             PersistenceProvider provider;
 
             // collect list of persistence providers packaged with the application
-            final List<String> providerNames = servicesAttachment.getServiceImplementations(PersistenceProvider.class.getName());
+            final List<String> providerNames = servicesAttachment.getServiceImplementations(PERSISTENCE_PROVIDER_CLASSNAME);
+            List<PersistenceProvider> providerList = new ArrayList<PersistenceProvider>();
+
             for (String providerName : providerNames) {
                 try {
                     final Class<? extends PersistenceProvider> providerClass = deploymentModuleClassLoader.loadClass(providerName).asSubclass(PersistenceProvider.class);
                     final Constructor<? extends PersistenceProvider> constructor = providerClass.getConstructor();
                     provider = constructor.newInstance();
-                    ROOT_LOGGER.debugf("Deployment has its own Persistence Provider %s ", providerClass);
+                    Set<ClassLoader> deploymentClassLoaders = allDeploymentModuleClassLoaders(deploymentUnit);
+                    ROOT_LOGGER.debugf("Deployment has its own persistence provider %s associated with classloaders %s", providerClass, deploymentClassLoaders.toString());
+
+                    // register persistence provider so javax.persistence.Persistence.createEntityManagerFactory can find it
+                    PersistenceProviderResolverImpl.getInstance().addDeploymentSpecificPersistenceProvider(provider, deploymentClassLoaders);
+
+                    // TODO: instead of passing provider in via PersistenceProviderDeploymentHolder,
+                    // it should instead be looked up via PersistenceProviderResolverImpl (still need to pass adapter in
+                    // or add mechanism to deal with it on a per deployment basis).
                     providerList.add(provider);
+
                 } catch (Exception e) {
                     throw MESSAGES.cannotDeployApp(e, providerName);
                 }
             }
+
+
             if (providerList.size() > 0) {
                 final String adapterClass = deploymentUnit.getAttachment(JpaAttachments.ADAPTOR_CLASS_NAME);
-                PersistenceProviderAdaptor adaptor = null;
+                PersistenceProviderAdaptor adaptor;
                 if (adapterClass != null) {
                     try {
                         adaptor = (PersistenceProviderAdaptor) deploymentModuleClassLoader.loadClass(adapterClass).newInstance();
@@ -93,16 +110,40 @@ public class PersistenceProviderProcessor implements DeploymentUnitProcessor {
                     }
                 }
             }
-
-
         }
     }
 
     /**
      * {@inheritDoc}
      */
-    public void undeploy(final DeploymentUnit context) {
+    public void undeploy(final DeploymentUnit deploymentUnit) {
+        DeploymentUnit toplevelDeploymentUnit = DeploymentUtils.getTopDeploymentUnit(deploymentUnit);
+        final Module module = toplevelDeploymentUnit.getAttachment(Attachments.MODULE);
+        Set<ClassLoader> deploymentClassLoaders = allDeploymentModuleClassLoaders(deploymentUnit);
+
+        PersistenceProviderResolverImpl.getInstance().clearCachedDeploymentSpecificProviders(deploymentClassLoaders);
     }
 
+    /**
+     * returns the toplevel deployment module classloader and all subdeployment classloaders
+     *
+     * @param deploymentUnit
+     * @return
+     */
+    private Set<ClassLoader> allDeploymentModuleClassLoaders(DeploymentUnit deploymentUnit) {
+        final DeploymentUnit topDeploymentUnit = DeploymentUtils.getTopDeploymentUnit(deploymentUnit);
+        final Module toplevelModule = topDeploymentUnit.getAttachment(Attachments.MODULE);
+        Set<ClassLoader> deploymentClassLoaders = new HashSet<ClassLoader>();
 
+        deploymentClassLoaders.add(toplevelModule.getClassLoader());
+        final List<DeploymentUnit> subDeployments = topDeploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS);
+        for (DeploymentUnit subDeploymentUnit: subDeployments) {
+            final Module subDeploymentModule = subDeploymentUnit.getAttachment(Attachments.MODULE);
+            if (subDeploymentModule != null) {
+                deploymentClassLoaders.add(subDeploymentModule.getClassLoader());
+            }
+        }
+        return deploymentClassLoaders;
+    }
 }
+
