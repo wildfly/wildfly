@@ -34,6 +34,7 @@ import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.ResourceInjectionTarget;
 import org.jboss.as.ee.component.deployers.AbstractDeploymentDescriptorBindingsProcessor;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.module.ResourceRoot;
@@ -68,7 +69,8 @@ public final class WSRefDDProcessor extends AbstractDeploymentDescriptorBindings
         final List<BindingConfiguration> bindingDescriptions = new LinkedList<BindingConfiguration>();
         for (final ServiceReferenceMetaData serviceRefMD : serviceRefsMD) {
             final UnifiedServiceRefMetaData serviceRefUMDM = getServiceRef(unit, componentDescription, serviceRefMD);
-            final WSRefValueSource valueSource = new WSRefValueSource(serviceRefUMDM);
+            final Module module = unit.getAttachment(Attachments.MODULE);
+            final WSRefValueSource valueSource = new WSRefValueSource(serviceRefUMDM, module.getClassLoader());
             final BindingConfiguration bindingConfiguration = new BindingConfiguration(serviceRefUMDM.getServiceRefName(), valueSource);
             bindingDescriptions.add(bindingConfiguration);
             final String serviceRefTypeName = serviceRefUMDM.getServiceRefType();

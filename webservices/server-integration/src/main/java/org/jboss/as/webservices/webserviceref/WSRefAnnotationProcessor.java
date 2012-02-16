@@ -139,6 +139,7 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
         boolean isEJB = false;
         final EEModuleDescription moduleDescription = unit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final String componentClassName = classInfo.name().toString();
+        final Module module = unit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         for (final ComponentDescription componentDescription : moduleDescription.getComponentsByClassName(componentClassName)) {
             if (componentDescription instanceof SessionBeanComponentDescription) {
                 isEJB = true;
@@ -148,7 +149,7 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
                 processWSFeatures(unit, serviceRefUMDM, injectionTarget, classInfo);
 
                 // Create the binding from whence our injection comes.
-                final InjectionSource serviceRefSource = new WSRefValueSource(serviceRefUMDM);
+                final InjectionSource serviceRefSource = new WSRefValueSource(serviceRefUMDM, module.getClassLoader());
                 final BindingConfiguration bindingConfiguration = new BindingConfiguration(bindingName, serviceRefSource);
                 componentDescription.getBindingConfigurations().add(bindingConfiguration);
                 // our injection comes from the local lookup, no matter what.
@@ -166,7 +167,7 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
             // TODO: class hierarchies? shared bindings?
             final EEModuleClassDescription classDescription = moduleDescription.addOrGetLocalClassDescription(classInfo.name().toString());
             // Create the binding from whence our injection comes.
-            final InjectionSource serviceRefSource = new WSRefValueSource(serviceRefUMDM);
+            final InjectionSource serviceRefSource = new WSRefValueSource(serviceRefUMDM, module.getClassLoader());
             final BindingConfiguration bindingConfiguration = new BindingConfiguration(bindingName, serviceRefSource);
             classDescription.getBindingConfigurations().add(bindingConfiguration);
             // our injection comes from the local lookup, no matter what.

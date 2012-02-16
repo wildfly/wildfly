@@ -52,9 +52,11 @@ import org.jboss.wsf.spi.serviceref.ServiceRefHandlerFactory;
  */
 final class WSRefValueSource extends InjectionSource implements Value<Object> {
     private final UnifiedServiceRefMetaData serviceRef;
+    private final ClassLoader classLoader;
 
-    WSRefValueSource(final UnifiedServiceRefMetaData serviceRef) {
+    WSRefValueSource(final UnifiedServiceRefMetaData serviceRef, final ClassLoader classLoader) {
         this.serviceRef = serviceRef;
+        this.classLoader = classLoader;
     }
 
     public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
@@ -65,7 +67,7 @@ final class WSRefValueSource extends InjectionSource implements Value<Object> {
     public Object getValue() throws IllegalStateException, IllegalArgumentException {
         final ClassLoader oldCL = getContextClassLoader();
         try {
-            final ClassLoader integrationCL = new DelegateClassLoader(getClassLoader(),oldCL);
+            final ClassLoader integrationCL = new DelegateClassLoader(getClassLoader(), classLoader);
             setContextClassLoader(integrationCL);
             final Referenceable referenceable = getReferenceable(integrationCL);
             final Class<?> clazz = Class.forName(referenceable.getReference().getFactoryClassName(), true, integrationCL);
