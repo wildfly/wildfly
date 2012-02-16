@@ -153,7 +153,7 @@
                     <keepalive-time time="100" unit="milliseconds"/>
                 </thread-pool>
             </thread-pools>
-            <iiop enable-by-default="false" use-qualified-name="false" />
+            <iiop enable-by-default="false" use-qualified-name="false"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:infinispan:1.1" default-cache-container="cluster">
             <cache-container name="cluster" aliases="ha-partition" default-cache="default">
@@ -206,7 +206,7 @@
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jacorb:1.1">
             <orb>
-                   <initializers transactions="spec" security="on"/>
+                <initializers transactions="spec" security="on"/>
             </orb>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jaxr:1.0">
@@ -422,7 +422,15 @@
             <security-domains>
                 <security-domain name="other" cache-type="default">
                     <authentication>
-                        <login-module code="UsersRoles" flag="required"/>
+                        <login-module code="Remoting" flag="optional">
+                            <module-option name="password-stacking" value="useFirstPass"/>
+                        </login-module>
+                        <login-module code="RealmUsersRoles" flag="required">
+                            <module-option name="usersProperties" value="${jboss.server.config.dir}/application-users.properties"/>
+                            <module-option name="rolesProperties" value="${jboss.server.config.dir}/application-roles.properties"/>
+                            <module-option name="realm" value="ApplicationRealm"/>
+                            <module-option name="password-stacking" value="useFirstPass"/>
+                        </login-module>
                     </authentication>
                 </security-domain>
                 <security-domain name="jboss-web-policy" cache-type="default">
@@ -434,14 +442,6 @@
                     <authorization>
                         <policy-module code="Delegating" flag="required"/>
                     </authorization>
-                </security-domain>
-                <security-domain name="messaging" cache-type="default">
-                    <authentication>
-                        <login-module code="UsersRoles" flag="required">
-                            <module-option name="usersProperties" value="${jboss.server.config.dir}/messaging-users.properties"/>
-                            <module-option name="rolesProperties" value="${jboss.server.config.dir}/messaging-roles.properties"/>
-                        </login-module>
-                    </authentication>
                 </security-domain>
             </security-domains>
         </subsystem>
