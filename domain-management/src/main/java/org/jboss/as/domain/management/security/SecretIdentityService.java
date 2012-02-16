@@ -54,9 +54,13 @@ public class SecretIdentityService implements Service<CallbackHandlerFactory> {
 
     private volatile CallbackHandlerFactory factory;
 
-    public SecretIdentityService(final String base64Password) {
-        byte[] value = Base64.decode(base64Password);
-        password = new String(value).toCharArray();
+    public SecretIdentityService(final String password, boolean base64) {
+        if (base64) {
+            byte[] value = Base64.decode(password);
+            this.password = new String(value).toCharArray();
+        } else {
+            this.password = password.toCharArray();
+        }
     }
 
 

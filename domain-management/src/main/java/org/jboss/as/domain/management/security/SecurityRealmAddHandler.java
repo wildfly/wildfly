@@ -296,9 +296,10 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
     private ServiceName addSecretService(OperationContext context, ModelNode secret, ServiceName realmServiceName, ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) throws OperationFailedException {
         ServiceName secretServiceName = realmServiceName.append(SecretIdentityService.SERVICE_SUFFIX);
 
-        String secretValue = context.resolveExpressions(secret.require(VALUE)).asString();
+        ModelNode secretValueNode = secret.require(VALUE);
+        String resolvedValue = context.resolveExpressions(secretValueNode).asString();
 
-        SecretIdentityService sis = new SecretIdentityService(secretValue);
+        SecretIdentityService sis = new SecretIdentityService(resolvedValue, secretValueNode.asString().equals(resolvedValue));
         final ServiceController<CallbackHandlerFactory> serviceController = serviceTarget.addService(secretServiceName, sis)
                 .setInitialMode(ON_DEMAND)
                 .install();

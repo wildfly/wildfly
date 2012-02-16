@@ -42,7 +42,7 @@ import org.jboss.dmr.ModelType;
 public class SecretServerIdentityResourceDefinition extends SimpleResourceDefinition {
 
     public static final SimpleAttributeDefinition VALUE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.VALUE, ModelType.STRING, false)
-            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, false)).build();
+            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true)).setAllowExpression(true).build();
 
     public SecretServerIdentityResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.SERVER_IDENTITY, ModelDescriptionConstants.SECRET),
