@@ -580,11 +580,9 @@ public class ParseAndMarshalModelsTestCase {
         Assert.assertTrue(f.exists());
         f = new File(f, "build");
         Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "src");
+        f = new File(f, "target");
         Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "main");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "resources");
+        f = new File(f, "generated-configs");
         Assert.assertTrue("Not found: " + f.getPath(), f.exists());
         f = new File(f, "standalone");
         Assert.assertTrue("Not found: " + f.getPath(), f.exists());
@@ -603,6 +601,25 @@ public class ParseAndMarshalModelsTestCase {
         Assert.assertTrue(f.exists());
         f = new File(f, "build");
         Assert.assertTrue("Not found: " + f.getPath(), f.exists());
+        f = new File(f, "target");
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
+        f = new File(f, "generated-configs");
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
+        f = new File(f, "domain");
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
+        f = new File(f, "configuration");
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
+        return f;
+    }
+
+    private File getHostConfigDir() {
+        //Get the standalone.xml from the build/src directory, since the one in the
+        //built server could have changed during running of tests
+        File f = new File( System.getProperty("jbossas.project.dir", "../../..") );
+        f = f.getAbsoluteFile();
+        Assert.assertTrue(f.exists());
+        f = new File(f, "build");
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
         f = new File(f, "src");
         Assert.assertTrue("Not found: " + f.getPath(), f.exists());
         f = new File(f, "main");
@@ -616,10 +633,11 @@ public class ParseAndMarshalModelsTestCase {
         return f;
     }
 
+
     private File getOriginalHostXml(final String profile) {
         //Get the standalone.xml from the build/src directory, since the one in the
         //built server could have changed during running of tests
-        File f = getDomainConfigDir();
+        File f = getHostConfigDir();
         f = new File(f, profile);
         Assert.assertTrue("Not found: " + f.getPath(), f.exists());
         return f;
