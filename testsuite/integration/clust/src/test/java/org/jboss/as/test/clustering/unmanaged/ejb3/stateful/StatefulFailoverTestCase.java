@@ -248,11 +248,11 @@ public class StatefulFailoverTestCase {
            int maxWait = GRACE_TIME;
            int count = 0;
            while (maxWait > 0) {
-               Thread.sleep(1000);
+               Thread.sleep(100);
 
                count = queryCount(client, url);
                if (count >= 0) break;
-               maxWait -= 1000;
+               maxWait -= 100;
           }
 
           if (count == -1)
