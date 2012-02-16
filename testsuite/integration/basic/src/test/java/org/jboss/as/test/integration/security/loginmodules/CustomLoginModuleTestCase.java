@@ -59,6 +59,7 @@ import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.security.Constants;
@@ -82,7 +83,13 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class CustomLoginModuleTestCase {
 
-    protected final String URL = "http://localhost:8080/" + getContextPath() + "/secured/";
+
+    @ArquillianResource(SecuredServlet.class)
+    URL deploymentURL;
+
+    private String getURL(){
+       return deploymentURL.toString() + "secured/";
+    }
 
     /**
      * Base method to create a {@link WebArchive}
@@ -149,7 +156,7 @@ public class CustomLoginModuleTestCase {
     protected void makeCall(String user, String pass, int expectedStatusCode) throws Exception {
         DefaultHttpClient httpclient = new DefaultHttpClient();
         try {
-            HttpGet httpget = new HttpGet(URL);
+            HttpGet httpget = new HttpGet(getURL());
 
             HttpResponse response = httpclient.execute(httpget);
 
@@ -173,7 +180,7 @@ public class CustomLoginModuleTestCase {
             }
 
             // We should now login with the user name and password
-            HttpPost httpost = new HttpPost(URL + "/j_security_check");
+            HttpPost httpost = new HttpPost(getURL() + "j_security_check");
 
             List<NameValuePair> nvps = new ArrayList<NameValuePair>();
             nvps.add(new BasicNameValuePair("j_username", user));

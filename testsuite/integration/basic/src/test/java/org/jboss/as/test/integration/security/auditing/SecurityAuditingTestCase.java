@@ -26,6 +26,7 @@ import static junit.framework.Assert.assertTrue;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.security.Constants;
@@ -137,9 +138,8 @@ public class SecurityAuditingTestCase {
    @Ignore("AS7-3346")
    @RunAsClient
    @Test
-   public void test() throws Exception {
+   public void test(@ArquillianResource URL url) throws Exception {
 
-      //jbossas.ts.submodule.dir=/opt/AS7/SecurityAuditing/jboss-as/testsuite/integration/basic
       File auditLog = new File(System.getProperty("jbossas.ts.submodule.dir"), "target/jbossas/standalone/log/audit.log");
 
 
@@ -154,7 +154,7 @@ public class SecurityAuditingTestCase {
       }
 
 
-      Utils.makeCall("http://localhost:8080/form-auth", "anil", "anil", 200);
+      Utils.makeCall(url.toString(), "anil", "anil", 200);
 
       Pattern successPattern = Pattern.compile("TRACE.+org.jboss.security.audit.providers.LogAuditProvider.+Success");
 
