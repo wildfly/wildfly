@@ -22,8 +22,6 @@
 
 package org.jboss.as.test.clustering.unmanaged.ejb3.xpc;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
 import java.util.Date;
 import java.util.Properties;
@@ -43,12 +41,13 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.unmanaged.ejb3.xpc.bean.StatefulBean;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Paul Ferraro
@@ -59,7 +58,6 @@ import org.junit.runner.RunWith;
 public class StatefulWithXPCFailoverTestCase {
     /** Constants **/
     public static final int GRACE_TIME = 20000;
-    public static final int SLEEP_AFTER_DEPLOY = 6000;
     public static final String CONTAINER1 = "clustering-udp-0-unmanaged";
     public static final String CONTAINER2 = "clustering-udp-1-unmanaged";
     public static final String DEPLOYMENT1 = "deployment-0-unmanaged";
@@ -109,7 +107,7 @@ public class StatefulWithXPCFailoverTestCase {
         System.out.println(war.toString(true));
         return war;
     }
-    
+
 
     @Test
     @InSequence(1)
@@ -275,13 +273,13 @@ public class StatefulWithXPCFailoverTestCase {
            int maxWait = GRACE_TIME;
            String name = null;
            while (maxWait > 0) {
-               Thread.sleep(1000);
+               Thread.sleep(100);
 
                name = getEmployee(client, url, message);
                if (name != null) {
                    break;
                }
-               maxWait -= 1000;
+               maxWait -= 100;
           }
 
           if (name == null)
@@ -294,13 +292,13 @@ public class StatefulWithXPCFailoverTestCase {
            int maxWait = GRACE_TIME;
            String name = null;
            while (maxWait > 0) {
-               Thread.sleep(1000);
+               Thread.sleep(100);
 
                name = getSecondEmployee(client, url);
                if (name != null) {
                    break;
                }
-               maxWait -= 1000;
+               maxWait -= 100;
           }
 
           if (name == null)
@@ -313,13 +311,13 @@ public class StatefulWithXPCFailoverTestCase {
            int maxWait = GRACE_TIME;
            String name = null;
            while (maxWait > 0) {
-               Thread.sleep(1000);
+               Thread.sleep(100);
 
                name = getDestroy(client, url);
                if (name != null) {
                    break;
                }
-               maxWait -= 1000;
+               maxWait -= 100;
           }
 
           if (name == null)
@@ -333,7 +331,6 @@ public class StatefulWithXPCFailoverTestCase {
             System.out.println(new Date() + "stopping deployment="+deployment+", container="+container);
             deployer.undeploy(deployment);
             controller.stop(container);
-            Thread.sleep(SLEEP_AFTER_DEPLOY);
             System.out.println(new Date() + "stopped deployment="+deployment+", container="+container);
         } catch (Throwable e) {
             e.printStackTrace(System.err);
@@ -345,7 +342,6 @@ public class StatefulWithXPCFailoverTestCase {
             System.out.println(new Date() + "starting deployment="+deployment+", container="+ container);
             controller.start(container);
             deployer.deploy(deployment);
-            Thread.sleep(SLEEP_AFTER_DEPLOY);
             System.out.println(new Date() + "started deployment="+deployment+", container=" + container);
         } catch (Throwable e) {
             e.printStackTrace(System.err);

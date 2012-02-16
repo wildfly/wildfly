@@ -105,62 +105,62 @@ public class JSFFailoverTestCase {
         war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
         return war;
     }
-    
+
     /**
      * Parses the response page and headers for a cookie, JSF view state and the numberguess game status.
-     * 
+     *
      * @param response
      * @param sessionId
      * @return
      * @throws IllegalStateException
      * @throws IOException
      */
-    private static NumberGuessState parseState(HttpResponse response, String sessionId) throws IllegalStateException, IOException {        
+    private static NumberGuessState parseState(HttpResponse response, String sessionId) throws IllegalStateException, IOException {
         Pattern smallestPattern = Pattern.compile("<span id=\"numberGuess:smallest\">([^<]+)</span>");
         Pattern biggestPattern = Pattern.compile("<span id=\"numberGuess:biggest\">([^<]+)</span>");
         Pattern remainingPattern = Pattern.compile("You have (\\d+) guesses remaining.");
         Pattern viewStatePattern = Pattern.compile("id=\"javax.faces.ViewState\" value=\"([^\"]*)\"");
-        
+
         Matcher matcher;
-        
+
         NumberGuessState state = new NumberGuessState();
         String responseString = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
-        
+
         Header setCookie = response.getFirstHeader("Set-Cookie");
         if (setCookie != null) {
             String setCookieValue = setCookie.getValue();
-            state.sessionId = setCookieValue.substring(setCookieValue.indexOf('=') + 1, setCookieValue.indexOf(';'));      
+            state.sessionId = setCookieValue.substring(setCookieValue.indexOf('=') + 1, setCookieValue.indexOf(';'));
         }
         else if (sessionId != null) {
             // We don't get a cookie back if we have sent it, so just set it to whatever we had before
             state.sessionId = sessionId;
         }
-        
+
         matcher = smallestPattern.matcher(responseString);
         if (matcher.find()) {
             state.smallest = matcher.group(1);
         }
-        
+
         matcher = biggestPattern.matcher(responseString);
         if (matcher.find()) {
             state.biggest = matcher.group(1);
         }
-        
+
         matcher = remainingPattern.matcher(responseString);
         if (matcher.find()) {
             state.remainingGuesses = matcher.group(1);
         }
-        
+
         matcher = viewStatePattern.matcher(responseString);
         if (matcher.find()) {
             state.jsfViewState = matcher.group(1);
         }
-        
+
         return state;
     }
-    
+
     /**
-     * Creates an HTTP POST request with a number guess. 
+     * Creates an HTTP POST request with a number guess.
      * @param url
      * @param sessionId
      * @param viewState
@@ -170,22 +170,22 @@ public class JSFFailoverTestCase {
      */
     private static HttpUriRequest buildPostRequest(String url, String sessionId, String viewState, String guess) throws UnsupportedEncodingException {
         HttpPost post = new HttpPost(url);
-        
+
         List<NameValuePair> list = new LinkedList<NameValuePair> ();
 
         list.add(new BasicNameValuePair("javax.faces.ViewState", viewState));
         list.add(new BasicNameValuePair("numberGuess", "numberGuess"));
         list.add(new BasicNameValuePair("numberGuess:guessButton", "Guess"));
         list.add(new BasicNameValuePair("numberGuess:inputGuess", guess));
-        
+
         post.setEntity(new StringEntity(URLEncodedUtils.format(list, "UTF-8"), "application/x-www-form-urlencoded", "UTF-8"));
         if (sessionId != null) {
             post.setHeader("Cookie", "JSESSIONID=" + sessionId);
         }
-        
+
         return post;
     }
-    
+
     /**
      * Creates an HTTP GET request, with a potential JSESSIONID cookie.
      * @param url
@@ -224,8 +224,6 @@ public class JSFFailoverTestCase {
         controller.start(CONTAINER2);
         deployer.deploy(DEPLOYMENT2);
 
-        Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
-
         DefaultHttpClient client = new DefaultHttpClient();
 
         // ARQ-674 Ouch, second hardcoded URL will need fixing. ARQ doesnt support @OperateOnDeployment on 2 containers.
@@ -235,15 +233,15 @@ public class JSFFailoverTestCase {
         try {
             HttpResponse response;
             NumberGuessState state;
-            
+
             // First non-JSF request to the home page
-            response = client.execute(buildGetRequest(url1, null));
+            response = tryGet(client, buildGetRequest(url1, null));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             state = parseState(response, null);
-            
+
             // We get a cookie!
             String sessionId = state.sessionId;
-            
+
             Assert.assertNotNull(sessionId);
             Assert.assertEquals("0", state.smallest);
             Assert.assertEquals("100", state.biggest);
@@ -256,22 +254,20 @@ public class JSFFailoverTestCase {
 
             Assert.assertEquals("2", state.smallest);
             Assert.assertEquals("100", state.biggest);
-            Assert.assertEquals("9", state.remainingGuesses);            
+            Assert.assertEquals("9", state.remainingGuesses);
 
             // Gracefully shutdown the 1st container.
             controller.stop(CONTAINER1);
 
-            // Lets wait for the session to replicate, we don't care about membership now.
-            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
-            
+
             // Now we do a JSF POST request with a cookie on to the second node, guessing 100, expecting to find a replicated state.
-            response = client.execute(buildPostRequest(url2, state.sessionId, state.jsfViewState, "100"));            
+            response = tryGet(client, buildPostRequest(url2, state.sessionId, state.jsfViewState, "100"));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             state = parseState(response, sessionId);
 
             // If the state would not be replicated, we would have 9 remaining guesses.
             Assert.assertEquals("Session failed to replicate after container 1 was shutdown.", "8", state.remainingGuesses);
-            
+
             // The server should accept our cookie and not try to set a different one
             Assert.assertEquals(sessionId, state.sessionId);
             Assert.assertEquals("2", state.smallest);
@@ -288,24 +284,21 @@ public class JSFFailoverTestCase {
 
             controller.start(CONTAINER1);
 
-            // Lets wait for the cluster to update membership and transfer state.
-            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
-            
             // And now we go back to the first node, guessing 2
-            response = client.execute(buildPostRequest(url1, state.sessionId, state.jsfViewState, "2"));            
+            response = tryGet(client, buildPostRequest(url1, state.sessionId, state.jsfViewState, "2"));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             state = parseState(response, sessionId);
-            
+
             Assert.assertEquals("Session failed to replicate after container 1 was brought up.", "6", state.remainingGuesses);
             Assert.assertEquals(sessionId, state.sessionId);
             Assert.assertEquals("3", state.smallest);
             Assert.assertEquals("98", state.biggest);
-            
+
             // One final guess on the first node, guess 50
-            response = client.execute(buildPostRequest(url1, state.sessionId, state.jsfViewState, "50"));            
+            response = client.execute(buildPostRequest(url1, state.sessionId, state.jsfViewState, "50"));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             state = parseState(response, sessionId);
-            
+
             Assert.assertEquals(sessionId, state.sessionId);
             Assert.assertEquals("5", state.remainingGuesses);
             Assert.assertEquals("3", state.smallest);
@@ -346,8 +339,6 @@ public class JSFFailoverTestCase {
         controller.start(CONTAINER2);
         deployer.deploy(DEPLOYMENT2);
 
-        Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
-
         DefaultHttpClient client = new DefaultHttpClient();
 
         // TODO ARQ-674
@@ -357,15 +348,15 @@ public class JSFFailoverTestCase {
         try {
             HttpResponse response;
             NumberGuessState state;
-            
+
             // First non-JSF request to the home page
-            response = client.execute(buildGetRequest(url1, null));
+            response = tryGet(client, buildGetRequest(url1, null));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             state = parseState(response, null);
-            
+
             // We get a cookie!
             String sessionId = state.sessionId;
-            
+
             Assert.assertNotNull(sessionId);
             Assert.assertEquals("0", state.smallest);
             Assert.assertEquals("100", state.biggest);
@@ -378,29 +369,26 @@ public class JSFFailoverTestCase {
 
             Assert.assertEquals("2", state.smallest);
             Assert.assertEquals("100", state.biggest);
-            Assert.assertEquals("9", state.remainingGuesses);            
+            Assert.assertEquals("9", state.remainingGuesses);
 
             // Gracefully undeploy from the 1st container.
             deployer.undeploy(DEPLOYMENT1);
 
-            // Lets wait for the session to replicate, we don't care about membership now.
-            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
-            
             // Now we do a JSF POST request with a cookie on to the second node, guessing 100, expecting to find a replicated state.
-            response = client.execute(buildPostRequest(url2, state.sessionId, state.jsfViewState, "100"));            
+            response = tryGet(client, buildPostRequest(url2, state.sessionId, state.jsfViewState, "100"));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             state = parseState(response, sessionId);
 
             // If the state would not be replicated, we would have 9 remaining guesses.
             Assert.assertEquals("Session failed to replicate after container 1 was shutdown.", "8", state.remainingGuesses);
-            
+
             // The server should accept our cookie and not try to set a different one
             Assert.assertEquals(sessionId, state.sessionId);
             Assert.assertEquals("2", state.smallest);
             Assert.assertEquals("99", state.biggest);
 
             // Now we do a JSF POST request on the second node again, guessing "99"
-            response = client.execute(buildPostRequest(url2, sessionId, state.jsfViewState, "99"));
+            response = tryGet(client, buildPostRequest(url2, sessionId, state.jsfViewState, "99"));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             state = parseState(response, sessionId);
 
@@ -411,24 +399,21 @@ public class JSFFailoverTestCase {
             // Redeploy
             deployer.deploy(DEPLOYMENT1);
 
-            // Lets wait for the cluster to update membership and transfer state.
-            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
-            
             // And now we go back to the first node, guessing 2
-            response = client.execute(buildPostRequest(url1, state.sessionId, state.jsfViewState, "2"));            
+            response = tryGet(client, buildPostRequest(url1, state.sessionId, state.jsfViewState, "2"));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             state = parseState(response, sessionId);
-            
+
             Assert.assertEquals("Session failed to replicate after container 1 was brought up.", "6", state.remainingGuesses);
             Assert.assertEquals(sessionId, state.sessionId);
             Assert.assertEquals("3", state.smallest);
             Assert.assertEquals("98", state.biggest);
-            
+
             // One final guess on the first node, guess 50
-            response = client.execute(buildPostRequest(url1, state.sessionId, state.jsfViewState, "50"));            
+            response = client.execute(buildPostRequest(url1, state.sessionId, state.jsfViewState, "50"));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             state = parseState(response, sessionId);
-            
+
             Assert.assertEquals(sessionId, state.sessionId);
             Assert.assertEquals("5", state.remainingGuesses);
             Assert.assertEquals("3", state.smallest);
@@ -455,5 +440,16 @@ public class JSFFailoverTestCase {
         String sessionId;
         String remainingGuesses;
         String jsfViewState;
+    }
+
+
+    private HttpResponse tryGet(final DefaultHttpClient client, final HttpUriRequest r) throws IOException {
+        final long startTime;
+        HttpResponse response = client.execute(r);
+        startTime = System.currentTimeMillis();
+        while(response.getStatusLine().getStatusCode() != HttpServletResponse.SC_OK && startTime + GRACE_TIME_TO_MEMBERSHIP_CHANGE > System.currentTimeMillis()) {
+            response = client.execute(r);
+        }
+        return response;
     }
 }

@@ -20,7 +20,6 @@ import org.jboss.as.test.clustering.unmanaged.singleton.service.MyService;
 import org.jboss.as.test.clustering.unmanaged.singleton.service.MyServiceContextListener;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
@@ -69,7 +68,7 @@ public class SingletonTestCase {
         System.out.println(war.toString(true));
         return war;
     }
-    
+
     @Test
     @InSequence(1)
     /* @OperateOnDeployment(DEPLOYMENT1) -- See http://community.jboss.org/thread/176096 */
@@ -93,56 +92,55 @@ public class SingletonTestCase {
             controller.start(CONTAINER2);
             deployer.deploy(DEPLOYMENT2);
 
-            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
 
             response = client.execute(new HttpGet(url1));
+            long startTime = System.currentTimeMillis();
+            while(response.getStatusLine().getStatusCode() != HttpServletResponse.SC_OK && startTime + GRACE_TIME_TO_MEMBERSHIP_CHANGE > System.currentTimeMillis()) {
+                response = client.execute(new HttpGet(url1));
+            }
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             Assert.assertEquals(MyServiceContextListener.PREFERRED_NODE, response.getFirstHeader("node").getValue());
             response.getEntity().getContent().close();
 
-            response = client.execute(new HttpGet(url2));
+            response = tryGet(client, url2);;
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             Assert.assertEquals(MyServiceContextListener.PREFERRED_NODE, response.getFirstHeader("node").getValue());
             response.getEntity().getContent().close();
 
             controller.stop(CONTAINER2);
-            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
 
-            response = client.execute(new HttpGet(url1));
+            response = tryGet(client, url1);
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             Assert.assertEquals("node-udp-0", response.getFirstHeader("node").getValue());
             response.getEntity().getContent().close();
 
             controller.start(CONTAINER2);
-            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
 
-            response = client.execute(new HttpGet(url1));
+            response = tryGet(client, url1);
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             Assert.assertEquals(MyServiceContextListener.PREFERRED_NODE, response.getFirstHeader("node").getValue());
             response.getEntity().getContent().close();
 
-            response = client.execute(new HttpGet(url2));
+            response = tryGet(client, url2);
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             Assert.assertEquals(MyServiceContextListener.PREFERRED_NODE, response.getFirstHeader("node").getValue());
             response.getEntity().getContent().close();
 
             controller.stop(CONTAINER1);
-            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
 
-            response = client.execute(new HttpGet(url2));
+            response = tryGet(client, url2);
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             Assert.assertEquals("node-udp-1", response.getFirstHeader("node").getValue());
             response.getEntity().getContent().close();
-            
-            controller.start(CONTAINER1);
-            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
 
-            response = client.execute(new HttpGet(url1));
+            controller.start(CONTAINER1);
+
+            response = tryGet(client, url1);
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             Assert.assertEquals(MyServiceContextListener.PREFERRED_NODE, response.getFirstHeader("node").getValue());
             response.getEntity().getContent().close();
 
-            response = client.execute(new HttpGet(url2));
+            response = tryGet(client, url2);
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             Assert.assertEquals(MyServiceContextListener.PREFERRED_NODE, response.getFirstHeader("node").getValue());
             response.getEntity().getContent().close();
@@ -154,5 +152,15 @@ public class SingletonTestCase {
             deployer.undeploy(DEPLOYMENT2);
             controller.stop(CONTAINER2);
         }
+    }
+
+    private HttpResponse tryGet(final DefaultHttpClient client, final String url1) throws IOException {
+        final long startTime;
+        HttpResponse response = client.execute(new HttpGet(url1));
+        startTime = System.currentTimeMillis();
+        while(response.getStatusLine().getStatusCode() != HttpServletResponse.SC_OK && startTime + GRACE_TIME_TO_MEMBERSHIP_CHANGE > System.currentTimeMillis()) {
+            response = client.execute(new HttpGet(url1));
+        }
+        return response;
     }
 }
