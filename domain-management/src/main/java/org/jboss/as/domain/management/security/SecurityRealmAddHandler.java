@@ -150,7 +150,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
                 ssl = serverIdentities.require(SSL);
             }
             if (serverIdentities.hasDefined(SECRET)) {
-                ServiceName secretServiceName = addSecretService(serverIdentities.require(SECRET),realmServiceName,serviceTarget,newControllers);
+                ServiceName secretServiceName = addSecretService(context, serverIdentities.require(SECRET), realmServiceName,serviceTarget,newControllers);
                 realmBuilder.addDependency(secretServiceName, CallbackHandlerFactory.class,securityRealmService.getSecretCallbackFactory());
             }
         }
@@ -293,10 +293,10 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         return password;
     }
 
-    private ServiceName addSecretService(ModelNode secret, ServiceName realmServiceName, ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) {
+    private ServiceName addSecretService(OperationContext context, ModelNode secret, ServiceName realmServiceName, ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) throws OperationFailedException {
         ServiceName secretServiceName = realmServiceName.append(SecretIdentityService.SERVICE_SUFFIX);
 
-        String secretValue = secret.require(VALUE).asString();
+        String secretValue = context.resolveExpressions(secret.require(VALUE)).asString();
 
         SecretIdentityService sis = new SecretIdentityService(secretValue);
         final ServiceController<CallbackHandlerFactory> serviceController = serviceTarget.addService(secretServiceName, sis)
