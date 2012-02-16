@@ -31,7 +31,7 @@
 
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-parent</artifactId>
-    <version>7.1.0.Final-SNAPSHOT</version>
+    <version>7.1.0.Final</version>
 
     <name>JBoss Application Server: Parent Aggregator</name>
     <description>JBoss Application Server: Parent Aggregator</description>
@@ -55,7 +55,7 @@
     <properties>
          <!-- Release Info -->
         <jboss.as.release.version>${project.version}</jboss.as.release.version>
-        <jboss.as.release.codename>Flux Capacitor</jboss.as.release.codename>
+        <jboss.as.release.codename>Thunder</jboss.as.release.codename>
         <jboss.as.scm.url>https://github.com/jbossas/jboss-as</jboss.as.scm.url>
         <jboss.as.scm.connection>git@github.com:jbossas/jboss-as.git</jboss.as.scm.connection>
 

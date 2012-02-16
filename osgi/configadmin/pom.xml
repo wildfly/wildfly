@@ -28,7 +28,7 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-osgi</artifactId>
-        <version>7.1.0.Final-SNAPSHOT</version>
+        <version>7.1.0.Final</version>
     </parent>
 
     <groupId>org.jboss.as</groupId>
