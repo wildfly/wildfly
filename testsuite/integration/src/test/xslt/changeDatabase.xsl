@@ -54,7 +54,7 @@
       -->
 
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:ds="urn:jboss:domain:datasources:1.0" version="1.0">
+                xmlns:ds="urn:jboss:domain:datasources:1.0">
     <xsl:output method="xml" indent="yes"/>
 
     <xsl:param name="ds.jdbc.driver.jar" select="'fred'"/>
@@ -63,24 +63,24 @@
     <xsl:param name="ds.jdbc.pass" select="'test'"/>
 
     <xsl:variable name="newDatasourceDefinition">
-        <ds:datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="MSQL" enabled="true" jta="true"
+            <ds:datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExamplePool" enabled="true" jta="true"
                        use-java-context="true">
-            <ds:connection-url><xsl:value-of select="$ds.jdbc.url"/></ds:connection-url>
-            <ds:driver><xsl:value-of select="$ds.jdbc.driver.jar"/></ds:driver>
-            <ds:security>
-                <ds:user-name><xsl:value-of select="$ds.jdbc.user"/></ds:user-name>
-                <ds:password><xsl:value-of select="$ds.jdbc.pass"/></ds:password>
-            </ds:security>
-        </ds:datasource>
+                <ds:connection-url><xsl:value-of select="$ds.jdbc.url"/></ds:connection-url>
+                <ds:driver><xsl:value-of select="$ds.jdbc.driver.jar"/></ds:driver>
+                <ds:security>
+                    <ds:user-name><xsl:value-of select="$ds.jdbc.user"/></ds:user-name>
+                    <ds:password><xsl:value-of select="$ds.jdbc.pass"/></ds:password>
+                </ds:security>
+            </ds:datasource>
     </xsl:variable>
 
-    <!-- replace the old definition with the new -->
+    <!-- Replace the old datasource with the new. -->
     <xsl:template match="//ds:subsystem/ds:datasources/ds:datasource[@jndi-name='java:jboss/datasources/ExampleDS']">
         <!-- http://docs.jboss.org/ironjacamar/userguide/1.0/en-US/html/deployment.html#deployingds_descriptor -->
         <xsl:copy-of select="$newDatasourceDefinition"/>
     </xsl:template>
 
-    <!-- get rid of the default driver defs -->
+    <!-- Get rid of the default driver defs. -->
     <xsl:template match="//ds:subsystem/ds:datasources/ds:drivers"/>
 
     <!-- Copy everything else. -->
