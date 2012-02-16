@@ -114,15 +114,18 @@ public class EEApplicationDescription {
      * @return A set of all views for the given component name and type
      */
     public Set<ComponentDescription> getComponents(final String componentName, final VirtualFile deploymentRoot) {
-        final List<Description> info = componentsByName.get(componentName);
-        if (info == null) {
-            return Collections.emptySet();
-        }
         if (componentName.contains("#")) {
             final String[] parts = componentName.split("#");
-            final String path = parts[0];
+            String path = parts[0];
+            if (!path.startsWith("../")) {
+                path = "../" + path;
+            }
             final VirtualFile virtualPath = deploymentRoot.getChild(path);
             final String name = parts[1];
+            final List<Description> info = componentsByName.get(name);
+            if (info == null) {
+                return Collections.emptySet();
+            }
             final Set<ComponentDescription> ret = new HashSet<ComponentDescription>();
             for (Description i : info) {
                 //now we need to check the path
@@ -132,6 +135,10 @@ public class EEApplicationDescription {
             }
             return ret;
         } else {
+            final List<Description> info = componentsByName.get(componentName);
+            if (info == null) {
+                return Collections.emptySet();
+            }
             final Set<ComponentDescription> all = new HashSet<ComponentDescription>();
             final Set<ComponentDescription> thisDeployment = new HashSet<ComponentDescription>();
             for (Description i : info) {
