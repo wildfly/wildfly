@@ -5,6 +5,10 @@
     <management>
         <security-realms>
             <security-realm name="ManagementRealm">
+                <server-identities>
+                     <secret value="set a base64 encoded password here which matches the user you created for this host" />
+                </server-identities>
+
                 <authentication>
                     <properties path="mgmt-users.properties" relative-to="jboss.domain.config.dir"/>
                 </authentication>
@@ -23,7 +27,7 @@
     </management>
 
     <domain-controller>
-       <remote host="${jboss.domain.master.address}" port="${jboss.domain.master.port:9999}"/>
+       <remote host="${jboss.domain.master.address}" port="${jboss.domain.master.port:9999}" security-realm="ManagementRealm"/>
     </domain-controller>
 
     <interfaces>
