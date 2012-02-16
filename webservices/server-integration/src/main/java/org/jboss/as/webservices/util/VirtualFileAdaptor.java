@@ -23,6 +23,8 @@ package org.jboss.as.webservices.util;
 
 import static org.jboss.as.webservices.WSMessages.MESSAGES;
 
+import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -42,6 +44,7 @@ import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
 import org.jboss.wsf.spi.deployment.WritableUnifiedVirtualFile;
+import org.jboss.wsf.spi.util.URLLoaderAdapter;
 
 /**
  * A VirtualFile adaptor.
@@ -182,6 +185,27 @@ public final class VirtualFileAdaptor implements WritableUnifiedVirtualFile {
         rootUrl = (URL) fields.get("rootUrl", null);
         path = (String) fields.get("path", null);
         requiresMount = fields.get("requiresMount", false);
+    }
+
+    private Object writeReplace() {
+        // TODO: hack to enable remote tests
+        try {
+            File archive = file.getPhysicalFile();
+            if (archive.list().length == 0) {
+                final File parent = file.getPhysicalFile().getParentFile();
+                final File[] children = parent.listFiles(new FileFilter() {
+                    @Override
+                    public boolean accept(File fileOrDir) {
+                        return fileOrDir.isFile();
+                    }
+                });
+                archive = children[0];
+            }
+            // Offer different UnifiedVirtualFile implementation for deserialization process
+            return new URLLoaderAdapter(archive.toURI().toURL());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public List<UnifiedVirtualFile> getChildren() throws IOException {
