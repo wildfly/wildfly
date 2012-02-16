@@ -27,7 +27,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -39,11 +38,9 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
-import junit.framework.Assert;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.python.google.common.io.LineReader;
 import org.xml.sax.SAXException;
 
 /**
@@ -110,15 +107,16 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
         parseXml("standalone/configuration/standalone-full.xml");
     }
 
-    @Test
-    public void testDomainJTS() throws Exception {
-        parseXml("docs/examples/configs/domain-jts.xml");
-    }
-
-    @Test
-    public void testDomainOSGiOnly() throws Exception {
-        parseXml("docs/examples/configs/domain-osgi-only.xml");
-    }
+  //TODO Leave commented out until domain-osgi-only.xml and domain-jts.xml are definitely removed from the configuration
+//    @Test
+//    public void testDomainJTS() throws Exception {
+//        parseXml("docs/examples/configs/domain-jts.xml");
+//    }
+//
+//    @Test
+//    public void testDomainOSGiOnly() throws Exception {
+//        parseXml("docs/examples/configs/domain-osgi-only.xml");
+//    }
 
     @Test
     public void testHornetQColocated() throws Exception {

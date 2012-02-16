@@ -338,15 +338,16 @@ public class ParseAndMarshalModelsTestCase {
         compare(originalModel, reparsedModel);
     }
 
-    @Test
-    public void testDomainOSGiOnlyXml() throws Exception {
-        domainXmlTest(getExampleConfigFile("domain-osgi-only.xml"));
-    }
-
-    @Test
-    public void testDomainJtsXml() throws Exception {
-        domainXmlTest(getExampleConfigFile("domain-jts.xml"));
-    }
+    //TODO Leave commented out until domain-osgi-only.xml and domain-jts.xml are definitely removed from the configuration
+//    @Test
+//    public void testDomainOSGiOnlyXml() throws Exception {
+//        domainXmlTest(getExampleConfigFile("domain-osgi-only.xml"));
+//    }
+//
+//    @Test
+//    public void testDomainJtsXml() throws Exception {
+//        domainXmlTest(getExampleConfigFile("domain-jts.xml"));
+//    }
 
     @Test
     public void test700DomainXml() throws Exception {
@@ -724,11 +725,9 @@ public class ParseAndMarshalModelsTestCase {
         Assert.assertTrue(f.exists());
         f = new File(f, "build");
         Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "src");
+        f = new File(f, "target");
         Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "main");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "resources");
+        f = new File(f, "generated-configs");
         Assert.assertTrue("Not found: " + f.getPath(), f.exists());
         f = new File(f, "docs");
         Assert.assertTrue("Not found: " + f.getPath(), f.exists());
