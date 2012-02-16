@@ -4,7 +4,7 @@
 / /_/ / /_/ / /_/ (__  |__  )  / ___ |___/ /     / /  
 \____/_____/\____/____/____/  /_/  |_/____/     /_/   
 
-Welcome to JBoss Application Server 7
+Welcome to JBoss Application Server 7.1.0
 http://www.jboss.org/jbossas/
 
 Go to the above link for documentation, and additional downloads.
@@ -23,6 +23,10 @@ Key Features
 * Distributed Domain Management
 * OSGi
 
+Release Notes
+-------------
+You can obtain the release notes here:
+https://community.jboss.org/wiki/AS710FinalReleaseNotes
 
 Getting Started
 ----------------
