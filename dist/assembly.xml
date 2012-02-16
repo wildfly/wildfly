@@ -19,7 +19,7 @@
                 <exclude>**/*.sh</exclude>
                 <exclude>jboss-*/domain/tmp/auth</exclude>
                 <exclude>jboss-*/domain/tmp/auth</exclude>
-                <exclude>**/mgmt-users.properties</exclude>
+                <exclude>**/*-users.properties</exclude>
             </excludes>
         </fileSet>
         <fileSet>
@@ -34,7 +34,7 @@
             <directory>../build/target</directory>
             <outputDirectory/>
             <includes>
-                <include>**/mgmt-users.properties</include>
+                <include>**/*-users.properties</include>
             </includes>
             <fileMode>0600</fileMode>
         </fileSet>
