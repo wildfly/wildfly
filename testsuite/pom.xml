@@ -367,6 +367,7 @@
                         </configuration>
                     </execution>
                 </executions>
+                <!--
                 <dependencies>
                     <dependency>
                         <groupId>net.sf.saxon</groupId>
@@ -374,6 +375,7 @@
                         <version>${version.saxon}</version>
                     </dependency>
                 </dependencies>
+                -->
             </plugin>
 
             <!--
@@ -694,10 +696,11 @@
                         </executions>
                     </plugin>
                     <plugin>
-                        <!-- Replace ExampleDS datasource in server configurations (target/jbossas). -->
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>xml-maven-plugin</artifactId>
                         <executions combine.children="append">
+                            <!-- Replace ExampleDS datasource in server configurations (target/jbossas). -->
+                            <!-- Not needed, done in ts.config-as.ip-and-ds.
                             <execution>
                                 <id>ts.config-as.db.change-datasource</id>
                                 <phase>process-test-resources</phase>
@@ -722,14 +725,8 @@
                                     </transformationSets>
                                 </configuration>
                             </execution>
+                            -->
                         </executions>
-                        <dependencies>
-                            <dependency>
-                                <groupId>net.sf.saxon</groupId>
-                                <artifactId>saxon</artifactId>
-                                <version>${version.saxon}</version>
-                            </dependency>
-                        </dependencies>
                     </plugin>
 
                     <!--
