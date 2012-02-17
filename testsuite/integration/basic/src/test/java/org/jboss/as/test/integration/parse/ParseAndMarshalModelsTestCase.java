@@ -203,27 +203,27 @@ public class ParseAndMarshalModelsTestCase {
 
     @Test
     public void testStandaloneMinimalisticXml() throws Exception {
-        standaloneXmlTest(getExampleConfigFile("standalone-minimalistic.xml"));
+        standaloneXmlTest(getDocsExampleConfigFile("standalone-minimalistic.xml"));
     }
 
     @Test
     public void testStandaloneOSGiOnlyXml() throws Exception {
-        standaloneXmlTest(getExampleConfigFile("standalone-osgi-only.xml"));
+        standaloneXmlTest(getGeneratedExampleConfigFile("standalone-osgi-only.xml"));
     }
 
     @Test
     public void testStandaloneXtsXml() throws Exception {
-        standaloneXmlTest(getExampleConfigFile("standalone-xts.xml"));
+        standaloneXmlTest(getGeneratedExampleConfigFile("standalone-xts.xml"));
     }
 
     @Test
     public void testStandaloneHornetqColocatedXml() throws Exception {
-        standaloneXmlTest(getExampleConfigFile("standalone-hornetq-colocated.xml"));
+        standaloneXmlTest(getGeneratedExampleConfigFile("standalone-hornetq-colocated.xml"));
     }
 
     @Test
     public void testStandaloneJtsXml() throws Exception {
-        standaloneXmlTest(getExampleConfigFile("standalone-jts.xml"));
+        standaloneXmlTest(getGeneratedExampleConfigFile("standalone-jts.xml"));
     }
 
     @Test
@@ -719,7 +719,31 @@ public class ParseAndMarshalModelsTestCase {
 
     }
 
-    private File getExampleConfigFile(String name) {
+    private File getDocsExampleConfigFile(String name) {
+        File f = new File( System.getProperty("jbossas.project.dir", "../../..") );
+        f = f.getAbsoluteFile();
+        Assert.assertTrue(f.exists());
+        f = new File(f, "build");
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
+        f = new File(f, "src");
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
+        f = new File(f, "main");
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
+        f = new File(f, "resources");
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
+        f = new File(f, "docs");
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
+        f = new File(f, "examples");
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
+        f = new File(f, "configs");
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
+        f = new File(f, name);
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
+        return f;
+    }
+
+
+    private File getGeneratedExampleConfigFile(String name) {
         File f = new File( System.getProperty("jbossas.project.dir", "../../..") );
         f = f.getAbsoluteFile();
         Assert.assertTrue(f.exists());
