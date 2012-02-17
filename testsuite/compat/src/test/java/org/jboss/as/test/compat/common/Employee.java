@@ -20,32 +20,49 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.compat.jpa.hibernate;
+package org.jboss.as.test.compat.common;
 
-import javax.ejb.Stateful;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import javax.persistence.Cacheable;
+import javax.persistence.Entity;
+import javax.persistence.Id;
 
 /**
- * stateful session bean
+ * Employee entity class
  *
  * @author Scott Marlow
  */
-@Stateful
-public class SFSB1 {
-    @PersistenceContext(unitName = "hibernate3_pc")
-        EntityManager em;
+@Entity
+@Cacheable(true)
+public class Employee  {
 
-    public void createEmployee(String name, String address, int id) {
-        Employee emp = new Employee();
-        emp.setId(id);
-        emp.setAddress(address);
-        emp.setName(name);
-        em.persist(emp);
+    @Id
+    private int id;
+
+    private String name;
+
+    private String address;
+
+    public int getId() {
+        return id;
     }
 
-    public Employee getEmployeeNoTX(int id) {
-        return em.find(Employee.class, id);
+    public void setId(final int id) {
+        this.id = id;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(final String name) {
+        this.name = name;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(final String address) {
+        this.address = address;
+    }
 }

@@ -20,32 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.compat.jpa.toplink;
+package org.jboss.as.test.compat.common;
 
-import javax.ejb.Stateful;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+
+import javax.ejb.Local;
 
 /**
- * stateful session bean
- *
- * @author Scott Marlow
+ * @author Brent Douglas <brent.n.douglas@gmail.com>
  */
-@Stateful
-public class SFSB1 {
-    @PersistenceContext(unitName = "hibernate3_pc")
-        EntityManager em;
+@Local
+public interface EmployeeBean {
 
-    public void createEmployee(String name, String address, int id) {
-        Employee emp = new Employee();
-        emp.setId(id);
-        emp.setAddress(address);
-        emp.setName(name);
-        em.persist(emp);
-    }
+    public void createEmployee(final int id, final String name, final String address) ;
 
-    public Employee getEmployeeNoTX(int id) {
-        return em.find(Employee.class, id);
-    }
+    public Employee getEmployee(final int id);
 
 }

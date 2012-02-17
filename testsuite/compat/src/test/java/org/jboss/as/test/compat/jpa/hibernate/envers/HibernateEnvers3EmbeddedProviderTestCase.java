@@ -3,13 +3,12 @@ package org.jboss.as.test.compat.jpa.hibernate.envers;
 import java.io.File;
 
 import javax.naming.InitialContext;
-import javax.naming.NameClassPair;
-import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.compat.common.JndiUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -64,17 +63,11 @@ public class HibernateEnvers3EmbeddedProviderTestCase {
         File hibernateannotations = new File(testdir, "hibernate3-commons-annotations.jar");
         File hibernateentitymanager = new File(testdir, "hibernate3-entitymanager.jar");
         File hibernateenvers = new File(testdir, "hibernate3-envers.jar");
-        File dom4j = new File(testdir, "dom4j.jar");
-        File commonCollections = new File(testdir, "commons-collections.jar");
-        File antlr = new File(testdir, "antlr.jar");
         ear.addAsLibraries(
             hibernatecore,
             hibernateannotations,
             hibernateentitymanager,
-            hibernateenvers,
-            dom4j,
-            commonCollections,
-            antlr
+            hibernateenvers
         );
 
     }
@@ -95,7 +88,7 @@ public class HibernateEnvers3EmbeddedProviderTestCase {
         ear.addAsLibraries(lib);
 
         final WebArchive main = ShrinkWrap.create(WebArchive.class, "main.war");
-        main.addClasses(HibernateEnvers3EmbeddedProviderTestCase.class);
+        main.addClasses(HibernateEnvers3EmbeddedProviderTestCase.class, JndiUtil.class);
         ear.addAsModule(main);
 
         // add application dependency on H2 JDBC driver, so that the Hibernate classloader (same as app classloader)
@@ -104,52 +97,25 @@ public class HibernateEnvers3EmbeddedProviderTestCase {
         // shared Hibernate module.
         // also add dependency on org.slf4j
         ear.addAsManifestResource(new StringAsset(
-            "<jboss-deployment-structure>" +
-            " <deployment>" +
-            "  <dependencies>" +
-            "   <module name=\"com.h2database.h2\" />" +
-            "   <module name=\"org.slf4j\"/>" +
-            "  </dependencies>" +
-            " </deployment>" +
-            "</jboss-deployment-structure>"),
-            "jboss-deployment-structure.xml");
+                "<jboss-deployment-structure>" +
+                " <deployment>" +
+                "  <dependencies>" +
+                "   <module name=\"com.h2database.h2\" />" +
+                "   <module name=\"org.antlr\" />" +
+                "   <module name=\"org.apache.commons.collections\" />" +
+                "   <module name=\"org.dom4j\" />" +
+                "   <module name=\"org.slf4j\"/>" +
+                "  </dependencies>" +
+                " </deployment>" +
+                "</jboss-deployment-structure>"),
+                "jboss-deployment-structure.xml");
 
         return ear;
     }
 
-    protected static <T> T lookup(String beanName, Class<T> interfaceType) throws NamingException {
-        try {
-            return interfaceType.cast(iniCtx.lookup("java:global/" + ARCHIVE_NAME + "/" + "beans/" + beanName + "!" + interfaceType.getName()));
-        } catch (NamingException e) {
-            dumpJndi("");
-            throw e;
-        }
-    }
-
-    // TODO: move this logic to a common base class (might be helpful for writing new tests)
-    private static void dumpJndi(String s) {
-        try {
-            dumpTreeEntry(iniCtx.list(s), s);
-        } catch (NamingException ignore) {
-        }
-    }
-
-    private static void dumpTreeEntry(NamingEnumeration<NameClassPair> list, String s) throws NamingException {
-        System.out.println("\ndump " + s);
-        while (list.hasMore()) {
-            NameClassPair ncp = list.next();
-            System.out.println(ncp.toString());
-            if (s.length() == 0) {
-                dumpJndi(ncp.getName());
-            } else {
-                dumpJndi(s + "/" + ncp.getName());
-            }
-        }
-    }
-
     @Test
     public void testSimpleEnversOperation() throws Exception {
-        SLSBPU slsbpu = lookup("SLSBPU",SLSBPU.class);
+        final SLSBPU slsbpu = JndiUtil.lookup(iniCtx, ARCHIVE_NAME, SLSBPU.class, SLSBPU.class);
 		Person p1= slsbpu.createPerson( "Strong","Liu","kexueyuan source road",307 );
 		Person p2= slsbpu.createPerson( "tom","cat","apache",34 );
 		Address a1 =p1.getAddress();

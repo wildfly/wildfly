@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.compat.jpa.hibernate;
+package org.jboss.as.test.compat.common;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -42,28 +42,29 @@ import java.io.Writer;
 
 @WebServlet(name="SimpleServlet", urlPatterns={"/simple"})
 public class SimpleServlet extends HttpServlet {
-    @PersistenceUnit(unitName = "web_hibernate3_pc")
-    EntityManagerFactory emf;   // servlet is in control of when obtained entity managers are closed
 
-    @PersistenceContext(unitName = "web_hibernate3_pc", name="persistence/em")
-    EntityManager em;
+    @PersistenceUnit(unitName = "web_hibernate3_pc")
+    private EntityManagerFactory entityManagerFactory;   // servlet is in control of when obtained entity managers are closed
+
+    @PersistenceContext(unitName = "web_hibernate3_pc", name="persistence/entityManager")
+    private EntityManager entityManager;
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String msg = req.getParameter("input");
+        req.getParameter("input");
 
-        Writer writer = resp.getWriter();
+        final Writer writer = resp.getWriter();
 
         // This is how a servlet could get an entity manager from a entity manager factory
-        EntityManager localEntityManager = emf.createEntityManager();
-        Query query = localEntityManager.createQuery("select count(*) from WebLink");
-        Long count = (Long)query.getSingleResult();
+        final EntityManager localEntityManager = entityManagerFactory.createEntityManager();
+        final Query localQuery = localEntityManager.createQuery("select count(*) from WebLink");
+        final Long localCount = (Long)localQuery.getSingleResult();
         localEntityManager.close();
 
         // a new underlying entity manager will be obtained to handle creating query
-        // the em will stay open until the container closes it.
-        query = em.createQuery("select count(*) from WebLink");
-        count = (Long)query.getSingleResult();
+        // the entityManager will stay open until the container closes it.
+        final Query query = entityManager.createQuery("select count(*) from WebLink");
+        final Long count = (Long)query.getSingleResult();
 
         writer.write(count.toString());
     }

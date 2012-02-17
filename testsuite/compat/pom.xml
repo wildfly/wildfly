@@ -44,8 +44,6 @@
         <!-- Used to provide an absolute location for the XSLT scripts. -->
         <!-- This value is overridden in submodules with the correct relative path. -->
         <xslt.scripts.dir>${basedir}/../integration/src/test/xslt</xslt.scripts.dir>
-
-        <version.org.hibernate3>3.6.6.Final</version.org.hibernate3>
     </properties>
 
     <!--
@@ -79,12 +77,7 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-commons-annotations</artifactId>
-            <version>3.2.0.Final</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
+            <version>${version.org.hibernate3.commons.annotations}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
