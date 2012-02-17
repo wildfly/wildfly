@@ -13,7 +13,7 @@
       <subsystem>configuration/subsystems/jacorb.xml</subsystem>
       <subsystem>configuration/subsystems/jaxr.xml</subsystem>
       <subsystem>configuration/subsystems/jaxrs.xml</subsystem>
-      <subsystem supplement="full">configuration/subsystems/jca.xml</subsystem>
+      <subsystem>configuration/subsystems/jca.xml</subsystem>
       <subsystem>configuration/subsystems/jdr.xml</subsystem>
       <subsystem>configuration/subsystems/jmx.xml</subsystem>
       <subsystem>configuration/subsystems/jpa.xml</subsystem>
