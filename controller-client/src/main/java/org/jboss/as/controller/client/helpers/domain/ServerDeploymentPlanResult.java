@@ -46,8 +46,6 @@ public interface ServerDeploymentPlanResult {
      * Gets the result of a {@link DeploymentAction} action associated with
      * the deployment set plan.
      *
-     * @param deploymentAction the id of the action
-     *
      * @return the result
      */
     Map<UUID, ServerUpdateResult> getDeploymentActionResults();

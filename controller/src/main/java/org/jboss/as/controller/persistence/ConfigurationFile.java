@@ -191,7 +191,7 @@ public class ConfigurationFile {
      * returns its name with the prefix removed.
      *
      * @param prefix the prefix
-     * @return the single file that meets the criteriaor {@code null} if none do
+     * @return the single file that meets the criterion {@code null} if none do
      * @throws IllegalStateException if more than one file meets the criteria
      */
     private String findMainFileFromSnapshotPrefix(final String prefix) {

@@ -42,7 +42,7 @@ public final class IronJacamarXmlDescriptor implements Serializable {
 
     /**
      * Create a new RaXmlDescriptor.
-     * @param resourceAdapters
+     * @param ironJacamar
      */
     public IronJacamarXmlDescriptor(IronJacamar ironJacamar) {
         super();

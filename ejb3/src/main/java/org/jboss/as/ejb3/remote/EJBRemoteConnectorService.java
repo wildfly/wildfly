@@ -100,7 +100,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
         final ServiceContainer serviceContainer = context.getController().getServiceContainer();
         final ServiceController streamServerServiceController = serviceContainer.getRequiredService(this.remotingConnectorServiceName);
         final AbstractStreamServerService streamServerService = (AbstractStreamServerService) streamServerServiceController.getService();
-        // we can only work off a remoting connector which is backed by a socketbinding
+        // we can only work off a remoting connector which is backed by a socket binding
         if (streamServerService instanceof InjectedSocketBindingStreamServerService) {
             this.remotingServer = (InjectedSocketBindingStreamServerService) streamServerService;
         }
@@ -244,12 +244,12 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
                         final DeploymentRepository deploymentRepository = EJBRemoteConnectorService.this.deploymentRepositoryInjectedValue.getValue();
                         final RegistryCollector<String, List<ClientMapping>> clientMappingRegistryCollector = EJBRemoteConnectorService.this.clusterRegistryCollector.getValue();
                         // populate the client-mapping cache which will be used for getting the client-mapping(s)
-                        // of each node's EJB remoting connector's socketbinding. The population the cache is done lazily
+                        // of each node's EJB remoting connector's socket binding. The population the cache is done lazily
                         // to handle the case where the cache service isn't started until the EJBs accessing that cache are
                         // deployed. The populate method is smart enough to populate the cache only once even if invoked multiple
                         // times
                         //EJBRemoteConnectorService.this.populateClientMappingsCache(serviceContainer);
-                        // the registry will be available when the clustering subsytem is present, so get the value optionally
+                        // the registry will be available when the clustering subsystem is present, so get the value optionally
                         final VersionOneProtocolChannelReceiver receiver = new VersionOneProtocolChannelReceiver(channel, deploymentRepository,
                                 EJBRemoteConnectorService.this.ejbRemoteTransactionsRepositoryInjectedValue.getValue(), clientMappingRegistryCollector,
                                 marshallerFactory, executorService.getValue());

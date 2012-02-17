@@ -30,7 +30,6 @@ import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.process.ProcessMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
-import org.jboss.as.protocol.mgmt.ManagementRequestHandlerFactory;
 import org.jboss.dmr.ModelNode;
 
 /**

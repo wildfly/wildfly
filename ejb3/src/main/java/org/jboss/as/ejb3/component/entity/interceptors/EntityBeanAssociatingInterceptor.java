@@ -62,7 +62,7 @@ public class EntityBeanAssociatingInterceptor extends AbstractEJBInterceptor {
 
             if (instance.isRemoved()) {
                 component.getCache().release(instance, true);
-                throw MESSAGES.instaceWasRemoved(component.getComponentName(), primaryKey);
+                throw MESSAGES.instanceWasRemoved(component.getComponentName(), primaryKey);
             }
         } catch (javax.ejb.NoSuchEntityException e) {
             //if this is a timer service invocation we throw a special exception

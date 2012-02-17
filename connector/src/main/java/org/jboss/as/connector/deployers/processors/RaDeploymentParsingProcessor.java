@@ -73,7 +73,7 @@ public class RaDeploymentParsingProcessor implements DeploymentUnitProcessor {
         if (file == null || !file.exists())
             return;
 
-        final String deploymentRootName = file.getLowerCaseName();
+        final String deploymentRootName = file.getName().toLowerCase();
         if (!deploymentRootName.endsWith(".rar")) {
             return;
         }

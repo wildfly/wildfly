@@ -300,7 +300,7 @@ abstract class AbstractOperationContext implements OperationContext {
             }
         } while (currentStage != Stage.DONE);
 
-        // All steps are completed withuout triggering rollback; time for final processing
+        // All steps are completed without triggering rollback; time for final processing
 
         // Prepare persistence of any configuration changes
         ConfigurationPersister.PersistenceResource persistenceResource = null;

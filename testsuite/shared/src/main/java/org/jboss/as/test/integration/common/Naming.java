@@ -30,12 +30,10 @@ import javax.naming.NamingException;
 public class Naming {
     public static <T> T lookup(final String name, final Class<T> cls) throws NamingException {
         InitialContext ctx = new InitialContext();
-        try
-        {
+        try {
            return cls.cast(ctx.lookup(name));
         }
-        finally
-        {
+        finally {
            ctx.close();
         }
     }

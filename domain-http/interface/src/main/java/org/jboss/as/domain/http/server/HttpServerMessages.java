@@ -160,7 +160,7 @@ public interface HttpServerMessages {
     String realmReadinessFilter();
 
     /**
-     * The description for the {@link SubjectAssociationHandler}.
+     * The description for the {@link org.jboss.as.domain.http.server.security.SubjectAssociationHandler}.
      *
      * @return the description.
      */

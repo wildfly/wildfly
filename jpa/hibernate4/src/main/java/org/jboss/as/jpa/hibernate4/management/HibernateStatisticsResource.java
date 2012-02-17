@@ -267,8 +267,8 @@ public class HibernateStatisticsResource extends PlaceholderResource.Placeholder
         boolean result = false;
         final Statistics stats = getStatistics();
         if (stats != null) {
-            final String emtityName = element.getValue();
-            result = stats.getEntityStatistics(emtityName) != null;
+            final String entityName = element.getValue();
+            result = stats.getEntityStatistics(entityName) != null;
         }
         return result;
     }

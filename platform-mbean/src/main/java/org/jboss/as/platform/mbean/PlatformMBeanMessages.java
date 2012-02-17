@@ -23,7 +23,6 @@
 package org.jboss.as.platform.mbean;
 
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.dmr.ModelType;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
@@ -53,7 +52,7 @@ public interface PlatformMBeanMessages {
     @Message(id = 12300, value = "No known attribute %s")
     OperationFailedException unknownAttribute(String attributeName);
 
-    @Message(id = 12301, value = "A platform mbean resource does not have a writeable model")
+    @Message(id = 12301, value = "A platform mbean resource does not have a writable model")
     UnsupportedOperationException modelNotWritable();
 
     @Message(id = 12302, value = "Adding child resources is not supported")

@@ -105,7 +105,7 @@ public class MailSessionService implements Service<Session> {
         try {
             destinationAddress = binding.getDestinationAddress();
         } catch (UnknownHostException uhe) {
-            throw MailMessages.MESSAGES.unknownOutboundSocketBindingDesintation(uhe, ref);
+            throw MailMessages.MESSAGES.unknownOutboundSocketBindingDestination(uhe, ref);
         }
         return new InetSocketAddress(destinationAddress, binding.getDestinationPort());
     }

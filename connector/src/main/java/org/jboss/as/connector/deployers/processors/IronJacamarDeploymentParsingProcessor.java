@@ -67,7 +67,7 @@ public class IronJacamarDeploymentParsingProcessor implements DeploymentUnitProc
         if (deploymentRoot == null || !deploymentRoot.exists())
             return;
 
-        final String deploymentRootName = deploymentRoot.getLowerCaseName();
+        final String deploymentRootName = deploymentRoot.getName().toLowerCase();
         VirtualFile serviceXmlFile = null;
         if (deploymentRootName.endsWith(".rar")) {
             serviceXmlFile = deploymentRoot.getChild("/META-INF/ironjacamar.xml");

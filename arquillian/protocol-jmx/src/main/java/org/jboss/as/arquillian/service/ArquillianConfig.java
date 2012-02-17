@@ -115,22 +115,22 @@ class ArquillianConfig implements Service<ArquillianConfig> {
             throw new ClassNotFoundException("Class '" + className + "' not found in: " + testClasses);
 
         Module module = depUnit.getAttachment(Attachments.MODULE);
-        Deployment osgidep = OSGiDeploymentAttachment.getDeployment(depUnit);
-        if (module == null && osgidep == null)
+        Deployment osgiDep = OSGiDeploymentAttachment.getDeployment(depUnit);
+        if (module == null && osgiDep == null)
             throw new IllegalStateException("Cannot determine deployment type: " + depUnit);
-        if (module != null && osgidep != null)
+        if (module != null && osgiDep != null)
             throw new IllegalStateException("Found MODULE attachment for Bundle deployment: " + depUnit);
 
         Class<?> testClass;
-        if (osgidep != null) {
-            Bundle bundle = osgidep.getAttachment(Bundle.class);
+        if (osgiDep != null) {
+            Bundle bundle = osgiDep.getAttachment(Bundle.class);
             testClass = bundle.loadClass(className);
             BundleAssociation.setBundle(bundle);
         } else {
             testClass = module.getClassLoader().loadClass(className);
         }
 
-        // Always make the MSC artefacts available
+        // Always make the MSC artifacts available
         ServiceTargetAssociation.setServiceTarget(serviceTarget);
         ServiceContainerAssociation.setServiceContainer(serviceContainer);
 

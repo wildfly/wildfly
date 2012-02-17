@@ -79,12 +79,10 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDCONNE
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDCONNECTIONCHECKER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.WRAP_XA_RESOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCECLASS;
-import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCE_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_RESOURCE_TIMEOUT;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.controller.OperationContext;
@@ -167,9 +165,9 @@ class DataSourceModelNodeUtil {
         final Long queryTimeout = getLongIfSetOrGetDefault(operationContext, dataSourceNode, QUERYTIMEOUT, null);
         final Integer xaResourceTimeout = getIntIfSetOrGetDefault(operationContext, dataSourceNode, XA_RESOURCE_TIMEOUT, null);
         final Long useTryLock = getLongIfSetOrGetDefault(operationContext, dataSourceNode, USETRYLOCK, null);
-        final boolean setTxQuertTimeout = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, SETTXQUERYTIMEOUT, Defaults.SET_TX_QUERY_TIMEOUT);
+        final boolean setTxQueryTimeout = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, SETTXQUERYTIMEOUT, Defaults.SET_TX_QUERY_TIMEOUT);
         final TimeOut timeOut = new TimeOutImpl(blockingTimeoutMillis, idleTimeoutMinutes, allocationRetry,
-                allocationRetryWaitMillis, xaResourceTimeout, setTxQuertTimeout, queryTimeout, useTryLock);
+                allocationRetryWaitMillis, xaResourceTimeout, setTxQueryTimeout, queryTimeout, useTryLock);
         final TransactionIsolation transactionIsolation = dataSourceNode.hasDefined(TRANSACTION_ISOLATION.getName()) ? TransactionIsolation
                 .valueOf(dataSourceNode.get(TRANSACTION_ISOLATION.getName()).asString()) : null;
         final String checkValidConnectionSql = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, CHECKVALIDCONNECTIONSQL, null);
@@ -246,9 +244,9 @@ class DataSourceModelNodeUtil {
         final Long queryTimeout = getLongIfSetOrGetDefault(operationContext, dataSourceNode, QUERYTIMEOUT, null);
         final Integer xaResourceTimeout = getIntIfSetOrGetDefault(operationContext, dataSourceNode, XA_RESOURCE_TIMEOUT, null);
         final Long useTryLock = getLongIfSetOrGetDefault(operationContext, dataSourceNode, USETRYLOCK, null);
-        final Boolean setTxQuertTimeout = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, SETTXQUERYTIMEOUT, Defaults.SET_TX_QUERY_TIMEOUT);
+        final Boolean setTxQueryTimeout = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, SETTXQUERYTIMEOUT, Defaults.SET_TX_QUERY_TIMEOUT);
         final TimeOut timeOut = new TimeOutImpl(blockingTimeoutMillis, idleTimeoutMinutes, allocationRetry,
-                allocationRetryWaitMillis, xaResourceTimeout, setTxQuertTimeout, queryTimeout, useTryLock);
+                allocationRetryWaitMillis, xaResourceTimeout, setTxQueryTimeout, queryTimeout, useTryLock);
         final TransactionIsolation transactionIsolation = dataSourceNode.hasDefined(TRANSACTION_ISOLATION.getName()) ? TransactionIsolation
                 .valueOf(dataSourceNode.get(TRANSACTION_ISOLATION.getName()).asString()) : null;
         final String checkValidConnectionSql = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, CHECKVALIDCONNECTIONSQL, null);

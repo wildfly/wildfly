@@ -776,7 +776,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case IGNORED_RESOURCE: {
-                    parseIgnoredResoure(reader, address, expectedNs, list, types);
+                    parseIgnoredResource(reader, address, expectedNs, list, types);
                     break;
                 }
                 default:
@@ -844,7 +844,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
         list.add(update);
     }
 
-    private void parseIgnoredResoure(final XMLExtendedStreamReader reader, final ModelNode address,
+    private void parseIgnoredResource(final XMLExtendedStreamReader reader, final ModelNode address,
             Namespace expectedNs, final List<ModelNode> list, final Set<String> foundTypes) throws XMLStreamException {
 
         ModelNode op = new ModelNode();

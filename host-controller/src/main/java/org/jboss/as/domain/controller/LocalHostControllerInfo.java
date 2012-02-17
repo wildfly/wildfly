@@ -105,7 +105,7 @@ public interface LocalHostControllerInfo {
      * Gets the port of the remote domain controller
      * @return the port number
      */
-    int getRemoteDomainControllertPort();
+    int getRemoteDomainControllerPort();
 
     /**
      * Gets the current state of the host controller process.

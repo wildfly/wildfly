@@ -37,7 +37,6 @@ import org.apache.tomcat.util.buf.CharChunk;
 import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.http.MimeHeaders;
 import org.jboss.as.web.WebLogger;
-import org.jboss.logging.Logger;
 
 import javax.security.auth.Subject;
 import javax.security.auth.message.AuthException;

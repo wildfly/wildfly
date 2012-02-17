@@ -23,9 +23,6 @@
 package org.jboss.as.jaxr.extension;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.dmr.ModelNode;
 
 /**
  * Handler responsible for removing the subsystem resource to the model

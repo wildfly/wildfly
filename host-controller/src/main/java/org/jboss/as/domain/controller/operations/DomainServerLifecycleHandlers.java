@@ -86,11 +86,11 @@ public class DomainServerLifecycleHandlers {
         registration.registerOperationHandler(RestartServersLifecycleHandler.OPERATION_NAME, RestartServersLifecycleHandler.SERVER_GROUP_INSTANCE, RestartServersLifecycleHandler.SERVER_GROUP_INSTANCE);
     }
 
-    private abstract static class AbstractHackLifecyleHandler implements OperationStepHandler, DescriptionProvider {
+    private abstract static class AbstractHackLifecycleHandler implements OperationStepHandler, DescriptionProvider {
         volatile ServerInventory serverInventory;
         final boolean domain;
 
-        protected AbstractHackLifecyleHandler(final boolean domain) {
+        protected AbstractHackLifecycleHandler(final boolean domain) {
             this.domain = domain;
         }
 
@@ -126,7 +126,7 @@ public class DomainServerLifecycleHandlers {
 
     }
 
-    private static class StopServersLifecycleHandler extends AbstractHackLifecyleHandler {
+    private static class StopServersLifecycleHandler extends AbstractHackLifecycleHandler {
         static final String OPERATION_NAME = STOP_SERVERS_NAME;
         static final StopServersLifecycleHandler DOMAIN_INSTANCE = new StopServersLifecycleHandler(true);
         static final StopServersLifecycleHandler SERVER_GROUP_INSTANCE = new StopServersLifecycleHandler(false);
@@ -165,7 +165,7 @@ public class DomainServerLifecycleHandlers {
         }
     }
 
-    private static class StartServersLifecycleHandler extends AbstractHackLifecyleHandler {
+    private static class StartServersLifecycleHandler extends AbstractHackLifecycleHandler {
         static final String OPERATION_NAME = START_SERVERS_NAME;
         static final StartServersLifecycleHandler DOMAIN_INSTANCE = new StartServersLifecycleHandler(true);
         static final StartServersLifecycleHandler SERVER_GROUP_INSTANCE = new StartServersLifecycleHandler(false);
@@ -212,7 +212,7 @@ public class DomainServerLifecycleHandlers {
         }
     }
 
-    private static class RestartServersLifecycleHandler extends AbstractHackLifecyleHandler {
+    private static class RestartServersLifecycleHandler extends AbstractHackLifecycleHandler {
         static final String OPERATION_NAME = RESTART_SERVERS_NAME;
         static final RestartServersLifecycleHandler DOMAIN_INSTANCE = new RestartServersLifecycleHandler(true);
         static final RestartServersLifecycleHandler SERVER_GROUP_INSTANCE = new RestartServersLifecycleHandler(false);

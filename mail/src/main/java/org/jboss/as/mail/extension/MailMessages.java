@@ -60,6 +60,6 @@ interface MailMessages {
      * @param outgoingSocketBindingRef the name of the socket binding configuration.
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 15451, value = "Unknwon host for outbound socket binding configuration '%s'.")
-    RuntimeException unknownOutboundSocketBindingDesintation(@Cause UnknownHostException cause, String outgoingSocketBindingRef);
+    @Message(id = 15451, value = "Unknown host for outbound socket binding configuration '%s'.")
+    RuntimeException unknownOutboundSocketBindingDestination(@Cause UnknownHostException cause, String outgoingSocketBindingRef);
 }

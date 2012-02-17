@@ -111,11 +111,11 @@ public class DataSourceDisable implements OperationStepHandler {
 
                         for (ServiceName name : serviceNames) {
                             if (dataSourceConfigServiceName.append("connection-properties").isParentOf(name)) {
-                                final ServiceController<?> connProperyController = registry.getService(name);
+                                final ServiceController<?> connPropertyController = registry.getService(name);
 
-                                if (connProperyController != null) {
-                                    if (ServiceController.State.UP.equals(connProperyController.getState())) {
-                                        connProperyController.setMode(ServiceController.Mode.NEVER);
+                                if (connPropertyController != null) {
+                                    if (ServiceController.State.UP.equals(connPropertyController.getState())) {
+                                        connPropertyController.setMode(ServiceController.Mode.NEVER);
                                     } else {
                                         throw new OperationFailedException(new ModelNode().set(MESSAGES.serviceAlreadyStarted("Data-source.connectionProperty", name)));
                                     }
@@ -124,11 +124,11 @@ public class DataSourceDisable implements OperationStepHandler {
                                 }
                             }
                             if (xaDataSourceConfigServiceName.append("xa-datasource-properties").isParentOf(name)) {
-                                final ServiceController<?> xaConfigProperyController = registry.getService(name);
+                                final ServiceController<?> xaConfigPropertyController = registry.getService(name);
 
-                                if (xaConfigProperyController != null) {
-                                    if (ServiceController.State.UP.equals(xaConfigProperyController.getState())) {
-                                        xaConfigProperyController.setMode(ServiceController.Mode.NEVER);
+                                if (xaConfigPropertyController != null) {
+                                    if (ServiceController.State.UP.equals(xaConfigPropertyController.getState())) {
+                                        xaConfigPropertyController.setMode(ServiceController.Mode.NEVER);
                                     } else {
                                         throw new OperationFailedException(new ModelNode().set(MESSAGES.serviceAlreadyStarted("Data-source.xa-config-property", name)));
                                     }

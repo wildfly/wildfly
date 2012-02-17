@@ -132,7 +132,7 @@ public class AnnotationImpl implements Annotation {
                        clazz = clazz.getSuperclass();
                     }
                 }
-            } else { // onclass
+            } else { // onClass
                 Class<?> clazz = cl.loadClass(className);
                 return clazz.getAnnotation(annotationClass);
             }

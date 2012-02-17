@@ -55,7 +55,7 @@ class ModuleStructureSpec {
         systemDependencies.add(dependency);
     }
 
-    public List<DependencySpec> getSytemDependencies() {
+    public List<DependencySpec> getSystemDependencies() {
         return Collections.unmodifiableList(systemDependencies);
     }
 

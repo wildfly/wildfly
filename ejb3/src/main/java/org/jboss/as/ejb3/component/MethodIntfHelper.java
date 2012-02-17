@@ -31,7 +31,7 @@ public class MethodIntfHelper {
     // centralize this hack
     public static MethodIntf of(final InterceptorContext invocation) {
         //for timer invocations there is no view, so the methodInf is attached directly
-        //to the context. Otherwise we retrive it from the invoked view
+        //to the context. Otherwise we retrieve it from the invoked view
         MethodIntf methodIntf = invocation.getPrivateData(MethodIntf.class);
         if (methodIntf == null) {
             final ComponentView componentView = invocation.getPrivateData(ComponentView.class);

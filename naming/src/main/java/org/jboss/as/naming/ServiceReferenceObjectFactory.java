@@ -28,7 +28,6 @@ import java.util.Hashtable;
 
 import javax.naming.Context;
 import javax.naming.Name;
-import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.spi.ObjectFactory;
 
@@ -37,7 +36,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceNotFoundException;
 import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.ServiceController.State;
 
 

@@ -25,7 +25,7 @@ package org.jboss.as.ejb3.component.messagedriven;
 import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.component.EJBComponentCreateServiceFactory;
-import org.jboss.as.ejb3.component.stateless.StatelessSessionComponentCreateService;
+
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**

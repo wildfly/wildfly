@@ -58,7 +58,7 @@ implements DescriptionProvider {
     /**
      * Constructor for a master Host Controller
      *
-     * @param repository the master content repository. If {@code null} this handler will function as a slave hander would.
+     * @param repository the master content repository. If {@code null} this handler will function as a slave handler would.
      */
     public DeploymentUploadURLHandler(final ContentRepository repository) {
         super(repository);

@@ -23,7 +23,6 @@
 package org.jboss.as.naming;
 
 import javax.naming.Binding;
-import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.NameClassPair;
 import javax.naming.NamingException;

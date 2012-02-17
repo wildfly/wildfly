@@ -77,8 +77,6 @@ public interface JaxrsMessages {
     /**
      * A message indicating the incorrect mapping config.
      *
-     * @param sb a builder with application classes.
-     *
      * @return the message.
      */
     @Message(id = 11233, value = "Please use either @ApplicationPath or servlet mapping for url path config.")

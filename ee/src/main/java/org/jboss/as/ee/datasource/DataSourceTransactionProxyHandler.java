@@ -38,7 +38,7 @@ import javax.transaction.TransactionSynchronizationRegistry;
  * Proxy handler that automatically enlists XA resources returned from a datasource.
  * <p/>
  * If getConnection() is called and the datasource is an XA datasource then getXAConnection() is called
- * instead and the resource is enlised in the transaction
+ * instead and the resource is enlisted in the transaction
  *
  * @author Stuart Douglas
  */
@@ -61,16 +61,16 @@ public class DataSourceTransactionProxyHandler implements InvocationHandler {
     public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
         if (method.getName().equals("getConnection") && method.getParameterTypes().length == 0 && delegate instanceof XADataSource) {
             final XADataSource xa = (XADataSource) delegate;
-            final XAConnection xacon = xa.getXAConnection();
+            final XAConnection xaConn = xa.getXAConnection();
             final Object transactionKey = synchronizationRegistry.getTransactionKey();
             if (!registeredTransactions.contains(transactionKey)) {
                 if (transactionManager.getTransaction() != null && transactionActive(transactionManager.getTransaction().getStatus())) {
-                    transactionManager.getTransaction().enlistResource(xacon.getXAResource());
+                    transactionManager.getTransaction().enlistResource(xaConn.getXAResource());
                     synchronizationRegistry.registerInterposedSynchronization(new Sync(transactionKey));
                     registeredTransactions.add(transactionKey);
                 }
             }
-            return xacon.getConnection();
+            return xaConn.getConnection();
         } else {
             final Object ret = method.invoke(delegate, args);
             return ret;

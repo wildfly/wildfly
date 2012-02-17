@@ -231,7 +231,7 @@ public class OperationDialog extends JDialog {
          * Constructor used for resource name property.
          * @param name Property name
          * @param description Description for tool tip text.
-         * @param isRequired Is this a isRequired property?
+         * @param required Is this a isRequired property?
          */
         public RequestProp(String name, String description, boolean required) {
             this.name = name;

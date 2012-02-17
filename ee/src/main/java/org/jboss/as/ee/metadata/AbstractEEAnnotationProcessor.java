@@ -62,7 +62,7 @@ public abstract class AbstractEEAnnotationProcessor implements DeploymentUnitPro
     }
 
     /**
-     * Method that can be overriden to do any additional processing
+     * Method that can be overridden to do any additional processing
      * @param phaseContext The phase context
      * @param deploymentUnit The deployment unit
      */

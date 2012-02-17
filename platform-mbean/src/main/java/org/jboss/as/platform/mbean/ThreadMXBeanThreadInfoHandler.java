@@ -78,6 +78,6 @@ public class ThreadMXBeanThreadInfoHandler implements OperationStepHandler, Desc
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return PlatformMBeanDescriptions.getGetThreadInfoDescripton(locale);
+        return PlatformMBeanDescriptions.getGetThreadInfoDescription(locale);
     }
 }

@@ -24,18 +24,9 @@ package org.jboss.as.security;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SubsystemRegistration;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
@@ -43,18 +34,6 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import static org.jboss.as.security.Constants.AUDIT_MANAGER_CLASS_NAME;
-import static org.jboss.as.security.Constants.AUTHENTICATION_MANAGER_CLASS_NAME;
-import static org.jboss.as.security.Constants.AUTHORIZATION_MANAGER_CLASS_NAME;
-import static org.jboss.as.security.Constants.DEEP_COPY_SUBJECT_MODE;
-import static org.jboss.as.security.Constants.DEFAULT_CALLBACK_HANDLER_CLASS_NAME;
-import static org.jboss.as.security.Constants.IDENTITY_TRUST_MANAGER_CLASS_NAME;
-import static org.jboss.as.security.Constants.MAPPING_MANAGER_CLASS_NAME;
-import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
-import static org.jboss.as.security.Constants.SECURITY_PROPERTIES;
-import static org.jboss.as.security.Constants.SUBJECT_FACTORY_CLASS_NAME;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceName;
 
 /**

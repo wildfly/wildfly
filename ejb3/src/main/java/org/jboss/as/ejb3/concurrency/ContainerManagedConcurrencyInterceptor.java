@@ -26,7 +26,6 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
 
-import javax.ejb.ConcurrentAccessTimeoutException;
 import javax.ejb.LockType;
 import javax.interceptor.InvocationContext;
 import java.lang.reflect.Method;

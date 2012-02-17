@@ -123,7 +123,7 @@ public abstract class AbstractOperationTestCase {
             return null;
         }
 
-        public int getRemoteDomainControllertPort() {
+        public int getRemoteDomainControllerPort() {
             return 0;
         }
 

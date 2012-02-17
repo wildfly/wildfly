@@ -41,7 +41,7 @@ import org.jboss.modules.ModuleLoader;
  * DUP that handles app client dependencies.
  *
  * This DUP is quite unusual, as it will also remove dependencies if they refer to
- * dependencies that are not accisible to the application client. This allows a server
+ * dependencies that are not accessible to the application client. This allows a server
  * side deployment to reference another module, while still allowing the app client to
  * function when that additional deployment is not present.
  *

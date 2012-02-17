@@ -19,13 +19,9 @@
 package org.jboss.as.controller.operations.common;
 
 
-import java.util.Locale;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import org.jboss.as.controller.descriptions.common.SocketBindingGroupDescription;
-import org.jboss.dmr.ModelNode;
 
 /**
  * Handler for the socket-binding resource's remove operation.

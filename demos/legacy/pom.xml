@@ -214,11 +214,11 @@
                     </goals>
                     <phase>package</phase>
                     <configuration>
-                        <tasks>
+                        <target>
                             <ant antfile="build.xml"  inheritRefs="true">
                                 <target name="example"/>
                             </ant>
-                        </tasks>
+                        </target>
                     </configuration>
                 </execution>
             </executions>

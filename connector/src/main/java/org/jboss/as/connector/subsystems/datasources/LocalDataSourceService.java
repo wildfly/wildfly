@@ -22,7 +22,6 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.value.InjectedValue;

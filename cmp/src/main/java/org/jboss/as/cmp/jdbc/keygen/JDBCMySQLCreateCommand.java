@@ -33,7 +33,6 @@ import org.jboss.as.cmp.jdbc.JDBCIdentityColumnCreateCommand;
 import org.jboss.as.cmp.jdbc.JDBCStoreManager;
 import org.jboss.as.cmp.jdbc.JDBCUtil;
 import org.jboss.as.cmp.jdbc.metadata.JDBCEntityCommandMetaData;
-import org.jboss.logging.Logger;
 
 /**
  * Create command for MySQL that uses the driver's getGeneratedKeys method
@@ -44,7 +43,6 @@ import org.jboss.logging.Logger;
  * @version $Revision: 81030 $
  */
 public class JDBCMySQLCreateCommand extends JDBCIdentityColumnCreateCommand {
-    private static final Logger log = Logger.getLogger(JDBCMySQLCreateCommand.class);
     private String className;
     private String methodName;
     private Method method;
@@ -55,7 +53,7 @@ public class JDBCMySQLCreateCommand extends JDBCIdentityColumnCreateCommand {
         ClassLoader loader = GetTCLAction.getContextClassLoader();
         try {
             Class psClass = loader.loadClass(className);
-            method = psClass.getMethod(methodName, null);
+            method = psClass.getMethod(methodName);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("Could not load driver class: " + className, e);
         } catch (NoSuchMethodException e) {
@@ -64,7 +62,7 @@ public class JDBCMySQLCreateCommand extends JDBCIdentityColumnCreateCommand {
 
         try {
             Class wrapperClass = loader.loadClass("org.jboss.resource.adapter.jdbc.StatementAccess");
-            getUnderlyingStatement = wrapperClass.getMethod("getUnderlyingStatement", null);
+            getUnderlyingStatement = wrapperClass.getMethod("getUnderlyingStatement");
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("Could not load org.jboss.resource.adapter.jdbc.StatementAccess", e);
         } catch (NoSuchMethodException e) {
@@ -106,7 +104,7 @@ public class JDBCMySQLCreateCommand extends JDBCIdentityColumnCreateCommand {
 
         ResultSet rs = null;
         try {
-            rs = (ResultSet) method.invoke(stmt, null);
+            rs = (ResultSet) method.invoke(stmt);
             if (!rs.next()) {
                 throw new EJBException("getGeneratedKeys returned an empty ResultSet");
             }

@@ -153,7 +153,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         //setup IIOP related stuff
         //This goes here rather than in EJB3IIOPAdd as it affects the server when it is acting as an iiop client
         //setup our dynamic stub factory
-        DelegatingStubFactoryFactory.setOverridenDynamicFactory(new DynamicStubFactoryFactory());
+        DelegatingStubFactoryFactory.setOverriddenDynamicFactory(new DynamicStubFactoryFactory());
 
         //setup the substitution service, that translates between ejb proxies and IIOP stubs
         final RemoteObjectSubstitutionService substitutionService = new RemoteObjectSubstitutionService();
@@ -288,7 +288,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         if (!appclient) {
             final EJBUtilities utilities = new EJBUtilities();
             newControllers.add(serviceTarget.addService(EJBUtilities.SERVICE_NAME, utilities)
-                    .addDependency(ConnectorServices.RA_REPOSISTORY_SERVICE, ResourceAdapterRepository.class, utilities.getResourceAdapterRepositoryInjector())
+                    .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class, utilities.getResourceAdapterRepositoryInjector())
                     .addDependency(SimpleSecurityManagerService.SERVICE_NAME, SimpleSecurityManager.class, utilities.getSecurityManagerInjector())
                     .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class, utilities.getTransactionManagerInjector())
                     .addDependency(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY, TransactionSynchronizationRegistry.class, utilities.getTransactionSynchronizationRegistryInjector())
@@ -309,7 +309,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     private void addRemoteInvocationServices(final OperationContext context, final List<ServiceController<?>> newControllers,
-                                             final ModelNode ejbSubsytemModel, final boolean appclient) throws OperationFailedException {
+                                             final ModelNode ejbSubsystemModel, final boolean appclient) throws OperationFailedException {
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
         // Add the tccl based client context selector
@@ -329,7 +329,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         if (!appclient) {
             // get the node name
             final String nodeName = SecurityActions.getSystemProperty(ServerEnvironment.NODE_NAME);
-            //the default spec compliant EJB reciever
+            //the default spec compliant EJB receiver
             final LocalEjbReceiver byValueLocalEjbReceiver = new LocalEjbReceiver(nodeName, false);
             newControllers.add(serviceTarget.addService(LocalEjbReceiver.BY_VALUE_SERVICE_NAME, byValueLocalEjbReceiver)
                     .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, byValueLocalEjbReceiver.getDeploymentRepository())
@@ -344,7 +344,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                     .install());
 
             // setup the default local ejb receiver service
-            EJBRemoteInvocationPassByValueWriteHandler.INSTANCE.updateDefaultLocalEJBReceiverService(context, ejbSubsytemModel, newControllers);
+            EJBRemoteInvocationPassByValueWriteHandler.INSTANCE.updateDefaultLocalEJBReceiverService(context, ejbSubsystemModel, newControllers);
             // add the default local ejb receiver to the client context
             clientContextServiceBuilder.addDependency(LocalEjbReceiver.DEFAULT_LOCAL_EJB_RECEIVER_SERVICE_NAME, LocalEjbReceiver.class, clientContextService.getDefaultLocalEJBReceiverInjector());
         }

@@ -25,7 +25,6 @@ package org.jboss.as.cmp.jdbc;
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.util.Collection;
-import javax.crypto.KeyGenerator;
 import javax.ejb.RemoveException;
 import javax.sql.DataSource;
 import org.jboss.as.cmp.CmpConfig;

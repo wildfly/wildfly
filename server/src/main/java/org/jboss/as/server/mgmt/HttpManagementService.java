@@ -27,7 +27,6 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.domain.http.server.ConsoleMode;
 import org.jboss.as.domain.http.server.ManagementHttpServer;

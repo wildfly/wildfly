@@ -47,7 +47,7 @@ public class DistributedCacheAdd extends SharedStateCacheAdd {
      * Implementation of abstract method processModelNode suitable for distributed cache
      *
      * @param cache
-     * @param configuration
+     * @param builder
      * @param dependencies
      * @return
      */

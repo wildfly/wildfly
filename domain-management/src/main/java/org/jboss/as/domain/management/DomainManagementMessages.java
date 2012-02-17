@@ -185,7 +185,7 @@ public interface DomainManagementMessages {
     String jbossHomeNotSet();
 
     /**
-     * A message indicating no mgmt-users.properties have been foun.
+     * A message indicating no mgmt-users.properties have been found.
      *
      * @return a {@link String} for the message.
      */
@@ -430,7 +430,7 @@ public interface DomainManagementMessages {
     /**
      * Creates an IllegalArgumentException indicating that a value can not be null.
      *
-     * @param name - The name of the paramter that can not be null.
+     * @param name - The name of the parameter that can not be null.
      * @return an {@link IllegalArgumentException} for the error.
      */
     @Message(id = 15248, value = "'%s' can not be null.")
@@ -459,7 +459,7 @@ public interface DomainManagementMessages {
     String filePrompt();
 
     /**
-     * Propmpt the user for the roles to add the user to
+     * Prompt the user for the roles to add the user to
      * @return
      */
     @Message(value = "What roles do you want this user to belong to? (Please enter a comma separated list, or leave blank for none)")

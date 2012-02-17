@@ -88,7 +88,7 @@ public class KernelServices {
 
     /**
      * Validates the operation against the description providers in the model controller
-     * @param operations the operations to validate
+     * @param operation the operation to validate
      * @throws AssertionFailedError if the operation is not valid
      */
     public void validateOperation(ModelNode operation) {

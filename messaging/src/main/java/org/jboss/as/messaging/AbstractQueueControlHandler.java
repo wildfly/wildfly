@@ -378,7 +378,7 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
                 context.getResult().set(control.listConsumersAsJSON());
             } else {
                 // TODO LIST_MESSAGE_COUNTER, LIST_MESSAGE_COUNTER_HISTORY, LIST_CONSUMERS
-                handback = handleAdditonalOperation(operationName, operation, context, control.getDelegate());
+                handback = handleAdditionalOperation(operationName, operation, context, control.getDelegate());
                 reversible = handback == null;
             }
         } catch (RuntimeException e) {
@@ -394,7 +394,7 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
                 } else if (RESUME.equals(operationName)) {
                     control.pause();
                 } else {
-                    revertAdditonalOperation(operationName, operation, context, control.getDelegate(), handback);
+                    revertAdditionalOperation(operationName, operation, context, control.getDelegate(), handback);
                 }
             } catch (Exception e) {
                 ROOT_LOGGER.revertOperationFailed(e, getClass().getSimpleName(),
@@ -406,11 +406,11 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
 
     protected abstract DelegatingQueueControl<T> getQueueControl(HornetQServer hqServer, String queueName);
 
-    protected abstract Object handleAdditonalOperation(final String operationName, final ModelNode operation,
-                                                     final OperationContext context, T queueControl) throws OperationFailedException;
+    protected abstract Object handleAdditionalOperation(final String operationName, final ModelNode operation,
+                                                        final OperationContext context, T queueControl) throws OperationFailedException;
 
-    protected abstract void revertAdditonalOperation(final String operationName, final ModelNode operation,
-                                                     final OperationContext context, T queueControl, Object handback);
+    protected abstract void revertAdditionalOperation(final String operationName, final ModelNode operation,
+                                                      final OperationContext context, T queueControl, Object handback);
 
     protected abstract boolean isJMS();
 

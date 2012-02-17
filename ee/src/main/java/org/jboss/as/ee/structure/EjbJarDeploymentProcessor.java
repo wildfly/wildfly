@@ -46,7 +46,7 @@ import org.jboss.vfs.VirtualFile;
 public class EjbJarDeploymentProcessor implements DeploymentUnitProcessor {
 
     private static final DotName STATELESS = DotName.createSimple("javax.ejb.Stateless");
-    private static final DotName STATEFULL = DotName.createSimple("javax.ejb.Stateful");
+    private static final DotName STATEFUL = DotName.createSimple("javax.ejb.Stateful");
     private static final DotName MESSAGE_DRIVEN = DotName.createSimple("javax.ejb.MessageDriven");
     private static final DotName SINGLETON = DotName.createSimple("javax.ejb.Singleton");
 
@@ -80,7 +80,7 @@ public class EjbJarDeploymentProcessor implements DeploymentUnitProcessor {
             } else {
                 final Index index = resourceRoot.getAttachment(Attachments.ANNOTATION_INDEX);
                 if (index != null) {
-                    if (!index.getAnnotations(STATEFULL).isEmpty() ||
+                    if (!index.getAnnotations(STATEFUL).isEmpty() ||
                             !index.getAnnotations(STATELESS).isEmpty() ||
                             !index.getAnnotations(MESSAGE_DRIVEN).isEmpty() ||
                             !index.getAnnotations(SINGLETON).isEmpty()) {

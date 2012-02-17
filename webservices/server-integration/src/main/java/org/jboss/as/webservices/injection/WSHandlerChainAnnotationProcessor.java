@@ -149,13 +149,13 @@ public final class WSHandlerChainAnnotationProcessor implements DeploymentUnitPr
             try {
                 classURI = new URI(annotatedClassName.replace('.', '/'));
             } catch (final URISyntaxException ignore) {}
-            final String handlerChaingConfigFileResourcePath = classURI.resolve(handlerChainConfigFile).toString();
-            final VirtualFile config = resourceRoot.getRoot().getChild(handlerChaingConfigFileResourcePath);
+            final String handlerChainConfigFileResourcePath = classURI.resolve(handlerChainConfigFile).toString();
+            final VirtualFile config = resourceRoot.getRoot().getChild(handlerChainConfigFileResourcePath);
             if (config.exists() && config.isFile()) {
                 return config.openStream();
             }
 
-            throw MESSAGES.missingHandlerChainConfigFile(handlerChaingConfigFileResourcePath, resourceRoot);
+            throw MESSAGES.missingHandlerChainConfigFile(handlerChainConfigFileResourcePath, resourceRoot);
         }
     }
 

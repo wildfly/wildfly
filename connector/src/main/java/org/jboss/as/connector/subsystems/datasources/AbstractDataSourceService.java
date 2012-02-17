@@ -156,7 +156,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
         return driverValue;
     }
 
-    public Injector<ManagementRepository> getmanagementRepositoryInjector() {
+    public Injector<ManagementRepository> getManagementRepositoryInjector() {
         return managementRepositoryValue;
     }
 

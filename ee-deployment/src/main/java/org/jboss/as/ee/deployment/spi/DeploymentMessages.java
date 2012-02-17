@@ -30,7 +30,6 @@ import org.jboss.logging.Messages;
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.Target;
-import javax.enterprise.deploy.spi.TargetModuleID;
 import java.io.File;
 import java.net.URI;
 
@@ -81,7 +80,7 @@ public interface DeploymentMessages {
     String moduleTypeNotSupported(ModuleType type);
 
     @Message(id = 16162, value = "Deployment plan does not contain entry: %s")
-    String deployementPlanDoesNotContainEntry(String entryname);
+    String deploymentPlanDoesNotContainEntry(String entryName);
 
     @Message(id = 16163, value = "Opaque deployment URI not implemented")
     String opaqueDeploymentUriNotImplemented();

@@ -34,7 +34,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 /**
- * User: jpai
+ * @author Jaikiran Pai
  */
 public class JMSAdminOperations {
 
@@ -125,6 +125,9 @@ public class JMSAdminOperations {
 
     }
 
+    /**
+     * JMSAdminOperationException
+     */
     private class JMSAdminOperationException extends Exception {
 
         JMSAdminOperationException(final String msg, final Throwable cause) {

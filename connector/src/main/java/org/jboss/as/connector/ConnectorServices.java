@@ -85,9 +85,9 @@ public final class ConnectorServices {
      */
     public static final ServiceName IRONJACAMAR_MDR = ServiceName.JBOSS.append("ironjacamar", "mdr");
 
-    public static final ServiceName RA_REPOSISTORY_SERVICE = ServiceName.JBOSS.append("rarepository");
+    public static final ServiceName RA_REPOSITORY_SERVICE = ServiceName.JBOSS.append("rarepository");
 
-    public static final ServiceName MANAGEMENT_REPOSISTORY_SERVICE = ServiceName.JBOSS.append("management_repository");
+    public static final ServiceName MANAGEMENT_REPOSITORY_SERVICE = ServiceName.JBOSS.append("management_repository");
 
     public static final ServiceName RESOURCEADAPTERS_SERVICE = ServiceName.JBOSS.append("resourceadapters");
 
@@ -272,7 +272,7 @@ public final class ConnectorServices {
         // adapter elements (with different configs) in the resource adapter subsystem, all pointing to the same ra archive.
         // The ServiceName for the first activation of a RA with raName *will always* be of the form:
         // RESOURCE_ADAPTER_SERVICE_PREFIX.append(raName).
-        // Any subsequent activations for the same raname will have a numeric identifier appended to the service name
+        // Any subsequent activations for the same raName will have a numeric identifier appended to the service name
         // as follows:
         // RESOURCE_ADAPTER_SERVICE_PREFIX.append(raName).append(RA_SERVICE_NAME_SEPARATOR).append(<numeric-id>)
 

@@ -196,9 +196,9 @@ public interface JDBCResultSetReader {
         }
 
         protected Object coerceToJavaType(Object value, Class<?> destination) {
-            // make new copy as sub types have problems in comparions
+            // make new copy as sub types have problems in comparisons
             java.util.Date result;
-            // handle timestamp special becauses it hoses the milisecond values
+            // handle timestamp special because it hoses the millisecond values
             if (value instanceof java.sql.Timestamp) {
                 java.sql.Timestamp ts = (java.sql.Timestamp) value;
                 // Timestamp returns whole seconds from getTime and partial

@@ -31,7 +31,7 @@ import org.jboss.as.clustering.web.SessionAttributeMarshaller;
 import static org.jboss.as.clustering.web.impl.ClusteringWebMessages.MESSAGES;
 
 /**
- * Session attribute marshaller that marshals attribute values using a {@link SimpleCachableMarshalledValue}.
+ * Session attribute marshaller that marshals attribute values using a {@link SimpleMarshalledValue}.
  *
  * @author Paul Ferraro
  */
@@ -45,7 +45,7 @@ public class SessionAttributeMarshallerImpl implements SessionAttributeMarshalle
     /**
      * {@inheritDoc}
      *
-     * @see org.jboss.web.tomcat.service.session.distributedcache.spi.SessionAttributeMarshaller#marshal(java.lang.Object)
+     * @see org.jboss.as.clustering.web.SessionAttributeMarshaller#marshal(Object)
      */
     @Override
     public Object marshal(Object value) throws IOException {
@@ -61,7 +61,7 @@ public class SessionAttributeMarshallerImpl implements SessionAttributeMarshalle
     /**
      * {@inheritDoc}
      *
-     * @see org.jboss.web.tomcat.service.session.distributedcache.spi.SessionAttributeMarshaller#unmarshal(java.lang.Object)
+     * @see org.jboss.as.clustering.web.SessionAttributeMarshaller#unmarshal(Object)
      */
     @Override
     public Object unmarshal(Object object) throws IOException, ClassNotFoundException {

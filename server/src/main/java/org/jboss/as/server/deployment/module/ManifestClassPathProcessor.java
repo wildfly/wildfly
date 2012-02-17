@@ -176,7 +176,7 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
             //as class path entries are exported, transitive dependencies will also be available
             target.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES, moduleSpecification.getModuleIdentifier());
         } else if (subDeployments.containsKey(classPathFile)) {
-            //now we need to calculate the sub deployment module identifer
+            //now we need to calculate the sub deployment module identifier
             //unfortunately the sub deployment has not been setup yet, so we cannot just
             //get it from the sub deployment directly
             final ResourceRoot otherRoot = subDeployments.get(classPathFile);

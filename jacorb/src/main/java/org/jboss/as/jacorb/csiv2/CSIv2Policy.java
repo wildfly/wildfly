@@ -51,7 +51,7 @@ public class CSIv2Policy extends LocalObject implements Policy {
 
     /**
      * <p>
-     * Creates an instance of {@code CSIv2Policy} with the specified tagged compoonents.
+     * Creates an instance of {@code CSIv2Policy} with the specified tagged components.
      * </p>
      *
      * @param sslTaggedComponent a {@code TaggedComponent} that contains the encoded SSL info.

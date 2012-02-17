@@ -101,7 +101,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
             throw ServerMessages.MESSAGES.noModuleIdentifier(deploymentUnit.getName());
         }
 
-        // create the module servce and set it to attach to the deployment in the next phase
+        // create the module service and set it to attach to the deployment in the next phase
         final ServiceName moduleServiceName = createModuleService(phaseContext, deploymentUnit, resourceRoots, moduleSpecification,
                 moduleIdentifier);
         phaseContext.addDeploymentDependency(moduleServiceName, Attachments.MODULE);
@@ -154,7 +154,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
 
         installAliases(moduleSpecification, moduleIdentifier, deploymentUnit, phaseContext);
 
-        // add aditional resource loaders first
+        // add additional resource loaders first
         for (final ResourceLoaderSpec resourceLoaderSpec : moduleSpecification.getResourceLoaders()) {
             logger.debug("Adding resource loader " + resourceLoaderSpec + " to module " + moduleIdentifier);
             specBuilder.addResourceRoot(resourceLoaderSpec);

@@ -18,7 +18,7 @@ import org.jboss.resteasy.util.GetRestful;
 import static org.jboss.as.jaxrs.JaxrsLogger.JAXRS_LOGGER;
 
 /**
- * Integrate's JAX-RS with other component types such as managed beans and EJB's
+ * Integrates JAX-RS with other component types such as managed beans and EJB's
  * <p/>
  * This is not needed if beans.xml is present, as in this case the integration is handed by the more general
  * integration with CDI.

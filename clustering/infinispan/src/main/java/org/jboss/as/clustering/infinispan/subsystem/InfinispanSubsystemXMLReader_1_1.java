@@ -132,7 +132,7 @@ public class InfinispanSubsystemXMLReader_1_1 implements XMLElementReader<List<M
         }
 
         /*
-          AS7-3488 make default-cache a non-required attribiute
+          AS7-3488 make default-cache a non-required attribute
         if ((name == null) || !container.hasDefined(ModelKeys.DEFAULT_CACHE)) {
             throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.NAME, Attribute.DEFAULT_CACHE));
         }

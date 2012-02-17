@@ -74,7 +74,6 @@ import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
-import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.repository.RemoteFileRequestAndHandler.CannotCreateLocalDirectoryException;
@@ -181,7 +180,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
                     throw MESSAGES.connectionToMasterTimeout(e, retries, timeout);
                 }
                 try {
-                    HostControllerLogger.ROOT_LOGGER.cannotConnect(localHostInfo.getRemoteDomainControllerHost(), localHostInfo.getRemoteDomainControllertPort());
+                    HostControllerLogger.ROOT_LOGGER.cannotConnect(localHostInfo.getRemoteDomainControllerHost(), localHostInfo.getRemoteDomainControllerPort());
                     ReconnectPolicy.CONNECT.wait(retries);
                 } catch (InterruptedException ie) {
                     throw MESSAGES.connectionToMasterInterrupted();
@@ -262,7 +261,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
 
             // Gather the required information to connect to the remote DC
             final ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
-            configuration.setUri(new URI("remote://" + NetworkUtils.formatPossibleIpv6Address(localHostInfo.getRemoteDomainControllerHost()) + ":" + localHostInfo.getRemoteDomainControllertPort()));
+            configuration.setUri(new URI("remote://" + NetworkUtils.formatPossibleIpv6Address(localHostInfo.getRemoteDomainControllerHost()) + ":" + localHostInfo.getRemoteDomainControllerPort()));
             configuration.setEndpoint(endpointInjector.getValue());
 
             final SecurityRealm realm = securityRealmInjector.getOptionalValue();

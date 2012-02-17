@@ -40,7 +40,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 /**
- * Configration util.
+ * Configuration util.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */

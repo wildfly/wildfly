@@ -42,7 +42,7 @@ import org.omg.PortableServer.Servant;
 import org.omg.PortableServer.ServantRetentionPolicyValue;
 
 /**
- * Registry that maintains 2 different servant resistries
+ * Registry that maintains 2 different servant registries
  * <p/>
  * <ul>
  * <li>a <code>ServantRegistry</code> with a transient POA per servant;</li>

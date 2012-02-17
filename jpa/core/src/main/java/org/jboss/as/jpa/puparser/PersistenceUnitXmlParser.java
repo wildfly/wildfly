@@ -144,7 +144,7 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
     private static PersistenceUnitMetadata parsePU(XMLStreamReader reader, Version version) throws XMLStreamException {
         PersistenceUnitMetadata pu = new PersistenceUnitMetadataImpl();
         List<String> classes = new ArrayList<String>(1);
-        List<String> jarfiles = new ArrayList<String>(1);
+        List<String> jarFiles = new ArrayList<String>(1);
         List<String> mappingFiles = new ArrayList<String>(1);
         Properties properties = new Properties();
 
@@ -212,7 +212,7 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
 
                 case JARFILE:
                     String file = reader.getElementText();
-                    jarfiles.add(file);
+                    jarFiles.add(file);
                     break;
 
                 case JTADATASOURCE:
@@ -253,7 +253,7 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
             JPA_LOGGER.trace("parse persistence.xml: reached ending persistence-unit tag");
         }
         pu.setManagedClassNames(classes);
-        pu.setJarFiles(jarfiles);
+        pu.setJarFiles(jarFiles);
         pu.setMappingFiles(mappingFiles);
         pu.setProperties(properties);
         return pu;

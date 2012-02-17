@@ -28,7 +28,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.weld.bootstrap.api.SingletonProvider;
-import org.jboss.weld.bootstrap.api.helpers.TCCLSingletonProvider;
 
 /**
  * Service that manages the weld {@link SingletonProvider}

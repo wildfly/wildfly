@@ -31,7 +31,6 @@ import java.util.Locale;
 
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;

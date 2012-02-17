@@ -27,8 +27,8 @@ import java.util.List;
  * EntityBridge follows the Bridge pattern [Gamma et. al, 1995].
  * In this implementation of the pattern the Abstract is the entity bean class,
  * and the RefinedAbstraction is the entity bean dynamic proxy. This interface
- * can be considered the implementor. Each imlementation of the CMPStoreManager
- * should create a store specifiec implementaion of the bridge.
+ * can be considered the implementor. Each implementation of the CMPStoreManager
+ * should create a store specific implementation of the bridge.
  * <p/>
  * Life-cycle:
  * Undefined. Should be tied to CMPStoreManager.

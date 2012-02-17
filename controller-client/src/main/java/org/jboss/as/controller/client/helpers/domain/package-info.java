@@ -22,7 +22,7 @@
 
 /**
  * Convenience API built on top of the {@link org.jboss.as.controller.client.ModelControllerClient core management API}
- * to make it easier to perform common managment tasks against a JBoss Application Server Managed Domain.
+ * to make it easier to perform common management tasks against a JBoss Application Server Managed Domain.
  *
  * @see DomainClient
  */

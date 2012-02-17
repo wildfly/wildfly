@@ -93,7 +93,7 @@ public interface EjbMessages {
      * @return a {@link IllegalArgumentException} for the error.
      */
     @Message(id = 14302, value = "Method name cannot be null")
-    IllegalArgumentException methodeNameIsNull();
+    IllegalArgumentException methodNameIsNull();
 
     /**
      * Creates an exception indicating the bean home interface was not set
@@ -166,7 +166,7 @@ public interface EjbMessages {
      * Creates an exception indicating the NamespaceContextSelector was not set
      *
      * @param name the jndi name
-     * @param e    cause of the exeception
+     * @param e    cause of the exception
      *
      * @return a {@link RuntimeException} for the error.
      */
@@ -189,7 +189,7 @@ public interface EjbMessages {
      *
      * @param namespaceContextSelector
      * @param jndiContext              the jndi context it was looked up on
-     * @param ne                       cause of the exeception
+     * @param ne                       cause of the exception
      *
      * @return a {@link IllegalArgumentException} for the error.
      */
@@ -468,7 +468,7 @@ public interface EjbMessages {
      * @return a {@link NoSuchEJBException} for the error.
      */
     @Message(id = 14344, value = "Instance of %s with primary key %s has been removed")
-    NoSuchEntityException instaceWasRemoved(String componentName, Object primaryKey);
+    NoSuchEntityException instanceWasRemoved(String componentName, Object primaryKey);
 
     /**
      * Creates an exception indicating unexpected component
@@ -1641,7 +1641,7 @@ public interface EjbMessages {
 
     /**
      * Creates an exception indicating Method for view shouldn't be
-     * marked for both @PemitAll and @DenyAll at the same time
+     * marked for both @PermitAll and @DenyAll at the same time
      *
      * @return an {@link IllegalStateException} for the error.
      */

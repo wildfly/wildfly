@@ -302,7 +302,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
 
     /**
      * <p>
-     * Parses the ORB {@code connection} section of the JacORB susbsytem configuration.
+     * Parses the ORB {@code connection} section of the JacORB subsystem configuration.
      * </p>
      *
      * @param reader the {@code XMLExtendedStreamReader} used to read the configuration XML.
@@ -410,7 +410,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
 
     /**
      * <p>
-     * Parses the {@code naming} section of the JacORB susbsytem configuration.
+     * Parses the {@code naming} section of the JacORB subsystem configuration.
      * </p>
      *
      * @param reader the {@code XMLExtendedStreamReader} used to read the configuration XML.
@@ -522,7 +522,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
 
     /**
      * <p>
-     * Parses the {@code properties} section of the JacORB subssytem configuration.
+     * Parses the {@code properties} section of the JacORB subsystem configuration.
      * </p>
      *
      * @param reader the {@code XMLExtendedStreamReader} used to read the configuration XML.
@@ -727,10 +727,10 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
 
         boolean writeORB = this.isWritable(node, JacORBSubsystemDefinitions.ORB_ATTRIBUTES);
         boolean writeORBConnection = this.isWritable(node, JacORBSubsystemDefinitions.ORB_CONN_ATTRIBUTES);
-        boolean writeORBInitialzers = this.isWritable(node, JacORBSubsystemDefinitions.ORB_INIT_ATTRIBUTES);
+        boolean writeORBInitializer = this.isWritable(node, JacORBSubsystemDefinitions.ORB_INIT_ATTRIBUTES);
 
         // if no connection or initializers properties are available, just write the orb properties (if any) in an empty element.
-        if (!writeORBConnection && !writeORBInitialzers) {
+        if (!writeORBConnection && !writeORBInitializer) {
             if (writeORB) {
                 writer.writeEmptyElement(JacORBSubsystemConstants.ORB);
                 this.writeAttributes(writer, node, JacORBSubsystemDefinitions.ORB_ATTRIBUTES);
@@ -744,7 +744,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
                 writer.writeEmptyElement(JacORBSubsystemConstants.ORB_CONN);
                 this.writeAttributes(writer, node, JacORBSubsystemDefinitions.ORB_CONN_ATTRIBUTES);
             }
-            if (writeORBInitialzers) {
+            if (writeORBInitializer) {
                 writer.writeEmptyElement(JacORBSubsystemConstants.ORB_INIT);
                 this.writeAttributes(writer, node, JacORBSubsystemDefinitions.ORB_INIT_ATTRIBUTES);
             }

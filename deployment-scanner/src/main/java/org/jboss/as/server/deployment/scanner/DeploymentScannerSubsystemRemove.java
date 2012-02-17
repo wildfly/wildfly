@@ -22,15 +22,8 @@
 
 package org.jboss.as.server.deployment.scanner;
 
-import java.util.Locale;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.dmr.ModelNode;
-
-import static org.jboss.as.server.deployment.scanner.DeploymentScannerMessages.MESSAGES;
 
 /**
  * Handles the addition of the deployment scanning subsystem.

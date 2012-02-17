@@ -123,8 +123,6 @@ abstract class AbstractMetaDataBuilderEJB {
      *
      * @param wsEjbsMD
      *            jboss agnostic EJBs meta data
-     * @param jbossEjbMD
-     *            jboss specific EJB meta data
      */
     protected void buildEnterpriseBeanMetaData(final List<EJBMetaData> wsEjbsMD, final EJBEndpoint ejbEndpoint, final JBossWebservicesMetaData jbossWebservicesMD) {
         final EJBMetaData wsEjbMD = new SLSBMetaData();

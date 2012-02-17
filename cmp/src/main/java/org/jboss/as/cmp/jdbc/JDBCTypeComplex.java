@@ -74,7 +74,7 @@ public final class JDBCTypeComplex implements JDBCType {
             jdbcTypes[i] = property.getJDBCType();
             sqlTypes[i] = property.getSQLType();
             notNull[i] = property.isNotNull();
-            resultSetReaders[i] = property.getResulSetReader();
+            resultSetReaders[i] = property.getResultSetReader();
             paramSetters[i] = property.getParameterSetter();
             propertiesByName.put(property.getPropertyName(), property);
         }

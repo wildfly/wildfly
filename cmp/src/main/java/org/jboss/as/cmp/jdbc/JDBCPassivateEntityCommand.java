@@ -26,7 +26,7 @@ import org.jboss.as.cmp.context.CmpEntityBeanContext;
 
 /**
  * JDBCPassivateEntityCommand deletes the entity persistence context,
- * where data about the instence is keeps.
+ * where data about the instance is keeps.
  *
  * @author <a href="mailto:dain@daingroup.com">Dain Sundstrom</a>
  * @author <a href="mailto:rickard.oberg@telkel.com">Rickard Oberg</a>

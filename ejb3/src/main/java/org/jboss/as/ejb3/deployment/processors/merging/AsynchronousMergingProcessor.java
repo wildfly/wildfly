@@ -61,7 +61,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
- * Merging processor that handles EJB asyn methods, and adds a configurator to configure any that are found.
+ * Merging processor that handles EJB async methods, and adds a configurator to configure any that are found.
  *
  * @author Stuart Douglas
  */
@@ -97,9 +97,9 @@ public class AsynchronousMergingProcessor extends AbstractMergingProcessor<Sessi
         if (data != null) {
             if (data instanceof SessionBean31MetaData) {
                 final SessionBean31MetaData sessionBeanData = (SessionBean31MetaData) data;
-                final AsyncMethodsMetaData asyn = sessionBeanData.getAsyncMethods();
-                if (asyn != null) {
-                    for (AsyncMethodMetaData method : asyn) {
+                final AsyncMethodsMetaData async = sessionBeanData.getAsyncMethods();
+                if (async != null) {
+                    for (AsyncMethodMetaData method : async) {
                         final Collection<Method> methods = MethodResolutionUtils.resolveMethods(method.getMethodName(), method.getMethodParams(), componentClass, deploymentReflectionIndex);
                         for(final Method m : methods ) {
                             description.addAsynchronousMethod(MethodIdentifier.getIdentifierForMethod(m));

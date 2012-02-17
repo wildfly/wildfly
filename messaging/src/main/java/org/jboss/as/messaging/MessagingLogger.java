@@ -99,7 +99,7 @@ public interface MessagingLogger extends BasicLogger {
 
     /**
      * Logs an error message indicating the class, represented by the {@code className} parameter, caught an exception
-     * attempting to revert the operation, represented by the {@code operation} parameter, at the address, respresented
+     * attempting to revert the operation, represented by the {@code operation} parameter, at the address, represented
      * by the {@code address} parameter.
      *
      * @param cause     the cause of the error.

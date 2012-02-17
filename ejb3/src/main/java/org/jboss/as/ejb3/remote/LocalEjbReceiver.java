@@ -119,7 +119,7 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
         paramConfig.setClassCloner(new ClassLoaderClassCloner(ejb.getDeploymentClassLoader()));
         final ObjectCloner parameterCloner = ObjectCloners.getSerializingObjectClonerFactory().createCloner(paramConfig);
 
-        //TODO: this is not very efficent
+        //TODO: this is not very efficient
         final Method method = view.getMethod(invocation.getInvokedMethod().getName(), DescriptorUtils.methodDescriptor(invocation.getInvokedMethod()));
 
         final boolean async = view.isAsynchronous(method);

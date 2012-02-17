@@ -22,7 +22,7 @@
 
 /**
  * Convenience API built on top of the {@link org.jboss.as.controller.client.ModelControllerClient core management API}
- * to make it easier to perform common managment tasks against a single standalone JBoss Application Server instance.
+ * to make it easier to perform common management tasks against a single standalone JBoss Application Server instance.
  *
  * @see org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager
  */

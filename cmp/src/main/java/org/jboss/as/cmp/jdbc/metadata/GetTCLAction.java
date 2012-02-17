@@ -26,7 +26,7 @@ import java.security.PrivilegedAction;
 
 /**
  * @author Scott.Stark@jboss.org
- * @version $Revison:$
+ * @version $Revision:$
  */
 public class GetTCLAction implements PrivilegedAction {
     static PrivilegedAction ACTION = new GetTCLAction();

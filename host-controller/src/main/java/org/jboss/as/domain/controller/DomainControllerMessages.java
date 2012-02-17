@@ -515,11 +515,11 @@ public interface DomainControllerMessages {
     IllegalStateException deploymentHashNotFoundInRepository(String hash);
 
     /**
-     * Creates an exception indicating the hash does not refer to any deployment.
+     * Creates an exception indicating an unexpected number of deployments.
      *
-     * @param hash the invalid hash.
+     * @param i number of deployments found
      *
-     * @return an {@link IllegalArgumentException} for the error.
+     * @return an {@link IllegalStateException} for the error.
      */
     @Message(id = 15874, value = "Expected only one deployment, found %d")
     IllegalStateException expectedOnlyOneDeployment(int i);

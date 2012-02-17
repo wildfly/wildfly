@@ -268,7 +268,7 @@ public class LsHandler extends CommandHandlerWithHelp {
                                                     buf.append(prop.getName());
                                                     buf.append('=');
                                                     buf.append(prop.getValue().asString());
-// TODO the value should be formatted nicer but the current fomatter uses new lines for complex value which doesn't work here
+// TODO the value should be formatted nicer but the current formatter uses new lines for complex value which doesn't work here
 //                                                    final ModelNode value = prop.getValue();
 //                                                    ModelNodeFormatter.Factory.forType(value.getType()).format(buf, 0, value);
                                                     typeNames.add(buf.toString());

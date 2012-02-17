@@ -31,7 +31,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 
 /**
- * Responsible for setting up a {@link EJBRemoteTransactionPropogatingInterceptor} for a (remote) view.
+ * Responsible for setting up a {@link EJBRemoteTransactionPropagatingInterceptor} for a (remote) view.
  * This view configurator does <i>not</i> check whether the view is remote or not. It's the responsibility
  * of whoever sets up this view configurator to make sure that the view being configured is a remote view
  *
@@ -42,10 +42,10 @@ public class EJBRemoteTransactionsViewConfigurator implements ViewConfigurator {
     @Override
     public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration,
                           final ViewDescription viewDescription, final ViewConfiguration viewConfiguration) throws DeploymentUnitProcessingException {
-        // setup a view interceptor which propogates remote transactions. This interceptor
+        // setup a view interceptor which propagates remote transactions. This interceptor
         // should appear before the CMT/BMT interceptors so that the latter interceptors know about any existing
         // tx for the invocation
-        viewConfiguration.addViewInterceptor(EJBRemoteTransactionPropogatingInterceptorFactory.INSTANCE, InterceptorOrder.View.REMOTE_TRANSACTION_PROPOGATION_INTERCEPTOR);
+        viewConfiguration.addViewInterceptor(EJBRemoteTransactionPropagatingInterceptorFactory.INSTANCE, InterceptorOrder.View.REMOTE_TRANSACTION_PROPAGATION_INTERCEPTOR);
 
     }
 }

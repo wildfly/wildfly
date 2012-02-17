@@ -466,7 +466,7 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
                     marshaller.finish();
                     return beanReferenceFactory.createReferenceWithId(stream.toByteArray(), beanRepositoryIds[0]);
                 }
-                throw new RuntimeException("Unkown locator type " + locator);
+                throw new RuntimeException("Unknown locator type " + locator);
             } else {
                 throw new IllegalArgumentException("Provided locator " + locator + " was not for EJB " + ejbComponent);
             }

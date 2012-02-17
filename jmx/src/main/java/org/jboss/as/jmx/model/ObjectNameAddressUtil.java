@@ -44,7 +44,7 @@ import org.jboss.as.controller.registry.Resource;
 class ObjectNameAddressUtil {
 
     private static final EscapedCharacter[] ESCAPED_KEY_CHARACTERS;
-    private static final EscapedCharacter[] ECAPED_VALUE_CHARACTERS;
+    private static final EscapedCharacter[] ESCAPED_VALUE_CHARACTERS;
     static {
         List<EscapedCharacter> keys = new ArrayList<EscapedCharacter>();
         List<EscapedCharacter> values = new ArrayList<EscapedCharacter>();
@@ -61,7 +61,7 @@ class ObjectNameAddressUtil {
         values.add(new EscapedCharacter(','));
 
         ESCAPED_KEY_CHARACTERS = keys.toArray(new EscapedCharacter[keys.size()]);
-        ECAPED_VALUE_CHARACTERS = keys.toArray(new EscapedCharacter[values.size()]);
+        ESCAPED_VALUE_CHARACTERS = keys.toArray(new EscapedCharacter[values.size()]);
     }
 
     static ObjectName createObjectName(final PathAddress pathAddress) {
@@ -80,7 +80,7 @@ class ObjectNameAddressUtil {
             }
             appendEscapedCharacter(ESCAPED_KEY_CHARACTERS, sb, element.getKey());
             sb.append("=");
-            appendEscapedCharacter(ECAPED_VALUE_CHARACTERS, sb, element.getValue());
+            appendEscapedCharacter(ESCAPED_VALUE_CHARACTERS, sb, element.getValue());
         }
         try {
             return ObjectName.getInstance(sb.toString());

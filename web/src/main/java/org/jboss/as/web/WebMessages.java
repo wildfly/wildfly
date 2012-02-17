@@ -146,7 +146,7 @@ public interface WebMessages {
     String invalidRelativeOrderingDuplicateName(String jar);
 
     @Message(id = 18035, value = "Unknown name declared in JAR: %s")
-    String invalidRelativeOrderingUnkownName(String jar);
+    String invalidRelativeOrderingUnknownName(String jar);
 
     @Message(id = 18036, value = "Relative ordering conflict with JAR: %s")
     String invalidRelativeOrderingConflict(String jar);
@@ -223,7 +223,7 @@ public interface WebMessages {
     @Message(id = 18060, value = "Exception acquiring ownership of %s")
     RuntimeException failAcquiringOwnership(String id, @Cause Throwable t);
 
-    @Message(id = 18061, value = "Interruped acquiring ownership of %s")
+    @Message(id = 18061, value = "Interrupted acquiring ownership of %s")
     RuntimeException interruptedAcquiringOwnership(String id, @Cause Throwable t);
 
     @Message(id = 18062, value = "Specified attribute cannot be replicated")
@@ -283,7 +283,7 @@ public interface WebMessages {
     @Message(id = 18080, value = "Standard expiration of session %s failed; switching to a brute force cleanup. Problem is %s")
     String bruteForceCleanup(String id, String t);
 
-    @Message(id = 18081, value = "Recieved notification for inactive session %s")
+    @Message(id = 18081, value = "Received notification for inactive session %s")
     String notificationForInactiveSession(String id);
 
     @Message(id = 18082, value = "Caught exception during brute force cleanup of unloaded session %s  Session will be removed from Manager but may still exist in distributed cache")
@@ -316,7 +316,7 @@ public interface WebMessages {
     @Message(id = 18091, value = "Exception storing session %s")
     String failedToStoreSession(String id);
 
-    @Message(id = 18092, value = "Exception sprocessing sessions")
+    @Message(id = 18092, value = "Exception processing sessions")
     String exceptionProcessingSessions();
 
     @Message(id = 18093, value = "Null real id")

@@ -153,8 +153,8 @@ public class WarJaccService extends JaccService<WarMetaData> {
         // Create the permissions
         for (PatternInfo info : patternMap.values()) {
             String qurl = info.getQualifiedPattern();
-            if (info.isOverriden) {
-                log.debugf("Dropping overriden pattern: " + info);
+            if (info.isOverridden) {
+                log.debugf("Dropping overridden pattern: " + info);
                 continue;
             }
 
@@ -215,9 +215,9 @@ public class WarJaccService extends JaccService<WarMetaData> {
             }
 
             // Create the unchecked permissions WebUserDataPermissions
-            Iterator<Map.Entry<String, Set<String>>> transportContraints = info.getTransportMethods();
-            while (transportContraints.hasNext()) {
-                Map.Entry<String, Set<String>> transportMethods = transportContraints.next();
+            Iterator<Map.Entry<String, Set<String>>> transportConstraints = info.getTransportMethods();
+            while (transportConstraints.hasNext()) {
+                Map.Entry<String, Set<String>> transportMethods = transportConstraints.next();
                 String transport = transportMethods.getKey();
                 Set<String> methods = transportMethods.getValue();
                 httpMethods = new String[methods.size()];
@@ -225,7 +225,7 @@ public class WarJaccService extends JaccService<WarMetaData> {
                 WebUserDataPermission wudp = new WebUserDataPermission(qurl, httpMethods, transport);
                 pc.addToUncheckedPolicy(wudp);
 
-                // If the transport is "NONE", then add an exlusive WebUserDataPermission
+                // If the transport is "NONE", then add an exclusive WebUserDataPermission
                 // with the url pattern and null
                 if ("NONE".equals(transport)) {
                     WebUserDataPermission wudp1 = new WebUserDataPermission(info.pattern, null);
@@ -493,7 +493,7 @@ public class WarJaccService extends JaccService<WarMetaData> {
         /**
          * Does a qualifying pattern match this pattern and make this pattern obsolete?
          */
-        boolean isOverriden;
+        boolean isOverridden;
 
         /**
          * A Security Constraint is missing an <auth-constraint/>
@@ -635,7 +635,7 @@ public class WarJaccService extends JaccService<WarMetaData> {
             if (qualifiers.contains(info) == false) {
                 // See if this pattern is matched by the qualifier
                 if (info.type == PREFIX && info.matches(this))
-                    isOverriden = true;
+                    isOverridden = true;
                 qualifiers.add(info);
             }
         }
@@ -702,8 +702,8 @@ public class WarJaccService extends JaccService<WarMetaData> {
             tmp.append(pattern);
             tmp.append(",type=");
             tmp.append(type);
-            tmp.append(",isOverriden=");
-            tmp.append(isOverriden);
+            tmp.append(",isOverridden=");
+            tmp.append(isOverridden);
             tmp.append(",qualifiers=");
             tmp.append(qualifiers);
             tmp.append("]");

@@ -104,7 +104,7 @@ public class WebExtension implements Extension {
         connectors.registerReadWriteAttribute(Constants.ENABLED, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN, true), Storage.CONFIGURATION);
         connectors.registerReadWriteAttribute(Constants.EXECUTOR, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
         connectors.registerReadWriteAttribute(Constants.MAX_CONNECTIONS, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
-        connectors.registerReadWriteAttribute(Constants.VIRTUAL_SERVER, null, new WriteAttributeHandlers.ListValidatatingHandler(new StringLengthValidator(1, false), true), Storage.CONFIGURATION);
+        connectors.registerReadWriteAttribute(Constants.VIRTUAL_SERVER, null, new WriteAttributeHandlers.ListValidatingHandler(new StringLengthValidator(1, false), true), Storage.CONFIGURATION);
         // connectors SSL part.
         final ManagementResourceRegistration ssl = connectors.registerSubModel(sslPath, WebSubsystemDescriptionProviders.SSL);
         ssl.registerOperationHandler(ADD, WebSSLAdd.INSTANCE, WebSSLAdd.INSTANCE, true);
@@ -127,7 +127,7 @@ public class WebExtension implements Extension {
         final ManagementResourceRegistration hosts = registration.registerSubModel(hostPath, WebSubsystemDescriptionProviders.VIRTUAL_SERVER);
         hosts.registerOperationHandler(ADD, WebVirtualHostAdd.INSTANCE, WebVirtualHostAdd.INSTANCE, false);
         hosts.registerOperationHandler(REMOVE, WebVirtualHostRemove.INSTANCE, WebVirtualHostRemove.INSTANCE, false);
-        hosts.registerReadWriteAttribute(Constants.ALIAS, null, new WriteAttributeHandlers. ListValidatatingHandler(new StringLengthValidator(1, false), true), Storage.CONFIGURATION);
+        hosts.registerReadWriteAttribute(Constants.ALIAS, null, new WriteAttributeHandlers.ListValidatingHandler(new StringLengthValidator(1, false), true), Storage.CONFIGURATION);
         // They excluded each other...
         hosts.registerReadWriteAttribute(Constants.ENABLE_WELCOME_ROOT, null, WriteEnableWelcomeRoot.INSTANCE, Storage.CONFIGURATION);
         hosts.registerReadWriteAttribute(Constants.DEFAULT_WEB_MODULE, null, WriteDefaultWebModule.INSTANCE, Storage.CONFIGURATION);
@@ -181,12 +181,12 @@ public class WebExtension implements Extension {
         WebConfigurationHandlerUtils.initJSPAttributes(jsp); // Register write attributes
         // configuration=resources
         final ManagementResourceRegistration resources = registration.registerSubModel(resourcesPath, WebSubsystemDescriptionProviders.STATIC_RESOURCES);
-        WebConfigurationHandlerUtils.initResourcesAttribtues(resources); // Register write attributes
+        WebConfigurationHandlerUtils.initResourcesAttributes(resources); // Register write attributes
         // configuration=container
         final ManagementResourceRegistration container = registration.registerSubModel(containerPath, WebSubsystemDescriptionProviders.CONTAINER);
         container.registerOperationHandler("add-mime", MimeMappingAdd.INSTANCE, MimeMappingAdd.INSTANCE, false);
         container.registerOperationHandler("remove-mime", MimeMappingRemove.INSTANCE, MimeMappingRemove.INSTANCE, false);
-        container.registerReadWriteAttribute(Constants.WELCOME_FILE, null, new WriteAttributeHandlers. ListValidatatingHandler(new StringLengthValidator(1, false), true), Storage.CONFIGURATION);
+        container.registerReadWriteAttribute(Constants.WELCOME_FILE, null, new WriteAttributeHandlers.ListValidatingHandler(new StringLengthValidator(1, false), true), Storage.CONFIGURATION);
 
         if (registerRuntimeOnly) {
             final ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(WebSubsystemDescriptionProviders.DEPLOYMENT);

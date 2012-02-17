@@ -551,7 +551,7 @@ public class PlatformMBeanDescriptions {
         return node;
     }
 
-    public static ModelNode getGetThreadInfoDescripton(Locale locale) {
+    public static ModelNode getGetThreadInfoDescription(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
         final ModelNode node = getThreadInfoOperation(bundle, PlatformMBeanConstants.GET_THREAD_INFO, PlatformMBeanConstants.THREADING);
@@ -570,7 +570,7 @@ public class PlatformMBeanDescriptions {
         return node;
     }
 
-    public static ModelNode getGetThreadInfosDescripton(Locale locale) {
+    public static ModelNode getGetThreadInfosDescription(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
         final ModelNode node = new ModelNode();
@@ -607,7 +607,7 @@ public class PlatformMBeanDescriptions {
         return node;
     }
 
-    public static ModelNode getDumpThreadsDescripton(Locale locale) {
+    public static ModelNode getDumpThreadsDescription(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
         final ModelNode node = new ModelNode();

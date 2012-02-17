@@ -127,7 +127,7 @@ public class VirtualServerTestCase extends AbstractMgmtTestBase {
         } catch (Exception e) {
             failed = true;
         }
-        assertTrue("Deployment also on defaul server. " , failed);
+        assertTrue("Deployment also on default server. " , failed);
 
         // undeploy form virtual server
         deployer.undeploy("vsdeployment");

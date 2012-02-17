@@ -51,7 +51,7 @@ public interface DeploymentPlanBuilder {
      * <code>{@link File#getName() file.getName()}</code>.
      * <p>
      * Note that this operation does not indicate the content should
-     * be deployed into the runtime. See {@link #andDeploy()}.
+     * be deployed into the runtime.
      *
      * @param file file containing the new content
      *
@@ -71,7 +71,7 @@ public interface DeploymentPlanBuilder {
      * <code>{@link URL#getPath() url.getPath()}</code>.
      * <p>
      * Note that this operation does not indicate the content should
-     * be deployed into the runtime. See {@link #andDeploy()}.
+     * be deployed into the runtime.
      *
      * @param url URL pointing to the new content
      *
@@ -90,7 +90,7 @@ public interface DeploymentPlanBuilder {
      * repository.
      * <p>
      * Note that this operation does not indicate the content should
-     * be deployed into the runtime. See {@link #andDeploy()}.
+     * be deployed into the runtime.
      *
      * @param name name that should be given to the new content
      * @param file file containing the new content
@@ -110,7 +110,7 @@ public interface DeploymentPlanBuilder {
      * repository.
      * <p>
      * Note that this operation does not indicate the content should
-     * be deployed into the runtime. See {@link #andDeploy()}.
+     * be deployed into the runtime.
      *
      * @param name name that should be given to the new content
      * @param url URL pointing to the new content
@@ -130,7 +130,7 @@ public interface DeploymentPlanBuilder {
      * should be added to the default content repository.
      * <p>
      * Note that this operation does not indicate the content should
-     * be deployed into the runtime. See {@link #andDeploy()}.
+     * be deployed into the runtime.
      *
      * @param name name that should be given to the new content
      * @param stream <code>InputStream</code> from which the new content should be read
@@ -151,7 +151,7 @@ public interface DeploymentPlanBuilder {
      * should be added to the content repository.
      * <p>
      * Note that this operation does not indicate the content should
-     * be deployed into the runtime. See {@link #andDeploy()}.
+     * be deployed into the runtime.
      *
      * @param name name that should be given to the new content to uniquely
      *             identify it within the domain's management system. Must be different from the
@@ -189,8 +189,8 @@ public interface DeploymentPlanBuilder {
      * content that was added as part of a previously executed plan to one or more
      * new server groups.
      *
-     * @param name name that uniquely identifies the deployment within
-     *             the domain's management system.
+     * @param uniqueName name that uniquely identifies the deployment within
+     *                   the domain's management system.
      * @throws IOException
      */
     AddDeploymentPlanBuilder add(String uniqueName) throws IOException;
@@ -227,8 +227,8 @@ public interface DeploymentPlanBuilder {
      * Indicates the specified deployment content should be deployed, replacing
      * the specified existing deployment.
      *
-     * @param replacement unique identifier of the content to deploy
-     * @param toReplace unique identifier of the currently deployed content to replace
+     * @param replacementDeploymentName unique identifier of the content to deploy
+     * @param toReplaceDeploymentName unique identifier of the currently deployed content to replace
      *
      * @return a builder that can continue building the overall deployment plan
      */

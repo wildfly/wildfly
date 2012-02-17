@@ -594,12 +594,12 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
                 continue; // This method is not mapped.
 
             // Calculate new IDL name
-            ParameterAnalysis[] parms = oa.getParameters();
+            ParameterAnalysis[] params = oa.getParameters();
             StringBuffer b = new StringBuffer(oa.getIDLName());
-            if (parms.length == 0)
+            if (params.length == 0)
                 b.append("__");
-            for (int j = 0; j < parms.length; ++j) {
-                String s = parms[j].getTypeIDLName();
+            for (int j = 0; j < params.length; ++j) {
+                String s = params[j].getTypeIDLName();
 
                 if (s.startsWith("::"))
                     s = s.substring(2);

@@ -27,7 +27,6 @@ import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 import org.jboss.as.ejb3.pool.AbstractPool;
 import org.jboss.as.ejb3.pool.StatelessObjectFactory;
 
-import javax.ejb.EJBException;
 import java.util.LinkedList;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;

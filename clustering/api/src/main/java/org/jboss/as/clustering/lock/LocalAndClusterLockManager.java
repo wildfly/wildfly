@@ -204,7 +204,7 @@ public class LocalAndClusterLockManager {
     }
 
     /**
-     * Removes this object from a state where it is ready for normal oepration and performs cleanup work.
+     * Removes this object from a state where it is ready for normal operation and performs cleanup work.
      *
      * @throws Exception
      */

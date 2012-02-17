@@ -120,7 +120,7 @@ public final class WebMetaDataHelper {
     }
 
     /**
-     * Gests servlets meta data from jboss web meta data. If not found it creates new servlets meta data and associates them
+     * Gets servlets meta data from jboss web meta data. If not found it creates new servlets meta data and associates them
      * with jboss web meta data.
      *
      * @param jbossWebMD jboss web meta data
@@ -138,7 +138,7 @@ public final class WebMetaDataHelper {
     }
 
     /**
-     * Gests servlet mappings meta data from jboss web meta data. If not found it creates new servlet mappings meta data and
+     * Gets servlet mappings meta data from jboss web meta data. If not found it creates new servlet mappings meta data and
      * associates them with jboss web meta data.
      *
      * @param jbossWebMD jboss web meta data
@@ -156,7 +156,7 @@ public final class WebMetaDataHelper {
     }
 
     /**
-     * Gests security constraints meta data from jboss web meta data. If not found it creates new security constraints meta data
+     * Gets security constraints meta data from jboss web meta data. If not found it creates new security constraints meta data
      * and associates them with jboss web meta data.
      *
      * @param jbossWebMD jboss web meta data
@@ -174,7 +174,7 @@ public final class WebMetaDataHelper {
     }
 
     /**
-     * Gests login config meta data from jboss web meta data. If not found it creates new login config meta data and associates
+     * Gets login config meta data from jboss web meta data. If not found it creates new login config meta data and associates
      * them with jboss web meta data.
      *
      * @param jbossWebMD jboss web meta data
@@ -192,7 +192,7 @@ public final class WebMetaDataHelper {
     }
 
     /**
-     * Gests context parameters meta data from jboss web meta data. If not found it creates new context parameters meta data and
+     * Gets context parameters meta data from jboss web meta data. If not found it creates new context parameters meta data and
      * associates them with jboss web meta data.
      *
      * @param jbossWebMD jboss web meta data
@@ -210,7 +210,7 @@ public final class WebMetaDataHelper {
     }
 
     /**
-     * Gests web resource collections meta data from security constraint meta data. If not found it creates new web resource
+     * Gets web resource collections meta data from security constraint meta data. If not found it creates new web resource
      * collections meta data and associates them with security constraint meta data.
      *
      * @param securityConstraintMD security constraint meta data
@@ -228,7 +228,7 @@ public final class WebMetaDataHelper {
     }
 
     /**
-     * Gests init parameters meta data from servlet meta data. If not found it creates new init parameters meta data and
+     * Gets init parameters meta data from servlet meta data. If not found it creates new init parameters meta data and
      * associates them with servlet meta data.
      *
      * @param servletMD servlet meta data

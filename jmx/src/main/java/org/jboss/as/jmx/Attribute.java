@@ -35,7 +35,7 @@ enum Attribute {
     SHOW_MODEL(CommonAttributes.SHOW_MODEL),
     SERVER_BINDING(CommonAttributes.SERVER_BINDING),
     REGISTRY_BINDING(CommonAttributes.REGISTRY_BINDING),
-    USE_MANAGEMENT_ENDPOINT(CommonAttributes.USE_MANAGMENT_ENDPOINT),
+    USE_MANAGEMENT_ENDPOINT(CommonAttributes.USE_MANAGEMENT_ENDPOINT),
     VALUE(CommonAttributes.VALUE)
     ;
     private final String name;

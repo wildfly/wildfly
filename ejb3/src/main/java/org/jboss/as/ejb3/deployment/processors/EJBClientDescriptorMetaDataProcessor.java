@@ -85,7 +85,7 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
                 final ServiceName localEjbReceiverServiceName = passByValue == true ? LocalEjbReceiver.BY_VALUE_SERVICE_NAME : LocalEjbReceiver.BY_REFERENCE_SERVICE_NAME;
                 serviceBuilder.addDependency(localEjbReceiverServiceName, LocalEjbReceiver.class, service.getLocalEjbReceiverInjector());
             } else {
-                // setup a dependency on the default local ejb receiver service configured at the subsytem level
+                // setup a dependency on the default local ejb receiver service configured at the subsystem level
                 serviceBuilder.addDependency(LocalEjbReceiver.DEFAULT_LOCAL_EJB_RECEIVER_SERVICE_NAME, LocalEjbReceiver.class, service.getLocalEjbReceiverInjector());
             }
         }

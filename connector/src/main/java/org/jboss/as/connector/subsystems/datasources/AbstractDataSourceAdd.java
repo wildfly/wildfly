@@ -83,8 +83,8 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                 .addService(dataSourceServiceName, dataSourceService)
                 .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class,
                         dataSourceService.getTransactionIntegrationInjector())
-                .addDependency(ConnectorServices.MANAGEMENT_REPOSISTORY_SERVICE, ManagementRepository.class,
-                        dataSourceService.getmanagementRepositoryInjector())
+                .addDependency(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, ManagementRepository.class,
+                        dataSourceService.getManagementRepositoryInjector())
                 .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
                         dataSourceService.getSubjectFactoryInjector())
                 .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class,

@@ -17,7 +17,7 @@ public class DelegatingStubFactoryFactory extends StubFactoryFactoryBase {
     private final PresentationManager.StubFactoryFactory staticFactory;
     private final PresentationManager.StubFactoryFactory dynamicFactory;
 
-    private static volatile PresentationManager.StubFactoryFactory overridenDynamicFactory;
+    private static volatile PresentationManager.StubFactoryFactory overriddenDynamicFactory;
 
     public DelegatingStubFactoryFactory() {
         staticFactory = new StubFactoryFactoryStaticImpl();
@@ -33,8 +33,8 @@ public class DelegatingStubFactoryFactory extends StubFactoryFactoryBase {
         } catch (Exception e) {
 
         }
-        if (overridenDynamicFactory != null) {
-            return overridenDynamicFactory.createStubFactory(className, isIDLStub, remoteCodeBase, expectedClass, classLoader);
+        if (overriddenDynamicFactory != null) {
+            return overriddenDynamicFactory.createStubFactory(className, isIDLStub, remoteCodeBase, expectedClass, classLoader);
 
         } else {
             return dynamicFactory.createStubFactory(className, isIDLStub, remoteCodeBase, expectedClass, classLoader);
@@ -57,11 +57,11 @@ public class DelegatingStubFactoryFactory extends StubFactoryFactoryBase {
         return true;
     }
 
-    public static PresentationManager.StubFactoryFactory getOverridenDynamicFactory() {
-        return overridenDynamicFactory;
+    public static PresentationManager.StubFactoryFactory getOverriddenDynamicFactory() {
+        return overriddenDynamicFactory;
     }
 
-    public static void setOverridenDynamicFactory(final PresentationManager.StubFactoryFactory overridenDynamicFactory) {
-        DelegatingStubFactoryFactory.overridenDynamicFactory = overridenDynamicFactory;
+    public static void setOverriddenDynamicFactory(final PresentationManager.StubFactoryFactory overriddenDynamicFactory) {
+        DelegatingStubFactoryFactory.overriddenDynamicFactory = overriddenDynamicFactory;
     }
 }

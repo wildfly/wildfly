@@ -27,8 +27,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.as.ejb3.tx.ApplicationExceptionDetails;
-
 /**
  * User: jpai
  */
@@ -57,7 +55,7 @@ public class ApplicationExceptions {
         if (applicationException == null) {
             throw new IllegalArgumentException("ApplicationException cannot be null");
         }
-        // EJB 3.1 sepc, section 14.1.1
+        // EJB 3.1 spec, section 14.1.1
         // application exception *must* be of type Exception
         if (!Exception.class.isAssignableFrom(exceptionClass)) {
             throw new IllegalArgumentException("[EJB 3.1 spec, section 14.1.1] Class: " + exceptionClass + " cannot be " +

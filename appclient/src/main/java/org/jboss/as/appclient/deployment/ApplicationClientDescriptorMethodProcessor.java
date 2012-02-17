@@ -42,7 +42,7 @@ import org.jboss.metadata.javaee.spec.LifecycleCallbacksMetaData;
 import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
 
 /**
- * Deployment descriptor that resolves interceptor methods definined in ejb-jar.xml that could not be resolved at
+ * Deployment descriptor that resolves interceptor methods defined in ejb-jar.xml that could not be resolved at
  * DD parse time.
  *
  * @author Stuart Douglas

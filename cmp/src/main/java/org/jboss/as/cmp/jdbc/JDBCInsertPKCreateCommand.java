@@ -42,7 +42,7 @@ public abstract class JDBCInsertPKCreateCommand extends JDBCAbstractCreateComman
     public void init(JDBCStoreManager manager) {
         super.init(manager);
 
-        // if no exception processor is defined, we will perform a existance
+        // if no exception processor is defined, we will perform a existence
         // check before trying the insert to report duplicate key
         if (exceptionProcessor == null) {
             initExistsSQL();
@@ -62,7 +62,7 @@ public abstract class JDBCInsertPKCreateCommand extends JDBCAbstractCreateComman
     }
 
     protected void beforeInsert(CmpEntityBeanContext ctx) throws CreateException {
-        // are we checking existance by query?
+        // are we checking existence by query?
         if (existsSQL != null) {
             Connection c = null;
             PreparedStatement ps = null;

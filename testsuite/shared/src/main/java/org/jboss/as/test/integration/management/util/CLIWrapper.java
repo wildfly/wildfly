@@ -48,8 +48,8 @@ import org.jboss.as.test.http.Authentication;
 public class CLIWrapper implements Runnable {
 
     private static String cliCommand = null;
-    private static final String outThreadHame = "CLI-out";
-    private static final String errThreadHame = "CLI-err";
+    private static final String OUT_THREAD_NAME = "CLI-out";
+    private static final String ERR_THREAD_NAME = "CLI-err";
     private Process cliProcess;
     private PrintWriter writer;
     private BufferedReader outputReader;
@@ -271,7 +271,7 @@ public class CLIWrapper implements Runnable {
                 // compound attribute
                 map.put(key, parseCompound(st));
             } else if (token == '[') {
-                // list attribure
+                // list attribute
                 map.put(key, parseList(st));
             } else {
                 // primitive attribute
@@ -294,7 +294,7 @@ public class CLIWrapper implements Runnable {
                 // compound attribute
                 list.add(parseCompound(st));
             } else if (token == '[') {
-                // list attribure
+                // list attribute
                 list.add(parseList(st));
             } else {
                 // primitive attribute
@@ -361,9 +361,9 @@ public class CLIWrapper implements Runnable {
 
         running = true;
 
-        Thread readOutputThread = new Thread(this, outThreadHame);
+        Thread readOutputThread = new Thread(this, OUT_THREAD_NAME);
         readOutputThread.start();
-        Thread readErrorThread = new Thread(this, errThreadHame);
+        Thread readErrorThread = new Thread(this, ERR_THREAD_NAME);
         readErrorThread.start();
 
     }
@@ -397,11 +397,11 @@ public class CLIWrapper implements Runnable {
      */
     public void run() {
         String threadName = Thread.currentThread().getName();
-        BufferedReader reader = threadName.equals(outThreadHame) ? outputReader : errorReader;
+        BufferedReader reader = threadName.equals(OUT_THREAD_NAME) ? outputReader : errorReader;
         try {
             String line = reader.readLine();
             while (line != null) {
-                if (threadName.equals(outThreadHame)) {
+                if (threadName.equals(OUT_THREAD_NAME)) {
                     outputLineReceived(line);
                 } else {
                     errorLineReceived(line);
@@ -411,7 +411,7 @@ public class CLIWrapper implements Runnable {
         } catch (Exception e) {
         } finally {
             synchronized (this) {
-                if (threadName.equals(outThreadHame)) {
+                if (threadName.equals(OUT_THREAD_NAME)) {
                     outputReader = null;
                 } else {
                     errorReader = null;
@@ -423,13 +423,13 @@ public class CLIWrapper implements Runnable {
     }
 
     private synchronized void outputLineReceived(String line) {
-        System.out.println("[" + outThreadHame + "] " + line);
+        System.out.println("[" + OUT_THREAD_NAME + "] " + line);
         outputQueue.add(line);
         notifyAll();
     }
 
     private synchronized void errorLineReceived(String line) {
-        System.out.println("[" + outThreadHame + "] " + line);
+        System.out.println("[" + OUT_THREAD_NAME + "] " + line);
         notifyAll();
     }
 }

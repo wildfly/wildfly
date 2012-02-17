@@ -80,7 +80,7 @@ public interface PojoMessages {
      * @param cause the cause
      * @return a {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 17053, value = "Cannot instantiate new instace.")
+    @Message(id = 17053, value = "Cannot instantiate new instance.")
     IllegalArgumentException cannotInstantiate(@Cause Throwable cause);
 
     /**
@@ -89,7 +89,7 @@ public interface PojoMessages {
      * @param cause the cause
      * @return a {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 17054, value = "Cannot instantiate new collection instace.")
+    @Message(id = 17054, value = "Cannot instantiate new collection instance.")
     IllegalArgumentException cannotInstantiateCollection(@Cause Throwable cause);
 
     /**
@@ -98,7 +98,7 @@ public interface PojoMessages {
      * @param cause the cause
      * @return a {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 17055, value = "Cannot instantiate new map instace.")
+    @Message(id = 17055, value = "Cannot instantiate new map instance.")
     IllegalArgumentException cannotInstantiateMap(@Cause Throwable cause);
 
     /**
@@ -303,11 +303,11 @@ public interface PojoMessages {
     IllegalArgumentException setterNotFound(Class<?> type, String clazz);
 
     /**
-     * Ambigous match.
+     * Ambiguous match.
      *
      * @param info the info
      * @return a {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 17079, value = "Ambigous match %s.")
-    IllegalArgumentException ambigousMatch(Object info);
+    @Message(id = 17079, value = "Ambiguous match %s.")
+    IllegalArgumentException ambiguousMatch(Object info);
 }

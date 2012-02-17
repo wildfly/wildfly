@@ -28,7 +28,7 @@ import org.jboss.as.ejb3.cache.Cacheable;
 import org.jboss.as.ejb3.cache.Identifiable;
 
 /**
- * Specialized {@link BackingCacheEntry} that wraps an {@link #setUnderlyingItem(CacheItem) underlying CacheItem} and represents
+ * Specialized {@link BackingCacheEntry} that wraps an {@link #setUnderlyingItem(org.jboss.as.ejb3.cache.Cacheable)}  underlying CacheItem} and represents
  * it as a <strong>potential</strong> member of a {@link SerializationGroup}. Note that a particular instance need not actually
  * be a member of a group; such an instance will return <code>null</code> from {@link #getGroupId()}.
  *

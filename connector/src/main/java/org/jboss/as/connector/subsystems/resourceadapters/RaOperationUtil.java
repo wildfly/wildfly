@@ -107,8 +107,8 @@ public class RaOperationUtil {
         List<String> beanValidationGroups = null;
         if (operation.hasDefined(BEANVALIDATIONGROUPS.getName())) {
             beanValidationGroups = new ArrayList<String>(operation.get(BEANVALIDATIONGROUPS.getName()).asList().size());
-            for (ModelNode beanValidtion : operation.get(BEANVALIDATIONGROUPS.getName()).asList()) {
-                beanValidationGroups.add(beanValidtion.asString());
+            for (ModelNode beanValidation : operation.get(BEANVALIDATIONGROUPS.getName()).asList()) {
+                beanValidationGroups.add(beanValidation.asString());
             }
 
         }
@@ -202,10 +202,10 @@ public class RaOperationUtil {
                 boolean enabled = getBooleanIfSetOrGetDefault(operationContext, operation, ENABLED, Defaults.ENABLED);
                 boolean useJavaContext = getBooleanIfSetOrGetDefault(operationContext, operation, USE_JAVA_CONTEXT, Defaults.USE_JAVA_CONTEXT);
 
-                ModifiableAdminObject adminObjet = new ModifiableAdminObject(configProperties, className, jndiName, poolName,
+                ModifiableAdminObject adminObject = new ModifiableAdminObject(configProperties, className, jndiName, poolName,
                         enabled, useJavaContext);
 
-                return adminObjet;
+                return adminObject;
     }
 
     private static Long getLongIfSetOrGetDefault(final OperationContext context, final ModelNode dataSourceNode, final SimpleAttributeDefinition key, final Long defaultValue) throws OperationFailedException {

@@ -106,7 +106,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
     /**
      * {@inheritDoc}
      *
-     * @see org.jboss.web.tomcat.service.session.distributedcache.spi.DistributedCacheManager#start()
+     * @see org.jboss.as.clustering.web.DistributedCacheManager#start()
      */
     @Override
     public void start() {
@@ -119,7 +119,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
     /**
      * {@inheritDoc}
      *
-     * @see org.jboss.web.tomcat.service.session.distributedcache.spi.DistributedCacheManager#stop()
+     * @see org.jboss.as.clustering.web.DistributedCacheManager#stop()
      */
     @Override
     public void stop() {
@@ -130,7 +130,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
     /**
      * {@inheritDoc}
      *
-     * @see org.jboss.web.tomcat.service.session.distributedcache.spi.DistributedCacheManager#getBatchingManager()
+     * @see org.jboss.as.clustering.web.DistributedCacheManager#getBatchingManager()
      */
     @Override
     public BatchingManager getBatchingManager() {
@@ -140,7 +140,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
     /**
      * {@inheritDoc}
      *
-     * @see org.jboss.web.tomcat.service.session.distributedcache.spi.DistributedCacheManager#sessionCreated(java.lang.String)
+     * @see org.jboss.as.clustering.web.DistributedCacheManager#sessionCreated(String)
      */
     @Override
     public void sessionCreated(String sessionId) {
@@ -150,7 +150,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
     /**
      * {@inheritDoc}
      *
-     * @see org.jboss.web.tomcat.service.session.distributedcache.spi.DistributedCacheManager#storeSessionData(org.jboss.web.tomcat.service.session.distributedcache.spi.OutgoingDistributableSessionData)
+     * @see org.jboss.as.clustering.web.DistributedCacheManager#storeSessionData(org.jboss.as.clustering.web.OutgoingDistributableSessionData)
      */
     @Override
     public void storeSessionData(final T sessionData) {
@@ -181,8 +181,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
     /**
      * {@inheritDoc}
      *
-     * @see org.jboss.web.tomcat.service.session.distributedcache.spi.DistributedCacheManager#getSessionData(java.lang.String,
-     *      boolean)
+     * @see org.jboss.as.clustering.web.DistributedCacheManager#getSessionData(String, boolean)
      */
     @Override
     public IncomingDistributableSessionData getSessionData(String sessionId, boolean initialLoad) {
@@ -194,8 +193,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
     /**
      * {@inheritDoc}
      *
-     * @see org.jboss.web.tomcat.service.session.distributedcache.spi.DistributedCacheManager#getSessionData(java.lang.String,
-     *      java.lang.String, boolean)
+     * @see org.jboss.as.clustering.web.DistributedCacheManager#getSessionData(String, boolean)
      */
     @Override
     public IncomingDistributableSessionData getSessionData(final String sessionId, String dataOwner, boolean includeAttributes) {
@@ -245,7 +243,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
     /**
      * {@inheritDoc}
      *
-     * @see org.jboss.web.tomcat.service.session.distributedcache.spi.DistributedCacheManager#removeSession(java.lang.String)
+     * @see org.jboss.as.clustering.web.DistributedCacheManager#removeSession(String)
      */
     @Override
     public void removeSession(final String sessionId) {
@@ -257,7 +255,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
     /**
      * {@inheritDoc}
      *
-     * @see org.jboss.web.tomcat.service.session.distributedcache.spi.DistributedCacheManager#removeSessionLocal(java.lang.String)
+     * @see org.jboss.as.clustering.web.DistributedCacheManager#removeSessionLocal(String)
      */
     @Override
     public void removeSessionLocal(final String sessionId) {
@@ -280,8 +278,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
     /**
      * {@inheritDoc}
      *
-     * @see org.jboss.web.tomcat.service.session.distributedcache.spi.DistributedCacheManager#removeSessionLocal(java.lang.String,
-     *      java.lang.String)
+     * @see org.jboss.as.clustering.web.DistributedCacheManager#removeSession(String)
      */
     @Override
     public void removeSessionLocal(String sessionId, String dataOwner) {
@@ -295,7 +292,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
     /**
      * {@inheritDoc}
      *
-     * @see org.jboss.web.tomcat.service.session.distributedcache.spi.DistributedCacheManager#evictSession(java.lang.String)
+     * @see org.jboss.as.clustering.web.DistributedCacheManager#evictSession(String)
      */
     @Override
     public void evictSession(final String sessionId) {
@@ -313,8 +310,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
     /**
      * {@inheritDoc}
      *
-     * @see org.jboss.web.tomcat.service.session.distributedcache.spi.DistributedCacheManager#evictSession(java.lang.String,
-     *      java.lang.String)
+     * @see org.jboss.as.clustering.web.DistributedCacheManager#evictSession(String, String)
      */
     @Override
     public void evictSession(String sessionId, String dataOwner) {
@@ -328,7 +324,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
     /**
      * {@inheritDoc}
      *
-     * @see org.jboss.web.tomcat.service.session.distributedcache.spi.DistributedCacheManager#getSessionIds()
+     * @see org.jboss.as.clustering.web.DistributedCacheManager#getSessionIds()
      */
     @Override
     public Map<String, String> getSessionIds() {
@@ -342,7 +338,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
     /**
      * {@inheritDoc}
      *
-     * @see org.jboss.web.tomcat.service.session.distributedcache.spi.DistributedCacheManager#isPassivationEnabled()
+     * @see org.jboss.as.clustering.web.DistributedCacheManager#isPassivationEnabled()
      */
     @Override
     public boolean isPassivationEnabled() {
@@ -352,7 +348,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
     /**
      * {@inheritDoc}
      *
-     * @see org.jboss.web.tomcat.service.session.distributedcache.spi.DistributedCacheManager#setForceSynchronous(boolean)
+     * @see org.jboss.as.clustering.web.DistributedCacheManager#setForceSynchronous(boolean)
      */
     @Override
     public void setForceSynchronous(boolean forceSynchronous) {
@@ -362,7 +358,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
     /**
      * {@inheritDoc}
      *
-     * @see org.jboss.web.tomcat.service.session.distributedcache.spi.DistributedCacheManager#getSessionOwnershipSupport()
+     * @see org.jboss.as.clustering.web.DistributedCacheManager#getSessionOwnershipSupport()
      */
     @Override
     public SessionOwnershipSupport getSessionOwnershipSupport() {
@@ -394,7 +390,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
     /**
      * {@inheritDoc}
      *
-     * @see org.jboss.web.tomcat.service.session.distributedcache.spi.DistributedCacheManager#isLocal(java.lang.String)
+     * @see org.jboss.as.clustering.web.DistributedCacheManager#isLocal(String)
      */
     @Override
     public boolean isLocal(String sessionId) {
@@ -409,7 +405,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
     /**
      * {@inheritDoc}
      *
-     * @see org.jboss.web.tomcat.service.session.distributedcache.spi.DistributedCacheManager#locate(java.lang.String)
+     * @see org.jboss.as.clustering.web.DistributedCacheManager#locate(String)
      */
     @Override
     public String locate(String sessionId) {

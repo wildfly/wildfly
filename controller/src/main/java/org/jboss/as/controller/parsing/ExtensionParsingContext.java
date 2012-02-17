@@ -43,7 +43,7 @@ public interface ExtensionParsingContext {
      * "subsystem add" update, without the address or operation name as that information will be automatically
      * populated.
      *
-     * @param namespaceUri the URI of the susbsystem's XML namespace, in string form. Cannot be {@code null}
+     * @param namespaceUri the URI of the subsystem's XML namespace, in string form. Cannot be {@code null}
      * @param reader the element reader. Cannot be {@code null}
      *
      * @deprecated use {@link #setSubsystemXmlMapping(String, String, XMLElementReader)}
@@ -58,7 +58,7 @@ public interface ExtensionParsingContext {
      * populated.
      *
      * @param subsystemName the name of the subsystem. Cannot be {@code null}
-     * @param namespaceUri the URI of the susbsystem's XML namespace, in string form. Cannot be {@code null}
+     * @param namespaceUri the URI of the sussystem's XML namespace, in string form. Cannot be {@code null}
      * @param reader the element reader. Cannot be {@code null}
      *
      * @throws IllegalStateException if another {@link Extension} has already registered a subsystem with the given
@@ -69,7 +69,7 @@ public interface ExtensionParsingContext {
     /**
      * Set the parser for the per-deployment configuration for this element, if any.
      *
-     * @param namespaceUri the URI of the susbsystem's XML namespace, in string form. Cannot be {@code null}
+     * @param namespaceUri the URI of the subsystem's XML namespace, in string form. Cannot be {@code null}
      * @param reader the element reader. Cannot be {@code null}
      *
      * @throws IllegalStateException if another {@link Extension} has already registered a subsystem with the given
@@ -89,7 +89,7 @@ public interface ExtensionParsingContext {
      * (TODO: round this out or remove it.)
      *
      * @param subsystemName the name of the subsystem. Cannot be {@code null}
-     * @param namespaceUri the URI of the susbsystem's XML namespace, in string form. Cannot be {@code null}
+     * @param namespaceUri the URI of the subsystem's XML namespace, in string form. Cannot be {@code null}
      * @param reader the element reader. Cannot be {@code null}
      *
      * @throws IllegalStateException if another {@link Extension} has already registered a subsystem with the given

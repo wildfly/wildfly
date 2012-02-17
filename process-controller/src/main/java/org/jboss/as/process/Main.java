@@ -282,7 +282,7 @@ public final class Main {
                 } else {
                     bindAddress = addr;
                 }
-            } else if (CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT.equals(arg) || CommandLineConstants.OLD_PROCESS_CONROLLER_BIND_PORT.equals(arg)) {
+            } else if (CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT.equals(arg) || CommandLineConstants.OLD_PROCESS_CONTROLLER_BIND_PORT.equals(arg)) {
                 bindPort = Integer.parseInt(args[index + 1]);
                 argIncrement = 1;
             } else if (arg.startsWith(CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT)) {
@@ -292,8 +292,8 @@ public final class Main {
                 } else {
                     bindPort = Integer.parseInt(port);
                 }
-            } else if (arg.startsWith(CommandLineConstants.OLD_PROCESS_CONROLLER_BIND_PORT)) {
-                String port = parseValue(arg, CommandLineConstants.OLD_PROCESS_CONROLLER_BIND_PORT);
+            } else if (arg.startsWith(CommandLineConstants.OLD_PROCESS_CONTROLLER_BIND_PORT)) {
+                String port = parseValue(arg, CommandLineConstants.OLD_PROCESS_CONTROLLER_BIND_PORT);
                 if (port == null) {
                     parseFailed = true;
                 } else {

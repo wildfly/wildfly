@@ -804,10 +804,10 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
                 case MAX_POOL_SIZE:
                     maxPoolSize = StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.parse(value, reader).asInt();
                     break;
-                case INSTANCE_AQUISITION_TIMEOUT:
+                case INSTANCE_ACQUISITION_TIMEOUT:
                     timeout = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT.parse(value, reader).asLong();
                     break;
-                case INSTANCE_AQUISITION_TIMEOUT_UNIT:
+                case INSTANCE_ACQUISITION_TIMEOUT_UNIT:
                     unit = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT.parse(value, reader).asString();
                     break;
 

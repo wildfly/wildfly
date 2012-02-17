@@ -94,7 +94,7 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
     /**
      * Constructor for a master Host Controller
      *
-     * @param contentRepository the master content repository. If {@code null} this handler will function as a slave hander would.
+     * @param contentRepository the master content repository. If {@code null} this handler will function as a slave handler would.
      */
     public DeploymentAddHandler(final ContentRepository contentRepository) {
         this.contentRepository = contentRepository;

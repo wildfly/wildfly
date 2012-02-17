@@ -22,9 +22,7 @@
 
 package org.jboss.as.connector.pool;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.controller.OperationContext;
@@ -34,10 +32,7 @@ import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.dmr.ModelNode;
-import org.jboss.jca.core.api.management.Connector;
-import org.jboss.jca.core.api.management.DataSource;
 import org.jboss.jca.core.api.management.ManagementRepository;
-import org.jboss.jca.core.connectionmanager.pool.mcp.ManagedConnectionPoolStatisticsImpl;
 import org.jboss.jca.core.spi.statistics.StatisticsPlugin;
 import org.jboss.msc.service.ServiceController;
 
@@ -57,7 +52,7 @@ public abstract class PoolMetrics implements OperationStepHandler {
                     final String attributeName = operation.require(NAME).asString();
 
                     final ServiceController<?> managementRepoService = context.getServiceRegistry(false).getService(
-                            ConnectorServices.MANAGEMENT_REPOSISTORY_SERVICE);
+                            ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE);
                     if (managementRepoService != null) {
                         try {
                             final ManagementRepository repository = (ManagementRepository) managementRepoService.getValue();
@@ -98,7 +93,7 @@ public abstract class PoolMetrics implements OperationStepHandler {
                         final String attributeName = operation.require(NAME).asString();
 
                         final ServiceController<?> managementRepoService = context.getServiceRegistry(false).getService(
-                                ConnectorServices.MANAGEMENT_REPOSISTORY_SERVICE);
+                                ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE);
                         if (managementRepoService != null) {
                             try {
                                 final ModelNode result = context.getResult();

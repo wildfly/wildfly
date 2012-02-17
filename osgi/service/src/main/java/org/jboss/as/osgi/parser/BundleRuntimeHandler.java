@@ -73,8 +73,8 @@ public class BundleRuntimeHandler extends AbstractRuntimeOnlyHandler {
             registry.registerOperationHandler(op, this, new DescriptionProvider() {
                 @Override
                 public ModelNode getModelDescription(Locale locale) {
-                    ResourceBundle resouceBundle = OSGiSubsystemProviders.getResourceBundle(locale);
-                    return CommonDescriptions.getDescriptionOnlyOperation(resouceBundle, op, ModelConstants.BUNDLE);
+                    ResourceBundle resourceBundle = OSGiSubsystemProviders.getResourceBundle(locale);
+                    return CommonDescriptions.getDescriptionOnlyOperation(resourceBundle, op, ModelConstants.BUNDLE);
                 }
             }, EnumSet.of(OperationEntry.Flag.RESTART_NONE));
         }

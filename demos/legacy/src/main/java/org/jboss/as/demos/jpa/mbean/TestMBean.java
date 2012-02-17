@@ -21,8 +21,6 @@
  */
 package org.jboss.as.demos.jpa.mbean;
 
-import java.util.concurrent.Callable;
-
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */

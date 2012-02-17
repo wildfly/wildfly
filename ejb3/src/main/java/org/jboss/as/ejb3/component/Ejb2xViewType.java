@@ -3,7 +3,7 @@ package org.jboss.as.ejb3.component;
 /**
  * An enum that is used as a marker for EJB 2.x views.
  *
- * {@link MethodIntf} is not sufficent for this, as it cannot differentiate
+ * {@link MethodIntf} is not sufficient for this, as it cannot differentiate
  * between EJB 3 business and EJB 2 component views
  *
  * @author Stuart Douglas

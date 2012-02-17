@@ -27,7 +27,6 @@ import java.net.URISyntaxException;
 
 import org.jboss.as.controller.client.ModelControllerClientConfiguration;
 import org.jboss.as.protocol.ProtocolChannelClient;
-import org.jboss.as.protocol.mgmt.ProtocolUtils;
 
 /**
  * Transformation class of the model controller client configuration to the

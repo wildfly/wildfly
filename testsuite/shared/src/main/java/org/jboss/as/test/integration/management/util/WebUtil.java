@@ -10,25 +10,21 @@ import java.util.concurrent.TimeUnit;
 import org.jboss.as.test.integration.common.HttpRequest;
 
 /**
- *
  * @author dpospisi
  */
 public class WebUtil {
-    
-    public static final boolean testHttpURL(String url) {
+    public static boolean testHttpURL(String url) {
         boolean failed = false;
         try {
             HttpRequest.get(url, 10, TimeUnit.SECONDS);
         } catch (Exception e) {
             failed = true;
         }
-        return ! failed;
+        return !failed;
 
     }
 
-    public static final String getBaseURL(URL url) throws MalformedURLException {
+    public static String getBaseURL(URL url) throws MalformedURLException {
         return new URL(url.getProtocol(), url.getHost(), url.getPort(), "/").toString();
     }
-    
-    
 }

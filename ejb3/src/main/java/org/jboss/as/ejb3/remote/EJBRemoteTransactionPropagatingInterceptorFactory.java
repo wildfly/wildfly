@@ -29,13 +29,13 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 
 /**
- * Creates and reutrns a {@link EJBRemoteTransactionPropogatingInterceptor}
+ * Creates and returns a {@link EJBRemoteTransactionPropagatingInterceptor}
  *
  * @author Jaikiran Pai
  */
-class EJBRemoteTransactionPropogatingInterceptorFactory extends ComponentInterceptorFactory {
+class EJBRemoteTransactionPropagatingInterceptorFactory extends ComponentInterceptorFactory {
 
-    static final EJBRemoteTransactionPropogatingInterceptorFactory INSTANCE = new EJBRemoteTransactionPropogatingInterceptorFactory();
+    static final EJBRemoteTransactionPropagatingInterceptorFactory INSTANCE = new EJBRemoteTransactionPropagatingInterceptorFactory();
 
     @Override
     protected Interceptor create(final Component component, final InterceptorFactoryContext context) {
@@ -43,6 +43,6 @@ class EJBRemoteTransactionPropogatingInterceptorFactory extends ComponentInterce
             throw new IllegalArgumentException(component + " is not an EJB component");
         }
         final EJBRemoteTransactionsRepository ejbRemoteTransactionsRepository = ((EJBComponent) component).getEjbRemoteTransactionsRepository();
-        return new EJBRemoteTransactionPropogatingInterceptor(ejbRemoteTransactionsRepository);
+        return new EJBRemoteTransactionPropagatingInterceptor(ejbRemoteTransactionsRepository);
     }
 }

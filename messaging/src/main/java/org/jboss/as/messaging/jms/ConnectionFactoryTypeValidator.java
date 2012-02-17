@@ -25,7 +25,6 @@ package org.jboss.as.messaging.jms;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.AllowedValuesValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 

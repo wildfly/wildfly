@@ -726,11 +726,11 @@ class CommandContextImpl implements CommandContext {
         }
     }
 
-    private static final String[] FINGERPRINT_ALOGRITHMS = new String[] { "MD5", "SHA1" };
+    private static final String[] FINGERPRINT_ALGORITHMS = new String[] { "MD5", "SHA1" };
 
     private Map<String, String> generateFingerprints(final X509Certificate cert) throws IOException  {
-        Map<String, String> fingerprints = new HashMap<String, String>(FINGERPRINT_ALOGRITHMS.length);
-        for (String current : FINGERPRINT_ALOGRITHMS) {
+        Map<String, String> fingerprints = new HashMap<String, String>(FINGERPRINT_ALGORITHMS.length);
+        for (String current : FINGERPRINT_ALGORITHMS) {
             try {
                 fingerprints.put(current, generateFingerPrint(current, cert.getEncoded()));
             } catch (GeneralSecurityException e) {

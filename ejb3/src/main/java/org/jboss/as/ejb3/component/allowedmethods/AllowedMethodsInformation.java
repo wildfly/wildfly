@@ -91,7 +91,7 @@ public class AllowedMethodsInformation {
     }
 
     /**
-     * transaction sync is not afected by the current invocation, as multiple ejb methods may be invoked from afterCompletion
+     * transaction sync is not affected by the current invocation, as multiple ejb methods may be invoked from afterCompletion
      */
     private void checkTransactionSync(MethodType methodType) {
         //first we have to check the synchronization status

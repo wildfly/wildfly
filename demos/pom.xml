@@ -114,7 +114,7 @@
         </profile>
         <!--
             Name: jpda
-            Descr: Enable JPDA remote debuging
+            Descr: Enable JPDA remote debugging
         -->
         <profile>
           <id>jpda</id>

@@ -31,7 +31,7 @@ import org.jboss.sasl.util.HexConverter;
 /**
  * A simple NonceFactory for single use nonces.
  * <p/>
- * At a later point a pluggable mechansims may be added to control the nonce requirements and add additional generation
+ * At a later point a pluggable mechanisms may be added to control the nonce requirements and add additional generation
  * strategies. Issues such as expiration will also be handled.
  * <p/>
  * This implementation uses a SecureRandom to generate 16 random bytes which will then be converted to hex as 32 characters.

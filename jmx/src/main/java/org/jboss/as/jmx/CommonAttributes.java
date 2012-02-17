@@ -35,6 +35,6 @@ interface CommonAttributes {
     String REGISTRY_BINDING = "registry-binding";
     String REMOTING_CONNECTOR = "remoting-connector";
     String JMX_CONNECTOR = "jmx-connector";
-    String USE_MANAGMENT_ENDPOINT = "use-management-endpoint";
+    String USE_MANAGEMENT_ENDPOINT = "use-management-endpoint";
     String VALUE = "value";
 }

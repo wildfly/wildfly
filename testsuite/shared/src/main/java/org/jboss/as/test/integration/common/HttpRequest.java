@@ -174,7 +174,7 @@ public class HttpRequest {
      *
      * @param spec The {@link URL} in String form
      * @param message Message to write
-     * @param timeout TImeout value
+     * @param timeout Timeout value
      * @param unit Timeout units
      * @param requestMethod Name of the HTTP method to execute (ie. HEAD, GET, POST)
      * @return

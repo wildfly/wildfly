@@ -136,7 +136,7 @@ public abstract class AbstractClusterLockSupport implements GroupMembershipListe
         long start = System.currentTimeMillis();
         while (left > 0) {
             // Another node we lost to who should take precedence
-            // over ourself in competition for the lock
+            // over ourselves in competition for the lock
             ClusterNode superiorCompetitor = null;
 
             // Only continue if category is unlocked

@@ -143,7 +143,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             List<ResourceRoot> resourceRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
             assert resourceRoots != null;
             for (ResourceRoot resourceRoot : resourceRoots) {
-                if (resourceRoot.getRoot().getLowerCaseName().endsWith(JAR_FILE_EXTENSION)) {
+                if (resourceRoot.getRoot().getName().toLowerCase().endsWith(JAR_FILE_EXTENSION)) {
                     listPUHolders = new ArrayList<PersistenceUnitMetadataHolder>(1);
                     persistence_xml = resourceRoot.getRoot().getChild(META_INF_PERSISTENCE_XML);
                     parse(persistence_xml, listPUHolders, deploymentUnit, resourceRoot);
@@ -183,7 +183,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
                 // look at lib/*.jar files that aren't subdeployments (subdeployments are passed
                 // to deploy(DeploymentPhaseContext)).
                 if (!SubDeploymentMarker.isSubDeployment(resourceRoot) &&
-                    resourceRoot.getRoot().getLowerCaseName().endsWith(JAR_FILE_EXTENSION) &&
+                    resourceRoot.getRoot().getName().toLowerCase().endsWith(JAR_FILE_EXTENSION) &&
                     resourceRoot.getRoot().getParent().getName().equals(LIB_FOLDER)) {
                     listPUHolders = new ArrayList<PersistenceUnitMetadataHolder>(1);
                     persistence_xml = resourceRoot.getRoot().getChild(META_INF_PERSISTENCE_XML);

@@ -250,7 +250,7 @@ public class DeployHandler extends BatchModeCommandHandler {
         String name = this.name.getValue(args);
         if(name == null) {
             if(f == null) {
-                ctx.error("Either path or --name is requied.");
+                ctx.error("Either path or --name is required.");
                 return;
             }
             name = f.getName();
@@ -423,7 +423,7 @@ public class DeployHandler extends BatchModeCommandHandler {
         String name = this.name.getValue(args);
         if(name == null) {
             if(f == null) {
-                throw new OperationFormatException("Either path or --name is requied.");
+                throw new OperationFormatException("Either path or --name is required.");
             }
             name = f.getName();
         }

@@ -116,7 +116,7 @@ public interface SerializationGroup<K extends Serializable, V extends Cacheable<
     void setGroupCache(PassivatingBackingCache<G, Cacheable<G>, SerializationGroup<K, V, G>> groupCache);
 
     /**
-     * Returns whether the group has been modified. Differs from {@link CacheItem#isModified()} in that invoking this method
+     * Returns whether the group has been modified. Differs from {@link org.jboss.as.ejb3.cache.Cacheable#isModified()} in that invoking this method
      * does not clear the modified state.
      *
      * {@inheritDoc}

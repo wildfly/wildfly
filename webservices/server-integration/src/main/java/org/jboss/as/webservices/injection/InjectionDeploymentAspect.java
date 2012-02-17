@@ -85,7 +85,7 @@ public final class InjectionDeploymentAspect extends AbstractDeploymentAspect {
             if (className.equals(endpointClass)) {
                 // handle endpoint instantiation
                 if (!isEjb3Endpoint) {
-                    // only POJO endpoints have to be initialized. EJB3 endpoints are handled by the EJB3 susbystem.
+                    // only POJO endpoints have to be initialized. EJB3 endpoints are handled by the EJB3 subsystem.
                     final ServiceName endpointComponentName = getEndpointComponentServiceName();
                     final ServiceController<BasicComponent> endpointController = getComponentController(endpointComponentName);
                     if (endpointController != null) {

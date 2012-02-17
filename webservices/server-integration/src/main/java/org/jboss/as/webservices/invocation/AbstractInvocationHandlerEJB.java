@@ -68,7 +68,7 @@ abstract class AbstractInvocationHandlerEJB extends AbstractInvocationHandler {
     */
    private ComponentView getComponentView() {
        //we need to check both, otherwise it is possible for
-       //ejbComponentView to be initalized before reference
+       //ejbComponentView to be initialized before reference
       if (ejbComponentView == null || reference == null) {
          synchronized(this) {
             if (ejbComponentView == null) {

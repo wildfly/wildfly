@@ -22,7 +22,6 @@
 
 package org.jboss.as.messaging.jms;
 
-import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.management.JMSQueueControl;
 import org.hornetq.core.server.HornetQServer;
@@ -172,14 +171,14 @@ public class JMSQueueControlHandler extends AbstractQueueControlHandler<JMSQueue
     }
 
     @Override
-    protected Object handleAdditonalOperation(String operationName, ModelNode operation, OperationContext context,
-                                            JMSQueueControl queueControl) throws OperationFailedException {
+    protected Object handleAdditionalOperation(String operationName, ModelNode operation, OperationContext context,
+                                               JMSQueueControl queueControl) throws OperationFailedException {
         throwUnimplementedOperationException(operationName);
         return null;
     }
 
     @Override
-    protected void revertAdditonalOperation(String operationName, ModelNode operation, OperationContext context, JMSQueueControl queueControl, Object handback) {
+    protected void revertAdditionalOperation(String operationName, ModelNode operation, OperationContext context, JMSQueueControl queueControl, Object handback) {
         // no-op
     }
 }

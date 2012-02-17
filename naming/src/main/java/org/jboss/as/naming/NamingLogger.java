@@ -33,7 +33,7 @@ import org.jboss.logging.MessageLogger;
 
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
-import org.jboss.naming.remote.server.RemoteNamingServerLogger;
+
 import org.jboss.remoting3.Channel;
 
 /**
@@ -49,7 +49,7 @@ public interface NamingLogger extends BasicLogger {
     NamingLogger ROOT_LOGGER = Logger.getMessageLogger(NamingLogger.class, NamingLogger.class.getPackage().getName());
 
     /**
-     * Logs an informational message indicating the naming subsystem is being actived.
+     * Logs an informational message indicating the naming subsystem is being activated.
      */
     @LogMessage(level = INFO)
     @Message(id = 11800, value = "Activating Naming Subsystem")
@@ -90,7 +90,7 @@ public interface NamingLogger extends BasicLogger {
 
     @LogMessage(level = ERROR)
     @Message(id = 11807, value = "Unexpected internal error")
-    void unnexpectedError(@Cause Throwable t);
+    void unexpectedError(@Cause Throwable t);
 
     @LogMessage(level = ERROR)
     @Message(id = 11808, value = "Null correlationId so error not sent to client")
@@ -102,6 +102,6 @@ public interface NamingLogger extends BasicLogger {
 
 
     @LogMessage(level = ERROR)
-    @Message(id = 11810, value = "Unexpected parameter type - excpected: %d  received: %d")
+    @Message(id = 11810, value = "Unexpected parameter type - expected: %d  received: %d")
     void unexpectedParameterType(byte expected, byte actual);
 }

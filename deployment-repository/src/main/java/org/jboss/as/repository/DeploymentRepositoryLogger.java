@@ -39,7 +39,7 @@ import org.jboss.logging.MessageLogger;
 interface DeploymentRepositoryLogger extends BasicLogger {
 
     /**
-     * A logger with the category of the pacakge name.
+     * A logger with the category of the package name.
      */
     DeploymentRepositoryLogger ROOT_LOGGER = Logger.getMessageLogger(DeploymentRepositoryLogger.class, DeploymentRepositoryLogger.class.getPackage().getName());
 

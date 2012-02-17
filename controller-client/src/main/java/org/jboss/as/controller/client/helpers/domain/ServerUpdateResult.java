@@ -8,9 +8,6 @@ import org.jboss.dmr.ModelNode;
  * Encapsulates the results of performing a configuration modification on an individual
  * server.
  *
- * @param R the type of the object returned by the update when it was
- *          applied to the runtime
- *
  * @author Brian Stansberry
  */
 public interface ServerUpdateResult {

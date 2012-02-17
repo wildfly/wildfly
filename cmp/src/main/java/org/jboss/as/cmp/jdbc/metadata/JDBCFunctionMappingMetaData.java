@@ -120,7 +120,7 @@ public final class JDBCFunctionMappingMetaData {
         for (int i = 0; i < sqlChunks.length; i++) {
             if (i < parameters.length) {
                 // the logic is that if there is a parameter
-                // than append its chunck unless the parameter is null
+                // than append its chunk unless the parameter is null
                 // FIXME: I am not sure it's ok for any kind of template.
                 Object arg = args[parameters[i]];
                 if (arg != null) {

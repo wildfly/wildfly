@@ -30,7 +30,6 @@ import org.apache.catalina.deploy.LoginConfig;
 import org.jboss.as.web.WebLogger;
 import org.jboss.as.web.security.JBossGenericPrincipal;
 import org.jboss.as.web.security.JBossWebRealm;
-import org.jboss.logging.Logger;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.ServerAuthenticationManager;
 import org.jboss.security.SimplePrincipal;
@@ -177,7 +176,7 @@ public class WebJASPIAuthenticator extends AuthenticatorBase {
 
     /**
      * <p>
-     * Sets the flage that indicates whether JASPI should be used to secure the HTTP response or not.
+     * Sets the flag that indicates whether JASPI should be used to secure the HTTP response or not.
      * </p>
      *
      * @param secureResponse {@code true} if the authenticator is to secure the response; {@code false} otherwise.
@@ -298,7 +297,7 @@ public class WebJASPIAuthenticator extends AuthenticatorBase {
             sso.update(ssoId, principal, authType, username, password);
         }
 
-        // fix for Bug 10040: always associate a session with a new SSO reqistration. SSO entries are only removed from
+        // fix for Bug 10040: always associate a session with a new SSO registration. SSO entries are only removed from
         // the SSO registry map when associated sessions are destroyed; if a new SSO entry is created above for this
         // request and the user never revisits the context, the SSO entry will never be cleared if we don't associate
         // the session

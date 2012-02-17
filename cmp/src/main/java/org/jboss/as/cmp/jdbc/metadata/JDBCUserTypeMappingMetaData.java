@@ -40,11 +40,11 @@ public class JDBCUserTypeMappingMetaData {
      */
     private String mapper;
     /**
-     * Check a field of this type for dirty state after the getter: null, true or false (can be overriden on the field level)
+     * Check a field of this type for dirty state after the getter: null, true or false (can be overridden on the field level)
      */
     private byte checkDirtyAfterGet = JDBCCMPFieldMetaData.CHECK_DIRTY_AFTER_GET_NOT_PRESENT;
     /**
-     * CMP field state factory class that should be used for fields of this type unless overriden on the field level
+     * CMP field state factory class that should be used for fields of this type unless overridden on the field level
      */
     private String stateFactory;
 

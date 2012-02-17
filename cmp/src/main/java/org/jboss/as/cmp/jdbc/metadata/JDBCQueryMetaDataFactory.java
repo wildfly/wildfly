@@ -28,13 +28,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.jboss.as.cmp.jdbc.metadata.parser.ParsedQuery;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.ejb.spec.QueryMetaData;
 import org.jboss.util.Classes;
 
 /**
  * JDBCQueryMetaDataFactory constructs a JDBCQueryMetaData object based
- * on the query specifiection type.
+ * on the query specification type.
  *
  * @author <a href="mailto:dain@daingroup.com">Dain Sundstrom</a>
  * @version $Revision: 81030 $

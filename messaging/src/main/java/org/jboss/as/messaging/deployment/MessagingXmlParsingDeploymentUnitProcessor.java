@@ -98,7 +98,7 @@ public class MessagingXmlParsingDeploymentUnitProcessor implements DeploymentUni
             return Collections.emptySet();
         }
 
-        final String deploymentRootName = deploymentRoot.getLowerCaseName();
+        final String deploymentRootName = deploymentRoot.getName().toLowerCase();
 
         if (deploymentRootName.endsWith("-jms.xml")) {
             return Collections.singleton(deploymentRoot);

@@ -50,9 +50,9 @@ public class RaServicesFactory {
         ServiceBuilder builder = serviceTarget
                 .addService(serviceName, service)
                 .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, service.getMdrInjector())
-                .addDependency(ConnectorServices.RA_REPOSISTORY_SERVICE, ResourceAdapterRepository.class,
+                .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class,
                         service.getRaRepositoryInjector())
-                .addDependency(ConnectorServices.MANAGEMENT_REPOSISTORY_SERVICE, ManagementRepository.class,
+                .addDependency(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, ManagementRepository.class,
                         service.getManagementRepositoryInjector())
                 .addDependency(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE,
                         ResourceAdapterDeploymentRegistry.class, service.getRegistryInjector())

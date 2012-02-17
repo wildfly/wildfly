@@ -24,10 +24,10 @@ package org.jboss.as.cmp.ejbql;
 import java.util.LinkedList;
 
 /**
- * A buffer simmilar to StringBuffer that works on string blocks instead
+ * A buffer similar to StringBuffer that works on string blocks instead
  * of individual characters.  This eliminates excessive array allocation
- * and copying at the expense of removal and substring opperations. This
- * is a greate compromise as usually the only functions called on a
+ * and copying at the expense of removal and substring operations. This
+ * is a great compromise as usually the only functions called on a
  * StringBuffer are append, length, and toString.
  *
  * @author <a href="mailto:dain@daingroup.com">Dain Sundstrom</a>

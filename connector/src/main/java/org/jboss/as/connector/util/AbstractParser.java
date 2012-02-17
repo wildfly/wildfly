@@ -65,13 +65,13 @@ public abstract class AbstractParser {
      * FIXME Comment this
      *
      * @param reader
-     * @return the string representing the raw eleemnt text
+     * @return the string representing the raw element text
      * @throws XMLStreamException
      */
     public String rawElementText(XMLStreamReader reader) throws XMLStreamException {
-        String elementtext = reader.getElementText();
-        elementtext = elementtext == null || elementtext.trim().length() == 0 ? null : elementtext.trim();
-        return elementtext;
+        String elementText = reader.getElementText();
+        elementText = elementText == null || elementText.trim().length() == 0 ? null : elementText.trim();
+        return elementText;
     }
 
     /**
@@ -79,7 +79,7 @@ public abstract class AbstractParser {
      *
      * @param reader
      * @param attributeName
-     * @return the string representing raw attribute textx
+     * @return the string representing raw attribute text
      */
     public String rawAttributeText(XMLStreamReader reader, String attributeName) {
         String attributeString = reader.getAttributeValue("", attributeName) == null ? null : reader.getAttributeValue(
@@ -90,7 +90,7 @@ public abstract class AbstractParser {
 
 
     protected void parseExtension(XMLExtendedStreamReader reader, String enclosingTag, final ModelNode operation,
-                                  final SimpleAttributeDefinition extensionclassname, final SimpleAttributeDefinition extensionProperties)
+                                  final SimpleAttributeDefinition extensionClassName, final SimpleAttributeDefinition extensionProperties)
             throws XMLStreamException, ParserException, ValidateException {
 
         String className = null;
@@ -101,7 +101,7 @@ public abstract class AbstractParser {
                 case CLASS_NAME: {
                     requireSingleAttribute(reader, attribute.getLocalName());
                     final String value = reader.getAttributeValue(0);
-                    extensionclassname.parseAndSetParameter(value, operation, reader);
+                    extensionClassName.parseAndSetParameter(value, operation, reader);
                     break;
 
                 }

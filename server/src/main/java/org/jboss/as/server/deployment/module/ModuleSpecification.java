@@ -91,7 +91,7 @@ public class ModuleSpecification extends SimpleAttachable {
     private boolean requiresTransitiveDependencies;
 
     /**
-     * Flag that idicates that local resources should come last in the dependencies list
+     * Flag that indicates that local resources should come last in the dependencies list
      */
     private boolean localLast;
 
@@ -265,8 +265,8 @@ public class ModuleSpecification extends SimpleAttachable {
         return allDependencies;
     }
 
-    public void addModuleSystemDependencies(final List<DependencySpec> sytemDependencies) {
-        moduleSystemDependencies.addAll(sytemDependencies);
+    public void addModuleSystemDependencies(final List<DependencySpec> systemDependencies) {
+        moduleSystemDependencies.addAll(systemDependencies);
     }
 
     public List<DependencySpec> getModuleSystemDependencies() {

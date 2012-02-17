@@ -130,7 +130,7 @@ public class PoolConfigurationRWHandler {
             final String jndiName = address.getLastElement().getValue();
 
             final ServiceController<?> managementRepoService = context.getServiceRegistry(false).getService(
-                    ConnectorServices.MANAGEMENT_REPOSISTORY_SERVICE);
+                    ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE);
             List<PoolConfiguration> poolConfigs = null;
             if (managementRepoService != null) {
                 try {

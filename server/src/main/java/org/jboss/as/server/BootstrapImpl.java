@@ -25,7 +25,6 @@ package org.jboss.as.server;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;

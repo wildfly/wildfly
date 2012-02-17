@@ -61,7 +61,7 @@ public class WeldPortableExtensionProcessor implements DeploymentUnitProcessor {
             }
         } else if (deploymentUnit.getParent() == null) {
             // if any sub deployments have beans.xml then the top level deployment is
-            // marked as a weld deplyment
+            // marked as a weld deployment
             if (!WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
                 return;
             }

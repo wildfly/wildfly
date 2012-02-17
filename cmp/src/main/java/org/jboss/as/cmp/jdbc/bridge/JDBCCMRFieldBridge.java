@@ -100,11 +100,11 @@ public final class JDBCCMRFieldBridge extends JDBCAbstractCMRFieldBridge {
      */
     private final JDBCRelationshipRoleMetaData metadata;
     /**
-     * The data source used to acess the relation table if relevant.
+     * The data source used to access the relation table if relevant.
      */
     private DataSource dataSource;
     /**
-     * The relation table name if relevent.
+     * The relation table name if relevant.
      */
     private String qualifiedTableName;
     private String tableName;
@@ -198,7 +198,7 @@ public final class JDBCCMRFieldBridge extends JDBCAbstractCMRFieldBridge {
         this.metadata = metadata;
         this.jdbcContextIndex = ((JDBCEntityBridge) manager.getEntityBridge()).getNextJDBCContextIndex();
 
-        //  Creat the log
+        //  Create the log
         String categoryName = this.getClass().getName() +
                 "." + manager.getMetaData().getName() + ".";
         if (metadata.getCMRFieldName() != null) {
@@ -352,7 +352,7 @@ public final class JDBCCMRFieldBridge extends JDBCAbstractCMRFieldBridge {
                 try {
                     return transactionManager.getTransaction();
                 } catch (SystemException e) {
-                    throw new IllegalStateException("An error occured while getting the " +
+                    throw new IllegalStateException("An error occurred while getting the " +
                             "transaction associated with the current thread: " + e);
                 }
             }
@@ -424,7 +424,7 @@ public final class JDBCCMRFieldBridge extends JDBCAbstractCMRFieldBridge {
     }
 
     /**
-     * Gets the name of the relation table if relevent.
+     * Gets the name of the relation table if relevant.
      */
     public String getQualifiedTableName() {
         return qualifiedTableName;
@@ -435,7 +435,7 @@ public final class JDBCCMRFieldBridge extends JDBCAbstractCMRFieldBridge {
     }
 
     /**
-     * Gets the datasource of the relation table if relevent.
+     * Gets the datasource of the relation table if relevant.
      */
     public DataSource getDataSource() {
         return dataSource;
@@ -1087,7 +1087,7 @@ public final class JDBCCMRFieldBridge extends JDBCAbstractCMRFieldBridge {
 
         // check the preload cache
         if (log.isTraceEnabled()) {
-            log.trace("Read ahead cahce load: cmrField=" + getFieldName() + " pk=" + myCtx.getPrimaryKey());
+            log.trace("Read ahead cache load: cmrField=" + getFieldName() + " pk=" + myCtx.getPrimaryKey());
         }
 
         manager.getReadAheadCache().load(myCtx);
@@ -1602,7 +1602,7 @@ public final class JDBCCMRFieldBridge extends JDBCAbstractCMRFieldBridge {
          * loads the collection of related ids
          */
         public void loadRelations(Collection values) {
-            // check if we are aleready loaded
+            // check if we are already loaded
             if (isLoaded) {
                 throw new EJBException("CMR field value is already loaded");
             }
@@ -1647,14 +1647,14 @@ public final class JDBCCMRFieldBridge extends JDBCAbstractCMRFieldBridge {
                         true);
             }
 
-            // if we already have a relationset use it
+            // if we already have a relationSet use it
             if (relationSet != null) {
                 return relationSet;
             }
 
-            // construct a new relationshet
+            // construct a new relationSet
             try {
-                // get the curent transaction
+                // get the current transaction
                 CmpEntityBeanComponent component = getJDBCStoreManager().getComponent();
                 TransactionManager tm = component.getTransactionManager();
                 Transaction tx = tm.getTransaction();
@@ -1866,7 +1866,7 @@ public final class JDBCCMRFieldBridge extends JDBCAbstractCMRFieldBridge {
                     try {
                         return transactionManager.getTransaction();
                     } catch (SystemException e) {
-                        throw new IllegalStateException("An error occured while getting the " +
+                        throw new IllegalStateException("An error occurred while getting the " +
                                 "transaction associated with the current thread: " + e);
                     }
                 }

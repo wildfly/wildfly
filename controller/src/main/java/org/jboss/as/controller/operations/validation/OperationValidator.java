@@ -51,7 +51,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * Validates operations against the model controllers descripton providers
+ * Validates operations against the model controllers description providers
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
@@ -74,7 +74,7 @@ public class OperationValidator {
     /**
      * Validates operations against their description providers
      *
-     * @param operation The operation to validate
+     * @param operations The operations to validate
      * @throws IllegalArgumentException if any operation is not valid
      */
     public void validateOperations(final List<ModelNode> operations) {

@@ -91,7 +91,7 @@ public final class ReadAheadCache {
                 try {
                     return transactionManager.getTransaction();
                 } catch (SystemException e) {
-                    throw new IllegalStateException("An error occured while getting the " +
+                    throw new IllegalStateException("An error occurred while getting the " +
                             "transaction associated with the current thread: " + e);
                 }
             }
@@ -431,11 +431,11 @@ public final class ReadAheadCache {
 
         // store the preloaded data
         Map preloadDataMap = getPreloadDataMap(pk, true);
-        Object overriden = preloadDataMap.put(field, fieldValue);
+        Object overridden = preloadDataMap.put(field, fieldValue);
 
-        if (log.isTraceEnabled() && overriden != null) {
+        if (log.isTraceEnabled() && overridden != null) {
             log.trace(
-                    "Overriding cached value " + overriden +
+                    "Overriding cached value " + overridden +
                             " with " + (fieldValue == NULL_VALUE ? null : fieldValue) +
                             ". pk=" + pk +
                             ", field=" + field.getFieldName()
@@ -626,7 +626,7 @@ public final class ReadAheadCache {
                     try {
                         return transactionManager.getTransaction();
                     } catch (SystemException e) {
-                        throw new IllegalStateException("An error occured while getting the " +
+                        throw new IllegalStateException("An error occurred while getting the " +
                                 "transaction associated with the current thread: " + e);
                     }
                 }

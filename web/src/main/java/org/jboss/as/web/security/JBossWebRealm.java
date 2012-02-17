@@ -52,7 +52,6 @@ import org.apache.catalina.realm.RealmBase;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.web.WebLogger;
 import org.jboss.as.web.deployment.WarMetaData;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.javaee.spec.SecurityRoleRefMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleRefsMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
@@ -119,7 +118,7 @@ public class JBossWebRealm extends RealmBase {
     /**
      * The {@code DeploymentUnit} associated with the Realm
      */
-    protected DeploymentUnit deploymnetUnit;
+    protected DeploymentUnit deploymentUnit;
 
     /**
      * MetaData associated with the DeploymentUnit
@@ -183,7 +182,7 @@ public class JBossWebRealm extends RealmBase {
      * @param deploymentUnit
      */
     public void setDeploymentUnit(DeploymentUnit deploymentUnit) {
-        this.deploymnetUnit = deploymentUnit;
+        this.deploymentUnit = deploymentUnit;
         metaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY).getMergedJBossWebMetaData();
         principalVersusRolesMap = metaData.getSecurityRoles().getPrincipalVersusRolesMap();
         useJBossAuthorization = metaData.isUseJBossAuthorization();

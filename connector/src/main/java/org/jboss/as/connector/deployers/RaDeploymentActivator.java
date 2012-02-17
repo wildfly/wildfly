@@ -65,13 +65,13 @@ public class RaDeploymentActivator {
             .install());
 
         RaRepositoryService raRepositoryService = new RaRepositoryService();
-        controllers.add(serviceTarget.addService(ConnectorServices.RA_REPOSISTORY_SERVICE, raRepositoryService)
+        controllers.add(serviceTarget.addService(ConnectorServices.RA_REPOSITORY_SERVICE, raRepositoryService)
             .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, raRepositoryService.getMdrInjector())
             .addListener(listeners)
             .install());
 
         ManagementRepositoryService managementRepositoryService = new ManagementRepositoryService();
-        controllers.add(serviceTarget.addService(ConnectorServices.MANAGEMENT_REPOSISTORY_SERVICE, managementRepositoryService)
+        controllers.add(serviceTarget.addService(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, managementRepositoryService)
             .addListener(listeners)
             .install());
 

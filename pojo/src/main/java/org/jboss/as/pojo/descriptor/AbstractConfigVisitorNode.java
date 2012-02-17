@@ -114,7 +114,7 @@ public abstract class AbstractConfigVisitorNode implements ConfigVisitorNode, Ty
      *
      * @param type the type
      * @param index the component index
-     * @return component's clas or null if cannot be determined
+     * @return component's class or null if cannot be determined
      */
     static Type getComponentType(ParameterizedType type, int index) {
         Type[] tp = type.getActualTypeArguments();

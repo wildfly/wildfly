@@ -46,7 +46,7 @@ public interface ProxyController {
     /**
      * Get the address where this proxy controller applies to in the host ModelController
      *
-     * @return the address where this proxy contoller applies.
+     * @return the address where this proxy controller applies.
      */
     PathAddress getProxyNodeAddress();
 

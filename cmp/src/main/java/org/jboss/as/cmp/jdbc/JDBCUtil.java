@@ -48,8 +48,8 @@ import javax.ejb.Handle;
 import org.jboss.logging.Logger;
 
 /**
- * JDBCUtil takes care of some of the more anoying JDBC tasks.
- * It hanles safe closing of jdbc resources, setting statement
+ * JDBCUtil takes care of some of the more annoying JDBC tasks.
+ * It handles safe closing of jdbc resources, setting statement
  * parameters and loading query results.
  *
  * @author <a href="mailto:dain@daingroup.com">Dain Sundstrom</a>
@@ -148,7 +148,7 @@ public final class JDBCUtil {
      *
      * @param value the value to convert into a byte array
      * @return the byte representation of the value
-     * @throws SQLException if a problem occures in the conversion
+     * @throws SQLException if a problem occurs in the conversion
      */
     public static byte[] convertObjectToByteArray(Object value)
             throws SQLException {
@@ -187,8 +187,8 @@ public final class JDBCUtil {
      * Coverts the input into an object.
      *
      * @param input the bytes to convert
-     * @return the object repsentation of the input stream
-     * @throws SQLException if a problem occures in the conversion
+     * @return the object representation of the input stream
+     * @throws SQLException if a problem occurs in the conversion
      */
     public static Object convertToObject(byte[] input)
             throws SQLException {
@@ -205,8 +205,8 @@ public final class JDBCUtil {
      * Coverts the input into an object.
      *
      * @param input the bytes to convert
-     * @return the object repsentation of the input stream
-     * @throws SQLException if a problem occures in the conversion
+     * @return the object representation of the input stream
+     * @throws SQLException if a problem occurs in the conversion
      */
     public static Object convertToObject(InputStream input)
             throws SQLException {
@@ -703,9 +703,9 @@ public final class JDBCUtil {
             //
             // java.util.Date
             //
-            // make new copy as sub types have problems in comparions
+            // make new copy as sub types have problems in comparisons
             if (destination == java.util.Date.class && value instanceof java.util.Date) {
-                // handle timestamp special becauses it hoses the milisecond values
+                // handle timestamp special because it hoses the millisecond values
                 if (value instanceof java.sql.Timestamp) {
                     java.sql.Timestamp ts = (java.sql.Timestamp) value;
 
@@ -744,9 +744,9 @@ public final class JDBCUtil {
             if (destination == java.sql.Timestamp.class && value instanceof java.sql.Timestamp) {
                 // make a new Timestamp object; you never know
                 // what a driver will return
-                java.sql.Timestamp orignal = (java.sql.Timestamp) value;
-                java.sql.Timestamp copy = new java.sql.Timestamp(orignal.getTime());
-                copy.setNanos(orignal.getNanos());
+                java.sql.Timestamp original = (java.sql.Timestamp) value;
+                java.sql.Timestamp copy = new java.sql.Timestamp(original.getTime());
+                copy.setNanos(original.getNanos());
                 return copy;
             }
 

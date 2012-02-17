@@ -32,7 +32,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
-import static org.jboss.as.jmx.CommonAttributes.USE_MANAGMENT_ENDPOINT;
+import static org.jboss.as.jmx.CommonAttributes.USE_MANAGEMENT_ENDPOINT;
 
 /**
  * @author Stuart Douglas
@@ -46,7 +46,7 @@ class RemotingConnectorAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        if(operation.hasDefined(USE_MANAGMENT_ENDPOINT)) {
+        if(operation.hasDefined(USE_MANAGEMENT_ENDPOINT)) {
             RemotingConnectorResource.USE_MANAGEMENT_ENDPOINT.validateAndSet(operation, model);
         }
     }
@@ -56,7 +56,7 @@ class RemotingConnectorAdd extends AbstractAddStepHandler {
             ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
             throws OperationFailedException {
         boolean useManagementEndpoint = true;
-        if(model.hasDefined(USE_MANAGMENT_ENDPOINT)) {
+        if(model.hasDefined(USE_MANAGEMENT_ENDPOINT)) {
              useManagementEndpoint = RemotingConnectorResource.USE_MANAGEMENT_ENDPOINT.resolveModelAttribute(context, model).asBoolean();
         }
 

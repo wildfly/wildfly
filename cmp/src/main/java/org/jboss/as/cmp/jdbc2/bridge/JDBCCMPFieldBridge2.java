@@ -198,7 +198,7 @@ public class JDBCCMPFieldBridge2 implements CMPFieldBridge {
                 columnValue = jdbcType.setColumnValue(i, null, columnValue);
             }
 
-            // retrun the updated parameterIndex
+            // return the updated parameterIndex
             return columnValue;
         } catch (SQLException e) {
             // Non recoverable internal exception

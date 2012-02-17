@@ -22,21 +22,8 @@
 
 package org.jboss.as.logging.util;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.logging.Handler;
-
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.logging.CommonAttributes;
-import org.jboss.as.logging.LoggingLogger;
-import org.jboss.as.logging.loggers.LoggerHandlerService;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>

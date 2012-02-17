@@ -81,7 +81,7 @@ public class EntityBeanRemoteViewInstanceFactory implements ViewInstanceFactory 
             throw new IllegalStateException("Unexpected component: " + component + " Expected " + EntityBeanComponent.class);
         }
         final EntityBeanComponent entityBeanComponent = (EntityBeanComponent) component;
-        //grab an unasociated entity bean from the pool
+        //grab an unassociated entity bean from the pool
         final EntityBeanComponentInstance instance = entityBeanComponent.acquireUnAssociatedInstance();
 
         //call the ejbCreate method

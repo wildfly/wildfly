@@ -22,12 +22,9 @@
 
 package org.jboss.as.threads;
 
-import static org.jboss.logging.Logger.Level.ERROR;
-
 import java.math.BigDecimal;
 
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Message;

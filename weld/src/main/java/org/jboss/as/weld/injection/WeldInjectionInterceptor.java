@@ -35,7 +35,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * Class that performs CDI injection and calls intializer methods after resource injection
+ * Class that performs CDI injection and calls initializer methods after resource injection
  * has been run
  *
  * @author Stuart Douglas

@@ -49,7 +49,7 @@ public final class JDBCDynamicQLQueryMetaData implements JDBCQueryMetaData {
 
     /**
      * Constructs a JDBCDynamicQLQueryMetaData with DynamicQL declared in the
-     * jboss-ql elemnt and is invoked by the specified method.
+     * jboss-ql element and is invoked by the specified method.
      *
      * @param defaults the metadata about this query
      */
@@ -67,7 +67,7 @@ public final class JDBCDynamicQLQueryMetaData implements JDBCQueryMetaData {
 
     /**
      * Constructs a JDBCDynamicQLQueryMetaData with DynamicQL declared in the
-     * jboss-ql elemnt and is invoked by the specified method.
+     * jboss-ql element and is invoked by the specified method.
      */
     public JDBCDynamicQLQueryMetaData(boolean resultTypeMappingLocal,
                                       Method method,

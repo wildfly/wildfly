@@ -342,7 +342,7 @@ public final class JDBCApplicationMetaData {
     /**
      * Gets the relationship roles for the entity with the specified name.
      *
-     * @param entityName the name of the entity whos roles are returned
+     * @param entityName the name of the entity whose roles are returned
      * @return an unmodifiable collection of JDBCRelationshipRoles
      *         of the specified entity
      */

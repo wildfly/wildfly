@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.msc.inject.ConcurrentMapInjector;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;

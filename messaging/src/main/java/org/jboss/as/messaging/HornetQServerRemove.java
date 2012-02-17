@@ -95,7 +95,7 @@ class HornetQServerRemove implements OperationStepHandler {
         }
         context.removeService(hqServiceName.append(HornetQServerAdd.PATH_BASE).append(HornetQServerAdd.DEFAULT_BINDINGS_DIR));
         context.removeService(hqServiceName.append(HornetQServerAdd.PATH_BASE).append(HornetQServerAdd.DEFAULT_JOURNAL_DIR));
-        context.removeService(hqServiceName.append(HornetQServerAdd.PATH_BASE).append(HornetQServerAdd.DEFAULT_LARGE_MESSSAGE_DIR));
+        context.removeService(hqServiceName.append(HornetQServerAdd.PATH_BASE).append(HornetQServerAdd.DEFAULT_LARGE_MESSAGE_DIR));
         context.removeService(hqServiceName.append(HornetQServerAdd.PATH_BASE).append(HornetQServerAdd.DEFAULT_PAGING_DIR));
     }
 }

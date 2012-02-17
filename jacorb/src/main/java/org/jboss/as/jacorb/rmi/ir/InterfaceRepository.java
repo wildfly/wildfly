@@ -776,7 +776,7 @@ public class InterfaceRepository {
                 typeCode = vbDef.type();
         }
 
-        // Return the box of higest dimension.
+        // Return the box of highest dimension.
         return vbDef;
     }
 

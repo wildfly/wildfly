@@ -61,7 +61,7 @@ import static org.jboss.as.osgi.service.FrameworkBootstrapService.SERVICE_BASE_N
 import static org.jboss.osgi.resolver.v2.XResourceConstants.MODULE_IDENTITY_NAMESPACE;
 
 /**
- * An {@link ArtifactProviderPlugin} that resolves arteffacts from the local modules/bundles location
+ * An {@link ArtifactProviderPlugin} that resolves artifacts from the local modules/bundles location
  *
  * @author thomas.diesler@jboss.com
  * @since 20-Jan-2012

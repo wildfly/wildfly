@@ -188,17 +188,17 @@ public class WriteAttributeHandlers {
         }
     }
 
-    public static class ListValidatatingHandler extends WriteAttributeOperationHandler {
+    public static class ListValidatingHandler extends WriteAttributeOperationHandler {
 
-        public ListValidatatingHandler(ParameterValidator elementValidator) {
+        public ListValidatingHandler(ParameterValidator elementValidator) {
             this(elementValidator, false, 1, Integer.MAX_VALUE);
         }
 
-        public ListValidatatingHandler(ParameterValidator elementValidator, boolean nullable) {
+        public ListValidatingHandler(ParameterValidator elementValidator, boolean nullable) {
             this(elementValidator, nullable, 1, Integer.MAX_VALUE);
         }
 
-        public ListValidatatingHandler(ParameterValidator elementValidator, boolean nullable, int minSize, int maxSize) {
+        public ListValidatingHandler(ParameterValidator elementValidator, boolean nullable, int minSize, int maxSize) {
             super(new ListValidator(elementValidator, nullable, minSize, maxSize));
         }
     }

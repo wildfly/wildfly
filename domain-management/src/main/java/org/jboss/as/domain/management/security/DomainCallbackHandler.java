@@ -36,7 +36,7 @@ public interface DomainCallbackHandler extends CallbackHandler {
     Class<Callback>[] getSupportedCallbacks();
 
     /**
-     * Is this DomainCallbackHanler ready for handling remote requests.
+     * Is this DomainCallbackHandler ready for handling remote requests.
      *
      * To be used by the HTTP interface to display an error if the administrator
      * has not completed the set-up of their AS installation.

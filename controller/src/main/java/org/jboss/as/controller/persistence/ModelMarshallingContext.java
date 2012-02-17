@@ -38,7 +38,7 @@ public interface ModelMarshallingContext {
      * Gets the writer that can marshal the subsystem with the given name.
      *
      * @param subsystemName the name of the subsystem
-     * @return the writer, or {@code null} if there is no writer regisered
+     * @return the writer, or {@code null} if there is no writer registered
      *          under {@code subsystemName}
      */
     XMLElementWriter<SubsystemMarshallingContext> getSubsystemWriter(String subsystemName);
@@ -48,7 +48,7 @@ public interface ModelMarshallingContext {
      * subsystem with the given name.
      *
      * @param subsystemName the name of the subsystem
-     * @return the writer, or {@code null} if there is no writer regisered
+     * @return the writer, or {@code null} if there is no writer registered
      *          under {@code subsystemName}
      */
     XMLElementWriter<SubsystemMarshallingContext> getSubsystemDeploymentWriter(String subsystemName);

@@ -95,7 +95,7 @@ public class OperationCoordinatorStepHandler {
         if (!localHostControllerInfo.isMasterDomainController()
                 && !routing.isLocalOnly(localHostControllerInfo.getLocalHostName())) {
             // We cannot handle this ourselves
-            routetoMasterDomainController(context, operation);
+            routeToMasterDomainController(context, operation);
         }
         else if (routing.getSingleHost() != null && !localHostControllerInfo.getLocalHostName().equals(routing.getSingleHost())) {
             if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {
@@ -127,7 +127,7 @@ public class OperationCoordinatorStepHandler {
         return executorService == null ? Executors.newSingleThreadExecutor() : executorService;
     }
 
-    private void routetoMasterDomainController(OperationContext context, ModelNode operation) {
+    private void routeToMasterDomainController(OperationContext context, ModelNode operation) {
         // Per discussion on 2011/03/07, routing requests from a slave to the
         // master may overly complicate the security infrastructure. Therefore,
         // the ability to do this is being disabled until it's clear that it's

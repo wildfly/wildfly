@@ -123,7 +123,7 @@ public class DefaultBeanInfo<T> implements BeanInfo<T> {
             public Method lookup(ClassReflectionIndex index) {
                 Collection<Method> methods = index.getMethods(name, parameterTypes);
                 if (methods.size() != 1)
-                    throw PojoMessages.MESSAGES.ambigousMatch(methods);
+                    throw PojoMessages.MESSAGES.ambiguousMatch(methods);
                 return methods.iterator().next();
             }
         }, 0, Integer.MAX_VALUE);

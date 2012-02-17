@@ -61,7 +61,7 @@ public class BeanWithSimpleInjected extends BeanParent {
     @PostConstruct
     public void start() {
         if(bean2 == null) {
-            throw new RuntimeException("PostContruct called before @Inject method");
+            throw new RuntimeException("PostConstruct called before @Inject method");
         }
 
         log.info("-----> Constructed BeanWithSimpleInjected, simple=" + simple);

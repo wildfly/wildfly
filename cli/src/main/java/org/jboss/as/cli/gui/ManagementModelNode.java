@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 
 /**
@@ -159,7 +158,7 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
         private String value;
         private boolean isLeaf;
         private boolean isGeneric = false;
-        private String seperator;
+        private String separator;
 
         /**
          * Constructor for generic folder where resource=*.
@@ -171,7 +170,7 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
             this.value = "*";
             this.isLeaf = false;
             this.isGeneric = true;
-            this.seperator = "=";
+            this.separator = "=";
         }
 
         public UserObject(String name, String value, boolean isLeaf) {
@@ -179,9 +178,9 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
             this.value = value;
             this.isLeaf = isLeaf;
             if (isLeaf) {
-                this.seperator = " => ";
+                this.separator = " => ";
             } else {
-                this.seperator = "=";
+                this.separator = "=";
             }
         }
 
@@ -207,7 +206,7 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
 
         @Override
         public String toString() {
-            return this.name + this.seperator + this.value;
+            return this.name + this.separator + this.value;
         }
     }
 

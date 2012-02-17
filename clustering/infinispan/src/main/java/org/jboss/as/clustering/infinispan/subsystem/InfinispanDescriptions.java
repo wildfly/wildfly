@@ -376,7 +376,7 @@ public class InfinispanDescriptions {
         return op;
     }
 
-    // cache expiration elemet
+    // cache expiration element
     static ModelNode getExpirationDescription(Locale locale) {
         ResourceBundle resources = getResources(locale);
         final ModelNode expiration = createDescription(resources, "infinispan.cache.expiration");

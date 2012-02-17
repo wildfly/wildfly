@@ -145,7 +145,7 @@ public final class BeanUtils {
      *
      * @param beanInfo the bean info
      * @param bean the bean instance
-     * @param config the lifecyce config
+     * @param config the lifecycle config
      * @param defaultMethod the default method
      * @throws Throwable for any error
      */

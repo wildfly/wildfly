@@ -45,8 +45,7 @@ public class FineSessionAttributeStorage implements SessionAttributeStorage<Outg
     /**
      * {@inheritDoc}
      *
-     * @see org.jboss.web.tomcat.service.session.distributedcache.ispn.SessionAttributeStorage#store(org.infinispan.atomic.AtomicMap,
-     *      org.jboss.web.tomcat.service.session.distributedcache.spi.OutgoingDistributableSessionData)
+     * @see org.jboss.as.clustering.web.infinispan.SessionAttributeStorage#store(java.util.Map, org.jboss.as.clustering.web.OutgoingDistributableSessionData)
      */
     @Override
     public void store(Map<Object, Object> map, OutgoingAttributeGranularitySessionData sessionData) throws IOException {
@@ -70,7 +69,7 @@ public class FineSessionAttributeStorage implements SessionAttributeStorage<Outg
     /**
      * {@inheritDoc}
      *
-     * @see org.jboss.web.tomcat.service.session.distributedcache.ispn.SessionAttributeStorage#load(org.infinispan.atomic.AtomicMap)
+     * @see org.jboss.as.clustering.web.infinispan.SessionAttributeStorage#load(java.util.Map)
      */
     @Override
     public Map<String, Object> load(Map<Object, Object> data) throws IOException, ClassNotFoundException {

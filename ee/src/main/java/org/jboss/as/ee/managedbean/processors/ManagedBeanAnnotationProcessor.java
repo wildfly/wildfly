@@ -117,7 +117,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
                     final ManagedBeanAssociatingInterceptorFactory associatingInterceptorFactory = new ManagedBeanAssociatingInterceptorFactory(contextKey);
                     configuration.addClientInterceptor(associatingInterceptorFactory, InterceptorOrder.Client.ASSOCIATING_INTERCEPTOR);
                     configuration.addClientPreDestroyInterceptor(new ManagedBeanDestroyInterceptorFactory(contextKey), InterceptorOrder.ClientPreDestroy.INSTANCE_DESTROY);
-                    configuration.addViewInterceptor(new ImmediateInterceptorFactory(new TCCLInterceptor(componentConfiguration.getModuleClassLoder())), InterceptorOrder.View.TCCL_INTERCEPTOR);
+                    configuration.addViewInterceptor(new ImmediateInterceptorFactory(new TCCLInterceptor(componentConfiguration.getModuleClassLoader())), InterceptorOrder.View.TCCL_INTERCEPTOR);
                 }
             });
             viewDescription.getBindingNames().addAll(Arrays.asList("java:module/" + beanName, "java:app/" + moduleDescription.getModuleName() + "/" + beanName));

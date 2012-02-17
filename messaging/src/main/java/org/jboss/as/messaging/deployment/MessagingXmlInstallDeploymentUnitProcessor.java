@@ -30,7 +30,7 @@ import static org.jboss.as.messaging.CommonAttributes.JMS_TOPIC;
 import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
 
 /**
- * Processor that handles the installation of the messaging subsystems depoyable XML
+ * Processor that handles the installation of the messaging subsystems deployable XML
  *
  * @author Stuart Douglas
  */

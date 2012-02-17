@@ -34,7 +34,7 @@ import static org.jboss.as.ee.deployment.spi.DeploymentManagerImpl.DEPLOYER_URI;
 import static org.jboss.as.ee.deployment.spi.DeploymentLogger.ROOT_LOGGER;
 
 /**
- * The DeploymentFactory interface is a deployment driver for a J2EE plaform product.
+ * The DeploymentFactory interface is a deployment driver for a J2EE platform product.
  *
  * It returns a DeploymentManager object which represents a connection to a specific J2EE platform product. Each application
  * server vendor must provide an implementation of this class in order for the J2EE Deployment API to work with their product.

@@ -90,7 +90,7 @@ import org.jboss.modules.ModuleLoadException;
 public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler, DescriptionProvider {
     public static final String OPERATION_NAME = "apply-remote-domain-model";
 
-    private final Set<String> appliedExensions = new HashSet<String>();
+    private final Set<String> appliedExtensions = new HashSet<String>();
     private final HostFileRepository fileRepository;
     private final ContentRepository contentRepository;
     private final ExtensionRegistry extensionRegistry;
@@ -135,8 +135,8 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
             final Resource resource = getResource(resourceAddress, rootResource, context);
             if (resourceAddress.size() == 1 && resourceAddress.getElement(0).getKey().equals(EXTENSION)) {
                 final String module = resourceAddress.getElement(0).getValue();
-                if (!appliedExensions.contains(module)) {
-                    appliedExensions.add(module);
+                if (!appliedExtensions.contains(module)) {
+                    appliedExtensions.add(module);
                     initializeExtension(module);
                 }
             }

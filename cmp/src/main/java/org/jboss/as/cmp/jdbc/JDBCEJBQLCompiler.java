@@ -147,7 +147,7 @@ public final class JDBCEJBQLCompiler extends BasicVisitor implements QLCompiler 
         // reset all state variables
         reset();
 
-        // set input arguemts
+        // set input arguments
         this.returnType = returnType;
         this.parameterTypes = parameterTypes;
         this.readAhead = metadata.getReadAhead();
@@ -157,7 +157,7 @@ public final class JDBCEJBQLCompiler extends BasicVisitor implements QLCompiler 
         EJBQLParser parser = new EJBQLParser(new StringReader(SQLUtil.EMPTY_STRING));
 
         try {
-            // parse the ejbql into an abstract sytax tree
+            // parse the ejbql into an abstract syntax tree
             ASTEJBQL ejbqlNode;
             ejbqlNode = parser.parse(catalog, parameterTypes, ejbql);
 
@@ -182,7 +182,7 @@ public final class JDBCEJBQLCompiler extends BasicVisitor implements QLCompiler 
         // reset all state variables
         reset();
 
-        // set input arguemts
+        // set input arguments
         this.returnType = returnType;
         this.parameterTypes = parameterTypes;
         this.readAhead = metadata.getReadAhead();
@@ -192,7 +192,7 @@ public final class JDBCEJBQLCompiler extends BasicVisitor implements QLCompiler 
         JBossQLParser parser = new JBossQLParser(new StringReader(SQLUtil.EMPTY_STRING));
 
         try {
-            // parse the ejbql into an abstract sytax tree
+            // parse the ejbql into an abstract syntax tree
             ASTEJBQL ejbqlNode;
             ejbqlNode = parser.parse(catalog, parameterTypes, ejbql);
 
@@ -744,10 +744,10 @@ public final class JDBCEJBQLCompiler extends BasicVisitor implements QLCompiler 
                 String childAlias = (String) entry.getKey();
                 ASTPath path = (ASTPath) entry.getValue();
 
-                // join the memeber path
+                // join the member path
                 createThetaJoin(path, path.size() - 1, joinedAliases, childAlias, buf);
 
-                // join the memeber path parents
+                // join the member path parents
                 for (int i = 0; i < path.size() - 1; i++) {
                     createThetaJoin(path, i, joinedAliases, buf);
                 }
@@ -906,7 +906,7 @@ public final class JDBCEJBQLCompiler extends BasicVisitor implements QLCompiler 
                 selectEntity(path, node.distinct, buf);
             }
         } else {
-            // the function should take a path expresion as a parameter
+            // the function should take a path expression as a parameter
             path = getPathFromChildren(child0);
 
             if (path == null) {
@@ -1016,7 +1016,7 @@ public final class JDBCEJBQLCompiler extends BasicVisitor implements QLCompiler 
     public Object visit(ASTMemberOf node, Object data) {
         StringBuffer buf = (StringBuffer) data;
 
-        // setup compare to vars first, so we can compre types in from vars
+        // setup compare to vars first, so we can compare types in from vars
         ASTPath toPath = (ASTPath) node.jjtGetChild(1);
 
         JDBCCMRFieldBridge toCMRField = (JDBCCMRFieldBridge) toPath.getCMRField();
@@ -1108,7 +1108,7 @@ public final class JDBCEJBQLCompiler extends BasicVisitor implements QLCompiler 
 
         // second part makes fromNode equal toChild
         if (fromAlias != null) {
-            // compre pk to pk
+            // compare pk to pk
             if (relationTableAlias == null) {
                 SQLUtil.getSelfCompareWhereClause(toChildEntity.getPrimaryKeyFields(),
                         toChildAlias,
@@ -1193,7 +1193,7 @@ public final class JDBCEJBQLCompiler extends BasicVisitor implements QLCompiler 
     }
 
     /**
-     * compreEntity(arg0, arg1)
+     * compareEntity(arg0, arg1)
      */
     public Object visit(ASTEntityComparison node, Object data) {
         StringBuffer buf = (StringBuffer) data;
@@ -1548,10 +1548,10 @@ public final class JDBCEJBQLCompiler extends BasicVisitor implements QLCompiler 
 
     /**
      * Wrap a node with a class that when ever toString is called visits the
-     * node.  This is used by the function implmentations, for parameters.
+     * node.  This is used by the function implementations, for parameters.
      * <p/>
      * Be careful with this class because it visits the node for each call of
-     * toString, which could have undesireable result if called multiple times.
+     * toString, which could have undesirable result if called multiple times.
      */
     private final class NodeStringWrapper {
         final Node node;

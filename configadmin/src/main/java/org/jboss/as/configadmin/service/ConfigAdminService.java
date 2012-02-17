@@ -28,7 +28,7 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 
 /**
- * Maintains a set of {@link Dictionary}s in the domain model keyd by persistent ID (PID).
+ * Maintains a set of {@link Dictionary}s in the domain model keyed by persistent ID (PID).
  *
  * @author Thomas.Diesler@jboss.com
  * @since 29-Nov-2010
@@ -44,7 +44,7 @@ public interface ConfigAdminService extends Service<ConfigAdminService> {
     Set<String> getConfigurations();
 
     /**
-     * True if therer is a configuration for the given PID.
+     * True if there is a configuration for the given PID.
      */
     boolean hasConfiguration(String pid);
 
@@ -61,7 +61,7 @@ public interface ConfigAdminService extends Service<ConfigAdminService> {
     Dictionary<String, String> putConfiguration(String pid, Dictionary<String, String> config);
 
     /**
-     * REmove the configuration for the given PID.
+     * Remove the configuration for the given PID.
      * @return The previously registered configuration or <code>null</code>
      */
     Dictionary<String, String> removeConfiguration(String pid);

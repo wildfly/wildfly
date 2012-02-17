@@ -64,7 +64,7 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     /**
      * class used to record the url pattern and service endpoint implementation class name of
-     * an XTS JaxWS endpoint associatd wiht one of the XTS context paths. this is equivalent
+     * an XTS JaxWS endpoint associated with one of the XTS context paths. this is equivalent
      * to the information contained in a single matched pair of servlet:servletName and
      * servlet-mapping:url-pattern fields in the web.xml
      */

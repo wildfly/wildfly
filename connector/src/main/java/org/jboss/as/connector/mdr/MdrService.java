@@ -55,7 +55,7 @@ public final class MdrService implements Service<MetadataRepository> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        MDR_LOGGER.debugf("Starting sevice MDR");
+        MDR_LOGGER.debugf("Starting service MDR");
     }
 
     @Override

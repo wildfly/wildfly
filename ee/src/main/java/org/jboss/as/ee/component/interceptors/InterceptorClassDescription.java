@@ -48,7 +48,7 @@ public class InterceptorClassDescription {
     }
 
     /**
-     * Merges two descriptors, either of the paraemters will be null.
+     * Merges two descriptors, either of the parameters will be null.
      * <p/>
      * this method will never return null;
      *

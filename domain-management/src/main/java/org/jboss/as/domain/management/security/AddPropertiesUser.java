@@ -50,7 +50,7 @@ import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
  */
 public class AddPropertiesUser {
 
-    private static final String[] badUsernames = {"admin", "administrator", "root"};
+    private static final String[] BAD_USER_NAMES = {"admin", "administrator", "root"};
 
     private static final String DEFAULT_MANAGEMENT_REALM = "ManagementRealm";
     private static final String DEFAULT_APPLICATION_REALM = "ApplicationRealm";
@@ -198,7 +198,7 @@ public class AddPropertiesUser {
     }
 
     /**
-     * The first state executed, responsible for searching for the relevent properties files.
+     * The first state executed, responsible for searching for the relevant properties files.
      */
     private class PropertyFileFinder implements State {
 
@@ -398,7 +398,7 @@ public class AddPropertiesUser {
             }
 
             boolean weakUserName = false;
-            for (String current : badUsernames) {
+            for (String current : BAD_USER_NAMES) {
                 if (current.equals(values.userName.toLowerCase())) {
                     weakUserName = true;
                     break;

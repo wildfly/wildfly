@@ -35,7 +35,7 @@ public class WeldDeploymentMarker {
     private static final AttachmentKey<Boolean> MARKER = AttachmentKey.create(Boolean.class);
 
     /**
-     * Mark the top level deployment as being a weld deployment. If the delpoyment is not a top level deployment the parent is
+     * Mark the top level deployment as being a weld deployment. If the deployment is not a top level deployment the parent is
      * marked instead
      *
      */
@@ -44,7 +44,7 @@ public class WeldDeploymentMarker {
     }
 
     /**
-     * retuns true if the {@link DeploymentUnit} is part of a weld deployment
+     * returns true if the {@link DeploymentUnit} is part of a weld deployment
      */
     public static boolean isPartOfWeldDeployment(DeploymentUnit unit) {
         if (unit.getParent() == null) {
@@ -55,7 +55,7 @@ public class WeldDeploymentMarker {
     }
 
     /**
-     * retuns true if the {@link DeploymentUnit} has a beans.xml in any of it's resource roots,
+     * returns true if the {@link DeploymentUnit} has a beans.xml in any of it's resource roots,
      * or is a top level deployment that contains sub-deployments that are weld deployments.
      */
     public static boolean isWeldDeployment(DeploymentUnit unit) {

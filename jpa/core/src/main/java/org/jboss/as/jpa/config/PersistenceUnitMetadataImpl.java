@@ -78,7 +78,7 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
     // optional:  collection of jar file names that contain entity classes
     private List<String> jarFiles = new ArrayList<String>(1);
 
-    private List<URL> jarfilesUrls = new ArrayList<URL>();
+    private List<URL> jarFilesUrls = new ArrayList<URL>();
 
     private URL persistenceUnitRootUrl;
 
@@ -196,8 +196,8 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
     }
 
     @Override
-    public void setAnnotationIndex(Map<URL, Index> indexs) {
-        annotationIndex = indexs;
+    public void setAnnotationIndex(Map<URL, Index> indexes) {
+        annotationIndex = indexes;
     }
 
     @Override
@@ -242,12 +242,12 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
 
     @Override
     public List<URL> getJarFileUrls() {
-        return jarfilesUrls;
+        return jarFilesUrls;
     }
 
     @Override
-    public void setJarFileUrls(List<URL> jarfilesUrls) {
-        this.jarfilesUrls = jarfilesUrls;
+    public void setJarFileUrls(List<URL> jarFilesUrls) {
+        this.jarFilesUrls = jarFilesUrls;
     }
 
 

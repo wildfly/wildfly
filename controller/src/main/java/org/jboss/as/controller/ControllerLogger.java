@@ -69,7 +69,7 @@ public interface ControllerLogger extends BasicLogger {
      * Logs a warning message indicating the address, represented by the {@code address} parameter, could not be
      * resolved, so cannot match it to any InetAddress.
      *
-     * @param address the address that could not be resoloved.
+     * @param address the address that could not be resolved.
      */
     @LogMessage(level = WARN)
     @Message(id = 14600, value = "Cannot resolve address %s, so cannot match it to any InetAddress")

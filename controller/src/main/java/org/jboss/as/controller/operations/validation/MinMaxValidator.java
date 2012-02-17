@@ -32,14 +32,14 @@ public interface MinMaxValidator {
     /**
      * Gets the minimum, if there is one.
      *
-     * @return the minimum value, or {@code null} if there is no mimimum
+     * @return the minimum value, or {@code null} if there is no minimum
      */
     Long getMin();
 
     /**
      * Gets the maximum, if there is one.
      *
-     * @return the maximum value, or {@code null} if there is no mimimum
+     * @return the maximum value, or {@code null} if there is no minimum
      */
     Long getMax();
 }

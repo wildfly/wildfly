@@ -34,7 +34,7 @@ import java.util.List;
 import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
 
 /**
- * Processor that determines which application client should be started. This may be specifed on the command line,
+ * Processor that determines which application client should be started. This may be specified on the command line,
  * or alternatively if there is only one app client in the deployment it will be used.
  *
  * @author Stuart Douglas

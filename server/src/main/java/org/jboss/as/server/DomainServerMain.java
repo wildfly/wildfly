@@ -36,7 +36,6 @@ import java.util.Arrays;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.process.protocol.StreamUtils;
-import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.as.remoting.EndpointService;
 import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.remoting.management.ManagementRemotingServices;

@@ -129,9 +129,9 @@ public class JDBCMetaDataParser extends MetaDataElementParser {
                 case ADD_COLUMN_TEMPLATE: {
                     final String value = getElementText(reader);
                     if (!isEmpty(value)) {
-                        metaData.setAddColomnTemplate(new JDBCFunctionMappingMetaData("add-column-template", value));
+                        metaData.setAddColumnTemplate(new JDBCFunctionMappingMetaData("add-column-template", value));
                     } else {
-                        metaData.setAddColomnTemplate(new JDBCFunctionMappingMetaData("add-column-template", "ALTER TABLE ?1 ADD ?2 ?3"));
+                        metaData.setAddColumnTemplate(new JDBCFunctionMappingMetaData("add-column-template", "ALTER TABLE ?1 ADD ?2 ?3"));
                     }
                     break;
                 }
@@ -162,9 +162,9 @@ public class JDBCMetaDataParser extends MetaDataElementParser {
                 case ALTER_COLUMN_TEMPLATE: {
                     final String value = getElementText(reader);
                     if (!isEmpty(value)) {
-                        metaData.setAlterColomnTemplate(new JDBCFunctionMappingMetaData("add-column-template", value));
+                        metaData.setAlterColumnTemplate(new JDBCFunctionMappingMetaData("add-column-template", value));
                     } else {
-                        metaData.setAlterColomnTemplate(new JDBCFunctionMappingMetaData("add-column-template", "ALTER TABLE ?1 ADD ?2 ?3"));
+                        metaData.setAlterColumnTemplate(new JDBCFunctionMappingMetaData("add-column-template", "ALTER TABLE ?1 ADD ?2 ?3"));
                     }
                     break;
                 }
@@ -178,9 +178,9 @@ public class JDBCMetaDataParser extends MetaDataElementParser {
                 case DROP_COLUMN_TEMPLATE: {
                     final String value = getElementText(reader);
                     if (!isEmpty(value)) {
-                        metaData.setDropColomnTemplate(new JDBCFunctionMappingMetaData("drop-column-template", value));
+                        metaData.setDropColumnTemplate(new JDBCFunctionMappingMetaData("drop-column-template", value));
                     } else {
-                        metaData.setDropColomnTemplate(new JDBCFunctionMappingMetaData("drop-column-template", "ALTER TABLE ?1 DROP ?2"));
+                        metaData.setDropColumnTemplate(new JDBCFunctionMappingMetaData("drop-column-template", "ALTER TABLE ?1 DROP ?2"));
                     }
                     break;
                 }
@@ -199,7 +199,7 @@ public class JDBCMetaDataParser extends MetaDataElementParser {
                     break;
                 }
                 case FUNCTION_MAPPING: {
-                    metaData.addFunctionMapping(parseFuctionMapping(reader));
+                    metaData.addFunctionMapping(parseFunctionMapping(reader));
                     break;
                 }
                 case MAPPING: {
@@ -250,7 +250,7 @@ public class JDBCMetaDataParser extends MetaDataElementParser {
         return metaData;
     }
 
-    private static JDBCFunctionMappingMetaData parseFuctionMapping(final XMLStreamReader reader) throws XMLStreamException {
+    private static JDBCFunctionMappingMetaData parseFunctionMapping(final XMLStreamReader reader) throws XMLStreamException {
 
         final JDBCFunctionMappingMetaData metaData = new JDBCFunctionMappingMetaData();
         for (Element element : children(reader)) {
@@ -825,7 +825,7 @@ public class JDBCMetaDataParser extends MetaDataElementParser {
                     metaData.audit = parseAudit(reader);
                     break;
                 }
-                case PREFERED_RELATION: {
+                case PREFERRED_RELATION: {
                     getElementText(reader); // TODO: jeb How to handle this
                     break;
                 }

@@ -150,7 +150,7 @@ public class EntityBeanObjectViewConfigurator implements ViewConfigurator {
     }
 
     protected InterceptorFactory getEjbRemoveInterceptorFactory(final Method remove) {
-        //for BMP beans we just inoke the ejb remove method as normal, and allow the ejb remove
+        //for BMP beans we just invoke the ejb remove method as normal, and allow the ejb remove
         //method to handle the actual removal
         return new ImmediateInterceptorFactory(new ComponentDispatcherInterceptor(remove));
     }

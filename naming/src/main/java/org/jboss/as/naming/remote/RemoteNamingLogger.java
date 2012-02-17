@@ -53,7 +53,7 @@ class RemoteNamingLogger implements RemoteNamingServerLogger {
     }
 
     public void unnexpectedError(final Throwable t) {
-        ROOT_LOGGER.unnexpectedError(t);
+        ROOT_LOGGER.unexpectedError(t);
     }
 
     public void nullCorrelationId(final Throwable t) {

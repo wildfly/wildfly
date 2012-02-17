@@ -1,19 +1,8 @@
 package org.jboss.as.mail.extension;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-
-import java.util.List;
-
-import static org.jboss.as.mail.extension.MailSubsystemModel.FROM;
-import static org.jboss.as.mail.extension.MailSubsystemModel.OUTBOUND_SOCKET_BINDING_REF;
-import static org.jboss.as.mail.extension.MailSubsystemModel.PASSWORD;
-import static org.jboss.as.mail.extension.MailSubsystemModel.SSL;
-import static org.jboss.as.mail.extension.MailSubsystemModel.USER_NAME;
 
 /**
  * @author Tomaz Cerar

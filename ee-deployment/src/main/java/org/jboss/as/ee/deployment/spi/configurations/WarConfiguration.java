@@ -92,7 +92,7 @@ public class WarConfiguration implements DeploymentConfiguration {
     public void save(OutputStream stream) throws ConfigurationException {
         JarOutputStream jos;
 
-        // Setup deployment plan meta data with propriatary descriptor (jboss-web.xml)
+        // Setup deployment plan meta data with proprietary descriptor (jboss-web.xml)
         DeploymentMetaData metaData = new DeploymentMetaData("WRONG.war");
 
         try {

@@ -66,7 +66,7 @@ public interface BackingCacheEntryStore<K extends Serializable, V extends Cachea
      * Update an already cached item.
      *
      * @param entry the entry to update
-     * @param modified was the entry modified since {@link #get(Object)} was called?
+     * @param modified was the entry modified since {@link #get(java.io.Serializable, boolean)} was called?
      *
      * @throws IllegalStateException if the store isn't already managing an entry with the same {@link Identifiable#getId() id}.
      *         It is not a requirement that the store throw this exception in this case, but it is permissible. This basically

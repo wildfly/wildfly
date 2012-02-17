@@ -47,7 +47,7 @@ import org.jboss.as.jacorb.JacORBMessages;
  * <p/>
  * Besides caching work already done, this caches work in progress,
  * as we need to know about this to handle cyclic graphs of analyses.
- * When a thread re-enters the <code>getAnalysis()</code> metohd, an
+ * When a thread re-enters the <code>getAnalysis()</code> method, an
  * unfinished analysis will be returned if the same thread is already
  * working on this analysis.
  *
@@ -66,7 +66,7 @@ class WorkCacheManager {
         // Find the constructor and initializer.
         try {
             constructor = cls.getDeclaredConstructor(new Class[]{Class.class});
-            initializer = cls.getDeclaredMethod("doAnalyze", null);
+            initializer = cls.getDeclaredMethod("doAnalyze");
         } catch (NoSuchMethodException ex) {
             throw JacORBMessages.MESSAGES.unexpectedException(ex);
         }
@@ -157,7 +157,7 @@ class WorkCacheManager {
     private ContainerAnalysis createWorkInProgress(final Class cls) {
         final ContainerAnalysis analysis;
         try {
-            analysis = (ContainerAnalysis) constructor.newInstance(new Object[]{cls});
+            analysis = (ContainerAnalysis) constructor.newInstance(cls);
         } catch (InstantiationException ex) {
             throw new RuntimeException(ex.toString());
         } catch (IllegalAccessException ex) {
@@ -174,7 +174,7 @@ class WorkCacheManager {
     private void doTheWork(final Class cls, final ContainerAnalysis ret)
             throws RMIIIOPViolationException {
         try {
-            initializer.invoke(ret, new Object[]{});
+            initializer.invoke(ret);
         } catch (Throwable t) {
             synchronized (this) {
                 workInProgress.remove(cls);

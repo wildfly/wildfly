@@ -102,15 +102,15 @@ public class WebSecurityFORMTestCase extends WebSecurityPasswordBasedBase {
             }
 
             // We should now login with the user name and password
-            HttpPost httpost = new HttpPost(URL + "/j_security_check");
+            HttpPost httpPost = new HttpPost(URL + "/j_security_check");
 
             List<NameValuePair> nvps = new ArrayList<NameValuePair>();
             nvps.add(new BasicNameValuePair("j_username", user));
             nvps.add(new BasicNameValuePair("j_password", pass));
 
-            httpost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
+            httpPost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
 
-            response = httpclient.execute(httpost);
+            response = httpclient.execute(httpPost);
             entity = response.getEntity();
             if (entity != null)
                 EntityUtils.consume(entity);

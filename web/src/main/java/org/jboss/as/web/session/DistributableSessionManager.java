@@ -311,7 +311,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
                     md = sessionData.getMetadata();
                 } catch (Exception e) {
                     // most likely a lock conflict if the session is being updated remotely;
-                    // ignore it and use default values for timstamp and maxInactive
+                    // ignore it and use default values for timestamp and maxInactive
                     log.debug("Problem reading metadata for session " + realId + " -- " + e.toString(), e);
                 }
 
@@ -1171,7 +1171,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
         }
 
         // Holder for sessions or OwnedSessionUpdates that survive expiration,
-        // sorted by last acccessed time
+        // sorted by last accessed time
         TreeSet<PassivationCheck> passivationChecks = new TreeSet<PassivationCheck>();
 
         try {

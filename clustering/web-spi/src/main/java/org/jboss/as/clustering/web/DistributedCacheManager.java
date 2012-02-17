@@ -52,7 +52,7 @@ public interface DistributedCacheManager<T extends OutgoingDistributableSessionD
 
     /**
      * Store or update a session in the distributed cache.
-     * @param session the session
+     * @param sessionData the session
      */
     void storeSessionData(T sessionData);
 

@@ -33,7 +33,7 @@ public interface ServerUpdateActionResult {
         CONFIGURATION_MODIFIED_REQUIRES_RESTART,
         /**
          * The action failed to complete successfully. See
-         * {@link DeploymentActionResult#getDeploymentException()} for possible details.
+         * {@link ServerUpdateActionResult#getDeploymentException()} for possible details.
          */
         FAILED,
         /**

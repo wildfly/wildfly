@@ -27,7 +27,6 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.descriptions.common.PathDescription;
 import org.jboss.as.controller.descriptions.common.ProfileDescription;
-import org.jboss.as.controller.descriptions.common.SocketBindingGroupDescription;
 import org.jboss.dmr.ModelNode;
 
 /**

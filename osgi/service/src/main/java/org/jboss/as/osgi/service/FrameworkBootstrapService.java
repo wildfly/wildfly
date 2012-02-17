@@ -277,8 +277,8 @@ public class FrameworkBootstrapService implements Service<Void> {
             String bindingNames = syscontext.getProperty(MAPPED_OSGI_SOCKET_BINDINGS);
             if (bindingNames != null) {
                 final Set<ServiceName> socketBindingNames = new HashSet<ServiceName>();
-                for (String sufix : bindingNames.split(",")) {
-                    socketBindingNames.add(JBOSS_BINDING_NAME.append(sufix));
+                for (String suffix : bindingNames.split(",")) {
+                    socketBindingNames.add(JBOSS_BINDING_NAME.append(suffix));
                 }
                 ServiceTarget serviceTarget = context.getChildTarget();
                 ServiceName serviceName = Services.SYSTEM_SERVICES_PROVIDER.append("BINDINGS");

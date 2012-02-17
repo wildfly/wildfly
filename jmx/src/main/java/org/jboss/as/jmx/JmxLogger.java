@@ -57,7 +57,7 @@ public interface JmxLogger extends BasicLogger {
     void cannotShutdownRmiRegistry(@Cause Throwable cause);
 
     /**
-     * Creates an exception indicating the JMX connector could not undbind from the registry.
+     * Creates an exception indicating the JMX connector could not unbind from the registry.
      *
      * @param cause the cause of the error.
      */
@@ -66,7 +66,7 @@ public interface JmxLogger extends BasicLogger {
     void cannotStopConnectorServer(@Cause Throwable cause);
 
     /**
-     * Creates an exception indicating the JMX connector could not undbind from the registry.
+     * Creates an exception indicating the JMX connector could not unbind from the registry.
      *
      * @param cause the cause of the error.
      */

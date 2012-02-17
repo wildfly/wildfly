@@ -25,9 +25,9 @@ import java.lang.reflect.Method;
 
 /**
  * This immutable class contains information about an automatically generated
- * query. This class is a place holder used to make an automaticlly generated
+ * query. This class is a place holder used to make an automatically generated
  * query look more like a user specified query.  This class only contains a
- * referance to the method used to invoke this query.
+ * reference to the method used to invoke this query.
  *
  * @author <a href="mailto:dain@daingroup.com">Dain Sundstrom</a>
  * @author <a href="sebastien.alborini@m4x.org">Sebastien Alborini</a>
@@ -35,7 +35,7 @@ import java.lang.reflect.Method;
  */
 public final class JDBCAutomaticQueryMetaData implements JDBCQueryMetaData {
     /**
-     * A referance to the method which invokes this query.
+     * A reference to the method which invokes this query.
      */
     private final Method method;
 

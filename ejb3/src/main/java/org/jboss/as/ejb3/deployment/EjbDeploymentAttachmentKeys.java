@@ -29,7 +29,6 @@ import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
-import org.jboss.msc.service.ServiceName;
 
 /**
  * {@link org.jboss.as.server.deployment.DeploymentUnitProcessor} attachment keys specific to EJB3 deployment

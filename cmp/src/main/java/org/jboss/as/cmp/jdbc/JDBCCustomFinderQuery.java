@@ -134,7 +134,7 @@ public final class JDBCCustomFinderQuery implements JDBCQueryCommand {
             if (ex instanceof FinderException) {
                 throw (FinderException) ex;
             } else {
-                throw new FinderException("Errror invoking cutom finder " +
+                throw new FinderException("Error invoking custom finder " +
                         finderMethod.getName() + ": " + ex);
             }
         }

@@ -66,7 +66,7 @@ public final class JDBCLoadRelationCommand {
     public Collection execute(JDBCCMRFieldBridge cmrField, Object pk) {
         JDBCCMRFieldBridge relatedCMRField = (JDBCCMRFieldBridge) cmrField.getRelatedCMRField();
 
-        // get the read ahead cahces
+        // get the read ahead caches
         ReadAheadCache readAheadCache = manager.getReadAheadCache();
         ReadAheadCache relatedReadAheadCache = cmrField.getRelatedManager().getReadAheadCache();
 
@@ -190,7 +190,7 @@ public final class JDBCLoadRelationCommand {
                 // store the results list for readahead on-load
                 relatedReadAheadCache.addFinderResults(results, readAhead);
 
-                // store the preloaded relationship (unless this is the realts we
+                // store the preloaded relationship (unless this is the result we
                 // are actually after)
                 if (!key.equals(pk)) {
                     readAheadCache.addPreloadData(key, cmrField, results);

@@ -22,7 +22,7 @@
 package org.jboss.as.cmp.ejbql;
 
 /**
- * This abstract syntax node represents a negation opperator.
+ * This abstract syntax node represents a negation operator.
  *
  * @author <a href="mailto:dain@daingroup.com">Dain Sundstrom</a>
  * @version $Revision: 81030 $

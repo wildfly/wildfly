@@ -71,7 +71,7 @@ final class WSVirtualFileFilter implements VirtualFileFilterWithAttributes {
             return false;
         }
 
-        final String fileName = file.getLowerCaseName();
+        final String fileName = file.getName().toLowerCase();
         final boolean hasWsdlSuffix = fileName.endsWith(".wsdl");
         final boolean hasXsdSuffix = fileName.endsWith(".xsd");
         final boolean hasXmlSuffix = fileName.endsWith(".xml");

@@ -116,7 +116,7 @@ enum Element {
     PK_CONSTRAINT("pk-constraint"),
     PK_CONSTRAINT_TEMPLATE("pk-constraint-template"),
     POST_TABLE_CREATE("post-table-create"),
-    PREFERED_RELATION("preferred-relation-mapping"),
+    PREFERRED_RELATION("preferred-relation-mapping"),
     PROPERTY("property"),
     PROPERTY_NAME("property-name"),
     QL_COMPILER("ql-compiler"),

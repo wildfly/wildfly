@@ -434,7 +434,7 @@ class ModClusterSubsystemDescriptions {
         node.get(type, CommonAttributes.WORKER_TIMEOUT, ModelDescriptionConstants.UNIT).set(MeasurementUnit.SECONDS.getName());
 
         node.get(type, CommonAttributes.MAX_ATTEMPTS, TYPE).set(ModelType.INT);
-        node.get(type, CommonAttributes.MAX_ATTEMPTS, DESCRIPTION).set(bundle.getString("modcluster.configuration.max-attemps"));
+        node.get(type, CommonAttributes.MAX_ATTEMPTS, DESCRIPTION).set(bundle.getString("modcluster.configuration.max-attempts"));
         node.get(type, CommonAttributes.MAX_ATTEMPTS, REQUIRED).set(false);
         node.get(type, CommonAttributes.MAX_ATTEMPTS, DEFAULT).set(1);
 

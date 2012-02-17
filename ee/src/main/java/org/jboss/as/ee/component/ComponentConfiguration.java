@@ -58,7 +58,7 @@ public class ComponentConfiguration {
     // Core component config
     private final ClassIndex classIndex;
     private final ModuleLoader moduleLoader;
-    private final ClassLoader moduleClassLoder;
+    private final ClassLoader moduleClassLoader;
 
     private ComponentCreateServiceFactory componentCreateServiceFactory = ComponentCreateServiceFactory.BASIC;
 
@@ -87,10 +87,10 @@ public class ComponentConfiguration {
 
     private final Set<Object> interceptorContextKeys = new HashSet<Object>();
 
-    public ComponentConfiguration(final ComponentDescription componentDescription, final ClassIndex classIndex, final ClassLoader moduleClassLoder, final ModuleLoader moduleLoader) {
+    public ComponentConfiguration(final ComponentDescription componentDescription, final ClassIndex classIndex, final ClassLoader moduleClassLoader, final ModuleLoader moduleLoader) {
         this.componentDescription = componentDescription;
         this.classIndex = classIndex;
-        this.moduleClassLoder = moduleClassLoder;
+        this.moduleClassLoader = moduleClassLoader;
         this.moduleLoader = moduleLoader;
     }
 
@@ -415,8 +415,8 @@ public class ComponentConfiguration {
         this.namespaceContextInterceptorFactory = interceptorFactory;
     }
 
-    public ClassLoader getModuleClassLoder() {
-        return moduleClassLoder;
+    public ClassLoader getModuleClassLoader() {
+        return moduleClassLoader;
     }
 
     public ModuleLoader getModuleLoader() {

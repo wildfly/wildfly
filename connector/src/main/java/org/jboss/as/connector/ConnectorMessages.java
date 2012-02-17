@@ -387,7 +387,7 @@ public interface ConnectorMessages {
 
     /**
      * Failed to load native libraries
-     * @param e the exception.
+     * @param cause the exception.
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
     @Message(id = 10461, value = "Failed to load native libraries")

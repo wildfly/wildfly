@@ -91,7 +91,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
 
         // @PersistenceUnit
         List<AnnotationInstance> persistenceUnits = index.getAnnotations(PERSISTENCE_UNIT_ANNOTATION_NAME);
-        // create binding and injection configurations out of the @PersistenceUnit annotaitons
+        // create binding and injection configurations out of the @PersistenceUnit annotations
         this.processPersistenceAnnotations(deploymentUnit, eeModuleDescription, persistenceUnits, applicationClasses);
 
         // if we found any @PersistenceContext or @PersistenceUnit annotations then mark this as a JPA deployment

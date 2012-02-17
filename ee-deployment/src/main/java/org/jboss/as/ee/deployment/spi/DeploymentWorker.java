@@ -35,7 +35,7 @@ import static org.jboss.as.ee.deployment.spi.DeploymentLogger.ROOT_LOGGER;
 import static org.jboss.as.ee.deployment.spi.DeploymentMessages.MESSAGES;
 
 /**
- * A thread that deployes the given deployment on all targets contained in the progress object. It sends events to the progress
+ * A thread that deploys the given deployment on all targets contained in the progress object. It sends events to the progress
  * object.
  *
  * @author Thomas.Diesler@jboss.com

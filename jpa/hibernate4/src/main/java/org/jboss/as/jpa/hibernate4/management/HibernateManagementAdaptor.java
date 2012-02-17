@@ -232,7 +232,7 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
         });
 
         /**
-         * Get global number of entity fetchs
+         * Get global number of entity fetches
          * @return entity fetch (from DB)
          */
         jpaHibernateRegistration.registerMetric(OPERATION_ENTITY_FETCH_COUNT, new AbstractMetricsHandler() {

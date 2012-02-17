@@ -868,7 +868,7 @@ public class EntityTable implements Table {
             if (references != null) {
                 if (inFlush) {
                     if (log.isTraceEnabled()) {
-                        log.trace("inFlush, ignorning flushCreated");
+                        log.trace("inFlush, ignoring flushCreated");
                     }
                     return;
                 } else if (log.isTraceEnabled()) {

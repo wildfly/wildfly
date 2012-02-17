@@ -23,7 +23,6 @@
 package org.jboss.as.connector.metadata.deployment;
 
 import org.jboss.jca.deployers.common.CommonDeployment;
-import org.jboss.modules.ModuleIdentifier;
 
 /**
  * A resource adapter deployment
@@ -35,7 +34,6 @@ public final class ResourceAdapterDeployment {
 
     /**
      * Create an instance
-     * @param identifier The identifier
      * @param deployment The deployment
      */
     public ResourceAdapterDeployment(CommonDeployment deployment) {

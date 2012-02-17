@@ -22,7 +22,7 @@
 package org.jboss.as.cmp.jdbc.metadata;
 
 import java.lang.reflect.Method;
-import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
+
 import org.jboss.metadata.ejb.spec.QueryMetaData;
 import org.jboss.metadata.ejb.spec.ResultTypeMapping;
 

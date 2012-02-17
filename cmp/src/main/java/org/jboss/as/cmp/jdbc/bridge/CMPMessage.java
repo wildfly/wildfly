@@ -26,7 +26,7 @@ import java.io.Serializable;
 
 /**
  * Type safe enumeration of message objects.
- * Used by optmistic lock to lock fields and its values dependeding
+ * Used by optimistic lock to lock fields and its values depending
  * on the strategy used.
  *
  * @author <a href="mailto:aloubyansky@hotmail.com">Alex Loubyansky</a>

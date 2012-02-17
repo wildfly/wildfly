@@ -51,7 +51,7 @@ public abstract class AbstractDeploymentUnitProcessor implements DeploymentUnitP
 
     /**
      * If this is an appclient we want to make the components as not installable, so we can still look up which EJB's are in
-     * the deployment, but do not actuall install them
+     * the deployment, but do not actual install them
      */
     protected final boolean appclient;
 

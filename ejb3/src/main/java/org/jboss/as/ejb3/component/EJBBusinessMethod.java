@@ -52,7 +52,7 @@ public class EJBBusinessMethod implements Serializable {
 
     public EJBBusinessMethod(MethodIntf view, String methodName, Class<?>... paramTypes) {
         if (methodName == null) {
-            throw MESSAGES.methodeNameIsNull();
+            throw MESSAGES.methodNameIsNull();
         }
         this.methodName = methodName;
         this.methodParamTypes = paramTypes == null ? new Class<?>[0] : paramTypes;

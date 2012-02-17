@@ -29,11 +29,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.ejb.EJBMetaData;
-import javax.ejb.EJBObject;
-import javax.ejb.Handle;
 import javax.ejb.HomeHandle;
 import javax.management.MBeanException;
-import javax.rmi.PortableRemoteObject;
 import javax.transaction.Status;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
@@ -292,7 +289,7 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
                         final Object[] params = op.readParams((org.omg.CORBA_2_3.portable.InputStream) in);
 
                         if (!home && opName.equals("isIdentical") && params.length == 1) {
-                            //handle isIdential specially
+                            //handle isIdentical specially
                             Object val = params[0];
                             if (val instanceof org.omg.CORBA.Object) {
                                 retVal = handleIsIdentical((org.omg.CORBA.Object) val);

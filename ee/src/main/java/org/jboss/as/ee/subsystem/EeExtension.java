@@ -143,7 +143,7 @@ public class EeExtension implements Extension {
             requireNoAttributes(reader);
 
             final ModelNode eeSubSystem = createEESubSystemAddOperation();
-            // add the subsytem to the ModelNode(s)
+            // add the subsystem to the ModelNode(s)
             list.add(eeSubSystem);
 
             // elements

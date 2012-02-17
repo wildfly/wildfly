@@ -34,7 +34,7 @@ import org.jboss.as.clustering.web.OutgoingAttributeGranularitySessionData;
  * the dirty attributes.
  * <p/>
  * Note that the isolation level of the cache dictates the concurrency behavior. Also note that session and its associated
- * attribtues are stored in different nodes. This will be ok since cache will take care of concurrency. When replicating, we
+ * attributes are stored in different nodes. This will be ok since cache will take care of concurrency. When replicating, we
  * will need to replicate both session and its attributes.
  * </p>
  * @author Ben Wang

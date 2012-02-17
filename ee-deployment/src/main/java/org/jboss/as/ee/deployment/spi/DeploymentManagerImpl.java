@@ -78,7 +78,7 @@ import static org.jboss.as.ee.deployment.spi.DeploymentMessages.MESSAGES;
 public class DeploymentManagerImpl implements DeploymentManager {
 
     /**
-     * The URI deployment factory recoginzes: http://org.jboss.as.ee.deployment/jsr88
+     * The URI deployment factory recognizes: http://org.jboss.as.ee.deployment/jsr88
      */
     public static final String DEPLOYER_URI = "http://org.jboss.as.ee.deployment/jsr88";
 
@@ -362,7 +362,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
                 targetModuleIDs[i] = new TargetModuleIDImpl(target, moduleID, null, type);
             }
 
-            // delete all temp files, except the depoyment
+            // delete all temp files, except the deployment
             for (int i = 0; i < tmpFiles.size(); i++) {
                 File file = tmpFiles.get(i);
                 if (file.equals(deployment) == false)
@@ -391,7 +391,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
     private void initDeploymentMetaData() throws IOException {
         File metaTmpFile = mapDeploymentPlan.get(DeploymentMetaData.ENTRY_NAME);
         if (metaTmpFile == null)
-            throw new IOException(MESSAGES.deployementPlanDoesNotContainEntry(DeploymentMetaData.ENTRY_NAME));
+            throw new IOException(MESSAGES.deploymentPlanDoesNotContainEntry(DeploymentMetaData.ENTRY_NAME));
 
         try {
             SAXReader reader = new SAXReader();

@@ -182,7 +182,7 @@ public final class QueryParameter {
             // get the field from the entity
             field = getCMPField(manager, argType, fieldName);
             if (!field.isPrimaryKeyMember()) {
-                throw new IllegalArgumentException("The specified field must be a primay key field");
+                throw new IllegalArgumentException("The specified field must be a primary key field");
             }
 
             // get the jdbc type object
@@ -201,7 +201,7 @@ public final class QueryParameter {
             this.type = type;
         } else {
             if (!tok.hasMoreTokens()) {
-                throw new IllegalArgumentException("Parmeter is a known " +
+                throw new IllegalArgumentException("Parameter is a known " +
                         "dependent value class, so a property must be supplied");
             }
 
@@ -263,7 +263,7 @@ public final class QueryParameter {
                 } else if (arg instanceof EJBLocalObject) {
                     arg = ((EJBLocalObject) arg).getPrimaryKey();
                 } else {
-                    throw new IllegalArgumentException("Expected an instanc of " +
+                    throw new IllegalArgumentException("Expected an instance of " +
                             "EJBObject or EJBLocalObject, but got an instance of " +
                             arg.getClass().getName());
                 }

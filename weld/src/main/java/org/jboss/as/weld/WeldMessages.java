@@ -128,6 +128,6 @@ public interface WeldMessages {
     @Message(id = 16074, value = "services cannot be added after weld has started")
     IllegalStateException cannotAddServicesAfterStart();
 
-    @Message(id = 16075, value = "BeanDeploymentArchive with id %s not found in deplyoment")
+    @Message(id = 16075, value = "BeanDeploymentArchive with id %s not found in deployment")
     IllegalArgumentException beanDeploymentNotFound(String beanDeploymentId);
 }

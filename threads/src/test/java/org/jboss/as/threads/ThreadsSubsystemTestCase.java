@@ -1209,6 +1209,11 @@ public class ThreadsSubsystemTestCase {
 
         @Override
         public SubsystemRegistration registerSubsystem(final String name) throws IllegalArgumentException {
+            return registerSubsystem(name, 1, 0);
+        }
+
+        @Override
+        public SubsystemRegistration registerSubsystem(final String name, final int majorVersion, final int minorVersion) {
             return new SubsystemRegistration() {
                 @Override
                 public ManagementResourceRegistration registerSubsystemModel(final DescriptionProvider descriptionProvider) {
@@ -1244,11 +1249,6 @@ public class ThreadsSubsystemTestCase {
                     Assert.assertNotNull(writer);
                 }
             };
-        }
-
-        @Override
-        public SubsystemRegistration registerSubsystem(String name, int majorVersion, int minorVersion) {
-            return registerSubsystem(name);
         }
     }
     static List<ModelNode> createSubSystem(String subsystemContents) throws XMLStreamException {

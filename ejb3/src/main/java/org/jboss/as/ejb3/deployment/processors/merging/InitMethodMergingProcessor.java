@@ -82,7 +82,7 @@ public class InitMethodMergingProcessor extends AbstractMergingProcessor<Statefu
             for (Method method : index.getMethods()) {
                 if (method.getName().startsWith("ejbCreate")) {
                     //if there is additional metadata specified for this method
-                    //it will be overriden below
+                    //it will be overridden below
                     if (!description.getInitMethods().containsKey(method)) {
                         description.addInitMethod(method, null);
                     }

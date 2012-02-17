@@ -29,7 +29,6 @@ import org.apache.catalina.connector.Response;
 import org.apache.catalina.util.StringManager;
 import org.apache.coyote.ActionCode;
 import org.jboss.as.web.WebLogger;
-import org.jboss.logging.Logger;
 
 import javax.security.auth.Subject;
 import javax.security.auth.message.AuthException;

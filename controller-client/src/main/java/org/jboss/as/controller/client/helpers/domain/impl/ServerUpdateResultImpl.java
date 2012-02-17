@@ -27,7 +27,6 @@ import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
 import java.io.Serializable;
 import java.util.UUID;
 
-import org.jboss.as.controller.client.helpers.domain.RollbackCancelledException;
 import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
 import org.jboss.as.controller.client.helpers.domain.ServerUpdateResult;
 import org.jboss.dmr.ModelNode;

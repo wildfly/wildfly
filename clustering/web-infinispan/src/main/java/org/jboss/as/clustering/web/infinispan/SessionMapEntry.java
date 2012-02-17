@@ -44,7 +44,7 @@ public enum SessionMapEntry {
      * Returns the value associated with this atomic map entry.
      *
      * @param <T> the value type
-     * @param data an atomic map
+     * @param map an atomic map
      * @return the entry value
      */
     public <T> T get(Map<Object, Object> map) {
@@ -55,7 +55,7 @@ public enum SessionMapEntry {
      * Add this entry to the specified map if the specified value is non-null.
      *
      * @param <T> the value type
-     * @param data an atomic map
+     * @param map an atomic map
      * @param value the entry value
      * @return the old entry value, or null if no previous entry existed
      */

@@ -27,7 +27,7 @@ import java.util.Map;
 
 /**
  * <p>
- * Enumeration of {@code ORB} initializer groups. Each member contains one or more initiliazer classes that belong to a
+ * Enumeration of {@code ORB} initializer groups. Each member contains one or more initializer classes that belong to a
  * specific group.
  * </p>
  *

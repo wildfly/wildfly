@@ -28,24 +28,14 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -282,7 +272,7 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
         ModelNode op = createOpNode("subsystem=web/connector=test-" + conn.getName() + "-connector", "add");
         op.get("socket-binding").set("test-" + conn.getName());
         op.get("scheme").set(conn.getScheme());
-        op.get("protocol").set(conn.getProtrocol());
+        op.get("protocol").set(conn.getProtocol());
         op.get("secure").set(conn.isSecure());
         op.get("enabled").set(true);
         if (conn.isSecure()) {

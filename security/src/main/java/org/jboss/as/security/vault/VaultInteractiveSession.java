@@ -96,7 +96,7 @@ public class VaultInteractiveSession {
             System.out.println("Obtained Vault");
             Map<String, Object> options = new HashMap<String, Object>();
             options.putAll(getMap());
-            System.out.println("Intializing Vault");
+            System.out.println("Initializing Vault");
             vault.init(options);
             System.out.println("Vault is initialized and ready for use");
             handshake();

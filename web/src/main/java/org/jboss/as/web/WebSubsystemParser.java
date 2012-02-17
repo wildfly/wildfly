@@ -277,7 +277,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
 
         boolean startWritten = writeStaticResourceAttribute(writer, Attribute.LISTINGS.getLocalName(), config, false);
         startWritten = writeStaticResourceAttribute(writer, Attribute.SENDFILE.getLocalName(), config, startWritten) || startWritten;
-        startWritten = writeStaticResourceAttribute(writer, Attribute.FILE_ENCONDING.getLocalName(), config, startWritten) || startWritten;
+        startWritten = writeStaticResourceAttribute(writer, Attribute.FILE_ENCODING.getLocalName(), config, startWritten) || startWritten;
         startWritten = writeStaticResourceAttribute(writer, Attribute.READ_ONLY.getLocalName(), config, startWritten) || startWritten;
         startWritten = writeStaticResourceAttribute(writer, Attribute.WEBDAV.getLocalName(), config, startWritten) || startWritten;
         startWritten = writeStaticResourceAttribute(writer, Attribute.SECRET.getLocalName(), config, startWritten) || startWritten;
@@ -311,7 +311,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
         startWritten = writeJspConfigAttribute(writer, Attribute.TAG_POOLING.getLocalName(), jsp, startWritten, containerConfigStartWritten) || startWritten;
         startWritten = writeJspConfigAttribute(writer, Attribute.MAPPED_FILE.getLocalName(), jsp, startWritten, containerConfigStartWritten) || startWritten;
         startWritten = writeJspConfigAttribute(writer, Attribute.CHECK_INTERVAL.getLocalName(), jsp, startWritten, containerConfigStartWritten) || startWritten;
-        startWritten = writeJspConfigAttribute(writer, Attribute.MODIFIFICATION_TEST_INTERVAL.getLocalName(), jsp, startWritten, containerConfigStartWritten) || startWritten;
+        startWritten = writeJspConfigAttribute(writer, Attribute.MODIFICATION_TEST_INTERVAL.getLocalName(), jsp, startWritten, containerConfigStartWritten) || startWritten;
         startWritten = writeJspConfigAttribute(writer, Attribute.RECOMPILE_ON_FAIL.getLocalName(), jsp, startWritten, containerConfigStartWritten) || startWritten;
         startWritten = writeJspConfigAttribute(writer, Attribute.SMAP.getLocalName(), jsp, startWritten, containerConfigStartWritten) || startWritten;
         startWritten = writeJspConfigAttribute(writer, Attribute.DUMP_SMAP.getLocalName(), jsp, startWritten, containerConfigStartWritten) || startWritten;
@@ -457,7 +457,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
             case TAG_POOLING:
             case MAPPED_FILE:
             case CHECK_INTERVAL:
-            case MODIFIFICATION_TEST_INTERVAL:
+            case MODIFICATION_TEST_INTERVAL:
             case RECOMPILE_ON_FAIL:
             case SMAP:
             case DUMP_SMAP:
@@ -493,8 +493,8 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
             case SENDFILE:
                 resources.get(SENDFILE).set(value);
                 break;
-            case FILE_ENCONDING:
-                resources.get(FILE_ENCONDING).set(value);
+            case FILE_ENCODING:
+                resources.get(FILE_ENCODING).set(value);
                 break;
             case READ_ONLY:
                 resources.get(READ_ONLY).set(value);

@@ -137,7 +137,7 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
     }
 
     /**
-     * Remove the {@link Module} and {@link ModuleSpec} services assocaiated with the given identifier.
+     * Remove the {@link Module} and {@link ModuleSpec} services associated with the given identifier.
      */
     @Override
     public void removeModule(ModuleIdentifier identifier) {

@@ -97,7 +97,7 @@ public enum ClusteredSessionNotificationCause {
     // TAKE_OWNERSHIP,
     //
     // /**
-    // * Local node has relinquised "ownership" of a session for a reason other than
+    // * Local node has relinquished "ownership" of a session for a reason other than
     // * {@link #FAILAWAY} {@link #INVALIDATE}, {@link #TIMEOUT} or {@link #UNDEPLOY};
     // * i.e. some other node is taking over as the owner of session.
     // * Typically a policy implementation would not allow notifications for a

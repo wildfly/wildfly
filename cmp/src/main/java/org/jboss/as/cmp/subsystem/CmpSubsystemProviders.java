@@ -23,7 +23,7 @@
 package org.jboss.as.cmp.subsystem;
 
 import java.util.Locale;
-import java.util.ResourceBundle;
+
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 

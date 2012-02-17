@@ -20,7 +20,6 @@ package org.jboss.as.web.deployment.mock;
 
 
 import java.security.Principal;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;

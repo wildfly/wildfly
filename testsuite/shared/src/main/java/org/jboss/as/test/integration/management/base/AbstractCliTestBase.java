@@ -33,11 +33,10 @@ import org.jboss.as.test.integration.management.util.CLIWrapper;
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
 public class AbstractCliTestBase {
-
-    public final static long WAIT_TIMEOUT = 30000;
-    public final static long WAIT_LINETIMEOUT = 1000;
+    public static final long WAIT_TIMEOUT = 30000;
+    public static final long WAIT_LINETIMEOUT = 1000;
     protected static CLIWrapper cli;
-    
+
     public static void initCLI() throws Exception {
         if (cli == null) cli = new CLIWrapper(true);
     }
@@ -54,7 +53,6 @@ public class AbstractCliTestBase {
         return new URL(url.getProtocol(), url.getHost(), url.getPort(), "/").toString();
     }
 
-    
     protected boolean checkUndeployed(String spec) {
         try {
             final long firstTry = System.currentTimeMillis();
@@ -73,5 +71,4 @@ public class AbstractCliTestBase {
         }
         return true;
     }
-    
 }

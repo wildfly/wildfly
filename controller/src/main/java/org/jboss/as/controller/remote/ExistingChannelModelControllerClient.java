@@ -57,7 +57,7 @@ public class ExistingChannelModelControllerClient extends AbstractModelControlle
     /**
      * Create and add model controller handler to a existing management channel handler.
      *
-     * @param handler the channle hanlder
+     * @param handler the channel handler
      * @return the created client
      */
     public static ModelControllerClient createAndAdd(final ManagementChannelHandler handler) {

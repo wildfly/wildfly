@@ -46,7 +46,7 @@ public class InitialContextFactoryBuilder implements javax.naming.spi.InitialCon
      *
      * @param environment The environment
      * @return An initial context factory
-     * @throws NamingException If an error occurs loading the factroy class.
+     * @throws NamingException If an error occurs loading the factory class.
      */
     public javax.naming.spi.InitialContextFactory createInitialContextFactory(Hashtable<?, ?> environment) throws NamingException {
         if (environment == null)

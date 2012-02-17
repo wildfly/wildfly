@@ -31,7 +31,6 @@
     import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 
     import java.util.Arrays;
-    import java.util.Collections;
     import java.util.HashMap;
     import java.util.List;
     import java.util.Locale;

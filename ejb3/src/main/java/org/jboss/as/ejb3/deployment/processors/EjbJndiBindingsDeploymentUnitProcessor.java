@@ -44,7 +44,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.logging.Logger;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
 import org.jboss.msc.value.Values;
 
 /**
@@ -198,7 +197,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
         moduleDescription.getBindingConfigurations().add(new BindingConfiguration(jndiName, new RemoteViewInjectionSource(null, moduleDescription.getEarApplicationName(), moduleDescription.getModuleName(), moduleDescription.getDistinctName(), componentDescription.getComponentName(), viewDescription.getViewClassName(), componentDescription.isStateful(), viewClassLoader)));
         componentDescription.getConfigurators().add(new ComponentConfigurator() {
             public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                viewClassLoader.setValue(Values.immediateValue(configuration.getModuleClassLoder()));
+                viewClassLoader.setValue(Values.immediateValue(configuration.getModuleClassLoader()));
             }
         });
     }

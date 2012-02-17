@@ -26,7 +26,7 @@ import java.util.List;
 
 /**
  * This abstract syntax node represents a series of addition and subtraction
- * opperations.
+ * operations.
  *
  * @author <a href="mailto:dain@daingroup.com">Dain Sundstrom</a>
  * @version $Revision: 81030 $

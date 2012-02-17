@@ -23,11 +23,7 @@
 package org.jboss.as.logging;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
-import javax.xml.stream.XMLStreamException;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 

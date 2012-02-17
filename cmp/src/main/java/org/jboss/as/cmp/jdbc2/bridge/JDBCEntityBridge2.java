@@ -161,7 +161,7 @@ public class JDBCEntityBridge2 implements JDBCAbstractEntityBridge {
     }
 
     public static void destroyPersistenceContext(CmpEntityBeanContext ctx) {
-        // If we have an EJB 2.0 dynaymic proxy,
+        // If we have an EJB 2.0 dynamic proxy,
         // notify the handler of the assigned context.
         // Object instance = ctx.getComponent().getCache().get(ctx.getPrimaryKey());
         // TODO: jeb - Set context on proxy
@@ -169,7 +169,7 @@ public class JDBCEntityBridge2 implements JDBCAbstractEntityBridge {
     }
 
     public void initPersistenceContext(CmpEntityBeanContext ctx) {
-        // If we have an EJB 2.0 dynaymic proxy,
+        // If we have an EJB 2.0 dynamic proxy,
         // notify the handler of the assigned context.
         //Object instance = ctx.getComponent().getCache().get(ctx.getPrimaryKey());
         // TODO: jeb - Set context on proxy
