@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,6 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.controller.remote;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
@@ -47,16 +48,16 @@ import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.dmr.ModelNode;
 
 /**
- * The transactional request handler for a remote {@link ProxyController}.
+ * The transactional request handler for a remote {@link TransactionalProtocolClient}.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author Emanuel Muckenhuber
  */
-public class TransactionalModelControllerOperationHandler implements ManagementRequestHandlerFactory {
+public class TransactionalProtocolOperationHandler implements ManagementRequestHandlerFactory {
 
     private final ModelController controller;
     private final ManagementChannelAssociation channelAssociation;
-    public TransactionalModelControllerOperationHandler(final ModelController controller, final ManagementChannelAssociation channelAssociation) {
+    public TransactionalProtocolOperationHandler(final ModelController controller, final ManagementChannelAssociation channelAssociation) {
         this.controller = controller;
         this.channelAssociation = channelAssociation;
     }
@@ -67,7 +68,7 @@ public class TransactionalModelControllerOperationHandler implements ManagementR
             case ModelControllerProtocol.EXECUTE_TX_REQUEST:
                 // Initialize the request context
                 final ExecuteRequestContext executeRequestContext = new ExecuteRequestContext();
-                executeRequestContext.operation = handlers.registerActiveOperation(request.getBatchId(), executeRequestContext);
+                executeRequestContext.operation = handlers.registerActiveOperation(request.getBatchId(), executeRequestContext, executeRequestContext);
                 return new ExecuteRequestHandler();
             case ModelControllerProtocol.COMPLETE_TX_REQUEST:
                 return new CompleteTxOperationHandler();
@@ -171,15 +172,16 @@ public class TransactionalModelControllerOperationHandler implements ManagementR
                 // Wait for the commit or rollback message
                 requestContext.txCompletedLatch.await();
             } catch (InterruptedException e) {
-                requestContext.getResultHandler().failed(e);
+                // requestContext.getResultHandler().failed(e);
                 Thread.currentThread().interrupt();
             }
         }
     }
 
-    static class ExecuteRequestContext {
+    static class ExecuteRequestContext implements ActiveOperation.CompletedCallback<Void> {
 
         private boolean prepared;
+        private boolean rollbackOnPrepare;
         private ModelController.OperationTransaction activeTx;
         private ActiveOperation<Void, ExecuteRequestContext> operation;
         private ManagementRequestContext<ExecuteRequestContext> responseChannel;
@@ -193,6 +195,27 @@ public class TransactionalModelControllerOperationHandler implements ManagementR
             return operation.getResultHandler();
         }
 
+        @Override
+        public void completed(Void result) {
+            //
+        }
+
+        @Override
+        public synchronized void failed(Exception e) {
+            if(prepared) {
+                final ModelController.OperationTransaction transaction = activeTx;
+                if(transaction != null) {
+                    transaction.rollback();
+                    txCompletedLatch.countDown();
+                }
+            }
+        }
+
+        @Override
+        public void cancelled() {
+            //
+        }
+
         synchronized void initialize(final ManagementRequestContext<ExecuteRequestContext> context) {
             assert ! prepared;
             assert responseChannel == null;
@@ -202,32 +225,58 @@ public class TransactionalModelControllerOperationHandler implements ManagementR
         }
 
         synchronized void prepare(final ModelController.OperationTransaction tx, final ModelNode result) {
-            assert !prepared;
-            assert activeTx == null;
-            assert responseChannel != null;
-            try {
-                // 2) send the operation-prepared notification (just clear response info)
-                sendResponse(responseChannel, ModelControllerProtocol.PARAM_OPERATION_PREPARED, result);
-                activeTx = tx;
-                prepared = true;
-            } catch (IOException e) {
-                getResultHandler().failed(e);
-            } finally {
-                responseChannel = null;
+            if(rollbackOnPrepare) {
+                try {
+                    tx.rollback();
+                } finally {
+                    txCompletedLatch.countDown();
+                }
+
+                // TODO send response ?
+
+            } else {
+                assert !prepared;
+                assert activeTx == null;
+                assert responseChannel != null;
+                try {
+                    // 2) send the operation-prepared notification (just clear response info)
+                    sendResponse(responseChannel, ModelControllerProtocol.PARAM_OPERATION_PREPARED, result);
+                    activeTx = tx;
+                    prepared = true;
+                } catch (IOException e) {
+                    getResultHandler().failed(e);
+                } finally {
+                    responseChannel = null;
+                }
             }
         }
 
         synchronized void completeTx(final ManagementRequestContext<ExecuteRequestContext> context, final boolean commit) {
-            assert prepared;
-            assert activeTx != null;
-            assert responseChannel == null;
-            responseChannel = context;
-            if (commit) {
-                activeTx.commit();
+            if(!prepared) {
+                assert !commit; // can only be rollback before it's prepared
+                rollbackOnPrepare = true;
+                // Hmm,  perhaps block remoting thread to cancel?
+                context.executeAsync(new ManagementRequestContext.AsyncTask<ExecuteRequestContext>() {
+                    @Override
+                    public void execute(ManagementRequestContext<ExecuteRequestContext> executeRequestContextManagementRequestContext) throws Exception {
+                        operation.getResultHandler().cancel();
+                    }
+                });
+
+                // TODO response !?
+
             } else {
-                activeTx.rollback();
+                assert prepared;
+                assert activeTx != null;
+                assert responseChannel == null;
+                responseChannel = context;
+                if (commit) {
+                    activeTx.commit();
+                } else {
+                    activeTx.rollback();
+                }
+                txCompletedLatch.countDown();
             }
-            txCompletedLatch.countDown();
         }
 
         synchronized void failed(final ModelNode response) {

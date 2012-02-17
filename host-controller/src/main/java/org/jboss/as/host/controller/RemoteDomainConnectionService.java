@@ -59,7 +59,7 @@ import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.remote.ExistingChannelModelControllerClient;
-import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
+import org.jboss.as.controller.remote.TransactionalProtocolOperationHandler;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.SlaveRegistrationException;
 import org.jboss.as.domain.controller.operations.ApplyRemoteMasterDomainModelHandler;
@@ -202,7 +202,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         }
         if(connected) {
             // Setup the transaction protocol handler
-            handler.addHandlerFactory(new TransactionalModelControllerOperationHandler(controller, handler));
+            handler.addHandlerFactory(new TransactionalProtocolOperationHandler(controller, handler));
             // Use the existing channel strategy
             masterProxy = ExistingChannelModelControllerClient.createAndAdd(handler);
         }
