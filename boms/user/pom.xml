@@ -37,6 +37,14 @@
         <version.org.jboss.as.arquillian.container>7.1.0.Final</version.org.jboss.as.arquillian.container>
         <version.org.jboss.jbossts.jbossjts>4.16.1.Final</version.org.jboss.jbossts.jbossjts>
 
+        <!-- Version of Hibernate projects -->
+        <version.org.hibernate>4.1.0.Final</version.org.hibernate>
+        <version.org.hibernate.validator>4.2.0.Final</version.org.hibernate.validator>
+        <version.org.hibernate.search>4.1.0.Beta2</version.org.hibernate.search>
+        <version.org.hibernate.common>4.0.1.Final</version.org.hibernate.common>
+        <version.org.hibernate.javax.persistence>1.0.1.Final</version.org.hibernate.javax.persistence>
+        <version.org.hibernate-jpamodelgen>1.1.1.Final</version.org.hibernate-jpamodelgen>
+
         <!-- Versions of projects not directly under JBoss umbrella -->
         <version.junit>4.8.1</version.junit>
         <version.org.testng>5.14.6</version.org.testng>
@@ -49,6 +57,7 @@
     <modules>
         <module>jboss-javaee-6.0-with-tools</module>
         <module>jboss-javaee-6.0-with-transactions</module>
+        <module>jboss-javaee-6.0-with-hibernate</module>
     </modules>
 
 </project>
