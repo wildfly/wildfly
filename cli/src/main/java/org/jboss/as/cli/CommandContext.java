@@ -135,6 +135,12 @@ public interface CommandContext {
     void connectController(String host, int port);
 
     /**
+     * Connects the controller client using the default host and the port.
+     * It simply calls connectController(null, -1).
+     */
+    void connectController();
+
+    /**
      * Closes the previously established connection with the controller client.
      * If the connection hasn't been established, the method silently returns.
      */

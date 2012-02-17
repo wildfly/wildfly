@@ -605,6 +605,11 @@ class CommandContextImpl implements CommandContext {
     }
 
     @Override
+    public void connectController() {
+        connectController(null, -1);
+    }
+
+    @Override
     public void connectController(String host, int port) {
         if (host == null) {
             host = defaultControllerHost;
@@ -944,7 +949,7 @@ class CommandContextImpl implements CommandContext {
             if(!handler.isBatchMode(this)) {
                 throw new OperationFormatException("The command is not allowed in a batch.");
             }
-        } else if (handler instanceof OperationCommand) {
+        } else if (!(handler instanceof OperationCommand)) {
             throw new OperationFormatException("The command does not translate to an operation request.");
         }
 
