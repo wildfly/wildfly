@@ -148,6 +148,11 @@ if [ "x$JBOSS_CONFIG_DIR" = "x" ]; then
    JBOSS_CONFIG_DIR="$JBOSS_BASE_DIR/configuration"
 fi
 
+# auto set background options if not set
+if [ "x$JBOSS_BACKGROUND_OPTIONS" = "x" ]; then
+   JBOSS_BACKGROUND_OPTIONS="&"
+fi
+
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
     JBOSS_HOME=`cygpath --path --windows "$JBOSS_HOME"`
@@ -194,7 +199,7 @@ while true; do
          -jaxpmodule "javax.xml.jaxp-provider" \
          org.jboss.as.standalone \
          -Djboss.home.dir=\"$JBOSS_HOME\" \
-         "$@" "&"
+         "$@" $JBOSS_BACKGROUND_OPTIONS
       JBOSS_PID=$!
       # Trap common signals and relay them to the jboss process
       trap "kill -HUP  $JBOSS_PID" HUP
