@@ -75,6 +75,7 @@ public class InitialDeploymentSetBuilderImpl extends DeploymentPlanBuilderImpl i
     }
 
     @Override
+    @Deprecated
     public InitialDeploymentSetBuilder withSingleServerRollback() {
         DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
         DeploymentSetPlanImpl newSet = currentSet.setRollback();

@@ -31,6 +31,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamField;
 import java.io.OutputStream;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.LinkedList;
@@ -95,7 +96,7 @@ public final class VirtualFileAdaptor implements WritableUnifiedVirtualFile {
         if (file == null) {
             VirtualFile root;
             try {
-                root = VFS.getChild(rootUrl);
+                root = VFS.getChild(rootUrl.toURI());
             } catch (URISyntaxException e) {
                 throw MESSAGES.cannotGetVirtualFile(e, rootUrl);
             }
@@ -173,7 +174,8 @@ public final class VirtualFileAdaptor implements WritableUnifiedVirtualFile {
         fields.put("rootUrl", url);
         fields.put("path", pathName);
 
-        VirtualFile newRoot = VFS.getChild(url);
+        URI uri = url != null ? url.toURI() : null;
+        VirtualFile newRoot = VFS.getChild(uri);
         VirtualFile newChild = newRoot.getChild(pathName);
         fields.put("requiresMount", isMounted(newRoot, newChild));
 

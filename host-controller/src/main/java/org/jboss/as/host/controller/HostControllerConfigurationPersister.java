@@ -189,12 +189,14 @@ public class HostControllerConfigurationPersister implements ExtensibleConfigura
     }
 
     @Override
+    @Deprecated
     @SuppressWarnings("deprecation")
     public void registerSubsystemDeploymentWriter(String name, XMLElementWriter<SubsystemMarshallingContext> writer) {
         domainPersister.registerSubsystemDeploymentWriter(name, writer);
     }
 
     @Override
+    @Deprecated
     @SuppressWarnings("deprecation")
     public void unregisterSubsystemDeploymentWriter(String name) {
         domainPersister.unregisterSubsystemDeploymentWriter(name);

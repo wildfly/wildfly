@@ -65,11 +65,10 @@ public class HttpClientUtils {
                 }
             };
             ctx.init(null, new TrustManager[] { tm }, null);
-            SSLSocketFactory ssf = new SSLSocketFactory(ctx);
-            ssf.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+            SSLSocketFactory ssf = new SSLSocketFactory(ctx, SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
             ClientConnectionManager ccm = base.getConnectionManager();
             SchemeRegistry sr = ccm.getSchemeRegistry();
-            sr.register(new Scheme("https", ssf, 443));
+            sr.register(new Scheme("https", 443, ssf));
             return new DefaultHttpClient(ccm, base.getParams());
         } catch (Exception ex) {
             ex.printStackTrace();

@@ -27,12 +27,11 @@ import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.jca.common.spi.annotations.repository.AnnotationRepository;
 
 import java.io.InputStream;
-import java.net.URL;
+import java.net.URI;
 import java.util.List;
 
 import org.jboss.jandex.Index;
 import org.jboss.jandex.Indexer;
-import org.jboss.logging.Logger;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
@@ -55,23 +54,10 @@ import static org.junit.Assert.fail;
  * @version $Revision: $
  */
 public class AnnotationsTestCase {
-
-    // --------------------------------------------------------------------------------||
-    // Class Members
-    // ------------------------------------------------------------------||
-    // --------------------------------------------------------------------------------||
-
-    private static Logger log = Logger.getLogger(AnnotationsTestCase.class);
-
-    /*
+    /**
      * Annotations
      */
     private Annotations annotations;
-
-    // --------------------------------------------------------------------------------||
-    // Tests
-    // --------------------------------------------------------------------------||
-    // --------------------------------------------------------------------------------||
 
     /**
      * Process: Null arguemnts
@@ -101,8 +87,8 @@ public class AnnotationsTestCase {
     @Test
     public void testProcessConnector() throws Throwable {
         try {
-            URL url = getURL("/ra16inoutanno.rar");
-            final VirtualFile virtualFile = VFS.getChild(url);
+            URI uri = getURI("/ra16inoutanno.rar");
+            final VirtualFile virtualFile = VFS.getChild(uri);
             final Indexer indexer = new Indexer();
             final List<VirtualFile> classChildren = virtualFile.getChildren(new SuffixMatchFilter(".class",
                     VisitorAttributes.RECURSE_LEAVES_ONLY));
@@ -133,8 +119,8 @@ public class AnnotationsTestCase {
     @Test
     public void testProcessConnectorFail() throws Throwable {
         try {
-            URL url = getURL("/rafail2connector.rar");
-            final VirtualFile virtualFile = VFS.getChild(url);
+            URI uri = getURI("/rafail2connector.rar");
+            final VirtualFile virtualFile = VFS.getChild(uri);
             final Indexer indexer = new Indexer();
             final List<VirtualFile> classChildren = virtualFile.getChildren(new SuffixMatchFilter(".class",
                     VisitorAttributes.RECURSE_LEAVES_ONLY));
@@ -167,8 +153,8 @@ public class AnnotationsTestCase {
     @Test
     public void testProcessConnectionDefinitions() throws Throwable {
         try {
-            URL url = getURL("/ra16annoconndefs.rar");
-            final VirtualFile virtualFile = VFS.getChild(url);
+            URI uri = getURI("/ra16annoconndefs.rar");
+            final VirtualFile virtualFile = VFS.getChild(uri);
             final Indexer indexer = new Indexer();
             final List<VirtualFile> classChildren = virtualFile.getChildren(new SuffixMatchFilter(".class",
                     VisitorAttributes.RECURSE_LEAVES_ONLY));
@@ -199,8 +185,8 @@ public class AnnotationsTestCase {
     @Test
     public void testProcessConnectionDefinition() throws Throwable {
         try {
-            URL url = getURL("/ra16annoconndef.rar");
-            final VirtualFile virtualFile = VFS.getChild(url);
+            URI uri = getURI("/ra16annoconndef.rar");
+            final VirtualFile virtualFile = VFS.getChild(uri);
             final Indexer indexer = new Indexer();
             final List<VirtualFile> classChildren = virtualFile.getChildren(new SuffixMatchFilter(".class",
                     VisitorAttributes.RECURSE_LEAVES_ONLY));
@@ -229,8 +215,8 @@ public class AnnotationsTestCase {
     @Test
     public void testProcessActivation() throws Throwable {
         try {
-            URL url = getURL("/ra16annoactiv.rar");
-            final VirtualFile virtualFile = VFS.getChild(url);
+            URI uri = getURI("/ra16annoactiv.rar");
+            final VirtualFile virtualFile = VFS.getChild(uri);
             final Indexer indexer = new Indexer();
             final List<VirtualFile> classChildren = virtualFile.getChildren(new SuffixMatchFilter(".class",
                     VisitorAttributes.RECURSE_LEAVES_ONLY));
@@ -260,8 +246,8 @@ public class AnnotationsTestCase {
     @Test
     public void testProcessAuthenticationMechanism() throws Throwable {
         try {
-            URL url = getURL("/ra16annoauthmech.rar");
-            final VirtualFile virtualFile = VFS.getChild(url);
+            URI uri = getURI("/ra16annoauthmech.rar");
+            final VirtualFile virtualFile = VFS.getChild(uri);
             final Indexer indexer = new Indexer();
             final List<VirtualFile> classChildren = virtualFile.getChildren(new SuffixMatchFilter(".class",
                     VisitorAttributes.RECURSE_LEAVES_ONLY));
@@ -291,8 +277,8 @@ public class AnnotationsTestCase {
     @Test
     public void testProcessAdministeredObject() throws Throwable {
         try {
-            URL url = getURL("/ra16annoadminobj.rar");
-            final VirtualFile virtualFile = VFS.getChild(url);
+            URI uri = getURI("/ra16annoadminobj.rar");
+            final VirtualFile virtualFile = VFS.getChild(uri);
             final Indexer indexer = new Indexer();
             final List<VirtualFile> classChildren = virtualFile.getChildren(new SuffixMatchFilter(".class",
                     VisitorAttributes.RECURSE_LEAVES_ONLY));
@@ -322,8 +308,8 @@ public class AnnotationsTestCase {
     @Test
     public void testProcessConfigProperty() throws Throwable {
         try {
-            URL url = getURL("/ra16annoconfprop.rar");
-            final VirtualFile virtualFile = VFS.getChild(url);
+            URI uri = getURI("/ra16annoconfprop.rar");
+            final VirtualFile virtualFile = VFS.getChild(uri);
             final Indexer indexer = new Indexer();
             final List<VirtualFile> classChildren = virtualFile.getChildren(new SuffixMatchFilter(".class",
                     VisitorAttributes.RECURSE_LEAVES_ONLY));
@@ -343,11 +329,6 @@ public class AnnotationsTestCase {
             fail(t.getMessage());
         }
     }
-
-    // --------------------------------------------------------------------------------||
-    // Lifecycle Methods
-    // --------------------------------------------------------------||
-    // --------------------------------------------------------------------------------||
 
     /**
      * be run before the Test method.
@@ -394,8 +375,8 @@ public class AnnotationsTestCase {
      * @return The URL to the archive
      * @throws Throwable throwable exception
      */
-    public URL getURL(String archive) throws Throwable {
-        return this.getClass().getResource(archive);
+    public URI getURI(String archive) throws Throwable {
+        return this.getClass().getResource(archive).toURI();
         // File f = new File(fileName);
         //
         // if (!f.exists())
