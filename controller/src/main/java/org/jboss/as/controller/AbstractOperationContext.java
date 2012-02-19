@@ -61,7 +61,6 @@ abstract class AbstractOperationContext implements OperationContext {
 
     static final ThreadLocal<Thread> controllingThread = new ThreadLocal<Thread>();
 
-    private final Type contextType;
     final Thread initiatingThread;
     private final EnumMap<Stage, Deque<Step>> steps;
     private final ModelController.OperationTransactionControl transactionControl;
@@ -94,7 +93,6 @@ abstract class AbstractOperationContext implements OperationContext {
                              final ControlledProcessState processState, boolean booting) {
         this.processType = processType;
         this.runningMode = runningMode;
-        this.contextType = Type.getType(processType, runningMode);
         this.transactionControl = transactionControl;
         this.processState = processState;
         this.booting = booting;
@@ -165,8 +163,8 @@ abstract class AbstractOperationContext implements OperationContext {
         if (stage.compareTo(currentStage) < 0 && (stage != Stage.IMMEDIATE || currentStage == Stage.DONE)) {
             throw MESSAGES.stageAlreadyComplete(stage);
         }
-        if (stage == Stage.DOMAIN && contextType != Type.HOST) {
-            throw MESSAGES.invalidStage(stage, contextType);
+        if (stage == Stage.DOMAIN && processType != ProcessType.HOST_CONTROLLER) {
+            throw MESSAGES.invalidStage(stage, processType);
         }
         if (stage == Stage.DONE) {
             throw MESSAGES.invalidStepStage();
@@ -508,9 +506,11 @@ abstract class AbstractOperationContext implements OperationContext {
         return runningMode;
     }
 
+    @Override
+    @Deprecated
     @SuppressWarnings("deprecation")
     public final Type getType() {
-        return contextType;
+        return Type.getType(processType, runningMode);
     }
 
     public final boolean isNormalServer() {

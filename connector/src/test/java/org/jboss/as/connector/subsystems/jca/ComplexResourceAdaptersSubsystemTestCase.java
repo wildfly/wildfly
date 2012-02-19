@@ -32,7 +32,6 @@ import junit.framework.Assert;
 
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension;
-import org.jboss.as.controller.OperationContext.Type;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -58,15 +57,7 @@ public class ComplexResourceAdaptersSubsystemTestCase extends AbstractSubsystemT
 
         String xml = readResource(resourceFileName);
 
-        KernelServices services = super.installInController(new AdditionalInitialization() {
-
-            @Override
-            protected Type getType() {
-                //This override makes it only install in the model, not create the services
-                return Type.MANAGEMENT;
-            }
-
-        }, xml);
+        KernelServices services = super.installInController(AdditionalInitialization.MANAGEMENT, xml);
 
         ModelNode model = services.readWholeModel();
         ConnectorServices.unregisterResourceIdentifiers("some.rar");
@@ -75,15 +66,7 @@ public class ComplexResourceAdaptersSubsystemTestCase extends AbstractSubsystemT
         String marshalled = services.getPersistedSubsystemXml();
         if(checkMarshalledXML)Assert.assertEquals(normalizeXML(xml), normalizeXML(marshalled));
 
-        services = super.installInController(new AdditionalInitialization() {
-
-            @Override
-            protected Type getType() {
-                //This override makes it only install in the model, not create the services
-                return Type.MANAGEMENT;
-            }
-
-        }, marshalled);
+        services = super.installInController(AdditionalInitialization.MANAGEMENT, marshalled);
 
         //Check that the model looks the same
         ModelNode modelReloaded = services.readWholeModel();

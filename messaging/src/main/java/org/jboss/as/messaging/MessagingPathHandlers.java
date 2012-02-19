@@ -96,7 +96,7 @@ class MessagingPathHandlers {
     }
 
     static void reloadRequiredStep(final OperationContext context) {
-        if(context.getType() == OperationContext.Type.SERVER) {
+        if(context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {

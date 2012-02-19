@@ -87,7 +87,7 @@ public class DeploymentHandlerUtil {
     public static void deploy(final OperationContext context, final String deploymentUnitName, final String managementName, final ContentItem... contents) throws OperationFailedException {
         assert contents != null : "contents is null";
 
-        if (context.getType() == OperationContext.Type.SERVER) {
+        if (context.isNormalServer()) {
             //
             final Resource deployment = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
             final ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
@@ -174,19 +174,19 @@ public class DeploymentHandlerUtil {
         return controllers;
     }
 
-    public static void redeploy(final OperationContext operationContext, final String deploymentUnitName,
+    public static void redeploy(final OperationContext context, final String deploymentUnitName,
                                 final String managementName, final ContentItem... contents) throws OperationFailedException {
         assert contents != null : "contents is null";
 
-        if (operationContext.getType() == OperationContext.Type.SERVER) {
+        if (context.isNormalServer()) {
             //
-            final Resource deployment = operationContext.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
-            final ImmutableManagementResourceRegistration registration = operationContext.getResourceRegistration();
-            final ManagementResourceRegistration mutableRegistration = operationContext.getResourceRegistrationForUpdate();
+            final Resource deployment = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
+            final ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
+            final ManagementResourceRegistration mutableRegistration = context.getResourceRegistrationForUpdate();
 
             DeploymentModelUtils.cleanup(deployment);
 
-            operationContext.addStep(new OperationStepHandler() {
+            context.addStep(new OperationStepHandler() {
                 public void execute(final OperationContext context, ModelNode operation) throws OperationFailedException {
                     final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
                     context.removeService(deploymentUnitServiceName);
@@ -197,7 +197,7 @@ public class DeploymentHandlerUtil {
                         @Override
                         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                             ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-                            doDeploy(context, deploymentUnitName, managementName, verificationHandler, deployment, registration, mutableRegistration,  contents);
+                            doDeploy(context, deploymentUnitName, managementName, verificationHandler, deployment, registration, mutableRegistration, contents);
                             if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                                 if (context.hasFailureDescription()) {
                                     ServerLogger.ROOT_LOGGER.redeployRolledBack(deploymentUnitName, context.getFailureDescription().asString());
@@ -214,7 +214,7 @@ public class DeploymentHandlerUtil {
 
                     if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                         ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-                        doDeploy(context, deploymentUnitName, managementName, verificationHandler, deployment, registration, mutableRegistration,  contents);
+                        doDeploy(context, deploymentUnitName, managementName, verificationHandler, deployment, registration, mutableRegistration, contents);
                         if (!logged.get()) {
                             if (context.hasFailureDescription()) {
                                 ServerLogger.ROOT_LOGGER.undeploymentRolledBack(deploymentUnitName, context.getFailureDescription().asString());
@@ -226,35 +226,35 @@ public class DeploymentHandlerUtil {
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-        operationContext.completeStep();
+        context.completeStep();
     }
 
-    public static void replace(final OperationContext operationContext, final ModelNode originalDeployment, final String deploymentUnitName, final String managementName,
+    public static void replace(final OperationContext context, final ModelNode originalDeployment, final String deploymentUnitName, final String managementName,
                                final String replacedDeploymentUnitName, final ContentItem... contents) throws OperationFailedException {
         assert contents != null : "contents is null";
 
-        if (operationContext.getType() == OperationContext.Type.SERVER) {
+        if (context.isNormalServer()) {
             //
             final PathElement path = PathElement.pathElement(DEPLOYMENT, managementName);
-            final Resource deployment = operationContext.readResourceForUpdate(PathAddress.EMPTY_ADDRESS.append(path));
-            final ImmutableManagementResourceRegistration registration = operationContext.getResourceRegistration().getSubModel(PathAddress.EMPTY_ADDRESS.append(path));
-            final ManagementResourceRegistration mutableRegistration = operationContext.getResourceRegistrationForUpdate().getSubModel(PathAddress.EMPTY_ADDRESS.append(path));
+            final Resource deployment = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS.append(path));
+            final ImmutableManagementResourceRegistration registration = context.getResourceRegistration().getSubModel(PathAddress.EMPTY_ADDRESS.append(path));
+            final ManagementResourceRegistration mutableRegistration = context.getResourceRegistrationForUpdate().getSubModel(PathAddress.EMPTY_ADDRESS.append(path));
 
             DeploymentModelUtils.cleanup(deployment);
 
-            operationContext.addStep(new OperationStepHandler() {
+            context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     final ServiceName replacedDeploymentUnitServiceName = Services.deploymentUnitName(replacedDeploymentUnitName);
                     final ServiceName replacedContentsServiceName = replacedDeploymentUnitServiceName.append("contents");
-                    operationContext.removeService(replacedContentsServiceName);
-                    operationContext.removeService(replacedDeploymentUnitServiceName);
+                    context.removeService(replacedContentsServiceName);
+                    context.removeService(replacedDeploymentUnitServiceName);
 
                     ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
                     final Collection<ServiceController<?>> controllers = doDeploy(context, deploymentUnitName, managementName, verificationHandler, deployment, registration, mutableRegistration, contents);
                     context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
 
                     if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-                        for(ServiceController<?> controller : controllers) {
+                        for (ServiceController<?> controller : controllers) {
                             context.removeService(controller.getName());
                         }
 
@@ -279,7 +279,7 @@ public class DeploymentHandlerUtil {
     }
 
     public static void undeploy(final OperationContext context, final String deploymentUnitName) {
-        if (context.getType() == OperationContext.Type.SERVER) {
+        if (context.isNormalServer()) {
             final Resource deployment = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
             final ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
             final ManagementResourceRegistration mutableRegistration = context.getResourceRegistrationForUpdate();

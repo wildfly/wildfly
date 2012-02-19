@@ -32,6 +32,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 
@@ -48,7 +49,7 @@ public class MimeMappingRemove implements OperationStepHandler, DescriptionProvi
     @Override
     public void execute(OperationContext context, ModelNode operation)
             throws OperationFailedException {
-        if (context.getType() == OperationContext.Type.SERVER || context.getType() == OperationContext.Type.HOST) {
+        if (context.isNormalServer() || context.getProcessType() == ProcessType.HOST_CONTROLLER) {
             final ModelNode mimetypes = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel().get(MIME_MAPPING);
             if (operation.hasDefined("name")) {
                 mimetypes.remove(operation.get("name").asString());

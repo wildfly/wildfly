@@ -21,7 +21,6 @@
  */
 package org.jboss.as.security.test;
 
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.security.SecurityExtension;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -40,14 +39,7 @@ public class SecurityDomainModelv11UnitTestCase extends AbstractSubsystemTest {
         //Parse the subsystem xml and install into the first controller
         String subsystemXml = readResource("securitysubsystemv11.xml");
 
-        AdditionalInitialization additionalInit = new AdditionalInitialization(){
-            @Override
-            protected OperationContext.Type getType() {
-                return OperationContext.Type.MANAGEMENT;
-            }
-        };
-
-        KernelServices servicesA = super.installInController(additionalInit, subsystemXml);
+        KernelServices servicesA = super.installInController(AdditionalInitialization.MANAGEMENT, subsystemXml);
         //Get the model and the persisted xml from the first controller
         ModelNode modelA = servicesA.readWholeModel();
         String marshalled = servicesA.getPersistedSubsystemXml();
@@ -56,7 +48,7 @@ public class SecurityDomainModelv11UnitTestCase extends AbstractSubsystemTest {
         System.out.println(marshalled);
 
         //Install the persisted xml from the first controller into a second controller
-        KernelServices servicesB = super.installInController(additionalInit, marshalled);
+        KernelServices servicesB = super.installInController(AdditionalInitialization.MANAGEMENT, marshalled);
         ModelNode modelB = servicesB.readWholeModel();
 
         //Make sure the models from the two controllers are identical

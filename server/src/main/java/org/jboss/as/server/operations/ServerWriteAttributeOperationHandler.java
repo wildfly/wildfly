@@ -94,7 +94,7 @@ public class ServerWriteAttributeOperationHandler extends WriteAttributeOperatio
                                 final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
 
         boolean restartRequired = false;
-        boolean applyToRuntime = context.getType() == OperationContext.Type.SERVER;
+        boolean applyToRuntime = context.isNormalServer();
         ModelNode resolvedValue = null;
         if (applyToRuntime) {
             validateResolvedValue(attributeName, newValue);

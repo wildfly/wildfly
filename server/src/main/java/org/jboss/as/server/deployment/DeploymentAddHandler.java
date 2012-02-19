@@ -167,7 +167,7 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
         subModel.get(ENABLED).set(operation.has(ENABLED) && operation.get(ENABLED).asBoolean()); // TODO consider starting
         subModel.get(PERSISTENT).set(!operation.hasDefined(PERSISTENT) || operation.get(PERSISTENT).asBoolean());
 
-        if (subModel.get(ENABLED).asBoolean() && (context.getType() == OperationContext.Type.SERVER)) {
+        if (subModel.get(ENABLED).asBoolean() && context.isNormalServer()) {
             DeploymentHandlerUtil.deploy(context, runtimeName, name, contentItem);
         }
 

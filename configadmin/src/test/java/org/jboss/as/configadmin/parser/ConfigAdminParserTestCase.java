@@ -22,7 +22,6 @@
 package org.jboss.as.configadmin.parser;
 
 import junit.framework.Assert;
-import org.jboss.as.controller.OperationContext.Type;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -97,12 +96,7 @@ public class ConfigAdminParserTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testDescribeHandler() throws Exception {
-        KernelServices servicesA = installInController(new AdditionalInitialization() {
-            @Override
-            protected Type getType() {
-                return Type.MANAGEMENT;
-            }
-        }, SUBSYSTEM_XML_1_0);
+        KernelServices servicesA = installInController(AdditionalInitialization.MANAGEMENT, SUBSYSTEM_XML_1_0);
         ModelNode modelA = servicesA.readWholeModel();
         ModelNode describeOp = new ModelNode();
         describeOp.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.DESCRIBE);
@@ -110,12 +104,7 @@ public class ConfigAdminParserTestCase extends AbstractSubsystemBaseTest {
                 PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ConfigAdminExtension.SUBSYSTEM_NAME)).toModelNode());
         List<ModelNode> operations = checkResultAndGetContents(servicesA.executeOperation(describeOp)).asList();
 
-        KernelServices servicesB = installInController(new AdditionalInitialization() {
-            @Override
-            public Type getType() {
-                return Type.MANAGEMENT;
-            }
-        }, operations);
+        KernelServices servicesB = installInController(AdditionalInitialization.MANAGEMENT, operations);
         ModelNode modelB = servicesB.readWholeModel();
 
         compare(modelA, modelB);
@@ -129,11 +118,6 @@ public class ConfigAdminParserTestCase extends AbstractSubsystemBaseTest {
     }
 
     protected AdditionalInitialization createAdditionalInitialization() {
-        return new AdditionalInitialization(){
-            @Override
-            protected Type getType() {
-                return Type.MANAGEMENT;
-            }
-        };
+        return AdditionalInitialization.MANAGEMENT;
     }
 }

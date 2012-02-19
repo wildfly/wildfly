@@ -69,7 +69,7 @@ public class DeploymentRemoveHandler implements OperationStepHandler, Descriptio
         final ManagementResourceRegistration mutableRegistration = context.getResourceRegistrationForUpdate();
         final ModelNode model = deployment.getModel();
 
-        if (context.getType() == OperationContext.Type.SERVER) {
+        if (context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     String deploymentUnitName = null;

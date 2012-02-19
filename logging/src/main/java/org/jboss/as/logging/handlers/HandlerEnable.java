@@ -45,7 +45,7 @@ public class HandlerEnable implements OperationStepHandler {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
 
-        if (context.getType() == OperationContext.Type.SERVER) {
+        if (context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {
                 public void execute(final OperationContext context, ModelNode operation) {
                     final ServiceRegistry serviceRegistry = context.getServiceRegistry(true);

@@ -76,7 +76,7 @@ class OutboundSocketBindingWriteHandler extends WriteAttributeHandlers.WriteAttr
 
         final boolean restartRequired = requiresRestart();
         boolean setReload = false;
-        if (context.getType() == OperationContext.Type.SERVER) {
+        if (context.isNormalServer()) {
             if (restartRequired) {
                 context.reloadRequired();
                 setReload = true;

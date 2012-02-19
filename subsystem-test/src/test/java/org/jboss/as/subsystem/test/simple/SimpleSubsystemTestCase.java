@@ -31,8 +31,6 @@ import java.util.List;
 
 import junit.framework.Assert;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationContext.Type;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
@@ -114,13 +112,7 @@ public class SimpleSubsystemTestCase extends AbstractSubsystemTest {
         String subsystemXml =
                 "<subsystem xmlns=\"" + SimpleSubsystemExtension.NAMESPACE + "\">" +
                 "</subsystem>";
-        KernelServices services = super.installInController(
-                new AdditionalInitialization() {
-                    protected OperationContext.Type getType() {
-                        return Type.MANAGEMENT;
-                    }
-                },
-                subsystemXml);
+        KernelServices services = super.installInController(AdditionalInitialization.MANAGEMENT, subsystemXml);
 
         //Read the whole model and make sure it looks as expected
         ModelNode model = services.readWholeModel();
@@ -203,14 +195,7 @@ public class SimpleSubsystemTestCase extends AbstractSubsystemTest {
         testModel.get(SUBSYSTEM).get(SimpleSubsystemExtension.SUBSYSTEM_NAME).setEmptyObject();
         String triggered = outputModel(testModel);
 
-        KernelServices services = super.installInController(
-                new AdditionalInitialization() {
-                    @Override
-                    protected Type getType() {
-                        return Type.MANAGEMENT;
-                    }
-                },
-                subsystemXml);
+        KernelServices services = super.installInController(AdditionalInitialization.MANAGEMENT, subsystemXml);
         //Get the model and the persisted xml from the controller
         services.readWholeModel();
         String marshalled = services.getPersistedSubsystemXml();

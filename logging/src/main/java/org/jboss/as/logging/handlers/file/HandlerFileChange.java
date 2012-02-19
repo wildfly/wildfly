@@ -48,7 +48,7 @@ public class HandlerFileChange implements OperationStepHandler {
         final ModelNode model = resource.getModel();
         FILE.validateAndSet(operation, model);
 
-        if (context.getType() == OperationContext.Type.SERVER && !context.isBooting()) {
+        if (context.isNormalServer() && !context.isBooting()) {
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));

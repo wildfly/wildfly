@@ -82,7 +82,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        if (context.getType() != OperationContext.Type.SERVER) {
+        if (!context.isNormalServer()) {
             throw MESSAGES.fullServerBootRequired(getClass());
         }
 

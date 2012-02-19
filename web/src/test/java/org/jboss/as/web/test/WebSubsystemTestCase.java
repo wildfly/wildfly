@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -55,12 +54,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
-        return new AdditionalInitialization(){
-            @Override
-            protected OperationContext.Type getType() {
-                return OperationContext.Type.MANAGEMENT;
-            }
-        };
+        return AdditionalInitialization.MANAGEMENT;
     }
 
     @Override

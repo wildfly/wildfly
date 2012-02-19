@@ -12,7 +12,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
@@ -83,8 +83,8 @@ public abstract class ClusteringSubsystemTest extends AbstractSubsystemBaseTest 
     protected AdditionalInitialization createAdditionalInitialization() {
         return new AdditionalInitialization() {
             @Override
-            protected OperationContext.Type getType() {
-                return OperationContext.Type.MANAGEMENT;
+            protected RunningMode getRunningMode() {
+                return RunningMode.ADMIN_ONLY;
             }
 
             @Override

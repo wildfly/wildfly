@@ -110,8 +110,8 @@ public class CacheWriteAttributeHandler implements OperationStepHandler, SelfReg
 
      /**
       * Gets whether a {@link org.jboss.as.controller.OperationContext.Stage#RUNTIME} handler should be added. This default implementation
-      * returns {@code true} if the {@link org.jboss.as.controller.OperationContext#getType() context type} is {@link org.jboss.as.controller.OperationContext.Type#SERVER}
-      * and {@link org.jboss.as.controller.OperationContext#isBooting() context.isBooting()} returns {@code false}.
+      * returns {@code true} if the {@link org.jboss.as.controller.OperationContext#getProcessType()}  process type} is
+      * a server and {@link org.jboss.as.controller.OperationContext#isBooting() context.isBooting()} returns {@code false}.
       *
       * @param context operation context
       * @return {@code true} if a runtime stage handler should be added; {@code false} otherwise.
