@@ -98,9 +98,9 @@ public class CachedConnectionManagerAdd extends AbstractBoottimeAddStepHandler {
     protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model,
                                    final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-        final boolean debug = CcmParameters.DEBUG.getAttribute().validateResolvedOperation(model).asBoolean();
-        final boolean error = CcmParameters.ERROR.getAttribute().validateResolvedOperation(model).asBoolean();
-        final boolean install = CcmParameters.INSTALL.getAttribute().validateResolvedOperation(model).asBoolean();
+        final boolean debug = CcmParameters.DEBUG.getAttribute().resolveModelAttribute(context, model).asBoolean();
+        final boolean error = CcmParameters.ERROR.getAttribute().resolveModelAttribute(context, model).asBoolean();
+        final boolean install = CcmParameters.INSTALL.getAttribute().resolveModelAttribute(context, model).asBoolean();
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
 

@@ -128,7 +128,7 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
         }, OperationContext.Stage.RUNTIME);
 
         // get the configured ORB properties.
-        Properties props = this.getConfigurationProperties(model);
+        Properties props = this.getConfigurationProperties(context, model);
 
         // setup the ORB initializers using the configured properties.
         this.setupInitializers(props);
@@ -193,16 +193,16 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
      * before being added to the returned {@code Properties} object.
      * </p>
      *
-     * @param node the {@code ModelNode} that contains the subsystem configuration properties.
+     * @param model the {@code ModelNode} that contains the subsystem configuration properties.
      * @return a {@code Properties} instance containing all configured subsystem properties.
      * @throws OperationFailedException if an error occurs while resolving the properties.
      */
-    private Properties getConfigurationProperties(ModelNode node) throws OperationFailedException {
+    private Properties getConfigurationProperties(OperationContext context, ModelNode model) throws OperationFailedException {
         Properties props = new Properties();
 
         // get the configuration properties from the attribute definitions.
         for (AttributeDefinition attrDefinition : JacORBSubsystemDefinitions.SUBSYSTEM_ATTRIBUTES) {
-            ModelNode resolvedModelAttribute = attrDefinition.validateResolvedOperation(node);
+            ModelNode resolvedModelAttribute = attrDefinition.resolveModelAttribute(context, model);
             if (resolvedModelAttribute.isDefined()) {
                 String name = attrDefinition.getName();
                 String value = resolvedModelAttribute.asString();
@@ -224,8 +224,8 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
         }
 
         // check if the node contains a list of generic properties.
-        if (node.hasDefined(JacORBSubsystemConstants.PROPERTIES)) {
-            ModelNode propertiesNode = node.get(JacORBSubsystemConstants.PROPERTIES);
+        if (model.hasDefined(JacORBSubsystemConstants.PROPERTIES)) {
+            ModelNode propertiesNode = model.get(JacORBSubsystemConstants.PROPERTIES);
 
             for (Property property : propertiesNode.asPropertyList()) {
                 String name = property.getName();

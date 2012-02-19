@@ -93,9 +93,9 @@ public class ArchiveValidationAdd extends AbstractBoottimeAddStepHandler {
     protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model,
             final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-        final boolean enabled = ArchiveValidationParameters.ARCHIVE_VALIDATION_ENABLED.getAttribute().validateResolvedOperation(model).asBoolean();
-        final boolean failOnError = ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_ERROR.getAttribute().validateResolvedOperation(model).asBoolean();
-        final boolean failOnWarn = ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_WARN.getAttribute().validateResolvedOperation(model).asBoolean();
+        final boolean enabled = ArchiveValidationParameters.ARCHIVE_VALIDATION_ENABLED.getAttribute().resolveModelAttribute(context, model).asBoolean();
+        final boolean failOnError = ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_ERROR.getAttribute().resolveModelAttribute(context, model).asBoolean();
+        final boolean failOnWarn = ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_WARN.getAttribute().resolveModelAttribute(context, model).asBoolean();
 
         ServiceName serviceName = ConnectorServices.ARCHIVE_VALIDATION_CONFIG_SERVICE;
         ServiceName jcaConfigServiceName = ConnectorServices.CONNECTOR_CONFIG_SERVICE;
