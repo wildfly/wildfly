@@ -293,6 +293,7 @@ class DeploymentPlanBuilderImpl
     }
 
     @Override
+    @Deprecated
     public DeploymentPlanBuilder withRollback() {
         if (deploymentActions.size() > 0) {
             // Someone has cast to this impl class

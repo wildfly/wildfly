@@ -67,12 +67,14 @@ class OperationImpl implements Operation {
     }
 
     @Override
+    @Deprecated
     public Operation clone() {
         List<InputStream> streamsCopy = inputStreams == null ? null : new ArrayList<InputStream>(inputStreams);
         return new OperationImpl(operation.clone(), streamsCopy);
     }
 
     @Override
+    @Deprecated
     public Operation clone(final ModelNode operation) {
         if (operation == null) {
             throw MESSAGES.nullVar("operation");

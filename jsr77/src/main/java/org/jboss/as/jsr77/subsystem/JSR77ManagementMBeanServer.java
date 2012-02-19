@@ -106,16 +106,19 @@ class JSR77ManagementMBeanServer implements MBeanServerPlugin {
     }
 
     @Override
+    @Deprecated
     public ObjectInputStream deserialize(ObjectName name, byte[] data) throws OperationsException {
         return null;
     }
 
     @Override
+    @Deprecated
     public ObjectInputStream deserialize(String className, byte[] data) throws OperationsException, ReflectionException {
         return null;
     }
 
     @Override
+    @Deprecated
     public ObjectInputStream deserialize(String className, ObjectName loaderName, byte[] data) throws OperationsException, ReflectionException {
         return null;
     }

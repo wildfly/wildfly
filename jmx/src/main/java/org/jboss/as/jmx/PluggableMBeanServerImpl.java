@@ -131,16 +131,19 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
     }
 
     @Override
+    @Deprecated
     public ObjectInputStream deserialize(ObjectName name, byte[] data) throws OperationsException {
         return findDelegate(name).deserialize(name, data);
     }
 
     @Override
+    @Deprecated
     public ObjectInputStream deserialize(String className, byte[] data) throws OperationsException, ReflectionException {
         return rootMBeanServer.deserialize(className, data);
     }
 
     @Override
+    @Deprecated
     public ObjectInputStream deserialize(String className, ObjectName loaderName, byte[] data) throws OperationsException, ReflectionException {
         return rootMBeanServer.deserialize(className, loaderName, data);
     }
@@ -390,14 +393,20 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             return delegate.createMBean(className, name);
         }
 
+        @Override
+        @Deprecated
         public ObjectInputStream deserialize(ObjectName name, byte[] data) throws OperationsException {
             return delegate.deserialize(name, data);
         }
 
+        @Override
+        @Deprecated
         public ObjectInputStream deserialize(String className, byte[] data) throws OperationsException, ReflectionException {
             return delegate.deserialize(className, data);
         }
 
+        @Override
+        @Deprecated
         public ObjectInputStream deserialize(String className, ObjectName loaderName, byte[] data) throws OperationsException,
                 ReflectionException {
             return delegate.deserialize(className, loaderName, data);
