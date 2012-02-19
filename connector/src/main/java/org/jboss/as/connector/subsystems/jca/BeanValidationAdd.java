@@ -77,7 +77,7 @@ public class BeanValidationAdd extends AbstractBoottimeAddStepHandler {
     protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model,
             final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-        final boolean enabled = BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().validateResolvedOperation(model).asBoolean();
+        final boolean enabled = BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().resolveModelAttribute(context, model).asBoolean();
 
         ServiceName serviceName = ConnectorServices.BEAN_VALIDATION_CONFIG_SERVICE;
         ServiceName jcaConfigServiceName = ConnectorServices.CONNECTOR_CONFIG_SERVICE;
