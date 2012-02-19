@@ -49,7 +49,7 @@ public class JndiViewOperation implements OperationStepHandler {
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
         final ModelNode resultNode = context.getResult();
 
-        if (context.getType() == OperationContext.Type.SERVER) {
+        if (context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                     final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);

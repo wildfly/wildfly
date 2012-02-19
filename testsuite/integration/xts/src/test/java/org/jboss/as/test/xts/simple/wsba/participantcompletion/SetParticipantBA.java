@@ -103,6 +103,7 @@ public class SetParticipantBA implements BusinessAgreementWithParticipantComplet
         return null;
     }
 
+    @Deprecated
     public void unknown() throws SystemException {
     }
 

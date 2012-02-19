@@ -88,7 +88,7 @@ public abstract class AbstractRemoveStepHandler implements OperationStepHandler 
     }
 
     protected boolean requiresRuntime(OperationContext context) {
-        return context.getType() == OperationContext.Type.SERVER;
+        return context.isNormalServer();
     }
 
     private List<PathElement> getChildren(Resource resource) {

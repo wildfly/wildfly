@@ -31,7 +31,6 @@ import java.util.regex.Pattern;
 import junit.framework.Assert;
 
 import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
@@ -142,12 +141,7 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
     }
 
     protected AdditionalInitialization createAdditionalInitialization() {
-        return new AdditionalInitialization(){
-            @Override
-            protected OperationContext.Type getType() {
-                return OperationContext.Type.MANAGEMENT;
-            }
-        };
+        return AdditionalInitialization.MANAGEMENT;
     }
 
     /**

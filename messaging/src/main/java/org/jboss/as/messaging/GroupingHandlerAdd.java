@@ -81,7 +81,7 @@ public class GroupingHandlerAdd implements OperationStepHandler, DescriptionProv
             attributeDefinition.validateAndSet(operation, model);
         }
 
-        if (context.getType() == OperationContext.Type.SERVER) {
+        if (context.isNormalServer()) {
 
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {

@@ -44,7 +44,7 @@ public class RaActivate implements OperationStepHandler {
         final ModelNode model = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
         final ModelNode address = operation.require(OP_ADDR);
         final String raName = PathAddress.pathAddress(address).getLastElement().getValue();
-        if (context.getType() == OperationContext.Type.SERVER) {
+        if (context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {
                 public void execute(final OperationContext context, ModelNode operation) throws OperationFailedException {
 

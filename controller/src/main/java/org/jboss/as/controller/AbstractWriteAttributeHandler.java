@@ -200,15 +200,13 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
 
 
     /**
-     * Gets whether a {@link OperationContext.Stage#RUNTIME} handler should be added. This default implementation
-     * returns {@code true} if the {@link OperationContext#getType() context type} is {@link OperationContext.Type#SERVER}
-     * and {@link OperationContext#isBooting() context.isBooting()} returns {@code false}.
+     * Gets whether a {@link OperationContext.Stage#RUNTIME} handler should be added.
      *
      * @param context operation context
      * @return {@code true} if a runtime stage handler should be added; {@code false} otherwise.
      */
     protected boolean requiresRuntime(OperationContext context) {
-        return context.getType() == OperationContext.Type.SERVER && !context.isBooting();
+        return context.isNormalServer() && !context.isBooting();
     }
 
     protected AttributeDefinition getAttributeDefinition(final String attributeName) {

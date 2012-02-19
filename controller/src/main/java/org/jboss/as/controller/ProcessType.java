@@ -28,25 +28,24 @@ package org.jboss.as.controller;
  * need to be present. {@link OperationStepHandler}s can use this to determine how to handle operations.
  */
 public enum ProcessType {
-    DOMAIN_SERVER,
-    EMBEDDED_SERVER,
-    STANDALONE_SERVER,
-    HOST_CONTROLLER,
-    APPLICATION_CLIENT;
+    DOMAIN_SERVER(true),
+    EMBEDDED_SERVER(true),
+    STANDALONE_SERVER(true),
+    HOST_CONTROLLER(false),
+    APPLICATION_CLIENT(true);
+
+    private final boolean server;
+
+    ProcessType(final boolean server) {
+        this.server = server;
+    }
 
     /**
-     * Returns true if the process is one of the 3 server variants.
+     * Returns true if the process is one of the server variants.
      *
      * @return Returns <tt>true</tt> if the process is a server. Returns <tt>false</tt> otherwise.
      */
     public boolean isServer() {
-        switch (this) {
-        case DOMAIN_SERVER:
-        case EMBEDDED_SERVER:
-        case STANDALONE_SERVER:
-        case APPLICATION_CLIENT:
-            return true;
-        }
-        return false;
+        return server;
     }
 }

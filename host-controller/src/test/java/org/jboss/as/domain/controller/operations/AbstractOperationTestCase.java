@@ -253,6 +253,8 @@ public abstract class AbstractOperationTestCase {
             return null;
         }
 
+        @Deprecated
+        @SuppressWarnings("deprecation")
         public OperationContext.Type getType() {
             return null;
         }

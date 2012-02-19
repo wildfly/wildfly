@@ -117,18 +117,18 @@ public class RemoteDestinationOutboundSocketBindingAddHandler extends AbstractAd
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
         // destination host
-        final String destinationHost = RemoteDestinationOutboundSocketBindingResourceDefinition.HOST.validateResolvedOperation(model).asString();
+        final String destinationHost = RemoteDestinationOutboundSocketBindingResourceDefinition.HOST.resolveModelAttribute(context, model).asString();
         // port
-        final int destinationPort = RemoteDestinationOutboundSocketBindingResourceDefinition.PORT.validateResolvedOperation(model).asInt();
+        final int destinationPort = RemoteDestinationOutboundSocketBindingResourceDefinition.PORT.resolveModelAttribute(context, model).asInt();
 
         // (optional) source interface
-        final ModelNode sourceInterfaceModelNode = OutboundSocketBindingResourceDefinition.SOURCE_INTERFACE.validateResolvedOperation(model);
+        final ModelNode sourceInterfaceModelNode = OutboundSocketBindingResourceDefinition.SOURCE_INTERFACE.resolveModelAttribute(context, model);
         final String sourceInterfaceName = sourceInterfaceModelNode.isDefined() ? sourceInterfaceModelNode.asString() : null;
         // (optional) source port
-        final ModelNode sourcePortModelNode = OutboundSocketBindingResourceDefinition.SOURCE_PORT.validateResolvedOperation(model);
+        final ModelNode sourcePortModelNode = OutboundSocketBindingResourceDefinition.SOURCE_PORT.resolveModelAttribute(context, model);
         final Integer sourcePort = sourcePortModelNode.isDefined() ? sourcePortModelNode.asInt() : null;
         // (optional) fixedSourcePort
-        final ModelNode fixedSourcePortModelNode = OutboundSocketBindingResourceDefinition.FIXED_SOURCE_PORT.validateResolvedOperation(model);
+        final ModelNode fixedSourcePortModelNode = OutboundSocketBindingResourceDefinition.FIXED_SOURCE_PORT.resolveModelAttribute(context, model);
         final boolean fixedSourcePort = fixedSourcePortModelNode.isDefined() ? fixedSourcePortModelNode.asBoolean() : false;
         // create the service
         final OutboundSocketBindingService outboundSocketBindingService = new RemoteDestinationOutboundSocketBindingService(outboundSocketName, destinationHost, destinationPort, sourcePort, fixedSourcePort);

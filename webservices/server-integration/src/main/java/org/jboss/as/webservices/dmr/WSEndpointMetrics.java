@@ -74,7 +74,7 @@ final class WSEndpointMetrics implements OperationStepHandler {
 
     /** {@inheritDoc} */
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        if (context.getType() == OperationContext.Type.SERVER) {
+        if (context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     final ServiceController<?> controller = context.getServiceRegistry(false).getService(WSServices.REGISTRY_SERVICE);

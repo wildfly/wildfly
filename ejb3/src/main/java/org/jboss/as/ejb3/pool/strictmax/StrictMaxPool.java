@@ -165,6 +165,7 @@ public class StrictMaxPool<T> extends AbstractPool<T> {
     }
 
     @Override
+    @Deprecated
     public void remove(T ctx) {
         if (ROOT_LOGGER.isTraceEnabled()) {
             ROOT_LOGGER.tracef("Removing instance: %s#%s", this, ctx);

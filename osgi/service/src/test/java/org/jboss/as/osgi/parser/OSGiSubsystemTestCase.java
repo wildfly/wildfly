@@ -22,8 +22,6 @@
 package org.jboss.as.osgi.parser;
 
 import junit.framework.Assert;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationContext.Type;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -194,12 +192,7 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testReadWriteNamespace10() throws Exception {
-        KernelServices services = installInController(new AdditionalInitialization() {
-            @Override
-            protected Type getType() {
-                return Type.MANAGEMENT;
-            }
-        }, SUBSYSTEM_XML_1_0);
+        KernelServices services = installInController(AdditionalInitialization.MANAGEMENT, SUBSYSTEM_XML_1_0);
         ModelNode model = services.readWholeModel();
 
         String marshalled = outputModel(model);
@@ -208,12 +201,7 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testReadWriteNamespace11() throws Exception {
-        KernelServices services = installInController(new AdditionalInitialization() {
-            @Override
-            protected Type getType() {
-                return Type.MANAGEMENT;
-            }
-        }, SUBSYSTEM_XML_1_1);
+        KernelServices services = installInController(AdditionalInitialization.MANAGEMENT, SUBSYSTEM_XML_1_1);
         ModelNode model = services.readWholeModel();
 
         String marshalled = outputModel(model);
@@ -222,12 +210,7 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testDescribeHandler() throws Exception {
-        KernelServices servicesA = installInController(new AdditionalInitialization() {
-            @Override
-            protected Type getType() {
-                return Type.MANAGEMENT;
-            }
-        }, SUBSYSTEM_XML_1_2);
+        KernelServices servicesA = installInController(AdditionalInitialization.MANAGEMENT, SUBSYSTEM_XML_1_2);
         ModelNode modelA = servicesA.readWholeModel();
         ModelNode describeOp = new ModelNode();
         describeOp.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.DESCRIBE);
@@ -235,12 +218,7 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
                 PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, OSGiExtension.SUBSYSTEM_NAME)).toModelNode());
         List<ModelNode> operations = checkResultAndGetContents(servicesA.executeOperation(describeOp)).asList();
 
-        KernelServices servicesB = installInController(new AdditionalInitialization() {
-            @Override
-            public Type getType() {
-                return Type.MANAGEMENT;
-            }
-        }, operations);
+        KernelServices servicesB = installInController(AdditionalInitialization.MANAGEMENT, operations);
         ModelNode modelB = servicesB.readWholeModel();
 
         compare(modelA, modelB);
@@ -266,11 +244,6 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     protected AdditionalInitialization createAdditionalInitialization() {
-        return new AdditionalInitialization(){
-            @Override
-            protected OperationContext.Type getType() {
-                return OperationContext.Type.MANAGEMENT;
-            }
-        };
+        return AdditionalInitialization.MANAGEMENT;
     }
 }

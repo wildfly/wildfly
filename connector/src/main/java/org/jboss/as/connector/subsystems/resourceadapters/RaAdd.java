@@ -73,7 +73,7 @@ public class RaAdd implements OperationStepHandler {
         subModel.get(ARCHIVE.getName()).set(archiveName);
         final String archive = archiveName;
 
-        if (context.getType() == OperationContext.Type.SERVER) {
+        if (context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     final ServiceTarget serviceTarget = context.getServiceTarget();

@@ -564,6 +564,8 @@ public abstract class AttributeDefinition {
         }
 
         @Override
+        @Deprecated
+        @SuppressWarnings("deprecation")
         public Type getType() {
             return null;
         }

@@ -68,7 +68,7 @@ class AddressSettingsWriteHandler implements OperationStepHandler {
             def.getValidator().validateParameter(ModelDescriptionConstants.VALUE, operation);
             resource.getModel().get(attribute).set(operation.get(ModelDescriptionConstants.VALUE));
 
-            if(context.getType() == OperationContext.Type.SERVER) {
+            if(context.isNormalServer()) {
                 context.addStep(new OperationStepHandler() {
                     @Override
                     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {

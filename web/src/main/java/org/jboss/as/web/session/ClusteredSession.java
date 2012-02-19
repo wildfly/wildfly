@@ -897,17 +897,20 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
     }
 
     @Override
+    @Deprecated
     @SuppressWarnings("deprecation")
     public javax.servlet.http.HttpSessionContext getSessionContext() {
         return (sessionContext);
     }
 
     @Override
+    @Deprecated
     public Object getValue(String name) {
         return (getAttribute(name));
     }
 
     @Override
+    @Deprecated
     public String[] getValueNames() {
         if (!isValidInternal())
             throw MESSAGES.expiredSession();
@@ -916,11 +919,13 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
     }
 
     @Override
+    @Deprecated
     public void putValue(String name, Object value) {
         setAttribute(name, value);
     }
 
     @Override
+    @Deprecated
     public void removeValue(String name) {
         removeAttribute(name);
     }

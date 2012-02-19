@@ -1,8 +1,6 @@
 package org.jboss.as.subsystem.test;
 
 import org.jboss.as.controller.extension.ExtensionRegistry;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationContext.Type;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -17,25 +15,19 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class AdditionalInitialization extends AdditionalParsers {
-
-    /**
-     * Return {@code OperationContext.Type#MANAGEMENT} to only affect the model from your tested operations, and thus avoid installing services into the service controller.
-     * Return {@code OperationContext.Type#SERVER} to install services, this is the default.
-     *
-     * @return the type
-     */
-    protected OperationContext.Type getType() {
-        return Type.SERVER;
-    }
+    public static final AdditionalInitialization MANAGEMENT = new AdditionalInitialization() {
+        @Override
+        protected RunningMode getRunningMode() {
+            return RunningMode.ADMIN_ONLY;
+        }
+    };
 
     protected ProcessType getProcessType() {
-        OperationContext.Type contextType = getType();
-        return (contextType == Type.HOST) ? ProcessType.HOST_CONTROLLER : ProcessType.STANDALONE_SERVER;
+        return ProcessType.STANDALONE_SERVER;
     }
 
     protected RunningMode getRunningMode() {
-        OperationContext.Type contextType = getType();
-        return (contextType == Type.MANAGEMENT) ? RunningMode.ADMIN_ONLY : RunningMode.NORMAL;
+        return RunningMode.NORMAL;
     }
 
     /**

@@ -40,7 +40,7 @@ public abstract class PoolOperations implements OperationStepHandler {
             jndiName = Util.getJndiName(context.readModel(PathAddress.EMPTY_ADDRESS));
         }
 
-        if (context.getType() == OperationContext.Type.SERVER) {
+        if (context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     final ServiceController<?> managementRepoService = context.getServiceRegistry(false).getService(

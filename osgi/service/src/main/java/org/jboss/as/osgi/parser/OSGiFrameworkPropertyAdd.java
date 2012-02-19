@@ -28,6 +28,7 @@ import java.util.ResourceBundle;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -47,7 +48,7 @@ public class OSGiFrameworkPropertyAdd extends AbstractAddStepHandler {
 
     @Override
     protected boolean requiresRuntime(OperationContext context) {
-        return context.getType() == OperationContext.Type.SERVER || context.getType() == OperationContext.Type.HOST;
+        return context.isNormalServer() || context.getProcessType() == ProcessType.HOST_CONTROLLER;
     }
 
     @Override

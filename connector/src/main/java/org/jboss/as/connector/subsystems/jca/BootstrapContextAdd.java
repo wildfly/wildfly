@@ -91,8 +91,8 @@ public class BootstrapContextAdd extends AbstractBoottimeAddStepHandler {
     protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model,
                                    final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-        String name = BootstrapCtxParameters.NAME.getAttribute().validateResolvedOperation(model).asString();
-        String workmanager = BootstrapCtxParameters.WORKMANAGER.getAttribute().validateResolvedOperation(model).asString();
+        String name = BootstrapCtxParameters.NAME.getAttribute().resolveModelAttribute(context, model).asString();
+        String workmanager = BootstrapCtxParameters.WORKMANAGER.getAttribute().resolveModelAttribute(context, model).asString();
         boolean usingDefaultWm = false;
         if (DEFAULT_NAME.equals( workmanager)) {
             usingDefaultWm = true;

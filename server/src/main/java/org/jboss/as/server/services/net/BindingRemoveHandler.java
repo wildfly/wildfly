@@ -49,7 +49,7 @@ public class BindingRemoveHandler extends SocketBindingRemoveHandler {
 
     @Override
     protected boolean requiresRuntime(OperationContext context) {
-        return context.getType() == OperationContext.Type.SERVER;
+        return context.isNormalServer();
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {

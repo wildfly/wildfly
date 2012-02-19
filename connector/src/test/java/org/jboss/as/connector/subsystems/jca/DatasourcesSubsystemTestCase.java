@@ -24,7 +24,6 @@ package org.jboss.as.connector.subsystems.jca;
 import java.io.IOException;
 
 import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 
@@ -63,13 +62,7 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
 
 
     protected AdditionalInitialization createAdditionalInitialization() {
-        return new AdditionalInitialization(){
-            @Override
-            protected OperationContext.Type getType() {
-                return OperationContext.Type.MANAGEMENT;
-            }
-
-        };
+        return AdditionalInitialization.MANAGEMENT;
     }
 
 }

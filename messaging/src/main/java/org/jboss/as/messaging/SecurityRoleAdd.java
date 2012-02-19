@@ -85,7 +85,7 @@ class SecurityRoleAdd implements OperationStepHandler, DescriptionProvider {
         for(final AttributeDefinition attribute : ROLE_ATTRIBUTES) {
             attribute.validateAndSet(operation, subModel);
         }
-        if(context.getType() == OperationContext.Type.SERVER) {
+        if(context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {

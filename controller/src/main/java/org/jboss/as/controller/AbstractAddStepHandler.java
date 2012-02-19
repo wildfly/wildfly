@@ -112,7 +112,7 @@ public abstract class AbstractAddStepHandler implements OperationStepHandler {
      * @return {@code true} if {@code performRuntime} should be invoked; {@code false} otherwise.
      */
     protected boolean requiresRuntime(OperationContext context) {
-        return context.getType() == OperationContext.Type.SERVER;
+        return context.isNormalServer();
     }
 
     /**

@@ -1044,15 +1044,15 @@ public interface ControllerMessages {
     XMLStreamException invalidSha1Value(@Cause Throwable cause, String value, String name, @Param Location location);
 
     /**
-     * Creates an exception indicating the stage is not valid for the context type.
+     * Creates an exception indicating the stage is not valid for the context process type.
      *
      * @param stage the stage.
-     * @param type  the context type.
+     * @param processType the context process type.
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14714, value = "Stage %s is not valid for context type %s")
-    IllegalStateException invalidStage(OperationContext.Stage stage, OperationContext.Type type);
+    @Message(id = 14714, value = "Stage %s is not valid for context process type %s")
+    IllegalStateException invalidStage(OperationContext.Stage stage, ProcessType processType);
 
     /**
      * Creates an exception indicating an invalid step stage specified.

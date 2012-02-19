@@ -169,7 +169,7 @@ class HornetQServerAdd implements OperationStepHandler {
         model.get(JMS_TOPIC).setEmptyObject();
         model.get(POOLED_CONNECTION_FACTORY).setEmptyObject();
 
-        if (context.getType() == OperationContext.Type.SERVER) {
+        if (context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();

@@ -87,7 +87,7 @@ public class WorkManagerAdd extends AbstractBoottimeAddStepHandler {
     protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model,
                                    final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-        String name = WmParameters.NAME.getAttribute().validateResolvedOperation(model).asString();
+        String name = WmParameters.NAME.getAttribute().resolveModelAttribute(context, model).asString();
 
         ServiceTarget serviceTarget = context.getServiceTarget();
 

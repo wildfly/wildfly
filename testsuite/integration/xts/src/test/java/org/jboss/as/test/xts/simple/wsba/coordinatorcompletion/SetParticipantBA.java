@@ -118,6 +118,7 @@ public class SetParticipantBA implements BusinessAgreementWithCoordinatorComplet
         return null;
     }
 
+    @Deprecated
     public void unknown() throws SystemException {
         removeParticipant(txID);
     }

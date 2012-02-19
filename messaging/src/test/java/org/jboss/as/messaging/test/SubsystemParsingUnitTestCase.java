@@ -24,7 +24,6 @@ package org.jboss.as.messaging.test;
 
 import java.io.IOException;
 
-import org.jboss.as.controller.OperationContext.Type;
 import org.jboss.as.messaging.MessagingExtension;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -58,7 +57,7 @@ public class SubsystemParsingUnitTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
-        return new MessagingAdditionalInitialization(Type.MANAGEMENT);
+        return AdditionalInitialization.MANAGEMENT;
     }
 
     @Override
