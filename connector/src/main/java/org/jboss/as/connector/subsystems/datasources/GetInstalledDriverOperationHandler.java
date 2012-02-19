@@ -45,7 +45,7 @@ public class GetInstalledDriverOperationHandler implements OperationStepHandler 
         validator.validate(operation);
 
         final String name = operation.require(DRIVER_NAME.getName()).asString();
-        if (context.getType() == OperationContext.Type.SERVER) {
+        if (context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {
 
                 @Override

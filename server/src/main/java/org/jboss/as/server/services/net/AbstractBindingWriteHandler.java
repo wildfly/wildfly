@@ -152,7 +152,7 @@ abstract class AbstractBindingWriteHandler extends WriteAttributeHandlers.WriteA
     }
 
     protected boolean requiresRuntime(OperationContext context) {
-        return context.getType() == OperationContext.Type.SERVER;
+        return context.isNormalServer();
     }
 
     private void handleBindingReinstall(OperationContext context, String bindingName, ModelNode bindingModel) throws OperationFailedException {

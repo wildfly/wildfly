@@ -59,8 +59,8 @@ public class AddAliasCommand implements OperationStepHandler {
 
     /**
      * Gets whether a {@link OperationContext.Stage#RUNTIME} handler should be added. This default implementation
-     * returns {@code true} if the {@link OperationContext#getType() context type} is {@link OperationContext.Type#SERVER}
-     * and {@link OperationContext#isBooting() context.isBooting()} returns {@code false}.
+     * returns {@code true} if the {@link org.jboss.as.controller.OperationContext#getProcessType()}  process type} is
+     * as sever and {@link OperationContext#isBooting() context.isBooting()} returns {@code false}.
      *
      * @param context operation context
      * @return {@code true} if a runtime stage handler should be added; {@code false} otherwise.

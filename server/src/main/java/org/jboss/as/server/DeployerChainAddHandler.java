@@ -81,7 +81,7 @@ public class DeployerChainAddHandler implements OperationStepHandler, Descriptio
     }
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        if(context.getType() == OperationContext.Type.SERVER) {
+        if(context.isNormalServer()) {
 
             // Our real work needs to run after all RUNTIME steps that add DUPs have run. ServerService adds
             // this operation at the end of the boot op list, so our MODEL stage step is last, and

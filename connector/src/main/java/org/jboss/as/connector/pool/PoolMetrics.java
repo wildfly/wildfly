@@ -44,7 +44,7 @@ public abstract class PoolMetrics implements OperationStepHandler {
     static final String[] NO_LOCATION = new String[0];
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        if (context.getType() == OperationContext.Type.SERVER) {
+        if (context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
@@ -86,7 +86,7 @@ public abstract class PoolMetrics implements OperationStepHandler {
 
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            if (context.getType() == OperationContext.Type.SERVER) {
+            if (context.isNormalServer()) {
                 context.addStep(new OperationStepHandler() {
                     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));

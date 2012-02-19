@@ -22,7 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -44,13 +43,7 @@ public class SubsystemParsingUnitTestCase extends AbstractSubsystemTest {
         //Parse the subsystem xml and install into the first controller
         String subsystemXml = readResource("subsystem.xml");
 
-        AdditionalInitialization additionalInit = new AdditionalInitialization() {
-
-            @Override
-            protected OperationContext.Type getType() {
-                return OperationContext.Type.MANAGEMENT;
-            }
-        };
+        AdditionalInitialization additionalInit = AdditionalInitialization.MANAGEMENT;
 
         KernelServices servicesA = super.installInController(additionalInit, subsystemXml);
         //Get the model and the persisted xml from the first controller

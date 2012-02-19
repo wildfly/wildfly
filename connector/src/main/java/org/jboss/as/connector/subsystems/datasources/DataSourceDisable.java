@@ -62,7 +62,7 @@ public class DataSourceDisable implements OperationStepHandler {
         final ModelNode model = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
         model.get(ENABLED).set(false);
 
-        if (context.getType() == OperationContext.Type.SERVER) {
+        if (context.isNormalServer()) {
             if (context.isResourceServiceRestartAllowed()) {
                 context.addStep(new OperationStepHandler() {
                     public void execute(final OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -167,7 +167,7 @@ public class DataSourceDisable implements OperationStepHandler {
     }
 
     public void reEnable(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-        if (context.getType() == OperationContext.Type.SERVER) {
+        if (context.isNormalServer()) {
             PathAddress addr = PathAddress.pathAddress(operation.get(OP_ADDR));
             Resource resource = context.getOriginalRootResource();
             for (PathElement element : addr) {

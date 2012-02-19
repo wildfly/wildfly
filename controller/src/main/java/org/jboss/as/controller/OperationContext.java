@@ -653,13 +653,13 @@ public interface OperationContext {
         MANAGEMENT;
 
         /**
-         *  Provides the {@code Type} that matches the given {@code processType} and {@code runningMode}.
+         * Provides the {@code Type} that matches the given {@code processType} and {@code runningMode}.
          *
-         *  @param processType the process type. Cannot be {@code null}
-         *  @param runningMode the running mode. Cannot be {@code null}
-         *
-         *  @return the type
+         * @param processType the process type. Cannot be {@code null}
+         * @param runningMode the running mode. Cannot be {@code null}
+         * @return the type
          */
+        @Deprecated
         @SuppressWarnings("deprecation")
         static Type getType(final ProcessType processType, final RunningMode runningMode) {
             if (processType.isServer()) {

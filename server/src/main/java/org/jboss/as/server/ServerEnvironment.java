@@ -56,28 +56,22 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
     /** The manner in which a server can be launched */
     public static enum LaunchType {
         /** Launched by a Host Controller in a managed domain */
-        DOMAIN,
+        DOMAIN(ProcessType.DOMAIN_SERVER),
         /** Launched from the command line */
-        STANDALONE,
+        STANDALONE(ProcessType.STANDALONE_SERVER),
         /** Launched by another process in which the server is embedded */
-        EMBEDDED,
+        EMBEDDED(ProcessType.EMBEDDED_SERVER),
         /** Launched by a Java EE appclient */
-        APPCLIENT;
+        APPCLIENT(ProcessType.APPLICATION_CLIENT);
+
+        private final ProcessType processType;
+
+        LaunchType(final ProcessType processType) {
+            this.processType = processType;
+        }
 
         public ProcessType getProcessType() {
-            switch (this) {
-                case DOMAIN:
-                    return ProcessType.DOMAIN_SERVER;
-                case STANDALONE:
-                    return ProcessType.STANDALONE_SERVER;
-                case EMBEDDED:
-                    return  ProcessType.EMBEDDED_SERVER;
-                case APPCLIENT:
-                    return ProcessType.APPLICATION_CLIENT;
-                default:
-                    // programming error
-                    throw new RuntimeException("unimplemented LaunchType");
-            }
+            return processType;
         }
     }
 

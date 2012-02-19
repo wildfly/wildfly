@@ -25,13 +25,11 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
 
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.modcluster.ModClusterExtension;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
 
 /**
  *
@@ -53,18 +51,7 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
     protected String getSubsystemXml(String configId) throws IOException {
         return readResource(configId);
     }
-/*
-    @Override
-    protected AdditionalInitialization createAdditionalInitialization() {
-        return new AdditionalInitialization(){
-            @Override
-            protected OperationContext.Type getType() {
-                return OperationContext.Type.MANAGEMENT;
-            }
 
-        };
-    }
-*/
     @Override
     protected Set<PathAddress> getIgnoredChildResourcesForRemovalTest() {
         return Collections.singleton(

@@ -27,7 +27,6 @@ import java.util.List;
 
 import junit.framework.Assert;
 
-import org.jboss.as.controller.OperationContext.Type;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.messaging.MessagingExtension;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
@@ -51,7 +50,7 @@ public class SubsystemDescriptionsUnitTestCase extends AbstractSubsystemTest {
     public void testSubsystemDescriptions() throws Exception {
 
         List<ModelNode> empty = Collections.emptyList();
-        KernelServices servicesA = super.installInController(new MessagingAdditionalInitialization(Type.SERVER), empty);
+        KernelServices servicesA = super.installInController(empty);
 
         final ModelNode operation = createReadResourceDescriptionOperation();
         final ModelNode result = servicesA.executeOperation(operation);
