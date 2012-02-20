@@ -111,6 +111,11 @@ public class EjbInjectionSource extends InjectionSource {
                     final Set<EJBViewDescription> ejbsForViewName = new HashSet<EJBViewDescription>();
                     for (final ViewDescription view : views) {
                         if (view instanceof EJBViewDescription) {
+                            final MethodIntf viewType = ((EJBViewDescription) view).getMethodIntf();
+                            // @EJB injection *shouldn't* consider the @WebService endpoint view or MDBs
+                            if (viewType == MethodIntf.SERVICE_ENDPOINT || viewType == MethodIntf.MESSAGE_ENDPOINT) {
+                                continue;
+                            }
                             ejbsForViewName.add((EJBViewDescription) view);
                         }
                     }
