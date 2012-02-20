@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.integration.jpa.secondlevelcache;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.Assert.assertNotNull;
 
 import java.sql.Connection;
 
@@ -37,7 +37,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -56,44 +55,6 @@ public class JPA2LCTestCase {
     // cache region name prefix, use getCacheRegionName() method to get the value!
     private static String CACHE_REGION_NAME = null;
 
-    private static final String persistence_xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> "
-			+ "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">"
-			+ "  <persistence-unit name=\"mypc\">"
-			+ "    <description>Persistence Unit."
-			+ "    </description>"
-			+ "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>"
-			+ " <shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>"
-			+ "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>"
-			+ "<property name=\"hibernate.show_sql\" value=\"true\"/>"
-			+ "<property name=\"hibernate.cache.use_second_level_cache\" value=\"true\"/>"
-			+ "<property name=\"hibernate.cache.use_query_cache\" value=\"true\"/>"
-			+ "<property name=\"hibernate.generate_statistics\" value=\"true\"/>"
-			+ "</properties>"
-			+ "  </persistence-unit>"
-			+ "  <persistence-unit name=\"mypc2\">"
-			+ "    <description>Persistence Unit."
-			+ "    </description>"
-			+ "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>"
-			+ " <shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>"
-			+ "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>"
-			+ "<property name=\"hibernate.show_sql\" value=\"true\"/>"
-			+ "<property name=\"hibernate.cache.use_second_level_cache\" value=\"true\"/>"
-			+ "<property name=\"hibernate.cache.use_query_cache\" value=\"true\"/>"
-			+ "<property name=\"hibernate.generate_statistics\" value=\"true\"/>"
-			+ "</properties>"
-			+ "  </persistence-unit>"
-			+ "  <persistence-unit name=\"mypc_no_2lc\">"
-			+ "    <description>Persistence Unit."
-			+ "    </description>"
-			+ "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>"
-			+ " <shared-cache-mode>NONE</shared-cache-mode>"
-			+ "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>"
-			+ "<property name=\"hibernate.show_sql\" value=\"true\"/>"
-			+ "<property name=\"hibernate.cache.use_second_level_cache\" value=\"false\"/>"
-			+ "<property name=\"hibernate.cache.use_query_cache\" value=\"false\"/>"
-			+ "<property name=\"hibernate.generate_statistics\" value=\"true\"/>"
-			+ "</properties>" + "  </persistence-unit>" + "</persistence>";
-
     @Deployment
     public static Archive<?> deploy() {
 
@@ -104,7 +65,8 @@ public class JPA2LCTestCase {
             SFSB2LC.class
         );
 
-        jar.addAsResource(new StringAsset(persistence_xml), "META-INF/persistence.xml");
+        jar.addAsManifestResource(JPA2LCTestCase.class.getPackage(), "persistence.xml","persistence.xml");
+
         return jar;
     }
 
@@ -253,9 +215,6 @@ public class JPA2LCTestCase {
         // invalidate the cache
         sfsb.createEmployee("Newman", "Paul", 400);
         
-        // the nextTimestamp from infinispan is "return System.currentTimeMillis() / 100;"
-        Thread.sleep(1000);
-        
         message = sfsb.queryCacheCheck(id);
 
         if (!message.equals("OK")){
@@ -280,9 +239,6 @@ public class JPA2LCTestCase {
  		
  		// evict query cache
  		sfsb.evictQueryCache();
- 		
- 		// the nextTimestamp from infinispan is "return System.currentTimeMillis() / 100;"
- 		Thread.sleep(1000);
  		
  		message = sfsb.queryCacheCheck(id);
 

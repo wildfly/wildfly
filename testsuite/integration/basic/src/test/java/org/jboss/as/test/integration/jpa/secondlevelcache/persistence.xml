@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"	version="1.0">
+	<persistence-unit name="mypc">
+		<description>Persistence Unit.</description>
+		<jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
+		<shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>
+		<properties>
+			<property name="hibernate.hbm2ddl.auto" value="create-drop" />
+			<property name="hibernate.show_sql" value="true" />
+			<property name="hibernate.cache.use_second_level_cache"	value="true" />
+			<property name="hibernate.cache.use_query_cache" value="true" />
+			<property name="hibernate.generate_statistics" value="true" />
+		</properties>
+	</persistence-unit>
+	<persistence-unit name="mypc2">
+		<description>Persistence Unit.</description>
+		<jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
+		<shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>
+		<properties>
+			<property name="hibernate.hbm2ddl.auto" value="create-drop" />
+			<property name="hibernate.show_sql" value="true" />
+			<property name="hibernate.cache.use_second_level_cache"	value="true" />
+			<property name="hibernate.cache.use_query_cache" value="true" />
+			<property name="hibernate.generate_statistics" value="true" />
+		</properties>
+	</persistence-unit>
+	<persistence-unit name="mypc_no_2lc">
+		<description>Persistence Unit.</description>
+		<jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
+		<shared-cache-mode>NONE</shared-cache-mode>
+		<properties>
+			<property name="hibernate.hbm2ddl.auto" value="create-drop" />
+			<property name="hibernate.show_sql" value="true" />
+			<property name="hibernate.cache.use_second_level_cache"	value="false" />
+			<property name="hibernate.cache.use_query_cache" value="false" />
+			<property name="hibernate.generate_statistics" value="true" />
+		</properties>
+	</persistence-unit>
+</persistence>
