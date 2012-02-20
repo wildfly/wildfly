@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.integration.naming.remote.ejb;
 
+import java.net.URL;
 import java.util.Properties;
 
 import javax.naming.Context;
@@ -30,12 +31,11 @@ import javax.naming.InitialContext;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.shared.integration.ejb.security.CallbackHandler;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -43,47 +43,56 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 /**
- * @author John Bailey
+ * @author John Bailey, Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
 @RunAsClient
 public class RemoteNamingEjbTestCase {
+    private static final String ARCHIVE_NAME = "test";
+    private static final Integer PORT = 4447;
+    
+    @ArquillianResource
+    private URL baseUrl;
+    
     @Deployment
     public static Archive<?> deploy() {
-        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "test.jar");
-        jar.addClasses(Remote.class, Bean.class);
+        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
+        jar.addClasses(Remote.class, Bean.class, Singleton.class, StatefulBean.class);
         return jar;
     }
 
-    private static Context remoteContext;
-
-    @BeforeClass
-    public static void setupRemoteContext() throws Exception {
+    public InitialContext getRemoteContext() throws Exception {
         final Properties env = new Properties();
         env.put(Context.INITIAL_CONTEXT_FACTORY, org.jboss.naming.remote.client.InitialContextFactory.class.getName());
-        env.put(Context.PROVIDER_URL, "remote://localhost:4447");
+        env.put(Context.PROVIDER_URL, "remote://" + baseUrl.getHost() + ":" + PORT);
         env.put("jboss.naming.client.ejb.context", true);
         env.put("jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "false");
         env.put("jboss.naming.client.security.callback.handler.class", CallbackHandler.class.getName());
-        remoteContext = new InitialContext(env);
-    }
-
-    @AfterClass
-    public static void tearDownRemoteContext() throws Exception {
-        remoteContext.close();
+        return new InitialContext(env);
     }
 
     @Test
     public void testIt() throws Exception {
+        final InitialContext ctx = getRemoteContext();
         final ClassLoader current = Thread.currentThread().getContextClassLoader();
+        
         try {
             Thread.currentThread().setContextClassLoader(Remote.class.getClassLoader());
 
-            final Remote remote  = (Remote)remoteContext.lookup("test/Bean!org.jboss.as.test.integration.naming.remote.ejb.Remote");
+            Remote remote  = (Remote) ctx.lookup(ARCHIVE_NAME + "/" + Bean.class.getSimpleName() + "!" + Remote.class.getName());
+            assertNotNull(remote);
+            assertEquals("Echo: test", remote.echo("test"));
+            
+            remote  = (Remote) ctx.lookup(ARCHIVE_NAME + "/" + Singleton.class.getSimpleName() + "!" + Remote.class.getName());
+            assertNotNull(remote);
+            assertEquals("Echo: test", remote.echo("test"));
+            
+            remote  = (Remote) ctx.lookup(ARCHIVE_NAME + "/" + StatefulBean.class.getSimpleName() + "!" + Remote.class.getName());
             assertNotNull(remote);
             assertEquals("Echo: test", remote.echo("test"));
 
         } finally {
+            ctx.close();
             Thread.currentThread().setContextClassLoader(current);
         }
     }

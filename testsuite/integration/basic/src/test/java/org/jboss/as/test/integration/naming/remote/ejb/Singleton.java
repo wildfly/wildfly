@@ -22,13 +22,13 @@
 
 package org.jboss.as.test.integration.naming.remote.ejb;
 
-import javax.ejb.Singleton;
+import javax.ejb.Stateless;
 
 /**
- * @author John Bailey, Ondrej Chaloupka
+ * @author John Bailey
  */
-@Singleton
-public class Bean implements Remote {
+@Stateless
+public class Singleton implements Remote {
     public String echo(String value) {
         return "Echo: " + value;
     }
