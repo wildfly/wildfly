@@ -59,7 +59,6 @@ import org.junit.Ignore;
  */
 @RunAsClient
 @RunWith(Arquillian.class)
-@Ignore("AS7-3704")
 public class HttpDeploymentUploadUnitTestCase {
 
     private static final String BOUNDARY_PARAM = "NeAG1QNIHHOyB5joAS7Rox!!";
