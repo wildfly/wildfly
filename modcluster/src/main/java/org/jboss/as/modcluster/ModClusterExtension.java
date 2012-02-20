@@ -112,7 +112,7 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         configuration.registerReadWriteAttribute(CommonAttributes.PROXY_URL, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
         configuration.registerReadWriteAttribute(CommonAttributes.ADVERTISE, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN, true), Storage.CONFIGURATION);
         configuration.registerReadWriteAttribute(CommonAttributes.ADVERTISE_SECURITY_KEY, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
-        configuration.registerReadWriteAttribute(CommonAttributes.EXCLUDED_CONTEXTS, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN, true), Storage.CONFIGURATION);
+        configuration.registerReadWriteAttribute(CommonAttributes.EXCLUDED_CONTEXTS, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
         configuration.registerReadWriteAttribute(CommonAttributes.AUTO_ENABLE_CONTEXTS, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN, true), Storage.CONFIGURATION);
         configuration.registerReadWriteAttribute(CommonAttributes.STOP_CONTEXT_TIMEOUT, null, new WriteAttributeHandlers.IntRangeValidatingHandler(1, true), Storage.CONFIGURATION);
         configuration.registerReadWriteAttribute(CommonAttributes.SOCKET_TIMEOUT, null, new WriteAttributeHandlers.IntRangeValidatingHandler(1, true), Storage.CONFIGURATION);
