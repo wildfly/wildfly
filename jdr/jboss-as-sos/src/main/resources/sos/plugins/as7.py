@@ -141,15 +141,16 @@ class AS7(Plugin, IndependentPlugin, AS7Mixin):
                 self.addForbiddenPath(os.path.join(confDir, 'mgmt-users.properties'))
                 self.addForbiddenPath(os.path.join(confDir, 'application-users.properties'))
 
-                self.doCopyFileOrDir(confDir, sub=(self.__jbossHome, 'JBOSSHOME'))
-
                 for logFile in find("*.log", path):
                     self.addCopySpecLimit(logFile,
                             self.getOption("logsize"),
                             sub=(self.__jbossHome, 'JBOSSHOME'))
 
                 for xml in find("*.xml", path):
-                    self.addCopySpec(xml)
+                    self.addCopySpec(xml, sub=(self.__jbossHome, 'JBOSSHOME'))
+
+                for prop in find("*.properties", path):
+                    self.addCopySpec(prop, sub=(self.__jbossHome, 'JBOSSHOME'))
 
                 deployment_info = self.__get_deployment_info(confDir)
                 deployments = self.__get_deployments(path)
