@@ -210,7 +210,7 @@
                                 <goals><goal>test</goal></goals>
                                 <configuration>
                                     <skipTests>${ts.skipTests}</skipTests>
-                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <enableAssertions>true</enableAssertions>
                                     <includes>
                                         <include>org/jboss/as/test/integration/**/*SecondTestCase.java</include>

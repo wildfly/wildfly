@@ -98,6 +98,9 @@
         <jvm.args.securityManager></jvm.args.securityManager>
         <jvm.args.securityPolicy></jvm.args.securityPolicy>
         <jvm.args.security>${jvm.args.securityManager} ${jvm.args.securityPolicy}</jvm.args.security>
+        
+        <!-- Logging config -->
+        <testLogToFile>true</testLogToFile>
 
         <!-- Timeout ratios. 100 will leave the timeout as it was coded. -->
         <timeout.ratio.fsio>100</timeout.ratio.fsio>
@@ -392,7 +395,7 @@
                     <failIfNoTests>false</failIfNoTests>
                     <!-- don't halt the all test executions if a test fails -->
                     <testFailureIgnore>${surefire.test.failure.ignore}</testFailureIgnore>
-                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                     <systemPropertyVariables>
                         <jboss.options>${surefire.system.args}</jboss.options>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
