@@ -124,6 +124,7 @@
         <!-- Common surefire properties. -->
         <surefire.memory.args>-Xmx512m -XX:MaxPermSize=256m</surefire.memory.args>
         <surefire.jpda.args></surefire.jpda.args>
+        <as.debug.port>8787</as.debug.port>
         <surefire.system.args>${surefire.memory.args} ${surefire.jpda.args} -Djboss.dist=${jboss.dist}</surefire.system.args>
         <surefire.forked.process.timeout>900</surefire.forked.process.timeout>
         <surefire.test.failure.ignore>false</surefire.test.failure.ignore>
@@ -591,7 +592,14 @@
             <id>jpda.profile</id>
             <activation><property><name>jpda</name></property></activation>
             <properties>
-                <surefire.jpda.args>-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y</surefire.jpda.args>
+                <surefire.jpda.args>-Xrunjdwp:transport=dt_socket,address=${as.debug.port},server=y,suspend=y</surefire.jpda.args>
+            </properties>
+        </profile>
+        <profile>
+            <id>debug.profile</id>
+            <activation><property><name>debug</name></property></activation>
+            <properties>
+                <surefire.jpda.args>-Xrunjdwp:transport=dt_socket,address=${as.debug.port},server=y,suspend=y</surefire.jpda.args>
             </properties>
         </profile>
 
