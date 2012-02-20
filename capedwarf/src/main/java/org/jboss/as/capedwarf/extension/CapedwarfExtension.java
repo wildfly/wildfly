@@ -24,12 +24,10 @@ package org.jboss.as.capedwarf.extension;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -44,7 +42,6 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import java.util.List;
-import java.util.Locale;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
@@ -61,14 +58,26 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
  */
 public class CapedwarfExtension implements Extension {
 
-    /** The name space used for the {@code substystem} element */
+    /**
+     * The name space used for the {@code substystem} element
+     */
     public static final String NAMESPACE = "urn:jboss:domain:capedwarf:1.0";
 
-    /** The name of our subsystem within the model. */
+    /**
+     * The name of our subsystem within the model.
+     */
     public static final String SUBSYSTEM_NAME = "capedwarf";
 
-    /** The parser used for parsing our subsystem */
+    private static final String RESOURCE_NAME = CapedwarfExtension.class.getPackage().getName() + ".LocalDescriptions";
+
+    /**
+     * The parser used for parsing our subsystem
+     */
     private final SubsystemParser parser = new SubsystemParser();
+
+    static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
+        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, CapedwarfExtension.class.getClassLoader(), true, false);
+    }
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
@@ -78,63 +87,49 @@ public class CapedwarfExtension implements Extension {
     @Override
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(SubsystemProviders.SUBSYSTEM);
-        // We always need to add an 'add' operation
-        registration.registerOperationHandler(ADD, CapedwarfSubsystemAdd.INSTANCE, SubsystemProviders.SUBSYSTEM_ADD, false);
-        // We always need to add a 'describe' operation
-        registration.registerOperationHandler(DESCRIBE, SubsystemDescribeHandler.INSTANCE, SubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(CapedwarfDefinition.INSTANCE);
+        registration.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE, GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         // Register parser
         subsystem.registerXMLElementWriter(parser);
     }
 
-    private static ModelNode createAddSubsystemOperation(String appengineAPI) {
-        final ModelNode subsystem = new ModelNode();
-        subsystem.get(OP).set(ADD);
-        subsystem.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
-        if (appengineAPI != null)
-            subsystem.get("appengine-api").set(appengineAPI);
-        return subsystem;
-    }
 
     /**
      * The subsystem parser, which uses stax to read and write to and from xml
      */
     private static class SubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
             context.startSubsystemElement(CapedwarfExtension.NAMESPACE, false);
+            CapedwarfDefinition.APPENGINE_API.marshallAsElement(context.getModelNode(),writer);
             writer.writeEndElement();
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
-            list.add(createAddSubsystemOperation(reader.getAttributeValue(null, "appengine-api")));
+            final ModelNode operation = new ModelNode();
+            operation.get(OP).set(ADD);
+            operation.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
+            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                if (CapedwarfModel.APPENGINE_API.equals(reader.getLocalName())) {
+                    CapedwarfDefinition.APPENGINE_API.parseAndSetParameter(reader.getElementText(), operation, reader);
+                } else {
+                    reader.handleAny(list);
+                }
+            }
+            list.add(operation);
             // Require no content
-            ParseUtils.requireNoContent(reader);
+            //ParseUtils.requireNoContent(reader);
+
         }
     }
 
-    /**
-     * Recreate the steps to put the subsystem in the same state it was in.
-     * This is used in domain mode to query the profile being used, in order to
-     * get the steps needed to create the servers
-     */
-    private static class SubsystemDescribeHandler implements OperationStepHandler, DescriptionProvider {
-        static final SubsystemDescribeHandler INSTANCE = new SubsystemDescribeHandler();
-
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            final String appengineAPI = operation.hasDefined("appengine-api") ? operation.get("appengine-api").asString() : null;
-            context.getResult().add(createAddSubsystemOperation(appengineAPI));
-            context.completeStep();
-        }
-
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return CommonDescriptions.getSubsystemDescribeOperation(locale);
-        }
-    }
 
 }

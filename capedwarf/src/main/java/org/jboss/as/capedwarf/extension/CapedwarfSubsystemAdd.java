@@ -81,7 +81,7 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
      */
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        model.setEmptyObject();
+        CapedwarfDefinition.APPENGINE_API.validateAndSet(operation,model);
     }
 
     /**
@@ -91,8 +91,9 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
     public void performBoottime(final OperationContext context, ModelNode operation, ModelNode model,
                                 ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
             throws OperationFailedException {
+        ModelNode appEngineModel = CapedwarfDefinition.APPENGINE_API.resolveModelAttribute(context,model);
 
-        final String appengineAPI = operation.hasDefined("appengine-api") ? operation.get("appengine-api").asString() : null;
+        final String appengineAPI = appEngineModel.isDefined()?appEngineModel.asString():null;
 
         context.addStep(new AbstractDeploymentChainStep() {
             public void execute(DeploymentProcessorTarget processorTarget) {

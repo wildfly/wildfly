@@ -21,15 +21,20 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-            targetNamespace="urn:jboss:domain:capedwarf:1.0"
-            xmlns="urn:jboss:domain:capedwarf:1.0"
-            elementFormDefault="qualified"
-            attributeFormDefault="unqualified"
-            version="1.0">
+           targetNamespace="urn:jboss:domain:capedwarf:1.0"
+           xmlns="urn:jboss:domain:capedwarf:1.0"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified"
+           version="1.0">
 
     <!-- The naming subsystem root element -->
     <xs:element name="subsystem" type="subsystem"/>
 
-    <xs:complexType name="subsystem"/>
+
+    <xs:complexType name="subsystem">
+        <xs:sequence>
+            <xs:element name="appengine-api" type="xs:string" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
 
 </xs:schema>
