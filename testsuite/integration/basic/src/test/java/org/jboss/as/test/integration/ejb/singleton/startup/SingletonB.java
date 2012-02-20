@@ -38,7 +38,7 @@ public class SingletonB implements SingletonBeanRemoteView {
 
     private static Logger logger = Logger.getLogger(SingletonB.class);
 
-    @EJB(name = "SLSBTwo")
+    @EJB(beanName = "SLSBTwo")
     private DoSomethingView slsbTwo;
 
     @PostConstruct

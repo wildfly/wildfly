@@ -87,8 +87,11 @@ public class EJBViewDescription extends ViewDescription {
         if (hasJNDIBindings != that.hasJNDIBindings) return false;
         if (methodIntf != that.methodIntf) return false;
         if (!getViewClassName().equals(that.getViewClassName())) return false;
+        //we compare the components based on ==
+        //as you can have two components with the same name
+        if (getComponentDescription() != that.getComponentDescription()) return false;
 
-        return true;
+        return super.equals(o);
     }
 
     @Override
@@ -118,6 +121,7 @@ public class EJBViewDescription extends ViewDescription {
         int result = methodIntf.hashCode();
         result = 31 * result + (hasJNDIBindings ? 1 : 0);
         result = 31 * result + getViewClassName().hashCode();
+        result = 31 * result + getComponentDescription().getComponentName().hashCode();
         return result;
     }
 
