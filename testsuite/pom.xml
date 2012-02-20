@@ -328,7 +328,7 @@
                 <artifactId>xml-maven-plugin</artifactId>
                 <executions combine.children="append">
                     <execution>
-                        <id>ts.config-as.ip-and-ds</id>
+                        <id>ts.config-as.ip</id>
                         <phase>process-test-resources</phase>
                         <goals><goal>transform</goal></goals>
                         <inherited>false</inherited>
@@ -349,6 +349,7 @@
                                     </parameters>
                                 </transformationSet>
                                 <!-- Datasource. -->
+                                <!-- Not needed, done in ds.profile .
                                 <transformationSet>
                                     <dir      >${basedir}/target/jbossas/standalone/configuration</dir>
                                     <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
@@ -363,6 +364,7 @@
                                         <parameter><name>ds.jdbc.pass</name><value>${ds.jdbc.pass}</value></parameter>
                                     </parameters>
                                 </transformationSet>
+                                -->
                             </transformationSets>
                         </configuration>
                     </execution>
@@ -650,11 +652,7 @@
                 Profile used to perform database related changes.
             -->
             <id>ds.profile</id>
-            <!--
-            <activation><activeByDefault>true</activeByDefault></activation>
             <activation><property><name>ds</name></property></activation>
-            -->
-            <activation><property><name>!dummyPropertyKJDWQ</name></property></activation>
             <dependencies>
                 <dependency>
                     <groupId>jdbcdrivers</groupId>
@@ -700,7 +698,6 @@
                         <artifactId>xml-maven-plugin</artifactId>
                         <executions combine.children="append">
                             <!-- Replace ExampleDS datasource in server configurations (target/jbossas). -->
-                            <!-- Not needed, done in ts.config-as.ip-and-ds.
                             <execution>
                                 <id>ts.config-as.db.change-datasource</id>
                                 <phase>process-test-resources</phase>
@@ -725,7 +722,6 @@
                                     </transformationSets>
                                 </configuration>
                             </execution>
-                            -->
                         </executions>
                     </plugin>
 
