@@ -45,15 +45,34 @@
                 <artifactId>javacc-maven-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>jjtree-javacc-ejbql-jbossql</id>
+                        <id>jjtree-jbossql</id>
                         <goals>
-                            <goal>jjtree-javacc</goal>
+                            <goal>jjtree</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>org/jboss/as/cmp/ejbql/JBossQLParser.jjt</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>jjtree-ejbql</id>
+                        <goals>
+                            <goal>jjtree</goal>
                         </goals>
                         <configuration>
                             <includes>
                                 <include>org/jboss/as/cmp/ejbql/EJBQLParser.jjt</include>
-                                <include>org/jboss/as/cmp/ejbql/JBossQLParser.jjt</include>
                             </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>javacc</id>
+                        <goals>
+                            <goal>javacc</goal>
+                        </goals>
+                        <configuration>
+                            <sourceDirectory>${project.build.directory}/generated-sources/jjtree/</sourceDirectory>
                         </configuration>
                     </execution>
                 </executions>
