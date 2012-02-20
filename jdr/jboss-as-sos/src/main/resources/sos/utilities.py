@@ -296,6 +296,9 @@ class Archive(object):
             name = os.path.split(self._name)[-1]
             return os.path.join(name, src.lstrip(os.sep))
 
+    def add_link(self, dest, link_name):
+        pass
+
 
 class TarFileArchive(Archive):
 
@@ -328,6 +331,13 @@ class TarFileArchive(Archive):
         tar_info.size = len(content)
         tar_info.mtime = time.time()
         self.tarfile.addfile(tar_info, StringIO(content))
+
+    def add_link(self, dest, link_name):
+        tar_info = tarfile.TarInfo(name=self.prepend(link_name))
+        tar_info.type = tarfile.SYMTYPE
+        tar_info.linkname = dest
+        tar_info.mtime = time.time()
+        self.tarfile.addfile(tar_info, None)
 
     def open_file(self, name):
         try:

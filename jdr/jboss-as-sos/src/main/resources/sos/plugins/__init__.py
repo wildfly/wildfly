@@ -311,7 +311,9 @@ class Plugin(object):
 
         for name, parms in izip(self.optNames, self.optParms):
             if _check(name):
-                return parms['enabled']
+                val = parms['enabled']
+                if val != None:
+                    return val
 
         for key, value in self.cInfo.get('global_plugin_options', {}).iteritems():
             if _check(key):
@@ -442,6 +444,8 @@ class Plugin(object):
         if not (status == 127 or status == 32512): # if not command_not_found
             outfn_strip = outfn[len(self.cInfo['cmddir'])+1:]
             self.archive.add_string(shout, outfn)
+            if root_symlink:
+                self.archive.add_link(outfn, root_symlink)
         else:
             self.soslog.debug("could not run command: %s" % exe)
             outfn = None
