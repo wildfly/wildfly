@@ -4,8 +4,8 @@ DIRNAME=`dirname "$0"`
 PROGNAME=`basename "$0"`
 GREP="grep"
 
-# Use the maximum available, or set MAX_FD != -1 to use that
-MAX_FD="maximum"
+# Default value for maximum open file descriptors.
+MAX_FD=2048
 # Decrement the value of MAX_FD by MAX_FD_STEP. This is the default
 # value. Change it in standalone.conf.
 MAX_FD_STEP=50
@@ -62,28 +62,18 @@ export JBOSS_HOME
 
 # Increase the maximum file descriptors if we can
 if [ "$cygwin" = "false" ]; then
-    MAX_FD_LIMIT=`ulimit -H -n`
-    if [ "$?" -eq 0 ]; then
-        # Darwin does not allow RLIMIT_INFINITY on file soft limit
-        if [ "$darwin" = "true" -a "$MAX_FD_LIMIT" = "unlimited" ]; then
-            MAX_FD_LIMIT=`/usr/sbin/sysctl -n kern.maxfilesperproc`
-        fi
+    if [ ${MAX_FD} ]; then
+        MAX_FD_TMP=${MAX_FD}
+        while [ ${MAX_FD_TMP} -gt 0 ]; do
+            if ulimit -n ${MAX_FD_TMP} 2> /dev/null 1>&2; then
+                percent=`expr ${MAX_FD_TMP} \* 100 \/ ${MAX_FD}`
+                echo "Open file descriptor limit set to ${MAX_FD_TMP} (${percent}% of desired ${MAX_FD})."
+                break
+            else
+                MAX_FD_TMP=`expr ${MAX_FD_TMP} - ${MAX_FD_STEP}`
+            fi
+        done
     fi
-    if [ "$MAX_FD" = "maximum" -o "$MAX_FD" = "max" ]; then
-        # use the system max
-        MAX_FD="$MAX_FD_LIMIT"
-    fi
-
-    MAX_FD_TMP=${MAX_FD}
-    while [ ${MAX_FD_TMP} -gt 0 ]; do
-        if ulimit -n ${MAX_FD_TMP} 2> /dev/null 1>&2; then
-            percent=`expr ${MAX_FD_TMP} \* 100 \/ ${MAX_FD}`
-            echo "Open file descriptor limit set to ${MAX_FD_TMP} (${percent}% if desired ${MAX_FD})."
-            break
-        else
-            MAX_FD_TMP=`expr ${MAX_FD_TMP} - ${MAX_FD_STEP}`
-        fi
-    done
 fi
 
 # Setup the JVM
