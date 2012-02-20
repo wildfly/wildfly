@@ -51,7 +51,7 @@
         </xsl:copy>
     </xsl:template>
 
-    <xsl:template match="//d:interfaces/d:interface[@name='public']/d:inet-address">
+    <xsl:template match="//d:interfaces/d:interface[@name='public' or @name='unsecure']/d:inet-address">
         <xsl:copy>
             <xsl:attribute name="value">
                 <xsl:value-of select="$publicIPAddress"/>
@@ -90,7 +90,7 @@
     </xsl:template>
 
     <!-- Change modcluster multicast addresses. -->
-    <xsl:template match="//socket-binding-group[@name='standard-sockets']/socket-binding[@name='modcluster']">
+    <xsl:template match="//d:socket-binding-group[@name='standard-sockets']/d:socket-binding[@name='modcluster']">
         <xsl:copy>
             <xsl:attribute name="multicast-address">
                 <xsl:value-of select="$modclusterMcastAddress"/>
