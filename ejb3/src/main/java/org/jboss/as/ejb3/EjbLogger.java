@@ -84,7 +84,7 @@ public interface EjbLogger extends BasicLogger {
      * @param id the session id that could not be released
      */
     @LogMessage(level = INFO)
-    @Message(id = 14101, value = "Failed to find %s in cache")
+    @Message(id = 14101, value = "Failed to find SFSB instance with session ID %s in cache")
     void cacheEntryNotFound(Object id);
 
     /**
