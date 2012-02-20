@@ -31,6 +31,7 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
 
     private static final String GAE_FILTER_NAME = "GAEFilter";
     private static final String AUTH_SERVLET_NAME = "authservlet";
+    private static final String ADMIN_SERVLET_NAME = "CapedwarfAdminServlet";
 
     private final ListenerMetaData GAE_LISTENER;
     private final ListenerMetaData CDI_LISTENER;
@@ -38,7 +39,9 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
     private final FilterMetaData GAE_FILTER;
     private final FilterMappingMetaData GAE_FILTER_MAPPING;
     private final ServletMetaData GAE_SERVLET;
+    private final ServletMetaData ADMIN_SERVLET;
     private final ServletMappingMetaData GAE_SERVLET_MAPPING;
+    private final ServletMappingMetaData ADMIN_SERVLET_MAPPING;
     private final ResourceReferenceMetaData INFINISPAN_REF;
 
     public CapedwarfWebComponentsDeploymentProcessor() {
@@ -49,6 +52,8 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
         GAE_FILTER_MAPPING = createGaeFilterMapping();
         GAE_SERVLET = createAuthServlet();
         GAE_SERVLET_MAPPING = createAuthServletMapping();
+        ADMIN_SERVLET = createAdminServlet();
+        ADMIN_SERVLET_MAPPING = createAdminServletMapping();
         INFINISPAN_REF = createInfinispanRef();
     }
 
@@ -64,6 +69,9 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
 
             addAuthServletTo(webMetaData);
             addAuthServletMappingTo(webMetaData);
+
+            addAdminServletTo(webMetaData);
+            addAdminServletMappingTo(webMetaData);
 
             addResourceReference(webMetaData);
         }
@@ -162,6 +170,10 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
         getServlets(webMetaData).add(GAE_SERVLET);
     }
 
+    private void addAdminServletTo(WebMetaData webMetaData) {
+        getServlets(webMetaData).add(ADMIN_SERVLET);
+    }
+
     private ServletsMetaData getServlets(WebMetaData webMetaData) {
         ServletsMetaData servletsMetaData = webMetaData.getServlets();
         if (servletsMetaData == null) {
@@ -179,8 +191,20 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
         return servlet;
     }
 
+    private ServletMetaData createAdminServlet() {
+        ServletMetaData servlet = new ServletMetaData();
+        servlet.setServletName(ADMIN_SERVLET_NAME);
+        servlet.setServletClass("org.jboss.capedwarf.admin.AdminServlet");
+        servlet.setEnabled(true);
+        return servlet;
+    }
+
     private void addAuthServletMappingTo(WebMetaData webMetaData) {
         getServletMappings(webMetaData).add(GAE_SERVLET_MAPPING);
+    }
+
+    private void addAdminServletMappingTo(WebMetaData webMetaData) {
+        getServletMappings(webMetaData).add(ADMIN_SERVLET_MAPPING);
     }
 
     private List<ServletMappingMetaData> getServletMappings(WebMetaData webMetaData) {
@@ -196,6 +220,13 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
         ServletMappingMetaData servletMapping = new ServletMappingMetaData();
         servletMapping.setServletName(AUTH_SERVLET_NAME);
         servletMapping.setUrlPatterns(Collections.singletonList("/_capedwarf_/auth/*"));   // TODO: introduce AuthServlet.URL_PATTERN
+        return servletMapping;
+    }
+
+    private ServletMappingMetaData createAdminServletMapping() {
+        ServletMappingMetaData servletMapping = new ServletMappingMetaData();
+        servletMapping.setServletName(ADMIN_SERVLET_NAME);
+        servletMapping.setUrlPatterns(Collections.singletonList("/_ah/admin/*"));
         return servletMapping;
     }
 

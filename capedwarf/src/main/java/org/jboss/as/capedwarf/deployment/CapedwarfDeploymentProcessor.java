@@ -61,6 +61,7 @@ public class CapedwarfDeploymentProcessor extends CapedwarfDeploymentUnitProcess
     private static final ModuleIdentifier INFINISPAN = ModuleIdentifier.create("org.infinispan");
 
     private static final ModuleIdentifier MODULES = ModuleIdentifier.create("org.jboss.modules");
+    private static final ModuleIdentifier VELOCITY = ModuleIdentifier.create("org.apache.velocity");
     private static final ModuleIdentifier TX = ModuleIdentifier.create("javax.transaction.api");
     private static final ModuleIdentifier ACTIVATION = ModuleIdentifier.create("javax.activation.api");
     private static final ModuleIdentifier MAIL = ModuleIdentifier.create("org.javassist");
@@ -72,7 +73,7 @@ public class CapedwarfDeploymentProcessor extends CapedwarfDeploymentUnitProcess
     private static final ModuleIdentifier PICKETLINK_FED = ModuleIdentifier.create("org.picketlink.fed");
     private static final ModuleIdentifier PICKETLINK_SOCIAL = ModuleIdentifier.create("org.picketlink.social");
     // inline this module deps, if running with bundled
-    private static final ModuleIdentifier[] INLINE = {MODULES, TX, ACTIVATION, MAIL, JAVASSIST, INFINISPAN_QUERY, HIBERNATE_SEARCH, LUCENE, HTTP_COMPONENTS, PICKETLINK_FED, PICKETLINK_SOCIAL};
+    private static final ModuleIdentifier[] INLINE = {MODULES, VELOCITY, TX, ACTIVATION, MAIL, JAVASSIST, INFINISPAN_QUERY, HIBERNATE_SEARCH, LUCENE, HTTP_COMPONENTS, PICKETLINK_FED, PICKETLINK_SOCIAL};
 
     private static final VirtualFileFilter JARS_VFS = new VirtualFileFilter() {
         public boolean accepts(VirtualFile file) {

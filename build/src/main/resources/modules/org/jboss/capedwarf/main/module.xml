@@ -37,6 +37,7 @@
         <module name="javax.activation.api"/>
         <module name="javax.mail.api"/>
         <module name="javax.servlet.api"/>
+        <module name="org.apache.velocity"/>
         <module name="org.jboss.modules"/>
         <module name="org.javassist"/>
         <module name="org.infinispan"/>
