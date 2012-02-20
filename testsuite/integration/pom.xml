@@ -164,33 +164,12 @@
             </plugin>
             
             
-            <!-- Copy JBoss AS to target/jbossas. -->
+            <!-- Resources plugin. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions combine.children="append">
-                    <!-- First, make a copy for this module. -->
-                    <execution>
-                        <inherited>false</inherited>
-                        <id>ts.copy-jbossas.integ</id>
-                        <phase>generate-test-resources</phase>
-                        <goals><goal>copy-resources</goal></goals>
-                        <configuration>
-                            <outputDirectory>${basedir}/target/jbossas</outputDirectory>
-                            <overwrite>true</overwrite>
-                            <resources>
-                                <resource>
-                                    <directory>${jboss.home}</directory>
-                                    <!-- Modules and bundles not copied as they are read-only (see Surefire props). -->
-                                    <excludes>
-                                        <exclude>modules/</exclude>
-                                        <exclude>bundles/</exclude>
-                                    </excludes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                    <!-- Users and roles config. -->
+                    <!-- Copy users and roles config from shared resources. -->
                     <execution>
                         <id>ts.config-as.copy-mgmt-users</id>
                         <phase>generate-test-resources</phase>
