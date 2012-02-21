@@ -19,19 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.web.security;
+package org.jboss.as.test.integration.web.security.form;
+
+import java.net.URL;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.integration.web.security.SecuredServlet;
+import org.jboss.as.test.integration.web.security.SecurityTest;
+import org.jboss.as.test.integration.web.security.WebSecurityPasswordBasedBase;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.net.URL;
 
 /**
  * Unit Test web security
@@ -66,14 +70,17 @@ public class WebSecurityJBossSimpleRoleMappingTestCase extends WebSecurityFORMTe
             // ignore
         }
 
-        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-        URL webxml = tccl.getResource("web-secure.war/web.xml");
-        WebArchive war = WebSecurityPasswordBasedBase.create("web-secure.war", SecuredServlet.class, true, webxml);
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "web-secure.war");
+        war.addClasses(SecuredServlet.class);
 
-        war.addAsWebResource(tccl.getResource("web-secure.war/login.jsp"), "login.jsp");
-        war.addAsWebResource(tccl.getResource("web-secure.war/error.jsp"), "error.jsp");
-        war.addAsWebInfResource(tccl.getResource("web-secure.war/jboss-web.xml"), "jboss-web.xml");
+        war.addAsWebResource(WebSecurityJBossSimpleRoleMappingTestCase.class.getPackage(), "login.jsp", "login.jsp");
+        war.addAsWebResource(WebSecurityJBossSimpleRoleMappingTestCase.class.getPackage(), "error.jsp", "error.jsp");
 
+        war.addAsWebInfResource(WebSecurityJBossSimpleRoleMappingTestCase.class.getPackage(), "jboss-web-role-mapping.xml", "jboss-web.xml");
+        war.addAsWebInfResource(WebSecurityJBossSimpleRoleMappingTestCase.class.getPackage(), "web.xml", "web.xml");
+
+        war.addAsResource(WebSecurityJBossSimpleRoleMappingTestCase.class.getPackage(), "users.properties", "users.properties");
+        war.addAsResource(WebSecurityJBossSimpleRoleMappingTestCase.class.getPackage(), "roles.properties", "roles.properties");
         WebSecurityPasswordBasedBase.printWar(war);
         return war;
     }
@@ -96,6 +103,4 @@ public class WebSecurityJBossSimpleRoleMappingTestCase extends WebSecurityFORMTe
     public void testPrincipalMappingOnRole() throws Exception {
         makeCall("peter", "peter", 200);
     }
-
-
 }

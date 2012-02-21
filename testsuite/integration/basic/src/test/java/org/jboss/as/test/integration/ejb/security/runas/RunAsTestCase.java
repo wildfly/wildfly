@@ -41,6 +41,7 @@ import org.jboss.as.test.integration.ejb.security.base.WhoAmIBean;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.util.Base64;
 import org.junit.Test;
@@ -96,7 +97,7 @@ public class RunAsTestCase extends SecurityTest {
                 .addAsResource("ejb3/security/roles.properties", "roles.properties")
                 .addAsWebInfResource("ejb3/security/web.xml", "web.xml")
                 .addAsWebInfResource("ejb3/security/jboss-web.xml", "jboss-web.xml")
-                .addAsManifestResource("web-secure-programmatic-login.war/MANIFEST.MF", "MANIFEST.MF");
+                .addAsManifestResource(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF");
         log.info(war.toString(true));
         return war;
     }

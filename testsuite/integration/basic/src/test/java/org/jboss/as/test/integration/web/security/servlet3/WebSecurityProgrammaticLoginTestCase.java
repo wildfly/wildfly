@@ -21,22 +21,7 @@
  */
 package org.jboss.as.test.integration.web.security.servlet3;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.security.Constants.AUTHENTICATION;
-import static org.jboss.as.security.Constants.CODE;
-import static org.jboss.as.security.Constants.FLAG;
-import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
-import static org.junit.Assert.assertEquals;
-
 import java.net.InetAddress;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,6 +41,20 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.security.Constants.AUTHENTICATION;
+import static org.jboss.as.security.Constants.CODE;
+import static org.jboss.as.security.Constants.FLAG;
+import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Unit Test the programmatic login feature of Servlet 3
@@ -78,21 +77,14 @@ public class WebSecurityProgrammaticLoginTestCase {
             // ignore
         }
 
-        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-        URL webxml = tccl.getResource("web-secure-programmatic-login.war/web.xml");
         WebArchive war = ShrinkWrap.create(WebArchive.class, "web-secure-programmatic-login.war");
-        war.addAsResource(tccl.getResource("security/users.properties"), "users.properties");
-        war.addAsResource(tccl.getResource("security/roles.properties"), "roles.properties");
-        war.addAsManifestResource(tccl.getResource("web-secure-programmatic-login.war/MANIFEST.MF"), "MANIFEST.MF");
-        war.addAsWebInfResource(tccl.getResource("web-secure-programmatic-login.war/jboss-web.xml"), "jboss-web.xml");
+        war.addAsResource(WebSecurityProgrammaticLoginTestCase.class.getPackage(), "users.properties", "users.properties");
+        war.addAsResource(WebSecurityProgrammaticLoginTestCase.class.getPackage(), "roles.properties", "roles.properties");
+        war.addAsManifestResource(WebSecurityProgrammaticLoginTestCase.class.getPackage(), "MANIFEST.MF", "MANIFEST.MF");
+        war.addAsWebInfResource(WebSecurityProgrammaticLoginTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
+        war.addAsWebInfResource(WebSecurityProgrammaticLoginTestCase.class.getPackage(), "web.xml", "web.xml");
         war.addClass(LoginServlet.class);
         war.addClass(SecuredServlet.class);
-
-        if (webxml != null) {
-            war.setWebXML(webxml);
-        }
-
-        printWar(war);
 
         return war;
     }
@@ -160,14 +152,6 @@ public class WebSecurityProgrammaticLoginTestCase {
         return "web-secure-programmatic-login";
     }
 
-    /**
-     * Print the contents of the {@link WebArchive}
-     *
-     * @param war
-     */
-    public static void printWar(WebArchive war) {
-        System.out.println(war.toString(true));
-    }
 
     public static void createSecurityDomains(final ModelControllerClient client) throws Exception {
         final List<ModelNode> updates = new ArrayList<ModelNode>();
