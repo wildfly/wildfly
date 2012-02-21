@@ -49,6 +49,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -128,7 +129,6 @@ public class ServerManagementTestCase {
 
     }
 
-    @Ignore("AS7-2653")
     @Test
     public void testAddAndRemoveServer() throws Exception {
         final DomainClient client = domainSlaveLifecycleUtil.getDomainClient();
@@ -136,7 +136,7 @@ public class ServerManagementTestCase {
         final ModelNode addServer = new ModelNode();
         addServer.get(OP).set(ADD);
         addServer.get(OP_ADDR).set(newServerConfigAddress);
-        addServer.get(GROUP).set("main-server-group");
+        addServer.get(GROUP).set("minimal");
         addServer.get(SOCKET_BINDING_GROUP).set("standard-sockets");
         addServer.get(SOCKET_BINDING_PORT_OFFSET).set(650);
         addServer.get(AUTO_START).set(false);
@@ -165,7 +165,7 @@ public class ServerManagementTestCase {
         stopServer.get(OP_ADDR).set(newServerConfigAddress);
         result = client.execute(stopServer);
         validateResponse(result);
-        waitUntilState(client, newServerConfigAddress, "STOPPED");
+        waitUntilState(client, newServerConfigAddress, "DISABLED");
 
         Assert.assertTrue(exists(client, newServerConfigAddress));
         Assert.assertFalse(exists(client, newRunningServerAddress));
@@ -344,22 +344,29 @@ public class ServerManagementTestCase {
                 return;
             }
             try {
-                Thread.sleep(500);
+                TimeUnit.SECONDS.sleep(1);
             } catch(InterruptedException e) {
                 Thread.currentThread().interrupt();
                 return;
             }
         }
-        Assert.fail(serverAddress + " never reached the " + state + " statue");
+        final String required = getServerState(client, serverAddress);
+        Assert.assertEquals(serverAddress.toString(), required, state);
     }
 
     private boolean checkState(final ModelControllerClient client, final ModelNode serverAddress, final String state) throws IOException {
+        final String serverState = getServerState(client, serverAddress);
+        return state.equals(serverState);
+    }
+
+    private String getServerState(final ModelControllerClient client, final ModelNode serverAddress) throws IOException {
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
         operation.get(OP_ADDR).set(serverAddress);
         operation.get(NAME).set("status");
 
         ModelNode status = client.execute(operation);
-        return state.equals(status.get(RESULT).asString());
+        return status.get(RESULT).asString();
     }
+
 }
