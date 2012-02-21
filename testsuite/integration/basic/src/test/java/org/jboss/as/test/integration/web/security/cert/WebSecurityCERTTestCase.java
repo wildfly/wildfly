@@ -20,22 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.web.security;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.security.Constants.AUTHENTICATION;
-import static org.jboss.as.security.Constants.CODE;
-import static org.jboss.as.security.Constants.FLAG;
-import static org.jboss.as.security.Constants.JSSE;
-import static org.jboss.as.security.Constants.MODULE_OPTIONS;
-import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
-import static org.jboss.as.security.Constants.TRUSTSTORE_PASSWORD;
-import static org.jboss.as.security.Constants.TRUSTSTORE_URL;
-import static org.junit.Assert.assertEquals;
+package org.jboss.as.test.integration.web.security.cert;
 
 import java.net.InetAddress;
 import java.net.URL;
@@ -60,6 +45,8 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.test.integration.web.security.SecuredServlet;
+import org.jboss.as.test.integration.web.security.WebSecurityPasswordBasedBase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.security.JBossJSSESecurityDomain;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -69,6 +56,21 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.security.Constants.AUTHENTICATION;
+import static org.jboss.as.security.Constants.CODE;
+import static org.jboss.as.security.Constants.FLAG;
+import static org.jboss.as.security.Constants.JSSE;
+import static org.jboss.as.security.Constants.MODULE_OPTIONS;
+import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
+import static org.jboss.as.security.Constants.TRUSTSTORE_PASSWORD;
+import static org.jboss.as.security.Constants.TRUSTSTORE_URL;
+import static org.junit.Assert.assertEquals;
+
 /**
  * Unit test for CLIENT-CERT authentication.
  *
@@ -76,51 +78,34 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("[AS7-734] Migrate to ARQ Beta1")
+@Ignore("AS7-3837")
 public class WebSecurityCERTTestCase {
 
     protected final String URL = "https://localhost:8380/" + getContextPath() + "/secured/";
 
-    /**
-     * Base method to create a {@link WebArchive}
-     *
-     * @param name Name of the war file
-     * @param servletClass a class that is the servlet
-     * @param webxml {@link URL} to the web.xml. This can be null
-     * @return  the web archive
-     */
-    public static WebArchive create(String name, Class<?> servletClass, URL webxml) {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, name);
-        war.addClass(servletClass);
-
-        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-
-        war.addAsResource(tccl.getResource("web-secure-client-cert.war/roles.properties"), "roles.properties");
-        war.addAsWebInfResource(tccl.getResource("web-secure-client-cert.war/jboss-web.xml"), "jboss-web.xml");
-
-        if (webxml != null) {
-            war.setWebXML(webxml);
-        }
-
-        return war;
-    }
 
     @Deployment
     public static WebArchive deployment() {
         // FIXME hack to get things prepared before the deployment happens
         try {
             final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
-            // create the test connector
-            createTestConnector(client);
             // create required security domains
             createSecurityDomains(client);
+            // create the test connector
+            createTestConnector(client);
         } catch (Exception e) {
             // ignore
         }
 
-        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-        URL webxml = tccl.getResource("web-secure-client-cert.war/web.xml");
-        WebArchive war = create("web-secure-client-cert.war", SecuredServlet.class, webxml);
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "web-secure-client-cert.war");
+        war.addClass(SecuredServlet.class);
+
+        war.addAsWebInfResource(WebSecurityCERTTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
+        war.addAsWebInfResource(WebSecurityCERTTestCase.class.getPackage(), "web.xml", "web.xml");
+
+        war.addAsResource(WebSecurityCERTTestCase.class.getPackage(), "users.properties", "users.properties");
+        war.addAsResource(WebSecurityCERTTestCase.class.getPackage(), "roles.properties", "roles.properties");
+
         WebSecurityPasswordBasedBase.printWar(war);
         return war;
     }

@@ -21,10 +21,6 @@
  */
 package org.jboss.as.test.integration.ejb.security;
 
-import org.jboss.as.test.shared.integration.ejb.security.Util;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import java.util.logging.Logger;
 
 import javax.ejb.EJB;
@@ -36,11 +32,16 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.ejb.security.authorization.DenyAllOverrideBean;
 import org.jboss.as.test.integration.ejb.security.authorization.PermitAllOverrideBean;
 import org.jboss.as.test.integration.ejb.security.authorization.RolesAllowedOverrideBean;
+import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * Test case to test the general authorization requirements for annotated beans, more specific requirements such as RunAs
@@ -72,7 +73,7 @@ public class AnnotationAuthorizationTestCase extends SecurityTest {
                 .addAsResource("ejb3/security/users.properties", "users.properties")
                 .addAsResource("ejb3/security/roles.properties", "roles.properties")
                 .addAsWebInfResource("ejb3/security/jboss-web.xml", "jboss-web.xml")
-                .addAsManifestResource("web-secure-programmatic-login.war/MANIFEST.MF", "MANIFEST.MF");
+                .addAsManifestResource(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF");
         log.info(war.toString(true));
         return war;
     }

@@ -22,7 +22,6 @@
 
 package org.jboss.as.test.integration.ejb.security;
 
-import org.jboss.as.test.shared.integration.ejb.security.Util;
 import javax.ejb.EJBAccessException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -31,9 +30,11 @@ import javax.security.auth.login.LoginContext;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.ejb.security.dd.override.PartialDDBean;
+import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -66,7 +67,7 @@ public class SecurityDDOverrideTestCase extends SecurityTest {
         jar.addAsResource("ejb3/security/users.properties", "users.properties");
         jar.addAsResource("ejb3/security/roles.properties", "roles.properties");
         jar.addAsManifestResource("ejb3/security/ejb-jar.xml", "ejb-jar.xml");
-        jar.addAsManifestResource("web-secure-programmatic-login.war/MANIFEST.MF", "MANIFEST.MF");
+        jar.addAsManifestResource(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF");
         logger.info(jar.toString(true));
         return jar;
     }

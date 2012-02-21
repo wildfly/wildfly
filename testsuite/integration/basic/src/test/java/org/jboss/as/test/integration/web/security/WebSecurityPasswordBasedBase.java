@@ -21,9 +21,6 @@
  */
 package org.jboss.as.test.integration.web.security;
 
-import java.net.URL;
-
-import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 
@@ -38,32 +35,6 @@ public abstract class WebSecurityPasswordBasedBase extends SecurityTest {
     private int port = 8080;
 
     protected final String URL = "http://" + getHostname() + ":" + String.valueOf(getPort()) + "/" + getContextPath() + "/secured/";
-
-    /**
-     * Base method to create a {@link WebArchive}
-     *
-     * @param name Name of the war file
-     * @param servletClass a class that is the servlet
-     * @param addProps should we add users.properties and roles.properties to war
-     * @param webxml {@link URL} to the web.xml. This can be null
-     * @return
-     */
-    public static WebArchive create(String name, Class<?> servletClass, boolean addProps, URL webxml) {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, name);
-        war.addClass(servletClass);
-        war.addClass(SecurityTest.class);
-
-        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-
-        war.addAsResource(tccl.getResource("security/users.properties"), "users.properties");
-        war.addAsResource(tccl.getResource("security/roles.properties"), "roles.properties");
-
-        if (webxml != null) {
-            war.setWebXML(webxml);
-        }
-
-        return war;
-    }
 
     /**
      * Obtain the context path of the {@link WebArchive}
