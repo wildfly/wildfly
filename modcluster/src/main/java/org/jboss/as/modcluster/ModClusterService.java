@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.catalina.Engine;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jboss.as.web.WebServer;
@@ -147,8 +148,28 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         if (modelconf.has(CommonAttributes.ADVERTISE_SECURITY_KEY))
             config.setProxyList(modelconf.get(CommonAttributes.ADVERTISE_SECURITY_KEY).asString());
 
-        if (modelconf.hasDefined(CommonAttributes.EXCLUDED_CONTEXTS))
-            config.setExcludedContexts(modelconf.get(CommonAttributes.EXCLUDED_CONTEXTS).asString());
+        if (modelconf.hasDefined(CommonAttributes.EXCLUDED_CONTEXTS)) {
+            // read the default host.
+            String defaulthost = ((Engine) webServer.getValue().getService().getContainer()).getDefaultHost();
+            String exluded_contexts = null;
+            for (String exluded_context : modelconf.get(CommonAttributes.EXCLUDED_CONTEXTS).asString().trim().split(",")) {
+                String[] parts = exluded_context.trim().split(":");
+                if (parts.length != 1) {
+                    if (exluded_contexts == null)
+                        exluded_contexts = "";
+                    else
+                        exluded_contexts = exluded_contexts.concat(",");
+                    exluded_contexts = exluded_contexts.concat(exluded_context);
+                } else {
+                        if (exluded_contexts == null)
+                            exluded_contexts = "";
+                        else
+                            exluded_contexts = exluded_contexts.concat(",");
+                        exluded_contexts = exluded_contexts.concat(defaulthost).concat(":").concat(exluded_context);
+                }
+            }
+            config.setExcludedContexts(exluded_contexts);
+        }
         if (modelconf.hasDefined(CommonAttributes.AUTO_ENABLE_CONTEXTS))
             config.setAutoEnableContexts(modelconf.get(CommonAttributes.AUTO_ENABLE_CONTEXTS).asBoolean());
         if (modelconf.hasDefined(CommonAttributes.STOP_CONTEXT_TIMEOUT)) {
