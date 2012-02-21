@@ -226,7 +226,7 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
     private ServletMappingMetaData createAdminServletMapping() {
         ServletMappingMetaData servletMapping = new ServletMappingMetaData();
         servletMapping.setServletName(ADMIN_SERVLET_NAME);
-        servletMapping.setUrlPatterns(Collections.singletonList("/_ah/admin/*"));
+        servletMapping.setUrlPatterns(Arrays.asList("/_ah/admin/*", "/_ah/admin/"));
         return servletMapping;
     }
 
