@@ -78,8 +78,12 @@ public class OperationRequestHandler implements CommandHandler, OperationCommand
         }
 
         try {
-            ModelNode result = client.execute(request);
-            ctx.printLine(result.toString());
+            final ModelNode result = client.execute(request);
+            if(Util.isSuccess(result)) {
+                ctx.printLine(result.toString());
+            } else {
+                ctx.error(result.toString());
+            }
         } catch(NoSuchElementException e) {
             ctx.error("ModelNode request is incomplete: " + e.getMessage());
         } catch (CancellationException e) {
