@@ -1,15 +1,7 @@
 package org.jboss.as.test.integration.ejb.iiop.naming;
 
-import java.rmi.NoSuchObjectException;
-import java.rmi.RemoteException;
-import java.util.Properties;
-
-import javax.ejb.RemoveException;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.rmi.PortableRemoteObject;
-
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -17,6 +9,14 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import javax.ejb.RemoveException;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.rmi.PortableRemoteObject;
+import java.rmi.NoSuchObjectException;
+import java.rmi.RemoteException;
+import java.util.Properties;
 
 /**
  * Tests that corba name lookups work from inside the AS itself
@@ -36,11 +36,12 @@ public class IIOPNamingInContainerTestCase {
     @Deployment(name="test2")
     public static Archive<?> descriptorOverrideDeploy() {
         return ShrinkWrap.create(JavaArchive.class, "test2.jar")
-                .addClasses(IIOPNamingHome.class, IIOPRemote.class, IIOPNamingBean.class)
+                .addPackage(IIOPNamingInContainerTestCase.class.getPackage())
                 .addAsManifestResource("ejb/iiop/jboss-ejb3-nameing.xml", "jboss-ejb3.xml");
     }
 
     @Test
+    @OperateOnDeployment("test")
     public void testIIOPNamingInvocation() throws NamingException, RemoteException {
 
         final Properties prope = new Properties();
@@ -52,6 +53,7 @@ public class IIOPNamingInContainerTestCase {
     }
 
     @Test
+    @OperateOnDeployment("test")
     public void testStatefulIIOPNamingInvocation() throws NamingException, RemoteException, RemoveException {
         final Properties prope = new Properties();
         final InitialContext context = new InitialContext(prope);
@@ -80,6 +82,7 @@ public class IIOPNamingInContainerTestCase {
      * @throws RemoteException if an error occurs while invoking the remote bean.
      */
     @Test
+    @OperateOnDeployment("test2")
     public void testIIOPNamingInvocationWithDDOverride() throws NamingException, RemoteException {
         final Properties prope = new Properties();
         final InitialContext context = new InitialContext(prope);

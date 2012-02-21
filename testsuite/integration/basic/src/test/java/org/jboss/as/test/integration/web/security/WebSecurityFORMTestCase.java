@@ -21,8 +21,6 @@
  */
 package org.jboss.as.test.integration.web.security;
 
-import static org.junit.Assert.assertEquals;
-
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +44,8 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.runner.RunWith;
 
+import static org.junit.Assert.assertEquals;
+
 /**
  * Unit Test web security
  *
@@ -62,7 +62,7 @@ public class WebSecurityFORMTestCase extends WebSecurityPasswordBasedBase {
             // create required security domains
             createSecurityDomain();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            //ignore
         }
 
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
