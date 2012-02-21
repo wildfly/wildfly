@@ -34,7 +34,7 @@
         <version.org.jboss.arquillian>1.0.0.CR7</version.org.jboss.arquillian>
         <version.org.jboss.arquillian.extension.drone>1.0.0.CR3</version.org.jboss.arquillian.extension.drone>
         <version.org.jboss.arquillian.ajocado>1.0.0.CR2</version.org.jboss.arquillian.ajocado>
-        <version.org.jboss.as.arquillian.container>7.1.0.CR1b</version.org.jboss.as.arquillian.container>
+        <version.org.jboss.as.arquillian.container>7.1.0.Final</version.org.jboss.as.arquillian.container>
         <version.org.jboss.jbossts.jbossjts>4.16.1.Final</version.org.jboss.jbossts.jbossjts>
 
         <!-- Versions of projects not directly under JBoss umbrella -->
@@ -43,7 +43,7 @@
 
         <!-- Versions of Maven plugins, user must setup them by his/her own -->
         <version.org.apache.maven.surefire.plugin>2.10</version.org.apache.maven.surefire.plugin>
-        <version.org.jboss.as.plugins.jboss.as.maven.plugin>7.1.0.CR1b</version.org.jboss.as.plugins.jboss.as.maven.plugin>
+        <version.org.jboss.as.plugins.jboss.as.maven.plugin>7.1.0.Final</version.org.jboss.as.plugins.jboss.as.maven.plugin>
     </properties>
 
     <modules>
