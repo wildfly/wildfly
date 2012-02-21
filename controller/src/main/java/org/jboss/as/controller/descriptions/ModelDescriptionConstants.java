@@ -124,6 +124,7 @@ public class ModelDescriptionConstants {
     public static final String LDAP_CONNECTION = "ldap-connection";
     public static final String LOCAL = "local";
     public static final String LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING = "local-destination-outbound-socket-binding";
+    public static final String LOCAL_HOST_NAME = "local-host-name";
     public static final String LOCALE = "locale";
     public static final String MANAGEMENT_SUBSYSTEM_ENDPOINT = "management-subsystem-endpoint";
     public static final String MANAGEMENT = "management";

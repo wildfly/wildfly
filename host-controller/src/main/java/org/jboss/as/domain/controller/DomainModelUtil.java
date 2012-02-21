@@ -30,6 +30,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IN_SERIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL_HOST_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_CLIENT_CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
@@ -99,6 +100,7 @@ import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
 import org.jboss.as.domain.controller.descriptions.DomainRootDescription;
 import org.jboss.as.domain.controller.operations.ApplyRemoteMasterDomainModelHandler;
 import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
+import org.jboss.as.domain.controller.operations.LocalHostNameOperationHandler;
 import org.jboss.as.domain.controller.operations.ProcessTypeHandler;
 import org.jboss.as.domain.controller.operations.ProfileAddHandler;
 import org.jboss.as.domain.controller.operations.ProfileDescribeHandler;
@@ -228,6 +230,7 @@ public class DomainModelUtil {
 
         root.registerReadOnlyAttribute(PROCESS_TYPE, isMaster ? ProcessTypeHandler.MASTER : ProcessTypeHandler.SLAVE, Storage.RUNTIME);
         root.registerReadOnlyAttribute(ServerDescriptionConstants.LAUNCH_TYPE, new LaunchTypeHandler(ServerEnvironment.LaunchType.DOMAIN), Storage.RUNTIME);
+        root.registerReadOnlyAttribute(LOCAL_HOST_NAME, new LocalHostNameOperationHandler(hostControllerInfo), Storage.RUNTIME);
 
         root.registerOperationHandler(ValidateAddressOperationHandler.OPERATION_NAME, ValidateAddressOperationHandler.INSTANCE,
                 ValidateAddressOperationHandler.INSTANCE, false, EnumSet.of(OperationEntry.Flag.READ_ONLY));

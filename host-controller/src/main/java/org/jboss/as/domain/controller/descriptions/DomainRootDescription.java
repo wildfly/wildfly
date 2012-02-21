@@ -29,6 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL_HOST_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
@@ -133,6 +134,11 @@ public class DomainRootDescription {
         root.get(ATTRIBUTES, MANAGEMENT_MINOR_VERSION, REQUIRED).set(true);
         root.get(ATTRIBUTES, MANAGEMENT_MINOR_VERSION, NILLABLE).set(false);
         root.get(ATTRIBUTES, MANAGEMENT_MINOR_VERSION, MIN).set(1);
+
+        root.get(ATTRIBUTES, LOCAL_HOST_NAME, DESCRIPTION).set(bundle.getString("domain.local-host-name"));
+        root.get(ATTRIBUTES, LOCAL_HOST_NAME, TYPE).set(ModelType.STRING);
+        root.get(ATTRIBUTES, LOCAL_HOST_NAME, REQUIRED).set(true);
+        root.get(ATTRIBUTES, LOCAL_HOST_NAME, NILLABLE).set(false);
 
         root.get(OPERATIONS).setEmptyObject();
 
