@@ -220,7 +220,7 @@ public class CliLauncher {
     private static void processCommands(String[] commands, CommandContext cmdCtx) {
         int i = 0;
         try {
-            while (i < commands.length && !cmdCtx.isTerminated()) {
+            while (cmdCtx.getExitCode() == 0 && i < commands.length && !cmdCtx.isTerminated()) {
                 cmdCtx.handle(commands[i]);
                 ++i;
             }
@@ -241,7 +241,7 @@ public class CliLauncher {
         try {
             reader = new BufferedReader(new FileReader(file));
             String line = reader.readLine();
-            while (!cmdCtx.isTerminated() && line != null) {
+            while (cmdCtx.getExitCode() == 0 && !cmdCtx.isTerminated() && line != null) {
                 cmdCtx.handle(line.trim());
                 line = reader.readLine();
             }

@@ -26,6 +26,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -39,12 +40,18 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class CommandsArgumentTestCase {
+public class FileArgumentTestCase {
 
     private static final String PROP_NAME = "cli-arg-test";
     private static final String SET_PROP_COMMAND = "/system-property=" + PROP_NAME + ":add(value=set)";
     private static final String GET_PROP_COMMAND = "/system-property=" + PROP_NAME + ":read-resource";
     private static final String REMOVE_PROP_COMMAND = "/system-property=" + PROP_NAME + ":remove";
+
+    private static final String FILE_NAME = "jboss-cli-file-arg-test.cli";
+    private static final File TMP_FILE;
+    static {
+        TMP_FILE = new File(new File(System.getProperty("java.io.tmpdir")), FILE_NAME);
+    }
 
     /**
      * Tests that the exit code is 0 value after a successful operation
@@ -52,9 +59,9 @@ public class CommandsArgumentTestCase {
      */
     @Test
     public void testSuccess() {
-        int exitCode = execute(SET_PROP_COMMAND, true);
+        int exitCode = executeAsFile(new String[]{SET_PROP_COMMAND}, true);
         if(exitCode == 0) {
-            execute(REMOVE_PROP_COMMAND, true);
+            executeAsFile(new String[]{REMOVE_PROP_COMMAND}, true);
         }
         assertEquals(0, exitCode);
     }
@@ -74,9 +81,9 @@ public class CommandsArgumentTestCase {
      */
     @Test
     public void testValidCommandAfterInvalidCommand() {
-        int exitCode = execute('\"' + GET_PROP_COMMAND + ',' + SET_PROP_COMMAND + '\"', false);
+        int exitCode = executeAsFile(new String[]{GET_PROP_COMMAND, SET_PROP_COMMAND}, false);
         if(exitCode == 0) {
-            execute(REMOVE_PROP_COMMAND, true);
+            executeAsFile(new String[]{REMOVE_PROP_COMMAND}, true);
         } else {
             assertFailure(GET_PROP_COMMAND);
         }
@@ -89,21 +96,52 @@ public class CommandsArgumentTestCase {
      */
     @Test
     public void testValidCommandBeforeInvalidCommand() {
-        int exitCode = execute(SET_PROP_COMMAND + ",bad-wrong-illegal", false);
+        int exitCode = executeAsFile(new String[]{SET_PROP_COMMAND, "bad-wrong-illegal"}, true);
         assertSuccess(GET_PROP_COMMAND);
-        execute(REMOVE_PROP_COMMAND, true);
+        executeAsFile(new String[]{REMOVE_PROP_COMMAND}, true);
         assertTrue(exitCode != 0);
     }
 
     protected void assertSuccess(String cmd) {
-        assertEquals(0, execute(cmd, true));
+        assertEquals(0, executeAsFile(new String[]{cmd}, true));
     }
 
     protected void assertFailure(String cmd) {
-        assertTrue(execute(cmd, false) != 0);
+        assertTrue(executeAsFile(new String[]{cmd}, false) != 0);
     }
 
-    protected int execute(String cmd, boolean logFailure) {
+    protected int executeAsFile(String[] cmd, boolean logFailure) {
+        createFile(cmd);
+        return execute(TMP_FILE, logFailure);
+    }
+
+    protected void createFile(String[] cmd) {
+        if(TMP_FILE.exists()) {
+            if(!TMP_FILE.delete()) {
+                fail("Failed to delete " + TMP_FILE.getAbsolutePath());
+            }
+        }
+
+        FileWriter writer = null;
+        try {
+            writer = new FileWriter(TMP_FILE);
+            for(String line : cmd) {
+                writer.write(line);
+                writer.write('\n');
+            }
+        } catch (IOException e) {
+            fail("Failed to write to " + TMP_FILE.getAbsolutePath() + ": " + e.getLocalizedMessage());
+        } finally {
+            if(writer != null) {
+                try {
+                    writer.close();
+                } catch (IOException e) {
+                }
+            }
+        }
+    }
+
+    protected int execute(File f, boolean logFailure) {
         final String jbossDist = System.getProperty("jboss.dist");
         if(jbossDist == null) {
             fail("jboss.dist system property is not set");
@@ -114,7 +152,7 @@ public class CommandsArgumentTestCase {
         }
 
         final ProcessBuilder builder = new ProcessBuilder();
-        builder.command("java" , "-jar" , jbossDist + File.separatorChar + "jboss-modules.jar", "-mp", modulePath, "org.jboss.as.cli", "-c", cmd);
+        builder.command("java" , "-jar" , jbossDist + File.separatorChar + "jboss-modules.jar", "-mp", modulePath, "org.jboss.as.cli", "-c", "--file=" + f.getAbsolutePath());
         Process cliProc = null;
         try {
             cliProc = builder.start();
@@ -128,7 +166,7 @@ public class CommandsArgumentTestCase {
             fail("Interrupted waiting for the CLI process.");
         }
         if (logFailure && exitCode != 0) {
-            System.out.println("Failed to execute '" + cmd + "'");
+            System.out.println("Failed to execute " + f.getAbsolutePath());
             try {
                 int bytesTotal = cliProc.getInputStream().available();
                 if (bytesTotal > 0) {
@@ -136,8 +174,8 @@ public class CommandsArgumentTestCase {
                     cliProc.getInputStream().read(bytes);
                     System.out.println("Command's output: '" + new String(bytes) + "'");
                 }
-            } catch(IOException e) {
-                fail("Failed to read command's output: " + e.getLocalizedMessage());
+            } catch(Exception e) {
+                System.out.println("Failed to read command's output: " + e.getLocalizedMessage());
             }
 
             try {
@@ -149,8 +187,8 @@ public class CommandsArgumentTestCase {
                 } else {
                     System.out.println("No output data for the command.");
                 }
-            } catch(IOException e) {
-                fail("Failed to read command's error output: " + e.getLocalizedMessage());
+            } catch(Exception e) {
+                System.out.println("Failed to read command's error output: " + e.getLocalizedMessage());
             }
         }
         return exitCode;
