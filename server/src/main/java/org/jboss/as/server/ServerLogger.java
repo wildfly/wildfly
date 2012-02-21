@@ -22,6 +22,10 @@
 
 package org.jboss.as.server;
 
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
+
 import java.net.URISyntaxException;
 import java.util.jar.Attributes;
 
@@ -39,12 +43,8 @@ import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 import org.jboss.modules.ModuleIdentifier;
 
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.INFO;
-import static org.jboss.logging.Logger.Level.WARN;
-
 /**
- * This module is using message IDs in the range 15700-15999.
+ * This module is using message IDs in the range 15700-15999 and 18700-18799.
  * This file is using the subset 15850-15899 and 15950-15999 for server logger messages.
  * See http://community.jboss.org/docs/DOC-16810 for the full list of
  * currently reserved JBAS message id blocks.
