@@ -44,11 +44,7 @@
 
         <profile>
             <id>xts.integration.tests.profile</id>
-            <activation>
-                <property>
-                    <name>!ts.noXTS</name>
-                </property>
-            </activation>
+            <activation><property><name>!ts.noXTS</name></property></activation>
             <properties>
             </properties>
             <!--
@@ -63,13 +59,13 @@
                             <execution>
                                 <id>build-xts.server</id>
                                 <phase>process-test-resources</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
+                                <goals><goal>run</goal></goals>
                                 <configuration>
                                     <target>
                                         <!-- build the UDP server configs in target-->
                                         <ant antfile="${jbossas.ts.integ.dir}/src/test/scripts/xts-build.xml">
+                                            <property name="node0" value="${node0}"/> <!-- inheritAll="true" doesn't work. -->
+                                            <property name="node1" value="${node1}"/>
                                             <target name="build-xts"/>
                                         </ant>
                                     </target>

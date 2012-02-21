@@ -70,6 +70,8 @@
                                     <target>
                                         <!-- Configure IIOP server and client. -->
                                         <ant antfile="${jbossas.ts.integ.dir}/src/test/scripts/iiop-build.xml">
+                                            <property name="node0" value="${node0}"/> <!-- inheritAll="true" doesn't work. -->
+                                            <property name="node1" value="${node1}"/>
                                             <target name="build-iiop"/>
                                         </ant>
                                     </target>

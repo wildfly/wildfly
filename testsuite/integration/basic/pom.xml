@@ -100,6 +100,8 @@
                                         <property name="tests.resources.dir" value="${basedir}/../src/test/resources"/>
                                         <property name="tests.output.dir"    value="${project.build.directory}"/>
                                         <ant antfile="${basedir}/../src/test/scripts/basic-integration-build.xml">
+                                            <property name="node0" value="${node0}"/> <!-- inheritAll="true" doesn't work. -->
+                                            <property name="node1" value="${node1}"/>
                                             <target name="build-basic-integration"/>  <!-- TODO: Unify names, then call "recursively". -->
                                         </ant>
                                     </target>
