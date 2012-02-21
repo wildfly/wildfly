@@ -218,11 +218,14 @@ public class CliLauncher {
     }
 
     private static void processCommands(String[] commands, CommandContext cmdCtx) {
+        int i = 0;
         try {
-            for (int i = 0; i < commands.length && !cmdCtx.isTerminated(); ++i) {
-                cmdCtx.handleSafe(commands[i]);
+            while (i < commands.length && !cmdCtx.isTerminated()) {
+                cmdCtx.handle(commands[i]);
+                ++i;
             }
         } catch(Throwable t) {
+            cmdCtx.error("Failed to process command '" + commands[i] + "': " + t.getLocalizedMessage());
             t.printStackTrace();
         } finally {
             if (!cmdCtx.isTerminated()) {
@@ -239,7 +242,7 @@ public class CliLauncher {
             reader = new BufferedReader(new FileReader(file));
             String line = reader.readLine();
             while (!cmdCtx.isTerminated() && line != null) {
-                cmdCtx.handleSafe(line.trim());
+                cmdCtx.handle(line.trim());
                 line = reader.readLine();
             }
         } catch (Throwable e) {
