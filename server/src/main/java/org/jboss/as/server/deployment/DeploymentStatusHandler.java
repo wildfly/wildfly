@@ -22,6 +22,7 @@
 
 package org.jboss.as.server.deployment;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import org.jboss.as.controller.OperationContext;
@@ -29,6 +30,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
@@ -44,21 +46,26 @@ public class DeploymentStatusHandler implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final PathElement element = address.getLastElement();
-
+        final ModelNode deployment = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
+        final boolean isEnabled = deployment.get(ENABLED).asBoolean();
         context.addStep(new OperationStepHandler() {
                     @Override
                     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                         final ModelNode result = context.getResult();
-                        final ServiceController<?> controller = context.getServiceRegistry(false).getService(Services.deploymentUnitName(element.getValue()));
-                        if(controller != null) {
-                            if (controller.getSubstate() == ServiceController.Substate.WONT_START &&
-                                      controller.getState() == ServiceController.State.DOWN) {
-                                result.set(AbstractDeploymentUnitService.DeploymentStatus.STOPPED.toString());
-                            } else {
-                                result.set(((AbstractDeploymentUnitService)controller.getService()).getStatus().toString());
-                            }
+                        if (!isEnabled) {
+                            result.set(AbstractDeploymentUnitService.DeploymentStatus.STOPPED.toString());
                         } else {
-                            result.set(NO_METRICS);
+                            final ServiceController<?> controller = context.getServiceRegistry(false).getService(Services.deploymentUnitName(element.getValue()));
+                            if (controller != null) {
+                                if (controller.getSubstate() == ServiceController.Substate.WONT_START &&
+                                        controller.getState() == ServiceController.State.DOWN) {
+                                    result.set(AbstractDeploymentUnitService.DeploymentStatus.STOPPED.toString());
+                                } else {
+                                    result.set(((AbstractDeploymentUnitService) controller.getService()).getStatus().toString());
+                                }
+                            } else {
+                                result.set(NO_METRICS);
+                            }
                         }
                         context.completeStep();
                     }
