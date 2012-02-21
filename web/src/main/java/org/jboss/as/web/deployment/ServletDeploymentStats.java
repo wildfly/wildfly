@@ -93,7 +93,7 @@ public class ServletDeploymentStats {
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
             final PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
 
-            final Resource web = context.getRootResource().navigate(address.subAddress(0, address.size() -1));
+            final Resource web = context.readResourceFromRoot(address.subAddress(0, address.size() -1), false);
             final ModelNode subModel = web.getModel();
 
             final String host = subModel.require("virtual-host").asString();

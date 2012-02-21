@@ -294,8 +294,8 @@ public class CacheConfigOperationHandlers {
     }
 
     private static ModelNode getCache(OperationContext context, PathAddress cacheAddress) {
-        Resource rootResource = context.getRootResource();
-        ModelNode cache = rootResource.navigate(cacheAddress).getModel();
+        Resource rootResource = context.readResourceFromRoot(cacheAddress);
+        ModelNode cache = rootResource.getModel();
         return cache ;
     }
 
