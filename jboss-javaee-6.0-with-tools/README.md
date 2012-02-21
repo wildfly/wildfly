@@ -9,8 +9,8 @@ To use the BOM, import into your dependency management:
 
     <dependencyManagement>
         <dependencies>
-	    <dependency>
-	       <groupId>org.jboss.bom</groupId>
+            <dependency>
+               <groupId>org.jboss.bom</groupId>
                <artifactId>jboss-javaee-6.0-with-tools</artifactId>
                <version>1.0.0-SNAPSHOT</version>
                <type>pom</scope>
