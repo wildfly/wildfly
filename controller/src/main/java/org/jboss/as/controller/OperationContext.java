@@ -413,37 +413,80 @@ public interface OperationContext {
     void addResource(PathAddress address, Resource toAdd);
 
     /**
-     * Get the addressable resource for read only operations.
+     * Get the resource for read only operations, relative to the executed operation address. Reads never block.
+     * If a write action was previously performed, the value read will be from an uncommitted copy of the the management model.<br/>
      *
-     * @param address the address
+     * Note: By default the returned resource is read-only copy of the entire sub-model. In case this is not required use
+     * {@link OperationContext#readResource(PathAddress, boolean)} instead.
+     *
+     * @param relativeAddress the (possibly empty) address where the resource should be added. The address is relative to the
+     *                address of the operation being executed
      * @return the resource
      */
-    Resource readResource(PathAddress address);
+    Resource readResource(PathAddress relativeAddress);
 
     /**
-     * Get an addressable resource for update operations.
+     * Get the resource for read only operations, relative to the executed operation address. Reads never block.
+     * If a write action was previously performed, the value read will be from an uncommitted copy of the the management model.
      *
-     * @param address the address
+     * @param relativeAddress the (possibly empty) address where the resource should be added. The address is relative to the
+     *                address of the operation being executed
+     * @param recursive whether the model should be read recursively or not
      * @return the resource
      */
-    Resource readResourceForUpdate(PathAddress address);
+    Resource readResource(PathAddress relativeAddress, boolean recursive);
+
+    /**
+     * Read a addressable resource from the root of the model. Reads never block. If a write action was previously performed,
+     * the value read will be from an uncommitted copy of the the management model.<br/>
+     *
+     * Note: By default the returned resource is read-only copy of the entire sub-model. In case this is not required use
+     * {@link OperationContext#readResourceFromRoot(PathAddress, boolean)} instead.
+     *
+     * @param address the (possibly empty) address
+     * @return a read-only reference from the model
+     */
+    Resource readResourceFromRoot(PathAddress address);
+
+    /**
+     * Read a addressable resource from the root of the model. Reads never block. If a write action was previously performed,
+     * the value read will be from an uncommitted copy of the the management model.
+     *
+     * @param address the (possibly empty) address
+     * @param recursive whether the model should be read recursively or not
+     * @return a read-only reference from the model
+     */
+    Resource readResourceFromRoot(PathAddress address, boolean recursive);
+
+    /**
+     * Get an addressable resource for update operations. Since only one operation may write at a time, this operation
+     * may block until other writing operations have completed.
+     *
+     * @param relativeAddress the (possibly empty) address where the resource should be added. The address is relative to the
+     *                address of the operation being executed
+     * @return the resource
+     */
+    Resource readResourceForUpdate(PathAddress relativeAddress);
 
     /**
      * Remove a resource relative to the executed operation address. Since only one operation
      * may write at a time, this operation may block until other writing operations have completed.
      *
-     * @param address the (possibly empty) address to remove
+     * @param relativeAddress the (possibly empty) address where the resource should be removed. The address is relative to the
+     *                address of the operation being executed
      * @return the old value of the node
      * @throws UnsupportedOperationException if the calling operation is not a model operation
      */
-    Resource removeResource(PathAddress address) throws UnsupportedOperationException;
+    Resource removeResource(PathAddress relativeAddress) throws UnsupportedOperationException;
 
     /**
      * Get a read-only reference of the entire management model.  The structure of the returned model may depend
      * on the context type (domain vs. server).
      *
      * @return the read-only resource
+     * @deprecated Use {@link OperationContext#readResourceFromRoot(PathAddress, boolean)}
      */
+    @Deprecated
     Resource getRootResource();
 
      /**

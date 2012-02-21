@@ -47,6 +47,7 @@ import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.DelegatingImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.Injector;
@@ -432,8 +433,20 @@ final class OperationContextImpl extends AbstractOperationContext {
         return model.getModel();
     }
 
-    public Resource readResource(PathAddress requestAddress) {
+    public Resource readResource(final PathAddress requestAddress) {
+        return readResource(requestAddress, true);
+    }
+
+    public Resource readResource(final PathAddress requestAddress, final boolean recursive) {
         final PathAddress address = activeStep.address.append(requestAddress);
+        return readResourceFromRoot(address, recursive);
+    }
+
+    public Resource readResourceFromRoot(final PathAddress address) {
+        return readResourceFromRoot(address, true);
+    }
+
+    public Resource readResourceFromRoot(final PathAddress address, final boolean recursive) {
         assert isControllingThread();
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
@@ -443,7 +456,18 @@ final class OperationContextImpl extends AbstractOperationContext {
         for (final PathElement element : address) {
             model = requireChild(model, element, address);
         }
-        return model.clone();
+        if(recursive) {
+            return model.clone();
+        } else {
+            final Resource copy = Resource.Factory.create();
+            copy.writeModel(model.getModel());
+            for(final String childType : model.getChildTypes()) {
+                for(final Resource.ResourceEntry child : model.getChildren(childType)) {
+                    copy.registerChild(child.getPathElement(), PlaceholderResource.INSTANCE);
+                }
+            }
+            return copy;
+        }
     }
 
     public Resource readResourceForUpdate(PathAddress requestAddress) {

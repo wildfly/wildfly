@@ -181,8 +181,23 @@ class ParallelBootOperationContext extends AbstractOperationContext {
 
     @Override
     public Resource readResource(PathAddress address) {
+        return readResource(address, true);
+    }
+
+    @Override
+    public Resource readResource(PathAddress address, boolean recursive) {
         PathAddress fullAddress = activeStep.address.append(address);
-        return primaryContext.readResource(fullAddress);
+        return primaryContext.readResource(fullAddress, recursive);
+    }
+
+    @Override
+    public Resource readResourceFromRoot(PathAddress address) {
+        return readResourceFromRoot(address, true);
+    }
+
+    @Override
+    public Resource readResourceFromRoot(PathAddress address, boolean recursive) {
+        return primaryContext.readResourceFromRoot(address, recursive);
     }
 
     @Override
