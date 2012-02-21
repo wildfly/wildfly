@@ -5,6 +5,8 @@
 	<container qualifier="jboss" default="true">
 		<configuration>
 			<property name="jbossHome">target/jbossas</property>
+			<property name="managementAddress">${node0:127.0.0.1}</property>
+			<property name="managementPort">${as.managementPort:9999}</property>
 		</configuration>
 	</container>
 </arquillian>

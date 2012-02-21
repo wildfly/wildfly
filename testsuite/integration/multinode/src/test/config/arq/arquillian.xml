@@ -11,6 +11,8 @@
                 <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-multinode-client -Djboss.node.name=multinode-client</property>
                                                                                         <!-- jboss.node.name is defined in the test, not related to AS instance name! -->
                 <property name="serverConfig">${jboss.server.config.file.name:standalone.xml}</property>
+                <property name="managementAddress">${node0}</property>
+                <property name="managementPort">${as.managementPort:9999}</property>
             </configuration>
         </container>
 
@@ -20,6 +22,7 @@
                 <property name="jbossHome">${basedir}/target/jbossas-multinode-server</property>
                 <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-multinode-server -Djboss.node.name=multinode-server</property>
                 <property name="serverConfig">${jboss.server.config.file.name:standalone.xml}</property>
+                <property name="managementAddress">${node1}</property>
                 <property name="managementPort">10099</property>
             </configuration>
         </container>
