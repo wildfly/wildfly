@@ -22,7 +22,10 @@
 package org.jboss.as.test.integration.ws.wsa;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -104,20 +107,14 @@ public class TestNoAddressingTestCase {
 
         QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/wsaddressing", "AddressingService");
         URL wsdlURL = new URL(baseUrl, "/jaxws-wsa/AddressingService?wsdl");
-
-        log.info(" ------- WSDL dump --------- ");
-        BufferedReader in = new BufferedReader(new InputStreamReader(wsdlURL.openStream()));
-        String inputLine;
-        while ((inputLine = in.readLine()) != null) { 
-            log.info(inputLine);
-        }
-        in.close();
-        log.info(" --------------------- ");
+        File wsdlFile = new File(this.getClass().getSimpleName() + ".wsdl");
+        downloadWSDLToFile(wsdlURL, wsdlFile);
         
-        Service service = Service.create(wsdlURL, serviceName);
+        Service service = Service.create(wsdlFile.toURI().toURL(), serviceName);
         ServiceIface proxy = (ServiceIface) service.getPort(ServiceIface.class);
 
         Assert.assertEquals(expectedResponse, proxy.sayHello(message));
+        wsdlFile.delete();
     }
 
     private ServiceIface getServicePortFromWSDL(String wsdlFileName) throws MalformedURLException {
@@ -132,5 +129,18 @@ public class TestNoAddressingTestCase {
         bp.getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, new URL(baseUrl, "/jaxws-wsa/AddressingService").toString());
 
         return proxy;
+    }
+    
+    protected static void downloadWSDLToFile(URL wsdlURL, File wsdlFile) throws IOException {
+        BufferedReader in = new BufferedReader(new InputStreamReader(wsdlURL.openStream()));
+        BufferedWriter out = new BufferedWriter(new FileWriter(wsdlFile));
+        String inputLine;
+        while ((inputLine = in.readLine()) != null) { 
+            out.write(inputLine);
+            out.newLine();
+        }
+        in.close();
+        out.flush();
+        out.close();
     }
 }
