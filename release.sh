@@ -35,8 +35,8 @@ release()
    echo "***** Now close and release the staged repository at http://repository.jboss.org/nexus"
 }
 
-SNAPSHOTVERSION="1.0.0-SNAPSHOT"
-RELEASEVERSION="1.0.0.M1"
+SNAPSHOTVERSION="UNDEFINED"
+RELEASEVERSION="UNDEFINED"
 NEWSNAPSHOTVERSION="UNDEFINED"
 
 while getopts “n:r:s:” OPTION
@@ -63,9 +63,16 @@ do
      esac
 done
 
-if [ $NEWSNAPSHOTVERSION -eq "UNDEFINED" ]
+if [ "$NEWSNAPSHOTVERSION" == "UNDEFINED" ]
 then
    NEWSNAPSHOTVERSION=$SNAPSHOTVERSION
 fi
 
-release
+if [ "$SNAPSHOTVERSION" == "UNDEFINED" -o  "$RELEASEVERSION" == "UNDEFINED" ]
+then
+   echo "\nMust specify -r and -s\n"
+   usage
+else  
+   release
+fi
+
