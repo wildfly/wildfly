@@ -171,8 +171,8 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         ServiceName cacheConfigurationServiceName = CacheConfigurationService.getServiceName(containerName, cacheName);
 
         // get container Model
-        Resource rootResource = context.getRootResource();
-        ModelNode container = rootResource.navigate(containerAddress).getModel();
+        Resource rootResource = context.readResourceFromRoot(containerAddress);
+        ModelNode container = rootResource.getModel();
 
         // get default cache of the container and start mode
         // AS7-3488 make default-cache no required attribute

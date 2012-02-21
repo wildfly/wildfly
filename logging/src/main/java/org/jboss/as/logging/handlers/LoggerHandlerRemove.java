@@ -22,6 +22,7 @@
 
 package org.jboss.as.logging.handlers;
 
+import org.jboss.as.controller.PathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
@@ -146,9 +147,8 @@ public abstract class LoggerHandlerRemove extends AbstractRemoveStepHandler {
      * @throws OperationFailedException if the handler is attached to a logger or{@link org.jboss.logmanager.handlers.AsyncHandler}.
      */
     static void checkHandler(final OperationContext context, final String handlerName) throws OperationFailedException {
-        final Resource root = context.getRootResource();
-        final ModelNode rootNode = Tools.readModel(root);
-        final ModelNode subsystem = rootNode.get(SUBSYSTEM, LoggingExtension.SUBSYSTEM_NAME);
+        final Resource root = context.readResourceFromRoot(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, LoggingExtension.SUBSYSTEM_NAME)));
+        final ModelNode subsystem = Tools.readModel(root);
 
         final List<String> attached = new ArrayList<String>();
 

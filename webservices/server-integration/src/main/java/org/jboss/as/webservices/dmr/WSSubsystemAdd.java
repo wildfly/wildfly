@@ -21,6 +21,7 @@
  */
 package org.jboss.as.webservices.dmr;
 
+import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONFIG;
@@ -129,7 +130,8 @@ public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
             newControllers.add(ServerConfigService.install(serviceTarget, serverConfig, verificationHandler));
             newControllers.add(EndpointRegistryService.install(serviceTarget, verificationHandler));
 
-            String defaultHost = context.getRootResource().getChild(PathElement.pathElement("subsystem", "web")).getModel().get("default-virtual-server").asString();
+            final Resource webSubsystem = context.readResourceFromRoot(PathAddress.pathAddress(PathElement.pathElement("subsystem", "web")));
+            String defaultHost = webSubsystem.getModel().get("default-virtual-server").asString();
             newControllers.add(PortComponentLinkService.install(serviceTarget, defaultHost, verificationHandler));
         }
     }

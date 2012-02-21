@@ -69,7 +69,7 @@ public class ServerRestartHandler implements OperationStepHandler, DescriptionPr
         final PathElement element = address.getLastElement();
         final String serverName = element.getValue();
 
-        final ModelNode model = Resource.Tools.readModel(context.getRootResource());
+        final ModelNode model = Resource.Tools.readModel(context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, true));
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {

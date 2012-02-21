@@ -116,7 +116,7 @@ public class OperationSlaveStepHandler {
 
         public ModelNode getDomainModel() {
             if (domainModel == null) {
-                domainModel = Resource.Tools.readModel(context.getRootResource());
+                domainModel = Resource.Tools.readModel(context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, true));
             }
             return domainModel;
         }

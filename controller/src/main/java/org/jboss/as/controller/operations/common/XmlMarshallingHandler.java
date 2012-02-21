@@ -61,7 +61,7 @@ public class XmlMarshallingHandler implements OperationStepHandler, DescriptionP
 
     @Override
     public void execute(OperationContext context, ModelNode operation) {
-        final Resource resource = context.getRootResource().navigate(getBaseAddress());
+        final Resource resource = context.readResourceFromRoot(getBaseAddress());
         // Get the model recursively
         final ModelNode model = Resource.Tools.readModel(resource);
         try {

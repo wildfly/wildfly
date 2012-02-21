@@ -21,6 +21,7 @@
 */
 package org.jboss.as.host.controller.operations;
 
+import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 
@@ -31,6 +32,7 @@ import org.jboss.as.controller.operations.global.WriteAttributeHandlers.WriteAtt
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.operations.coordination.ServerOperationResolver;
 import org.jboss.as.host.controller.HostControllerMessages;
 import org.jboss.dmr.ModelNode;
@@ -74,8 +76,9 @@ public abstract class ServerRestartRequiredServerConfigWriteAttributeHandler ext
 
         @Override
         protected void validateReferencedNewValueExisits(OperationContext context, ModelNode value) throws OperationFailedException{
+            final Resource root = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, false);
             //Don't do this on boot since the domain model is not populated yet
-            if (!context.isBooting() && context.getRootResource().getChild(PathElement.pathElement(SERVER_GROUP, value.asString())) == null) {
+            if (!context.isBooting() && root.getChild(PathElement.pathElement(SERVER_GROUP, value.asString())) == null) {
                 throw HostControllerMessages.MESSAGES.noServerGroupCalled(value.asString());
             }
         }
@@ -88,8 +91,9 @@ public abstract class ServerRestartRequiredServerConfigWriteAttributeHandler ext
 
         @Override
         protected void validateReferencedNewValueExisits(OperationContext context, ModelNode value) throws OperationFailedException{
+            final Resource root = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, false);
             //Don't do this on boot since the domain model is not populated yet
-            if (!context.isBooting() && context.getRootResource().getChild(PathElement.pathElement(SOCKET_BINDING_GROUP, value.asString())) == null) {
+            if (!context.isBooting() && root.getChild(PathElement.pathElement(SOCKET_BINDING_GROUP, value.asString())) == null) {
                 throw HostControllerMessages.MESSAGES.noSocketBindingGroupCalled(value.asString());
             }
         }

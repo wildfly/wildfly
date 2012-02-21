@@ -150,7 +150,7 @@ public abstract class RestartParentWriteAttributeHandler extends AbstractWriteAt
 
     private ModelNode getModel(OperationContext ctx, PathAddress address) {
         try {
-            Resource resource = ctx.getRootResource().navigate(address);
+            Resource resource = ctx.readResourceFromRoot(address);
             return Resource.Tools.readModel(resource);
         } catch (NoSuchElementException e) {
             return null;

@@ -115,6 +115,9 @@ public class DomainServerLifecycleHandlers {
             }
             final String hostName = model.get(HOST).keys().iterator().next();
             final ModelNode serverConfig = model.get(HOST, hostName).get(SERVER_CONFIG);
+            if(! serverConfig.isDefined()) {
+                return Collections.emptySet();
+            }
             final Set<String> servers = new HashSet<String>();
             for (Property config : serverConfig.asPropertyList()) {
                 if (groupName.equals(config.getValue().get(GROUP).asString())) {
@@ -142,7 +145,7 @@ public class DomainServerLifecycleHandlers {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     if (group != null) {
-                        final ModelNode model = Resource.Tools.readModel(context.getRootResource());
+                        final ModelNode model = Resource.Tools.readModel(context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, true));
                         for (String server : getServersForGroup(model, group)) {
                             serverInventory.stopServer(server, TIMEOUT);
                         }
@@ -176,7 +179,7 @@ public class DomainServerLifecycleHandlers {
 
         @Override
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-            final ModelNode model = Resource.Tools.readModel(context.getRootResource());
+            final ModelNode model = Resource.Tools.readModel(context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, true));
             final String group = getServerGroupName(operation);
             context.addStep(new OperationStepHandler() {
                 @Override
@@ -228,7 +231,7 @@ public class DomainServerLifecycleHandlers {
 
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    final ModelNode model = Resource.Tools.readModel(context.getRootResource());
+                    final ModelNode model = Resource.Tools.readModel(context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, true));
                     final String group = getServerGroupName(operation);
                     context.addStep(new OperationStepHandler() {
                         @Override

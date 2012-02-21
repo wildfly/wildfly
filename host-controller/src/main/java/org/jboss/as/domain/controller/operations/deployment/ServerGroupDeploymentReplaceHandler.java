@@ -90,7 +90,7 @@ public class ServerGroupDeploymentReplaceHandler implements OperationStepHandler
         Resource domainDeployment;
         try {
             // check if the domain deployment exists
-            domainDeployment = context.getRootResource().requireChild(deploymentPath);
+            domainDeployment = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS.append(deploymentPath));
         } catch (NoSuchElementException e) {
             throw operationFailed(MESSAGES.noDeploymentContentWithName(name));
         }
