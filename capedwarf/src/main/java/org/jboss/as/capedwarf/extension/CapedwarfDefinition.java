@@ -24,22 +24,24 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 
 /**
  * @author Tomaz Cerar
- * @created 20.2.12 16:12
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CapedwarfDefinition extends SimpleResourceDefinition {
-    public static final CapedwarfDefinition INSTANCE = new CapedwarfDefinition();
+class CapedwarfDefinition extends SimpleResourceDefinition {
+    static final CapedwarfDefinition INSTANCE = new CapedwarfDefinition();
 
     protected static final SimpleAttributeDefinition APPENGINE_API =
             new SimpleAttributeDefinitionBuilder(CapedwarfModel.APPENGINE_API, ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setXmlName(CapedwarfModel.APPENGINE_API)
-                    .setValidator(new StringLengthValidator(5))
+                    .setValidator(new StringLengthValidator(5, Integer.MAX_VALUE, true, true))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
     private CapedwarfDefinition() {
-        super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, CapedwarfExtension.SUBSYSTEM_NAME),
-                CapedwarfExtension.getResourceDescriptionResolver(CapedwarfExtension.SUBSYSTEM_NAME));
+        super(PathElement.pathElement(
+                ModelDescriptionConstants.SUBSYSTEM, CapedwarfExtension.SUBSYSTEM_NAME),
+                CapedwarfExtension.getResourceDescriptionResolver(CapedwarfExtension.SUBSYSTEM_NAME)
+        );
     }
 
     @Override
