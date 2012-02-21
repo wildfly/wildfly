@@ -31,6 +31,7 @@ import java.io.IOException;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -51,6 +52,13 @@ public class FileArgumentTestCase {
     private static final File TMP_FILE;
     static {
         TMP_FILE = new File(new File(System.getProperty("java.io.tmpdir")), FILE_NAME);
+    }
+
+    @AfterClass
+    public void cleanUp() {
+        if(TMP_FILE.exists()) {
+            TMP_FILE.delete();
+        }
     }
 
     /**
