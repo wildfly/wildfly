@@ -27,7 +27,6 @@ import java.net.URL;
 import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Service;
-import javax.xml.ws.WebServiceException;
 import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -98,11 +97,14 @@ public class TestOptionalAddressingTestCase {
 
         QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/wsaddressing", "AddressingService");
         URL wsdlURL = new URL(baseUrl, "/jaxws-wsa/AddressingService?wsdl");
+        File wsdlFile = new File(this.getClass().getSimpleName() + ".wsdl");
+        TestNoAddressingTestCase.downloadWSDLToFile(wsdlURL, wsdlFile);
         
-        Service service = Service.create(wsdlURL, serviceName);
+        Service service = Service.create(wsdlFile.toURI().toURL(), serviceName);
         ServiceIface proxy = (ServiceIface) service.getPort(ServiceIface.class);
 
         Assert.assertEquals(expectedResponse, proxy.sayHello(message));
+        wsdlFile.delete();
     }
 
     private ServiceIface getServicePortFromWSDL(String wsdlFileName) throws MalformedURLException {
