@@ -54,7 +54,7 @@ public class DeploymentUndeployHandler implements OperationStepHandler, Descript
     }
 
     public void execute(OperationContext context, ModelNode operation) {
-        ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
+        ModelNode model = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
         final String deploymentUnitName = model.require(RUNTIME_NAME).asString();
         model.get(ENABLED).set(false);
 
