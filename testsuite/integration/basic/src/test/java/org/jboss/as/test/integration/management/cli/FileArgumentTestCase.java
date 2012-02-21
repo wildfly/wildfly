@@ -55,7 +55,7 @@ public class FileArgumentTestCase {
     }
 
     @AfterClass
-    public void cleanUp() {
+    public static void cleanUp() {
         if(TMP_FILE.exists()) {
             TMP_FILE.delete();
         }
