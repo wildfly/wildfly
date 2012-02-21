@@ -115,7 +115,7 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
         // We get the model as a list of resources descriptions
         final ModelNode domainModel = operation.get(DOMAIN_MODEL);
 
-        final ModelNode startRoot = Resource.Tools.readModel(context.getRootResource());
+        final ModelNode startRoot = Resource.Tools.readModel(context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS));
 
         final Set<String> ourServerGroups = getOurServerGroups(context);
         final Map<String, Set<byte[]>> deploymentHashes = new HashMap<String, Set<byte[]>>();

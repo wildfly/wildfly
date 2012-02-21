@@ -171,7 +171,7 @@ public class ServerOperationResolver {
             return Collections.emptyMap();
         }
 
-        final ModelNode domain = Resource.Tools.readModel(context.getRootResource());
+        final ModelNode domain = Resource.Tools.readModel(context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, true));
         final ModelNode host = domain.get(HOST, localHostName);
         if (address.size() == 0) {
             return resolveDomainRootOperation(operation, domain, host);

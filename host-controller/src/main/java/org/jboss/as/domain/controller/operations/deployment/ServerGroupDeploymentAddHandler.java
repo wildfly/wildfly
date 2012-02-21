@@ -76,7 +76,7 @@ public class ServerGroupDeploymentAddHandler implements OperationStepHandler, De
         PathAddress address = PathAddress.pathAddress(opAddr);
         String name = address.getLastElement().getValue();
 
-        final Resource deploymentResource = context.getRootResource().navigate(PathAddress.pathAddress(PathElement.pathElement(DEPLOYMENT, name)));
+        final Resource deploymentResource = context.readResourceFromRoot(PathAddress.pathAddress(PathElement.pathElement(DEPLOYMENT, name)));
         ModelNode deployment = deploymentResource.getModel();
 
         for (ModelNode content : deployment.require(CONTENT).asList()) {

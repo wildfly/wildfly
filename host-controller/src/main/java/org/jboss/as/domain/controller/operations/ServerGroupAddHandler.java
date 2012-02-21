@@ -76,7 +76,7 @@ public class ServerGroupAddHandler implements OperationStepHandler, DescriptionP
         String profile = operation.require(PROFILE).asString();
 
         try {
-            context.getRootResource().navigate(PathAddress.pathAddress(PathElement.pathElement(PROFILE, profile)));
+            context.readResourceFromRoot(PathAddress.pathAddress(PathElement.pathElement(PROFILE, profile)));
         } catch (NoSuchElementException e) {
             throw new OperationFailedException(new ModelNode().set(MESSAGES.unknown(PROFILE, profile)));
         }
@@ -86,7 +86,7 @@ public class ServerGroupAddHandler implements OperationStepHandler, DescriptionP
             String socketBindingGroup =  operation.get(SOCKET_BINDING_GROUP).asString();
 
             try {
-                context.getRootResource().navigate(PathAddress.pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, socketBindingGroup)));
+                context.readResourceFromRoot(PathAddress.pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, socketBindingGroup)));
             } catch (NoSuchElementException e) {
                 throw new OperationFailedException(new ModelNode().set(MESSAGES.unknown(SOCKET_BINDING_GROUP, socketBindingGroup)));
             }

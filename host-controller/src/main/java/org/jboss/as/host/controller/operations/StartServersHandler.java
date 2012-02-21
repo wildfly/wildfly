@@ -79,7 +79,7 @@ public class StartServersHandler implements OperationStepHandler, DescriptionPro
         }
 
 
-        final ModelNode domainModel = Resource.Tools.readModel(context.getRootResource());
+        final ModelNode domainModel = Resource.Tools.readModel(context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, true));
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {

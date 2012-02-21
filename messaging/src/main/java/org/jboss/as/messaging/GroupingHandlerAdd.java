@@ -71,7 +71,7 @@ public class GroupingHandlerAdd implements OperationStepHandler, DescriptionProv
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         PathAddress ourAddress = PathAddress.pathAddress(operation.require(OP_ADDR));
 
-        final Resource subsystemRootResource = context.getRootResource().navigate(ourAddress.subAddress(0, ourAddress.size() - 1));
+        final Resource subsystemRootResource = context.readResourceFromRoot(ourAddress.subAddress(0, ourAddress.size() - 1));
         if (subsystemRootResource.hasChildren(CommonAttributes.GROUPING_HANDLER)) {
             throw new OperationFailedException(new ModelNode().set(MESSAGES.childResourceAlreadyExists(CommonAttributes.GROUPING_HANDLER)));
         }
