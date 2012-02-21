@@ -71,8 +71,12 @@
                                 <goals><goal>run</goal></goals>
                                 <configuration>
                                     <target>
+                                        <echo>In Maven: node0: ${node0}</echo>
+                                        <echo>In Maven: node1: ${node1}</echo>
                                         <!-- Build the UDP server configs in target/ . -->
                                         <ant antfile="${basedir}/../src/test/scripts/clustering-build.xml">
+                                            <property name="node0" value="${node0}"/> <!-- inheritAll="true" doesn't work. -->
+                                            <property name="node1" value="${node1}"/>
                                             <target name="build-clustering-udp"/>
                                         </ant>
                                     </target>

@@ -7,16 +7,20 @@
     <target name="build-clustering-udp" description="Builds server configurations for UDP tests">
 
         <echo message="Building config clustering-udp-0"/>
-        <copy todir="target/jbossas-clustering-udp-0">
-            <fileset dir="target/jbossas"/>
+                                        <echo>clustering-udp-0 node0: ${node0}</echo>
+                                        <echo>clustering-udp-0 node1: ${node1}</echo>
+        <copy todir="target/jbossas-clustering-udp-0" overwrite="true">
+            <fileset dir="${basedir}/target/jbossas"/>
         </copy>
         <ts.config-as.ip-with-multicast name="jbossas-clustering-udp-0" node="${node0}" mcastaddr="${udpGroup}"/>
         <ts.config-as.add-port-offset name="jbossas-clustering-udp-0" />
 
 
         <echo message="Building config clustering-udp-1"/>
-        <copy todir="target/jbossas-clustering-udp-1">
-            <fileset dir="target/jbossas"/>
+                                        <echo>clustering-udp-1 node0: ${node0}</echo>
+                                        <echo>clustering-udp-1 node1: ${node1}</echo>
+        <copy todir="target/jbossas-clustering-udp-1" overwrite="true">
+            <fileset dir="${basedir}/target/jbossas"/>
         </copy>
         <ts.config-as.ip-with-multicast name="jbossas-clustering-udp-1" node="${node1}" mcastaddr="${udpGroup}"/>
         <ts.config-as.add-port-offset name="jbossas-clustering-udp-1" offset="100" nativePort="9999" httpPort="9990"/>
