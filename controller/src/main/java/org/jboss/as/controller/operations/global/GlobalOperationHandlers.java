@@ -280,12 +280,12 @@ public class GlobalOperationHandlers {
             Resource result;
             if (registry != null && registry.isRuntimeOnly()) {
                 try {
-                    result = context.readResource(PathAddress.EMPTY_ADDRESS);
+                    result = context.readResource(PathAddress.EMPTY_ADDRESS, false);
                 } catch (RuntimeException e) {
                     result = PlaceholderResource.INSTANCE;
                 }
             } else {
-                result = context.readResource(PathAddress.EMPTY_ADDRESS);
+                result = context.readResource(PathAddress.EMPTY_ADDRESS, false);
             }
             return result;
         }
@@ -538,7 +538,7 @@ public class GlobalOperationHandlers {
 
             validator.validate(operation);
             final String childType = operation.require(CHILD_TYPE).asString();
-            final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+            final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS, false);
             ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
             Map<String, Set<String>> childAddresses = getChildAddresses(registry, resource, childType);
             Set<String> childNames = childAddresses.get(childType);
@@ -581,7 +581,7 @@ public class GlobalOperationHandlers {
 
             final Map<PathElement, ModelNode> resources = new HashMap<PathElement, ModelNode>();
 
-            final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+            final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS, false);
             final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
             Map<String, Set<String>> childAddresses = getChildAddresses(registry, resource, childType);
             Set<String> childNames = childAddresses.get(childType);
@@ -1028,7 +1028,7 @@ public class GlobalOperationHandlers {
         }
 
         void execute(final PathAddress address, final PathAddress base, final OperationContext context) {
-            final Resource resource = context.readResource(base);
+            final Resource resource = context.readResource(base, false);
             final PathAddress current = address.subAddress(base.size());
             final Iterator<PathElement> iterator = current.iterator();
             if (iterator.hasNext()) {
@@ -1137,7 +1137,7 @@ public class GlobalOperationHandlers {
 
     private static ModelNode safeReadModel(final OperationContext context) {
         try {
-            final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+            final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS, false);
             final ModelNode result = resource.getModel();
             if (result.isDefined()) {
                 return result;

@@ -365,17 +365,26 @@ public abstract class AbstractOperationTestCase {
         }
 
         public Resource readResource(PathAddress address) {
-            Resource root = this.root;
-            for (PathElement element : operationAddress) {
-                root = root.getChild(element);
-                assertNotNull(root);
-            }
-            if (address == PathAddress.EMPTY_ADDRESS) {
-                return root;
-            }
-            Resource resource = root;
+            return readResource(address, true);
+        }
+
+        @Override
+        public Resource readResource(PathAddress relativeAddress, boolean recursive) {
+            final PathAddress address = operationAddress.append(relativeAddress);
+            return readResourceFromRoot(address);
+        }
+
+        @Override
+        public Resource readResourceFromRoot(PathAddress address) {
+            return readResourceFromRoot(address, true);
+        }
+
+        @Override
+        public Resource readResourceFromRoot(PathAddress address, boolean recursive) {
+            Resource resource = this.root;
             for (PathElement element : address) {
                 resource = resource.getChild(element);
+                assertNotNull(resource);
             }
             return resource;
         }

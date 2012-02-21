@@ -494,6 +494,21 @@ public abstract class AttributeDefinition {
         }
 
         @Override
+        public Resource readResource(PathAddress address, boolean recursive) {
+            return null;
+        }
+
+        @Override
+        public Resource readResourceFromRoot(PathAddress address) {
+            return null;
+        }
+
+        @Override
+        public Resource readResourceFromRoot(PathAddress address, boolean recursive) {
+            return null;
+        }
+
+        @Override
         public ModelNode readModelForUpdate(PathAddress address) {
             return null;
         }
