@@ -94,7 +94,7 @@ public class JPAExtension implements Extension {
 
     @Override
     public void initialize(ExtensionContext context) {
-        SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
+        SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, 1, 1);
         final ManagementResourceRegistration nodeRegistration = registration.registerSubsystemModel(DESCRIPTION);
         PersistenceUnitRegistryImpl persistenceUnitRegistry = new PersistenceUnitRegistryImpl();
         JPASubSystemAdd subsystemAdd = new JPASubSystemAdd(persistenceUnitRegistry);

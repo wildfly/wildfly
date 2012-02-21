@@ -23,7 +23,7 @@ public class JPADefaultDatasourceWriteHandler extends AbstractWriteAttributeHand
     static final JPADefaultDatasourceWriteHandler INSTANCE = new JPADefaultDatasourceWriteHandler();
 
     private JPADefaultDatasourceWriteHandler() {
-        super(new StringLengthValidator(0, Integer.MAX_VALUE, false, true), new StringLengthValidator(0, Integer.MAX_VALUE, false, false));
+        super(new StringLengthValidator(0, Integer.MAX_VALUE, true, true), new StringLengthValidator(0, Integer.MAX_VALUE, true, false));
     }
 
     @Override
