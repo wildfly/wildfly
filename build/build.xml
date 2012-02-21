@@ -234,6 +234,10 @@
             <maven-resource group="org.jboss.logging" artifact="jboss-logging"/>
         </module-def>
 
+        <module-def name="org.jboss.logging.jul-to-slf4j-stub">
+            <maven-resource group="org.jboss.logging" artifact="jul-to-slf4j-stub"/>
+        </module-def>
+
         <module-def name="org.jboss.logmanager">
             <maven-resource group="org.jboss.logmanager" artifact="jboss-logmanager"/>
         </module-def>
