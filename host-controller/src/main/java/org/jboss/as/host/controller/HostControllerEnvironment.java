@@ -282,16 +282,21 @@ public class HostControllerEnvironment extends ProcessEnvironment {
 
 
         File home = getFileFromProperty(HOME_DIR);
-        if (home == null) {
-           home = new File(System.getProperty("user.dir"));
-        }
         this.homeDir = home;
-        SecurityActions.setSystemProperty(HOME_DIR, homeDir.getAbsolutePath());
+        if (homeDir == null) {
+            throw MESSAGES.missingHomeDirConfiguration(HOME_DIR);
+        }
+        if (!homeDir.exists() || !homeDir.isDirectory()) {
+            throw MESSAGES.homeDirectoryDoesNotExist(homeDir);
+        }
+        SecurityActions.setSystemProperty(HOME_DIR, this.homeDir.getAbsolutePath());
 
         @SuppressWarnings("deprecation")
         File tmp = getFileFromProperty(MODULES_DIR);
         if (tmp == null) {
             tmp = new File(this.homeDir, "modules");
+        } else if (!tmp.exists() || !tmp.isDirectory()) {
+            throw MESSAGES.modulesDirectoryDoesNotExist(tmp);
         }
         this.modulesDir = tmp;
         @SuppressWarnings("deprecation")
@@ -302,12 +307,20 @@ public class HostControllerEnvironment extends ProcessEnvironment {
         if (tmp == null) {
             tmp = new File(this.homeDir, "domain");
         }
+        if (!tmp.exists()) {
+            throw MESSAGES.domainBaseDirectoryDoesNotExist(tmp);
+        } else if (!tmp.isDirectory()) {
+            throw MESSAGES.domainBaseDirectoryIsNotADirectory(tmp);
+        }
         this.domainBaseDir = tmp;
         SecurityActions.setSystemProperty(DOMAIN_BASE_DIR, this.domainBaseDir.getAbsolutePath());
 
         tmp = getFileFromProperty(DOMAIN_CONFIG_DIR);
         if (tmp == null) {
             tmp = new File(this.domainBaseDir, "configuration");
+        }
+        if (!tmp.exists() && !tmp.isDirectory()) {
+            throw MESSAGES.configDirectoryDoesNotExist(tmp);
         }
         this.domainConfigurationDir = tmp;
         SecurityActions.setSystemProperty(DOMAIN_CONFIG_DIR, this.domainConfigurationDir.getAbsolutePath());
@@ -322,6 +335,15 @@ public class HostControllerEnvironment extends ProcessEnvironment {
             tmp = new File(this.domainBaseDir, "data");
         }
         this.domainDataDir = tmp;
+        if (domainDataDir.exists()) {
+            if (!domainDataDir.isDirectory()) {
+                throw MESSAGES.domainDataDirectoryIsNotDirectory(domainDataDir);
+            }
+        } else {
+            if (!domainDataDir.mkdirs()) {
+                throw MESSAGES.couldNotCreateDomainDataDirectory(domainDataDir);
+            }
+        }
         SecurityActions.setSystemProperty(DOMAIN_DATA_DIR, this.domainDataDir.getAbsolutePath());
 
         @SuppressWarnings("deprecation")
@@ -334,12 +356,27 @@ public class HostControllerEnvironment extends ProcessEnvironment {
             tmp = new File(this.domainDataDir, "content");
         }
         this.domainContentDir = tmp;
+        if (domainContentDir.exists()) {
+            if (!domainContentDir.isDirectory()) {
+                throw MESSAGES.domainContentDirectoryIsNotDirectory(domainContentDir);
+            }
+        } else if (!domainContentDir.mkdirs()) {
+            throw MESSAGES.couldNotCreateDomainContentDirectory(domainContentDir);
+        }
+
         SecurityActions.setSystemProperty(DOMAIN_CONTENT_DIR, this.domainContentDir.getAbsolutePath());
         SecurityActions.setSystemProperty(deprecatedDepDir, this.domainContentDir.getAbsolutePath());
 
         tmp = getFileFromProperty(DOMAIN_LOG_DIR);
         if (tmp == null) {
             tmp = new File(this.domainBaseDir, "log");
+        }
+        if (tmp.exists()) {
+            if (!tmp.isDirectory()) {
+                throw MESSAGES.logDirectoryIsNotADirectory(tmp);
+            }
+        } else if (!tmp.mkdirs()) {
+            throw MESSAGES.couldNotCreateLogDirectory(tmp);
         }
         this.domainLogDir = tmp;
         SecurityActions.setSystemProperty(DOMAIN_LOG_DIR, this.domainLogDir.getAbsolutePath());
@@ -348,12 +385,26 @@ public class HostControllerEnvironment extends ProcessEnvironment {
         if (tmp == null) {
             tmp = new File(this.domainBaseDir, "servers");
         }
+        if (tmp.exists()) {
+            if (!tmp.isDirectory()) {
+                throw MESSAGES.serversDirectoryIsNotADirectory(tmp);
+            }
+        } else if (!tmp.mkdirs()) {
+            throw MESSAGES.couldNotCreateServersDirectory(tmp);
+        }
         this.domainServersDir = tmp;
         SecurityActions.setSystemProperty(DOMAIN_SERVERS_DIR, this.domainServersDir.getAbsolutePath());
 
         tmp = getFileFromProperty(DOMAIN_TEMP_DIR);
         if (tmp == null) {
             tmp = new File(this.domainBaseDir, "tmp");
+        }
+        if (tmp.exists()) {
+            if (!tmp.isDirectory()) {
+                throw MESSAGES.domainTempDirectoryIsNotADirectory(tmp);
+            }
+        } else if (!tmp.mkdirs()){
+            throw MESSAGES.couldNotCreateDomainTempDirectory(tmp);
         }
         this.domainTempDir = tmp;
         SecurityActions.setSystemProperty(DOMAIN_TEMP_DIR, this.domainTempDir.getAbsolutePath());
@@ -637,7 +688,7 @@ public class HostControllerEnvironment extends ProcessEnvironment {
     protected boolean isRuntimeSystemPropertyUpdateAllowed(String propertyName, String propertyValue, boolean bootTime) {
         // Currently any system-property in host.xml should not be applied to the HC runtime. This method
         // should not be invoked.
-        throw HostControllerMessages.MESSAGES.hostControllerSystemPropertyUpdateNotSupported();
+        throw MESSAGES.hostControllerSystemPropertyUpdateNotSupported();
     }
 
     @Override
