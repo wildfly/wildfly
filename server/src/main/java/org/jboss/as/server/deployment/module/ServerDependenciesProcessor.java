@@ -44,6 +44,7 @@ public class ServerDependenciesProcessor implements DeploymentUnitProcessor {
     private static ModuleIdentifier COMMONS_LOGGING = ModuleIdentifier.create("org.apache.commons.logging");
     private static ModuleIdentifier LOG4J = ModuleIdentifier.create("org.apache.log4j");
     private static ModuleIdentifier SLF4J = ModuleIdentifier.create("org.slf4j");
+    private static ModuleIdentifier JUL_TO_SLF4J = ModuleIdentifier.create("org.jboss.logging.jul-to-slf4j-stub");
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -57,6 +58,7 @@ public class ServerDependenciesProcessor implements DeploymentUnitProcessor {
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, COMMONS_LOGGING, false, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, LOG4J, false, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, SLF4J, false, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JUL_TO_SLF4J, false, false, false, false));
     }
 
     @Override
