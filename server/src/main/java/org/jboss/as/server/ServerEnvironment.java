@@ -21,6 +21,8 @@
  */
 package org.jboss.as.server;
 
+import static org.jboss.as.server.ServerMessages.MESSAGES;
+
 import java.io.File;
 import java.io.Serializable;
 import java.net.UnknownHostException;
@@ -305,10 +307,10 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
 
         this.hostControllerName = hostControllerName;
         if (standalone && hostControllerName != null) {
-            throw ServerMessages.MESSAGES.hostControllerNameNonNullInStandalone();
+            throw MESSAGES.hostControllerNameNonNullInStandalone();
         }
         if (!standalone && hostControllerName == null) {
-            throw ServerMessages.MESSAGES.hostControllerNameNullInDomain();
+            throw MESSAGES.hostControllerNameNullInDomain();
         }
 
         // Calculate qualified and unqualified host names, default server name, cluster node name
@@ -319,13 +321,19 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
 
         // Must have HOME_DIR
         homeDir = getFileFromProperty(HOME_DIR, props);
-        if (homeDir == null)
-            throw ServerMessages.MESSAGES.missingHomeDirConfiguration(HOME_DIR);
+        if (homeDir == null) {
+            throw MESSAGES.missingHomeDirConfiguration(HOME_DIR);
+        }
+        if (!homeDir.exists() || !homeDir.isDirectory()) {
+            throw MESSAGES.homeDirectoryDoesNotExist(homeDir);
+        }
 
         @SuppressWarnings("deprecation")
         File tmp = getFileFromProperty(MODULES_DIR, props);
         if (tmp == null) {
             tmp = new File(homeDir, "modules");
+        } else if (!tmp.exists() || !tmp.isDirectory()) {
+            throw MESSAGES.modulesDirectoryDoesNotExist(tmp);
         }
         modulesDir = tmp;
 
@@ -335,13 +343,33 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         if (tmp == null) {
             tmp = new File(homeDir, standalone ? "standalone" : "domain/servers/" + serverName);
         }
+        if (standalone) {
+            if (!tmp.exists()) {
+                throw MESSAGES.serverBaseDirectoryDoesNotExist(tmp);
+            } else if (!tmp.isDirectory()) {
+                throw MESSAGES.serverBaseDirectoryIsNotADirectory(tmp);
+            }
+        } else {
+            if (tmp.exists()) {
+                if (!tmp.isDirectory()) {
+                    throw MESSAGES.serverBaseDirectoryIsNotADirectory(tmp);
+                }
+            }
+            else if (!tmp.mkdirs()) {
+                throw MESSAGES.couldNotCreateServerBaseDirectory(tmp);
+            }
+        }
         serverBaseDir = tmp;
+
 
         tmp = getFileFromProperty(SERVER_CONFIG_DIR, props);
         if (tmp == null) {
             tmp = new File(serverBaseDir, "configuration");
         }
         serverConfigurationDir = tmp;
+        if (standalone && !serverConfigurationDir.exists() && !serverConfigurationDir.isDirectory()) {
+            throw MESSAGES.configDirectoryDoesNotExist(serverConfigurationDir);
+        }
 
         String defaultServerConfig = SecurityActions.getSystemProperty(JBOSS_SERVER_DEFAULT_CONFIG, "standalone.xml");
         serverConfigurationFile = standalone ? new ConfigurationFile(serverConfigurationDir, defaultServerConfig, serverConfig) : null;
@@ -351,6 +379,15 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
             tmp = new File(serverBaseDir, "data");
         }
         serverDataDir = tmp;
+        if (serverDataDir.exists()) {
+            if (!serverDataDir.isDirectory()) {
+                throw MESSAGES.serverDataDirectoryIsNotDirectory(serverDataDir);
+            }
+        } else {
+            if (!serverDataDir.mkdirs()) {
+                throw MESSAGES.couldNotCreateServerDataDirectory(serverDataDir);
+            }
+        }
 
         tmp = getFileFromProperty(SERVER_CONTENT_DIR, props);
         if (tmp == null) {
@@ -362,30 +399,65 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
             tmp = new File(serverDataDir, "content");
         }
         serverContentDir = tmp;
+        if (serverContentDir.exists()) {
+            if (!serverContentDir.isDirectory()) {
+                throw MESSAGES.serverContentDirectoryIsNotDirectory(serverContentDir);
+            }
+        } else if (!serverContentDir.mkdirs()) {
+            throw MESSAGES.couldNotCreateServerContentDirectory(serverContentDir);
+        }
+
 
         tmp = getFileFromProperty(SERVER_LOG_DIR, props);
         if (tmp == null) {
             tmp = new File(serverBaseDir, "log");
         }
+        if (tmp.exists()) {
+            if (!tmp.isDirectory()) {
+                throw MESSAGES.logDirectoryIsNotADirectory(tmp);
+            }
+        } else if (!tmp.mkdirs()) {
+            throw MESSAGES.couldNotCreateLogDirectory(tmp);
+        }
         serverLogDir = tmp;
 
-        configureServerTempDir(props.getProperty(SERVER_TEMP_DIR), props);
+        tmp = configureServerTempDir(props.getProperty(SERVER_TEMP_DIR), props);
+        if (tmp.exists()) {
+            if (!tmp.isDirectory()) {
+                throw MESSAGES.serverTempDirectoryIsNotADirectory(tmp);
+            }
+        } else if (!tmp.mkdirs()){
+            throw MESSAGES.couldNotCreateServerTempDirectory(tmp);
+        }
 
         tmp = getFileFromProperty(CONTROLLER_TEMP_DIR, props);
         if (tmp == null) {
             tmp = new File(serverBaseDir, "tmp");
+        }
+        if (tmp.exists()) {
+            if (!tmp.isDirectory()) {
+                throw MESSAGES.controllerTempDirectoryIsNotADirectory(tmp);
+            }
+        } else if (!tmp.mkdirs()){
+            throw MESSAGES.couldNotCreateControllerTempDirectory(tmp);
         }
         controllerTempDir = tmp;
 
         // Optional paths for the domain mode
         tmp = getFileFromProperty(DOMAIN_BASE_DIR, props);
         if (tmp != null) {
+            if (!tmp.exists() || !tmp.isDirectory()) {
+                throw MESSAGES.domainBaseDirDoesNotExist(tmp);
+            }
             this.domainBaseDir = tmp;
         } else {
             this.domainBaseDir = null;
         }
         tmp = getFileFromProperty(DOMAIN_CONFIG_DIR, props);
         if (tmp != null) {
+            if (!tmp.exists() || !tmp.isDirectory()) {
+                throw MESSAGES.domainConfigDirDoesNotExist(tmp);
+            }
             this.domainConfigurationDir = tmp;
         } else {
             this.domainConfigurationDir = null;
@@ -644,8 +716,12 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
     }
 
     private void configureBundlesDir(String dirPath, Properties providedProperties) {
+        boolean haveDirProperty = dirPath != null;
         File tmp = getFileFromPath(dirPath);
         if (tmp == null) {
+            if (haveDirProperty) {
+                throw MESSAGES.bundlesDirectoryDoesNotExist(new File(dirPath).getAbsoluteFile());
+            }
             providedProperties.remove(BUNDLES_DIR);
             tmp = new File(homeDir, "bundles");
         } else {
@@ -739,7 +815,7 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         return serverTempDir;
     }
 
-    private void configureServerTempDir(String path, Properties providedProps) {
+    private File configureServerTempDir(String path, Properties providedProps) {
         File tmp = getFileFromPath(path);
         if (tmp == null) {
             providedProps.remove(SERVER_TEMP_DIR);
@@ -748,6 +824,7 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
             providedProps.setProperty(SERVER_TEMP_DIR, path);
         }
         serverTempDir = tmp;
+        return tmp;
     }
 
     // BES 2012/02/04 made package protected as I cannot find use for it other than to create a PathService

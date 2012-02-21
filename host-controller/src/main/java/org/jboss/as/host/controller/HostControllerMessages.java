@@ -571,4 +571,53 @@ public interface HostControllerMessages {
 
     @Message(id = 10992, value = "The JVM input arguments cannot be accessed so system properties passed directly to this Host Controller JVM will not be passed through to server processes. Cause of the problem: %s")
     String cannotAccessJvmInputArgument(Exception cause);
+
+    @Message(id = 10993, value = "Missing configuration value for: %s")
+    IllegalStateException missingHomeDirConfiguration(String propertyName);
+
+    @Message(id = 10994, value = "Home directory does not exist: %s")
+    IllegalStateException homeDirectoryDoesNotExist(File f);
+
+    @Message(id = 15848, value = "Determined modules directory does not exist: %s")
+    IllegalStateException modulesDirectoryDoesNotExist(File f);
+
+    @Message(id = 15849, value = "Domain base directory does not exist: %s")
+    IllegalStateException domainBaseDirectoryDoesNotExist(File f);
+
+    @Message(id = 15850, value = "Domain base directory is not a directory: %s")
+    IllegalStateException domainBaseDirectoryIsNotADirectory(File file);
+
+    @Message(id = 15851, value = "Configuration directory does not exist: %s")
+    IllegalStateException configDirectoryDoesNotExist(File f);
+
+    @Message(id = 15852, value = "Domain data directory is not a directory: %s")
+    IllegalStateException domainDataDirectoryIsNotDirectory(File file);
+
+    @Message(id = 15853, value = "Could not create domain data directory: %s")
+    IllegalStateException couldNotCreateDomainDataDirectory(File file);
+
+    @Message(id = 15854, value = "Domain content directory is not a directory: %s")
+    IllegalStateException domainContentDirectoryIsNotDirectory(File file);
+
+    @Message(id = 15855, value = "Could not create domain content directory: %s")
+    IllegalStateException couldNotCreateDomainContentDirectory(File file);
+
+    @Message(id = 15856, value = "Log directory is not a directory: %s")
+    IllegalStateException logDirectoryIsNotADirectory(File f);
+
+    @Message(id = 15857, value = "Could not create log directory: %s")
+    IllegalStateException couldNotCreateLogDirectory(File f);
+
+    @Message(id = 15858, value = "Servers directory is not a directory: %s")
+    IllegalStateException serversDirectoryIsNotADirectory(File f);
+
+    @Message(id = 15859, value = "Could not create servers directory: %s")
+    IllegalStateException couldNotCreateServersDirectory(File f);
+
+    @Message(id = 15860, value = "Domain temp directory does not exist: %s")
+    IllegalStateException domainTempDirectoryIsNotADirectory(File file);
+
+    @Message(id = 15861, value = "Could not create domain temp directory: %s")
+    IllegalStateException couldNotCreateDomainTempDirectory(File file);
+
 }

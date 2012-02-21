@@ -45,8 +45,8 @@ import org.jboss.msc.service.StartException;
 import org.jboss.vfs.VirtualFile;
 
 /**
- * This module is using message IDs in the range 15700-15999.
- * This file is using the subset 15800-15849 for server non-logger messages.
+ * This module is using message IDs in the range 15700-15999 and 18700-18799.
+ * This file is using the subset 15800-15849 and 18700-18799 for server non-logger messages.
  * See http://community.jboss.org/docs/DOC-16810 for the full list of
  * currently reserved JBAS message id blocks.
  *
@@ -357,10 +357,63 @@ public interface ServerMessages {
     @Message(id = 15847, value = "Unable to initialise a basic SSLContext '%s'")
     IOException unableToInitialiseSSLContext(String message);
 
-    /*
-     * WARNING!!! id 15849 is the last id in the available block for this class. Once the block
-     * is used up, check what ids ServerLogger is using, allocate another block for use by this
-     * class from the overall id pool used by this module and update the class javadoc above
-     * and this message accordingly.
-     */
+    @Message(id = 15848, value = "Determined modules directory does not exist: %s")
+    IllegalStateException modulesDirectoryDoesNotExist(File f);
+
+    @Message(id = 15849, value = "Home directory does not exist: %s")
+    IllegalStateException homeDirectoryDoesNotExist(File f);
+
+    /////////////////////////////////////
+    // New range of ids
+
+    @Message(id = 18700, value = "Bundles directory does not exist: %s")
+    IllegalStateException bundlesDirectoryDoesNotExist(File f);
+
+    @Message(id = 18701, value = "Configuration directory does not exist: %s")
+    IllegalStateException configDirectoryDoesNotExist(File f);
+
+    @Message(id = 18702, value = "Server base directory does not exist: %s")
+    IllegalStateException serverBaseDirectoryDoesNotExist(File f);
+
+    @Message(id = 18703, value = "Server data directory is not a directory: %s")
+    IllegalStateException serverDataDirectoryIsNotDirectory(File file);
+
+    @Message(id = 18704, value = "Could not create server data directory: %s")
+    IllegalStateException couldNotCreateServerDataDirectory(File file);
+
+    @Message(id = 18705, value = "Server content directory is not a directory: %s")
+    IllegalStateException serverContentDirectoryIsNotDirectory(File file);
+
+    @Message(id = 18706, value = "Could not create server content directory: %s")
+    IllegalStateException couldNotCreateServerContentDirectory(File file);
+
+    @Message(id = 18707, value = "Log directory is not a directory: %s")
+    IllegalStateException logDirectoryIsNotADirectory(File f);
+
+    @Message(id = 18708, value = "Could not create log directory: %s")
+    IllegalStateException couldNotCreateLogDirectory(File f);
+
+    @Message(id = 18709, value = "Server temp directory does not exist: %s")
+    IllegalStateException serverTempDirectoryIsNotADirectory(File file);
+
+    @Message(id = 18710, value = "Could not create server temp directory: %s")
+    IllegalStateException couldNotCreateServerTempDirectory(File file);
+
+    @Message(id = 18711, value = "Controller temp directory does not exist: %s")
+    IllegalStateException controllerTempDirectoryIsNotADirectory(File file);
+
+    @Message(id = 18712, value = "Could not create server temp directory: %s")
+    IllegalStateException couldNotCreateControllerTempDirectory(File file);
+
+    @Message(id = 18713, value = "Domain base dir does not exist: %s")
+    IllegalStateException domainBaseDirDoesNotExist(File file);
+
+    @Message(id = 18714, value = "Domain config dir does not exist: %s")
+    IllegalStateException domainConfigDirDoesNotExist(File file);
+
+    @Message(id = 18715, value = "Server base directory is not a directory: %s")
+    IllegalStateException serverBaseDirectoryIsNotADirectory(File file);
+
+    @Message(id = 18716, value = "Could not create server base directory: %s")
+    IllegalStateException couldNotCreateServerBaseDirectory(File file);
 }
