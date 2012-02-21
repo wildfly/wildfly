@@ -100,15 +100,17 @@
         <jvm.args.security>${jvm.args.securityManager} ${jvm.args.securityPolicy}</jvm.args.security>
 
         <!-- Timeout ratios. 100 will leave the timeout as it was coded. -->
-        <timeout.ratio.fsio>100</timeout.ratio.fsio>
-        <timeout.ratio.netio>100</timeout.ratio.netio>
-        <timeout.ratio.memio>100</timeout.ratio.memio>
-        <timeout.ratio.proc>100</timeout.ratio.proc>
-        <timeout.ratio.db>100</timeout.ratio.db>
+        <timeout.ratio.gen>100</timeout.ratio.gen>
+        <timeout.ratio.fs >100</timeout.ratio.fs>
+        <timeout.ratio.net>100</timeout.ratio.net>
+        <timeout.ratio.mem>100</timeout.ratio.mem>
+        <timeout.ratio.cpu>100</timeout.ratio.cpu>
+        <timeout.ratio.db >100</timeout.ratio.db>
         <jvm.args.timeouts>
-            -Dts.tr.fsio=${timeout.ratio.fsio}
-            -Dts.tr.netio=${timeout.ratio.netio}
-            -Dts.tr.memio=${timeout.ratio.memio}
+            -Dts.tr.fs=${timeout.ratio.fs}
+            -Dts.tr.net=${timeout.ratio.net}
+            -Dts.tr.mem=${timeout.ratio.mem}
+            -Dts.tr.cpu=${timeout.ratio.cpu}
             -Dts.tr.db=${timeout.ratio.db}
         </jvm.args.timeouts>
 

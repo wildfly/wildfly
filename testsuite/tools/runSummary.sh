@@ -4,7 +4,7 @@
 ##  and remove the boring plugins like enforcer etc.
  
 cat $1 \
- | egrep ' --- |Building| ---------|Tests run: | T E S T S' \
+ | egrep ' --- |Building| ---------|Tests run: | T E S T S | SUCCESS \[| FAILURE \[|BUILD SUCCESS|Total time: ' \
  | grep -v 'Time elapsed' \
  | sed 's|Tests run:|                Tests run:|' \
  | grep -v maven-clean-plugin \
