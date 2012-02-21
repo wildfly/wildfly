@@ -77,8 +77,8 @@ class JPASubSystemAdd extends AbstractBoottimeAddStepHandler implements Descript
     private final PersistenceUnitRegistryImpl persistenceUnitRegistry;
 
     public JPASubSystemAdd(final PersistenceUnitRegistryImpl persistenceUnitRegistry) {
-        modelValidator.registerValidator(CommonAttributes.DEFAULT_DATASOURCE, new StringLengthValidator(0, Integer.MAX_VALUE, false, true));
-        runtimeValidator.registerValidator(CommonAttributes.DEFAULT_DATASOURCE, new StringLengthValidator(0, Integer.MAX_VALUE, false, false));
+        modelValidator.registerValidator(CommonAttributes.DEFAULT_DATASOURCE, new StringLengthValidator(0, Integer.MAX_VALUE, true, true));
+        runtimeValidator.registerValidator(CommonAttributes.DEFAULT_DATASOURCE, new StringLengthValidator(0, Integer.MAX_VALUE, true, false));
         this.persistenceUnitRegistry = persistenceUnitRegistry;
     }
 

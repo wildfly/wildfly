@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
@@ -65,6 +66,7 @@ public class JPADescriptions {
         subsystem.get(ATTRIBUTES, CommonAttributes.DEFAULT_DATASOURCE, TYPE).set(ModelType.STRING);
         subsystem.get(ATTRIBUTES, CommonAttributes.DEFAULT_DATASOURCE, REQUIRED).set(true);
         subsystem.get(ATTRIBUTES, CommonAttributes.DEFAULT_DATASOURCE, MIN_LENGTH).set(0);
+        subsystem.get(ATTRIBUTES, CommonAttributes.DEFAULT_DATASOURCE, NILLABLE).set(true);
         subsystem.get(CHILDREN).setEmptyObject();
         return subsystem;
     }
@@ -81,7 +83,7 @@ public class JPADescriptions {
         op.get(REQUEST_PROPERTIES, CommonAttributes.DEFAULT_DATASOURCE, TYPE).set(ModelType.STRING);
         op.get(REQUEST_PROPERTIES, CommonAttributes.DEFAULT_DATASOURCE, REQUIRED).set(true);
         op.get(REQUEST_PROPERTIES, CommonAttributes.DEFAULT_DATASOURCE, MIN_LENGTH).set(0);
-
+        op.get(REQUEST_PROPERTIES, CommonAttributes.DEFAULT_DATASOURCE, NILLABLE).set(true);
         op.get(REPLY_PROPERTIES).setEmptyObject();
 
         return op;
