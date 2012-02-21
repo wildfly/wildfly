@@ -41,6 +41,8 @@ import org.jboss.as.jpa.config.PersistenceUnitMetadataImpl;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.metadata.parser.util.MetaDataElementParser;
 
+import org.jboss.util.StringPropertyReplacer;
+
 /**
  * Parse a persistence.xml into a list of persistence unit definitions.
  *
@@ -172,7 +174,7 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case NAME:
-                    pu.setPersistenceUnitName(value);
+                    pu.setPersistenceUnitName(resolve(value));
                     break;
                 case TRANSACTIONTYPE:
                     if (value.equalsIgnoreCase("RESOURCE_LOCAL"))
@@ -191,7 +193,7 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
             }
             switch (element) {
                 case CLASS:
-                    classes.add(reader.getElementText());
+                    classes.add(resolve(reader.getElementText()));
                     break;
 
                 case DESCRIPTION:
@@ -199,7 +201,7 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
                     break;
 
                 case EXCLUDEUNLISTEDCLASSES:
-                    String text = reader.getElementText();
+                    String text = resolve(reader.getElementText());
                     if (text == null || text.isEmpty()) {
                         //the spec has examples where an empty
                         //exclude-unlisted-classes element has the same
@@ -211,20 +213,20 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
                     break;
 
                 case JARFILE:
-                    String file = reader.getElementText();
+                    String file = resolve(reader.getElementText());
                     jarfiles.add(file);
                     break;
 
                 case JTADATASOURCE:
-                    pu.setJtaDataSourceName(reader.getElementText());
+                    pu.setJtaDataSourceName(resolve(reader.getElementText()));
                     break;
 
                 case NONJTADATASOURCE:
-                    pu.setNonJtaDataSourceName(reader.getElementText());
+                    pu.setNonJtaDataSourceName(resolve(reader.getElementText()));
                     break;
 
                 case MAPPINGFILE:
-                    mappingFiles.add(reader.getElementText());
+                    mappingFiles.add(resolve(reader.getElementText()));
                     break;
 
                 case PROPERTIES:
@@ -232,16 +234,16 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
                     break;
 
                 case PROVIDER:
-                    pu.setPersistenceProviderClassName(reader.getElementText());
+                    pu.setPersistenceProviderClassName(resolve(reader.getElementText()));
                     break;
 
                 case SHAREDCACHEMODE:
-                    String cm = reader.getElementText();
+                    String cm = resolve(reader.getElementText());
                     pu.setSharedCacheMode(SharedCacheMode.valueOf(cm));
                     break;
 
                 case VALIDATIONMODE:
-                    String validationMode = reader.getElementText();
+                    String validationMode = resolve(reader.getElementText());
                     pu.setValidationMode(ValidationMode.valueOf(validationMode));
                     break;
 
@@ -276,10 +278,10 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
                         final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                         switch (attribute) {
                             case NAME:
-                                name = attributeValue;
+                                name = resolve(attributeValue);
                                 break;
                             case VALUE:
-                                value = attributeValue;
+                                value = resolve(attributeValue);
                                 if (name != null && value != null) {
                                     properties.put(name, value);
                                 }
@@ -297,6 +299,16 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
                     throw unexpectedElement(reader);
             }
         }
+    }
+
+    /**
+     * Resolves system variables.
+     *
+     * @param varibale system variable
+     * @return variable's value.
+     */
+    private static String resolve(String variable) {
+        return variable == null ? null : StringPropertyReplacer.replaceProperties(variable);
     }
 
     /**
