@@ -37,7 +37,6 @@ import org.jboss.as.version.ProductConfig;
 import org.jboss.logmanager.Level;
 import org.jboss.logmanager.Logger;
 import org.jboss.logmanager.handlers.ConsoleHandler;
-import org.jboss.logmanager.log4j.BridgeRepositorySelector;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceActivator;
@@ -69,8 +68,6 @@ public final class Main {
      * @param args the command-line arguments
      */
     public static void main(String[] args) {
-        SecurityActions.setSystemProperty("log4j.defaultInitOverride", "true");
-        new BridgeRepositorySelector().start();
 
         // Make sure our original stdio is properly captured.
         try {

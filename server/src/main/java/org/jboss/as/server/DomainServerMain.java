@@ -43,7 +43,6 @@ import org.jboss.as.server.mgmt.domain.HostControllerServerClient;
 import org.jboss.as.server.mgmt.domain.RemoteFileRepository;
 import org.jboss.logmanager.Level;
 import org.jboss.logmanager.handlers.ConsoleHandler;
-import org.jboss.logmanager.log4j.BridgeRepositorySelector;
 import org.jboss.marshalling.ByteInput;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
@@ -81,9 +80,6 @@ public final class DomainServerMain {
      * @param args ignored
      */
     public static void main(String[] args) {
-
-        SecurityActions.setSystemProperty("log4j.defaultInitOverride", "true");
-        new BridgeRepositorySelector().start();
 
         final InputStream initialInput = System.in;
         final PrintStream initialError = System.err;

@@ -26,18 +26,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 import java.util.EnumSet;
 
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SubsystemRegistration;
@@ -84,7 +80,8 @@ import org.jboss.as.logging.loggers.RootLoggerLevelChange;
 import org.jboss.as.logging.loggers.RootLoggerRemove;
 import org.jboss.as.logging.loggers.RootLoggerUnassignHandler;
 import org.jboss.as.logging.loggers.RootLoggerWriteAttributeHandler;
-import org.jboss.dmr.ModelNode;
+import org.jboss.logmanager.ContextClassLoaderLogContextSelector;
+import org.jboss.logmanager.LogContext;
 
 /**
  * @author Emanuel Muckenhuber
@@ -103,6 +100,7 @@ public class LoggingExtension implements Extension {
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
     private static final int MANAGEMENT_API_MINOR_VERSION = 1;
+    static final ContextClassLoaderLogContextSelector CONTEXT_SELECTOR = new ContextClassLoaderLogContextSelector();
 
 
     /**
@@ -110,9 +108,10 @@ public class LoggingExtension implements Extension {
      */
     @Override
     public void initialize(ExtensionContext context) {
+        LogContext.setLogContextSelector(CONTEXT_SELECTOR);
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION, MANAGEMENT_API_MINOR_VERSION);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(LoggingSubsystemProviders.SUBSYSTEM);
-        registration.registerOperationHandler(ADD, NewLoggingSubsystemAdd.ADD_INSTANCE, LoggingSubsystemProviders.SUBSYSTEM_ADD, false);
+        registration.registerOperationHandler(ADD, LoggingSubsystemAdd.ADD_INSTANCE, LoggingSubsystemProviders.SUBSYSTEM_ADD, false);
         registration.registerOperationHandler(DESCRIBE, LoggingDescribeHandler.INSTANCE, LoggingDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         registration.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, LoggingSubsystemProviders.SUBSYSTEM_REMOVE, false);
 
@@ -127,7 +126,7 @@ public class LoggingExtension implements Extension {
         rootLogger.registerOperationHandler(RootLoggerLevelChange.OPERATION_NAME, RootLoggerLevelChange.INSTANCE, LoggingSubsystemProviders.ROOT_LOGGER_CHANGE_LEVEL, false);
         rootLogger.registerOperationHandler(RootLoggerAssignHandler.OPERATION_NAME, RootLoggerAssignHandler.INSTANCE, LoggingSubsystemProviders.ROOT_LOGGER_ASSIGN_HANDLER, false);
         rootLogger.registerOperationHandler(RootLoggerUnassignHandler.OPERATION_NAME, RootLoggerUnassignHandler.INSTANCE, LoggingSubsystemProviders.ROOT_LOGGER_UNASSIGN_HANDLER, false);
-        addWriteAttributes(rootLogger,  RootLoggerWriteAttributeHandler.INSTANCE);
+        addWriteAttributes(rootLogger, RootLoggerWriteAttributeHandler.INSTANCE);
 
         // loggers
         final ManagementResourceRegistration loggers = registration.registerSubModel(loggersPath, LoggingSubsystemProviders.LOGGER);
@@ -225,29 +224,4 @@ public class LoggingExtension implements Extension {
     }
 
 
-    static class NewLoggingSubsystemAdd extends AbstractAddStepHandler {
-
-        static final NewLoggingSubsystemAdd ADD_INSTANCE = new NewLoggingSubsystemAdd();
-
-        protected void populateModel(ModelNode operation, ModelNode model) {
-            model.get(CommonAttributes.LOGGER).setEmptyObject();
-            model.get(CommonAttributes.ASYNC_HANDLER).setEmptyObject();
-            model.get(CommonAttributes.CONSOLE_HANDLER).setEmptyObject();
-            model.get(CommonAttributes.CUSTOM_HANDLER).setEmptyObject();
-            model.get(CommonAttributes.FILE_HANDLER).setEmptyObject();
-            model.get(CommonAttributes.PERIODIC_ROTATING_FILE_HANDLER).setEmptyObject();
-            model.get(CommonAttributes.SIZE_ROTATING_FILE_HANDLER).setEmptyObject();
-        }
-
-        protected boolean requiresRuntime(OperationContext context) {
-            return false;
-        }
-
-        static ModelNode createOperation(ModelNode address) {
-            final ModelNode subsystem = new ModelNode();
-            subsystem.get(OP).set(ADD);
-            subsystem.get(OP_ADDR).set(address);
-            return subsystem;
-        }
-    }
 }

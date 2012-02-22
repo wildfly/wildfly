@@ -170,7 +170,7 @@
 
         <dependency>
             <groupId>org.jboss.logmanager</groupId>
-            <artifactId>jboss-logmanager-log4j</artifactId>
+            <artifactId>log4j-jboss-logmanager</artifactId>
         </dependency>
 
         <dependency>

@@ -79,7 +79,7 @@ public class LoggingDescribeHandler implements OperationStepHandler, Description
 
         PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement());
         final ModelNode result = context.getResult();
-        result.add(LoggingExtension.NewLoggingSubsystemAdd.createOperation(rootAddress.toModelNode()));
+        result.add(LoggingSubsystemAdd.createOperation(rootAddress.toModelNode()));
         if (model.hasDefined(ROOT_LOGGER)) {
             final ModelNode add = Util.getEmptyOperation(RootLoggerAdd.OPERATION_NAME, rootAddress.append(LoggingExtension.rootLoggerPath).toModelNode());
             final ModelNode rootLogger = model.get(ROOT_LOGGER, ROOT_LOGGER_NAME);

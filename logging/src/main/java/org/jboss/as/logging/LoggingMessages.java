@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 
 import org.jboss.as.logging.handlers.console.Target;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.dmr.ModelType;
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
@@ -333,4 +334,26 @@ public interface LoggingMessages {
      */
     @Message(id = 11554, value = "The suffix (%s) is invalid. A suffix must be a valid date format and not contain seconds or milliseconds.")
     String invalidSuffix(String suffix);
+
+    /**
+     * Creates an exception indicating a failure to configure logging with the configuration file represented by the
+     * {@code fileName} parameter.
+     *
+     * @param cause    the cause of the error.
+     * @param fileName the configuration file name.
+     *
+     * @return a {@link DeploymentUnitProcessingException} for the error.
+     */
+    @Message(id = 11555, value = "Failed to configure logging using '%s' configuration file.")
+    DeploymentUnitProcessingException failedToConfigureLogging(@Cause Throwable cause, String fileName);
+
+    /**
+     * Creates an exception indicating an error occurred while searching for logging configuration files.
+     *
+     * @param cause the cause of the error.
+     *
+     * @return a {@link DeploymentUnitProcessingException} for the error.
+     */
+    @Message(id = 11556, value = "Error occurred while searching for logging configuration files.")
+    DeploymentUnitProcessingException errorProcessingLoggingConfiguration(@Cause Throwable cause);
 }
