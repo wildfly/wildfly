@@ -22,17 +22,15 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.1" name="org.jboss.logmanager.log4j">
-    <properties>
-        <property name="jboss.api" value="private"/>
-    </properties>
-
+<module xmlns="urn:jboss:module:1.1" name="org.jboss.log4j.logmanager">
     <resources>
         <!-- Insert resources here -->
     </resources>
 
     <dependencies>
+        <module name="javax.api"/>
+        <module name="org.dom4j" optional="true"/>
         <module name="org.jboss.logmanager"/>
-        <module name="org.apache.log4j"/>
+        <module name="org.jboss.modules"/>
     </dependencies>
 </module>

@@ -46,7 +46,7 @@
         <module name="org.jboss.msc" export="true"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.logmanager" services="import"/>
-        <module name="org.jboss.logmanager.log4j"/>
+        <module name="org.jboss.log4j.logmanager"/>
         <module name="org.jboss.remoting3"/>
         <module name="org.jboss.sasl"/>
         <module name="org.jboss.stdio"/>

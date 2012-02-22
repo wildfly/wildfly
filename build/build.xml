@@ -246,8 +246,8 @@
             <maven-resource group="org.jboss.logmanager" artifact="jboss-logmanager"/>
         </module-def>
 
-        <module-def name="org.jboss.logmanager.log4j">
-            <maven-resource group="org.jboss.logmanager" artifact="jboss-logmanager-log4j"/>
+        <module-def name="org.jboss.log4j.logmanager">
+            <maven-resource group="org.jboss.logmanager" artifact="log4j-jboss-logmanager"/>
         </module-def>
 
         <module-def name="org.jboss.remoting3">

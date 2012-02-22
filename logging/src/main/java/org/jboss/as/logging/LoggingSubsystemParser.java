@@ -133,7 +133,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         address.add(SUBSYSTEM, LoggingExtension.SUBSYSTEM_NAME);
         address.protect();
 
-        list.add(LoggingExtension.NewLoggingSubsystemAdd.createOperation(address));
+        list.add(LoggingSubsystemAdd.createOperation(address));
 
         // Elements
         final Set<String> loggerNames = new HashSet<String>();

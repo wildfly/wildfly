@@ -2331,12 +2331,12 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.logmanager</groupId>
-      <artifactId>jboss-logmanager-log4j</artifactId>
+      <artifactId>log4j-jboss-logmanager</artifactId>
       <licenses>
-        <license>
-          <name>GNU Lesser General Public License, Version 2.1</name>
-          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
-        </license>
+          <license>
+              <name>Apache License, Version 2.0</name>
+              <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
+          </license>
       </licenses>
     </dependency>
     <dependency>

@@ -49,12 +49,6 @@ public class LoggingSubsystemTestCase extends AbstractSubsystemBaseTest {
     protected AdditionalInitialization createAdditionalInitialization() {
         return AdditionalInitialization.MANAGEMENT;
     }
-//
-//
-//    //TODO AS7-2421 remove this
-//    protected boolean testRemoval() {
-//        return false;
-//    }
 
     @Override
     protected void compareXml(String configId, String original, String marshalled) throws Exception {
