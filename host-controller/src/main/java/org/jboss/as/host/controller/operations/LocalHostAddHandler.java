@@ -24,6 +24,7 @@ package org.jboss.as.host.controller.operations;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_ENVIRONMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
@@ -97,6 +98,9 @@ public class LocalHostAddHandler implements OperationStepHandler, DescriptionPro
 
         // Create the empty management security resources
         context.createResource(PathAddress.pathAddress(PathElement.pathElement(CORE_SERVICE, MANAGEMENT)));
+
+        //Create the empty host-environment resource
+        context.createResource(PathAddress.pathAddress(PathElement.pathElement(CORE_SERVICE, HOST_ENVIRONMENT)));
 
         // Wire in the platform mbean resources. We're bypassing the context.createResource API here because
         // we want to use our own resource type. But it's ok as the createResource calls above have taken the lock

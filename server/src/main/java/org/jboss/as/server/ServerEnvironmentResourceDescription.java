@@ -84,7 +84,7 @@ public class ServerEnvironmentResourceDescription extends SimpleResourceDefiniti
      *
      * @param environment the environment the resource is based on.
      */
-    public ServerEnvironmentResourceDescription(final ServerEnvironment environment) {
+    private ServerEnvironmentResourceDescription(final ServerEnvironment environment) {
         super(RESOURCE_PATH, ServerDescriptions.getResourceDescriptionResolver("server.env"));
         osh = new ServerEnvironmentReadHandler(environment);
     }

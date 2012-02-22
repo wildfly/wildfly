@@ -89,6 +89,7 @@ import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
 import org.jboss.as.domain.controller.operations.deployment.HostProcessReloadHandler;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
 import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
+import org.jboss.as.host.controller.descriptions.HostControllerResourceDescription;
 import org.jboss.as.host.controller.descriptions.HostDescriptionProviders;
 import org.jboss.as.host.controller.descriptions.HostRootDescription;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
@@ -212,6 +213,9 @@ public class HostModelUtil {
         sysProps.registerReadWriteAttribute(VALUE, null, SystemPropertyValueWriteAttributeHandler.INSTANCE, Storage.CONFIGURATION);
         sysProps.registerReadWriteAttribute(BOOT_TIME, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN), Storage.CONFIGURATION);
 
+        /////////////////////////////////////////
+        // Core Services
+
         //vault
         ManagementResourceRegistration vault = hostRegistration.registerSubModel(PathElement.pathElement(CORE_SERVICE, VAULT), CommonProviders.VAULT_PROVIDER);
         VaultAddHandler vah = new VaultAddHandler(vaultReader);
@@ -234,6 +238,11 @@ public class HostModelUtil {
 
         // Platform MBeans
         PlatformMBeanResourceRegistrar.registerPlatformMBeanResources(hostRegistration);
+
+        //host-environment
+        hostRegistration.registerSubModel(HostControllerResourceDescription.of(environment));
+
+
 
         LocalDomainControllerAddHandler localDcAddHandler = LocalDomainControllerAddHandler.getInstance(root, hostControllerInfo,
                 configurationPersister, localFileRepository, contentRepository, domainController, extensionRegistry);
