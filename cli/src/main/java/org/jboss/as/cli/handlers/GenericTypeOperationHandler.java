@@ -291,6 +291,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                     }
                 }
                 nodeProps = argMap;
+                nodeProps.put(this.headers.getFullName(), this.headers);
             }
             return nodeProps;
         } else {
@@ -346,6 +347,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                         }
                         final CommandArgument arg = new ArgumentWithValue(GenericTypeOperationHandler.this, valueCompleter, valueConverter, "--" + prop.getName());
                         opProps.put(arg.getFullName(), arg);
+                        opProps.put(this.headers.getFullName(), this.headers);
                     }
                 }
                 propsByOp.put(op, opProps);
