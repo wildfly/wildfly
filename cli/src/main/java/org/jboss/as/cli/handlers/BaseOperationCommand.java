@@ -208,6 +208,15 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
         handleResponse(ctx, response, Util.COMPOSITE.equals(request.get(Util.OPERATION).asString()));
     }
 
+    @Override
+    public ModelNode buildRequest(CommandContext ctx) throws CommandFormatException {
+        final ModelNode request = buildRequestWithoutHeaders(ctx);
+        addHeaders(ctx, request);
+        return request;
+    }
+
+    protected abstract ModelNode buildRequestWithoutHeaders(CommandContext ctx) throws CommandFormatException;
+
     protected void addHeaders(CommandContext ctx, ModelNode request) throws CommandFormatException {
         if(!headers.isPresent(ctx.getParsedCommandLine())) {
             return;

@@ -92,7 +92,7 @@ public class BaseDataSourceModifyHandler extends BaseOperationCommand {
      * @see org.jboss.as.cli.OperationCommand#buildRequest(org.jboss.as.cli.CommandContext)
      */
     @Override
-    public ModelNode buildRequest(CommandContext ctx) throws CommandFormatException {
+    public ModelNode buildRequestWithoutHeaders(CommandContext ctx) throws CommandFormatException {
 
         ModelNode composite = new ModelNode();
         composite.get("operation").set("composite");

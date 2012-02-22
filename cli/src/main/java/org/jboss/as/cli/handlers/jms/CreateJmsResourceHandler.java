@@ -45,7 +45,7 @@ public class CreateJmsResourceHandler extends BatchModeCommandHandler {
     }
 
     @Override
-    public ModelNode buildRequest(CommandContext ctx) throws OperationFormatException {
+    public ModelNode buildRequestWithoutHeaders(CommandContext ctx) throws OperationFormatException {
 
         try {
             if(!ctx.getParsedCommandLine().hasProperties()) {

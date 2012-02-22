@@ -88,7 +88,7 @@ public class JmsQueueAddHandler extends BatchModeCommandHandler {
     }
 
     @Override
-    public ModelNode buildRequest(CommandContext ctx) throws CommandFormatException {
+    public ModelNode buildRequestWithoutHeaders(CommandContext ctx) throws CommandFormatException {
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         ParsedCommandLine args = ctx.getParsedCommandLine();

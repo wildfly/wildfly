@@ -118,7 +118,7 @@ public class ReadAttributeHandler extends BaseOperationCommand {
      * @see org.jboss.as.cli.OperationCommand#buildRequest(org.jboss.as.cli.CommandContext)
      */
     @Override
-    public ModelNode buildRequest(CommandContext ctx) throws CommandFormatException {
+    public ModelNode buildRequestWithoutHeaders(CommandContext ctx) throws CommandFormatException {
 
         final ParsedCommandLine parsedCmd = ctx.getParsedCommandLine();
         final String name = this.name.getValue(parsedCmd);

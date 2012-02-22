@@ -95,7 +95,7 @@ public class JmsCFRemoveHandler extends BatchModeCommandHandler {
     }
 
     @Override
-    public ModelNode buildRequest(CommandContext ctx) throws CommandFormatException {
+    public ModelNode buildRequestWithoutHeaders(CommandContext ctx) throws CommandFormatException {
 
         final String name = this.name.getValue(ctx.getParsedCommandLine(), true);
         String serverName = "default"; // TODO read server name from props

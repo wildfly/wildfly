@@ -42,7 +42,7 @@ public class DeleteJmsResourceHandler extends BatchModeCommandHandler {
     }
 
     @Override
-    public ModelNode buildRequest(CommandContext ctx)
+    public ModelNode buildRequestWithoutHeaders(CommandContext ctx)
             throws OperationFormatException {
 
         try {

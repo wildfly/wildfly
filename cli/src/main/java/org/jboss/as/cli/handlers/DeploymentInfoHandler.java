@@ -64,7 +64,7 @@ public class DeploymentInfoHandler extends BaseOperationCommand {
      * @see org.jboss.as.cli.OperationCommand#buildRequest(org.jboss.as.cli.CommandContext)
      */
     @Override
-    public ModelNode buildRequest(CommandContext ctx) throws CommandFormatException {
+    public ModelNode buildRequestWithoutHeaders(CommandContext ctx) throws CommandFormatException {
         final ParsedCommandLine parsedCmd = ctx.getParsedCommandLine();
         if(!name.isPresent(parsedCmd)) {
             throw new CommandFormatException("Required argument " + name.getFullName() + " is missing.");
