@@ -101,14 +101,14 @@ public class DefaultEjbClientContextService implements Service<EJBClientContext>
         // to resetting the selector. The TCCLEJBClientContextSelector is backed by a TCCLEJBClientContextSelectorService
         // which is what we set here during the service start, so that the selector has the correct service to return the
         // EJBClientContext. @see https://issues.jboss.org/browse/AS7-2998 for details
-        TCCLEJBClientContextSelector.INSTANCE.setTCCLEJBClientContextService(this.tcclEJBClientContextSelector.getValue());
+        TCCLEJBClientContextSelector.INSTANCE.setup(this.tcclEJBClientContextSelector.getValue(), this.context);
 
     }
 
     @Override
     public synchronized void stop(final StopContext context) {
         this.context = null;
-        TCCLEJBClientContextSelector.INSTANCE.setTCCLEJBClientContextService(null);
+        TCCLEJBClientContextSelector.INSTANCE.destroy();
     }
 
     @Override

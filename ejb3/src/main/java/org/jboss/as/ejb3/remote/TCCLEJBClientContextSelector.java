@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.remote;
 
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
+import org.jboss.logging.Logger;
 
 /**
  * A {@link TCCLEJBClientContextSelector} is backed by {@link TCCLEJBClientContextSelectorService}
@@ -33,12 +34,33 @@ import org.jboss.ejb.client.EJBClientContext;
  */
 class TCCLEJBClientContextSelector implements ContextSelector<EJBClientContext> {
 
+    private static final Logger logger = Logger.getLogger(TCCLEJBClientContextSelector.class);
+
     static final TCCLEJBClientContextSelector INSTANCE = new TCCLEJBClientContextSelector();
 
     private volatile TCCLEJBClientContextSelectorService tcclEJBClientContextService;
+    private volatile EJBClientContext defaultEJBClientContext;
 
-    void setTCCLEJBClientContextService(final TCCLEJBClientContextSelectorService clientContextService) {
+    /**
+     * Sets the TCCL based client context service, which will be used to query for EJB client context, and the
+     * default EJB client context which will be used when there's no EJB client context associated with the
+     * thread context classloader when {@link #getCurrent()} is invoked.
+     *
+     * @param clientContextService    The {@link TCCLEJBClientContextSelectorService}
+     * @param defaultEJBClientContext The default EJB client context to fallback on when the {@link org.jboss.as.ejb3.remote.TCCLEJBClientContextSelectorService#getCurrent()}
+     *                                returns null
+     */
+    void setup(final TCCLEJBClientContextSelectorService clientContextService, final EJBClientContext defaultEJBClientContext) {
         this.tcclEJBClientContextService = clientContextService;
+        this.defaultEJBClientContext = defaultEJBClientContext;
+    }
+
+    /**
+     * Cleans up any reference to a the TCCL based context service and the default EJB client context
+     */
+    void destroy() {
+        this.tcclEJBClientContextService = null;
+        this.defaultEJBClientContext = null;
     }
 
     @Override
@@ -46,6 +68,16 @@ class TCCLEJBClientContextSelector implements ContextSelector<EJBClientContext> 
         if (this.tcclEJBClientContextService == null) {
             return null;
         }
-        return this.tcclEJBClientContextService.getCurrent();
+        final EJBClientContext ejbClientContext = this.tcclEJBClientContextService.getCurrent();
+        if (ejbClientContext != null) {
+            return ejbClientContext;
+        }
+
+        // explicit isDebugEnabled() check to ensure that the SecurityActions.getContextClassLoader() isn't
+        // unnecessarily executed when debug logging is disabled
+        if (logger.isDebugEnabled()) {
+            logger.debug("Returning default EJB client context " + this.defaultEJBClientContext + " since no EJB client context could be found for TCCL " + SecurityActions.getContextClassLoader());
+        }
+        return this.defaultEJBClientContext;
     }
 }
