@@ -50,6 +50,7 @@ import org.jboss.modules.ModuleLoader;
 public class ApplicationClientDependencyProcessor implements DeploymentUnitProcessor {
 
     public static ModuleIdentifier CORBA_ID = ModuleIdentifier.create("org.omg.api");
+    public static ModuleIdentifier XNIO = ModuleIdentifier.create("org.jboss.xnio");
 
 
     public ApplicationClientDependencyProcessor() {
@@ -64,6 +65,7 @@ public class ApplicationClientDependencyProcessor implements DeploymentUnitProce
         final ModuleLoader loader = deploymentUnit.getAttachment(Attachments.SERVICE_MODULE_LOADER);
 
         moduleSpecification.addSystemDependency(new ModuleDependency(loader, CORBA_ID, false, true, true, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(loader, XNIO, false, true, true, false));
 
         final Set<ModuleIdentifier> moduleIdentifiers = new HashSet<ModuleIdentifier>();
         final DeploymentUnit top = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();

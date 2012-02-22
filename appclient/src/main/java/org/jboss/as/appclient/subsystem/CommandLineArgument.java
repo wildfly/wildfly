@@ -22,9 +22,9 @@
 
 package org.jboss.as.appclient.subsystem;
 
-import org.jboss.as.process.CommandLineConstants;
-
 import java.io.PrintStream;
+
+import org.jboss.as.process.CommandLineConstants;
 
 import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
 
@@ -60,6 +60,12 @@ enum CommandLineArgument {
         @Override
         public String instructions() {
             return MESSAGES.argProperties();
+        }
+    },
+    CONNECTION_PROPERTIES(CommandLineConstants.CONNECTION_PROPERTIES, "=<url>") {
+        @Override
+        public String instructions() {
+            return MESSAGES.connectionProperties();
         }
     },
 

@@ -55,6 +55,7 @@ public class AppClientWrapper implements Runnable {
     private Thread shutdownThread;
     private final Archive<?> archive;
     private final String clientArchiveName;
+    private final String appClientArgs;
     private File archiveOnDisk;
     private final String args;
 
@@ -68,10 +69,11 @@ public class AppClientWrapper implements Runnable {
      * @param args
      * @throws Exception
      */
-    public AppClientWrapper(final Archive<?> archive, final String clientArchiveName, final String args) throws Exception {
+    public AppClientWrapper(final Archive<?> archive,final String appClientArgs, final String clientArchiveName, final String args) throws Exception {
         this.archive = archive;
         this.clientArchiveName = clientArchiveName;
         this.args = args;
+        this.appClientArgs = appClientArgs;
         init();
     }
 
@@ -168,13 +170,13 @@ public class AppClientWrapper implements Runnable {
         }
         final ZipExporter exporter = archive.as(ZipExporter.class);
         exporter.exportTo(archiveOnDisk);
-        final String appClientArg;
+        final String archiveArg;
         if(clientArchiveName == null) {
-            appClientArg = archiveOnDisk.getAbsolutePath();
+            archiveArg = archiveOnDisk.getAbsolutePath();
         } else {
-            appClientArg = archiveOnDisk.getAbsolutePath() + "#" + clientArchiveName;
+            archiveArg = archiveOnDisk.getAbsolutePath() + "#" + clientArchiveName;
         }
-        
+
         // TODO: Move to a self-test.
         System.out.println("*** System properties: ***");
         Properties props = System.getProperties();
@@ -184,8 +186,8 @@ public class AppClientWrapper implements Runnable {
             String name = (String) en.nextElement();
             System.out.println( "\t" + name + " = " + System.getProperty(name) );
         }
-        
-        
+
+
         // TODO: Move to a shared testsuite lib.
         String asDist = System.getProperty("jboss.dist");
         if( asDist == null ) throw new Exception("'jboss.dist' property is not set.");
@@ -203,8 +205,8 @@ public class AppClientWrapper implements Runnable {
                 " -mp "+ asDist + "/modules" +
                 " org.jboss.as.appclient" +
                 " -Djboss.server.base.dir="+ asInst + "/appclient" +
-                " -Djboss.home.dir="+ asInst + 
-                " " +appClientArg + " " + args;
+                " -Djboss.home.dir="+ asInst +
+                " " + this.appClientArgs + " " + archiveArg + " " + args;
         return appClientCommand;
     }
 

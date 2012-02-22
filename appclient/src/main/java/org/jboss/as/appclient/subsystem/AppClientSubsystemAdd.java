@@ -47,6 +47,12 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
+import static org.jboss.as.appclient.subsystem.Constants.CONNECTION_PROPERTIES_URL;
+import static org.jboss.as.appclient.subsystem.Constants.DEPLOYMENT;
+import static org.jboss.as.appclient.subsystem.Constants.FILE;
+import static org.jboss.as.appclient.subsystem.Constants.HOST_URL;
+import static org.jboss.as.appclient.subsystem.Constants.PARAMETERS;
+
 /**
  * Add operation handler for the application client subsystem.
  *
@@ -68,20 +74,29 @@ class AppClientSubsystemAdd extends AbstractBoottimeAddStepHandler implements De
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) {
-        model.get(Constants.FILE).set(operation.get(Constants.FILE));
-        model.get(Constants.DEPLOYMENT).set(operation.get(Constants.DEPLOYMENT));
-        model.get(Constants.PARAMETERS).set(operation.get(Constants.PARAMETERS));
-        model.get(Constants.HOST_URL).set(operation.get(Constants.HOST_URL));
+        model.get(FILE).set(operation.get(FILE));
+        model.get(DEPLOYMENT).set(operation.get(DEPLOYMENT));
+        model.get(PARAMETERS).set(operation.get(PARAMETERS));
+        if(operation.hasDefined(HOST_URL)) {
+            model.get(HOST_URL).set(operation.get(HOST_URL));
+        }
+        if(operation.hasDefined(CONNECTION_PROPERTIES_URL)) {
+            model.get(CONNECTION_PROPERTIES_URL).set(operation.get(CONNECTION_PROPERTIES_URL));
+        }
     }
 
     protected void performBoottime(final OperationContext context, ModelNode operation, final ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
-        final String deployment = model.get(Constants.DEPLOYMENT).asString();
-        final File file = new File(model.get(Constants.FILE).asString());
-        final String hostUrl = model.get(Constants.HOST_URL).asString();
+        final String deployment = model.get(DEPLOYMENT).asString();
+        final File file = new File(model.get(FILE).asString());
+        final String hostUrl = model.hasDefined(HOST_URL) ? model.get(HOST_URL).asString() : null;
+        final String connectionPropertiesUrl = model.hasDefined(CONNECTION_PROPERTIES_URL) ? model.get(CONNECTION_PROPERTIES_URL).asString() : null;
         final List<String> parameters = new ArrayList<String>();
-        for (ModelNode param : model.get(Constants.PARAMETERS).asList()) {
+        for (ModelNode param : model.get(PARAMETERS).asList()) {
             parameters.add(param.asString());
         }
+
+
+
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
                 if (deployment != null && !deployment.isEmpty()) {
@@ -92,7 +107,7 @@ class AppClientSubsystemAdd extends AbstractBoottimeAddStepHandler implements De
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_APPLICATION_CLIENT_ACTIVE, new ActiveApplicationClientProcessor(deployment));
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_APP_CLIENT_METHOD_RESOLUTION, new ApplicationClientDescriptorMethodProcessor());
                 processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_APPLICATION_CLIENT, new ApplicationClientDependencyProcessor());
-                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_APPLICATION_CLIENT, new ApplicationClientStartProcessor(hostUrl, parameters.toArray(EMPTY_STRING)));
+                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_APPLICATION_CLIENT, new ApplicationClientStartProcessor(hostUrl, connectionPropertiesUrl, parameters.toArray(EMPTY_STRING)));
 
             }
         }, OperationContext.Stage.RUNTIME);

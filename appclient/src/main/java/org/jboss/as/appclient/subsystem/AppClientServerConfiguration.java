@@ -43,18 +43,18 @@ class AppClientServerConfiguration {
     private AppClientServerConfiguration() {
     }
 
-    public static List<ModelNode> serverConfiguration(final String filePath, final String deploymentName, final String hostUrl, final List<String> parameters, List<ModelNode> xmlNodes) {
+    public static List<ModelNode> serverConfiguration(final String filePath, final String deploymentName, final String hostUrl, final String propertiesFileUrl, final List<String> parameters, List<ModelNode> xmlNodes) {
         List<ModelNode> ret = new ArrayList<ModelNode>();
 
         for (final ModelNode node : xmlNodes) {
             ret.add(node);
         }
-        appclient(ret, filePath, deploymentName, hostUrl, parameters);
+        appclient(ret, filePath, deploymentName, hostUrl, propertiesFileUrl, parameters);
 
         return ret;
     }
 
-    private static void appclient(List<ModelNode> nodes, final String filePath, final String deploymentName, final String hostUrl, final List<String> parameters) {
+    private static void appclient(List<ModelNode> nodes, final String filePath, final String deploymentName, final String hostUrl, final String propertiesFileUrl, final List<String> parameters) {
         loadExtension(nodes, "org.jboss.as.appclient");
         ModelNode add = new ModelNode();
         add.get(OP_ADDR).set(new ModelNode().setEmptyList()).add(SUBSYSTEM, APPCLIENT);
@@ -70,7 +70,12 @@ class AppClientServerConfiguration {
                 add.get(Constants.PARAMETERS).add(param);
             }
         }
-        add.get(Constants.HOST_URL).set(hostUrl);
+        if(hostUrl != null) {
+            add.get(Constants.HOST_URL).set(hostUrl);
+        }
+        if(propertiesFileUrl != null) {
+            add.get(Constants.CONNECTION_PROPERTIES_URL).set(propertiesFileUrl);
+        }
         nodes.add(add);
     }
 
