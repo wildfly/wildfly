@@ -64,6 +64,7 @@ public class HibernateEnvers3EmbeddedProviderTestCase {
         File hibernateannotations = new File(testdir, "hibernate3-commons-annotations.jar");
         File hibernateentitymanager = new File(testdir, "hibernate3-entitymanager.jar");
         File hibernateenvers = new File(testdir, "hibernate3-envers.jar");
+        File hibernateInfinispan = new File(testdir, "hibernate3-infinispan.jar");
         File dom4j = new File(testdir, "dom4j.jar");
         File commonCollections = new File(testdir, "commons-collections.jar");
         File antlr = new File(testdir, "antlr.jar");
@@ -72,6 +73,7 @@ public class HibernateEnvers3EmbeddedProviderTestCase {
             hibernateannotations,
             hibernateentitymanager,
             hibernateenvers,
+            hibernateInfinispan,
             dom4j,
             commonCollections,
             antlr

@@ -44,7 +44,6 @@
         <module>core</module>
         <module>util</module>
         <module>spi</module>
-        <module>hibernate-infinispan</module>
         <module>hibernate4</module>
         <module>hibernate3</module>
         <module>openjpa</module>

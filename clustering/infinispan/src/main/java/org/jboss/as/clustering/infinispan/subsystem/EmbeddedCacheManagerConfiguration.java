@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,20 +19,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.clustering.infinispan.subsystem;
 
-package org.jboss.as.clustering.web;
-
-import org.jboss.metadata.web.jboss.JBossWebMetaData;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.msc.service.ServiceTarget;
+import org.infinispan.configuration.global.GlobalConfiguration;
 
 /**
- * Factory for obtaining a DistributedCacheManager.
- * @author Brian Stansberry
+ * @author Paul Ferraro
  */
-public interface DistributedCacheManagerFactory {
-    <T extends OutgoingDistributableSessionData> DistributedCacheManager<T> getDistributedCacheManager(LocalDistributableSessionManager localManager) throws ClusteringNotSupportedException;
+public interface EmbeddedCacheManagerConfiguration {
+    GlobalConfiguration getGlobalConfiguration();
 
-    boolean addDependencies(ServiceRegistry registry, ServiceTarget target, ServiceBuilder<?> builder, JBossWebMetaData metaData);
+    String getName();
+
+    String getDefaultCache();
 }

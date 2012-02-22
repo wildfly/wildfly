@@ -28,6 +28,7 @@
     <copy file="${org.hibernate:hibernate-envers:jar}"              tofile="${tests.output.dir}/test-libs/hibernate3-envers.jar"/>
     <copy file="${org.hibernate:hibernate-commons-annotations:jar}" tofile="${tests.output.dir}/test-libs/hibernate3-commons-annotations.jar"/>
     <copy file="${org.hibernate:hibernate-entitymanager:jar}"       tofile="${tests.output.dir}/test-libs/hibernate3-entitymanager.jar"/>
+    <copy file="${org.hibernate:hibernate-infinispan:jar}"          tofile="${tests.output.dir}/test-libs/hibernate3-infinispan.jar"/>
     <copy file="${dom4j:dom4j:jar}"                                 tofile="${tests.output.dir}/test-libs/dom4j.jar"/>
     <!--
     <copy file="${org.slf4j:slf4j-simple:jar}"                      tofile="${tests.output.dir}/test-libs/slf4j.jar"/>

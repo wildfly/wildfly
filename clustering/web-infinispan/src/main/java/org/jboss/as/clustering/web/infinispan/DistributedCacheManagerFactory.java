@@ -47,14 +47,13 @@ import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.as.clustering.web.SessionAttributeMarshallerFactory;
 import org.jboss.as.clustering.web.impl.SessionAttributeMarshallerFactoryImpl;
 import org.jboss.as.clustering.web.impl.TransactionBatchingManager;
-import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.jboss.ReplicationConfig;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 
@@ -103,10 +102,9 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
     }
 
     @Override
-    public boolean addDependencies(ServiceTarget target, ServiceBuilder<?> builder, JBossWebMetaData metaData) {
+    public boolean addDependencies(ServiceRegistry registry, ServiceTarget target, ServiceBuilder<?> builder, JBossWebMetaData metaData) {
         ServiceName cacheServiceName = this.getCacheServiceName(metaData.getReplicationConfig());
-        ServiceContainer serviceContainer = CurrentServiceContainer.getServiceContainer();
-        if (serviceContainer.getService(cacheServiceName) == null) {
+        if (registry.getService(cacheServiceName) == null) {
             return false;
         }
         ServiceName containerServiceName = cacheServiceName.getParent();
@@ -114,12 +112,12 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
         ServiceName lockManagerServiceName = SharedLocalYieldingClusterLockManagerService.getServiceName(container);
         ServiceName registryServiceName = cacheServiceName.append("registry");
         synchronized (this) {
-            if (serviceContainer.getService(lockManagerServiceName) == null) {
+            if (registry.getService(lockManagerServiceName) == null) {
                 // AS7-3906 Ensure that the cache manager's rpc dispatcher starts before GroupCommunicationService's
                 new CoreGroupCommunicationService(SCOPE_ID).build(target, container).addDependency(cacheServiceName).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
                 new SharedLocalYieldingClusterLockManagerService(container).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
             }
-            if (serviceContainer.getService(registryServiceName) == null) {
+            if (registry.getService(registryServiceName) == null) {
                 new RegistryService<String, Void>(this.registryEntryProvider).build(target, registryServiceName, cacheServiceName).install();
             }
         }
