@@ -13,6 +13,7 @@
 ## Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 import os
 import time
+import platform
 
 from sos.policies import PackageManager, Policy
 from sos.utilities import shell_out
@@ -23,10 +24,13 @@ class WindowsPolicy(Policy):
 
     @classmethod
     def check(class_):
+        is_windows = False
         try:
-            return "Windows" in shell_out("ver")
-        except Exception, e:
-            return False
+            from java.lang import System
+            is_windows = "win" in System.getProperty('os.name').lower()
+        except:
+            is_windows = "win" in platform.system().lower()
+        return is_windows
 
     def is_root(self):
         if "S-1-16-12288" in shell_out("whoami /groups"):

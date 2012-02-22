@@ -24,8 +24,11 @@ def load(cache={}):
         for policy in import_policy(module):
             if policy.check():
                 cache['policy'] = policy()
-                return policy()
-    return GenericPolicy()
+
+    if 'policy' not in cache:
+        cache['policy'] = GenericPolicy()
+
+    return cache['policy']
 
 
 class PackageManager(object):

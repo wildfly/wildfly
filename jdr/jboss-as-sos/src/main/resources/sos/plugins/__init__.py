@@ -610,6 +610,14 @@ class RedHatPlugin(object):
     """Tagging class to indicate that this plugin works with Red Hat Linux"""
     pass
 
+class UbuntuPlugin(object):
+    """Tagging class to indicate that this plugin works with Ubuntu Linux"""
+    pass
+
+class DebianPlugin(object):
+    """Tagging class to indicate that this plugin works with Debian Linux"""
+    pass
+
 class IndependentPlugin(object):
     """Tagging class that indicates this plugin can run on any platform"""
     pass
