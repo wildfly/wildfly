@@ -41,6 +41,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -519,8 +520,9 @@ public class RemoteProxyControllerProtocolTestCase {
                 } catch (Exception e) {
                     errorRef.set(e);
                     throw new RuntimeException();
+                } finally {
+                    latch.countDown();
                 }
-                latch.countDown();
                 try {
                     channels.getServerChannel().writeShutdown();
                     channels.getServerChannel().awaitClosed();
@@ -541,9 +543,9 @@ public class RemoteProxyControllerProtocolTestCase {
 
         CommitProxyOperationControl commitControl = new CommitProxyOperationControl();
         proxyController.execute(operation, null, commitControl, null);
-        latch.await();
-        Assert.assertEquals(1, commitControl.txCompletionStatus.get());
+        latch.await(15, TimeUnit.SECONDS);
         Assert.assertNull(errorRef.get());
+        Assert.assertEquals(1, commitControl.txCompletionStatus.get());
     }
 
 
