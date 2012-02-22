@@ -315,7 +315,7 @@ public interface HostControllerLogger extends BasicLogger {
      * @param host the host.
      */
     @LogMessage(level = Level.INFO)
-    @Message(id = 10925, value = "Unregistered remote slave host %s")
+    @Message(id = 10925, value = "Unregistered remote slave host \"%s\"")
     void unregisteredRemoteSlaveHost(String host);
 
     /**
@@ -341,5 +341,9 @@ public interface HostControllerLogger extends BasicLogger {
     @LogMessage(level = Level.INFO)
     @Message(id = 10928, value =  "Unregistered at domain controller")
     void unregisteredAtRemoteHostController();
+
+    @LogMessage(level = Level.WARN)
+    @Message(id = 10929, value = "Connection to remote host \"%s\" closed unexpected")
+    void lostConnectionToRemoteHost(String hostId);
 
 }

@@ -54,6 +54,8 @@ import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.dmr.ModelNode;
+import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.CloseHandler;
 
 import java.io.DataInput;
 import java.io.IOException;
@@ -122,6 +124,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
             context.executeAsync(new ManagementRequestContext.AsyncTask<RegistrationContext>() {
                 @Override
                 public void execute(ManagementRequestContext<RegistrationContext> context) throws Exception {
+                    final Channel channel = context.getChannel();
                     final ModelNode result;
                     try {
                         // The domain model is going to be sent as part of the prepared notification
@@ -132,6 +135,16 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                     }
                     // Send a registered notification back
                     registration.sendCompletedMessage();
+                    // Make sure that the host controller gets unregistered when the channel is closed
+                    channel.addCloseHandler(new CloseHandler<Channel>() {
+                        @Override
+                        public void handleClose(Channel closed, IOException exception) {
+                            if(domainController.isHostRegistered(hostName)) {
+                                DOMAIN_LOGGER.lostConnectionToRemoteHost(hostName);
+                            }
+                            domainController.unregisterRemoteHost(hostName);
+                        }
+                    });
                 }
             });
         }
