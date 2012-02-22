@@ -48,4 +48,41 @@ public class BikeShop  {
         entityManager.flush();
         return bike;
     }
+
+    /**
+     * create new motor bike but don't save to the DB until purchaseNow is invoked.
+     * @param id
+     * @param name
+     * @return
+     */
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public Motorbike downPaymentOnBikeNoTx(int id, String name) {
+        Motorbike bike = new Motorbike(id, name);
+        entityManager.persist(bike);
+        return bike;
+    }
+
+    /**
+     * save MotorBikes that we previously put a down payment on
+     * pending DB changes should be flushed as per JPA 7.9.1 Container Responsibilities for XPC:
+     *    When a business method of the stateful session bean is invoked,
+     *    if the stateful session bean uses container managed transaction demarcation,
+     *    and the entity manager is not already associated with the current JTA transaction,
+     *    the container associates the entity manager with the current JTA transaction and
+     *    calls EntityManager.joinTransaction.
+     */
+    public void purchaseNowAndFlushDbChanges() {
+
+    }
+
+    public void forceRollback(int id) {
+        // purchaseNow should of saved the MotorBike, so we should be able to find the MotorBike in the db
+        Motorbike bike = entityManager.find(Motorbike.class, id);
+        throw new RuntimeException("for ejb container to rollback tx");
+    }
+
+    public Motorbike find(int id) {
+        Motorbike bike = entityManager.find(Motorbike.class, id);
+        return bike;
+    }
 }
