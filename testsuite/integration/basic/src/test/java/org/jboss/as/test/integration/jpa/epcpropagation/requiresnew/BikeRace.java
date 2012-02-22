@@ -21,11 +21,12 @@
  */
 package org.jboss.as.test.integration.jpa.epcpropagation.requiresnew;
 
+import java.util.List;
+
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.util.List;
 
 /**
  * @author Stuart Douglas
@@ -50,6 +51,23 @@ public class BikeRace {
      */
     public Motorbike createNewBike(int id, String name) {
         return bikeShop.createMotorBike(id, name);
+    }
+
+    public Motorbike downPaymentOnBikeNoTx(int id, String name) {
+        return bikeShop.downPaymentOnBikeNoTx(id, name);
+    }
+
+
+    public void purchaseNowAndFlushDbChanges() {
+        bikeShop.purchaseNowAndFlushDbChanges();
+    }
+
+    public void forceRollback(int id) {
+        bikeShop.forceRollback(id);
+    }
+
+    public Motorbike find(int id) {
+        return bikeShop.find(id);
     }
 
     public boolean contains(Object object) {
