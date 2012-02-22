@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ironjacamar>
+	<connection-definitions>
+		<connection-definition
+			class-name="org.jboss.as.test.integration.jca.rar.MultipleManagedConnectionFactory1"
+			jndi-name="java:jboss/name1" pool-name="ij_Pool1">
+			<security>
+				<security-domain>RaRealm</security-domain>
+			</security>
+		</connection-definition>
+	</connection-definitions>
+	<admin-objects>
+		<admin-object
+			class-name="org.jboss.as.test.integration.jca.rar.MultipleAdminObject1Impl"
+			jndi-name="java:jboss/Name3" pool-name="ij_Pool3">
+		</admin-object>
+	</admin-objects>
+</ironjacamar>
