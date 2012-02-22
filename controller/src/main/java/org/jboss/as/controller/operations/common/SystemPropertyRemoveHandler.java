@@ -19,19 +19,18 @@
 package org.jboss.as.controller.operations.common;
 
 
-import java.util.Locale;
-import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
+import java.util.Locale;
+
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.dmr.ModelNode;
 
@@ -40,7 +39,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class SystemPropertyRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
+public class SystemPropertyRemoveHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = REMOVE;
 
@@ -56,7 +55,7 @@ public class SystemPropertyRemoveHandler extends AbstractRemoveStepHandler imple
 
     /**
      * Create the SystemPropertyRemoveHandler
-     * @param processEnvironment
+     * @param processEnvironment the process environment to use to validate changes. May be {@code null}
      */
     public SystemPropertyRemoveHandler(ProcessEnvironment processEnvironment) {
         this.processEnvironment = processEnvironment;

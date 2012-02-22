@@ -38,11 +38,6 @@ public class BindingPortHandler extends AbstractBindingWriteHandler {
     }
 
     @Override
-    protected boolean requiresRuntime(final OperationContext context) {
-        return true;
-    }
-
-    @Override
     void handleRuntimeChange(ModelNode operation, String attributeName, ModelNode attributeValue, SocketBinding binding) throws OperationFailedException {
         binding.setPort(attributeValue.asInt());
     }

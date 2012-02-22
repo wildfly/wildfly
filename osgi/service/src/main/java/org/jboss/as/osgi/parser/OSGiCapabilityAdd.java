@@ -48,11 +48,6 @@ public class OSGiCapabilityAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected boolean requiresRuntime(OperationContext context) {
-        return context.isNormalServer() || context.getProcessType() == ProcessType.HOST_CONTROLLER;
-    }
-
-    @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         if (operation.has(ModelConstants.STARTLEVEL)) {
             model.get(ModelConstants.STARTLEVEL).set(operation.get(ModelConstants.STARTLEVEL));

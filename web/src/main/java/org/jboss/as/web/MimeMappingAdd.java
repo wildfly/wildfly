@@ -48,13 +48,15 @@ public class MimeMappingAdd implements OperationStepHandler, DescriptionProvider
     @Override
     public void execute(OperationContext context, ModelNode operation)
             throws OperationFailedException {
-        if (context.isNormalServer() || context.getProcessType() == ProcessType.HOST_CONTROLLER) {
-            final ModelNode mimetypes = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel().get(MIME_MAPPING);
-            if (operation.hasDefined("name") && operation.hasDefined("value")) {
-                mimetypes.get(operation.get("name").asString()).set(operation.get("value").asString());
-            } else
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.nameAndValueRequiredForAddMimeMapping()));
+
+        final ModelNode mimetypes = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel().get(MIME_MAPPING);
+        if (operation.hasDefined("name") && operation.hasDefined("value")) {
+            mimetypes.get(operation.get("name").asString()).set(operation.get("value").asString());
+        } else {
+            throw new OperationFailedException(new ModelNode().set(MESSAGES.nameAndValueRequiredForAddMimeMapping()));
         }
+
+        // TODO deal with runtime https://issues.jboss.org/browse/AS7-3854
 
         context.completeStep();
     }

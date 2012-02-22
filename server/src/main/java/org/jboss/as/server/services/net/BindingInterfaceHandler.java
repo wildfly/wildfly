@@ -37,11 +37,6 @@ public class BindingInterfaceHandler extends AbstractBindingWriteHandler {
     }
 
     @Override
-    protected boolean requiresRuntime(final OperationContext context) {
-        return true;
-    }
-
-    @Override
     protected boolean requiresRestart() {
         return true;
     }

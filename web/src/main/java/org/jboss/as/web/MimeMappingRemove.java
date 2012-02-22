@@ -49,13 +49,15 @@ public class MimeMappingRemove implements OperationStepHandler, DescriptionProvi
     @Override
     public void execute(OperationContext context, ModelNode operation)
             throws OperationFailedException {
-        if (context.isNormalServer() || context.getProcessType() == ProcessType.HOST_CONTROLLER) {
-            final ModelNode mimetypes = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel().get(MIME_MAPPING);
-            if (operation.hasDefined("name")) {
-                mimetypes.remove(operation.get("name").asString());
-            } else
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.nameRequiredForRemoveMimeMapping()));
+
+        final ModelNode mimetypes = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel().get(MIME_MAPPING);
+        if (operation.hasDefined("name")) {
+            mimetypes.remove(operation.get("name").asString());
+        } else {
+            throw new OperationFailedException(new ModelNode().set(MESSAGES.nameRequiredForRemoveMimeMapping()));
         }
+
+        // TODO deal with runtime https://issues.jboss.org/browse/AS7-3854
 
         context.completeStep();
     }

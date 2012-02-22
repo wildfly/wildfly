@@ -45,7 +45,7 @@ public class OSGiFrameworkPropertyWrite extends AbstractWriteAttributeHandler {
 
     @Override
     protected boolean requiresRuntime(OperationContext context) {
-        return context.isNormalServer() || context.getProcessType() == ProcessType.HOST_CONTROLLER;
+        return context.isNormalServer();
     }
 
     @Override

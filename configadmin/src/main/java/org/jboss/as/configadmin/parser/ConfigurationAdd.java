@@ -48,11 +48,6 @@ public class ConfigurationAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected boolean requiresRuntime(OperationContext context) {
-        return context.isNormalServer() || context.getProcessType() == ProcessType.HOST_CONTROLLER;
-    }
-
-    @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         model.get(ModelConstants.ENTRIES).set(operation.get(ModelConstants.ENTRIES));
     }
