@@ -3672,12 +3672,6 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-jpa-hibernate-infinispan</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-jpa-openjpa</artifactId>
                 <version>${project.version}</version>
             </dependency>

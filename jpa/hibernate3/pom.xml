@@ -53,7 +53,18 @@
             <version>3.6.6.Final</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-infinispan</artifactId>
+            <version>3.6.6.Final</version>
+        </dependency>
+
         <!-- Internal -->
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-clustering-infinispan</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.jboss.as</groupId>

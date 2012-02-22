@@ -20,58 +20,41 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.jpa.hibernate.cache.infinispan;
+package org.jboss.as.jpa.hibernate4.infinispan;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.Properties;
 
-import org.hibernate.cache.CacheException;
-import org.hibernate.internal.util.config.ConfigurationHelper;
-import org.infinispan.AdvancedCache;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 
 /**
+ * Infinispan-backed region factory that uses retrieves its cache manager from the Infinispan subsystem.
  * @author Paul Ferraro
  */
-public class InfinispanRegionFactory extends org.hibernate.cache.infinispan.InfinispanRegionFactory {
+public class SharedInfinispanRegionFactory extends InfinispanRegionFactory {
     private static final long serialVersionUID = -3277051412715973863L;
 
-    public static final String CACHE_CONTAINER = "hibernate.cache.infinispan.container";
-    public static final String DEFAULT_CACHE_CONTAINER = "hibernate";
-
-    public InfinispanRegionFactory() {
+    public SharedInfinispanRegionFactory() {
         super();
     }
 
-    public InfinispanRegionFactory(Properties props) {
+    public SharedInfinispanRegionFactory(Properties props) {
         super(props);
     }
 
     @Override
-    protected EmbeddedCacheManager createCacheManager(Properties properties) throws CacheException {
-        String container = ConfigurationHelper.getString(CACHE_CONTAINER, properties, DEFAULT_CACHE_CONTAINER);
+    protected EmbeddedCacheManager createCacheManager(Properties properties) {
+        String container = properties.getProperty(CACHE_CONTAINER, DEFAULT_CACHE_CONTAINER);
         ServiceName serviceName = EmbeddedCacheManagerService.getServiceName(container);
-        return (EmbeddedCacheManager) CurrentServiceContainer.getServiceContainer().getRequiredService(serviceName).getValue();
+        ServiceRegistry registry = CurrentServiceContainer.getServiceContainer();
+        return (EmbeddedCacheManager) registry.getRequiredService(serviceName).getValue();
     }
 
     @Override
     public void stop() {
         // Do not attempt to stop our cache manager because it wasn't created by this region factory.
-    }
-
-    @SuppressWarnings("rawtypes")
-    @Override
-    protected AdvancedCache createCacheWrapper(AdvancedCache cache) {
-        PrivilegedAction<ClassLoader> action = new PrivilegedAction<ClassLoader>() {
-            @Override
-            public ClassLoader run() {
-                return Thread.currentThread().getContextClassLoader();
-            }
-        };
-        return cache.with(AccessController.doPrivileged(action));
     }
 }

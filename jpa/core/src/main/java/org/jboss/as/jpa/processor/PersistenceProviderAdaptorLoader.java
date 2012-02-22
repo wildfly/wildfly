@@ -37,7 +37,9 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
-import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Loads persistence provider adaptors
@@ -57,8 +59,7 @@ public class PersistenceProviderAdaptorLoader {
         }
 
         @Override
-        public Iterable<ServiceName> getProviderDependencies(PersistenceUnitMetadata pu) {
-            return null;
+        public void addProviderDependencies(ServiceRegistry registry, ServiceTarget target, ServiceBuilder<?> builder, PersistenceUnitMetadata pu) {
         }
 
         @Override
