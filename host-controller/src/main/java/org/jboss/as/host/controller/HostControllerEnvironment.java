@@ -645,11 +645,11 @@ public class HostControllerEnvironment extends ProcessEnvironment {
         // no-op
     }
 
-    ConfigurationFile getHostConfigurationFile() {
+    public ConfigurationFile getHostConfigurationFile() {
         return hostConfigurationFile;
     }
 
-    ConfigurationFile getDomainConfigurationFile() {
+    public ConfigurationFile getDomainConfigurationFile() {
         return domainConfigurationFile;
     }
 
