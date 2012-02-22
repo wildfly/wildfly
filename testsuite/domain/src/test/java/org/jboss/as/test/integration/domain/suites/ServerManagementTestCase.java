@@ -265,6 +265,34 @@ public class ServerManagementTestCase {
         }
     }
 
+    @Test
+    public void testAdminOnlyMode() throws Exception {
+        
+        // restart master HC in admin only mode
+        final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
+        ModelNode op = new ModelNode();
+        op.get(OP_ADDR).add(HOST, "master");
+        op.get(OP).set("reload");
+        op.get("admin-only").set(true);
+        executeForResult(masterClient, op);
+        
+        // check that the servers are stopped
+        waitUntilState(masterClient, "master", "main-one", "STOPPED");
+        waitUntilState(masterClient, "master", "main-one", "STOPPED");
+        
+        // restart back to normal mode
+        op = new ModelNode();
+        op.get(OP_ADDR).add(HOST, "master");
+        op.get(OP).set("reload");
+        op.get("admin-only").set(false);
+        executeForResult(masterClient, op);        
+
+        // check that the servers are up
+        waitUntilState(masterClient, "master", "main-one", "STARTED");
+        waitUntilState(masterClient, "master", "main-one", "STARTED");
+        
+    }
+    
     private void executeLifecycleOperation(final ModelControllerClient client, String opName) throws IOException {
         executeLifecycleOperation(client, null, opName);
     }

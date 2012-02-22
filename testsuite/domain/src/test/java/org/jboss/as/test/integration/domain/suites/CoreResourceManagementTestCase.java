@@ -28,6 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DIRECTORY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
@@ -43,9 +44,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PLATFORM_MBEAN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROCESS_STATE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
@@ -56,6 +59,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
@@ -67,6 +72,7 @@ import static org.jboss.as.test.integration.domain.DomainTestSupport.validateFai
 import static org.jboss.as.test.integration.domain.DomainTestSupport.validateResponse;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -632,7 +638,47 @@ public class CoreResourceManagementTestCase {
 
         validateFailedResponse(masterClient.execute(read));
     }
+    
+    @Test
+    public void testAddRemoveSocketBindingGroup() throws Exception {
+        final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
+        final String bindingGroupName = "testing-binding-group";
+        final String serverGroupName = "testing-server-group";
 
+        // add binding group
+        ModelNode add = new ModelNode();
+        add.get(OP).set(ADD);
+        add.get(OP_ADDR).add(SOCKET_BINDING_GROUP, bindingGroupName);
+        add.get(DEFAULT_INTERFACE).set("public");
+        validateResponse(masterClient.execute(add));         
+        
+        // add server group using new binding group
+        add = new ModelNode();
+        add.get(OP).set(ADD);
+        add.get(OP_ADDR).add(SERVER_GROUP, serverGroupName);
+        add.get(PROFILE).set("default");
+        validateResponse(masterClient.execute(add));        
+        
+        // remove server group
+        ModelNode remove = new ModelNode();
+        remove.get(OP).set(REMOVE);
+        remove.get(OP_ADDR).add(SERVER_GROUP, serverGroupName);
+        validateResponse(masterClient.execute(remove));        
+        
+        // remove binding group
+        remove = new ModelNode();
+        remove.get(OP).set(REMOVE);
+        remove.get(OP_ADDR).add(SOCKET_BINDING_GROUP, bindingGroupName);
+        validateResponse(masterClient.execute(remove));        
+        
+        // check the binding group is gone
+        ModelNode read = new ModelNode();
+        add.get(OP).set(READ_RESOURCE_OPERATION);
+        add.get(OP_ADDR).add(SOCKET_BINDING_GROUP, bindingGroupName);
+        validateFailedResponse(masterClient.execute(read));         
+        
+    }    
+    
     /**
      * Test for AS7-3643
      */
