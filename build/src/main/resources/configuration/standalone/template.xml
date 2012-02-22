@@ -30,9 +30,9 @@
     </management>
 
     <profile>
-    
+
         <?SUBSYSTEMS socket-binding-group="standard-sockets"?>
-        
+
     </profile>
 
     <interfaces>
@@ -44,9 +44,9 @@
         </interface>
         <!-- TODO - only show this if the jacorb subsystem is added  -->
         <interface name="unsecure">
-            <!-- Used for IIOP sockets in the standarad configuration.
+            <!-- Used for IIOP sockets in the standard configuration.
                  To secure JacORB you need to setup SSL -->
-            <inet-address value="127.0.0.1"/>
+            <inet-address value="${jboss.bind.address.unsecure:127.0.0.1}"/>
         </interface>
     </interfaces>
 
@@ -54,8 +54,8 @@
         <socket-binding name="management-native" interface="management" port="${jboss.management.native.port:9999}"/>
         <socket-binding name="management-http" interface="management" port="${jboss.management.http.port:9990}"/>
         <socket-binding name="management-https" interface="management" port="${jboss.management.https.port:9443}"/>
-        
+
         <?SOCKET-BINDINGS?>
-        
+
     </socket-binding-group>
 </server>
