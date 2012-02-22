@@ -24,11 +24,9 @@ package org.jboss.as.cli.handlers;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.ModelNodeFormatter;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.DefaultCompleter;
@@ -92,7 +90,7 @@ public class ReadOperationHandler extends BaseOperationCommand {
      * @see org.jboss.as.cli.OperationCommand#buildRequest(org.jboss.as.cli.CommandContext)
      */
     @Override
-    public ModelNode buildRequest(CommandContext ctx) throws CommandFormatException {
+    public ModelNode buildRequestWithoutHeaders(CommandContext ctx) throws CommandFormatException {
 
         final ParsedCommandLine parsedCmd = ctx.getParsedCommandLine();
         final String name = this.name.getValue(parsedCmd);

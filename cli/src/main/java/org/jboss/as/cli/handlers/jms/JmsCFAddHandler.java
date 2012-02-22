@@ -84,7 +84,7 @@ public class JmsCFAddHandler extends BatchModeCommandHandler {
     }
 
     @Override
-    public ModelNode buildRequest(CommandContext ctx) throws CommandFormatException {
+    public ModelNode buildRequestWithoutHeaders(CommandContext ctx) throws CommandFormatException {
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
 

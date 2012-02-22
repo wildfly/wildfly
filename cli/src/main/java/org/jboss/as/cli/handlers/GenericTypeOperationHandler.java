@@ -370,7 +370,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
     }
 
     @Override
-    public ModelNode buildRequest(CommandContext ctx) throws CommandFormatException {
+    public ModelNode buildRequestWithoutHeaders(CommandContext ctx) throws CommandFormatException {
         final String operation = this.operation.getValue(ctx.getParsedCommandLine());
         if(operation == null) {
             return buildWritePropertyRequest(ctx);

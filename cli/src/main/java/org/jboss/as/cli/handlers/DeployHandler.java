@@ -396,7 +396,7 @@ public class DeployHandler extends BatchModeCommandHandler {
     }
 
     @Override
-    public ModelNode buildRequest(CommandContext ctx) throws CommandFormatException {
+    public ModelNode buildRequestWithoutHeaders(CommandContext ctx) throws CommandFormatException {
 
         final ModelControllerClient client = ctx.getModelControllerClient();
 
@@ -571,7 +571,10 @@ public class DeployHandler extends BatchModeCommandHandler {
         return request;
     }
 
-    protected void execute(CommandContext ctx, ModelNode request, File f) {
+    protected void execute(CommandContext ctx, ModelNode request, File f) throws CommandFormatException {
+
+        addHeaders(ctx, request);
+
         ModelNode result;
         FileInputStream is = null;
         try {
@@ -603,7 +606,7 @@ public class DeployHandler extends BatchModeCommandHandler {
         return request;
     }
 
-    protected void replaceDeployment(CommandContext ctx, final File f, String name, final String runtimeName) {
+    protected void replaceDeployment(CommandContext ctx, final File f, String name, final String runtimeName) throws CommandFormatException {
         // replace
         final ModelNode request = new ModelNode();
         request.get(Util.OPERATION).set(Util.FULL_REPLACE_DEPLOYMENT);

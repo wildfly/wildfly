@@ -91,7 +91,7 @@ public class BaseDataSourceAddHandler extends BaseOperationCommand {
      * @see org.jboss.as.cli.OperationCommand#buildRequest(org.jboss.as.cli.CommandContext)
      */
     @Override
-    public ModelNode buildRequest(CommandContext ctx) throws CommandFormatException {
+    public ModelNode buildRequestWithoutHeaders(CommandContext ctx) throws CommandFormatException {
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         ParsedCommandLine args = ctx.getParsedCommandLine();

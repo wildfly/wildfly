@@ -181,9 +181,9 @@ public class UndeployHandler extends BatchModeCommandHandler {
     @Override
     protected void doHandle(CommandContext ctx) throws CommandFormatException {
 
-        ModelControllerClient client = ctx.getModelControllerClient();
-        ParsedCommandLine args = ctx.getParsedCommandLine();
-        boolean l = this.l.isPresent(args);
+        final ModelControllerClient client = ctx.getModelControllerClient();
+        final ParsedCommandLine args = ctx.getParsedCommandLine();
+        final boolean l = this.l.isPresent(args);
         if(!args.hasProperties() || l) {
             printList(ctx, Util.getDeployments(client), l);
             return;
@@ -195,15 +195,16 @@ public class UndeployHandler extends BatchModeCommandHandler {
             return;
         }
 
-        ModelNode request;
+        final ModelNode request;
         try {
             request = buildRequest(ctx);
+            addHeaders(ctx, request);
         } catch (OperationFormatException e) {
             ctx.error(e.getLocalizedMessage());
             return;
         }
 
-        ModelNode result;
+        final ModelNode result;
         try {
             result = client.execute(request);
         } catch (Exception e) {
@@ -217,12 +218,12 @@ public class UndeployHandler extends BatchModeCommandHandler {
     }
 
     @Override
-    public ModelNode buildRequest(CommandContext ctx) throws OperationFormatException {
+    public ModelNode buildRequestWithoutHeaders(CommandContext ctx) throws CommandFormatException {
 
-        ModelNode composite = new ModelNode();
+        final ModelNode composite = new ModelNode();
         composite.get(Util.OPERATION).set(Util.COMPOSITE);
         composite.get(Util.ADDRESS).setEmptyList();
-        ModelNode steps = composite.get(Util.STEPS);
+        final ModelNode steps = composite.get(Util.STEPS);
 
         final ParsedCommandLine args = ctx.getParsedCommandLine();
         final String name = this.name.getValue(args);
@@ -230,10 +231,10 @@ public class UndeployHandler extends BatchModeCommandHandler {
             throw new OperationFormatException("Required argument name are missing.");
         }
 
-        ModelControllerClient client = ctx.getModelControllerClient();
+        final ModelControllerClient client = ctx.getModelControllerClient();
         DefaultOperationRequestBuilder builder;
 
-        boolean keepContent;
+        final boolean keepContent;
         try {
             keepContent = this.keepContent.isPresent(args);
         } catch (CommandFormatException e) {
@@ -241,24 +242,20 @@ public class UndeployHandler extends BatchModeCommandHandler {
         }
         if(ctx.isDomainMode()) {
             final List<String> serverGroups;
-            try {
-                if(allRelevantServerGroups.isPresent(args)) {
-                    if(keepContent) {
-                        serverGroups = Util.getAllEnabledServerGroups(name, client);
-                    } else {
-                        serverGroups = Util.getAllReferencingServerGroups(name, client);
-                    }
+            if(allRelevantServerGroups.isPresent(args)) {
+                if(keepContent) {
+                    serverGroups = Util.getAllEnabledServerGroups(name, client);
                 } else {
-                    final String serverGroupsStr = this.serverGroups.getValue(args);
-                    if(serverGroupsStr == null) {
-                        //throw new OperationFormatException("Either --all-relevant-server-groups or --server-groups must be specified.");
-                        serverGroups = Collections.emptyList();
-                    } else {
-                        serverGroups = Arrays.asList(serverGroupsStr.split(","));
-                    }
+                    serverGroups = Util.getAllReferencingServerGroups(name, client);
                 }
-            } catch (CommandFormatException e) {
-                throw new OperationFormatException(e.getLocalizedMessage());
+            } else {
+                final String serverGroupsStr = this.serverGroups.getValue(args);
+                if(serverGroupsStr == null) {
+                    //throw new OperationFormatException("Either --all-relevant-server-groups or --server-groups must be specified.");
+                    serverGroups = Collections.emptyList();
+                } else {
+                    serverGroups = Arrays.asList(serverGroupsStr.split(","));
+                }
             }
 
             if(serverGroups.isEmpty()) {

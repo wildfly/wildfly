@@ -81,7 +81,7 @@ public class ArchiveHandler extends BatchModeCommandHandler {
      * @see org.jboss.as.cli.OperationCommand#buildRequest(org.jboss.as.cli.CommandContext)
      */
     @Override
-    public ModelNode buildRequest(CommandContext ctx) throws CommandFormatException {
+    public ModelNode buildRequestWithoutHeaders(CommandContext ctx) throws CommandFormatException {
         ParsedCommandLine args = ctx.getParsedCommandLine();
         final String path = this.path.getValue(args, true);
 
