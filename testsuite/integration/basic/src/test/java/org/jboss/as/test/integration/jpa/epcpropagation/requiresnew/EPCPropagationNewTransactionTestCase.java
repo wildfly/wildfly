@@ -79,5 +79,10 @@ public class EPCPropagationNewTransactionTestCase {
         stateful.runTest();
     }
 
+    @Test
+    public void testXPCIsAssociatedWithTX() throws Exception {
+        BikeManagerBean stateful = lookup(BikeManagerBean.class.getSimpleName(), BikeManagerBean.class);
+        stateful.runTest2();
+    }
 
 }

@@ -103,6 +103,16 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
     @Override
     protected EntityManager getEntityManager() {
 
+        internalAssociateWithJtaTx();
+        return underlyingEntityManager;
+    }
+
+    /**
+     * Associate the extended persistence context with the current JTA transaction (if one is found)
+     *
+     * this method is private to the JPA subsystem
+     */
+    public void internalAssociateWithJtaTx() {
         isInTx = TransactionUtil.isInTx();
 
         // ensure that a different XPC (with same name) is not already present in the TX
@@ -119,8 +129,6 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
                 TransactionUtil.registerExtendedUnderlyingWithTransaction(puScopedName, this, underlyingEntityManager);
             }
         }
-
-        return underlyingEntityManager;
     }
 
     @Override
@@ -190,4 +198,5 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
         // return hashCode of the ExtendedEntityManagerKey
         return ID != null ? ID.hashCode() : 0;
     }
+
 }
