@@ -98,15 +98,17 @@ public class CommandLineConstants {
 
     public static final String DEFAULT_MULTICAST_ADDRESS = "-u";
 
-    /** Additional class path items, used only by app client*/
-    public static final String APPCLIENT_CONFIG = "--appclient-config";
-    public static final String SHORT_HOST = "-H";
-    public static final String HOST = "--host";
-
     public static final String ADMIN_ONLY = "--admin-only";
 
     public static final String MASTER_ADDRESS = "--master-address";
     public static final String MASTER_PORT = "--master-port";
+
+    /** Additional class path items, used only by app client*/
+    public static final String APPCLIENT_CONFIG = "--appclient-config";
+    public static final String SHORT_HOST = "-H";
+    public static final String HOST = "--host";
+    public static final String CONNECTION_PROPERTIES = "--ejb-client-properties";
+
 
     private CommandLineConstants() {
     }

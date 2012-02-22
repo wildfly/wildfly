@@ -21,8 +21,6 @@
  */
 package org.jboss.as.appclient.subsystem;
 
-import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -36,6 +34,7 @@ import java.util.concurrent.ExecutorService;
 
 import javax.xml.namespace.QName;
 
+import org.jboss.as.appclient.logging.AppClientMessages;
 import org.jboss.as.appclient.subsystem.parsing.AppClientXml;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.parsing.Namespace;
@@ -51,6 +50,8 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.stdio.StdioContext;
+
+import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
 
 /**
  * The application client entry point
@@ -128,7 +129,7 @@ public final class Main {
 
                     @Override
                     public ExtensibleConfigurationPersister createConfigurationPersister(ServerEnvironment serverEnvironment, ExecutorService executorService) {
-                        ExtensibleConfigurationPersister persister = new ApplicationClientConfigurationPersister(earPath, deploymentName, options.hostUrl, params,
+                        ExtensibleConfigurationPersister persister = new ApplicationClientConfigurationPersister(earPath, deploymentName, options.hostUrl,options.propertiesFile, params,
                                 serverEnvironment.getServerConfigurationFile().getBootFile(), rootElement, parser);
                         extensionRegistry.setWriterRegistry(persister);
                         return persister;
@@ -160,6 +161,7 @@ public final class Main {
         String appClientConfig = "appclient.xml";
         boolean clientArgs = false;
         ProductConfig productConfig;
+        boolean hostSet = false;
 
         for (int i = 0; i < argsLength; i++) {
             final String arg = args[i];
@@ -196,15 +198,33 @@ public final class Main {
                         return null;
                     }
                 } else if (arg.equals(CommandLineConstants.SHORT_HOST) || arg.equals(CommandLineConstants.HOST)) {
+                    if(ret.propertiesFile != null) {
+                        throw AppClientMessages.MESSAGES.cannotSpecifyBothHostAndPropertiesFile();
+                    }
+                    hostSet = true;
                     String urlSpec = args[++i];
                     ret.hostUrl = urlSpec;
                 } else if (arg.startsWith(CommandLineConstants.SHORT_HOST)) {
+                    if(ret.propertiesFile != null) {
+                        throw AppClientMessages.MESSAGES.cannotSpecifyBothHostAndPropertiesFile();
+                    }
+                    hostSet = true;
                     String urlSpec = parseValue(arg, CommandLineConstants.SHORT_HOST);
                     ret.hostUrl = urlSpec;
                 } else if (arg.startsWith(CommandLineConstants.HOST)) {
+                    if(ret.propertiesFile != null) {
+                        throw AppClientMessages.MESSAGES.cannotSpecifyBothHostAndPropertiesFile();
+                    }
+                    hostSet = true;
                     String urlSpec = parseValue(arg, CommandLineConstants.HOST);
                     ret.hostUrl = urlSpec;
-                } else if (arg.startsWith(CommandLineConstants.SYS_PROP)) {
+                } else if (arg.startsWith(CommandLineConstants.CONNECTION_PROPERTIES)) {
+                    if(hostSet) {
+                        throw AppClientMessages.MESSAGES.cannotSpecifyBothHostAndPropertiesFile();
+                    }
+                    String fileUrl = parseValue(arg, CommandLineConstants.CONNECTION_PROPERTIES);
+                    ret.propertiesFile = fileUrl;
+                }else if (arg.startsWith(CommandLineConstants.SYS_PROP)) {
 
                     // set a system property
                     String name, value;
@@ -301,5 +321,6 @@ public final class Main {
         ServerEnvironment environment;
         List<String> clientArguments;
         String hostUrl = "remote://localhost:4447";
+        String propertiesFile;
     }
 }

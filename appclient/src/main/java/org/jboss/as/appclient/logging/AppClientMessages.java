@@ -71,6 +71,15 @@ public interface AppClientMessages {
     String argHost();
 
     /**
+     * Instructions for the {@link org.jboss.as.appclient.subsystem.CommandLineArgument#CONNECTION_PROPERTIES} command line
+     * arguments.
+     *
+     * @return the instructions.
+     */
+    @Message(id = Message.NONE, value = "Load ejb-client.properties file from the given url")
+    String connectionProperties();
+
+    /**
      * Instructions for the {@link org.jboss.as.appclient.subsystem.CommandLineArgument#PROPERTIES} command line
      * arguments.
      *
@@ -301,5 +310,15 @@ public interface AppClientMessages {
      */
     @Message(id = 13239, value = "Could find application client %s")
     RuntimeException cannotFindAppClientFile(File deploymentName);
+
+    @Message(id = 13240, value = "Cannot specify both a host to connect to and an ejb-client.properties file. ")
+    RuntimeException cannotSpecifyBothHostAndPropertiesFile();
+
+    /**
+     * The ejb-client.properties could not be loaded
+     */
+    @Message(id = 13241, value = "Unable to load ejb-client.properties URL: %s ")
+    DeploymentUnitProcessingException exceptionLoadingEjbClientPropertiesURL(final String file, @Cause Throwable cause);
+
 }
 

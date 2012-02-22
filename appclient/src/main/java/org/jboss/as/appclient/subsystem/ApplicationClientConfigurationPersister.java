@@ -65,12 +65,18 @@ public class ApplicationClientConfigurationPersister extends XmlConfigurationPer
      */
     private final String hostUrl;
 
-    public ApplicationClientConfigurationPersister(final String filePath, final String deploymentName, final String hostUrl, final List<String> parameters, final File configFile, final QName element, final XMLElementReader<List<ModelNode>> xmlParser) {
+    /**
+     * This URL of an ejb-client.properties file
+     */
+    private final String propertiesFileURL;
+
+    public ApplicationClientConfigurationPersister(final String filePath, final String deploymentName, final String hostUrl, final String propertiesFileUrl, final List<String> parameters, final File configFile, final QName element, final XMLElementReader<List<ModelNode>> xmlParser) {
         super(configFile, element, xmlParser, null);
         this.filePath = filePath;
         this.deploymentName = deploymentName;
         this.hostUrl = hostUrl;
         this.parameters = parameters;
+        this.propertiesFileURL = propertiesFileUrl;
     }
 
 
@@ -97,7 +103,7 @@ public class ApplicationClientConfigurationPersister extends XmlConfigurationPer
     @Override
     public List<ModelNode> load() throws ConfigurationPersistenceException {
         List<ModelNode> nodes = super.load();
-        return AppClientServerConfiguration.serverConfiguration(filePath, deploymentName, hostUrl, parameters, nodes);
+        return AppClientServerConfiguration.serverConfiguration(filePath, deploymentName, hostUrl, propertiesFileURL, parameters, nodes);
     }
 
     @Override

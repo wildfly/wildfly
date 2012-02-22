@@ -37,7 +37,9 @@ import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.ejb.client.ContextSelector;
+import org.jboss.ejb.client.EJBClientConfiguration;
 import org.jboss.ejb.client.EJBClientContext;
+import org.jboss.ejb.client.remoting.ConfigBasedEJBClientContextSelector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -66,24 +68,31 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
     private final Method mainMethod;
     private final String[] parameters;
     private final ClassLoader classLoader;
-    private final LazyConnectionContextSelector lazyConnectionContextSelector;
-    private final CallbackHandler callbackHandler;
+    private final ContextSelector<EJBClientContext> contextSelector;
     final String hostUrl;
 
     private Thread thread;
     private ComponentInstance instance;
 
-    public ApplicationClientStartService(final Method mainMethod, final String[] parameters, final String hostUrl, final InjectedEENamespaceContextSelector namespaceContextSelectorInjectedValue, final ClassLoader classLoader, final CallbackHandler callbackHandler, final List<SetupAction> setupActions) {
+    public ApplicationClientStartService(final Method mainMethod, final String[] parameters, final InjectedEENamespaceContextSelector namespaceContextSelectorInjectedValue, final ClassLoader classLoader,  final List<SetupAction> setupActions, final String hostUrl, final CallbackHandler callbackHandler) {
         this.mainMethod = mainMethod;
         this.parameters = parameters;
         this.namespaceContextSelectorInjectedValue = namespaceContextSelectorInjectedValue;
         this.classLoader = classLoader;
         this.hostUrl = hostUrl;
-        this.callbackHandler = callbackHandler;
         this.setupActions = setupActions;
-        this.lazyConnectionContextSelector = new LazyConnectionContextSelector(hostUrl, callbackHandler);
+        this.contextSelector = new LazyConnectionContextSelector(hostUrl, callbackHandler);
     }
 
+    public ApplicationClientStartService(final Method mainMethod, final String[] parameters, final InjectedEENamespaceContextSelector namespaceContextSelectorInjectedValue, final ClassLoader classLoader,  final List<SetupAction> setupActions, final EJBClientConfiguration configuration) {
+        this.mainMethod = mainMethod;
+        this.parameters = parameters;
+        this.namespaceContextSelectorInjectedValue = namespaceContextSelectorInjectedValue;
+        this.classLoader = classLoader;
+        this.hostUrl = null;
+        this.setupActions = setupActions;
+        this.contextSelector = new ConfigBasedEJBClientContextSelector(configuration);
+    }
     @Override
     public synchronized void start(final StartContext context) throws StartException {
 
@@ -96,7 +105,7 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
                     try {
                         try {
                             SecurityActions.setContextClassLoader(classLoader);
-                            AccessController.doPrivileged(new SetSelectorAction(lazyConnectionContextSelector));
+                            AccessController.doPrivileged(new SetSelectorAction(contextSelector));
                             applicationClientDeploymentServiceInjectedValue.getValue().getDeploymentCompleteLatch().await();
                             NamespaceContextSelector.setDefault(namespaceContextSelectorInjectedValue);
 
@@ -135,7 +144,9 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
                     }
 
                 } finally {
-                    lazyConnectionContextSelector.close();
+                    if(contextSelector instanceof LazyConnectionContextSelector) {
+                        ((LazyConnectionContextSelector)contextSelector).close();
+                    }
                 }
             }
         });
