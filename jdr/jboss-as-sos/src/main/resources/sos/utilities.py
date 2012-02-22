@@ -217,6 +217,8 @@ class ImporterHelper(object):
         try:
             path_to_zip, tail = self._get_path_to_zip(path)
             zf = zipfile.ZipFile(path_to_zip)
+            # the path will have os separators, but the zipfile will always have '/'
+            tail = tail.replace(os.path.sep, "/")
             root_names = [name for name in zf.namelist() if tail in name]
             candidates = self._get_plugins_from_list(root_names)
             zf.close()

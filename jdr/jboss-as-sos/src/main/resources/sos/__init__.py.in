@@ -22,7 +22,7 @@ path to a resource bundle the _ method will be changed to use java
 ResourceBundle code to present messages.
 """
 
-__version__ = "2.3"
+__version__ = "@SOSVERSION@"
 
 import gettext
 gettext_dir = "/usr/share/locale"
