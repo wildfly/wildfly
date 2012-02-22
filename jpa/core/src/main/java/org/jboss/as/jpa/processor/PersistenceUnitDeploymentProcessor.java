@@ -293,7 +293,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
 
                         deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, puServiceName);
 
-                        ServiceBuilder builder = serviceTarget.addService(puServiceName, service);
+                        ServiceBuilder<PersistenceUnitServiceImpl> builder = serviceTarget.addService(puServiceName, service);
                         boolean useDefaultDataSource = true;
                         final String jtaDataSource = adjustJndi(pu.getJtaDataSourceName());
                         final String nonJtaDataSource = adjustJndi(pu.getNonJtaDataSourceName());
@@ -326,10 +326,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                             }
                         }
 
-                        Iterable<ServiceName> providerDependencies = adaptor.getProviderDependencies(pu);
-                        if (providerDependencies != null) {
-                            builder.addDependencies(providerDependencies);
-                        }
+                        adaptor.addProviderDependencies(phaseContext.getServiceRegistry(), serviceTarget, builder, pu);
 
                         if (pu.getProperties().containsKey(JNDI_PROPERTY)) {
                             String jndiName = pu.getProperties().get(JNDI_PROPERTY).toString();
@@ -575,7 +572,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
         boolean result = false;
         // invoke org.hibernate.Version.getVersionString()
         try {
-            Class targetCls = provider.getClass().getClassLoader().loadClass("org.hibernate.Version");
+            Class<?> targetCls = provider.getClass().getClassLoader().loadClass("org.hibernate.Version");
             Method m = targetCls.getMethod("getVersionString");
             Object version = m.invoke(null);
             JPA_LOGGER.tracef("lookup provider checking provider version (%s)", version);

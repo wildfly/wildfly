@@ -28,7 +28,9 @@ import org.jboss.as.jpa.spi.JtaManager;
 import org.jboss.as.jpa.spi.ManagementAdaptor;
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
-import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Implements the {@link PersistenceProviderAdaptor} for OpenJPA 2.x.
@@ -71,8 +73,7 @@ public class OpenJPAPersistenceProviderAdaptor implements PersistenceProviderAda
     }
 
     @Override
-    public Iterable<ServiceName> getProviderDependencies(PersistenceUnitMetadata pu) {
-        return null;
+    public void addProviderDependencies(ServiceRegistry registry, ServiceTarget target, ServiceBuilder<?> builder, PersistenceUnitMetadata pu) {
     }
 
     @Override

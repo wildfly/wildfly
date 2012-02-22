@@ -24,7 +24,9 @@ package org.jboss.as.jpa.spi;
 
 import java.util.Map;
 
-import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * PersistenceProvider adaptor
@@ -55,7 +57,7 @@ public interface PersistenceProviderAdaptor {
      * @param pu
      * @return
      */
-    Iterable<ServiceName> getProviderDependencies(PersistenceUnitMetadata pu);
+    void addProviderDependencies(ServiceRegistry registry, ServiceTarget target, ServiceBuilder<?> builder, PersistenceUnitMetadata pu);
 
     /**
      * Called right before persistence provider is invoked to create container entity manager factory.

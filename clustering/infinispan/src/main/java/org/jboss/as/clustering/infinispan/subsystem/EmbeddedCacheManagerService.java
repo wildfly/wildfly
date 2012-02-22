@@ -21,31 +21,18 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.ScheduledExecutorService;
-
-import javax.management.MBeanServer;
-
-import org.infinispan.configuration.global.GlobalConfigurationBuilder;
-import org.infinispan.configuration.global.GlobalJmxStatisticsConfigurationBuilder;
-import org.infinispan.configuration.global.ShutdownHookBehavior;
-import org.infinispan.configuration.global.TransportConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStarted;
 import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStopped;
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStartedEvent;
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStoppedEvent;
-import org.jboss.as.clustering.infinispan.ChannelProvider;
 import org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager;
-import org.jboss.as.clustering.infinispan.ExecutorProvider;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
-import org.jboss.as.clustering.infinispan.MBeanServerProvider;
 import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
-import org.jgroups.Channel;
-import org.jgroups.util.TopologyUUID;
+import org.jboss.msc.value.Value;
 
 /**
  * @author Paul Ferraro
@@ -60,35 +47,13 @@ public class EmbeddedCacheManagerService extends AsynchronousService<EmbeddedCac
         return (name != null) ? SERVICE_NAME.append(name) : SERVICE_NAME;
     }
 
-    interface TransportConfiguration {
-        Long getLockTimeout();
-        Channel getChannel();
-        Executor getExecutor();
-    }
-
-    interface Dependencies {
-        TransportConfiguration getTransportConfiguration();
-        MBeanServer getMBeanServer();
-        Executor getListenerExecutor();
-        ScheduledExecutorService getEvictionExecutor();
-        ScheduledExecutorService getReplicationQueueExecutor();
-    }
-
-    private final String name;
-    private final String defaultCache;
-    private final Dependencies dependencies;
+    private final Value<EmbeddedCacheManagerConfiguration> config;
     private volatile EmbeddedCacheManager container;
 
-    public EmbeddedCacheManagerService(String name, String defaultCache, Dependencies dependencies) {
-        this.name = name;
-        this.defaultCache = defaultCache;
-        this.dependencies = dependencies;
+    public EmbeddedCacheManagerService(Value<EmbeddedCacheManagerConfiguration> config) {
+        this.config = config;
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.jboss.msc.value.Value#getValue()
-     */
     @Override
     public EmbeddedCacheManager getValue() throws IllegalStateException, IllegalArgumentException {
         return this.container;
@@ -96,88 +61,11 @@ public class EmbeddedCacheManagerService extends AsynchronousService<EmbeddedCac
 
     @Override
     protected void start() {
-
-        GlobalConfigurationBuilder globalBuilder = new GlobalConfigurationBuilder();
-        globalBuilder
-            .shutdown().hookBehavior(ShutdownHookBehavior.DONT_REGISTER)
-        ;
-
-        // set up transport only if transport is required by some cache in the cache manager
-        TransportConfiguration transport = this.dependencies.getTransportConfiguration();
-        TransportConfigurationBuilder transportBuilder = globalBuilder.transport();
-
-        if (transport != null) {
-            // See ISPN-1675
-            // transportBuilder.transport(new ChannelTransport(transport.getChannel()));
-            ChannelProvider.init(transportBuilder, transport.getChannel());
-            Long timeout = transport.getLockTimeout();
-            if (timeout != null) {
-                transportBuilder.distributedSyncTimeout(timeout.longValue());
-            }
-            // Topology is retrieved from the channel
-            Channel channel = transport.getChannel();
-            if(channel.getAddress() instanceof TopologyUUID) {
-                TopologyUUID topologyAddress = (TopologyUUID) channel.getAddress();
-                String site = topologyAddress.getSiteId();
-                if (site != null) {
-                    transportBuilder.siteId(site);
-                }
-                String rack = topologyAddress.getRackId();
-                if (rack != null) {
-                    transportBuilder.rackId(rack);
-                }
-                String machine = topologyAddress.getMachineId();
-                if (machine != null) {
-                    transportBuilder.machineId(machine);
-                }
-            }
-            transportBuilder.clusterName(this.name);
-
-            Executor executor = transport.getExecutor();
-            if (executor != null) {
-                // See ISPN-1675
-                // globalBuilder.asyncTransportExecutor().factory(new ManagedExecutorFactory(executor));
-                ExecutorProvider.initTransportExecutor(globalBuilder, executor);
-            }
-        }
-
-        Executor listenerExecutor = this.dependencies.getListenerExecutor();
-        if (listenerExecutor != null) {
-            // See ISPN-1675
-            // globalBuilder.asyncListenerExecutor().factory(new ManagedExecutorFactory(listenerExecutor));
-            ExecutorProvider.initListenerExecutor(globalBuilder, listenerExecutor);
-        }
-        ScheduledExecutorService evictionExecutor = this.dependencies.getEvictionExecutor();
-        if (evictionExecutor != null) {
-            // See ISPN-1675
-            // globalBuilder.evictionScheduledExecutor().factory(new ManagedScheduledExecutorFactory(evictionExecutor));
-            ExecutorProvider.initEvictionExecutor(globalBuilder, evictionExecutor);
-        }
-        ScheduledExecutorService replicationQueueExecutor = this.dependencies.getReplicationQueueExecutor();
-        if (replicationQueueExecutor != null) {
-            // See ISPN-1675
-            // globalBuilder.replicationQueueScheduledExecutor().factory(new ManagedScheduledExecutorFactory(replicationQueueExecutor));
-            ExecutorProvider.initReplicationQueueExecutor(globalBuilder, replicationQueueExecutor);
-        }
-
-        GlobalJmxStatisticsConfigurationBuilder jmxBuilder = globalBuilder.globalJmxStatistics().cacheManagerName(this.name);
-
-        MBeanServer server = this.dependencies.getMBeanServer();
-        if (server != null) {
-            jmxBuilder.enable()
-                .mBeanServerLookup(new MBeanServerProvider(server))
-                .jmxDomain(SERVICE_NAME.getCanonicalName())
-                .allowDuplicateDomains(true)
-            ;
-        } else {
-            jmxBuilder.disable();
-        }
-
-        // create the cache manager
-        this.container = new DefaultEmbeddedCacheManager(globalBuilder.build(), this.defaultCache);
+        EmbeddedCacheManagerConfiguration config = this.config.getValue();
+        this.container = new DefaultEmbeddedCacheManager(config.getGlobalConfiguration(), config.getDefaultCache());
         this.container.addListener(this);
         this.container.start();
-        log.debugf("%s cache container started", this.name);
+        log.debugf("%s cache container started", config.getName());
     }
 
     @Override
@@ -185,17 +73,17 @@ public class EmbeddedCacheManagerService extends AsynchronousService<EmbeddedCac
         if ((this.container != null) && this.container.getStatus().allowInvocations()) {
             this.container.stop();
             this.container.removeListener(this);
-            log.debugf("%s cache container stopped", this.name);
+            log.debugf("%s cache container stopped", this.config.getValue().getName());
         }
     }
 
     @CacheStarted
     public void cacheStarted(CacheStartedEvent event) {
-        InfinispanLogger.ROOT_LOGGER.cacheStarted(event.getCacheName(), new DefaultEmbeddedCacheManager(event.getCacheManager(), null).getCacheManagerConfiguration().globalJmxStatistics().cacheManagerName());
+        InfinispanLogger.ROOT_LOGGER.cacheStarted(event.getCacheName(), this.config.getValue().getName());
     }
 
     @CacheStopped
     public void cacheStopped(CacheStoppedEvent event) {
-        InfinispanLogger.ROOT_LOGGER.cacheStopped(event.getCacheName(), new DefaultEmbeddedCacheManager(event.getCacheManager(), null).getCacheManagerConfiguration().globalJmxStatistics().cacheManagerName());
+        InfinispanLogger.ROOT_LOGGER.cacheStopped(event.getCacheName(), this.config.getValue().getName());
     }
 }

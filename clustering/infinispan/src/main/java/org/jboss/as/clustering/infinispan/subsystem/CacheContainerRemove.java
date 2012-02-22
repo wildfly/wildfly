@@ -76,6 +76,7 @@ public class CacheContainerRemove extends AbstractRemoveStepHandler {
         context.removeService(bindInfo.getBinderServiceName()) ;
         // remove the cache container
         context.removeService(EmbeddedCacheManagerService.getServiceName(containerName));
+        context.removeService(EmbeddedCacheManagerConfigurationService.getServiceName(containerName));
         // check if a channel was installed
         ServiceName channelServiceName = ChannelService.getServiceName(containerName) ;
         ServiceController<?> channelServiceController = context.getServiceRegistry(false).getService(channelServiceName);

@@ -614,6 +614,7 @@
             <maven-resource group="org.hibernate" artifact="hibernate-core" />
             <maven-resource group="org.hibernate.common" artifact="hibernate-commons-annotations" />
             <maven-resource group="org.hibernate" artifact="hibernate-entitymanager" />
+            <maven-resource group="org.hibernate" artifact="hibernate-infinispan"/>
         </module-def>
 
         <module-def name="org.hibernate.envers">
@@ -621,9 +622,6 @@
         </module-def>
         <module-def name="org.hibernate.validator">
             <maven-resource group="org.hibernate" artifact="hibernate-validator"/>
-        </module-def>
-        <module-def name="org.hibernate.infinispan">
-            <maven-resource group="org.hibernate" artifact="hibernate-infinispan"/>
         </module-def>
 
         <module-def name="org.hornetq">
@@ -790,10 +788,6 @@
 
         <module-def name="org.jboss.as.jpa.hibernate" slot="4">
             <maven-resource group="org.jboss.as" artifact="jboss-as-jpa-hibernate4"/>
-        </module-def>
-
-        <module-def name="org.jboss.as.jpa.hibernate.infinispan">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-jpa-hibernate-infinispan"/>
         </module-def>
 
         <module-def name="org.jboss.as.jpa.openjpa">
