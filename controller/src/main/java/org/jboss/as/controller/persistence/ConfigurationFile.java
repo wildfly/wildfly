@@ -386,6 +386,8 @@ public class ConfigurationFile {
             final FileOutputStream fos = new FileOutputStream(backup);
             try {
                 StreamUtils.copyStream(fis, fos);
+                fos.flush();
+                fos.getFD().sync();
                 fos.close();
             } finally {
                 StreamUtils.safeClose(fos);
