@@ -246,6 +246,7 @@
         <version.org.jboss.xnio.xnio-api>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-nio>
         <version.org.jgroups>3.0.9.Final</version.org.jgroups>
+        <version.org.jivesoftware.smack>3.1.0</version.org.jivesoftware.smack>
         <version.org.mockito>1.8.5</version.org.mockito>
         <version.org.picketbox>4.0.9.Final</version.org.picketbox>
         <version.org.picketlink>1.0.4.final</version.org.picketlink>
@@ -5753,6 +5754,12 @@
             </dependency>
 
             <dependency>
+                <groupId>jivesoftware</groupId>
+                <artifactId>smack</artifactId>
+                <version>${version.org.jivesoftware.smack}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-all</artifactId>
                 <version>${version.org.mockito}</version>
@@ -6151,6 +6158,12 @@
             <dependency>
                 <groupId>org.jboss.capedwarf.blue</groupId>
                 <artifactId>capedwarf-users</artifactId>
+                <version>${version.org.jboss.capedwarf}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.capedwarf.blue</groupId>
+                <artifactId>capedwarf-xmpp</artifactId>
                 <version>${version.org.jboss.capedwarf}</version>
             </dependency>
 

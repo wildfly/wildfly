@@ -969,6 +969,7 @@
             <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-tasks"/>
             <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-urlfetch"/>
             <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-users"/>
+            <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-xmpp"/>
         </module-def>
 
         <module-def name="org.jboss.classfilewriter">
@@ -1208,6 +1209,10 @@
 
         <module-def name="org.jgroups">
             <maven-resource group="org.jgroups" artifact="jgroups"/>
+        </module-def>
+
+        <module-def name="org.jivesoftware.smack">
+            <maven-resource group="jivesoftware" artifact="smack"/>
         </module-def>
 
         <module-def name="org.joda.time">

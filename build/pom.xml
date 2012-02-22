@@ -1718,6 +1718,11 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>jivesoftware</groupId>
+                    <artifactId>smack</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.osgi</groupId>
                     <artifactId>org.osgi.core</artifactId>
                 </dependency>
@@ -1890,6 +1895,11 @@
                 <dependency>
                     <groupId>org.jboss.capedwarf.blue</groupId>
                     <artifactId>capedwarf-users</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.capedwarf.blue</groupId>
+                    <artifactId>capedwarf-xmpp</artifactId>
                 </dependency>
 
                 <dependency>
