@@ -32,8 +32,8 @@ import java.util.concurrent.Executor;
 
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.ajp.AjpAprProtocol;
+import org.apache.coyote.ajp.AjpProtocol;
 import org.apache.coyote.http11.Http11AprProtocol;
-import org.apache.coyote.http11.Http11Protocol;
 import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
@@ -140,7 +140,7 @@ class WebConnectorService implements Service<Connector> {
                 boolean nativeSSL = false;
                 if (connector.getProtocolHandler() instanceof Http11AprProtocol) {
                     nativeSSL = true;
-                } else if (!(connector.getProtocolHandler() instanceof Http11Protocol)) {
+                } else if ((connector.getProtocolHandler() instanceof AjpProtocol) || (connector.getProtocolHandler() instanceof AjpAprProtocol)) {
                     throw new StartException(MESSAGES.noSSLWithNonHTTPConnectors());
                 }
                 // Enable SSL
