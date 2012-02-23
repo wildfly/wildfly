@@ -79,7 +79,6 @@ public class ReadOperationHandler extends BaseOperationCommand {
                         e.printStackTrace();
                     }
                 } catch (CommandFormatException e) {
-                    ctx.error(e.getLocalizedMessage());
                     return Collections.emptyList();
                 }
                 return Collections.emptyList();
@@ -105,10 +104,9 @@ public class ReadOperationHandler extends BaseOperationCommand {
         return req;
     }
 
-    protected void handleResponse(CommandContext ctx, ModelNode response, boolean composite) {
+    protected void handleResponse(CommandContext ctx, ModelNode response, boolean composite) throws CommandFormatException {
         if (!Util.isSuccess(response)) {
-            ctx.error(Util.getFailureDescription(response));
-            return;
+            throw new CommandFormatException(Util.getFailureDescription(response));
         }
         if(!response.hasDefined(Util.RESULT)) {
             return;
@@ -118,8 +116,7 @@ public class ReadOperationHandler extends BaseOperationCommand {
         try {
             opDescr = name.isPresent(ctx.getParsedCommandLine());
         } catch (CommandFormatException e) {
-            ctx.error("Failed to read argument " + name.getFullName() + ": " + e.getLocalizedMessage());
-            return;
+            throw new CommandFormatException("Failed to read argument " + name.getFullName() + ": " + e.getLocalizedMessage());
         }
 
         if(opDescr) {

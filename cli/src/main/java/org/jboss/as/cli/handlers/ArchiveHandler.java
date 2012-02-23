@@ -147,13 +147,11 @@ public class ArchiveHandler extends BatchModeCommandHandler {
         try {
             request = buildRequest(ctx);
         } catch (CommandFormatException e1) {
-            ctx.error(e1.getLocalizedMessage());
-            return;
+            throw new CommandFormatException(e1.getLocalizedMessage());
         }
 
         if(request == null) {
-            ctx.error("Operation request wasn't built.");
-            return;
+            throw new CommandFormatException("Operation request wasn't built.");
         }
 
         try {
@@ -161,10 +159,10 @@ public class ArchiveHandler extends BatchModeCommandHandler {
             if(Util.isSuccess(result)) {
                 ctx.printLine("The archive script executed successfully.");
             } else {
-                ctx.error("Failed to execute archive script: " + Util.getFailureDescription(result));
+                throw new CommandFormatException("Failed to execute archive script: " + Util.getFailureDescription(result));
             }
         } catch (Exception e) {
-            ctx.error("Failed to execute archive script: " + e.getLocalizedMessage());
+            throw new CommandFormatException("Failed to execute archive script: " + e.getLocalizedMessage());
         }
     }
 

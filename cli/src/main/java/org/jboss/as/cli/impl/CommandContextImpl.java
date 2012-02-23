@@ -511,15 +511,9 @@ class CommandContextImpl implements CommandContext {
         }
     }
 
-    @Override
-    public void error(String message, int code) {
-        this.exitCode = code;
+    protected void error(String message) {
+        this.exitCode = 1;
         printLine(message);
-    }
-
-    @Override
-    public void error(String message) {
-        error(message, 1);
     }
 
     private String readLine(String prompt, boolean password, boolean disableHistory) throws IOException {

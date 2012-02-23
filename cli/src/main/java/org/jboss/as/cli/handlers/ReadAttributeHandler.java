@@ -103,7 +103,6 @@ public class ReadAttributeHandler extends BaseOperationCommand {
                         e.printStackTrace();
                     }
                 } catch (CommandFormatException e) {
-                    ctx.error(e.getLocalizedMessage());
                     return Collections.emptyList();
                 }
                 return Collections.emptyList();
@@ -148,10 +147,9 @@ public class ReadAttributeHandler extends BaseOperationCommand {
         return req;
     }
 
-    protected void handleResponse(CommandContext ctx, ModelNode response, boolean composite) {
+    protected void handleResponse(CommandContext ctx, ModelNode response, boolean composite) throws CommandFormatException {
         if (!Util.isSuccess(response)) {
-            ctx.error(Util.getFailureDescription(response));
-            return;
+            throw new CommandFormatException(Util.getFailureDescription(response));
         }
         if(!response.hasDefined(Util.RESULT)) {
             return;
@@ -174,7 +172,7 @@ public class ReadAttributeHandler extends BaseOperationCommand {
                     }
                     table.addLine(new String[]{"value", valueBuf.toString()});
                 } else {
-                    ctx.error("Failed to get resource description: " + response);
+                    throw new CommandFormatException("Failed to get resource description: " + response);
                 }
             }
 
@@ -187,23 +185,23 @@ public class ReadAttributeHandler extends BaseOperationCommand {
                             ModelNode attributes = descrResult.get(Util.ATTRIBUTES);
                             final String name = this.name.getValue(ctx.getParsedCommandLine());
                             if(name == null) {
-                                ctx.error("Attribute name is not available in handleResponse.");
+                                throw new CommandFormatException("Attribute name is not available in handleResponse.");
                             } else if(attributes.hasDefined(name)) {
                                 final ModelNode descr = attributes.get(name);
                                 for(String prop : descr.keys()) {
                                     table.addLine(new String[]{prop, descr.get(prop).asString()});
                                 }
                             } else {
-                                ctx.error("Attribute description is not available.");
+                                throw new CommandFormatException("Attribute description is not available.");
                             }
                         } else {
-                            ctx.error("The resource doesn't provide attribute descriptions.");
+                            throw new CommandFormatException("The resource doesn't provide attribute descriptions.");
                         }
                     } else {
-                        ctx.error("Result is not available for read-resource-description request: " + response);
+                        throw new CommandFormatException("Result is not available for read-resource-description request: " + response);
                     }
                 } else {
-                    ctx.error("Failed to get resource description: " + response);
+                    throw new CommandFormatException("Failed to get resource description: " + response);
                 }
             }
             ctx.printLine(table.toString(true));
@@ -215,7 +213,7 @@ public class ReadAttributeHandler extends BaseOperationCommand {
         }
     }
 
-    protected StringBuilder formatResponse(CommandContext ctx, ModelNode opResponse, boolean composite, StringBuilder buf) {
+    protected StringBuilder formatResponse(CommandContext ctx, ModelNode opResponse, boolean composite, StringBuilder buf) throws CommandFormatException {
         if(!opResponse.hasDefined(Util.RESULT)) {
             return null;
         }
@@ -225,9 +223,7 @@ public class ReadAttributeHandler extends BaseOperationCommand {
             try {
                 keys = result.keys();
             } catch(Exception e) {
-                ctx.error("Failed to get step results from a composite operation response " + opResponse);
-                e.printStackTrace();
-                return null;
+                throw new CommandFormatException("Failed to get step results from a composite operation response " + opResponse);
             }
             for(String key : keys) {
                 final ModelNode stepResponse = result.get(key);

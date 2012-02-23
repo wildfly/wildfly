@@ -25,6 +25,7 @@ package org.jboss.as.cli.handlers;
 import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.operation.ParsedCommandLine;
 
 /**
@@ -48,7 +49,7 @@ public class ConnectHandler extends CommandHandlerWithHelp {
     }
 
     @Override
-    protected void doHandle(CommandContext ctx) {
+    protected void doHandle(CommandContext ctx) throws CommandFormatException {
 
         int port = -1;
         String host = null;
@@ -57,8 +58,7 @@ public class ConnectHandler extends CommandHandlerWithHelp {
 
         if(!args.isEmpty()) {
             if(args.size() != 1) {
-                ctx.error("The command expects only one argument but got " + args);
-                return;
+                throw new CommandFormatException("The command expects only one argument but got " + args);
             }
             final String arg = args.get(0);
             String portStr = null;
@@ -95,13 +95,10 @@ public class ConnectHandler extends CommandHandlerWithHelp {
                 try {
                     port = Integer.parseInt(portStr);
                 } catch(NumberFormatException e) {
-                    ctx.error("The port must be a valid non-negative integer: '" + args + "'");
-                    return;
+                    throw new CommandFormatException("The port must be a valid non-negative integer: '" + args + "'");
                 }
-
                 if(port < 0) {
-                    ctx.error("The port must be a valid non-negative integer: '" + args + "'");
-                    return;
+                    throw new CommandFormatException("The port must be a valid non-negative integer: '" + args + "'");
                 }
             }
         }

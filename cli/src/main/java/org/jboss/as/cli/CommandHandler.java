@@ -50,10 +50,12 @@ public interface CommandHandler {
     boolean isBatchMode(CommandContext ctx);
 
     /**
-     * Handles the execution of the command.
+     * Executes the command.
      * @param ctx  current command context
+     * @throws CommandLineException  if for any reason the command can't be properly handled
+     * the implementation must throw an instance of CommandLineException.
      */
-    void handle(CommandContext ctx) throws CommandFormatException;
+    void handle(CommandContext ctx) throws CommandLineException;
 
     /**
      * Checks whether the command handler recognizes the argument by the name.
@@ -69,5 +71,11 @@ public interface CommandHandler {
      */
     boolean hasArgument(int index);
 
+    /**
+     * Returns a collection of the command arguments the handler supports in the current context.
+     *
+     * @param ctx  current command line context
+     * @return  list of the command arguments supported in the current context
+     */
     Collection<CommandArgument> getArguments(CommandContext ctx);
 }

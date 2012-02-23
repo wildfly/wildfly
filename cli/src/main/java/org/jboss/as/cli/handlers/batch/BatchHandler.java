@@ -105,8 +105,7 @@ public class BatchHandler extends CommandHandlerWithHelp {
         }
 
         if(batchManager.isBatchActive()) {
-            ctx.error("Can't start a new batch while in batch mode.");
-            return;
+            throw new CommandFormatException("Can't start a new batch while in batch mode.");
         }
 
         final String name = this.name.getValue(ctx.getParsedCommandLine());
@@ -126,15 +125,14 @@ public class BatchHandler extends CommandHandlerWithHelp {
                 }
             }
         } else if(name != null) {
-            ctx.error("'" + name + "' not found among the held back batches.");
-            return;
+            throw new CommandFormatException("'" + name + "' not found among the held back batches.");
         } else {
             activated = batchManager.activateNewBatch();
         }
 
         if(!activated) {
             // that's more like illegal state
-            ctx.error("Failed to activate batch.");
+            throw new CommandFormatException("Failed to activate batch.");
         }
     }
 }

@@ -221,12 +221,9 @@ public class CliLauncher {
         int i = 0;
         try {
             while (cmdCtx.getExitCode() == 0 && i < commands.length && !cmdCtx.isTerminated()) {
-                cmdCtx.handle(commands[i]);
+                cmdCtx.handleSafe(commands[i]);
                 ++i;
             }
-        } catch(Throwable t) {
-            cmdCtx.error("Failed to process command '" + commands[i] + "': " + t.getLocalizedMessage());
-            t.printStackTrace();
         } finally {
             if (!cmdCtx.isTerminated()) {
                 cmdCtx.terminateSession();
@@ -242,12 +239,11 @@ public class CliLauncher {
             reader = new BufferedReader(new FileReader(file));
             String line = reader.readLine();
             while (cmdCtx.getExitCode() == 0 && !cmdCtx.isTerminated() && line != null) {
-                cmdCtx.handle(line.trim());
+                cmdCtx.handleSafe(line.trim());
                 line = reader.readLine();
             }
         } catch (Throwable e) {
-            cmdCtx.error("Failed to process file '" + file.getAbsolutePath() + "'");
-            e.printStackTrace();
+            throw new IllegalStateException("Failed to process file '" + file.getAbsolutePath() + "'", e);
         } finally {
             StreamUtils.safeClose(reader);
             if (!cmdCtx.isTerminated()) {

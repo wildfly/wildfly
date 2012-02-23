@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.jboss.as.cli.CommandArgument;
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandHandler;
 import org.jboss.as.cli.Util;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -62,7 +63,7 @@ public class VersionHandler implements CommandHandler {
      * @see org.jboss.as.cli.CommandHandler#handle(org.jboss.as.cli.CommandContext)
      */
     @Override
-    public void handle(CommandContext ctx) {
+    public void handle(CommandContext ctx) throws CommandFormatException {
         final StringBuilder buf = new StringBuilder();
         buf.append("JBoss Admin Command-line Interface\n");
         buf.append("JBOSS_HOME: ").append(SecurityActions.getEnvironmentVariable("JBOSS_HOME")).append('\n');
@@ -99,8 +100,7 @@ public class VersionHandler implements CommandHandler {
                 }
                 buf.append('\n');
             } catch (IOException e) {
-                ctx.error("Failed to get the AS release info: " + e.getLocalizedMessage());
-                e.printStackTrace();
+                throw new CommandFormatException("Failed to get the AS release info: " + e.getLocalizedMessage());
             }
         }
         buf.append("JAVA_HOME: ").append(SecurityActions.getEnvironmentVariable("JAVA_HOME")).append('\n');

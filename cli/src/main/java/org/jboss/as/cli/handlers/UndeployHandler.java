@@ -195,25 +195,17 @@ public class UndeployHandler extends BatchModeCommandHandler {
             return;
         }
 
-        final ModelNode request;
-        try {
-            request = buildRequest(ctx);
-            addHeaders(ctx, request);
-        } catch (OperationFormatException e) {
-            ctx.error(e.getLocalizedMessage());
-            return;
-        }
+        final ModelNode request = buildRequest(ctx);
+        addHeaders(ctx, request);
 
         final ModelNode result;
         try {
             result = client.execute(request);
         } catch (Exception e) {
-            ctx.error("Undeploy failed: " + e.getLocalizedMessage());
-            return;
+            throw new CommandFormatException("Undeploy failed: " + e.getLocalizedMessage());
         }
         if (!Util.isSuccess(result)) {
-            ctx.error("Undeploy failed: " + Util.getFailureDescription(result));
-            return;
+            throw new CommandFormatException("Undeploy failed: " + Util.getFailureDescription(result));
         }
     }
 

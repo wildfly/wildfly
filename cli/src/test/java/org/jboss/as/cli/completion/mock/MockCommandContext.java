@@ -278,17 +278,6 @@ public class MockCommandContext implements CommandContext {
     }
 
     @Override
-    public void error(String message, int code) {
-        exitCode = code;
-        printLine(message);
-    }
-
-    @Override
-    public void error(String message) {
-        error(message, 1);
-    }
-
-    @Override
     public int getExitCode() {
         return exitCode;
     }

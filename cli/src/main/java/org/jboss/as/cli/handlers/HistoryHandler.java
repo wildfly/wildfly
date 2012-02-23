@@ -72,7 +72,7 @@ public class HistoryHandler extends CommandHandlerWithHelp {
         } else if(enable.isPresent(args)) {
             ctx.getHistory().setUseHistory(true);
         } else {
-            ctx.error("Unexpected argument '" + ctx.getArgumentsString() + '\'');
+            throw new CommandFormatException("Unexpected argument '" + ctx.getArgumentsString() + '\'');
         }
     }
 
