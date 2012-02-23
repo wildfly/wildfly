@@ -11,6 +11,8 @@
             <property name="jbossHome">${basedir}/target/jbossas-clustering-udp-0</property>
             <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-clustering-udp-0</property>
             <property name="serverConfig">${jboss.server.config.file.name:standalone.xml}</property>
+            <property name="managementAddress">${node0}</property>
+            <property name="managementPort">${as.managementPort:9999}</property>
         </configuration>
     </container>
 
@@ -22,6 +24,8 @@
                 <!-- AS7-2493 different jboss.node.name must be specified -->
                 <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-clustering-udp-0 -Djboss.node.name=node-udp-0</property>
                 <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
+                <property name="managementAddress">${node0}</property>
+                <property name="managementPort">${as.managementPort:9999}</property>
             </configuration>
         </container>
 
@@ -30,6 +34,7 @@
                 <property name="jbossHome">${basedir}/target/jbossas-clustering-udp-1</property>
                 <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-clustering-udp-1 -Djboss.node.name=node-udp-1 -Djboss.port.offset=100</property>
                 <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
+                <property name="managementAddress">${node1}</property>
                 <property name="managementPort">10099</property>
             </configuration>
         </container>
@@ -45,6 +50,8 @@
                 <!-- AS7-2493 different jboss.node.name must be specified -->
                 <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-clustering-udp-0 -Djboss.node.name=node-udp-0</property>
                 <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
+                <property name="managementAddress">${node0}</property>
+                <property name="managementPort">${as.managementPort:9999}</property>
             </configuration>
         </container>
 
@@ -53,6 +60,7 @@
                 <property name="jbossHome">${basedir}/target/jbossas-clustering-udp-1</property>
                 <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-clustering-udp-1 -Djboss.node.name=node-udp-1 -Djboss.port.offset=100</property>
                 <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
+                <property name="managementAddress">${node1}</property>
                 <property name="managementPort">10099</property>
             </configuration>
         </container>

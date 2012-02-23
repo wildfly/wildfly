@@ -32,6 +32,7 @@
 
     <!--
           Change AS database configuration.
+          TODO: Moved to maven.
     -->
     <condition property="changeDB">
         <not><equals arg1="${ds.db}" arg2=""/></not>
@@ -46,7 +47,7 @@
         <echo message="ds.jdbc.user = ${ds.jdbc.user}"/>
         <echo message="ds.jdbc.pass = ${ds.jdbc.pass}"/>
 
-        <property name="server.dir" value="${project.build.directory}/jbossas-${server-config}"/> <!-- Ant will copy actual instances from this "template" (when imlpemented). -->
+        <property name="server.dir" value="${project.build.directory}/${server-config}"/> <!-- Ant will copy actual instances from this "template" (when implemented). -->
         <property name="config.dir" value="${server.dir}/standalone/configuration"/>
 
         <!-- Copy jar into standalone/deployments. This installs the driver under a new driver name. -->
@@ -83,6 +84,8 @@
         Build server configutation:
            * Copy from distribution directory (TODO: Copy from ${basedir}target/jbossas to pick up changes by Maven!
            * Overwrite some config files, replace tokens.
+           
+        TODO: Not necessary - done in maven.
      -->
     <macrodef name="build-server-config" description="Builds a server configuration">
 
@@ -99,21 +102,21 @@
 
             <!-- copy the base distribution -->
             <!-- we exclude modules and bundles as they are read-only and we locate the via sys props-->
-            <copy todir="@{output.dir}/jbossas-@{name}">
+            <copy todir="@{output.dir}/@{name}">
                 <fileset dir="@{jboss.dist}">
                     <exclude name="**/modules/**"/>
                     <exclude name="**/bundles/**"/>
                 </fileset>
             </copy>
 
-            <copy todir="@{output.dir}/jbossas-@{name}/standalone/configuration" overwrite="true">
+            <copy todir="@{output.dir}/@{name}/standalone/configuration" overwrite="true">
                 <fileset dir="${jbossas.ts.integ.dir}/../shared/src/main/resources">
                     <include name="@{copyPattern}"/>
                 </fileset>
             </copy>
 
             <!-- overwrite with configs from test-configs and apply property filtering -->
-            <copy todir="@{output.dir}/jbossas-@{name}" overwrite="true" failonerror="false">
+            <copy todir="@{output.dir}/@{name}" overwrite="true" failonerror="false">
                 <fileset dir="@{test.configs.dir}/@{name}"/>
                 <filterset begintoken="${" endtoken="}">
                     <filter token="node0" value="${node0}"/>
@@ -126,11 +129,36 @@
     </macrodef>
 
 
+    <!--
+        Overwrite some config files, replace tokens.
+    -->
+    <macrodef name="ts.config-as.files" description="Changes server configuration.">
+
+        <attribute name="test.configs.dir" default="${jbossas.ts.integ.dir}/src/test/resources/test-configs"/>
+        <element name="filter-elements" optional="yes" description="Additional filter tokens to replace."/>
+
+        <sequential>
+            <echo message="Configuring AS instance &quot;@{name}&quot; at @{output.dir}"/>
+
+            <!-- Overwrite with configs from test-configs and apply property filtering. -->
+            <copy todir="@{output.dir}/@{name}" overwrite="true" failonerror="false">
+                <fileset dir="@{test.configs.dir}/@{name}"/>
+                <filterset begintoken="${" endtoken="}">
+                    <filter token="node0" value="${node0}"/>
+                    <filter token="node1" value="${node1}"/>
+                    <filter token="udpGroup" value="${udpGroup}"/>
+                    <filter-elements/>
+                </filterset>
+            </copy>
+        </sequential>
+    </macrodef>
+
 
     <!--
         Change IP adresses config.
+        TODO: Moved to maven.
      -->
-    <macrodef name="change-ip-addresses" description="Changes the IP addresses of a single node configuration">
+    <macrodef name="ts.config-as.ip" description="Changes the IP addresses of a single node configuration.">
 
         <attribute name="name" default="jbossas"/>
         <attribute name="output.dir" default="${project.build.directory}"/>
@@ -141,12 +169,14 @@
 
             <echo message="Changing IP addresses for config @{name}"/>
 
+            <property name="cur-as.config.dir" value="@{output.dir}/@{name}/@{config.dir.name}"/>
+
             <!-- Process *.xml to *.xml.mod. -->
-            <xslt destdir="@{output.dir}/jbossas-@{name}/@{config.dir.name}"
+            <xslt destdir="@{output.dir}/@{name}/@{config.dir.name}"
                   style="${jbossas.ts.integ.dir}/src/test/xslt/changeIPAddresses.xsl"
                   extension=".xml.mod"
                   useImplicitFileset="false">
-                <fileset dir="@{output.dir}/jbossas-@{name}/@{config.dir.name}">
+                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
                     <include name="**/standalone.xml"/>
                     <include name="**/standalone-full.xml"/>
                     <include name="**/standalone-ha.xml"/>
@@ -156,8 +186,8 @@
             </xslt>
 
             <!-- Move processed files back. -->
-            <move todir="@{output.dir}/jbossas-@{name}/@{config.dir.name}">
-               <fileset dir="@{output.dir}/jbossas-@{name}/@{config.dir.name}">
+            <move todir="@{output.dir}/@{name}/@{config.dir.name}">
+               <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
                    <include name="**/standalone-full.xml.mod"/>
                    <include name="**/standalone.xml.mod"/>
                    <include name="**/standalone-ha.xml.mod"/>
@@ -170,9 +200,11 @@
 
     <!--
         Change IP adresses, including multicast.
+        It's the same as above, only adds the udpMcastAddress param.
+        
         This macro makes use of saxon via  ${net.sf.saxon:saxon:jar}.
     -->
-    <macrodef name="change-ip-multicast-addresses" description="Changes the IP *and* multicast addresses of a node configuration">
+    <macrodef name="ts.config-as.ip-with-multicast" description="Changes the IP *and* multicast addresses of a node configuration">
 
         <attribute name="name" default="jbossas"/>
         <attribute name="output.dir" default="${project.build.directory}"/>
@@ -183,14 +215,16 @@
         <sequential>
             <echo message="Changing IP addresses for config @{name}"/>
 
+            <property name="cur-as.config.dir" value="@{output.dir}/@{name}/@{config.dir.name}"/>
+
             <!-- Process *.xml to *.xml.mod. -->
-            <xslt destdir="@{output.dir}/jbossas-@{name}/@{config.dir.name}"
+            <xslt destdir="@{output.dir}/@{name}/@{config.dir.name}"
                   style="${jbossas.ts.integ.dir}/src/test/xslt/changeIPAddresses.xsl"
                   extension=".xml.mod"
                   useImplicitFileset="false">
                 <!-- Can't get this to work. -->
                 <!-- classpath path="${net.sf.saxon:saxon:jar}"/ -->
-                <fileset dir="@{output.dir}/jbossas-@{name}/@{config.dir.name}">
+                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
                     <include name="**/standalone-full.xml"/>
                     <include name="**/standalone-ha.xml"/>
                     <include name="**/standalone.xml"/>
@@ -201,8 +235,8 @@
             </xslt>
 
             <!-- Move processed files back. -->
-            <move todir="@{output.dir}/jbossas-@{name}/@{config.dir.name}">
-               <fileset dir="@{output.dir}/jbossas-@{name}/@{config.dir.name}">
+            <move todir="@{output.dir}/@{name}/@{config.dir.name}">
+               <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
                    <include name="**/standalone-ha.xml.mod"/>
                    <include name="**/standalone.xml.mod"/>
                    <include name="**/standalone-full.xml.mod"/>
@@ -218,7 +252,7 @@
         Configure port offset.
         This macro makes use of saxon via  ${net.sf.saxon:saxon:jar}.
     -->
-    <macrodef name="add-port-offset" description="Add a port offeset a node configuration">
+    <macrodef name="ts.config-as.add-port-offset" description="Add a port offeset a node configuration">
 
         <attribute name="name" default="jbossas"/>
         <attribute name="output.dir" default="${project.build.directory}"/>
@@ -231,13 +265,13 @@
             <echo message="Adding port offset for config @{name}"/>
 
             <!-- Process *.xml to *.xml.mod. -->
-            <xslt destdir="@{output.dir}/jbossas-@{name}/@{config.dir.name}"
+            <xslt destdir="@{output.dir}/@{name}/@{config.dir.name}"
                   style="${jbossas.ts.integ.dir}/src/test/xslt/addPortOffset.xsl"
                   extension=".xml.mod"
                   useImplicitFileset="false">
                 <!-- can't get this to work -->
                 <!-- classpath path="${net.sf.saxon:saxon:jar}"/ -->
-                <fileset dir="@{output.dir}/jbossas-@{name}/@{config.dir.name}">
+                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
                     <include name="**/standalone-ha.xml"/>
                     <include name="**/standalone.xml"/>
                     <include name="**/standalone-full.xml"/>
@@ -248,8 +282,8 @@
             </xslt>
 
             <!-- Move processed files back. -->
-            <move todir="@{output.dir}/jbossas-@{name}/@{config.dir.name}">
-               <fileset dir="@{output.dir}/jbossas-@{name}/@{config.dir.name}">
+            <move todir="@{output.dir}/@{name}/@{config.dir.name}">
+               <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
                    <include name="**/standalone-ha.xml.mod"/>
                    <include name="**/standalone.xml.mod"/>
                    <include name="**/standalone-full.xml.mod"/>
@@ -265,7 +299,7 @@
         Enable JTS.
         This macro makes use of saxon via  ${net.sf.saxon:saxon:jar}.
     -->
-    <macrodef name="add-jts" description="Enable JTS">
+    <macrodef name="ts.config-as.add-jts" description="Enable JTS">
 
         <attribute name="name" default="jbossas"/>
         <attribute name="output.dir" default="${project.build.directory}"/>
@@ -275,11 +309,11 @@
             <echo message="Enabling JTS for config @{name}"/>
 
             <!-- Process *.xml to *.xml.mod. -->
-            <xslt destdir="@{output.dir}/jbossas-@{name}/@{config.dir.name}"
+            <xslt destdir="@{output.dir}/@{name}/@{config.dir.name}"
                   style="${jbossas.ts.integ.dir}/src/test/xslt/enableJTS.xsl"
                   extension=".xml.mod"
                   useImplicitFileset="false">
-                <fileset dir="@{output.dir}/jbossas-@{name}/@{config.dir.name}">
+                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
                     <include name="**/standalone-ha.xml"/>
                     <include name="**/standalone.xml"/>
                     <include name="**/standalone-full.xml"/>
@@ -287,8 +321,8 @@
             </xslt>
 
             <!-- Move processed files back. -->
-            <move todir="@{output.dir}/jbossas-@{name}/@{config.dir.name}">
-               <fileset dir="@{output.dir}/jbossas-@{name}/@{config.dir.name}">
+            <move todir="@{output.dir}/@{name}/@{config.dir.name}">
+               <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
                    <include name="**/standalone-ha.xml.mod"/>
                    <include name="**/standalone.xml.mod"/>
                    <include name="**/standalone-full.xml.mod"/>
@@ -304,7 +338,7 @@
         Add a new Remote Outbound Connection.
         This macro makes use of saxon via  ${net.sf.saxon:saxon:jar}.
     -->
-    <macrodef name="add-remote-outbound-connection" description="Add Remote Outbound Connection">
+    <macrodef name="ts.config-as.add-remote-outbound-connection" description="Add Remote Outbound Connection">
 
         <attribute name="name" default="jbossas"/>
         <attribute name="output.dir" default="${project.build.directory}"/>
@@ -319,11 +353,11 @@
             <echo message="Adding a new remote outbound connection @{connectionName} for config @{name}"/>
 
             <!-- Process *.xml to *.xml.mod. -->
-            <xslt destdir="@{output.dir}/jbossas-@{name}/@{config.dir.name}"
+            <xslt destdir="@{output.dir}/@{name}/@{config.dir.name}"
                   style="${jbossas.ts.integ.dir}/src/test/xslt/addRemoteOutboundConnection.xsl"
                   extension=".xml.mod"
                   useImplicitFileset="false">
-                <fileset dir="@{output.dir}/jbossas-@{name}/@{config.dir.name}">
+                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
                     <include name="**/standalone-ha.xml"/>
                     <include name="**/standalone.xml"/>
                     <include name="**/standalone-full.xml"/>
@@ -336,8 +370,8 @@
             </xslt>
 
             <!-- Move processed files back. -->
-            <move todir="@{output.dir}/jbossas-@{name}/@{config.dir.name}">
-               <fileset dir="@{output.dir}/jbossas-@{name}/@{config.dir.name}">
+            <move todir="@{output.dir}/@{name}/@{config.dir.name}">
+               <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
                    <include name="**/standalone-ha.xml.mod"/>
                    <include name="**/standalone.xml.mod"/>
                    <include name="**/standalone-full.xml.mod"/>
@@ -347,7 +381,7 @@
         </sequential>
     </macrodef>
     
-    <macrodef name="add-identity-realm" description="Add Server Identity Security Realm">
+    <macrodef name="ts.config-as.add-identity-realm" description="Add Server Identity Security Realm">
 
         <attribute name="name" default="jbossas"/>
         <attribute name="output.dir" default="${project.build.directory}"/>
@@ -359,11 +393,11 @@
             <echo message="Adding a new server identity realm @{realmName} with secret @{secret}"/>
 
             <!-- Process *.xml to *.xml.mod. -->
-            <xslt destdir="@{output.dir}/jbossas-@{name}/@{config.dir.name}"
+            <xslt destdir="@{output.dir}/@{name}-tmp/@{config.dir.name}"
                   style="${jbossas.ts.integ.dir}/src/test/xslt/addIdentityRealm.xsl"
                   extension=".xml.mod"
                   useImplicitFileset="false">
-                <fileset dir="@{output.dir}/jbossas-@{name}/@{config.dir.name}">
+                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
                     <include name="**/standalone-ha.xml"/>
                     <include name="**/standalone.xml"/>
                     <include name="**/standalone-full.xml"/>
@@ -373,8 +407,8 @@
             </xslt>
 
             <!-- Move processed files back. -->
-            <move todir="@{output.dir}/jbossas-@{name}/@{config.dir.name}">
-               <fileset dir="@{output.dir}/jbossas-@{name}/@{config.dir.name}">
+            <move todir="@{output.dir}/@{name}/@{config.dir.name}">
+               <fileset dir="@{output.dir}/@{name}-tmp/@{config.dir.name}">
                    <include name="**/standalone-ha.xml.mod"/>
                    <include name="**/standalone.xml.mod"/>
                    <include name="**/standalone-full.xml.mod"/>

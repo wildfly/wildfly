@@ -48,7 +48,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                     <skipTests>${skip.stress.tests}</skipTests>
                 </configuration>
             </plugin>

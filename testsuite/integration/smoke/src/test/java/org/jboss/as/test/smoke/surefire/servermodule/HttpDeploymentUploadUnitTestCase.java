@@ -49,6 +49,7 @@ import static junit.framework.Assert.assertNotNull;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import org.junit.Ignore;
 
 /**
  * Test the HTTP API upload functionality to ensure that a deployment is successfully

@@ -10,6 +10,8 @@
 			<!-- -Djboss.inst is not necessarily needed, only in case the test case neeeds path to the instance it runs in.
 			     In the future, Arquillian should capable of injecting it into @ArquillianResource File or such. -->
 			<property name="allowConnectingToRunningServer">true</property>
+			<property name="managementAddress">${node0:127.0.0.1}</property>
+			<property name="managementPort">${as.managementPort:9999}</property>
 		</configuration>
 	</container>
 </arquillian>

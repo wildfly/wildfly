@@ -6,7 +6,7 @@
 
     <parent>
         <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-testsuite-integration-agg</artifactId>
+        <artifactId>jboss-as-ts-integ</artifactId>
         <version>7.1.1.Final-SNAPSHOT</version>
     </parent>
 
@@ -14,7 +14,7 @@
     <!-- ******************************** Smoke Integration ******************************* -->
     <!-- ********************************************************************************** -->
     <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-testsuite-integration-smoke</artifactId>
+    <artifactId>jboss-as-ts-integ-smoke</artifactId>
     <version>7.1.1.Final-SNAPSHOT</version>
 
     <name>JBoss Application Server Test Suite: Integration - Smoke</name>
@@ -39,32 +39,6 @@
             </testResource>
         </testResources>
 
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copy-users</id>
-                        <phase>generate-test-resources</phase>
-                        <goals><goal>copy-resources</goal></goals>
-                        <configuration>
-                            <outputDirectory>${basedir}/target/jbossas-smoke/standalone/configuration</outputDirectory>
-                            <overwrite>true</overwrite>
-                            <resources>
-                                <resource>
-                                    <directory>../../shared/src/main/resources</directory>
-                                    <includes>
-                                        <include>*-users.properties</include>
-                                        <include>*-roles.properties</include>
-                                    </includes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
     </build>
 
 
@@ -99,13 +73,12 @@
                             <execution>
                                 <id>build-smoke.server</id>
                                 <phase>process-test-resources</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
+                                <goals><goal>run</goal></goals>
                                 <configuration>
                                     <target>
-                                        <!-- Build the UDP server configs in target. -->
                                         <ant antfile="${basedir}/../src/test/scripts/smoke-build.xml">
+                                            <property name="node0" value="${node0}"/> <!-- inheritAll="true" doesn't work. -->
+                                            <property name="node1" value="${node1}"/>
                                             <target name="build-smoke"/>
                                         </ant>
                                     </target>
@@ -139,7 +112,7 @@
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
                                         <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
-                                        <jboss.inst>${basedir}/target/jbossas-smoke</jboss.inst>
+                                        <jboss.inst>${basedir}/target/jbossas</jboss.inst>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
@@ -160,7 +133,7 @@
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
-                                        <jboss.inst>${basedir}/target/jbossas-smoke</jboss.inst>
+                                        <jboss.inst>${basedir}/target/jbossas</jboss.inst>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
