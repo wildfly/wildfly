@@ -94,7 +94,7 @@ public class CLIWrapper implements Runnable {
         //connect
 
         // wait for cli welcome message
-        String line = readLine(10000);
+        String line = readLine(30000);
 
         while (!line.contains("You are disconnected")) {
             line = readLine(10000);
