@@ -23,15 +23,15 @@
 package org.jboss.as.test.integration.jpa.transaction;
 
 import javax.annotation.Resource;
-import javax.ejb.SessionContext;
 import javax.ejb.Stateful;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceContextType;
+import javax.transaction.NotSupportedException;
+import javax.transaction.SystemException;
+import javax.transaction.UserTransaction;
 
 /**
  * stateful session bean with an extended persistence context
@@ -39,13 +39,13 @@ import javax.persistence.PersistenceContextType;
  * @author Scott Marlow
  */
 @Stateful
-@TransactionManagement(TransactionManagementType.CONTAINER)
+@TransactionManagement(TransactionManagementType.BEAN)
 public class SFSBXPC {
     @PersistenceContext(unitName = "mypc", type = PersistenceContextType.EXTENDED)
         EntityManager extendedEm;
 
     @Resource
-    SessionContext sessionContext;
+    UserTransaction tx;
 
     public void createEmployeeNoTx(String name, String address, int id) {
 
@@ -57,19 +57,52 @@ public class SFSBXPC {
     }
 
     /**
-     * createEmployeeNoTx is expected to be called previously and
-     * this method will persist the new employee after invoking a method on SFSB1 that requires
-     * yet a different TX.  The called method will look for the new Employee but shouldn't see it since the owning TX
-     * hasn't been committed yet.
+     * UT part of test for JPA 7.9.1 Container Responsibilities for XPC
      *
-     * @param sfsbcmt
-     * @param empid
-     * @return should be null but if its the Employee the new TX saw dirty data from the original TX
+     * "When a business method of the stateful session bean is invoked, if the stateful session bean
+     *  uses bean managed transaction demarcation and a UserTransaction is begun within the method,
+     *  the container associates the persistence context with the JTA transaction and calls
+     *  EntityManager.joinTransaction.
+     *  "
      */
+    public void savePendingChanges() {
 
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public Employee persistAfterLookupInDifferentTX(SFSBCMT sfsbcmt, int empid) {
-        return sfsbcmt.queryEmployeeNameRequireNewTX(empid);
+        try {
+            tx.begin();
+            tx.commit();
+        } catch (Exception e) {
+            throw new RuntimeException("could not commit pending extended persistence changes", e);
+        }
+    }
+
+
+    public void forceRollbackAndLosePendingChanges(int id, boolean shouldOfSavedAlready) {
+        Employee employee = extendedEm.find(Employee.class, id);
+        if (employee == null) { // employee should be found
+            throw new RuntimeException("pending database changes were not saved previously, could not find Employee id = " + id);
+        }
+        try {
+            tx.begin();
+            tx.rollback();
+        } catch (NotSupportedException ignore) {
+
+        } catch (SystemException ignore) {
+
+        }
+
+        employee = extendedEm.find(Employee.class, id);
+        if (shouldOfSavedAlready && employee == null) {
+            throw new RuntimeException("unexpectedly in forceRollbackAndLosePendingChanges(), rollback lost Employee id = "+ id +", which should of been previously saved");
+        }
+        else if(!shouldOfSavedAlready && employee != null) {
+            throw new RuntimeException("unexpectedly in forceRollbackAndLosePendingChanges(), database changes shouldn't of been saved yet for Employee id = "+ id);
+        }
+
+
+    }
+
+    public Employee lookup(int empid) {
+        return extendedEm.find(Employee.class, empid);
     }
 
 }

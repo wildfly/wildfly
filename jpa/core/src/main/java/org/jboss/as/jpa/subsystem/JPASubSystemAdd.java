@@ -29,7 +29,6 @@ import java.util.Locale;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
@@ -45,6 +44,7 @@ import org.jboss.as.jpa.processor.PersistenceRefProcessor;
 import org.jboss.as.jpa.processor.PersistenceUnitDeploymentProcessor;
 import org.jboss.as.jpa.processor.PersistenceUnitParseProcessor;
 import org.jboss.as.jpa.service.JPAService;
+import org.jboss.as.jpa.service.JPAUserTransactionListenerService;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
@@ -93,7 +93,6 @@ class JPASubSystemAdd extends AbstractBoottimeAddStepHandler implements Descript
         OperationFailedException {
 
         runtimeValidator.validate(operation.resolve());
-        final boolean appclient = context.getProcessType() == ProcessType.APPLICATION_CLIENT;
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
 
@@ -124,6 +123,7 @@ class JPASubSystemAdd extends AbstractBoottimeAddStepHandler implements Descript
         final String dataSourceName = defaultDSNode.resolve().asString();
         final ServiceTarget target = context.getServiceTarget();
         newControllers.add(JPAService.addService(target, dataSourceName, verificationHandler));
+        newControllers.add(JPAUserTransactionListenerService.addService(target, verificationHandler));
     }
 
     @Override
