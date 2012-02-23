@@ -22,7 +22,6 @@
 package org.jboss.as.test.integration.web.security.form;
 
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,14 +59,10 @@ import static org.junit.Assert.assertEquals;
 public class WebSecurityFORMTestCase extends WebSecurityPasswordBasedBase {
 
     @Deployment
-    public static WebArchive deployment() {
+    public static WebArchive deployment() throws Exception {
         // FIXME hack to get things prepared before the deployment happens
-        try {
-            // create required security domains
-            createSecurityDomain();
-        } catch (Exception e) {
-            //ignore
-        }
+        // create required security domains
+        createSecurityDomain();
 
         WebArchive war = ShrinkWrap.create(WebArchive.class, "web-secure.war");
         war.addClasses(SecuredServlet.class);

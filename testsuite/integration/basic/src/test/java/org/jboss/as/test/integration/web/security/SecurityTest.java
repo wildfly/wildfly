@@ -23,17 +23,6 @@
 package org.jboss.as.test.integration.web.security;
 
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.security.Constants.*;
-
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,8 +34,29 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.junit.AfterClass;
 
+import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.security.Constants.AUTHENTICATION;
+import static org.jboss.as.security.Constants.CLASSIC;
+import static org.jboss.as.security.Constants.CODE;
+import static org.jboss.as.security.Constants.FLAG;
+import static org.jboss.as.security.Constants.MAPPING;
+import static org.jboss.as.security.Constants.MAPPING_MODULES;
+import static org.jboss.as.security.Constants.MODULE_OPTIONS;
+import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
+import static org.jboss.as.security.Constants.TYPE;
+
 /**
- * Utility methods to create/remove simple security domains
+ * Utility methods to create/remove simple security domains.
+ * <p/>
+ * Tests should inherit from this class, to make sure the security domain is removed.
  *
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  */
@@ -55,7 +65,7 @@ public class SecurityTest {
     protected static String securityDomain = "web-tests";
 
     private static final Logger log = Logger.getLogger(SecurityTest.class);
-    
+
     // this is removing the security domain after each test so I have to disable it
     @AfterClass
     public static void after() throws Exception {
@@ -69,11 +79,9 @@ public class SecurityTest {
         }
     }
 
-    public static void createSecurityDomain() throws Exception {
+    protected static void createSecurityDomain() throws Exception {
 
         log.debug("start of the domain creation");
-
-        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
 
         final List<ModelNode> updates = new ArrayList<ModelNode>();
         ModelNode op = new ModelNode();
@@ -96,20 +104,18 @@ public class SecurityTest {
         updates.add(op);
 
         try {
-            applyUpdates(updates, client);
-        }
-        catch (Exception e) {
+            applyUpdates(updates);
+        } catch (Exception e) {
             log.error(e);
             throw e;
         }
         log.debug("end of the domain creation");
     }
 
-    public static void createSimpleRoleMappingSecurityDomain() throws Exception {
-        
+    protected static void createSimpleRoleMappingSecurityDomain() throws Exception {
+
         log.debug("start of the domain creation");
 
-        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
 
         final List<ModelNode> updates = new ArrayList<ModelNode>();
 
@@ -136,7 +142,7 @@ public class SecurityTest {
         op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
         op.get(OP_ADDR).add(MAPPING, CLASSIC);
 
-        ModelNode mappingModule =op.get(MAPPING_MODULES).add();
+        ModelNode mappingModule = op.get(MAPPING_MODULES).add();
         mappingModule.get(CODE).set("SimpleRoles"); // see:  https://docs.jboss.org/author/display/AS71/Security+subsystem+configuration
         mappingModule.get(TYPE).set("role");
         ModelNode mappingOptions = mappingModule.get(MODULE_OPTIONS);
@@ -145,17 +151,15 @@ public class SecurityTest {
         updates.add(op);
 
         try {
-            applyUpdates(updates, client);
-        }
-        catch (Exception e) {
+            applyUpdates(updates);
+        } catch (Exception e) {
             log.error(e);
             throw e;
         }
         log.debug("end of the domain creation");
     }
 
-    public static void removeSecurityDomain() throws Exception {
-        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
+    protected static void removeSecurityDomain() throws Exception {
 
         ModelNode op = new ModelNode();
         op.get(OP).set(REMOVE);
@@ -164,25 +168,30 @@ public class SecurityTest {
         // Don't rollback when the AS detects the war needs the module
         op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
 
-        applyUpdate(op, client, true);
+        applyUpdate(op, true);
     }
 
-    public static void applyUpdates(final List<ModelNode> updates, final ModelControllerClient client) throws Exception {
+    protected static void applyUpdates(final List<ModelNode> updates) throws Exception {
         for (ModelNode update : updates) {
-            applyUpdate(update, client, false);
+            applyUpdate(update, false);
         }
     }
 
-    public static void applyUpdate(ModelNode update, final ModelControllerClient client, boolean allowFailure) throws Exception {
-        ModelNode result = client.execute(new OperationBuilder(update).build());
-        if (result.hasDefined("outcome") && (allowFailure || "success".equals(result.get("outcome").asString()))) {
-            if (result.hasDefined("result")) {
-                System.out.println(result.get("result"));
+    protected static void applyUpdate(ModelNode update, boolean allowFailure) throws Exception {
+        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
+        try {
+            ModelNode result = client.execute(new OperationBuilder(update).build());
+            if (result.hasDefined("outcome") && (allowFailure || "success".equals(result.get("outcome").asString()))) {
+                if (result.hasDefined("result")) {
+                    System.out.println(result.get("result"));
+                }
+            } else if (result.hasDefined("failure-description")) {
+                throw new RuntimeException(result.get("failure-description").toString());
+            } else {
+                throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
             }
-        } else if (result.hasDefined("failure-description")) {
-            throw new RuntimeException(result.get("failure-description").toString());
-        } else {
-            throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
+        } finally {
+            client.close();
         }
     }
 

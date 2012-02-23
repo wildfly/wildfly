@@ -50,14 +50,10 @@ import static org.junit.Assert.assertEquals;
 public class WebSecurityBASICTestCase extends WebSecurityPasswordBasedBase {
 
     @Deployment
-    public static WebArchive deployment() {
-        // FIXME hack to get things prepared before the deployment happens
-        try {
-            // create required security domains
-            createSecurityDomain();
-        } catch (Exception e) {
-            // ignore
-        }
+    public static WebArchive deployment() throws Exception {
+
+        // create required security domains
+        createSecurityDomain();
 
         WebArchive war = ShrinkWrap.create(WebArchive.class, "web-secure-basic.war");
         war.addClass(SecuredServlet.class);
@@ -71,6 +67,7 @@ public class WebSecurityBASICTestCase extends WebSecurityPasswordBasedBase {
         WebSecurityPasswordBasedBase.printWar(war);
         return war;
     }
+
 
     protected void makeCall(String user, String pass, int expectedStatusCode) throws Exception {
         DefaultHttpClient httpclient = new DefaultHttpClient();

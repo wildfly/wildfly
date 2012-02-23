@@ -48,7 +48,8 @@ public class WebSecurityJBossSimpleRoleMappingTestCase extends WebSecurityFORMTe
 
     public static final String deploymentName = "web-secure.war";
 
-    @ArquillianResource @OperateOnDeployment(deploymentName)
+    @ArquillianResource
+    @OperateOnDeployment(deploymentName)
     URL deploymentUrl;
 
     @Before
@@ -60,15 +61,8 @@ public class WebSecurityJBossSimpleRoleMappingTestCase extends WebSecurityFORMTe
 
 
     @Deployment(name = deploymentName, order = 1, testable = false)
-    public static WebArchive deployment() {
-        // FIXME hack to get things prepared before the deployment happens
-        try {
-            // create required security domains
-            SecurityTest.createSimpleRoleMappingSecurityDomain();
-            //Thread.sleep(1000 * 60 * 10);
-        } catch (Exception e) {
-            // ignore
-        }
+    public static WebArchive deployment() throws Exception {
+        SecurityTest.createSimpleRoleMappingSecurityDomain();
 
         WebArchive war = ShrinkWrap.create(WebArchive.class, "web-secure.war");
         war.addClasses(SecuredServlet.class);
@@ -97,6 +91,7 @@ public class WebSecurityJBossSimpleRoleMappingTestCase extends WebSecurityFORMTe
 
     /**
      * At this time peter can go through because he has role mapped in the map-module option.
+     *
      * @throws Exception
      */
     @Test

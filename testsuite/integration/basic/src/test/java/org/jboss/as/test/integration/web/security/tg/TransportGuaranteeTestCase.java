@@ -22,6 +22,11 @@
 
 package org.jboss.as.test.integration.web.security.tg;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+
+import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -29,26 +34,23 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.as.test.http.util.HttpClientUtils;
-import org.junit.*;
-import org.apache.commons.io.FileUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.http.util.HttpClientUtils;
 import org.jboss.as.test.integration.management.Connector;
 import org.jboss.as.test.integration.management.ServerManager;
 import org.jboss.as.test.integration.web.security.SecurityTest;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-
 
 
 /**
@@ -59,7 +61,7 @@ import java.net.URL;
 
 @RunWith(Arquillian.class)
 @RunAsClient
-public class TransportGuaranteeTestCase {
+public class TransportGuaranteeTestCase extends SecurityTest {
 
 
     private static final Logger log = Logger.getLogger(TransportGuaranteeTestCase.class);
@@ -69,7 +71,8 @@ public class TransportGuaranteeTestCase {
     private static final String TG_DD = "tg-dd";
     private static final String TG_MIXED = "tg-mixed";
 
-    @ArquillianResource @OperateOnDeployment(TG_ANN + WAR)
+    @ArquillianResource
+    @OperateOnDeployment(TG_ANN + WAR)
     URL deploymentUrl;
 
     private ServerManager serverManager = null;
@@ -83,21 +86,11 @@ public class TransportGuaranteeTestCase {
     private boolean beforeServerManagerInitialized = false;
 
     @Deployment(name = TG_ANN + WAR, order = 1, testable = false)
-    public static WebArchive deployAnnWar() {
+    public static WebArchive deployAnnWar() throws Exception {
 
         log.info("starting deployAnnWar()");
 
-        // FIXME hack to get things prepared before the deployment happens
-        try {
-            // create required security domains
-            log.info("createSecurityDomain");
-            SecurityTest.createSecurityDomain();
-            log.info("Done");
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
+        SecurityTest.createSecurityDomain();
 
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         WebArchive war = ShrinkWrap.create(WebArchive.class, TG_ANN + WAR);
@@ -163,19 +156,17 @@ public class TransportGuaranteeTestCase {
 
         try {
             serverManager.addConnector(Connector.HTTPSJIO, httpsPort,
-                null, null, keyStoreFile.getAbsolutePath(),
-                "password");
-        }
-        catch (Exception e) {
+                    null, null, keyStoreFile.getAbsolutePath(),
+                    "password");
+        } catch (Exception e) {
             Assert.fail("Cannot create https connector - HTTPSJIO");
         }
 
         // set test URL
         httpsTestURL = "https://" + deploymentUrl.getHost() + ":" + Integer.toString(httpsPort);
         httpTestURL = "http://" + deploymentUrl.getHost() + ":" + deploymentUrl.getPort();
-        
-    }
 
+    }
 
 
     @After
@@ -195,25 +186,23 @@ public class TransportGuaranteeTestCase {
      */
     private boolean checkGetURL(String url, String responseSubstring, String user, String pass) throws Exception {
 
-        log.info("Checking URL="+url);
+        log.info("Checking URL=" + url);
 
         HttpClient httpClient;
         if (url.startsWith("https")) {
             httpClient = HttpClientUtils.wrapHttpsClient(new DefaultHttpClient());
-        }
-        else {
+        } else {
             httpClient = new DefaultHttpClient();
         }
 
-        ((DefaultHttpClient)httpClient).getCredentialsProvider().setCredentials(new AuthScope(AuthScope.ANY),
-              new UsernamePasswordCredentials(user, pass));
+        ((DefaultHttpClient) httpClient).getCredentialsProvider().setCredentials(new AuthScope(AuthScope.ANY),
+                new UsernamePasswordCredentials(user, pass));
 
         HttpGet get = new HttpGet(url);
         HttpResponse hr;
         try {
             hr = httpClient.execute(get);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             if (responseSubstring == null)
                 return false;
             else // in case substring is defined, rethrow exception so, we can easier analyze the cause
@@ -222,22 +211,21 @@ public class TransportGuaranteeTestCase {
 
         int statusCode = hr.getStatusLine().getStatusCode();
         if (statusCode != 200) {
-            log.info("statusCode not expected. statusCode="+statusCode+", URL="+url);
+            log.info("statusCode not expected. statusCode=" + statusCode + ", URL=" + url);
             return false;
         }
 
         if (responseSubstring == null) {
             // this indicates that negative test had problems
-            log.info("statusCode==200 on URL="+url);
+            log.info("statusCode==200 on URL=" + url);
             return true;
         }
 
         String response = EntityUtils.toString(hr.getEntity());
         if (response.indexOf(responseSubstring) != -1) {
             return true;
-        }
-        else {
-            log.info("Response doesn't contain expected substring ("+responseSubstring+")");
+        } else {
+            log.info("Response doesn't contain expected substring (" + responseSubstring + ")");
             return false;
         }
 
@@ -247,20 +235,20 @@ public class TransportGuaranteeTestCase {
     public void testTransportGuaranteedAnnotation() throws Exception {
 
         String testURLContext = "/" + TG_ANN + TransportGuaranteeAnnotatedServlet.servletContext;
-        
+
         boolean result = checkGetURL(
-              httpsTestURL + testURLContext,
-              "TransportGuaranteedGet",
-              "anil",
-              "anil");
+                httpsTestURL + testURLContext,
+                "TransportGuaranteedGet",
+                "anil",
+                "anil");
         Assert.assertTrue("Not expected response", result);
 
 
         result = checkGetURL(
-              httpTestURL + testURLContext,
-              null,
-              "anil",
-              "anil");
+                httpTestURL + testURLContext,
+                null,
+                "anil",
+                "anil");
         Assert.assertFalse("Non secure transport on URL has to be prevented, but was not", result);
 
     }
@@ -272,18 +260,18 @@ public class TransportGuaranteeTestCase {
         String testURLContext = "/" + TG_DD + TransportGuaranteeServlet.servletContext;
 
         boolean result = checkGetURL(
-              httpsTestURL + testURLContext,
-              "TransportGuaranteedGet",
-              "anil",
-              "anil");
+                httpsTestURL + testURLContext,
+                "TransportGuaranteedGet",
+                "anil",
+                "anil");
         Assert.assertTrue("Not expected response", result);
 
 
         result = checkGetURL(
-              httpTestURL + testURLContext,
-              null,
-              "anil",
-              "anil");
+                httpTestURL + testURLContext,
+                null,
+                "anil",
+                "anil");
         Assert.assertFalse("Non secure transport on URL has to be prevented, but was not", result);
 
 
@@ -294,21 +282,21 @@ public class TransportGuaranteeTestCase {
     public void testTransportGuaranteedMixed() throws Exception {
 
         String testURLContext = "/" + TG_MIXED
-              + "/tg_mixed_override/srv" ;
+                + "/tg_mixed_override/srv";
 
         boolean result = checkGetURL(
-              httpsTestURL + testURLContext,
-              "TransportGuaranteedGet",
-              "anil",
-              "anil");
+                httpsTestURL + testURLContext,
+                "TransportGuaranteedGet",
+                "anil",
+                "anil");
         Assert.assertTrue("Not expected response", result);
 
 
         result = checkGetURL(
-              httpTestURL + testURLContext,
-              null,
-              "anil",
-              "anil");
+                httpTestURL + testURLContext,
+                null,
+                "anil",
+                "anil");
         Assert.assertFalse("Non secure transport on URL has to be prevented, but was not", result);
 
 
