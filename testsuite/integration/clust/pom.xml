@@ -18,7 +18,7 @@
     <version>7.1.1.Final-SNAPSHOT</version>
 
     <name>JBoss Application Server Test Suite: Integration - Clustering</name>
-    
+
     <properties>
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>

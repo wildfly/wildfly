@@ -23,6 +23,7 @@
 package org.jboss.as.test.clustering.unmanaged.ejb3.xpc;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Date;
 import java.util.Properties;
 
@@ -30,11 +31,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.jboss.arquillian.container.test.api.ContainerController;
-import org.jboss.arquillian.container.test.api.Deployer;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.container.test.api.TargetsContainer;
+import org.jboss.arquillian.container.test.api.*;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -104,23 +101,36 @@ public class StatefulWithXPCFailoverTestCase {
         return war;
     }
 
-
     @Test
     @InSequence(1)
-    /* @OperateOnDeployment(DEPLOYMENT1) -- See http://community.jboss.org/thread/176096 */
-    public void testBasicXPC(/*@ArquillianResource(SimpleServlet.class) URL baseURL*/) throws IOException, InterruptedException {
+    public void testArquillianWorkaroundSecond() {
         // Container is unmanaged, need to start manually.
         start(DEPLOYMENT_1, CONTAINER_1);
 
+        // TODO: This is nasty. I need to start it to be able to inject it later and then stop it again!
+        // https://community.jboss.org/thread/176096
+        start(DEPLOYMENT_2, CONTAINER_2);
+    }
+
+    @Test
+    @InSequence(2)
+    public void testBasicXPC(
+            @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
+            @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
+            throws IOException, InterruptedException {
+
+        // TODO: This is nasty. I need to start it to be able to inject it later and then stop it again!
+        // https://community.jboss.org/thread/176096
+        stop(DEPLOYMENT_2, CONTAINER_2);
+
         DefaultHttpClient client = new DefaultHttpClient();
 
-        // ARQ-674 Ouch, node2 (port 8180) hardcoded URL will need fixing. ARQ doesnt support @OperateOnDeployment on 2 containers.
-        String xpc1_create_url = "http://127.0.0.1:8080/stateful/count?command=createEmployee";
-        String xpc1_get_url = "http://127.0.0.1:8080/stateful/count?command=getEmployee";
-        String xpc2_get_url = "http://127.0.0.1:8180/stateful/count?command=getEmployee";
-        String xpc1_getempsecond_url = "http://127.0.0.1:8080/stateful/count?command=getSecondBeanEmployee";
-        String xpc2_getempsecond_url = "http://127.0.0.1:8180/stateful/count?command=getSecondBeanEmployee";
-        String xpc2_getdestroy_url = "http://127.0.0.1:8180/stateful/count?command=destroy";
+        String xpc1_create_url = baseURL1 + "count?command=createEmployee";
+        String xpc1_get_url = baseURL1 + "count?command=getEmployee";
+        String xpc2_get_url = baseURL2 + "count?command=getEmployee";
+        String xpc1_getempsecond_url = baseURL1 + "count?command=getSecondBeanEmployee";
+        String xpc2_getempsecond_url = baseURL2 + "count?command=getSecondBeanEmployee";
+        String xpc2_getdestroy_url = baseURL2 + "count?command=destroy";
 
         try {
             // extended persistence context is available on node1

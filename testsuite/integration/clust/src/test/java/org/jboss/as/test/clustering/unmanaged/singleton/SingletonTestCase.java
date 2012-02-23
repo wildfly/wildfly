@@ -22,6 +22,7 @@
 package org.jboss.as.test.clustering.unmanaged.singleton;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Properties;
 
 import javax.servlet.http.HttpServletResponse;
@@ -29,11 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.jboss.arquillian.container.test.api.ContainerController;
-import org.jboss.arquillian.container.test.api.Deployer;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.container.test.api.TargetsContainer;
+import org.jboss.arquillian.container.test.api.*;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -49,6 +46,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
+import org.jboss.as.test.clustering.unmanaged.singleton.service.MyServiceServlet;
 
 @RunWith(Arquillian.class)
 @RunAsClient
@@ -87,17 +85,36 @@ public class SingletonTestCase {
 
     @Test
     @InSequence(1)
-    /* @OperateOnDeployment(DEPLOYMENT1) -- See http://community.jboss.org/thread/176096 */
-    public void test(/*@ArquillianResource(SimpleServlet.class) URL baseURL*/) throws IOException, InterruptedException {
+    public void testArquillianWorkaround() {
         // Container is unmanaged, need to start manually.
         controller.start(CONTAINER_1);
         deployer.deploy(DEPLOYMENT_1);
 
+        // TODO: This is nasty. I need to start it to be able to inject it later and then stop it again!
+        // https://community.jboss.org/thread/176096
+        controller.start(CONTAINER_2);
+        deployer.deploy(DEPLOYMENT_2);
+    }
+
+    @Test
+    @InSequence(2)
+    public void testSingletonService(
+            @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
+            @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
+            throws IOException, InterruptedException {
+
+        // TODO: This is nasty. I need to start it to be able to inject it later and then stop it again!
+        // https://community.jboss.org/thread/176096
+        deployer.undeploy(DEPLOYMENT_2);
+        controller.stop(CONTAINER_2);
+
         DefaultHttpClient client = new DefaultHttpClient();
 
-        // ARQ-674 Ouch, second hardcoded URL will need fixing. ARQ doesnt support @OperateOnDeployment on 2 containers.
-        String url1 = "http://127.0.0.1:8080/singleton/service"; /* baseURL.toString() + "simple"; */
-        String url2 = "http://127.0.0.1:8180/singleton/service";
+        // URLs look like "http://IP:PORT/singleton/service"
+        String url1 = baseURL1.toString() + "service";
+        String url2 = baseURL2.toString() + "service";
+
+        System.out.println("URLs are: " + url1 + ", " + url2);
 
         try {
             HttpResponse response = client.execute(new HttpGet(url1));
@@ -118,7 +135,7 @@ public class SingletonTestCase {
             Assert.assertEquals(MyServiceContextListener.PREFERRED_NODE, response.getFirstHeader("node").getValue());
             response.getEntity().getContent().close();
 
-            response = tryGet(client, url2);;
+            response = tryGet(client, url2);
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             Assert.assertEquals(MyServiceContextListener.PREFERRED_NODE, response.getFirstHeader("node").getValue());
             response.getEntity().getContent().close();

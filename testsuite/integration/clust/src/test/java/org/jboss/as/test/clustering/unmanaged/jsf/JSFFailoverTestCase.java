@@ -23,6 +23,7 @@ package org.jboss.as.test.clustering.unmanaged.jsf;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -41,11 +42,7 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
-import org.jboss.arquillian.container.test.api.ContainerController;
-import org.jboss.arquillian.container.test.api.Deployer;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.container.test.api.TargetsContainer;
+import org.jboss.arquillian.container.test.api.*;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -59,6 +56,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
+import org.jboss.as.test.clustering.single.web.SimpleServlet;
 
 /**
  * Weld numberguess example converted to a test
@@ -194,6 +192,17 @@ public class JSFFailoverTestCase {
         return request;
     }
 
+    @Test
+    @InSequence(1)
+    public void testStartContainersAndDeploymentsForGracefulSimpleFailover() {
+        // Container is unmanaged, need to start manually.
+        controller.start(CONTAINER_1);
+        deployer.deploy(DEPLOYMENT_1);
+
+        controller.start(CONTAINER_2);
+        deployer.deploy(DEPLOYMENT_2);
+    }
+
     /**
      * Test simple graceful shutdown failover:
      * <p/>
@@ -208,20 +217,18 @@ public class JSFFailoverTestCase {
      * @throws InterruptedException
      */
     @Test
-    @InSequence(1)
-    public void testGracefulSimpleFailover() throws IOException, InterruptedException {
-        // Container is unmanaged, need to start manually.
-        controller.start(CONTAINER_1);
-        deployer.deploy(DEPLOYMENT_1);
-
-        controller.start(CONTAINER_2);
-        deployer.deploy(DEPLOYMENT_2);
+    @InSequence(2)
+    public void testGracefulSimpleFailover(
+            @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
+            @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
+            throws IOException, InterruptedException {
 
         DefaultHttpClient client = new DefaultHttpClient();
 
-        // ARQ-674 Ouch, second hardcoded URL will need fixing. ARQ doesnt support @OperateOnDeployment on 2 containers.
-        String url1 = "http://127.0.0.1:8080/distributable/home.jsf";
-        String url2 = "http://127.0.0.1:8180/distributable/home.jsf";
+        String url1 = baseURL1.toString() + "home.jsf";
+        String url2 = baseURL2.toString() + "home.jsf";
+
+        System.out.println("URLs are: " + url1 + ", " + url2);
 
         try {
             HttpResponse response;
@@ -309,6 +316,17 @@ public class JSFFailoverTestCase {
         // Assert.fail("Show me the logs please!");
     }
 
+    @Test
+    @InSequence(10)
+    public void testStartContainersAndDeploymentsForGracefulUndeployFailover() {
+        // Container is unmanaged, need to start manually.
+        controller.start(CONTAINER_1);
+        deployer.deploy(DEPLOYMENT_1);
+
+        controller.start(CONTAINER_2);
+        deployer.deploy(DEPLOYMENT_2);
+    }
+
     /**
      * Test simple undeploy failover:
      * <p/>
@@ -323,20 +341,16 @@ public class JSFFailoverTestCase {
      * @throws InterruptedException
      */
     @Test
-    @InSequence(2)
-    public void testGracefulUndeployFailover() throws IOException, InterruptedException {
-        // Container is unmanaged, need to start manually.
-        controller.start(CONTAINER_1);
-        deployer.deploy(DEPLOYMENT_1);
-
-        controller.start(CONTAINER_2);
-        deployer.deploy(DEPLOYMENT_2);
+    @InSequence(11)
+    public void testGracefulUndeployFailover(
+            @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
+            @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
+            throws IOException, InterruptedException {
 
         DefaultHttpClient client = new DefaultHttpClient();
 
-        // TODO ARQ-674
-        String url1 = "http://127.0.0.1:8080/distributable/home.jsf";
-        String url2 = "http://127.0.0.1:8180/distributable/home.jsf";
+        String url1 = baseURL1.toString() + "home.jsf";
+        String url2 = baseURL2.toString() + "home.jsf";
 
         try {
             HttpResponse response;
