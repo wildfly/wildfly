@@ -26,6 +26,8 @@ import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -78,6 +80,7 @@ public final class LogLevelValidator extends ModelTypeValidator implements Allow
     public LogLevelValidator(final boolean nullable, final boolean allowExpressions, final Level... levels) {
         super(ModelType.STRING, nullable, allowExpressions);
         allowedValues = Arrays.asList(levels);
+        Collections.sort(allowedValues, LevelComparator.INSTANCE);
         nodeValues = new ArrayList<ModelNode>(allowedValues.size());
         for (Level level : allowedValues) {
             nodeValues.add(new ModelNode().set(level.getName()));
@@ -103,5 +106,27 @@ public final class LogLevelValidator extends ModelTypeValidator implements Allow
     @Override
     public List<ModelNode> getAllowedValues() {
         return nodeValues;
+    }
+
+    private static class LevelComparator implements Comparator<Level> {
+
+        static final int EQUAL = 0;
+        static final int LESS = -1;
+        static final int GREATER = 1;
+
+        static final LevelComparator INSTANCE = new LevelComparator();
+
+        @Override
+        public int compare(final Level o1, final Level o2) {
+            int result = EQUAL;
+            final int left = o1.intValue();
+            final int right = o2.intValue();
+            if (left < right) {
+                result = LESS;
+            } else if (left > right) {
+                result = GREATER;
+            }
+            return result;
+        }
     }
 }
