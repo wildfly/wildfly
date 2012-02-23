@@ -18,34 +18,15 @@
     <version>7.1.0.Final-SNAPSHOT</version>
 
     <name>JBoss AS Test Suite: Integration - Manual Mode Tests</name>
-    
+
     <properties>
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
     </properties>
 
-    <!--  TODO move this to parent? -->
-    <build>
-        <testResources>
-            <testResource>
-                <directory>src/test/resources</directory>
-            </testResource>
-            <testResource>
-                <directory>src/test/java</directory>
-                <excludes>
-                    <exclude>**/*.java</exclude>
-                </excludes>
-            </testResource>
-        </testResources>
-    </build>
-
-
     <profiles>
 
-        <!-- ********************************************************************************** -->
-        <!-- ****     Manual-mode tests                                               ********* -->
-        <!-- ********************************************************************************** -->
         <profile>
             <id>manualmode.integration.tests.profile</id>
             <activation>
@@ -63,29 +44,6 @@
             -->
             <build>
                 <plugins>
-
-                    <!-- Build the target/jbossts server configuration. -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions combine.children="append">
-                            <execution>
-                                <id>build-manualmode.server</id>
-                                <phase>process-test-resources</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <configuration>
-                                    <target>
-                                        <!-- Build the UDP server configs in target. -->
-                                        <ant antfile="${basedir}/../src/test/scripts/manualmode-build.xml">
-                                            <target name="build-manualmode"/>
-                                        </ant>
-                                    </target>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
 
                     <!-- Surefire. -->
                     <plugin>
@@ -120,6 +78,6 @@
                 </plugins>
             </build>
         </profile>
-        
+
     </profiles>
 </project>
