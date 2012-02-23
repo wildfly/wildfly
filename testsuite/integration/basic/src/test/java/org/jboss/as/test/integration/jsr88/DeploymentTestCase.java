@@ -193,7 +193,7 @@ public class DeploymentTestCase {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         JarOutputStream plan = new JarOutputStream(baos);
 
-        URL descriptorURL = getClass().getClassLoader().getResource(DeploymentTestCase.class.getPackage().getName().replace(".", "/") + jbossDescriptorName);
+        URL descriptorURL = getClass().getClassLoader().getResource(DeploymentTestCase.class.getPackage().getName().replace(".", "/") + "/" + jbossDescriptorName);
         File jbossDescriptorFile = new File(descriptorURL.getPath());
         JarUtils.addJarEntry(plan, "!/" + (webInf ? "WEB-INF/" : "META-INF/") + jbossDescriptorName, new FileInputStream(jbossDescriptorFile));
 
