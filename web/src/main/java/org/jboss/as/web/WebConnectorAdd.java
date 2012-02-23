@@ -166,7 +166,10 @@ class WebConnectorAdd extends AbstractAddStepHandler implements DescriptionProvi
         if (enabled) {
             serviceBuilder.addListener(verificationHandler);
         }
-        newControllers.add(serviceBuilder.install());
+        final ServiceController<Connector> serviceController = serviceBuilder.install();
+        if(newControllers != null) {
+            newControllers.add(serviceController);
+        }
     }
 
     @Override
