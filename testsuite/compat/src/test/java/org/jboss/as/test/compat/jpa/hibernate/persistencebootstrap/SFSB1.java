@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.compat.jpa.hibernate.persistencebootstrap;
 
+import javax.annotation.PostConstruct;
 import javax.ejb.Stateful;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -33,11 +34,16 @@ import javax.persistence.EntityManagerFactory;
  */
 @Stateful
 public class SFSB1 {
-//    @PersistenceContext(unitName = "hibernate3_pc")
-//        EntityManager em;
+
+    EntityManagerFactory entityManagerFactory = javax.persistence.Persistence.createEntityManagerFactory("hibernate3_pc");
+
+    @PostConstruct
+    public void setup() {
+        entityManagerFactory = javax.persistence.Persistence.createEntityManagerFactory("hibernate3_pc");
+    }
 
     public void createEmployee(String name, String address, int id) {
-        EntityManagerFactory entityManagerFactory = javax.persistence.Persistence.createEntityManagerFactory("hibernate3_pc");
+
         EntityManager em = entityManagerFactory.createEntityManager();
 
         try {
@@ -54,7 +60,6 @@ public class SFSB1 {
 
     public Employee getEmployeeNoTX(int id) {
 
-        EntityManagerFactory entityManagerFactory = javax.persistence.Persistence.createEntityManagerFactory("hibernate3_pc");
         EntityManager em = entityManagerFactory.createEntityManager();
 
         try {

@@ -66,6 +66,7 @@ public class PersistenceBootstrapTestCase {
             "<property name=\"hibernate.show_sql\" value=\"true\"/>" +
             "<property name=\"jboss.as.jpa.providerModule\" value=\"hibernate3-bundled\"/>" +
             "<property name=\"hibernate.transaction.manager_lookup_class\" value=\"org.hibernate.transaction.JBossTransactionManagerLookup\"/>" +
+            "<property name=\"jboss.as.jpa.managed\" value=\"false\"/>" +
             "</properties>" +
             "  </persistence-unit>" +
             "</persistence>";
