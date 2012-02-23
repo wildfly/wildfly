@@ -27,6 +27,8 @@ import java.util.Arrays;
 
 import javax.annotation.Resource;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.naming.Context;
@@ -90,6 +92,7 @@ public class SLSB1 {
 	 * Makes two DAO calls, the transaction fails during the second DAO call.
 	 * The JTA transaction is rolled back and no database changes should occur.
 	 */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public String failInSecondCall() throws Exception {
 		int[] initialList = getEmployeeIDsNoEM();
 

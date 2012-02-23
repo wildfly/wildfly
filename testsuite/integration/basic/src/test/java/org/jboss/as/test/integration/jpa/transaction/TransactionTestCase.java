@@ -38,7 +38,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -150,28 +149,6 @@ public class TransactionTestCase {
 
 
     /**
-     * If a stateful session bean with an extended persistence context calls a stateless or stateful session bean
-     * in a different JTA transaction context, the persistence context is not propagated.
-     *
-     * This test is disabled since it is not a JPA specification requirement to prevent the same
-     * persistence context from being shared between transactions.  If that ever changes or we implement
-     * safeguards against that, we can enable this test again.  I want to have this test around in case we
-     * need to quickly reproduce leaking the PC between TXs.
-     */
-    @Test
-    @Ignore
-    public void testTransactionsDontLeakDirtyData() throws Exception {
-        SFSBXPC sfsbxpc = lookup("SFSBXPC", SFSBXPC.class);
-        SFSBCMT sfsbcmt = lookup("SFSBCMT", SFSBCMT.class);
-        sfsbxpc.createEmployeeNoTx("Amory Lorch", "Lannister House", 10);  // create the employee but leave in xpc
-        Employee emp = sfsbxpc.persistAfterLookupInDifferentTX(sfsbcmt, 10);
-        assertNull("should not leak dirty data from one TX to another", emp);
-
-    }
-    
-    
-    
-    /**
      * Tests JTA involving an EJB 3 SLSB which makes two DAO calls in transaction.
      * Scenarios: 
      * 1) The transaction fails during the first DAO call and the JTA transaction is rolled back and no database changes should occur. 
@@ -193,4 +170,36 @@ public class TransactionTestCase {
     	assertEquals("DB should be unchanged, which we indicate by returning 'success'","success", message);
     }
 
+    @Test
+    public void testUserTxRollbackDiscardsChanges() throws Exception {
+        SFSBXPC sfsbxpc = lookup("SFSBXPC", SFSBXPC.class);
+        sfsbxpc.createEmployeeNoTx("Amory Lorch", "Lannister House", 10);  // create the employee but leave in xpc
+        Employee employee = sfsbxpc.lookup(10);
+        assertNotNull("could read employee record from extended persistence context (not yet saved to db)", employee);
+
+        // rollback any changes that haven't been saved yet
+        sfsbxpc.forceRollbackAndLosePendingChanges(10, false);
+
+        employee = sfsbxpc.lookup(10);
+        assertNull("employee record should not be found in db after rollback", employee);
+
+    }
+
+    @Test
+    public void testEnlistXPCInUserTx() throws Exception {
+        SFSBXPC sfsbxpc = lookup("SFSBXPC", SFSBXPC.class);
+        sfsbxpc.createEmployeeNoTx("Amory Lorch", "Lannister House", 20);  // create the employee but leave in xpc
+        Employee employee = sfsbxpc.lookup(20);
+        assertNotNull("could read employee record from extended persistence context (not yet saved to db)", employee);
+
+        // start/end a user transaction without invoking the (extended) entity manager, which should cause the
+        // pending changes to be saved to db
+        sfsbxpc.savePendingChanges();
+
+        sfsbxpc.forceRollbackAndLosePendingChanges(20, true);
+
+        employee = sfsbxpc.lookup(20);
+        assertNotNull("could read employee record from extended persistence context (wasn't saved to db during savePendingChanges())", employee);
+
+    }
 }
