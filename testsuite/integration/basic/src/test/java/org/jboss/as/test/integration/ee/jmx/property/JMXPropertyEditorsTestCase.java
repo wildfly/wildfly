@@ -95,12 +95,6 @@ public class JMXPropertyEditorsTestCase {
         String [] attributeNames = {"Boolean","Char","Byte","Short"
                 ,"Integer","Long","Float","Double","AtomicBoolean"
                 ,"AtomicInteger","AtomicLong","BigDecimal"};
-        MBeanInfo info = connection.getMBeanInfo(oname);
-        MBeanAttributeInfo[] infos = info.getAttributes();
-        for(MBeanAttributeInfo i:infos)
-        {
-            System.err.println(i);
-        }
         for(String attrbiuteName:attributeNames)
         {
             Object attributeValue = connection.getAttribute(oname, attrbiuteName);
