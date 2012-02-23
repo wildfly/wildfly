@@ -29,8 +29,8 @@ MAVEN_SEARCH_PATH="\
     tools/apache/maven \
     maven"
 
-# The default arguments.
-MVN_OPTIONS="-s ../tools/maven/conf/settings.xml"
+# The default arguments.  `mvn -s ...` will override this.
+MVN_ARGS=${MVN_ARGS:-"-s ../tools/maven/conf/settings.xml"};
 
 # Use the maximum available, or set MAX_FD != -1 to use that.
 MAX_FD="maximum"
@@ -68,6 +68,8 @@ process_test_directives() {
     # For each parameter, check for testsuite directives.
     for param in $@ ; do
     case $param in
+      ## -s .../settings.xml - don't use our own.
+      -s)                MVN_ARGS="";          CMD_LINE_PARAMS="$CMD_LINE_PARAMS -s";;
       ## -DallTests runs all tests except benchmark and stress.
       -DallTests)        TESTS_SPECIFIED="Y";  CMD_LINE_PARAMS="$CMD_LINE_PARAMS -DallTests -fae";;
 
@@ -200,12 +202,6 @@ main() {
         die "Maven file is not executable: $MVN"
     fi
 
-    #  Need to specify planet57/buildmagic protocol handler package.
-    MVN_OPTS="-Djava.protocol.handler.pkgs=org.jboss.net.protocol"
-
-    #  Setup some build properties.
-    MVN_OPTS="$MVN_OPTS -Dbuild.script=$0"
-
     #  Change to the directory where the script lives 
     #  so users are not forced to be in the same directory as build.xml.
     cd $DIRNAME/testsuite
@@ -222,13 +218,13 @@ main() {
     # Export some stuff for maven.
     export MVN MAVEN_HOME MVN_OPTS MVN_GOAL
 
-    echo "$MVN $MVN_OPTIONS $MVN_GOAL"
+    echo "$MVN $MVN_ARGS $MVN_GOAL"
 
     #  Execute in debug mode, or simply execute.
     if [ "x$MVN_DEBUG" != "x" ]; then
-        /bin/sh -x $MVN $MVN_OPTIONS $MVN_GOAL
+        /bin/sh -x $MVN $MVN_ARGS $MVN_GOAL
     else
-        exec $MVN $MVN_OPTIONS $MVN_GOAL
+        exec $MVN $MVN_ARGS $MVN_GOAL
     fi
 
     cd $DIRNAME
