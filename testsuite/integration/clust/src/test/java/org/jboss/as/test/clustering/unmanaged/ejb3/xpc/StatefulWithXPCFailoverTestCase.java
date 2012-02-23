@@ -49,6 +49,8 @@ import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
 
+import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
+
 /**
  * @author Paul Ferraro
  *
@@ -56,12 +58,6 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class StatefulWithXPCFailoverTestCase {
-    /** Constants **/
-    public static final int GRACE_TIME = 20000;
-    public static final String CONTAINER_1 = "clustering-udp-1-unmanaged";
-    public static final String CONTAINER_2 = "clustering-udp-2-unmanaged";
-    public static final String DEPLOYMENT_1 = "deployment-1-unmanaged";
-    public static final String DEPLOYMENT_2 = "deployment-2-unmanaged";
 
     private static final String persistence_xml =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +

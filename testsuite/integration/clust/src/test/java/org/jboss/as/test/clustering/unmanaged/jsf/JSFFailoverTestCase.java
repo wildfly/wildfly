@@ -58,6 +58,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
+
 /**
  * Weld numberguess example converted to a test
  *
@@ -67,32 +69,23 @@ import org.junit.runner.RunWith;
 public class JSFFailoverTestCase {
 
     /**
-     * Constants *
-     */
-    public static final long GRACE_TIME_TO_MEMBERSHIP_CHANGE = 5000;
-    public static final String CONTAINER1 = "clustering-udp-1-unmanaged";
-    public static final String CONTAINER2 = "clustering-udp-2-unmanaged";
-    public static final String DEPLOYMENT1 = "deployment-1-unmanaged";
-    public static final String DEPLOYMENT2 = "deployment-2-unmanaged";
-
-    /**
      * Controller for testing failover and undeploy *
      */
     @ArquillianResource
-    ContainerController controller;
+    private ContainerController controller;
     @ArquillianResource
-    Deployer deployer;
+    private Deployer deployer;
 
-    @Deployment(name = DEPLOYMENT1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER1)
+    @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
+    @TargetsContainer(CONTAINER_1)
     public static Archive<?> deployment0() {
         return createDeployment();
     }
 
 
-    @Deployment(name = DEPLOYMENT2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER2)
-    public static Archive<?> deployment1() {
+    @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
+    @TargetsContainer(CONTAINER_2)
+    public static Archive<?> DEPLOYMENT_1() {
         return createDeployment();
     }
 
@@ -218,11 +211,11 @@ public class JSFFailoverTestCase {
     @InSequence(1)
     public void testGracefulSimpleFailover() throws IOException, InterruptedException {
         // Container is unmanaged, need to start manually.
-        controller.start(CONTAINER1);
-        deployer.deploy(DEPLOYMENT1);
+        controller.start(CONTAINER_1);
+        deployer.deploy(DEPLOYMENT_1);
 
-        controller.start(CONTAINER2);
-        deployer.deploy(DEPLOYMENT2);
+        controller.start(CONTAINER_2);
+        deployer.deploy(DEPLOYMENT_2);
 
         DefaultHttpClient client = new DefaultHttpClient();
 
@@ -257,7 +250,7 @@ public class JSFFailoverTestCase {
             Assert.assertEquals("9", state.remainingGuesses);
 
             // Gracefully shutdown the 1st container.
-            controller.stop(CONTAINER1);
+            controller.stop(CONTAINER_1);
 
 
             // Now we do a JSF POST request with a cookie on to the second node, guessing 100, expecting to find a replicated state.
@@ -282,7 +275,7 @@ public class JSFFailoverTestCase {
             Assert.assertEquals("2", state.smallest);
             Assert.assertEquals("98", state.biggest);
 
-            controller.start(CONTAINER1);
+            controller.start(CONTAINER_1);
 
             // And now we go back to the first node, guessing 2
             response = tryGet(client, buildPostRequest(url1, state.sessionId, state.jsfViewState, "2"));
@@ -308,10 +301,10 @@ public class JSFFailoverTestCase {
         }
 
         // Is would be done automatically, keep for 2nd test is added
-        deployer.undeploy(DEPLOYMENT1);
-        controller.stop(CONTAINER1);
-        deployer.undeploy(DEPLOYMENT2);
-        controller.stop(CONTAINER2);
+        deployer.undeploy(DEPLOYMENT_1);
+        controller.stop(CONTAINER_1);
+        deployer.undeploy(DEPLOYMENT_2);
+        controller.stop(CONTAINER_2);
 
         // Assert.fail("Show me the logs please!");
     }
@@ -333,11 +326,11 @@ public class JSFFailoverTestCase {
     @InSequence(2)
     public void testGracefulUndeployFailover() throws IOException, InterruptedException {
         // Container is unmanaged, need to start manually.
-        controller.start(CONTAINER1);
-        deployer.deploy(DEPLOYMENT1);
+        controller.start(CONTAINER_1);
+        deployer.deploy(DEPLOYMENT_1);
 
-        controller.start(CONTAINER2);
-        deployer.deploy(DEPLOYMENT2);
+        controller.start(CONTAINER_2);
+        deployer.deploy(DEPLOYMENT_2);
 
         DefaultHttpClient client = new DefaultHttpClient();
 
@@ -372,7 +365,7 @@ public class JSFFailoverTestCase {
             Assert.assertEquals("9", state.remainingGuesses);
 
             // Gracefully undeploy from the 1st container.
-            deployer.undeploy(DEPLOYMENT1);
+            deployer.undeploy(DEPLOYMENT_1);
 
             // Now we do a JSF POST request with a cookie on to the second node, guessing 100, expecting to find a replicated state.
             response = tryGet(client, buildPostRequest(url2, state.sessionId, state.jsfViewState, "100"));
@@ -397,7 +390,7 @@ public class JSFFailoverTestCase {
             Assert.assertEquals("98", state.biggest);
 
             // Redeploy
-            deployer.deploy(DEPLOYMENT1);
+            deployer.deploy(DEPLOYMENT_1);
 
             // And now we go back to the first node, guessing 2
             response = tryGet(client, buildPostRequest(url1, state.sessionId, state.jsfViewState, "2"));
@@ -423,10 +416,10 @@ public class JSFFailoverTestCase {
         }
 
         // Is would be done automatically, keep for when 3nd test is added
-        deployer.undeploy(DEPLOYMENT1);
-        controller.stop(CONTAINER1);
-        deployer.undeploy(DEPLOYMENT2);
-        controller.stop(CONTAINER2);
+        deployer.undeploy(DEPLOYMENT_1);
+        controller.stop(CONTAINER_1);
+        deployer.undeploy(DEPLOYMENT_2);
+        controller.stop(CONTAINER_2);
 
         // Assert.fail("Show me the logs please!");
     }
