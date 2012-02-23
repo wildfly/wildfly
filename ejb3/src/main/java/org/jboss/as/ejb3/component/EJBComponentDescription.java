@@ -46,6 +46,7 @@ import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentNamingMode;
+import org.jboss.as.ee.component.ComponentStartService;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.DependencyConfigurator;
 import org.jboss.as.ee.component.NamespaceConfigurator;
@@ -227,10 +228,10 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                 if(description.getNamingMode() == ComponentNamingMode.CREATE) {
                     description.getBindingConfigurations().add(new BindingConfiguration("java:comp/env", new ContextInjectionSource("env", "java:comp/env")));
                 }
+                final List<SetupAction> ejbSetupActions = context.getDeploymentUnit().getAttachmentList(Attachments.OTHER_EE_SETUP_ACTIONS);
 
                 if (description.isTimerServiceApplicable()) {
 
-                    final List<SetupAction> ejbSetupActions = context.getDeploymentUnit().getAttachmentList(Attachments.OTHER_EE_SETUP_ACTIONS);
                     if(!ejbSetupActions.isEmpty()) {
                         configuration.addTimeoutViewInterceptor(AdditionalSetupInterceptor.factory(ejbSetupActions), InterceptorOrder.View.EE_SETUP);
                     }
@@ -243,6 +244,16 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     for (final Method method : configuration.getClassIndex().getClassMethods()) {
                         configuration.addTimeoutViewInterceptor(method, new ImmediateInterceptorFactory(new ComponentDispatcherInterceptor(method)), InterceptorOrder.View.COMPONENT_DISPATCHER);
                     }
+                }
+                if(!ejbSetupActions.isEmpty()) {
+                    configuration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
+                        @Override
+                        public void configureDependency(final ServiceBuilder<?> serviceBuilder, final ComponentStartService service) throws DeploymentUnitProcessingException {
+                            for(final SetupAction setupAction : ejbSetupActions) {
+                                serviceBuilder.addDependencies(setupAction.dependencies());
+                            }
+                        }
+                    });
                 }
             }
         });
