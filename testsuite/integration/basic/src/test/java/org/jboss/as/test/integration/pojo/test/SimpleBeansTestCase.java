@@ -40,8 +40,8 @@ public class SimpleBeansTestCase {
     public static JavaArchive getSimpleBeansJar() {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "simple-beans.jar");
         archive.addPackage(TFactory.class.getPackage());
-        archive.addAsManifestResource("pojo/simple-jboss-beans.xml", "simple-jboss-beans.xml");
-        archive.addAsManifestResource("pojo/legacy-jboss-beans.xml", "legacy-jboss-beans.xml");
+        archive.addAsManifestResource(SimpleBeansTestCase.class.getPackage(), "simple-jboss-beans.xml", "simple-jboss-beans.xml");
+        archive.addAsManifestResource(SimpleBeansTestCase.class.getPackage(), "legacy-jboss-beans.xml", "legacy-jboss-beans.xml");
         return archive;
     }
 

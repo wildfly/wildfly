@@ -73,7 +73,7 @@ public class RarDeploymentTestCase {
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "rar-in-ear-test.ear");
         ear.addAsModule(rar);
         ear.addAsModule(ejbJar);
-        ear.addAsManifestResource("rar/AS7-2111/application.xml", "application.xml");
+        ear.addAsManifestResource(RarDeploymentTestCase.class.getPackage(), "application.xml", "application.xml");
 
         logger.info(ear.toString(true));
         return ear;

@@ -59,7 +59,7 @@ public class ResourceInjectionTestCase {
     public static WebArchive createWebDeployment() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "resource-injection-test.war");
         war.addPackage(SimpleSLSB.class.getPackage());
-        war.addAsWebInfResource("injection/web.xml");
+        war.addAsWebInfResource(ResourceInjectionTestCase.class.getPackage(), "web.xml", "web.xml");
         logger.info("War created: " + war.toString(true));
         return war;
     }
@@ -135,7 +135,7 @@ public class ResourceInjectionTestCase {
     /**
      * Test if an ORB can be properly located (EJB3 16.13). Part migration of tests from EJB testsuite [JIRA JBQA-5483].
      * Ondrej Chaloupka
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -148,7 +148,7 @@ public class ResourceInjectionTestCase {
 
     /**
      * Test if an ORB can be properly located (EJB3 16.13). Part migration of tests from EJB testsuite [JIRA JBQA-5483].
-     * 
+     *
      * @throws Exception
      */
     @Test

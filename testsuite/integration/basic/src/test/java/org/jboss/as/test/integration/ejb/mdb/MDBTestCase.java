@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.ejb.mdb.unit;
+package org.jboss.as.test.integration.ejb.mdb;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -30,8 +30,6 @@ import javax.jms.Queue;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.common.JMSAdminOperations;
-import org.jboss.as.test.integration.ejb.mdb.DDBasedMDB;
-import org.jboss.as.test.integration.ejb.mdb.JMSMessagingUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -71,7 +69,7 @@ public class MDBTestCase {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "mdb.jar");
         ejbJar.addPackage(DDBasedMDB.class.getPackage());
         ejbJar.addClass(JMSAdminOperations.class);
-        ejbJar.addAsManifestResource("mdb/ejb-jar.xml", "ejb-jar.xml");
+        ejbJar.addAsManifestResource(MDBTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
         ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF");
         logger.info(ejbJar.toString(true));
         return ejbJar;

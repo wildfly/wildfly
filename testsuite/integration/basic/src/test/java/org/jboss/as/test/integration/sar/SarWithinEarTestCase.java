@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.sar.unit;
+package org.jboss.as.test.integration.sar;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -35,8 +35,6 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.test.integration.sar.SarWithinEarService;
-import org.jboss.as.test.integration.sar.SarWithinEarServiceMBean;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -82,7 +80,7 @@ public class SarWithinEarTestCase {
     public static EnterpriseArchive getEarWithoutApplicationDotXml() {
         final JavaArchive sar = ShrinkWrap.create(JavaArchive.class, "simple-sar.sar");
         sar.addClasses(SarWithinEarServiceMBean.class, SarWithinEarService.class);
-        sar.addAsManifestResource("sar/jboss-service-without-application-xml.xml", "jboss-service.xml");
+        sar.addAsManifestResource(SarWithinEarTestCase.class.getPackage(), "jboss-service-without-application-xml.xml", "jboss-service.xml");
 
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, EAR_WITHOUT_APPLICATION_XML);
         ear.addAsModule(sar);
@@ -98,11 +96,11 @@ public class SarWithinEarTestCase {
     public static EnterpriseArchive getEarWithApplicationDotXml() {
         final JavaArchive sar = ShrinkWrap.create(JavaArchive.class, "simple-sar.sar");
         sar.addClasses(SarWithinEarServiceMBean.class, SarWithinEarService.class);
-        sar.addAsManifestResource("sar/jboss-service-with-application-xml.xml", "jboss-service.xml");
+        sar.addAsManifestResource(SarWithinEarTestCase.class.getPackage(), "jboss-service-with-application-xml.xml", "jboss-service.xml");
 
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, EAR_WITH_APPLICATION_XML);
         ear.addAsModule(sar);
-        ear.addAsManifestResource("sar/application.xml", "application.xml");
+        ear.addAsManifestResource(SarWithinEarTestCase.class.getPackage(), "application.xml", "application.xml");
         return ear;
     }
 
