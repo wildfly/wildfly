@@ -1204,11 +1204,6 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.osgi.metadata</groupId>
-                    <artifactId>jbosgi-metadata</artifactId>
-                </dependency>
-
-                <dependency>
                     <groupId>org.jboss.osgi.repository</groupId>
                     <artifactId>jbosgi-repository-api</artifactId>
                 </dependency>
