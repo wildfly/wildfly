@@ -67,10 +67,10 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
     private static final Logger logger = Logger.getLogger(RemoteEJBClientStatefulBeanFailoverTestCase.class);
 
     private static final String MODULE_NAME = "remote-ejb-client-stateful-bean-failover-test";
-    public static final String CONTAINER1 = "clustering-udp-0-unmanaged";
-    public static final String CONTAINER2 = "clustering-udp-1-unmanaged";
-    private static final String ARQUILLIAN_DEPLOYMENT_NAME_FOR_CONTAINER1 = "container1-deployment";
-    private static final String ARQUILLIAN_DEPLOYMENT_NAME_FOR_CONTAINER2 = "container2-deployment";
+    public static final String CONTAINER_1 = "clustering-udp-1-unmanaged";
+    public static final String CONTAINER_2 = "clustering-udp-2-unmanaged";
+    private static final String ARQUILLIAN_DEPLOYMENT_NAME_FOR_CONTAINER_1 = "container-1-deployment";
+    private static final String ARQUILLIAN_DEPLOYMENT_NAME_FOR_CONTAINER_2 = "container-2-deployment";
 
     private static Context context;
 
@@ -81,14 +81,14 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
     private Deployer deployer;
 
 
-    @Deployment(name = ARQUILLIAN_DEPLOYMENT_NAME_FOR_CONTAINER1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER1)
+    @Deployment(name = ARQUILLIAN_DEPLOYMENT_NAME_FOR_CONTAINER_1, managed = false, testable = false)
+    @TargetsContainer(CONTAINER_1)
     public static Archive createDeploymentForContainer1() {
         return createDeployment();
     }
 
-    @Deployment(name = ARQUILLIAN_DEPLOYMENT_NAME_FOR_CONTAINER2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER2)
+    @Deployment(name = ARQUILLIAN_DEPLOYMENT_NAME_FOR_CONTAINER_2, managed = false, testable = false)
+    @TargetsContainer(CONTAINER_2)
     public static Archive createDeploymentForContainer2() {
         return createDeployment();
     }
@@ -121,13 +121,13 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
     @Test
     public void testFailoverFromRemoteClientWhenOneNodeGoesDown() throws Exception {
         // Container is unmanaged, so start it ourselves
-        this.container.start(CONTAINER1);
+        this.container.start(CONTAINER_1);
         // deploy to container1
-        this.deployer.deploy(ARQUILLIAN_DEPLOYMENT_NAME_FOR_CONTAINER1);
+        this.deployer.deploy(ARQUILLIAN_DEPLOYMENT_NAME_FOR_CONTAINER_1);
 
         // start the other container too
-        this.container.start(CONTAINER2);
-        this.deployer.deploy(ARQUILLIAN_DEPLOYMENT_NAME_FOR_CONTAINER2);
+        this.container.start(CONTAINER_2);
+        this.deployer.deploy(ARQUILLIAN_DEPLOYMENT_NAME_FOR_CONTAINER_2);
 
         final ContextSelector<EJBClientContext> previousSelector = this.setupEJBClientContextSelector();
         final String jndiName = "ejb:" + "" + "/" + MODULE_NAME + "/" + "" + "/" + CounterBean.class.getSimpleName() + "!" + RemoteCounter.class.getName() + "?stateful";
@@ -154,12 +154,12 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
             final String previousInvocationNodeName = result.getNodeName();
             // the value is configured in arquillian.xml of the project
             if (previousInvocationNodeName.equals("node-udp-0")) {
-                this.deployer.undeploy(ARQUILLIAN_DEPLOYMENT_NAME_FOR_CONTAINER1);
-                this.container.stop(CONTAINER1);
+                this.deployer.undeploy(ARQUILLIAN_DEPLOYMENT_NAME_FOR_CONTAINER_1);
+                this.container.stop(CONTAINER_1);
                 container1Stopped = true;
             } else {
-                this.deployer.undeploy(ARQUILLIAN_DEPLOYMENT_NAME_FOR_CONTAINER2);
-                this.container.stop(CONTAINER2);
+                this.deployer.undeploy(ARQUILLIAN_DEPLOYMENT_NAME_FOR_CONTAINER_2);
+                this.container.stop(CONTAINER_2);
                 container2Stopped = true;
             }
             // invoke again
@@ -199,13 +199,13 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
             }
             // shutdown the containers
             if (!container1Stopped) {
-                this.deployer.undeploy(ARQUILLIAN_DEPLOYMENT_NAME_FOR_CONTAINER1);
-                this.container.stop(CONTAINER1);
+                this.deployer.undeploy(ARQUILLIAN_DEPLOYMENT_NAME_FOR_CONTAINER_1);
+                this.container.stop(CONTAINER_1);
             }
 
             if (!container2Stopped) {
-                this.deployer.undeploy(ARQUILLIAN_DEPLOYMENT_NAME_FOR_CONTAINER2);
-                this.container.stop(CONTAINER2);
+                this.deployer.undeploy(ARQUILLIAN_DEPLOYMENT_NAME_FOR_CONTAINER_2);
+                this.container.stop(CONTAINER_2);
             }
         }
     }

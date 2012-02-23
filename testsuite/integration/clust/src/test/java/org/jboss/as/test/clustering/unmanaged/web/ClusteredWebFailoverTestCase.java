@@ -52,15 +52,15 @@ public abstract class ClusteredWebFailoverTestCase {
 
     /** Constants **/
     public static final long GRACE_TIME_TO_MEMBERSHIP_CHANGE = 5000;
-    public static final String CONTAINER1 = "clustering-udp-0-unmanaged";
-    public static final String CONTAINER2 = "clustering-udp-1-unmanaged";
-    public static final String DEPLOYMENT1 = "deployment-0-unmanaged";
-    public static final String DEPLOYMENT2 = "deployment-1-unmanaged";
+    public static final String CONTAINER_1 = "clustering-udp-1-unmanaged";
+    public static final String CONTAINER_2 = "clustering-udp-2-unmanaged";
+    public static final String DEPLOYMENT_1 = "deployment-1-unmanaged";
+    public static final String DEPLOYMENT_2 = "deployment-2-unmanaged";
     /** Controller for testing failover and undeploy **/
     @ArquillianResource
-    ContainerController controller;
+    private ContainerController controller;
     @ArquillianResource
-    Deployer deployer;
+    private Deployer deployer;
 
     @BeforeClass
     public static void printSysProps() {
@@ -87,10 +87,10 @@ public abstract class ClusteredWebFailoverTestCase {
     public void testGracefulSimpleFailover(/*@ArquillianResource(SimpleServlet.class) URL baseURL*/) throws IOException, InterruptedException, ExecutionException {
         // Container is unmanaged, need to start manually.
 
-        controller.start(CONTAINER1);
-        deployer.deploy(DEPLOYMENT1);
-        controller.start(CONTAINER2);
-        deployer.deploy(DEPLOYMENT2);
+        controller.start(CONTAINER_1);
+        deployer.deploy(DEPLOYMENT_1);
+        controller.start(CONTAINER_2);
+        deployer.deploy(DEPLOYMENT_2);
 
 
         DefaultHttpClient client = new DefaultHttpClient();
@@ -114,7 +114,7 @@ public abstract class ClusteredWebFailoverTestCase {
             response.getEntity().getContent().close();
 
             // Gracefully shutdown the 1st container.
-            controller.stop(CONTAINER1);
+            controller.stop(CONTAINER_1);
 
             // Now check on the 2nd server
 
@@ -134,7 +134,7 @@ public abstract class ClusteredWebFailoverTestCase {
             Assert.assertEquals(4, Integer.parseInt(response.getFirstHeader("value").getValue()));
             response.getEntity().getContent().close();
 
-            controller.start(CONTAINER1);
+            controller.start(CONTAINER_1);
 
             // Lets wait for the cluster to update membership and tranfer state.
 
@@ -155,10 +155,10 @@ public abstract class ClusteredWebFailoverTestCase {
         }
 
         // Is would be done automatically, keep for 2nd test is added
-        deployer.undeploy(DEPLOYMENT1);
-        controller.stop(CONTAINER1);
-        deployer.undeploy(DEPLOYMENT2);
-        controller.stop(CONTAINER2);
+        deployer.undeploy(DEPLOYMENT_1);
+        controller.stop(CONTAINER_1);
+        deployer.undeploy(DEPLOYMENT_2);
+        controller.stop(CONTAINER_2);
 
         // Assert.fail("Show me the logs please!");
     }
@@ -180,11 +180,11 @@ public abstract class ClusteredWebFailoverTestCase {
     @InSequence(2)
     public void testGracefulUndeployFailover() throws IOException, InterruptedException {
         // Container is unmanaged, need to start manually.
-        controller.start(CONTAINER1);
-        deployer.deploy(DEPLOYMENT1);
+        controller.start(CONTAINER_1);
+        deployer.deploy(DEPLOYMENT_1);
 
-        controller.start(CONTAINER2);
-        deployer.deploy(DEPLOYMENT2);
+        controller.start(CONTAINER_2);
+        deployer.deploy(DEPLOYMENT_2);
 
 
         DefaultHttpClient client = new DefaultHttpClient();
@@ -208,7 +208,7 @@ public abstract class ClusteredWebFailoverTestCase {
             response.getEntity().getContent().close();
 
             // Gracefully undeploy from the 1st container.
-            deployer.undeploy(DEPLOYMENT1);
+            deployer.undeploy(DEPLOYMENT_1);
 
             // Now check on the 2nd server
 
@@ -228,7 +228,7 @@ public abstract class ClusteredWebFailoverTestCase {
             response.getEntity().getContent().close();
 
             // Redeploy
-            deployer.deploy(DEPLOYMENT1);
+            deployer.deploy(DEPLOYMENT_1);
 
             response = tryGet(client, url1);
             System.out.println("Requested " + url1 + ", got " + response.getFirstHeader("value").getValue() + ".");
@@ -247,10 +247,10 @@ public abstract class ClusteredWebFailoverTestCase {
         }
 
         // Is would be done automatically, keep for when 3nd test is added
-        deployer.undeploy(DEPLOYMENT1);
-        controller.stop(CONTAINER1);
-        deployer.undeploy(DEPLOYMENT2);
-        controller.stop(CONTAINER2);
+        deployer.undeploy(DEPLOYMENT_1);
+        controller.stop(CONTAINER_1);
+        deployer.undeploy(DEPLOYMENT_2);
+        controller.stop(CONTAINER_2);
 
         // Assert.fail("Show me the logs please!");
     }

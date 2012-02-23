@@ -70,10 +70,10 @@ public class JSFFailoverTestCase {
      * Constants *
      */
     public static final long GRACE_TIME_TO_MEMBERSHIP_CHANGE = 5000;
-    public static final String CONTAINER1 = "clustering-udp-0-unmanaged";
-    public static final String CONTAINER2 = "clustering-udp-1-unmanaged";
-    public static final String DEPLOYMENT1 = "deployment-0-unmanaged";
-    public static final String DEPLOYMENT2 = "deployment-1-unmanaged";
+    public static final String CONTAINER1 = "clustering-udp-1-unmanaged";
+    public static final String CONTAINER2 = "clustering-udp-2-unmanaged";
+    public static final String DEPLOYMENT1 = "deployment-1-unmanaged";
+    public static final String DEPLOYMENT2 = "deployment-2-unmanaged";
 
     /**
      * Controller for testing failover and undeploy *

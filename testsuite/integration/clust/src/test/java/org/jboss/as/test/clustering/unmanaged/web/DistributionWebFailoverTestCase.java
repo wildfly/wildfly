@@ -10,8 +10,8 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 public class DistributionWebFailoverTestCase extends ClusteredWebFailoverTestCase {
 
-    @Deployment(name = DEPLOYMENT1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER1)
+    @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
+    @TargetsContainer(CONTAINER_1)
     public static Archive<?> deployment0() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
         war.addClass(SimpleServlet.class);
@@ -22,8 +22,8 @@ public class DistributionWebFailoverTestCase extends ClusteredWebFailoverTestCas
         return war;
     }
 
-    @Deployment(name = DEPLOYMENT2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER2)
+    @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
+    @TargetsContainer(CONTAINER_2)
     public static Archive<?> deployment1() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
         war.addClass(SimpleServlet.class);
