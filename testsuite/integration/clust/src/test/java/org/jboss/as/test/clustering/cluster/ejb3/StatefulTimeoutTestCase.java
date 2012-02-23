@@ -42,6 +42,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
+
 /**
  * Tests that the stateful timeout annotation works
  *
@@ -62,14 +64,14 @@ public class StatefulTimeoutTestCase {
     @Inject
     private UserTransaction userTransaction;
 
-    @Deployment(name = "deployment-0")
-    @TargetsContainer("clustering-udp-0")
+    @Deployment(name = DEPLOYMENT_1)
+    @TargetsContainer(MANAGED_CONTAINER_1)
     public static Archive<?> deployment0() {
         return createJar();
     }
 
-    @Deployment(name = "deployment-1")
-    @TargetsContainer("clustering-udp-1")
+    @Deployment(name = DEPLOYMENT_2)
+    @TargetsContainer(MANAGED_CONTAINER_2)
     public static Archive<?> deployment1() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addPackage(StatefulTimeoutTestCase.class.getPackage());
@@ -88,8 +90,7 @@ public class StatefulTimeoutTestCase {
         return beanType.cast(iniCtx.lookup("java:global/" + ARCHIVE_NAME + "/" + beanType.getSimpleName() + "!" + beanType.getName()));
     }
 
-    @Test
-    @OperateOnDeployment("deployment-0")
+    @OperateOnDeployment(DEPLOYMENT_1)
     public void testStatefulTimeout() throws Exception {
 
         ClusteredCacheBean.preDestroy = false;
@@ -111,7 +112,7 @@ public class StatefulTimeoutTestCase {
     }
 
     @Test
-    @OperateOnDeployment("deployment-0")
+    @OperateOnDeployment(DEPLOYMENT_1)
     public void testClusteredStatefulTimeout() throws Exception {
 
         ClusteredBean.preDestroy = false;
@@ -133,7 +134,7 @@ public class StatefulTimeoutTestCase {
     }
 
     @Test
-    @OperateOnDeployment("deployment-0")
+    @OperateOnDeployment(DEPLOYMENT_1)
     public void testStatefulBeanNotDiscardedWhileInTransaction() throws Exception {
         ClusteredBean.preDestroy = false;
         ClusteredBean.prePassivate = false;
@@ -157,7 +158,7 @@ public class StatefulTimeoutTestCase {
     }
 
     @Test
-    @OperateOnDeployment("deployment-0")
+    @OperateOnDeployment(DEPLOYMENT_1)
     public void testNested() throws Exception {
 
         NestedBean.preDestroy = false;

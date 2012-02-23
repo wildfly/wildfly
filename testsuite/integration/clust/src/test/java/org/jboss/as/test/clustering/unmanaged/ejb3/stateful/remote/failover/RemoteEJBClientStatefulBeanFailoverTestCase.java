@@ -52,6 +52,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
+
 /**
  * Tests that invocations on a clustered stateful session bean from a remote EJB client, failover to
  * other node(s) in cases like a node going down
@@ -67,10 +69,6 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
     private static final Logger logger = Logger.getLogger(RemoteEJBClientStatefulBeanFailoverTestCase.class);
 
     private static final String MODULE_NAME = "remote-ejb-client-stateful-bean-failover-test";
-    public static final String CONTAINER_1 = "clustering-udp-1-unmanaged";
-    public static final String CONTAINER_2 = "clustering-udp-2-unmanaged";
-    private static final String ARQUILLIAN_DEPLOYMENT_NAME_FOR_CONTAINER_1 = "container-1-deployment";
-    private static final String ARQUILLIAN_DEPLOYMENT_NAME_FOR_CONTAINER_2 = "container-2-deployment";
 
     private static Context context;
 
@@ -81,13 +79,13 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
     private Deployer deployer;
 
 
-    @Deployment(name = ARQUILLIAN_DEPLOYMENT_NAME_FOR_CONTAINER_1, managed = false, testable = false)
+    @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
     public static Archive createDeploymentForContainer1() {
         return createDeployment();
     }
 
-    @Deployment(name = ARQUILLIAN_DEPLOYMENT_NAME_FOR_CONTAINER_2, managed = false, testable = false)
+    @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
     @TargetsContainer(CONTAINER_2)
     public static Archive createDeploymentForContainer2() {
         return createDeployment();
@@ -123,11 +121,11 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
         // Container is unmanaged, so start it ourselves
         this.container.start(CONTAINER_1);
         // deploy to container1
-        this.deployer.deploy(ARQUILLIAN_DEPLOYMENT_NAME_FOR_CONTAINER_1);
+        this.deployer.deploy(DEPLOYMENT_1);
 
         // start the other container too
         this.container.start(CONTAINER_2);
-        this.deployer.deploy(ARQUILLIAN_DEPLOYMENT_NAME_FOR_CONTAINER_2);
+        this.deployer.deploy(DEPLOYMENT_2);
 
         final ContextSelector<EJBClientContext> previousSelector = this.setupEJBClientContextSelector();
         final String jndiName = "ejb:" + "" + "/" + MODULE_NAME + "/" + "" + "/" + CounterBean.class.getSimpleName() + "!" + RemoteCounter.class.getName() + "?stateful";
@@ -154,11 +152,11 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
             final String previousInvocationNodeName = result.getNodeName();
             // the value is configured in arquillian.xml of the project
             if (previousInvocationNodeName.equals("node-udp-0")) {
-                this.deployer.undeploy(ARQUILLIAN_DEPLOYMENT_NAME_FOR_CONTAINER_1);
+                this.deployer.undeploy(DEPLOYMENT_1);
                 this.container.stop(CONTAINER_1);
                 container1Stopped = true;
             } else {
-                this.deployer.undeploy(ARQUILLIAN_DEPLOYMENT_NAME_FOR_CONTAINER_2);
+                this.deployer.undeploy(DEPLOYMENT_2);
                 this.container.stop(CONTAINER_2);
                 container2Stopped = true;
             }
@@ -199,12 +197,12 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase {
             }
             // shutdown the containers
             if (!container1Stopped) {
-                this.deployer.undeploy(ARQUILLIAN_DEPLOYMENT_NAME_FOR_CONTAINER_1);
+                this.deployer.undeploy(DEPLOYMENT_1);
                 this.container.stop(CONTAINER_1);
             }
 
             if (!container2Stopped) {
-                this.deployer.undeploy(ARQUILLIAN_DEPLOYMENT_NAME_FOR_CONTAINER_2);
+                this.deployer.undeploy(DEPLOYMENT_2);
                 this.container.stop(CONTAINER_2);
             }
         }

@@ -39,13 +39,14 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
 
 /**
  * Validate the <distributable/> works for a two-node cluster.
@@ -65,8 +66,8 @@ public class ClusteredWebTestCase {
         System.out.println("System properties:\n" + sysprops);
     }
 
-    @Deployment(name = "deployment-0")
-    @TargetsContainer("clustering-udp-0")
+    @Deployment(name = DEPLOYMENT_1)
+    @TargetsContainer(MANAGED_CONTAINER_1)
     public static Archive<?> deployment0() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
         war.addClass(SimpleServlet.class);
@@ -75,8 +76,8 @@ public class ClusteredWebTestCase {
         return war;
     }
 
-    @Deployment(name = "deployment-1")
-    @TargetsContainer("clustering-udp-1")
+    @Deployment(name = DEPLOYMENT_2)
+    @TargetsContainer(MANAGED_CONTAINER_2)
     public static Archive<?> deployment1() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
         war.addClass(SimpleServlet.class);
@@ -86,7 +87,7 @@ public class ClusteredWebTestCase {
     }
 
     @Test
-    @OperateOnDeployment("deployment-0")
+    @OperateOnDeployment(DEPLOYMENT_1)
     public void testSerialized(@ArquillianResource(SimpleServlet.class) URL baseURL) throws ClientProtocolException, IOException {
         DefaultHttpClient client = new DefaultHttpClient();
 
@@ -113,7 +114,7 @@ public class ClusteredWebTestCase {
     }
 
     @Test
-    @OperateOnDeployment("deployment-1") // For change, operate on the 2nd deployment first
+    @OperateOnDeployment(DEPLOYMENT_2) // For change, operate on the 2nd deployment first
     public void testSessionReplication(@ArquillianResource(SimpleServlet.class) URL baseURL) throws IllegalStateException, IOException, InterruptedException {
         DefaultHttpClient client = new DefaultHttpClient();
 

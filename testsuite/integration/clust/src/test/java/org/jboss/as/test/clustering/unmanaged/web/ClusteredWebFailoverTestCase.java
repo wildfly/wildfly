@@ -41,6 +41,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
+
 /**
  * Test that failover and undeploy works.
  *
@@ -50,12 +52,6 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public abstract class ClusteredWebFailoverTestCase {
 
-    /** Constants **/
-    public static final long GRACE_TIME_TO_MEMBERSHIP_CHANGE = 5000;
-    public static final String CONTAINER_1 = "clustering-udp-1-unmanaged";
-    public static final String CONTAINER_2 = "clustering-udp-2-unmanaged";
-    public static final String DEPLOYMENT_1 = "deployment-1-unmanaged";
-    public static final String DEPLOYMENT_2 = "deployment-2-unmanaged";
     /** Controller for testing failover and undeploy **/
     @ArquillianResource
     private ContainerController controller;
