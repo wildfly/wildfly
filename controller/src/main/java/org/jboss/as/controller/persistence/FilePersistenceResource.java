@@ -79,8 +79,6 @@ public class FilePersistenceResource implements ConfigurationPersister.Persisten
                     output.write(bytes, 0, read);
                 }
                 output.close();
-                fos.flush();
-                fos.getFD().sync();
                 fos.close();
                 is.close();
             } finally {

@@ -22,9 +22,6 @@
 
 package org.jboss.as.controller.persistence;
 
-import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.Closeable;
@@ -44,6 +41,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLMapper;
+
+import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * A configuration persister which uses an XML file for backing storage.
@@ -84,16 +84,6 @@ public class XmlConfigurationPersister extends AbstractConfigurationPersister {
         return new FilePersistenceResource(model, fileName, this);
     }
 
-    /**
-     * Unused and deprecated.
-     *
-     * @param model the model to store
-     * @param file the file to store to
-     * @throws ConfigurationPersistenceException
-     *
-     * @deprecated unused
-     */
-    @Deprecated
     protected void store(final ModelNode model, final File file) throws ConfigurationPersistenceException {
         try {
             final FileOutputStream fos = new FileOutputStream(file);
@@ -101,8 +91,6 @@ public class XmlConfigurationPersister extends AbstractConfigurationPersister {
                 BufferedOutputStream output = new BufferedOutputStream(fos);
                 marshallAsXml(model, output);
                 output.close();
-                fos.flush();
-                fos.getFD().sync();
                 fos.close();
             } finally {
                 safeClose(fos);
