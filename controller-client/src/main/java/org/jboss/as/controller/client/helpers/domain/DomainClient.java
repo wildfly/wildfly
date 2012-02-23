@@ -141,5 +141,16 @@ public interface DomainClient extends ModelControllerClient {
             return new DomainClientImpl(address, port, handler);
         }
 
+        /**
+         * Create an {@link org.jboss.as.controller.client.helpers.domain.DomainClient} instance based on an existing
+         * {@link ModelControllerClient}.
+         *
+         * @param client the client
+         * @return A domain domain
+         */
+        public static DomainClient create(final ModelControllerClient client) {
+            return new DomainClientImpl(client);
+        }
+
     }
 }

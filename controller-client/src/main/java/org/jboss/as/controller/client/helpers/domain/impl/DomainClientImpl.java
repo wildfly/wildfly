@@ -65,6 +65,10 @@ public class DomainClientImpl implements DomainClient {
         this.delegate = ModelControllerClient.Factory.create(address, port, handler);
     }
 
+    public DomainClientImpl(ModelControllerClient delegate) {
+        this.delegate = delegate;
+    }
+
     @Override
     public ModelNode execute(ModelNode operation) throws IOException {
         return delegate.execute(operation);
