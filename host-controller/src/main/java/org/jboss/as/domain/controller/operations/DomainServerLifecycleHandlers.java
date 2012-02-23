@@ -187,14 +187,16 @@ public class DomainServerLifecycleHandlers {
                     final String hostName = model.get(HOST).keys().iterator().next();
                     final ModelNode serverConfig = model.get(HOST, hostName).get(SERVER_CONFIG);
                     final Set<String> serversInGroup = getServersForGroup(model, group);
-                    for (Property config : serverConfig.asPropertyList()) {
-                        final ServerStatus status = serverInventory.determineServerStatus(config.getName());
-                        if (status != ServerStatus.STARTING && status != ServerStatus.STARTED) {
-                            if (group == null || serversInGroup.contains(config.getName())) {
-                                if (status != ServerStatus.STOPPED) {
-                                    serverInventory.stopServer(config.getName(), TIMEOUT);
+                    if(serverConfig.isDefined()) {
+                        for (Property config : serverConfig.asPropertyList()) {
+                            final ServerStatus status = serverInventory.determineServerStatus(config.getName());
+                            if (status != ServerStatus.STARTING && status != ServerStatus.STARTED) {
+                                if (group == null || serversInGroup.contains(config.getName())) {
+                                    if (status != ServerStatus.STOPPED) {
+                                        serverInventory.stopServer(config.getName(), TIMEOUT);
+                                    }
+                                    serverInventory.startServer(config.getName(), model);
                                 }
-                                serverInventory.startServer(config.getName(), model);
                             }
                         }
                     }
