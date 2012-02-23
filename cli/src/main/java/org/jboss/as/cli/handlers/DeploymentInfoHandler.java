@@ -171,17 +171,16 @@ public class DeploymentInfoHandler extends BaseOperationCommand {
     }
 
     @Override
-    protected void handleResponse(CommandContext ctx, ModelNode response, boolean composite) {
+    protected void handleResponse(CommandContext ctx, ModelNode response, boolean composite) throws CommandFormatException {
         try {
             if(!response.hasDefined(Util.RESULT)) {
-                ctx.error("The operation response came back w/o result: " + response);
-                return;
+                throw new CommandFormatException("The operation response came back w/o result: " + response);
             }
             ModelNode result = response.get(Util.RESULT);
 
             if(ctx.isDomainMode()) {
 //                if(!result.hasDefined(Util.DOMAIN_RESULTS)) {
-//                    ctx.error(Util.DOMAIN_RESULTS + " aren't available " + result);
+//                    throw new CommandFormatException(Util.DOMAIN_RESULTS + " aren't available " + result);
 //                    return;
 //                }
                 // TODO it could be... could be not...
@@ -191,8 +190,7 @@ public class DeploymentInfoHandler extends BaseOperationCommand {
 
                 final Iterator<Property> steps = result.asPropertyList().iterator();
                 if(!steps.hasNext()) {
-                    ctx.error("Response for the main resource info of the deployment is missing: " + result);
-                    return;
+                    throw new CommandFormatException("Response for the main resource info of the deployment is missing: " + result);
                 }
 
                 // /deployment=<name>
@@ -201,8 +199,7 @@ public class DeploymentInfoHandler extends BaseOperationCommand {
                     step = step.get(Util.STEP_1);
                 }
                 if(!step.has(Util.RESULT)) {
-                    ctx.error("Failed to read the main resource info of the deployment: " + Util.getFailureDescription(step));
-                    return;
+                    throw new CommandFormatException("Failed to read the main resource info of the deployment: " + Util.getFailureDescription(step));
                 }
                 ModelNode stepResponse = step.get(Util.RESULT);
                 final StrictSizeTable table = new StrictSizeTable(1);
@@ -213,8 +210,7 @@ public class DeploymentInfoHandler extends BaseOperationCommand {
                 final SimpleTable groups = new SimpleTable(new String[]{"SERVER GROUP", "STATE"});
                 if(addedServerGroups == null) {
                     if(steps.hasNext()) {
-                        ctx.error("Didn't expect results for server groups but received " + (result.asPropertyList().size() - 1) + " more steps.");
-                        return;
+                        throw new CommandFormatException("Didn't expect results for server groups but received " + (result.asPropertyList().size() - 1) + " more steps.");
                     }
                 } else {
                     for(String sg : addedServerGroups) {

@@ -55,26 +55,22 @@ public class BatchRemoveLineHandler extends CommandHandlerWithHelp {
 
         BatchManager batchManager = ctx.getBatchManager();
         if(!batchManager.isBatchActive()) {
-            ctx.error("No active batch.");
-            return;
+            throw new CommandFormatException("No active batch.");
         }
 
         Batch batch = batchManager.getActiveBatch();
         final int batchSize = batch.size();
         if(batchSize == 0) {
-            ctx.error("The batch is empty.");
-            return;
+            throw new CommandFormatException("The batch is empty.");
         }
 
         List<String> arguments = ctx.getParsedCommandLine().getOtherProperties();
         if(arguments.isEmpty()) {
-            ctx.error("Missing line number.");
-            return;
+            throw new CommandFormatException("Missing line number.");
         }
 
         if(arguments.size() != 1) {
-            ctx.error("Expected only one argument - the line number but received: " + arguments);
-            return;
+            throw new CommandFormatException("Expected only one argument - the line number but received: " + arguments);
         }
 
         String intStr = arguments.get(0);
@@ -82,13 +78,11 @@ public class BatchRemoveLineHandler extends CommandHandlerWithHelp {
         try {
             lineNumber = Integer.parseInt(intStr);
         } catch(NumberFormatException e) {
-            ctx.error("Failed to parse line number '" + intStr + "': " + e.getLocalizedMessage());
-            return;
+            throw new CommandFormatException("Failed to parse line number '" + intStr + "': " + e.getLocalizedMessage());
         }
 
         if(lineNumber < 1 || lineNumber > batchSize) {
-            ctx.error(lineNumber + " isn't in range [1.." + batchSize + "].");
-            return;
+            throw new CommandFormatException(lineNumber + " isn't in range [1.." + batchSize + "].");
         }
 
         batch.remove(lineNumber - 1);

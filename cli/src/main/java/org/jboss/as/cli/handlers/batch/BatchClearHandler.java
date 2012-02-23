@@ -23,6 +23,7 @@ package org.jboss.as.cli.handlers.batch;
 
 
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.batch.Batch;
 import org.jboss.as.cli.handlers.CommandHandlerWithHelp;
 
@@ -48,12 +49,11 @@ public class BatchClearHandler extends CommandHandlerWithHelp {
      * @see org.jboss.as.cli.handlers.CommandHandlerWithHelp#doHandle(org.jboss.as.cli.CommandContext)
      */
     @Override
-    protected void doHandle(CommandContext ctx) {
+    protected void doHandle(CommandContext ctx) throws CommandFormatException {
 
         Batch batch = ctx.getBatchManager().getActiveBatch();
         if(batch == null) {
-            ctx.error("No active batch.");
-            return;
+            throw new CommandFormatException("No active batch.");
         }
         batch.clear();
     }

@@ -33,6 +33,7 @@ import org.jboss.as.cli.CliEventListener;
 import org.jboss.as.cli.CommandArgument;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.OperationCommand;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.ArgumentWithValue;
@@ -181,29 +182,17 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
      * @see org.jboss.as.cli.handlers.CommandHandlerWithHelp#doHandle(org.jboss.as.cli.CommandContext)
      */
     @Override
-    protected void doHandle(CommandContext ctx) throws CommandFormatException {
+    protected void doHandle(CommandContext ctx) throws CommandLineException {
 
-        ModelNode request;
-        try {
-            request = buildRequest(ctx);
-        } catch (CommandFormatException e1) {
-            ctx.error(e1.getLocalizedMessage());
-            return;
-        }
-
-        if(request == null) {
-            ctx.error("Operation request wasn't built.");
-            return;
-        }
+        final ModelNode request = buildRequest(ctx);
         addHeaders(ctx, request);
 
-        ModelControllerClient client = ctx.getModelControllerClient();
+        final ModelControllerClient client = ctx.getModelControllerClient();
         final ModelNode response;
         try {
             response = client.execute(request);
         } catch (Exception e) {
-            ctx.error("Failed to perform operation: " + e.getLocalizedMessage());
-            return;
+            throw new CommandFormatException("Failed to perform operation: " + e.getLocalizedMessage());
         }
         handleResponse(ctx, response, Util.COMPOSITE.equals(request.get(Util.OPERATION).asString()));
     }
@@ -227,10 +216,9 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
         opHeaders.set(headersNode);
     }
 
-    protected void handleResponse(CommandContext ctx, ModelNode response, boolean composite) {
+    protected void handleResponse(CommandContext ctx, ModelNode response, boolean composite) throws CommandFormatException {
         if (!Util.isSuccess(response)) {
-            ctx.error(Util.getFailureDescription(response));
-            return;
+            throw new CommandFormatException(Util.getFailureDescription(response));
         }
     }
 

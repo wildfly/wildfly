@@ -24,6 +24,7 @@ package org.jboss.as.cli.handlers.batch;
 import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.batch.Batch;
 import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.batch.BatchedCommand;
@@ -51,11 +52,10 @@ public class BatchListHandler extends CommandHandlerWithHelp {
      * @see org.jboss.as.cli.handlers.CommandHandlerWithHelp#doHandle(org.jboss.as.cli.CommandContext)
      */
     @Override
-    protected void doHandle(CommandContext ctx) {
+    protected void doHandle(CommandContext ctx) throws CommandFormatException {
         BatchManager batchManager = ctx.getBatchManager();
         if(!batchManager.isBatchActive()) {
-            ctx.error("No active batch.");
-            return;
+            throw new CommandFormatException("No active batch.");
         }
         Batch activeBatch = batchManager.getActiveBatch();
         List<BatchedCommand> commands = activeBatch.getCommands();

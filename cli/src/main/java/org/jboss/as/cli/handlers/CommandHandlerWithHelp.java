@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
 import org.jboss.as.protocol.StreamUtils;
 
@@ -69,7 +70,7 @@ public abstract class CommandHandlerWithHelp extends CommandHandlerWithArguments
      * @see org.jboss.as.cli.CommandHandler#handle(org.jboss.as.cli.CommandContext)
      */
     @Override
-    public void handle(CommandContext ctx) throws CommandFormatException {
+    public void handle(CommandContext ctx) throws CommandLineException {
 
         if(helpArg.isPresent(ctx.getParsedCommandLine())) {
             printHelp(ctx);
@@ -77,14 +78,13 @@ public abstract class CommandHandlerWithHelp extends CommandHandlerWithArguments
         }
 
         if(!isAvailable(ctx)) {
-            ctx.error("The command is not available in the current context (e.g. required subsystems or connection to the controller might be unavailable).");
-            return;
+            throw new CommandFormatException("The command is not available in the current context (e.g. required subsystems or connection to the controller might be unavailable).");
         }
 
         doHandle(ctx);
     }
 
-    protected void printHelp(CommandContext ctx) {
+    protected void printHelp(CommandContext ctx) throws CommandFormatException {
         InputStream helpInput = SecurityActions.getClassLoader(CommandHandlerWithHelp.class).getResourceAsStream(filename);
         if(helpInput != null) {
             BufferedReader reader = new BufferedReader(new InputStreamReader(helpInput));
@@ -95,17 +95,16 @@ public abstract class CommandHandlerWithHelp extends CommandHandlerWithArguments
                     helpLine = reader.readLine();
                 }
             } catch(java.io.IOException e) {
-                ctx.error("Failed to read help/help.txt: " + e.getLocalizedMessage());
+                throw new CommandFormatException ("Failed to read help/help.txt: " + e.getLocalizedMessage());
             } finally {
                 StreamUtils.safeClose(reader);
             }
         } else {
-            ctx.error("Failed to locate command description " + filename);
+            throw new CommandFormatException("Failed to locate command description " + filename);
         }
-        return;
     }
 
-    protected abstract void doHandle(CommandContext ctx) throws CommandFormatException;
+    protected abstract void doHandle(CommandContext ctx) throws CommandLineException;
 
     @Override
     public boolean isBatchMode(CommandContext ctx) {

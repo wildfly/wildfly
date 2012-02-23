@@ -32,6 +32,7 @@ import org.jboss.as.cli.CommandArgument;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandHandler;
+import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.OperationCommand;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
@@ -54,27 +55,24 @@ public class OperationRequestHandler implements CommandHandler, OperationCommand
      * @see org.jboss.as.cli.CommandHandler#handle(org.jboss.as.cli.CommandContext)
      */
     @Override
-    public void handle(CommandContext ctx) {
+    public void handle(CommandContext ctx) throws CommandLineException {
 
         ModelControllerClient client = ctx.getModelControllerClient();
         if(client == null) {
-            ctx.error("You are disconnected at the moment." +
+            throw new CommandFormatException("You are disconnected at the moment." +
                     " Type 'connect' to connect to the server" +
                     " or 'help' for the list of supported commands.");
-            return;
         }
 
         ModelNode request = (ModelNode) ctx.get("OP_REQ");
         if(request == null) {
-            ctx.error("Parsed request isn't available.");
-            return;
+            throw new CommandFormatException("Parsed request isn't available.");
         }
 
         try {
             validateRequest(ctx, request);
         } catch(CommandFormatException e) {
-            ctx.error(e.getLocalizedMessage());
-            return;
+            throw new CommandFormatException(e.getLocalizedMessage());
         }
 
         try {
@@ -82,17 +80,17 @@ public class OperationRequestHandler implements CommandHandler, OperationCommand
             if(Util.isSuccess(result)) {
                 ctx.printLine(result.toString());
             } else {
-                ctx.error(result.toString());
+                throw new CommandFormatException(result.toString());
             }
         } catch(NoSuchElementException e) {
-            ctx.error("ModelNode request is incomplete: " + e.getMessage());
+            throw new CommandFormatException("ModelNode request is incomplete: " + e.getMessage());
         } catch (CancellationException e) {
-            ctx.error("The result couldn't be retrieved (perhaps the task was cancelled: " + e.getLocalizedMessage());
+            throw new CommandFormatException("The result couldn't be retrieved (perhaps the task was cancelled: " + e.getLocalizedMessage());
         } catch (IOException e) {
-            ctx.error("Communication error: " + e.getLocalizedMessage());
             ctx.disconnectController();
+            throw new CommandFormatException("Communication error: " + e.getLocalizedMessage());
         } catch (RuntimeException e) {
-            throw e;
+            throw new CommandFormatException("Failed to execute operation.", e);
         }
     }
 

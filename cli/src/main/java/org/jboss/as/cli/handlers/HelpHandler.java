@@ -53,13 +53,12 @@ public class HelpHandler extends CommandHandlerWithHelp {
      * @see org.jboss.as.cli.CommandHandler#handle(org.jboss.as.cli.Context)
      */
     @Override
-    public void handle(CommandContext ctx) {
+    public void handle(CommandContext ctx) throws CommandFormatException {
         boolean printCommands;
         try {
             printCommands = commands.isPresent(ctx.getParsedCommandLine());
         } catch (CommandFormatException e) {
-            ctx.error(e.getLocalizedMessage());
-            return;
+            throw new CommandFormatException(e.getLocalizedMessage());
         }
 
         if(printCommands) {

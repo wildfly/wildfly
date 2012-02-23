@@ -83,8 +83,10 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
         idProperty = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
             @Override
             public List<String> getAllCandidates(CommandContext ctx) {
-                List<Property> props = getNodeProperties(ctx);
-                if(props.isEmpty()) {
+                List<Property> props;
+                try {
+                    props = getNodeProperties(ctx);
+                } catch (CommandFormatException e) {
                     return Collections.emptyList();
                 }
 
@@ -166,8 +168,7 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
         final ParsedCommandLine args = ctx.getParsedCommandLine();
         final String action = this.action.getValue(args);
         if(action == null) {
-            ctx.error("Command is missing.");
-            return;
+            throw new CommandFormatException("Command is missing.");
         }
 
         if(action.equals("list")) {
@@ -179,14 +180,10 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
             final String nodePath = this.nodePath.getValue(args, true);
             final String propName = this.idProperty.getValue(args, false);
             final String cmdName = this.commandName.getValue(args, true);
-
-            if(!validateInput(ctx, nodePath, propName)) {
-                return;
-            }
+            validateInput(ctx, nodePath, propName);
 
             if(cmdRegistry.getCommandHandler(cmdName) != null) {
-                ctx.error("Command '" + cmdName + "' already registered.");
-                return;
+                throw new CommandFormatException("Command '" + cmdName + "' already registered.");
             }
             cmdRegistry.registerHandler(new GenericTypeOperationHandler(ctx, nodePath, propName), cmdName);
             return;
@@ -196,14 +193,13 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
             final String cmdName = this.commandName.getValue(args, true);
             CommandHandler handler = cmdRegistry.getCommandHandler(cmdName);
             if(!(handler instanceof GenericTypeOperationHandler)) {
-                ctx.error("Command '" + cmdName + "' is not a generic type command.");
-                return;
+                throw new CommandFormatException("Command '" + cmdName + "' is not a generic type command.");
             }
             cmdRegistry.remove(cmdName);
             return;
         }
 
-        ctx.error("Unexpected action: " + action);
+        throw new CommandFormatException("Unexpected action: " + action);
     }
 
     protected List<String> getExistingCommands() {
@@ -216,11 +212,8 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
         return commands;
     }
 
-    protected List<Property> getNodeProperties(CommandContext ctx) {
-        ModelNode request = initRequest(ctx);
-        if(request == null) {
-            return Collections.emptyList();
-        }
+    protected List<Property> getNodeProperties(CommandContext ctx) throws CommandFormatException {
+        final ModelNode request = initRequest(ctx);
         request.get(Util.OPERATION).set(Util.READ_RESOURCE_DESCRIPTION);
         ModelNode result;
         try {
@@ -238,7 +231,7 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
         return result.get(Util.ATTRIBUTES).asPropertyList();
     }
 
-    protected ModelNode initRequest(CommandContext ctx) {
+    protected ModelNode initRequest(CommandContext ctx) throws CommandFormatException {
         ModelNode request = new ModelNode();
         ModelNode address = request.get(Util.ADDRESS);
 
@@ -248,11 +241,7 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
         } else {
             callback.reset();
         }
-        try {
-            ParserUtil.parseOperationRequest(type, callback);
-        } catch (CommandFormatException e) {
-            throw new IllegalArgumentException("Failed to parse nodeType: " + e.getMessage());
-        }
+        ParserUtil.parseOperationRequest(type, callback);
 
         OperationRequestAddress typeAddress = callback.getAddress();
         if(!typeAddress.endsOnType()) {
@@ -267,7 +256,7 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
         return request;
     }
 
-    protected boolean validateInput(CommandContext ctx, String typePath, String propertyName) {
+    protected void validateInput(CommandContext ctx, String typePath, String propertyName) throws CommandFormatException {
 
         ModelNode request = new ModelNode();
         ModelNode address = request.get(Util.ADDRESS);
@@ -281,14 +270,12 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
         try {
             ParserUtil.parseOperationRequest(typePath, callback);
         } catch (CommandFormatException e) {
-            ctx.error("Failed to validate input: " + e.getLocalizedMessage());
-            return false;
+            throw new CommandFormatException("Failed to validate input: " + e.getLocalizedMessage());
         }
 
         OperationRequestAddress typeAddress = callback.getAddress();
         if(!typeAddress.endsOnType()) {
-            ctx.error("Node path '" + typePath + "' doesn't appear to end on a type.");
-            return false;
+            throw new CommandFormatException("Node path '" + typePath + "' doesn't appear to end on a type.");
         }
 
         final String typeName = typeAddress.toParentNode().getType();
@@ -302,12 +289,10 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
         try {
             result = ctx.getModelControllerClient().execute(request);
         } catch (IOException e) {
-            ctx.error("Failed to validate input: " + e.getLocalizedMessage());
-            return false;
+            throw new CommandFormatException("Failed to validate input: " + e.getLocalizedMessage());
         }
         if(!result.hasDefined(Util.RESULT)) {
-            ctx.error("Failed to validate input: operation response doesn't contain result info.");
-            return false;
+            throw new CommandFormatException("Failed to validate input: operation response doesn't contain result info.");
         }
 
         boolean pathValid = false;
@@ -318,8 +303,7 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
             }
         }
         if(!pathValid) {
-            ctx.error("Type '" + typeName + "' not found among child types of '" + ctx.getPrefixFormatter().format(typeAddress) + "'");
-            return false;
+            throw new CommandFormatException("Type '" + typeName + "' not found among child types of '" + ctx.getPrefixFormatter().format(typeAddress) + "'");
         }
 
         address.add(typeName, "?");
@@ -328,17 +312,14 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
         try {
             result = ctx.getModelControllerClient().execute(request);
         } catch (IOException e) {
-            ctx.error(e.getLocalizedMessage());
-            return false;
+            throw new CommandFormatException(e.getLocalizedMessage());
         }
         if(!result.hasDefined(Util.RESULT)) {
-            ctx.error("Failed to validate input: operation response doesn't contain result info.");
-            return false;
+            throw new CommandFormatException("Failed to validate input: operation response doesn't contain result info.");
         }
         result = result.get(Util.RESULT);
         if(!result.hasDefined("attributes")) {
-            ctx.error("Failed to validate input: description of attributes is missing for " + typePath);
-            return false;
+            throw new CommandFormatException("Failed to validate input: description of attributes is missing for " + typePath);
         }
 
         if(propertyName != null) {
@@ -346,16 +327,14 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
                 if(prop.getName().equals(propertyName)) {
                     ModelNode value = prop.getValue();
                     if(value.has(Util.ACCESS_TYPE) && Util.READ_ONLY.equals(value.get(Util.ACCESS_TYPE).asString())) {
-                        return true;
+                        return;
                     }
-                    ctx.error("Property " + propertyName + " is not read-only.");
-                    return false;
+                    throw new CommandFormatException("Property " + propertyName + " is not read-only.");
                 }
             }
         } else {
-            return true;
+            return;
         }
-        ctx.error("Property '" + propertyName + "' wasn't found among the properties of " + typePath);
-        return false;
+        throw new CommandFormatException("Property '" + propertyName + "' wasn't found among the properties of " + typePath);
     }
 }

@@ -47,7 +47,7 @@ public class PrefixHandler extends CommandHandlerWithHelp {
     }
 
     @Override
-    protected void doHandle(CommandContext ctx) {
+    protected void doHandle(CommandContext ctx) throws CommandFormatException {
 
         final String nodePath = this.nodePath.getValue(ctx.getParsedCommandLine());
 
@@ -59,10 +59,6 @@ public class PrefixHandler extends CommandHandlerWithHelp {
         }
 
         CommandLineParser.CallbackHandler handler = new DefaultCallbackHandler(prefix);
-        try {
-            ctx.getCommandLineParser().parse(ctx.getArgumentsString(), handler);
-        } catch (CommandFormatException e) {
-            ctx.error(e.getLocalizedMessage());
-        }
+        ctx.getCommandLineParser().parse(ctx.getArgumentsString(), handler);
     }
 }
