@@ -77,8 +77,6 @@
                                 <configuration>
                                     <target>
                                         <ant antfile="${basedir}/../src/test/scripts/smoke-build.xml">
-                                            <property name="node0" value="${node0}"/> <!-- inheritAll="true" doesn't work. -->
-                                            <property name="node1" value="${node1}"/>
                                             <target name="build-smoke"/>
                                         </ant>
                                     </target>

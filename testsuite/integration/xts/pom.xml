@@ -62,10 +62,7 @@
                                 <goals><goal>run</goal></goals>
                                 <configuration>
                                     <target>
-                                        <!-- build the UDP server configs in target-->
                                         <ant antfile="${jbossas.ts.integ.dir}/src/test/scripts/xts-build.xml">
-                                            <property name="node0" value="${node0}"/> <!-- inheritAll="true" doesn't work. -->
-                                            <property name="node1" value="${node1}"/>
                                             <target name="build-xts"/>
                                         </ant>
                                     </target>
@@ -95,12 +92,6 @@
                                     <includes>
                                         <include>org/jboss/as/test/xts/**/*TestCase.java</include>
                                     </includes>
-
-                                    <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables>
-                                        <!-- TODO: Use a property. -->
-                                        <jboss.server.config.file.name>../../docs/examples/configs/standalone-xts.xml</jboss.server.config.file.name>
-                                    </systemPropertyVariables>
                                 </configuration>
                             </execution>
 

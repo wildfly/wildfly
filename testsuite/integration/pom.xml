@@ -183,6 +183,11 @@
                                     <directory>../../shared/src/main/resources</directory>
                                     <includes><include>*.properties</include></includes>
                                 </resource>
+                                <resource>
+                                    <!-- Add the XTS config to the standalone/config directory, so it will be processed as well -->
+                                    <directory>${basedir}/target/jbossas/docs/examples/configs</directory>
+                                    <includes><include>standalone-xts.xml</include></includes>
+                                </resource>
                             </resources>
                         </configuration>
                     </execution>

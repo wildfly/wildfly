@@ -7,7 +7,6 @@
     <target name="build-xts" description="Builds server configuration for XTS tests">
 
         <echo message="Copying and configuring AS instance for XTS..."/>
-        <build-server-config name="jbossas-xts"/>
 
     </target>
 

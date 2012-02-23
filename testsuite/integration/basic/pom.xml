@@ -39,37 +39,9 @@
             </testResource>
         </testResources>
 
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copy-users</id>
-                        <phase>generate-test-resources</phase>
-                        <goals><goal>copy-resources</goal></goals>
-                        <configuration>
-                            <outputDirectory>${basedir}/target/jbossas/standalone/configuration</outputDirectory>
-                            <overwrite>true</overwrite>
-                            <resources>
-                                <resource>
-                                    <directory>../../shared/src/main/resources</directory>
-                                    <includes>
-                                        <include>*-users.properties</include>
-                                        <include>*-roles.properties</include>
-                                    </includes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-
     </build>
 
     <profiles>
-
 
         <profile>
             <id>basic.integration.tests.profile</id>
@@ -100,8 +72,6 @@
                                         <property name="tests.resources.dir" value="${basedir}/../src/test/resources"/>
                                         <property name="tests.output.dir"    value="${project.build.directory}"/>
                                         <ant antfile="${basedir}/../src/test/scripts/basic-integration-build.xml">
-                                            <property name="node0" value="${node0}"/> <!-- inheritAll="true" doesn't work. -->
-                                            <property name="node1" value="${node1}"/>
                                             <target name="build-basic-integration"/>  <!-- TODO: Unify names, then call "recursively". -->
                                         </ant>
                                     </target>
@@ -270,8 +240,6 @@
                 </plugins>
             </build>
         </profile>
-
-
 
         <!-- When -Dtest=... is set, only the default surefire execution with standalone-full.xml will run. -->
         <profile>
