@@ -48,7 +48,7 @@ public class MappedNameInjectionTestCase {
     public static WebArchive createSecondDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class);
         war.addClasses(MappedNameInjectionTestCase.class, MappedNameBean.class);
-        war.addAsWebInfResource("injection/mappedname/web.xml");
+        war.addAsWebInfResource(MappedNameInjectionTestCase.class.getPackage(), "/web.xml","/web.xml");
         war.toString(true);
         return war;
     }

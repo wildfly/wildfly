@@ -40,8 +40,8 @@ public class CycleBeansTestCase {
     public static JavaArchive getCycleBeansJar() {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "cycle-beans.jar");
         archive.addPackage(TFactory.class.getPackage());
-        archive.addAsManifestResource("pojo/a-jboss-beans.xml", "a-jboss-beans.xml");
-        archive.addAsManifestResource("pojo/b-jboss-beans.xml", "b-jboss-beans.xml");
+        archive.addAsManifestResource(CycleBeansTestCase.class.getPackage(), "a-jboss-beans.xml", "a-jboss-beans.xml");
+        archive.addAsManifestResource(CycleBeansTestCase.class.getPackage(), "b-jboss-beans.xml", "b-jboss-beans.xml");
         return archive;
     }
 

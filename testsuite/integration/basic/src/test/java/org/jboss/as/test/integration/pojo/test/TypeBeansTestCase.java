@@ -40,7 +40,7 @@ public class TypeBeansTestCase {
     public static JavaArchive getCycleBeansJar() {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "type-beans.jar");
         archive.addPackage(TFactory.class.getPackage());
-        archive.addAsManifestResource("pojo/type-jboss-beans.xml", "type-jboss-beans.xml");
+        archive.addAsManifestResource(TypeBeansTestCase.class.getPackage(), "type-jboss-beans.xml", "type-jboss-beans.xml");
         return archive;
     }
 

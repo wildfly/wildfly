@@ -40,7 +40,7 @@ public class BeanFactoryTestCase {
     public static JavaArchive getBeanFactoryJar() {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "bean-factory.jar");
         archive.addPackage(TFactory.class.getPackage());
-        archive.addAsManifestResource("pojo/bf-jboss-beans.xml", "bf-jboss-beans.xml");
+        archive.addAsManifestResource(BeanFactoryTestCase.class.getPackage(), "bf-jboss-beans.xml", "bf-jboss-beans.xml");
         return archive;
     }
 

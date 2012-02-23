@@ -56,7 +56,7 @@ public final class SarInjectionTestCase {
     public static JavaArchive createDeployment() throws Exception {
         final JavaArchive sar = ShrinkWrap.create(JavaArchive.class, "injection.sar");
         sar.addPackage(A.class.getPackage());
-        sar.addAsManifestResource("sar/injection/jboss-service.xml", "jboss-service.xml");
+        sar.addAsManifestResource(SarInjectionTestCase.class.getPackage(), "jboss-service.xml", "jboss-service.xml");
         return sar;
     }
 

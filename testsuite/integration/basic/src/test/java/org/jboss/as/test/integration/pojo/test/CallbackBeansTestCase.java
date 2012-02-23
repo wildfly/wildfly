@@ -40,7 +40,7 @@ public class CallbackBeansTestCase {
     public static JavaArchive getCallbackBeansJar() {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "callback-beans.jar");
         archive.addPackage(TOwner.class.getPackage());
-        archive.addAsManifestResource("pojo/callback-jboss-beans.xml", "callback-jboss-beans.xml");
+        archive.addAsManifestResource(CallbackBeansTestCase.class.getPackage(), "callback-jboss-beans.xml", "callback-jboss-beans.xml");
         return archive;
     }
 
