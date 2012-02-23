@@ -352,6 +352,19 @@
                                         <parameter><name>udpMcastAddress</name><value>${udpGroup}</value></parameter><!-- Only somewhere - TODO. -->
                                     </parameters>
                                 </transformationSet>
+                                <!-- JMS destinations. -->
+                                <transformationSet>
+                                    <dir>${basedir}/target/jbossas/standalone/configuration</dir>
+                                    <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
+                                    <stylesheet>${xslt.scripts.dir}/addJmsDestinations.xsl</stylesheet>
+                                    <includes>
+                                        <include>standalone*.xml</include>
+                                    </includes>
+                                    <parameters>
+                                        <parameter><name>queueName</name><value>testQueue</value></parameter>
+                                        <parameter><name>topicName</name><value>testTopic</value></parameter>
+                                    </parameters>
+                                </transformationSet>
                                 <!-- Datasource. -->
                                 <!-- Not needed, done in ds.profile .
                                 <transformationSet>
