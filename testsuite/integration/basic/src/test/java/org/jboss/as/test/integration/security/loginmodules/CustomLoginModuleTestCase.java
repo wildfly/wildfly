@@ -22,22 +22,7 @@
 
 package org.jboss.as.test.integration.security.loginmodules;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.security.Constants.AUTHENTICATION;
-import static org.jboss.as.security.Constants.CODE;
-import static org.jboss.as.security.Constants.FLAG;
-import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
-import static org.junit.Assert.assertEquals;
-
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URL;
 import java.util.ArrayList;
@@ -74,6 +59,22 @@ import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.security.Constants.AUTHENTICATION;
+import static org.jboss.as.security.Constants.CODE;
+import static org.jboss.as.security.Constants.FLAG;
+import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
+import static org.junit.Assert.assertEquals;
+
 /**
  * Unit test for custom login modules in authentication.
  *
@@ -96,41 +97,34 @@ public class CustomLoginModuleTestCase {
      *
      * @param name Name of the war file
      * @param servletClass a class that is the servlet
-     * @param webxml {@link URL} to the web.xml. This can be null
      * @return
      */
-    public static WebArchive create(String name, Class<?> servletClass, URL webxml) {
+    public static WebArchive create(String name, Class<?> servletClass) {
         WebArchive war = ShrinkWrap.create(WebArchive.class, name);
         war.addClass(servletClass);
 
-        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-
-        war.addAsWebResource(tccl.getResource("web-secure.war/login.jsp"), "login.jsp");
-        war.addAsWebResource(tccl.getResource("web-secure.war/error.jsp"), "error.jsp");
-        war.addAsWebInfResource(tccl.getResource("custom-login-module.war/jboss-web.xml"), "jboss-web.xml");
+        war.addAsWebResource(CustomLoginModuleTestCase.class.getPackage() ,"login.jsp", "login.jsp");
+        war.addAsWebResource( CustomLoginModuleTestCase.class.getPackage(),"error.jsp", "error.jsp");
+        war.addAsWebInfResource(CustomLoginModuleTestCase.class.getPackage() ,"jboss-web.xml", "jboss-web.xml");
+        war.setWebXML(CustomLoginModuleTestCase.class.getPackage(), "web.xml");
         war.addClass(CustomTestLoginModule.class);
-
-        if (webxml != null) {
-            war.setWebXML(webxml);
-        }
-
         return war;
     }
 
     @Deployment
-    public static WebArchive deployment() {
+    public static WebArchive deployment() throws IOException {
         // FIXME hack to get things prepared before the deployment happens
+        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
         try {
-            final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
             // create required security domains
             createSecurityDomains(client);
         } catch (Exception e) {
             // ignore
+        } finally {
+            client.close();
         }
 
-        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-        URL webxml = tccl.getResource("web-secure.war/web.xml");
-        WebArchive war = create("custom-login-module.war", SecuredServlet.class, webxml);
+        WebArchive war = create("custom-login-module.war", SecuredServlet.class);
         WebSecurityPasswordBasedBase.printWar(war);
         Logger.getLogger(CustomLoginModuleTestCase.class).debug(war.toString(true));
         return war;
