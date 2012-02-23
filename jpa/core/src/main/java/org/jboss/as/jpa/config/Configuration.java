@@ -115,6 +115,12 @@ public class Configuration {
     public static final String ADAPTER_MODULE_DEFAULT = "org.jboss.as.jpa.hibernate:4";
 
     /**
+     * defaults to true, if changed to false (in the persistence.xml),
+     * the JPA container will not start the persistence unit service.
+     */
+    public static final String JPA_CONTAINER_MANAGED = "jboss.as.jpa.managed";
+
+    /**
      * name of the persistence provider adapter class
      */
     public static final String ADAPTER_CLASS = "jboss.as.jpa.adapterClass";
