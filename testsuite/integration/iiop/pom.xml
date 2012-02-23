@@ -25,21 +25,6 @@
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
     </properties>
 
-    <!--  TODO move this to parent? -->
-    <build>
-        <testResources>
-            <testResource>
-                <directory>src/test/resources</directory>
-            </testResource>
-            <testResource>
-                <directory>src/test/java</directory>
-                <excludes>
-                    <exclude>**/*.java</exclude>
-                </excludes>
-            </testResource>
-        </testResources>
-    </build>
-
     <profiles>
 
         <profile>
@@ -49,10 +34,10 @@
                     <name>!ts.noIIOP</name>
                 </property>
             </activation>
-            
+
             <properties>
             </properties>
-            
+
             <!--
                 Server configuration executions.
             -->
