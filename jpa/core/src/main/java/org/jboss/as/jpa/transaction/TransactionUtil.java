@@ -172,7 +172,6 @@ public class TransactionUtil {
         getTransactionSynchronizationRegistry().putResource(scopedPuName, entityManager);
     }
 
-
     private static class SessionSynchronization implements Synchronization {
         private EntityManager manager;
         private boolean closeAtTxCompletion;

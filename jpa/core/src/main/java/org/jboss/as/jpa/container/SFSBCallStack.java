@@ -116,12 +116,25 @@ public class SFSBCallStack {
     }
 
     /**
-     * Return the current entity manager map
+     * Return the current entity manager call stack
      *
      * @return call stack (may be empty but never null)
      */
     public static ArrayList<Map<String, ReferenceCountedEntityManager>> currentSFSBCallStack() {
         return SFSBInvocationStack.get();
+    }
+
+    /**
+     * return for just the current entity manager invocation
+     *
+     * @return
+     */
+    public static Map<String, ReferenceCountedEntityManager> currentSFSBCallStackInvocation() {
+        ArrayList<Map<String, ReferenceCountedEntityManager>> stack = SFSBInvocationStack.get();
+        if ( stack != null && stack.size() > 0) {
+            return stack.get(stack.size() - 1);
+        }
+        return null;
     }
 
     /**

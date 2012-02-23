@@ -89,6 +89,7 @@ public class JPAService implements Service<Void> {
             .setInitialMode(ServiceController.Mode.ACTIVE)
             .addDependency(TransactionManagerService.SERVICE_NAME, new CastingInjector<TransactionManager>(transactionManagerInjector, TransactionManager.class))
             .addDependency(TransactionSynchronizationRegistryService.SERVICE_NAME, new CastingInjector<TransactionSynchronizationRegistry>(transactionRegistryInjector, TransactionSynchronizationRegistry.class))
+            .addDependency(JPAUserTransactionListenerService.SERVICE_NAME)
             .install();
     }
 
