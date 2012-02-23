@@ -21,10 +21,6 @@
  */
 package org.jboss.as.test.integration.management.api.web;
 
-import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -57,8 +53,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 /**
- * 
+ *
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
 @RunWith(Arquillian.class)
@@ -72,6 +72,12 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
 
     @ArquillianResource
     URL url;
+
+    /**
+     * We use a different socket binding name for each test, as if the socket is still up the service
+     * will not be removed. Rather than adding a sleep we use this approach
+     */
+    private static int socketBindingCount = 0;
 
     @Deployment
     public static Archive<?> getDeployment() {
@@ -263,14 +269,14 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
     }
 
     private ModelNode getAddSocketBindingOp(Connector conn) {
-        ModelNode op = createOpNode("socket-binding-group=standard-sockets/socket-binding=test-" + conn.getName(), "add");
+        ModelNode op = createOpNode("socket-binding-group=standard-sockets/socket-binding=test-" + conn.getName() + (++socketBindingCount), "add");
         op.get("port").set(8181);
         return op;
     }
 
     private ModelNode getAddConnectorOp(Connector conn) {
         ModelNode op = createOpNode("subsystem=web/connector=test-" + conn.getName() + "-connector", "add");
-        op.get("socket-binding").set("test-" + conn.getName());
+        op.get("socket-binding").set("test-" + conn.getName() + socketBindingCount);
         op.get("scheme").set(conn.getScheme());
         op.get("protocol").set(conn.getProtocol());
         op.get("secure").set(conn.isSecure());
@@ -308,7 +314,7 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
     }
 
     private ModelNode getRemoveSocketBindingOp(Connector conn) {
-        ModelNode op = createOpNode("socket-binding-group=standard-sockets/socket-binding=test-" + conn.getName(), "remove");
+        ModelNode op = createOpNode("socket-binding-group=standard-sockets/socket-binding=test-" + conn.getName() + socketBindingCount, "remove");
         return op;
     }
 
