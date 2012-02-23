@@ -27,108 +27,6 @@
         <propertyref prefix="ds"/>
     </propertyset>
 
-
-
-
-    <!--
-          Change AS database configuration.
-          TODO: Moved to maven.
-    -->
-    <condition property="changeDB">
-        <not><equals arg1="${ds.db}" arg2=""/></not>
-    </condition>
-    
-    <target name="changeDefaultDatabase" description="Changes the default database" if="changeDB">
-
-        <echo message="Changing database for ${server-config} with parameters:"/>
-        <echo message="ds.db = ${ds.db}"/>
-        <echo message="ds.jdbc.driver.jar = ${ds.jdbc.driver.jar}"/>
-        <echo message="ds.jdbc.url = ${ds.jdbc.url}"/>
-        <echo message="ds.jdbc.user = ${ds.jdbc.user}"/>
-        <echo message="ds.jdbc.pass = ${ds.jdbc.pass}"/>
-
-        <property name="server.dir" value="${project.build.directory}/${server-config}"/> <!-- Ant will copy actual instances from this "template" (when implemented). -->
-        <property name="config.dir" value="${server.dir}/standalone/configuration"/>
-
-        <!-- Copy jar into standalone/deployments. This installs the driver under a new driver name. -->
-        <copy file="${jbossas.ts.integ.dir}/target/jdbcDrivers/${ds.jdbc.driver.jar}" todir="${server.dir}/standalone/deployments"/>
-
-        <!-- Change standalone/configuration/standalone.xml file. I.e. update datasource subsystem config. -->
-        <xslt destdir="${config.dir}" extension=".xml.mod" useImplicitFileset="false"
-              style="${jbossas.ts.integ.dir}/src/test/xslt/changeDatabase.xsl">
-            <fileset dir="${config.dir}">
-                <include name="standalone.xml"/>
-                <include name="standalone-xts.xml"/>
-                <include name="standalone-ha.xml"/>
-                <include name="standalone-full.xml"/>
-            </fileset>
-            <param name="ds.jdbc.driver.jar" expression="${ds.jdbc.driver.jar}"/>
-            <param name="ds.jdbc.url" expression="${ds.jdbc.url}"/>
-            <param name="ds.jdbc.user" expression="${ds.jdbc.user}"/>
-            <param name="ds.jdbc.pass" expression="${ds.jdbc.pass}"/>
-        </xslt>
-
-        <!-- Move processed files back. -->
-        <move todir="${config.dir}">
-           <fileset dir="${config.dir}">
-               <include name="**/standalone.xml.mod"/>
-               <include name="**/standalone-ha.xml.mod"/>
-               <include name="**/standalone-full.xml.mod"/>
-               <include name="**/standalone-xts.xml.mod"/>
-           </fileset>
-           <mapper type="glob" from="*.mod" to="*"/>
-         </move>
-    </target>
-
-    <!--
-        Build server configutation:
-           * Copy from distribution directory (TODO: Copy from ${basedir}target/jbossas to pick up changes by Maven!
-           * Overwrite some config files, replace tokens.
-           
-        TODO: Not necessary - done in maven.
-     -->
-    <macrodef name="build-server-config" description="Builds a server configuration">
-
-        <attribute name="name" default="jbossas"/>
-        <attribute name="output.dir" default="${project.build.directory}"/>
-        <attribute name="jboss.dist" default="${jboss.dist}"/>
-        <attribute name="test.configs.dir" default="${jbossas.ts.integ.dir}/src/test/resources/test-configs"/>
-        <attribute name="copyPattern" default="DO_NOT_MATCH"/>
-        <element name="filter-elements" optional="yes" description="additional filter elements"/>
-
-        <sequential>
-
-            <echo message="Building AS instance &quot;@{name}&quot; from @{jboss.dist} to @{output.dir}"/>
-
-            <!-- copy the base distribution -->
-            <!-- we exclude modules and bundles as they are read-only and we locate the via sys props-->
-            <copy todir="@{output.dir}/@{name}">
-                <fileset dir="@{jboss.dist}">
-                    <exclude name="**/modules/**"/>
-                    <exclude name="**/bundles/**"/>
-                </fileset>
-            </copy>
-
-            <copy todir="@{output.dir}/@{name}/standalone/configuration" overwrite="true">
-                <fileset dir="${jbossas.ts.integ.dir}/../shared/src/main/resources">
-                    <include name="@{copyPattern}"/>
-                </fileset>
-            </copy>
-
-            <!-- overwrite with configs from test-configs and apply property filtering -->
-            <copy todir="@{output.dir}/@{name}" overwrite="true" failonerror="false">
-                <fileset dir="@{test.configs.dir}/@{name}"/>
-                <filterset begintoken="${" endtoken="}">
-                    <filter token="node0" value="${node0}"/>
-                    <filter token="node1" value="${node1}"/>
-                    <filter token="udpGroup" value="${udpGroup}"/>
-                    <filter-elements/>
-                </filterset>
-            </copy>
-        </sequential>
-    </macrodef>
-
-
     <!--
         Overwrite some config files, replace tokens.
     -->
@@ -155,53 +53,9 @@
 
 
     <!--
-        Change IP adresses config.
-        TODO: Moved to maven.
-     -->
-    <macrodef name="ts.config-as.ip" description="Changes the IP addresses of a single node configuration.">
-
-        <attribute name="name" default="jbossas"/>
-        <attribute name="output.dir" default="${project.build.directory}"/>
-        <attribute name="config.dir.name" default="standalone/configuration"/>
-        <attribute name="node" default="${node0}"/>
-
-        <sequential>
-
-            <echo message="Changing IP addresses for config @{name}"/>
-
-            <property name="cur-as.config.dir" value="@{output.dir}/@{name}/@{config.dir.name}"/>
-
-            <!-- Process *.xml to *.xml.mod. -->
-            <xslt destdir="@{output.dir}/@{name}/@{config.dir.name}"
-                  style="${jbossas.ts.integ.dir}/src/test/xslt/changeIPAddresses.xsl"
-                  extension=".xml.mod"
-                  useImplicitFileset="false">
-                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
-                    <include name="**/standalone.xml"/>
-                    <include name="**/standalone-full.xml"/>
-                    <include name="**/standalone-ha.xml"/>
-                </fileset>
-                <param name="managementIPAddress" expression="@{node}"/>
-                <param name="publicIPAddress" expression="@{node}"/>
-            </xslt>
-
-            <!-- Move processed files back. -->
-            <move todir="@{output.dir}/@{name}/@{config.dir.name}">
-               <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
-                   <include name="**/standalone-full.xml.mod"/>
-                   <include name="**/standalone.xml.mod"/>
-                   <include name="**/standalone-ha.xml.mod"/>
-               </fileset>
-               <mapper type="glob" from="*.mod" to="*"/>
-            </move>
-        </sequential>
-    </macrodef>
-
-
-    <!--
         Change IP adresses, including multicast.
         It's the same as above, only adds the udpMcastAddress param.
-        
+
         This macro makes use of saxon via  ${net.sf.saxon:saxon:jar}.
     -->
     <macrodef name="ts.config-as.ip-with-multicast" description="Changes the IP *and* multicast addresses of a node configuration">
@@ -247,7 +101,7 @@
     </macrodef>
 
 
-    
+
     <!--
         Configure port offset.
         This macro makes use of saxon via  ${net.sf.saxon:saxon:jar}.
@@ -294,7 +148,7 @@
     </macrodef>
 
 
-    
+
     <!--
         Enable JTS.
         This macro makes use of saxon via  ${net.sf.saxon:saxon:jar}.
@@ -380,7 +234,7 @@
              </move>
         </sequential>
     </macrodef>
-    
+
     <macrodef name="ts.config-as.add-identity-realm" description="Add Server Identity Security Realm">
 
         <attribute name="name" default="jbossas"/>
