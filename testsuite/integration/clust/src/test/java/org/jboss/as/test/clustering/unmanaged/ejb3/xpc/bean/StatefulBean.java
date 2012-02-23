@@ -42,7 +42,7 @@ import org.jboss.ejb3.annotation.Clustered;
 public class StatefulBean implements Stateful {
 
     @PersistenceContext(unitName = "mypc", type = PersistenceContextType.EXTENDED)
-        EntityManager em;
+    EntityManager em;
 
 //     @EJB
 //     SecondBean secondBean;

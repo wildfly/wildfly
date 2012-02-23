@@ -49,7 +49,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Validate the <distributable/> works for a two-node cluster.
- * 
+ *
  * @author Paul Ferraro
  * @author Radoslav Husar
  */

@@ -59,17 +59,17 @@ import static org.junit.Assert.assertEquals;
 public class StatefulFailoverTestCase {
     /** Constants **/
     public static final int GRACE_TIME = 20000;
-    public static final String CONTAINER1 = "clustering-udp-0-unmanaged";
-    public static final String CONTAINER2 = "clustering-udp-1-unmanaged";
-    public static final String[] CONTAINERS = new String[] { CONTAINER1, CONTAINER2 };
-    public static final String DEPLOYMENT1 = "deployment-0-unmanaged";
-    public static final String DEPLOYMENT2 = "deployment-1-unmanaged";
-    public static final String[] DEPLOYMENTS = new String[] { DEPLOYMENT1, DEPLOYMENT2 };
+    public static final String CONTAINER_1 = "clustering-udp-1-unmanaged";
+    public static final String CONTAINER_2 = "clustering-udp-2-unmanaged";
+    public static final String[] CONTAINERS = new String[] { CONTAINER_1, CONTAINER_2 };
+    public static final String DEPLOYMENT_1 = "deployment-1-unmanaged";
+    public static final String DEPLOYMENT_2 = "deployment-2-unmanaged";
+    public static final String[] DEPLOYMENTS = new String[] { DEPLOYMENT_1, DEPLOYMENT_2 };
 
     @ArquillianResource
-    ContainerController controller;
+    private ContainerController controller;
     @ArquillianResource
-    Deployer deployer;
+    private Deployer deployer;
 
     @BeforeClass
     public static void printSysProps() {
@@ -77,15 +77,15 @@ public class StatefulFailoverTestCase {
         System.out.println("System properties:\n" + sysprops);
     }
 
-    @Deployment(name = DEPLOYMENT1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER1)
+    @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
+    @TargetsContainer(CONTAINER_1)
     public static Archive<?> deployment0() {
         WebArchive war = createDeployment();
         return war;
     }
 
-    @Deployment(name = DEPLOYMENT2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER2)
+    @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
+    @TargetsContainer(CONTAINER_2)
     public static Archive<?> deployment1() {
         WebArchive war = createDeployment();
         return war;
@@ -108,8 +108,8 @@ public class StatefulFailoverTestCase {
     /* @OperateOnDeployment(DEPLOYMENT1) -- See http://community.jboss.org/thread/176096 */
     public void testRestart(/*@ArquillianResource(SimpleServlet.class) URL baseURL*/) throws IOException, InterruptedException {
         // Container is unmanaged, need to start manually.
-        controller.start(CONTAINER1);
-        deployer.deploy(DEPLOYMENT1);
+        controller.start(CONTAINER_1);
+        deployer.deploy(DEPLOYMENT_1);
 
         DefaultHttpClient client = new DefaultHttpClient();
 
@@ -121,8 +121,8 @@ public class StatefulFailoverTestCase {
             assertQueryCount(20010101, client, url1);
             assertQueryCount(20020202, client, url1);
 
-            controller.start(CONTAINER2);
-            deployer.deploy(DEPLOYMENT2);
+            controller.start(CONTAINER_2);
+            deployer.deploy(DEPLOYMENT_2);
 
             assertQueryCount(20030303, client, url1);
             assertQueryCount(20040404, client, url1);
@@ -130,12 +130,12 @@ public class StatefulFailoverTestCase {
             assertQueryCount(20050505, client, url2);
             assertQueryCount(20060606, client, url2);
 
-            controller.stop(CONTAINER2);
+            controller.stop(CONTAINER_2);
 
             assertQueryCount(20070707, client, url1);
             assertQueryCount(20080808, client, url1);
 
-            controller.start(CONTAINER2);
+            controller.start(CONTAINER_2);
 
             assertQueryCount(20090909, client, url1);
             assertQueryCount(20101010, client, url1);
@@ -143,11 +143,11 @@ public class StatefulFailoverTestCase {
             assertQueryCount(20111111, client, url2);
             assertQueryCount(20121212, client, url2);
 
-            controller.stop(CONTAINER1);
+            controller.stop(CONTAINER_1);
             assertQueryCount(20131313, client, url2);
             assertQueryCount(20141414, client, url2);
 
-            controller.start(CONTAINER1);
+            controller.start(CONTAINER_1);
 
             assertQueryCount(20151515, client, url1);
             assertQueryCount(20161616, client, url1);
@@ -157,8 +157,8 @@ public class StatefulFailoverTestCase {
         } finally {
             client.getConnectionManager().shutdown();
 
-            this.cleanup(DEPLOYMENT1, CONTAINER1);
-            this.cleanup(DEPLOYMENT2, CONTAINER2);
+            this.cleanup(DEPLOYMENT_1, CONTAINER_1);
+            this.cleanup(DEPLOYMENT_2, CONTAINER_2);
         }
     }
 
@@ -167,8 +167,8 @@ public class StatefulFailoverTestCase {
     /* @OperateOnDeployment(DEPLOYMENT1) -- See http://community.jboss.org/thread/176096 */
     public void testRedeploy(/*@ArquillianResource(SimpleServlet.class) URL baseURL*/) throws IOException, InterruptedException {
         // Container is unmanaged, need to start manually.
-        controller.start(CONTAINER1);
-        deployer.deploy(DEPLOYMENT1);
+        controller.start(CONTAINER_1);
+        deployer.deploy(DEPLOYMENT_1);
 
         DefaultHttpClient client = new DefaultHttpClient();
 
@@ -180,8 +180,8 @@ public class StatefulFailoverTestCase {
             assertQueryCount(20010101, client, url1);
             assertQueryCount(20020202, client, url1);
 
-            controller.start(CONTAINER2);
-            deployer.deploy(DEPLOYMENT2);
+            controller.start(CONTAINER_2);
+            deployer.deploy(DEPLOYMENT_2);
 
             assertQueryCount(20030303, client, url1);
             assertQueryCount(20040404, client, url1);
@@ -189,12 +189,12 @@ public class StatefulFailoverTestCase {
             assertQueryCount(20050505, client, url2);
             assertQueryCount(20060606, client, url2);
 
-            deployer.undeploy(DEPLOYMENT2);
+            deployer.undeploy(DEPLOYMENT_2);
 
             assertQueryCount(20070707, client, url1);
             assertQueryCount(20080808, client, url1);
 
-            deployer.deploy(DEPLOYMENT2);
+            deployer.deploy(DEPLOYMENT_2);
 
             assertQueryCount(20090909, client, url1);
             assertQueryCount(20101010, client, url1);
@@ -202,12 +202,12 @@ public class StatefulFailoverTestCase {
             assertQueryCount(20111111, client, url2);
             assertQueryCount(20121212, client, url2);
 
-            deployer.undeploy(DEPLOYMENT1);
+            deployer.undeploy(DEPLOYMENT_1);
 
             assertQueryCount(20131313, client, url2);
             assertQueryCount(20141414, client, url2);
 
-            deployer.deploy(DEPLOYMENT1);
+            deployer.deploy(DEPLOYMENT_1);
 
             assertQueryCount(20151515, client, url1);
             assertQueryCount(20161616, client, url1);
@@ -217,8 +217,8 @@ public class StatefulFailoverTestCase {
         } finally {
             client.getConnectionManager().shutdown();
 
-            this.cleanup(DEPLOYMENT1, CONTAINER1);
-            this.cleanup(DEPLOYMENT2, CONTAINER2);
+            this.cleanup(DEPLOYMENT_1, CONTAINER_1);
+            this.cleanup(DEPLOYMENT_2, CONTAINER_2);
         }
     }
 

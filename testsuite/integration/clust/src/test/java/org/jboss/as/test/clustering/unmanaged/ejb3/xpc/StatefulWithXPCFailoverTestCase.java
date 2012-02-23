@@ -58,10 +58,10 @@ import static org.junit.Assert.assertEquals;
 public class StatefulWithXPCFailoverTestCase {
     /** Constants **/
     public static final int GRACE_TIME = 20000;
-    public static final String CONTAINER1 = "clustering-udp-0-unmanaged";
-    public static final String CONTAINER2 = "clustering-udp-1-unmanaged";
-    public static final String DEPLOYMENT1 = "deployment-0-unmanaged";
-    public static final String DEPLOYMENT2 = "deployment-1-unmanaged";
+    public static final String CONTAINER_1 = "clustering-udp-1-unmanaged";
+    public static final String CONTAINER_2 = "clustering-udp-2-unmanaged";
+    public static final String DEPLOYMENT_1 = "deployment-1-unmanaged";
+    public static final String DEPLOYMENT_2 = "deployment-2-unmanaged";
 
     private static final String persistence_xml =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
@@ -86,8 +86,8 @@ public class StatefulWithXPCFailoverTestCase {
         System.out.println("System properties:\n" + sysprops);
     }
 
-    @Deployment(name = DEPLOYMENT1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER1)
+    @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
+    @TargetsContainer(CONTAINER_1)
     public static Archive<?> deployment0() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "stateful.war");
         war.addPackage(StatefulBean.class.getPackage());
@@ -97,8 +97,8 @@ public class StatefulWithXPCFailoverTestCase {
         return war;
     }
 
-    @Deployment(name = DEPLOYMENT2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER2)
+    @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
+    @TargetsContainer(CONTAINER_2)
     public static Archive<?> deployment1() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "stateful.war");
         war.addPackage(StatefulBean.class.getPackage());
@@ -114,7 +114,7 @@ public class StatefulWithXPCFailoverTestCase {
     /* @OperateOnDeployment(DEPLOYMENT1) -- See http://community.jboss.org/thread/176096 */
     public void testBasicXPC(/*@ArquillianResource(SimpleServlet.class) URL baseURL*/) throws IOException, InterruptedException {
         // Container is unmanaged, need to start manually.
-        start(DEPLOYMENT1, CONTAINER1);
+        start(DEPLOYMENT_1, CONTAINER_1);
 
         DefaultHttpClient client = new DefaultHttpClient();
 
@@ -138,7 +138,7 @@ public class StatefulWithXPCFailoverTestCase {
             assertGetEmployee(client, xpc1_get_url, "1. xpc on node1, node1 should be able to read entity on node1");
             assertGetSecondEmployee(client, xpc1_getempsecond_url, "1. xpc on node1, node1 should be able to read entity from second bean on node1");
 
-            start(DEPLOYMENT2, CONTAINER2);
+            start(DEPLOYMENT_2, CONTAINER_2);
 
             System.out.println(new Date() + "2. started node2 + deployed, about to read entity on node1");
 
@@ -147,7 +147,7 @@ public class StatefulWithXPCFailoverTestCase {
             assertGetSecondEmployee(client, xpc1_getempsecond_url, "2. started node2, xpc on node1, node1 should be able to read entity from second bean on node1");
 
             // failover to deployment2
-            stop(DEPLOYMENT1, CONTAINER1); // failover #1 to node 2
+            stop(DEPLOYMENT_1, CONTAINER_1); // failover #1 to node 2
 
             System.out.println(new Date() + "3. stopped node1 to force failover, about to read entity on node2");
 
@@ -155,7 +155,7 @@ public class StatefulWithXPCFailoverTestCase {
             assertGetEmployee(client, xpc2_getempsecond_url, "3. stopped deployment on node1, xpc should failover to node2, node2 should be able to read entity from xpc that is on node2 (second bean)");
 
             // restart deployment1
-            start(DEPLOYMENT1, CONTAINER1);
+            start(DEPLOYMENT_1, CONTAINER_1);
 
             System.out.println(new Date() + "4. started node1, about to read entity on node2");
 
@@ -164,14 +164,14 @@ public class StatefulWithXPCFailoverTestCase {
             assertGetEmployee(client, xpc2_getempsecond_url, "4. stopped deployment on node1, xpc should failover to node2, node2 should be able to read entity from xpc that is on node2 (second bean)");
 
             // failover to deployment1
-            stop(DEPLOYMENT2, CONTAINER2); // failover #1 to node 1
+            stop(DEPLOYMENT_2, CONTAINER_2); // failover #1 to node 1
 
             System.out.println(new Date() + "5. stopped node2, about to read entity on node1");
 
             assertGetEmployee(client, xpc1_get_url, "5. stopped deployment on node2, xpc still on node1, node1 should be able to read entity from xpc");
             assertGetSecondEmployee(client, xpc1_getempsecond_url, "5. stopped deployment on node2, xpc still on node1, node1 should be able to read entity from xpc of second bean");
 
-            start(DEPLOYMENT2, CONTAINER2);
+            start(DEPLOYMENT_2, CONTAINER_2);
 
             System.out.println(new Date() + "6. started node2, about to read entity on node1");
 
@@ -179,7 +179,7 @@ public class StatefulWithXPCFailoverTestCase {
             assertGetSecondEmployee(client, xpc1_getempsecond_url, "6. xpc still on node1, node1 should be able to read entity from xpc of second bean");
 
             // failover to deployment2
-            stop(DEPLOYMENT1, CONTAINER1);  // failover #2 to node 2
+            stop(DEPLOYMENT_1, CONTAINER_1);  // failover #2 to node 2
 
             System.out.println(new Date() + "7. stopped node1, about to read entity on node2");
 
@@ -192,8 +192,8 @@ public class StatefulWithXPCFailoverTestCase {
         } finally {
             client.getConnectionManager().shutdown();
 
-            stop(DEPLOYMENT1, CONTAINER1);
-            stop(DEPLOYMENT2, CONTAINER2);
+            stop(DEPLOYMENT_1, CONTAINER_1);
+            stop(DEPLOYMENT_2, CONTAINER_2);
         }
     }
 
