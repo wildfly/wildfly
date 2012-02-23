@@ -115,12 +115,14 @@ public class ClusteredWebTestCase {
 
     @Test
     @OperateOnDeployment(DEPLOYMENT_2) // For change, operate on the 2nd deployment first
-    public void testSessionReplication(@ArquillianResource(SimpleServlet.class) URL baseURL) throws IllegalStateException, IOException, InterruptedException {
+    public void testSessionReplication(
+            @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
+            @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
+            throws IllegalStateException, IOException, InterruptedException {
         DefaultHttpClient client = new DefaultHttpClient();
 
-        // ARQ-674 Ouch, hardcoded URL will need fixing. ARQ doesnt support @OperateOnDeployment on 2.
-        String url1 = baseURL.toString() + "simple";
-        String url2 = "http://127.0.0.1:8080/distributable/simple";
+        String url1 = baseURL1.toString() + "simple";
+        String url2 = baseURL2.toString() + "simple";
 
         try {
             HttpResponse response = client.execute(new HttpGet(url1));

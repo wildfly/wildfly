@@ -22,6 +22,7 @@
 package org.jboss.as.test.clustering.unmanaged.web;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
@@ -32,6 +33,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
@@ -42,6 +44,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
+import org.jboss.as.test.clustering.single.web.SimpleServlet;
 
 /**
  * Test that failover and undeploy works.
@@ -65,6 +68,20 @@ public abstract class ClusteredWebFailoverTestCase {
     }
 
     /**
+     * Workaround for Arquillian so that you can use "@ArquillianResource(C.class) @OperateOnDeployment(D)" because the
+     * containers need to be started beforehand.
+     */
+    @Test
+    @InSequence(1)
+    public void testStartContainersAndDeployments() {
+        // Container is unmanaged, need to start manually.
+        controller.start(CONTAINER_1);
+        deployer.deploy(DEPLOYMENT_1);
+        controller.start(CONTAINER_2);
+        deployer.deploy(DEPLOYMENT_2);
+    }
+
+    /**
      * Test simple graceful shutdown failover:
      *
      * 1/ Start 2 containers and deploy <distributable/> webapp.
@@ -78,22 +95,16 @@ public abstract class ClusteredWebFailoverTestCase {
      * @throws InterruptedException
      */
     @Test
-    @InSequence(1)
-    /* @OperateOnDeployment(DEPLOYMENT1) -- See http://community.jboss.org/thread/176096 */
-    public void testGracefulSimpleFailover(/*@ArquillianResource(SimpleServlet.class) URL baseURL*/) throws IOException, InterruptedException, ExecutionException {
-        // Container is unmanaged, need to start manually.
-
-        controller.start(CONTAINER_1);
-        deployer.deploy(DEPLOYMENT_1);
-        controller.start(CONTAINER_2);
-        deployer.deploy(DEPLOYMENT_2);
-
+    @InSequence(2)
+    public void testGracefulSimpleFailover(
+            @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
+            @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
+            throws IOException, InterruptedException, ExecutionException {
 
         DefaultHttpClient client = new DefaultHttpClient();
 
-        // ARQ-674 Ouch, second hardcoded URL will need fixing. ARQ doesnt support @OperateOnDeployment on 2 containers.
-        String url1 = "http://127.0.0.1:8080/distributable/simple"; /* baseURL.toString() + "simple"; */
-        String url2 = "http://127.0.0.1:8180/distributable/simple";
+        String url1 = baseURL1.toString() + "simple";
+        String url2 = baseURL2.toString() + "simple";
 
         try {
             HttpResponse response = tryGet(client, url1);
@@ -159,6 +170,17 @@ public abstract class ClusteredWebFailoverTestCase {
         // Assert.fail("Show me the logs please!");
     }
 
+    @Test
+    @InSequence(3)
+    public void testStartContainersAndDeploymentsForUndeployFailover() {
+        // Container is unmanaged, need to start manually.
+        controller.start(CONTAINER_1);
+        deployer.deploy(DEPLOYMENT_1);
+
+        controller.start(CONTAINER_2);
+        deployer.deploy(DEPLOYMENT_2);
+    }
+
     /**
      * Test simple undeploy failover:
      *
@@ -173,21 +195,16 @@ public abstract class ClusteredWebFailoverTestCase {
      * @throws InterruptedException
      */
     @Test
-    @InSequence(2)
-    public void testGracefulUndeployFailover() throws IOException, InterruptedException {
-        // Container is unmanaged, need to start manually.
-        controller.start(CONTAINER_1);
-        deployer.deploy(DEPLOYMENT_1);
-
-        controller.start(CONTAINER_2);
-        deployer.deploy(DEPLOYMENT_2);
-
+    @InSequence(4)
+    public void testGracefulUndeployFailover(
+            @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
+            @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
+            throws IOException, InterruptedException {
 
         DefaultHttpClient client = new DefaultHttpClient();
 
-        // TODO ARQ-674
-        String url1 = "http://127.0.0.1:8080/distributable/simple";
-        String url2 = "http://127.0.0.1:8180/distributable/simple";
+        String url1 = baseURL1.toString() + "simple";
+        String url2 = baseURL2.toString() + "simple";
 
         try {
             HttpResponse response = tryGet(client, url1);
@@ -209,7 +226,7 @@ public abstract class ClusteredWebFailoverTestCase {
             // Now check on the 2nd server
 
             // Note that this DOES rely on the fact that both servers are running on the "same" domain,
-            // which is '127.0.0.0'. Otherwise you will have to spoof cookies. @Rado
+            // which is '127.0.0.1'. Otherwise you will have to spoof cookies. @Rado
             response = tryGet(client, url2);
             System.out.println("Requested " + url2 + ", got " + response.getFirstHeader("value").getValue() + ".");
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
