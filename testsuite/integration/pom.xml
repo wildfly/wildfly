@@ -33,19 +33,19 @@
             -Djbossas.project.dir=${jbossas.project.dir}
             -Djboss.dist=${jboss.dist}
         </jvm.args.dirs>
-        
+
         <!-- Used to provide an absolute location for the distribution under test. -->
         <jboss.dist>${jbossas.project.dir}/build/target/jboss-as-${jboss.as.release.version}</jboss.dist>
         <jboss.home>${jboss.dist}</jboss.home>
-        
+
         <!-- Used to provide an absolute location for the XSLT scripts. -->
         <xslt.scripts.dir>${jbossas.ts.integ.dir}/src/test/xslt</xslt.scripts.dir>
-        
+
         <ts.skipTests>${skipTests}</ts.skipTests>
     </properties>
 
     <profiles>
-        
+
         <!-- Run all tests on -DallTests. -->
         <profile>
             <id>ts.integ.allGroups</id>
@@ -128,12 +128,12 @@
         </profile>
 
     </profiles>
-    
+
 
     <build>
         <plugins>
             <!-- General plugin configuration for all integration tests -->
-            
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-help-plugin</artifactId>
@@ -162,8 +162,8 @@
                     </execution>
                 </executions>
             </plugin>
-            
-            
+
+
             <!-- Resources plugin. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -174,12 +174,13 @@
                         <id>ts.config-as.copy-mgmt-users</id>
                         <phase>generate-test-resources</phase>
                         <goals><goal>copy-resources</goal></goals>
+                        <inherited>true</inherited>
                         <configuration>
                             <outputDirectory>${basedir}/target/jbossas/standalone/configuration</outputDirectory>
                             <overwrite>true</overwrite>
                             <resources>
                                 <resource>
-                                    <directory>../shared/src/main/resources</directory>
+                                    <directory>../../shared/src/main/resources</directory>
                                     <includes><include>*.properties</include></includes>
                                 </resource>
                             </resources>
@@ -224,10 +225,10 @@
                         -->
                         <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.security} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -DudpGroup=${udpGroup} ${jvm.args.dirs}</server.jvm.args>
                     </systemPropertyVariables>
-                    
+
                 </configuration>
             </plugin>
-            
+
         </plugins>
     </build>
 
@@ -252,5 +253,5 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-    
+
 </project>

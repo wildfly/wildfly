@@ -98,7 +98,7 @@
         <jvm.args.securityManager></jvm.args.securityManager>
         <jvm.args.securityPolicy></jvm.args.securityPolicy>
         <jvm.args.security>${jvm.args.securityManager} ${jvm.args.securityPolicy}</jvm.args.security>
-        
+
         <!-- Logging config -->
         <testLogToFile>true</testLogToFile>
 
@@ -280,10 +280,10 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions combine.children="append">
-                    <!-- Copy AS from ${jboss.home} to testsuite/target/jbossas -->
+                    <!-- Copy the AS into current_submodule/target/jbossas . This is executed recursively in submodules. -->
                     <execution>
-                        <id>ts.copy-jbossas.from-dist</id>
-                        <inherited>false</inherited>
+                        <id>ts.copy-jbossas.groups</id>
+                        <inherited>true</inherited>
                         <phase>generate-test-resources</phase>
                         <goals><goal>copy-resources</goal></goals>
                         <configuration>
@@ -295,24 +295,6 @@
                                     <excludes>
                                         <exclude>modules/</exclude>
                                         <exclude>bundles/</exclude>
-                                    </excludes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                    <!-- Copy that AS  ../target/jbossas into current_submodule/target/jbossas . This is executed recursively in submodules. -->
-                    <execution>
-                        <id>ts.copy-jbossas.groups</id>
-                        <inherited>true</inherited>
-                        <phase>generate-test-resources</phase>
-                        <goals><goal>copy-resources</goal></goals>
-                        <configuration>
-                            <outputDirectory>${basedir}/target/jbossas</outputDirectory>
-                            <overwrite>true</overwrite>
-                            <resources>
-                                <resource>
-                                    <directory>${basedir}/../target/jbossas</directory>
-                                    <excludes>
                                         <exclude>standalone/data</exclude>
                                         <exclude>standalone/log</exclude>
                                         <exclude>standalone/tmp</exclude>
@@ -335,7 +317,7 @@
                         <id>ts.config-as.ip</id>
                         <phase>process-test-resources</phase>
                         <goals><goal>transform</goal></goals>
-                        <inherited>false</inherited>
+                        <inherited>true</inherited>
                         <configuration>
                             <transformationSets>
                                 <!-- IPs. -->
@@ -365,36 +347,10 @@
                                         <parameter><name>topicName</name><value>testTopic</value></parameter>
                                     </parameters>
                                 </transformationSet>
-                                <!-- Datasource. -->
-                                <!-- Not needed, done in ds.profile .
-                                <transformationSet>
-                                    <dir      >${basedir}/target/jbossas/standalone/configuration</dir>
-                                    <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
-                                    <stylesheet>${xslt.scripts.dir}/changeDatabase.xsl</stylesheet>
-                                    <includes>
-                                        <include>standalone*.xml</include>
-                                    </includes>
-                                    <parameters>
-                                        <parameter><name>ds.jdbc.driver.jar</name><value>${ds.jdbc.driver.jar}</value></parameter>
-                                        <parameter><name>ds.jdbc.url</name><value>${ds.jdbc.url}</value></parameter>
-                                        <parameter><name>ds.jdbc.user</name><value>${ds.jdbc.user}</value></parameter>
-                                        <parameter><name>ds.jdbc.pass</name><value>${ds.jdbc.pass}</value></parameter>
-                                    </parameters>
-                                </transformationSet>
-                                -->
                             </transformationSets>
                         </configuration>
                     </execution>
                 </executions>
-                <!--
-                <dependencies>
-                    <dependency>
-                        <groupId>net.sf.saxon</groupId>
-                        <artifactId>saxon</artifactId>
-                        <version>${version.saxon}</version>
-                    </dependency>
-                </dependencies>
-                -->
             </plugin>
 
             <!--
@@ -501,7 +457,7 @@
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <executions><execution><id>check-style</id><phase>none</phase></execution></executions>
             </plugin>
-            
+
             <!-- Don't install - nothing to do. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -657,17 +613,17 @@
             * Adding a dependency for the database driver.
             * Changing the server configuration file.
             * Deploying the driver via the server's deployments directory.
-            
+
           DEFAULT DATASOURCE implementation note:
             There are two ways:
             *  Leaving the default DS as distributed in AS, or
             *  Having a default set of properties and executing DS config even without -Dds=... specified.
             Currently it's the 2nd.
             Changing to 1st would need moving DS transformation from ts.config-as.ip-and-ds to this profile.
-            
+
           Usage:
              mvn clean install -rf testsuite -Dds=mysql51
-             
+
           See: https://community.jboss.org/wiki/DataSourceConfigurationInAS7
         -->
 
@@ -726,7 +682,7 @@
                                 <id>ts.config-as.db.change-datasource</id>
                                 <phase>process-test-resources</phase>
                                 <goals><goal>transform</goal></goals>
-                                <inherited>false</inherited>
+                                <inherited>true</inherited>
                                 <configuration>
                                     <transformationSets>
                                         <transformationSet>
@@ -760,6 +716,7 @@
                                 <id>deploy-database-driver.server</id>
                                 <phase>generate-test-resources</phase>
                                 <goals><goal>copy-resources</goal></goals>
+                                <inherited>true</inherited>
                                 <configuration>
                                     <outputDirectory>${basedir}/target/jbossas/standalone/deployments</outputDirectory>
                                     <overwrite>true</overwrite>
@@ -781,7 +738,7 @@
         </profile>
 
         <!-- Database properties profiles. -->
-        
+
         <!-- H2 - http://www.h2database.com/html/features.html#database_url -->
         <profile>
             <id>h2.profile</id>
@@ -805,7 +762,7 @@
                 <ds.jdbc.driver.version>1.3.159</ds.jdbc.driver.version>
             </properties>
         </profile>
-        
+
         <!-- MySQL 5.1 -->
         <profile>
             <id>mysql51.profile</id>
