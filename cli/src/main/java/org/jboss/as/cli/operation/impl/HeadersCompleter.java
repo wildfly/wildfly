@@ -52,7 +52,7 @@ public class HeadersCompleter implements CommandLineCompleter {
         try {
             handler.parseOperation(null, buffer);
         } catch (CommandFormatException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             return -1;
         }
         if(handler.endsOnHeaderListStart() || handler.hasHeaders()) {
