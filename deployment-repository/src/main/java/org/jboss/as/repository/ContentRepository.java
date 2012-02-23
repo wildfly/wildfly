@@ -150,10 +150,6 @@ public interface ContentRepository {
                         while ((read = bis.read(bytes)) > -1) {
                             dos.write(bytes, 0, read);
                         }
-                        fos.flush();
-                        fos.getFD().sync();
-                        fos.close();
-                        fos = null;
                     }
                     finally {
                         safeClose(fos);
@@ -230,56 +226,27 @@ public interface ContentRepository {
             private void moveTempToPermanent(File tmpFile, File permanentFile) throws IOException {
 
                 if (!tmpFile.renameTo(permanentFile)) {
-                    // AS7-3574. Try to avoid writing the permanent file bit by bit in we crash in the middle.
-                    // Copy tmpFile to another tmpfile in the same dir as the permanent file (and thus same filesystem)
-                    // and see then if we can rename it.
-                    File localTmp = new File(permanentFile.getParent(), "tmp");
+                    FileOutputStream fos = null;
+                    BufferedOutputStream bos = null;
+                    FileInputStream fis = null;
                     try {
-                        copyFile(tmpFile, localTmp);
-                        if (!localTmp.renameTo(permanentFile)) {
-                            // No luck; need to copy
-                            copyFile(localTmp, permanentFile);
+                        fos = new FileOutputStream(permanentFile);
+                        bos = new BufferedOutputStream(fos);
+                        fis = new FileInputStream(tmpFile);
+                        BufferedInputStream bis = new BufferedInputStream(fis);
+                        byte[] bytes = new byte[8192];
+                        int read;
+                        while ((read = bis.read(bytes)) > -1) {
+                            bos.write(bytes, 0, read);
                         }
-                    } catch (IOException e) {
-                        if (permanentFile.exists()) {
-                            permanentFile.delete();
-                        }
-                        throw e;
-                    } catch (RuntimeException e) {
-                        if (permanentFile.exists()) {
-                            permanentFile.delete();
-                        }
-                        throw e;
-
                     } finally {
+                        safeClose(bos);
+                        safeClose(fos);
+                        safeClose(fis);
                         if (!tmpFile.delete()) {
                             tmpFile.deleteOnExit();
                         }
-                        if (localTmp.exists() && !localTmp.delete()) {
-                            localTmp.deleteOnExit();
-                        }
                     }
-                }
-            }
-
-            private void copyFile(File src, File dest) throws IOException {
-                FileOutputStream fos = null;
-                FileInputStream fis = null;
-                try {
-                    fos = new FileOutputStream(dest);
-                    fis = new FileInputStream(src);
-                    byte[] bytes = new byte[8192];
-                    int read;
-                    while ((read = fis.read(bytes)) > -1) {
-                        fos.write(bytes, 0, read);
-                    }
-                    fos.flush();
-                    fos.getFD().sync();
-                    fos.close();
-                    fos = null;
-                } finally {
-                    safeClose(fos);
-                    safeClose(fis);
                 }
             }
 
