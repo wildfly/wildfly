@@ -47,7 +47,8 @@ public class WebSecurityJBossWebXmlSecurityRolesTestCase extends WebSecurityFORM
 
     public static final String deploymentName = "web-secure.war";
 
-    @ArquillianResource @OperateOnDeployment(deploymentName)
+    @ArquillianResource
+    @OperateOnDeployment(deploymentName)
     URL deploymentUrl;
 
     @Before
@@ -59,14 +60,10 @@ public class WebSecurityJBossWebXmlSecurityRolesTestCase extends WebSecurityFORM
 
 
     @Deployment(name = deploymentName, order = 1, testable = false)
-    public static WebArchive deployment() {
+    public static WebArchive deployment() throws Exception {
         // FIXME hack to get things prepared before the deployment happens
-        try {
-            // create required security domains
-            createSecurityDomain();
-        } catch (Exception e) {
-            // ignore
-        }
+        // create required security domains
+        createSecurityDomain();
 
         WebArchive war = ShrinkWrap.create(WebArchive.class, "web-secure.war");
         war.addClasses(SecuredServlet.class);
@@ -95,6 +92,7 @@ public class WebSecurityJBossWebXmlSecurityRolesTestCase extends WebSecurityFORM
 
     /**
      * Negative test to see if mapping is not performed on username instead of role.
+     *
      * @throws Exception
      */
     @Test
