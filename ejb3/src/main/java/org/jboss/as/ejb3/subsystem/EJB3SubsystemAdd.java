@@ -257,9 +257,8 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         if (model.hasDefined(DEFAULT_SFSB_CACHE)) {
             EJB3SubsystemDefaultCacheWriteHandler.SFSB_CACHE.updateCacheService(context, model, newControllers);
         }
-        if (model.hasDefined(DEFAULT_CLUSTERED_SFSB_CACHE)) {
-            EJB3SubsystemDefaultCacheWriteHandler.CLUSTERED_SFSB_CACHE.updateCacheService(context, model, newControllers);
-        }
+
+        EJB3SubsystemDefaultCacheWriteHandler.CLUSTERED_SFSB_CACHE.updateCacheService(context, model, newControllers);
 
         if (model.hasDefined(DEFAULT_RESOURCE_ADAPTER_NAME)) {
             DefaultResourceAdapterWriteHandler.INSTANCE.updateDefaultAdapterService(context, model, newControllers);

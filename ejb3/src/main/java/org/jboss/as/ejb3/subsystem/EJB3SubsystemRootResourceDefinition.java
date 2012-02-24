@@ -85,7 +85,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
     public static final SimpleAttributeDefinition DEFAULT_CLUSTERED_SFSB_CACHE =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_CLUSTERED_SFSB_CACHE, ModelType.STRING, true)
                     .setAllowExpression(true)
-//                    .setAllowNull(true)
+                    .setAllowNull(true)
                     .build();
 
     public static final SimpleAttributeDefinition PASS_BY_VALUE =
