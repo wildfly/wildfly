@@ -24,14 +24,13 @@ package org.jboss.as.logging;
 
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.logging.handlers.console.Target;
 import org.jboss.as.logging.validators.FileValidator;
 import org.jboss.as.logging.validators.LogLevelValidator;
-import org.jboss.as.logging.validators.OverflowActionValidator;
 import org.jboss.as.logging.validators.SizeValidator;
-import org.jboss.as.logging.validators.TargetValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.logmanager.handlers.AsyncHandler.OverflowAction;
@@ -127,7 +126,7 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition OVERFLOW_ACTION = SimpleAttributeDefinitionBuilder.create("overflow-action", ModelType.STRING).
             setDefaultValue(new ModelNode().set(OverflowAction.BLOCK.name())).
-            setValidator(new OverflowActionValidator(false)).
+            setValidator(EnumValidator.create(OverflowAction.class, false, false)).
             build();
 
     SimpleAttributeDefinition PATH = SimpleAttributeDefinitionBuilder.create("path", ModelType.STRING).build();
@@ -174,7 +173,7 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition TARGET = SimpleAttributeDefinitionBuilder.create("target", ModelType.STRING, true).
             setDefaultValue(new ModelNode().set(Target.SYSTEM_OUT.toString())).
-            setValidator(new TargetValidator(false)).
+            setValidator(EnumValidator.create(Target.class, false, false)).
             build();
 
     SimpleAttributeDefinition USE_PARENT_HANDLERS = SimpleAttributeDefinitionBuilder.create("use-parent-handlers", ModelType.BOOLEAN, true).
