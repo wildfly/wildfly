@@ -1,9 +1,23 @@
 package org.jboss.as.clustering.lock;
 
-import static org.mockito.Mockito.*;
-import static org.mockito.AdditionalMatchers.*;
-import static org.jboss.as.clustering.lock.LockParamsMatcher.*;
-import static org.junit.Assert.*;
+import static org.jboss.as.clustering.lock.LockParamsMatcher.eqLockParams;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.AdditionalMatchers.aryEq;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Matchers.same;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,6 +31,7 @@ import org.jboss.as.clustering.GroupRpcDispatcher;
 import org.jboss.as.clustering.MockClusterNode;
 import org.jboss.as.clustering.ResponseFilter;
 import org.jboss.as.clustering.lock.AbstractClusterLockSupport.RpcTarget;
+import org.jboss.marshalling.ClassResolver;
 import org.junit.Test;
 import org.mockito.AdditionalMatchers;
 import org.mockito.ArgumentCaptor;
@@ -86,7 +101,7 @@ public abstract class ClusteredLockManagerTestBase<T extends AbstractClusterLock
 
         testee.start();
 
-        verify(rpcDispatcher).registerRPCHandler(eq("test"), any(RpcTarget.class), same(rpcDispatcher.getClass().getClassLoader()));
+        verify(rpcDispatcher).registerRPCHandler(eq("test"), any(RpcTarget.class), isA(ClassResolver.class));
         verify(notifier).registerGroupMembershipListener(testee);
 
         assertEquals("Current view is correct", 1, testee.getCurrentView().size());
@@ -492,7 +507,7 @@ public abstract class ClusteredLockManagerTestBase<T extends AbstractClusterLock
 
         testee.start();
         
-        verify(rpcDispatcher).registerRPCHandler(eq("test"), c.capture(), same(rpcDispatcher.getClass().getClassLoader()));
+        verify(rpcDispatcher).registerRPCHandler(eq("test"), c.capture(), isA(ClassResolver.class));
         verify(notifier).registerGroupMembershipListener(same(testee));
         verify(handler).setLocalNode(same(node));
         
