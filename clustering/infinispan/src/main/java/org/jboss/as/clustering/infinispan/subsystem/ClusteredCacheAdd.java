@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -43,18 +44,12 @@ public abstract class ClusteredCacheAdd extends CacheAdd {
     }
 
     @Override
-    void populate(ModelNode fromModel, ModelNode toModel) {
+    void populate(ModelNode fromModel, ModelNode toModel) throws OperationFailedException {
         super.populate(fromModel, toModel);
 
-        if (fromModel.hasDefined(ModelKeys.QUEUE_SIZE)) {
-            toModel.get(ModelKeys.QUEUE_SIZE).set(fromModel.get(ModelKeys.QUEUE_SIZE));
-        }
-        if (fromModel.hasDefined(ModelKeys.QUEUE_FLUSH_INTERVAL)) {
-            toModel.get(ModelKeys.QUEUE_FLUSH_INTERVAL).set(fromModel.get(ModelKeys.QUEUE_FLUSH_INTERVAL));
-        }
-        if (fromModel.hasDefined(ModelKeys.REMOTE_TIMEOUT)) {
-            toModel.get(ModelKeys.REMOTE_TIMEOUT).set(fromModel.get(ModelKeys.REMOTE_TIMEOUT));
-        }
+        CommonAttributes.QUEUE_SIZE.validateAndSet(fromModel, toModel);
+        CommonAttributes.QUEUE_FLUSH_INTERVAL.validateAndSet(fromModel, toModel);
+        CommonAttributes.REMOTE_TIMEOUT.validateAndSet(fromModel, toModel);
     }
 
     /**
@@ -67,23 +62,22 @@ public abstract class ClusteredCacheAdd extends CacheAdd {
      * @return initialised Configuration object
      */
     @Override
-    void processModelNode(String containerName, ModelNode cache, ConfigurationBuilder builder, List<Dependency<?>> dependencies) {
+    void processModelNode(OperationContext context, String containerName, ModelNode cache, ConfigurationBuilder builder, List<Dependency<?>> dependencies)
+            throws OperationFailedException{
 
         // process cache attributes and elements
-        super.processModelNode(containerName, cache, builder, dependencies);
+        super.processModelNode(context, containerName, cache, builder, dependencies);
+
+        final long remoteTimeout = CommonAttributes.REMOTE_TIMEOUT.resolveModelAttribute(context, cache).asLong();
+        final int queueSize = CommonAttributes.QUEUE_SIZE.resolveModelAttribute(context, cache).asInt();
+        final long queueFlushInterval = CommonAttributes.QUEUE_FLUSH_INTERVAL.resolveModelAttribute(context, cache).asLong();
 
         // process clustered cache attributes and elements
         if (CacheMode.valueOf(cache.get(ModelKeys.MODE).asString()).isSynchronous()) {
-            if (cache.hasDefined(ModelKeys.REMOTE_TIMEOUT)) {
-                builder.clustering().sync().replTimeout(cache.get(ModelKeys.REMOTE_TIMEOUT).asLong());
-            }
+            builder.clustering().sync().replTimeout(remoteTimeout);
         } else {
-            if (cache.hasDefined(ModelKeys.QUEUE_SIZE)) {
-                builder.clustering().async().replQueueMaxElements(cache.get(ModelKeys.QUEUE_SIZE).asInt());
-            }
-            if (cache.hasDefined(ModelKeys.QUEUE_FLUSH_INTERVAL)) {
-                builder.clustering().async().replQueueInterval(cache.get(ModelKeys.QUEUE_FLUSH_INTERVAL).asLong());
-            }
+            builder.clustering().async().replQueueMaxElements(queueSize);
+            builder.clustering().async().replQueueInterval(queueFlushInterval);
         }
     }
 }

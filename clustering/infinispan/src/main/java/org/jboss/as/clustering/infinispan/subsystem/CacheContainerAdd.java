@@ -71,40 +71,30 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
 
     public static final CacheContainerAdd INSTANCE = new CacheContainerAdd();
 
-    static ModelNode createOperation(ModelNode address, ModelNode existing) {
+    static ModelNode createOperation(ModelNode address, ModelNode existing) throws OperationFailedException {
         ModelNode operation = Util.getEmptyOperation(ADD, address);
         populate(existing, operation);
         return operation;
     }
 
-    private static void populate(ModelNode source, ModelNode target) {
-        // AS7-3488 make default-cache non required attribute
+    private static void populate(ModelNode source, ModelNode target) throws OperationFailedException {
+        // AS7-3488 make default-cache non required attrinbute
         // target.get(ModelKeys.DEFAULT_CACHE).set(source.get(ModelKeys.DEFAULT_CACHE));
-        if (source.hasDefined(ModelKeys.DEFAULT_CACHE)) {
-            target.get(ModelKeys.DEFAULT_CACHE).set(source.get(ModelKeys.DEFAULT_CACHE));
-        }
+
+        CommonAttributes.DEFAULT_CACHE.validateAndSet(source, target);
+        // TODO: need to handle list types
         if (source.hasDefined(ModelKeys.ALIASES)) {
             target.get(ModelKeys.ALIASES).set(source.get(ModelKeys.ALIASES));
         }
-        if (source.hasDefined(ModelKeys.JNDI_NAME)) {
-            target.get(ModelKeys.JNDI_NAME).set(source.get(ModelKeys.JNDI_NAME));
-        }
-        if (source.hasDefined(ModelKeys.START)) {
-            target.get(ModelKeys.START).set(source.get(ModelKeys.START));
-        }
-        if (source.hasDefined(ModelKeys.LISTENER_EXECUTOR)) {
-            target.get(ModelKeys.LISTENER_EXECUTOR).set(source.get(ModelKeys.LISTENER_EXECUTOR));
-        }
-        if (source.hasDefined(ModelKeys.EVICTION_EXECUTOR)) {
-            target.get(ModelKeys.EVICTION_EXECUTOR).set(source.get(ModelKeys.EVICTION_EXECUTOR));
-        }
-        if (source.hasDefined(ModelKeys.REPLICATION_QUEUE_EXECUTOR)) {
-            target.get(ModelKeys.REPLICATION_QUEUE_EXECUTOR).set(source.get(ModelKeys.REPLICATION_QUEUE_EXECUTOR));
-        }
+        CommonAttributes.JNDI_NAME.validateAndSet(source, target);
+        CommonAttributes.START.validateAndSet(source, target);
+        CommonAttributes.LISTENER_EXECUTOR.validateAndSet(source, target);
+        CommonAttributes.EVICTION_EXECUTOR.validateAndSet(source, target);
+        CommonAttributes.REPLICATION_QUEUE_EXECUTOR.validateAndSet(source, target);
     }
 
     @Override
-    protected void populateModel(ModelNode operation, ModelNode model) {
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         populate(operation, model);
     }
 
@@ -116,8 +106,15 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
 
+        // pick up the attribute values from the model
+        ModelNode resolvedValue = null ;
         // make default cache non required (AS7-3488)
-        String defaultCache = model.get(ModelKeys.DEFAULT_CACHE).asString();
+        final String defaultCache = ((resolvedValue = CommonAttributes.DEFAULT_CACHE.resolveModelAttribute(context, model)).isDefined()) ? resolvedValue.asString() : null ;
+        final String startMode = ((resolvedValue = CommonAttributes.START.resolveModelAttribute(context, model)).isDefined()) ? resolvedValue.asString() : null ;
+        final String jndiNameString = ((resolvedValue = CommonAttributes.JNDI_NAME.resolveModelAttribute(context, model)).isDefined()) ? resolvedValue.asString() : null ;
+        final String listenerExecutor = ((resolvedValue = CommonAttributes.LISTENER_EXECUTOR.resolveModelAttribute(context, model)).isDefined()) ? resolvedValue.asString() : null ;
+        final String evictionExecutor = ((resolvedValue = CommonAttributes.EVICTION_EXECUTOR.resolveModelAttribute(context, model)).isDefined()) ? resolvedValue.asString() : null ;
+        final String replicationQueueExecutor = ((resolvedValue = CommonAttributes.REPLICATION_QUEUE_EXECUTOR.resolveModelAttribute(context, model)).isDefined()) ? resolvedValue.asString() : null ;
 
         boolean hasTransport = model.hasDefined(ModelKeys.TRANSPORT) && model.get(ModelKeys.TRANSPORT).hasDefined(ModelKeys.TRANSPORT_NAME);
         Transport transportConfig = hasTransport ? new Transport() : null;
@@ -132,6 +129,8 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
             }
         }
 
+        ServiceController.Mode initialMode = (startMode != null) ? StartMode.valueOf(startMode).getMode() : ServiceController.Mode.ON_DEMAND;
+
         ServiceTarget target = context.getServiceTarget();
         ServiceName configServiceName = EmbeddedCacheManagerConfigurationService.getServiceName(name);
         ServiceBuilder<EmbeddedCacheManagerConfiguration> configBuilder = target.addService(configServiceName, new EmbeddedCacheManagerConfigurationService(name, defaultCache, dependencies))
@@ -139,8 +138,6 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
                 .addDependency(DependencyType.OPTIONAL, EmbeddedCacheManagerConfigurationService.getClassLoaderServiceName(name), ClassLoader.class, dependencies.getClassLoaderInjector())
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
         ;
-
-        ServiceController.Mode initialMode = model.hasDefined(ModelKeys.START) ? StartMode.valueOf(model.get(ModelKeys.START).asString()).getMode() : ServiceController.Mode.ON_DEMAND;
 
         ServiceName containerServiceName = EmbeddedCacheManagerService.getServiceName(name);
         InjectedValue<EmbeddedCacheManagerConfiguration> config = new InjectedValue<EmbeddedCacheManagerConfiguration>();
@@ -151,7 +148,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         ;
         newControllers.add(containerBuilder.install());
 
-        String jndiName = (model.hasDefined(ModelKeys.JNDI_NAME) ? InfinispanJndiName.toJndiName(model.get(ModelKeys.JNDI_NAME).asString()) : InfinispanJndiName.defaultCacheContainerJndiName(name)).getAbsoluteName();
+        String jndiName = (jndiNameString != null ? InfinispanJndiName.toJndiName(jndiNameString) : InfinispanJndiName.defaultCacheContainerJndiName(name)).getAbsoluteName();
         ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
 
         BinderService binder = new BinderService(bindInfo.getBindName());
@@ -164,15 +161,14 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         newControllers.add(binderBuilder.install());
 
         if (hasTransport) {
-            String stack = null;
             ModelNode transport = model.get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
-            if (transport.hasDefined(ModelKeys.STACK)) {
-                stack = transport.get(ModelKeys.STACK).asString();
-            }
-            if (transport.hasDefined(ModelKeys.LOCK_TIMEOUT)) {
-                transportConfig.setLockTimeout(transport.get(ModelKeys.LOCK_TIMEOUT).asLong());
-            }
-            addExecutorDependency(configBuilder, transport, ModelKeys.EXECUTOR, transportConfig.getExecutorInjector());
+
+            final String stack = ((resolvedValue = CommonAttributes.STACK.resolveModelAttribute(context, transport)).isDefined()) ? resolvedValue.asString() : null ;
+            final long lockTimeout = CommonAttributes.LOCK_TIMEOUT.resolveModelAttribute(context, transport).asLong();
+            final String executor = ((resolvedValue = CommonAttributes.EXECUTOR.resolveModelAttribute(context, transport)).isDefined()) ? resolvedValue.asString() : null ;
+
+            transportConfig.setLockTimeout(lockTimeout);
+            addExecutorDependency(containerBuilder, executor, transportConfig.getExecutorInjector());
 
             ServiceName channelServiceName = ChannelService.getServiceName(name);
             configBuilder.addDependency(channelServiceName, Channel.class, transportConfig.getChannelInjector());
@@ -185,24 +181,24 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
             newControllers.add(channelBuilder.install());
         }
 
-        addExecutorDependency(configBuilder, model, ModelKeys.LISTENER_EXECUTOR, dependencies.getListenerExecutorInjector());
-        addScheduledExecutorDependency(configBuilder, model, ModelKeys.EVICTION_EXECUTOR, dependencies.getEvictionExecutorInjector());
-        addScheduledExecutorDependency(configBuilder, model, ModelKeys.REPLICATION_QUEUE_EXECUTOR, dependencies.getReplicationQueueExecutorInjector());
+        addExecutorDependency(containerBuilder, listenerExecutor, dependencies.getListenerExecutorInjector());
+        addScheduledExecutorDependency(containerBuilder, evictionExecutor, dependencies.getEvictionExecutorInjector());
+        addScheduledExecutorDependency(containerBuilder, replicationQueueExecutor, dependencies.getReplicationQueueExecutorInjector());
 
         newControllers.add(configBuilder.install());
 
         log.debugf("%s cache container installed", name);
      }
 
-    private void addExecutorDependency(ServiceBuilder<EmbeddedCacheManagerConfiguration> builder, ModelNode model, String key, Injector<Executor> injector) {
-        if (model.hasDefined(key)) {
-            builder.addDependency(ThreadsServices.executorName(model.get(key).asString()), Executor.class, injector);
+    private void addExecutorDependency(ServiceBuilder<EmbeddedCacheManager> builder, String executor, Injector<Executor> injector) {
+        if (executor != null) {
+            builder.addDependency(ThreadsServices.executorName(executor), Executor.class, injector);
         }
     }
 
-    private void addScheduledExecutorDependency(ServiceBuilder<EmbeddedCacheManagerConfiguration> builder, ModelNode model, String key, Injector<ScheduledExecutorService> injector) {
-        if (model.hasDefined(key)) {
-            builder.addDependency(ThreadsServices.executorName(model.get(key).asString()), ScheduledExecutorService.class, injector);
+    private void addScheduledExecutorDependency(ServiceBuilder<EmbeddedCacheManager> builder, String executor, Injector<ScheduledExecutorService> injector) {
+        if (executor != null) {
+            builder.addDependency(ThreadsServices.executorName(executor), ScheduledExecutorService.class, injector);
         }
     }
 

@@ -21,7 +21,7 @@ public class LocalCacheAdd extends CacheAdd {
     }
 
     // used to create subsystem description
-    static ModelNode createOperation(ModelNode address, ModelNode model) {
+    static ModelNode createOperation(ModelNode address, ModelNode model) throws OperationFailedException {
         ModelNode operation = Util.getEmptyOperation(ADD, address);
         INSTANCE.populate(model, operation);
         return operation;

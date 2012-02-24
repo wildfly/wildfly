@@ -164,7 +164,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         String containerName = containerAddress.getLastElement().getValue();
 
         // process cache configuration ModelNode describing overrides to defaults
-        processModelNode(containerName, model, builder, dependencies);
+        processModelNode(context, containerName,  model, builder, dependencies);
 
         ServiceName containerServiceName = EmbeddedCacheManagerService.getServiceName(containerName);
         ServiceName cacheServiceName = containerServiceName.append(cacheName);
@@ -269,20 +269,12 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
      * @param fromModel
      * @param toModel
      */
-    void populate(ModelNode fromModel, ModelNode toModel) {
+    void populate(ModelNode fromModel, ModelNode toModel) throws OperationFailedException {
 
-        if (fromModel.hasDefined(ModelKeys.START)) {
-            toModel.get(ModelKeys.START).set(fromModel.get(ModelKeys.START));
-        }
-        if (fromModel.hasDefined(ModelKeys.BATCHING)) {
-            toModel.get(ModelKeys.BATCHING).set(fromModel.get(ModelKeys.BATCHING));
-        }
-        if (fromModel.hasDefined(ModelKeys.INDEXING)) {
-            toModel.get(ModelKeys.INDEXING).set(fromModel.get(ModelKeys.INDEXING));
-        }
-        if (fromModel.hasDefined(ModelKeys.JNDI_NAME)) {
-            toModel.get(ModelKeys.JNDI_NAME).set(fromModel.get(ModelKeys.JNDI_NAME));
-        }
+        CommonAttributes.START.validateAndSet(fromModel, toModel);
+        CommonAttributes.BATCHING.validateAndSet(fromModel, toModel);
+        CommonAttributes.INDEXING.validateAndSet(fromModel, toModel);
+        CommonAttributes.JNDI_NAME.validateAndSet(fromModel, toModel);
     }
 
     /**
@@ -292,54 +284,46 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
      * @param builder ConfigurationBuilder object to add data to
      * @return initialised Configuration object
      */
-    void processModelNode(String containerName, ModelNode cache, ConfigurationBuilder builder, List<Dependency<?>> dependencies) {
-        builder.classLoader(this.getClass().getClassLoader());
-        builder.clustering().cacheMode(CacheMode.valueOf(cache.require(ModelKeys.MODE).asString()));
+    void processModelNode(OperationContext context, String containerName, ModelNode cache, ConfigurationBuilder builder, List<Dependency<?>> dependencies)
+            throws OperationFailedException {
 
-        if (cache.hasDefined(ModelKeys.INDEXING)) {
-            Indexing indexing = Indexing.valueOf(cache.get(ModelKeys.INDEXING).asString());
+        ModelNode resolvedValue = null ;
+        final String indexingString = ((resolvedValue = CommonAttributes.INDEXING.resolveModelAttribute(context, cache)).isDefined()) ? resolvedValue.asString() : null ;
+        final int queueSize = CommonAttributes.QUEUE_SIZE.resolveModelAttribute(context, cache).asInt();
+        final long queueFlushInterval = CommonAttributes.QUEUE_FLUSH_INTERVAL.resolveModelAttribute(context, cache).asLong();
+        final long remoteTimeout = CommonAttributes.REMOTE_TIMEOUT.resolveModelAttribute(context, cache).asLong();
+        final boolean batching = CommonAttributes.BATCHING.resolveModelAttribute(context, cache).asBoolean();
+
+        builder.classLoader(this.getClass().getClassLoader());
+        // set the cache mode
+        CacheMode cacheMode = CacheMode.valueOf(cache.require(ModelKeys.MODE).asString());
+        builder.clustering().cacheMode(cacheMode);
+
+        if (indexingString != null) {
+            Indexing indexing = Indexing.valueOf(indexingString);
             builder.indexing().enabled(indexing.isEnabled()).indexLocalOnly(indexing.isLocalOnly());
         }
-        if (cache.hasDefined(ModelKeys.QUEUE_SIZE)) {
-            int size = cache.get(ModelKeys.QUEUE_SIZE).asInt();
-            builder.clustering().async().replQueueMaxElements(size).useReplQueue(size > 0);
-        }
-        if (cache.hasDefined(ModelKeys.QUEUE_FLUSH_INTERVAL)) {
-            builder.clustering().async().replQueueInterval(cache.get(ModelKeys.QUEUE_FLUSH_INTERVAL).asLong());
-        }
-        if (cache.hasDefined(ModelKeys.REMOTE_TIMEOUT)) {
-            builder.clustering().sync().replTimeout(cache.get(ModelKeys.REMOTE_TIMEOUT).asLong());
-        }
-        if (cache.hasDefined(ModelKeys.OWNERS)) {
-            builder.clustering().hash().numOwners(cache.get(ModelKeys.OWNERS).asInt());
-        }
-        if (cache.hasDefined(ModelKeys.VIRTUAL_NODES)) {
-            builder.clustering().hash().numVirtualNodes(cache.get(ModelKeys.VIRTUAL_NODES).asInt());
-        }
-        if (cache.hasDefined(ModelKeys.L1_LIFESPAN)) {
-            long lifespan = cache.get(ModelKeys.L1_LIFESPAN).asLong();
-            if (lifespan > 0) {
-                builder.clustering().l1().enable().lifespan(lifespan);
-            } else {
-                builder.clustering().l1().disable();
-            }
+
+        if (cacheMode.isSynchronous()) {
+            builder.clustering().sync().replTimeout(remoteTimeout);
+        } else  {
+            builder.clustering().async().replQueueMaxElements(queueSize).useReplQueue(queueSize > 0);
+            builder.clustering().async().replQueueInterval(queueFlushInterval);
         }
 
         // locking is a child resource
         if (cache.hasDefined(ModelKeys.LOCKING) && cache.get(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME).isDefined()) {
             ModelNode locking = cache.get(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME);
-            if (locking.hasDefined(ModelKeys.ISOLATION)) {
-                builder.locking().isolationLevel(IsolationLevel.valueOf(locking.get(ModelKeys.ISOLATION).asString()));
-            }
-            if (locking.hasDefined(ModelKeys.STRIPING)) {
-                builder.locking().useLockStriping(locking.get(ModelKeys.STRIPING).asBoolean());
-            }
-            if (locking.hasDefined(ModelKeys.ACQUIRE_TIMEOUT)) {
-                builder.locking().lockAcquisitionTimeout(locking.get(ModelKeys.ACQUIRE_TIMEOUT).asLong());
-            }
-            if (locking.hasDefined(ModelKeys.CONCURRENCY_LEVEL)) {
-                builder.locking().concurrencyLevel(locking.get(ModelKeys.CONCURRENCY_LEVEL).asInt());
-            }
+
+            final String isolationLevel = ((resolvedValue = CommonAttributes.ISOLATION.resolveModelAttribute(context, locking)).isDefined()) ? resolvedValue.asString() : null ;
+            final boolean striping = CommonAttributes.SHARED.resolveModelAttribute(context, locking).asBoolean();
+            final long acquireTimeout = CommonAttributes.ACQUIRE_TIMEOUT.resolveModelAttribute(context, locking).asLong();
+            final int concurrencyLevel = CommonAttributes.CONCURRENCY_LEVEL.resolveModelAttribute(context, locking).asInt();
+
+            builder.locking().isolationLevel(IsolationLevel.valueOf(isolationLevel));
+            builder.locking().useLockStriping(striping);
+            builder.locking().lockAcquisitionTimeout(acquireTimeout);
+            builder.locking().concurrencyLevel(concurrencyLevel);
         }
 
         TransactionMode txMode = TransactionMode.NONE;
@@ -347,14 +331,17 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         // locking is a child resource
         if (cache.hasDefined(ModelKeys.TRANSACTION) && cache.get(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME).isDefined()) {
             ModelNode transaction = cache.get(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME);
-            if (transaction.hasDefined(ModelKeys.STOP_TIMEOUT)) {
-                builder.transaction().cacheStopTimeout(transaction.get(ModelKeys.STOP_TIMEOUT).asLong());
+
+            final long stopTimeout = CommonAttributes.STOP_TIMEOUT.resolveModelAttribute(context, transaction).asLong();
+            final String txnMode = ((resolvedValue = CommonAttributes.MODE.resolveModelAttribute(context, transaction)).isDefined()) ? resolvedValue.asString() : null ;
+            final String lockingModeString = ((resolvedValue = CommonAttributes.LOCKING.resolveModelAttribute(context, transaction)).isDefined()) ? resolvedValue.asString() : null ;
+
+            builder.transaction().cacheStopTimeout(stopTimeout);
+            if (txnMode != null) {
+                txMode = TransactionMode.valueOf(txnMode);
             }
-            if (transaction.hasDefined(ModelKeys.MODE)) {
-                txMode = TransactionMode.valueOf(transaction.get(ModelKeys.MODE).asString());
-            }
-            if (transaction.hasDefined(ModelKeys.LOCKING)) {
-                lockingMode = LockingMode.valueOf(transaction.get(ModelKeys.LOCKING).asString());
+            if (lockingModeString != null) {
+                lockingMode = LockingMode.valueOf(lockingModeString);
             }
         }
         builder.transaction()
@@ -366,53 +353,64 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         if (txMode.isRecoveryEnabled()) {
             builder.transaction().syncCommitPhase(true).syncRollbackPhase(true);
         }
-        if (cache.hasDefined(ModelKeys.BATCHING)) {
-            if (cache.get(ModelKeys.BATCHING).asBoolean()) {
-                builder.transaction().transactionMode(org.infinispan.transaction.TransactionMode.TRANSACTIONAL).invocationBatching().enable();
-            } else {
-                builder.transaction().invocationBatching().disable();
-            }
+
+        if (batching) {
+            builder.transaction().transactionMode(org.infinispan.transaction.TransactionMode.TRANSACTIONAL).invocationBatching().enable();
+        } else {
+            builder.transaction().invocationBatching().disable();
         }
+
         // eviction is a child resource
         if (cache.hasDefined(ModelKeys.EVICTION) && cache.get(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME).isDefined()) {
             ModelNode eviction = cache.get(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME);
 
-            if (eviction.hasDefined(ModelKeys.STRATEGY)) {
-                builder.eviction().strategy(EvictionStrategy.valueOf(eviction.get(ModelKeys.STRATEGY).asString()));
+            final String strategy = ((resolvedValue = CommonAttributes.STRATEGY.resolveModelAttribute(context, eviction)).isDefined()) ? resolvedValue.asString() : null ;
+            final int maxEntries = CommonAttributes.MAX_ENTRIES.resolveModelAttribute(context, eviction).asInt();
+
+            if (strategy != null) {
+                builder.eviction().strategy(EvictionStrategy.valueOf(strategy));
             }
-            if (eviction.hasDefined(ModelKeys.MAX_ENTRIES)) {
-                builder.eviction().maxEntries(eviction.get(ModelKeys.MAX_ENTRIES).asInt());
-            }
+            builder.eviction().maxEntries(maxEntries);
         }
         // expiration is a child resource
         if (cache.hasDefined(ModelKeys.EXPIRATION) && cache.get(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME).isDefined()) {
+
             ModelNode expiration = cache.get(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME);
-            if (expiration.hasDefined(ModelKeys.MAX_IDLE)) {
-                builder.expiration().maxIdle(expiration.get(ModelKeys.MAX_IDLE).asLong());
-            }
-            if (expiration.hasDefined(ModelKeys.LIFESPAN)) {
-                builder.expiration().lifespan(expiration.get(ModelKeys.LIFESPAN).asLong());
-            }
-            if (expiration.hasDefined(ModelKeys.INTERVAL)) {
-                builder.expiration().wakeUpInterval(expiration.get(ModelKeys.INTERVAL).asLong());
-            }
+
+            final long maxIdle = CommonAttributes.MAX_IDLE.resolveModelAttribute(context, expiration).asLong();
+            final long lifespan = CommonAttributes.LIFESPAN.resolveModelAttribute(context, expiration).asLong();
+            final long interval = CommonAttributes.INTERVAL.resolveModelAttribute(context, expiration).asLong();
+
+            builder.expiration().maxIdle(maxIdle);
+            builder.expiration().lifespan(lifespan);
+            builder.expiration().wakeUpInterval(interval);
         }
+
+        // to here
 
         String storeKey = this.findStoreKey(cache);
         if (storeKey != null) {
             ModelNode store = this.getStoreModelNode(cache);
+
+            final boolean shared = CommonAttributes.SHARED.resolveModelAttribute(context, store).asBoolean();
+            final boolean preload = CommonAttributes.PRELOAD.resolveModelAttribute(context, store).asBoolean();
+            final boolean passivation = CommonAttributes.PASSIVATION.resolveModelAttribute(context, store).asBoolean();
+            final boolean fetchState = CommonAttributes.FETCH_STATE.resolveModelAttribute(context, store).asBoolean();
+            final boolean purge = CommonAttributes.PURGE.resolveModelAttribute(context, store).asBoolean();
+            final boolean singleton = CommonAttributes.SINGLETON.resolveModelAttribute(context, store).asBoolean();
+
             builder.loaders()
-                    .shared(store.hasDefined(ModelKeys.SHARED) ? store.get(ModelKeys.SHARED).asBoolean() : false)
-                    .preload(store.hasDefined(ModelKeys.PRELOAD) ? store.get(ModelKeys.PRELOAD).asBoolean() : false)
-                    .passivation(store.hasDefined(ModelKeys.PASSIVATION) ? store.get(ModelKeys.PASSIVATION).asBoolean() : true)
+                    .shared(shared)
+                    .preload(preload)
+                    .passivation(passivation)
             ;
             LoaderConfigurationBuilder storeBuilder = builder.loaders().addCacheLoader()
-                    .fetchPersistentState(store.hasDefined(ModelKeys.FETCH_STATE) ? store.get(ModelKeys.FETCH_STATE).asBoolean() : true)
-                    .purgeOnStartup(store.hasDefined(ModelKeys.PURGE) ? store.get(ModelKeys.PURGE).asBoolean() : true)
+                    .fetchPersistentState(fetchState)
+                    .purgeOnStartup(purge)
                     .purgeSynchronously(true)
             ;
-            storeBuilder.singletonStore().enabled(store.hasDefined(ModelKeys.SINGLETON) ? store.get(ModelKeys.SINGLETON).asBoolean() : false);
-            this.buildCacheStore(storeBuilder, containerName, store, storeKey, dependencies);
+            storeBuilder.singletonStore().enabled(singleton);
+            this.buildCacheStore(context, storeBuilder, containerName, store, storeKey, dependencies);
         }
     }
 
@@ -443,7 +441,8 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
     }
 
 
-    private void buildCacheStore(LoaderConfigurationBuilder builder, String containerName, ModelNode store, String storeKey, List<Dependency<?>> dependencies) {
+    private void buildCacheStore(OperationContext context, LoaderConfigurationBuilder builder, String containerName, ModelNode store, String storeKey, List<Dependency<?>> dependencies)
+            throws OperationFailedException {
         final Properties properties = new TypedProperties();
         if (store.hasDefined(ModelKeys.PROPERTY)) {
             for (Property property : store.get(ModelKeys.PROPERTY).asPropertyList()) {
@@ -459,9 +458,12 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         }
         builder.withProperties(properties);
 
+        ModelNode resolvedValue = null ;
         if (storeKey.equals(ModelKeys.FILE_STORE)) {
             builder.cacheLoader(new FileCacheStore());
-            final String path = store.hasDefined(ModelKeys.PATH) ? store.get(ModelKeys.PATH).asString() : containerName;
+
+            final String path = ((resolvedValue = CommonAttributes.PATH.resolveModelAttribute(context, store)).isDefined()) ? resolvedValue.asString() : containerName ;
+
             Injector<String> injector = new SimpleInjector<String>() {
                 @Override
                 public void inject(String value) {
@@ -472,12 +474,14 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
                     properties.setProperty("location", location.toString());
                 }
             };
-            String relativeTo = store.hasDefined(ModelKeys.RELATIVE_TO) ? store.get(ModelKeys.RELATIVE_TO).asString() : ServerEnvironment.SERVER_DATA_DIR;
+            final String relativeTo = ((resolvedValue = CommonAttributes.RELATIVE_TO.resolveModelAttribute(context, store)).isDefined()) ? resolvedValue.asString() : ServerEnvironment.SERVER_DATA_DIR ;
             dependencies.add(new Dependency<String>(AbstractPathService.pathNameOf(relativeTo), String.class, injector));
             properties.setProperty("fsyncMode", "perWrite");
         } else if (storeKey.equals(ModelKeys.JDBC_STORE)) {
             builder.cacheLoader(this.createJDBCStore(properties, store));
-            String datasource = store.require(ModelKeys.DATASOURCE).asString();
+
+            final String datasource = CommonAttributes.DATA_SOURCE.resolveModelAttribute(context, store).asString() ;
+
             dependencies.add(new Dependency<Object>(ServiceName.JBOSS.append("data-source", datasource)));
             properties.setProperty("datasourceJndiLocation", datasource);
             properties.setProperty("connectionFactoryClass", ManagedConnectionFactory.class.getName());

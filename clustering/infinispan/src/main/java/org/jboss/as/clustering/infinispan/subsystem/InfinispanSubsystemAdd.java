@@ -29,6 +29,7 @@ import java.util.List;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
@@ -45,25 +46,28 @@ public class InfinispanSubsystemAdd extends AbstractAddStepHandler {
 
     public static final InfinispanSubsystemAdd INSTANCE = new InfinispanSubsystemAdd();
 
-    static ModelNode createOperation(ModelNode address, ModelNode existing) {
+    static ModelNode createOperation(ModelNode address, ModelNode existing) throws OperationFailedException {
         ModelNode operation = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
         populate(existing, operation);
         return operation;
     }
 
-    private static void populate(ModelNode source, ModelNode target) {
-        target.get(ModelKeys.DEFAULT_CACHE_CONTAINER).set(source.require(ModelKeys.DEFAULT_CACHE_CONTAINER));
+    private static void populate(ModelNode source, ModelNode target) throws OperationFailedException {
+        CommonAttributes.DEFAULT_CACHE_CONTAINER.validateAndSet(source, target);
         target.get(ModelKeys.CACHE_CONTAINER).setEmptyObject();
     }
 
-    protected void populateModel(ModelNode operation, ModelNode model) {
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         populate(operation, model);
     }
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler,
+                                  List<ServiceController<?>> newControllers) throws OperationFailedException{
+
         ROOT_LOGGER.activatingSubsystem();
         ServiceTarget target = context.getServiceTarget();
-        String defaultContainer = operation.require(ModelKeys.DEFAULT_CACHE_CONTAINER).asString();
+
+        String defaultContainer = CommonAttributes.DEFAULT_CACHE_CONTAINER.resolveModelAttribute(context, model).asString();
         InjectedValue<EmbeddedCacheManager> container = new InjectedValue<EmbeddedCacheManager>();
         ValueService<EmbeddedCacheManager> service = new ValueService<EmbeddedCacheManager>(container);
         ServiceController<EmbeddedCacheManager> controller = target.addService(EmbeddedCacheManagerService.getServiceName(null), service)

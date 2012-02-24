@@ -71,7 +71,7 @@ public class JGroupsSubsystemAdd extends AbstractAddStepHandler {
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install());
 
-        String stack = CommonAttributes.DEFAULT_STACK.resolveModelAttribute(context, model).asString();
+        final String stack = CommonAttributes.DEFAULT_STACK.resolveModelAttribute(context, model).asString() ;
 
         InjectedValue<ChannelFactory> factory = new InjectedValue<ChannelFactory>();
         ValueService<ChannelFactory> service = new ValueService<ChannelFactory>(factory);
