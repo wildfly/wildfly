@@ -134,7 +134,7 @@ public class WebSecurityProgrammaticLoginTestCase {
         return "web-secure-programmatic-login";
     }
 
-    public static class SecurityDomainSetup extends AbstractSecurityDomainSetup {
+    static class SecurityDomainSetup extends AbstractSecurityDomainSetup {
 
         @Override
         protected String getSecurityDomainName() {
