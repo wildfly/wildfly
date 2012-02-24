@@ -22,6 +22,7 @@
 
 package org.jboss.as.logging;
 
+import org.jboss.as.controller.CaseParameterCorrector;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.EnumValidator;
@@ -58,7 +59,10 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition CATEGORY = SimpleAttributeDefinitionBuilder.create("category", ModelType.STRING).build();
 
-    SimpleAttributeDefinition CHANGE_LEVEL = SimpleAttributeDefinitionBuilder.create("change-level", ModelType.STRING, true).build();
+    SimpleAttributeDefinition CHANGE_LEVEL = SimpleAttributeDefinitionBuilder.create("change-level", ModelType.STRING, true).
+            setCorrector(CaseParameterCorrector.TO_UPPER).
+            setValidator(new LogLevelValidator(true)).
+            build();
 
     SimpleAttributeDefinition CLASS = SimpleAttributeDefinitionBuilder.create("class", ModelType.STRING).build();
 
@@ -92,6 +96,7 @@ public interface CommonAttributes {
             build();
 
     SimpleAttributeDefinition LEVEL = SimpleAttributeDefinitionBuilder.create("level", ModelType.STRING, true).
+            setCorrector(CaseParameterCorrector.TO_UPPER).
             setValidator(new LogLevelValidator(true)).
             build();
 
@@ -108,13 +113,19 @@ public interface CommonAttributes {
             setDefaultValue(new ModelNode().set(true)).
             build();
 
-    SimpleAttributeDefinition MAX_LEVEL = SimpleAttributeDefinitionBuilder.create("max-level", ModelType.STRING).build();
+    SimpleAttributeDefinition MAX_LEVEL = SimpleAttributeDefinitionBuilder.create("max-level", ModelType.STRING).
+            setCorrector(CaseParameterCorrector.TO_UPPER).
+            setValidator(new LogLevelValidator(true)).
+            build();
 
     SimpleAttributeDefinition MIN_INCLUSIVE = SimpleAttributeDefinitionBuilder.create("min-inclusive", ModelType.BOOLEAN).
             setDefaultValue(new ModelNode().set(true)).
             build();
 
-    SimpleAttributeDefinition MIN_LEVEL = SimpleAttributeDefinitionBuilder.create("min-level", ModelType.STRING).build();
+    SimpleAttributeDefinition MIN_LEVEL = SimpleAttributeDefinitionBuilder.create("min-level", ModelType.STRING).
+            setCorrector(CaseParameterCorrector.TO_UPPER).
+            setValidator(new LogLevelValidator(true)).
+            build();
 
     SimpleAttributeDefinition MODULE = SimpleAttributeDefinitionBuilder.create("module", ModelType.STRING).build();
 
@@ -122,7 +133,10 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition VALUE = SimpleAttributeDefinitionBuilder.create("value", ModelType.STRING).build();
 
-    SimpleAttributeDefinition NEW_LEVEL = SimpleAttributeDefinitionBuilder.create("new-level", ModelType.STRING).build();
+    SimpleAttributeDefinition NEW_LEVEL = SimpleAttributeDefinitionBuilder.create("new-level", ModelType.STRING).
+            setCorrector(CaseParameterCorrector.TO_UPPER).
+            setValidator(new LogLevelValidator(true)).
+            build();
 
     SimpleAttributeDefinition OVERFLOW_ACTION = SimpleAttributeDefinitionBuilder.create("overflow-action", ModelType.STRING).
             setDefaultValue(new ModelNode().set(OverflowAction.BLOCK.name())).
