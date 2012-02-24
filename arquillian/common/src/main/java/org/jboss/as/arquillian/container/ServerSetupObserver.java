@@ -1,5 +1,7 @@
 package org.jboss.as.arquillian.container;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -32,7 +34,7 @@ public class ServerSetupObserver {
     private final List<ManagementClient> active = new ArrayList<ManagementClient>();
     private ServerSetupTask current;
 
-    public synchronized void handleBeforeDeployment(@Observes BeforeDeploy event, Container container) throws IllegalAccessException, InstantiationException {
+    public synchronized void handleBeforeDeployment(@Observes BeforeDeploy event, Container container) throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
 
         final ClassContext classContext = classContextInstance.get();
         if (classContext == null) {
@@ -50,7 +52,9 @@ public class ServerSetupObserver {
             return;
         }
         if (current == null) {
-            current = setup.value().newInstance();
+            Constructor<? extends ServerSetupTask> ctor = setup.value().getConstructor();
+            ctor.setAccessible(true);
+            current = ctor.newInstance();
         } else if (current.getClass() != setup.value()) {
             throw new RuntimeException("Mismatched ServerSetupTask current is " + current + " but " + currentClass + " is expecting " + setup.value());
         }
