@@ -22,14 +22,15 @@
 
 package org.jboss.as.test.integration.management.jca;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import java.util.List;
 
 import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension.DataSourceSubsystemParser;
-import java.util.List;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.connector.subsystems.datasources.Namespace;
+import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.dmr.ModelNode;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * Extension of AbstractMgmtTestBase for data source testing.
@@ -80,7 +81,7 @@ public class DsMgmtTestBase extends AbstractMgmtTestBase {
 
     protected static List<ModelNode> marshalAndReparseDsResources(String childType) throws Exception {
         DataSourceSubsystemParser parser = new DataSourceSubsystemParser();
-        return XmlToModelOperations(ModelToXml("datasources", childType, parser), Namespace.CURRENT.getUriString(), parser);
+        return XmlToModelOperations(modelToXml("datasources", childType, parser), Namespace.CURRENT.getUriString(), parser);
     }
 
     private static void testCon(final String dsName, String type) throws Exception {

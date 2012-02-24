@@ -22,12 +22,7 @@
 
 package org.jboss.as.test.integration.management.api.core;
 
-import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
-
-import java.io.IOException;
 import java.net.URL;
-
-import javax.enterprise.inject.Model;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -41,11 +36,11 @@ import org.jboss.dmr.Property;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 
 /**
  * Test for functionality added with AS7-2234.
@@ -65,16 +60,6 @@ public class ManagementVersionTestCase extends AbstractMgmtTestBase {
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
         ja.addClass(ManagementVersionTestCase.class);
         return ja;
-    }
-
-    @Before
-    public void before() throws IOException {
-        initModelControllerClient(url.getHost(), MGMT_PORT);
-    }
-
-    @AfterClass
-    public static void after() throws IOException {
-        closeModelControllerClient();
     }
 
     @Test

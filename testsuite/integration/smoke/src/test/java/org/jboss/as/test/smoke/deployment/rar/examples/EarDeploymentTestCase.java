@@ -40,7 +40,6 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -59,45 +58,36 @@ import static org.junit.Assert.assertNotNull;
 @RunAsClient
 public class EarDeploymentTestCase extends AbstractMgmtTestBase {
 
-	@ArquillianResource
+    @ArquillianResource
     private ManagementClient managementClient;
 
-	static String subdeploymentName = "complex_ij.rar";
-	static String deploymentName ="new.ear";
+    static String subdeploymentName = "complex_ij.rar";
+    static String deploymentName = "new.ear";
 
 
-	public static void setUp() throws Exception{
-		initModelControllerClient("localhost",9999);
-	}
-	@AfterClass
-	public static void tearDown() throws Exception{
-        closeModelControllerClient();
-	}
     /**
      * Define the deployment
      *
      * @return The deployment archive
      */
-   @Deployment
-    public static EnterpriseArchive createDeployment()  throws Exception{
-	   setUp();
-
-
+    @Deployment
+    public static EnterpriseArchive createDeployment() throws Exception {
         ResourceAdapterArchive raa =
                 ShrinkWrap.create(ResourceAdapterArchive.class, subdeploymentName);
-         JavaArchive ja = ShrinkWrap.create(JavaArchive.class,  "multiple.jar");
+        JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "multiple.jar");
         ja.addPackage(MultipleConnectionFactory1.class.getPackage());
         raa.addAsManifestResource("rar/" + subdeploymentName + "/META-INF/ironjacamar.xml", "ironjacamar.xml")
-        .addAsManifestResource("rar/" + subdeploymentName + "/META-INF/ra.xml", "ra.xml")
-        .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli,javax.inject.api,org.jboss.as.connector\n"),"MANIFEST.MF");;
+                .addAsManifestResource("rar/" + subdeploymentName + "/META-INF/ra.xml", "ra.xml")
+                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli,javax.inject.api,org.jboss.as.connector\n"), "MANIFEST.MF");
+        ;
 
         WebArchive wa = ShrinkWrap.create(WebArchive.class, "servlet.war");
         wa.addClasses(RaServlet.class);
 
-        EnterpriseArchive ea=ShrinkWrap.create(EnterpriseArchive.class,deploymentName);
+        EnterpriseArchive ea = ShrinkWrap.create(EnterpriseArchive.class, deploymentName);
         ea.addAsModule(raa)
-        .addAsModule(wa)
-        .addAsLibrary(ja);
+                .addAsModule(wa)
+                .addAsLibrary(ja);
         return ea;
     }
 
@@ -108,20 +98,21 @@ public class EarDeploymentTestCase extends AbstractMgmtTestBase {
      */
     @Test
     public void testWebConfiguration() throws Throwable {
-        URL servletURL = new URL("http://localhost:8080/servlet"+RaServlet.URL_PATTERN);
+        URL servletURL = new URL("http://localhost:8080/servlet" + RaServlet.URL_PATTERN);
         BufferedReader br = new BufferedReader(new InputStreamReader(servletURL.openStream()));
         String message = br.readLine();
         assertEquals(RaServlet.SUCCESS, message);
     }
+
     @Test
     @Ignore
-    public void testConfiguration() throws Throwable{
-        assertNotNull("Deployment metadata for ear not found",managementClient.getDeploymentMetaData(deploymentName));
+    public void testConfiguration() throws Throwable {
+        assertNotNull("Deployment metadata for ear not found", managementClient.getDeploymentMetaData(deploymentName));
 
-        final ModelNode address=new ModelNode();
-        address.add("deployment",deploymentName).add("subdeployment",subdeploymentName).add("subsystem","resource-adapters");
+        final ModelNode address = new ModelNode();
+        address.add("deployment", deploymentName).add("subdeployment", subdeploymentName).add("subsystem", "resource-adapters");
         address.protect();
-        final ModelNode snapshot=new ModelNode();
+        final ModelNode snapshot = new ModelNode();
         snapshot.get(OP).set("read-resource");
         snapshot.get("recursive").set("true");
         snapshot.get(OP_ADDR).set(address);

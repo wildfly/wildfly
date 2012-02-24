@@ -22,15 +22,16 @@
 
 package org.jboss.as.test.integration.management;
 
+import java.util.HashSet;
+import java.util.List;
+
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.util.WebUtil;
 import org.jboss.dmr.ModelNode;
-import java.util.HashSet;
-import java.util.List;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Shared class for all mamagement operations needed by tests.
@@ -152,8 +153,4 @@ public class ServerManager extends AbstractMgmtTestBase {
         return connNames;
     }
 
-
-    public void initModelControllerClient() {
-        initModelControllerClient(mgmtHostName, getMgmtPort());
-    }
 }

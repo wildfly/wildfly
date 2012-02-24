@@ -27,8 +27,11 @@ import javax.annotation.Resource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension.ResourceAdapterSubsystemParser;
+import org.jboss.as.test.integration.management.AbstractServerSetupTask;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.smoke.deployment.rar.MultipleAdminObject1;
@@ -42,75 +45,83 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
-import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.junit.Assert.assertNotNull;
 
 
 /**
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
- *        JBQA-5738 multiple object activation(full)
+ *         JBQA-5738 multiple object activation(full)
  */
 @RunWith(Arquillian.class)
-
+@ServerSetup(MultipleObjectActivationTestCase.MultipleObjectActivationTestCaseSetup.class)
 public class MultipleObjectActivationTestCase extends AbstractMgmtTestBase {
 
-	//@BeforeClass - called from @Deployment
-	public static void setUp() throws Exception{
-		initModelControllerClient("localhost",9999);
-	    String xml=readXmlResource(System.getProperty("jbossas.ts.submodule.dir")+"/src/test/resources/config/multiple.xml");
-        List<ModelNode> operations=XmlToModelOperations(xml,Namespace.CURRENT.getUriString(),new ResourceAdapterSubsystemParser());
-        executeOperation(operationListToCompositeOperation(operations));
+    static class MultipleObjectActivationTestCaseSetup extends AbstractServerSetupTask {
 
-	}
-	@AfterClass
-	public static void tearDown() throws Exception{
+        @Override
+        public void setup(final ManagementClient managementClient) {
+            try {
+                String xml = readXmlResource(System.getProperty("jbossas.ts.submodule.dir") + "/src/test/resources/config/multiple.xml");
+                List<ModelNode> operations = XmlToModelOperations(xml, Namespace.CURRENT.getUriString(), new ResourceAdapterSubsystemParser());
+                applyUpdate(managementClient.getControllerClient(), operationListToCompositeOperation(operations));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
 
-		final ModelNode address = new ModelNode();
-        address.add("subsystem", "resource-adapters");
-        address.add("resource-adapter","archive_mult.rar");
-        address.protect();
-        remove(address);
-        closeModelControllerClient();
+        @Override
+        public void tearDown(final ManagementClient managementClient) {
 
-	}
+            final ModelNode address = new ModelNode();
+            address.add("subsystem", "resource-adapters");
+            address.add("resource-adapter", "archive_mult.rar");
+            address.protect();
+
+            final ModelNode operation = new ModelNode();
+            operation.get(OP).set("remove");
+            operation.get(OP_ADDR).set(address);
+            applyUpdate(managementClient.getControllerClient(), operation);
+        }
+    }
 
     /**
      * Define the deployment
      *
      * @return The deployment archive
      */
-   @Deployment
-    public static ResourceAdapterArchive createDeployment()  throws Exception{
-    	setUp();
-
+    @Deployment
+    public static ResourceAdapterArchive createDeployment() throws Exception {
         String deploymentName = "archive_mult.rar";
 
         ResourceAdapterArchive raa =
                 ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName);
-         JavaArchive ja = ShrinkWrap.create(JavaArchive.class,  "multiple.jar");
+        JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "multiple.jar");
         ja.addPackage(MultipleConnectionFactory1.class.getPackage()).
-        addClasses(MultipleObjectActivationTestCase.class,AbstractMgmtTestBase.class,MgmtOperationException.class,XMLElementReader.class,XMLElementWriter.class);
+                addClasses(MultipleObjectActivationTestCase.class, AbstractMgmtTestBase.class, MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class);
         raa.addAsLibrary(ja);
 
         raa.addAsManifestResource("rar/" + deploymentName + "/META-INF/ra.xml", "ra.xml")
-        .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli\n"),"MANIFEST.MF");;
+                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli\n"), "MANIFEST.MF");
+        ;
         return raa;
     }
 
-   @Resource(mappedName = "java:jboss/name1")
-   private MultipleConnectionFactory1 connectionFactory1;
+    @Resource(mappedName = "java:jboss/name1")
+    private MultipleConnectionFactory1 connectionFactory1;
 
-   @Resource(mappedName = "java:jboss/name2")
-   private MultipleConnectionFactory2 connectionFactory2;
+    @Resource(mappedName = "java:jboss/name2")
+    private MultipleConnectionFactory2 connectionFactory2;
 
-   @Resource(mappedName="java:jboss/Name3")
-   private MultipleAdminObject1 adminObject1;
+    @Resource(mappedName = "java:jboss/Name3")
+    private MultipleAdminObject1 adminObject1;
 
-   @Resource(mappedName="java:jboss/Name4")
-   private MultipleAdminObject2 adminObject2;
+    @Resource(mappedName = "java:jboss/Name4")
+    private MultipleAdminObject2 adminObject2;
 
     /**
      * Test configuration
@@ -119,9 +130,9 @@ public class MultipleObjectActivationTestCase extends AbstractMgmtTestBase {
      */
     @Test
     public void testConfiguration() throws Throwable {
-    	assertNotNull("CF1 not found",connectionFactory1);
-    	assertNotNull("CF2 not found",connectionFactory2);
-    	assertNotNull("AO1 not found",adminObject1);
-    	assertNotNull("AO2 not found",adminObject2);
+        assertNotNull("CF1 not found", connectionFactory1);
+        assertNotNull("CF2 not found", connectionFactory2);
+        assertNotNull("AO1 not found", adminObject1);
+        assertNotNull("AO2 not found", adminObject2);
     }
 }

@@ -54,10 +54,9 @@ import static org.junit.Assert.assertNotNull;
 
 /**
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
- *        JBQA-5741 -Inflow RA deployment test
+ *         JBQA-5741 -Inflow RA deployment test
  */
 @RunWith(Arquillian.class)
-
 public class InflowTestCase extends AbstractMgmtTestBase {
 
 
@@ -66,26 +65,26 @@ public class InflowTestCase extends AbstractMgmtTestBase {
      *
      * @return The deployment archive
      */
-   @Deployment
-    public static ResourceAdapterArchive createDeployment()  throws Exception{
+    @Deployment
+    public static ResourceAdapterArchive createDeployment() throws Exception {
         String deploymentName = "inflow.rar";
 
         ResourceAdapterArchive raa =
                 ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName);
-         JavaArchive ja = ShrinkWrap.create(JavaArchive.class,  "multiple.jar");
+        JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "multiple.jar");
         ja.addPackage(PureInflowResourceAdapter.class.getPackage()).
-        addClasses(InflowTestCase.class,AbstractMgmtTestBase.class,MgmtOperationException.class,XMLElementReader.class,XMLElementWriter.class);
+                addClasses(InflowTestCase.class, AbstractMgmtTestBase.class, MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class);
         raa.addAsLibrary(ja);
 
         raa.addAsManifestResource("rar/" + deploymentName + "/META-INF/ra.xml", "ra.xml")
-        .addAsManifestResource("rar/" + deploymentName + "/META-INF/ironjacamar.xml", "ironjacamar.xml")
-        .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli,javax.inject.api,org.jboss.as.connector\n"),"MANIFEST.MF");
+                .addAsManifestResource("rar/" + deploymentName + "/META-INF/ironjacamar.xml", "ironjacamar.xml")
+                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli,javax.inject.api,org.jboss.as.connector\n"), "MANIFEST.MF");
 
         return raa;
     }
 
-   @Inject
-   public ServiceContainer serviceContainer;
+    @Inject
+    public ServiceContainer serviceContainer;
 
 
     /**
@@ -95,11 +94,11 @@ public class InflowTestCase extends AbstractMgmtTestBase {
      */
     @Test
     public void testRegistryConfiguration() throws Throwable {
-    	ServiceController<?> controller=serviceContainer.getService( ConnectorServices.RA_REPOSITORY_SERVICE);
-    	assertNotNull(controller);
-    	ResourceAdapterRepository repository=(ResourceAdapterRepository)controller.getValue();
-    	assertNotNull(repository);
-    	Set<String> ids = repository.getResourceAdapters(javax.jms.MessageListener.class);
+        ServiceController<?> controller = serviceContainer.getService(ConnectorServices.RA_REPOSITORY_SERVICE);
+        assertNotNull(controller);
+        ResourceAdapterRepository repository = (ResourceAdapterRepository) controller.getValue();
+        assertNotNull(repository);
+        Set<String> ids = repository.getResourceAdapters(javax.jms.MessageListener.class);
 
         assertNotNull(ids);
         assertEquals(1, ids.size());
@@ -120,13 +119,14 @@ public class InflowTestCase extends AbstractMgmtTestBase {
         assertNotNull(as);
         assertNotNull(as.getResourceAdapter());
     }
+
     @Test
     public void testMetadataConfiguration() throws Throwable {
-    	ServiceController<?> controller=serviceContainer.getService( ConnectorServices.IRONJACAMAR_MDR);
-    	assertNotNull(controller);
-    	MetadataRepository repository=(MetadataRepository)controller.getValue();
-    	assertNotNull(repository);
-    	Set<String> ids = repository.getResourceAdapters();
+        ServiceController<?> controller = serviceContainer.getService(ConnectorServices.IRONJACAMAR_MDR);
+        assertNotNull(controller);
+        MetadataRepository repository = (MetadataRepository) controller.getValue();
+        assertNotNull(repository);
+        Set<String> ids = repository.getResourceAdapters();
 
         assertNotNull(ids);
         assertEquals(1, ids.size());

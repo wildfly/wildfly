@@ -28,8 +28,6 @@ import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.dmr.ModelNode;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
@@ -51,15 +49,6 @@ public class ValidateOperationOperationTestCase extends AbstractMgmtTestBase {
     private static final String MASTER_SERVER = "main-one";
     private static final String SLAVE_SERVER = "main-three";
 
-    @BeforeClass
-    public static void initClient() throws Exception {
-        initModelControllerClient("127.0.0.1", 9999);
-    }
-
-    @AfterClass
-    public static void closeClient() throws Exception {
-        closeModelControllerClient();
-    }
 
     @Test
     public void testValidRootOperation() throws IOException, MgmtOperationException {

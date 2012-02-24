@@ -30,8 +30,6 @@ import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.dmr.ModelNode;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -50,16 +48,6 @@ import static org.junit.Assert.assertTrue;
 @RunAsClient
 public class ValidateAddressOperationTestCase extends AbstractMgmtTestBase {
 
-
-    @BeforeClass
-    public static void initClient() throws Exception {
-        initModelControllerClient("127.0.0.1", 9999);
-    }
-
-    @AfterClass
-    public static void closeClient() throws Exception {
-        closeModelControllerClient();
-    }
 
     @Test
     public void testValidRootAddress() throws IOException, MgmtOperationException {

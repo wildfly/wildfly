@@ -28,9 +28,12 @@ import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension.ResourceAdapterSubsystemParser;
+import org.jboss.as.test.integration.management.AbstractServerSetupTask;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.smoke.deployment.rar.inflow.PureInflowResourceAdapter;
@@ -45,66 +48,75 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
-import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 
 /**
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
- *        JBQA-5742 -Pure RA deployment test
+ *         JBQA-5742 -Pure RA deployment test
  */
 @RunWith(Arquillian.class)
+@ServerSetup(PureTestCase.PureTestCaseSetup.class)
 public class PureTestCase extends AbstractMgmtTestBase {
 
-	//@BeforeClass - called from @Deployment
-		public static void setUp() throws Exception{
-			initModelControllerClient("localhost",9999);
-		    String xml=readXmlResource(System.getProperty("jbossas.ts.submodule.dir")+"/src/test/resources/config/pure.xml");
-	        List<ModelNode> operations=XmlToModelOperations(xml,Namespace.CURRENT.getUriString(),new ResourceAdapterSubsystemParser());
-	        executeOperation(operationListToCompositeOperation(operations));
+    static class PureTestCaseSetup extends AbstractServerSetupTask {
 
-		}
-		@AfterClass
-		public static void tearDown() throws Exception{
+        @Override
+        public void setup(final ManagementClient managementClient) {
+            try {
+                String xml = readXmlResource(System.getProperty("jbossas.ts.submodule.dir") + "/src/test/resources/config/pure.xml");
+                List<ModelNode> operations = XmlToModelOperations(xml, Namespace.CURRENT.getUriString(), new ResourceAdapterSubsystemParser());
+                applyUpdate(managementClient.getControllerClient(), operationListToCompositeOperation(operations));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
 
-			final ModelNode address = new ModelNode();
-	        address.add("subsystem", "resource-adapters");
-	        address.add("resource-adapter","pure.rar");
-	        address.protect();
-	        remove(address);
-	        closeModelControllerClient();
+        @Override
+        public void tearDown(final ManagementClient managementClient) {
 
-		}
+            final ModelNode address = new ModelNode();
+            address.add("subsystem", "resource-adapters");
+            address.add("resource-adapter", "pure.rar");
+            address.protect();
+
+            final ModelNode operation = new ModelNode();
+            operation.get(OP).set("remove");
+            operation.get(OP_ADDR).set(address);
+            applyUpdate(managementClient.getControllerClient(), operation);
+        }
+    }
 
     /**
      * Define the deployment
      *
      * @return The deployment archive
      */
-   @Deployment
-    public static ResourceAdapterArchive createDeployment()  throws Exception{
-	   setUp();
+    @Deployment
+    public static ResourceAdapterArchive createDeployment() throws Exception {
         String deploymentName = "pure.rar";
 
         ResourceAdapterArchive raa =
                 ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName);
-         JavaArchive ja = ShrinkWrap.create(JavaArchive.class,  "multiple.jar");
-        ja. addClasses(PureInflowResourceAdapter.class,PureTestCase.class,AbstractMgmtTestBase.class,
-        		MgmtOperationException.class,XMLElementReader.class,XMLElementWriter.class);
+        JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "multiple.jar");
+        ja.addClasses(PureInflowResourceAdapter.class, PureTestCase.class, AbstractMgmtTestBase.class,
+                MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class);
         raa.addAsLibrary(ja);
 
         raa.addAsManifestResource("rar/" + deploymentName + "/META-INF/ra.xml", "ra.xml")
-        .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli,javax.inject.api,org.jboss.as.connector\n"),"MANIFEST.MF");
+                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli,javax.inject.api,org.jboss.as.connector\n"), "MANIFEST.MF");
 
         return raa;
     }
 
-   @Inject
-   public ServiceContainer serviceContainer;
+    @Inject
+    public ServiceContainer serviceContainer;
 
 
     /**
@@ -114,11 +126,11 @@ public class PureTestCase extends AbstractMgmtTestBase {
      */
     @Test
     public void testRegistryConfiguration() throws Throwable {
-    	ServiceController<?> controller=serviceContainer.getService( ConnectorServices.RA_REPOSITORY_SERVICE);
-    	assertNotNull(controller);
-    	ResourceAdapterRepository repository=(ResourceAdapterRepository)controller.getValue();
-    	assertNotNull(repository);
-    	Set<String> ids = repository.getResourceAdapters();
+        ServiceController<?> controller = serviceContainer.getService(ConnectorServices.RA_REPOSITORY_SERVICE);
+        assertNotNull(controller);
+        ResourceAdapterRepository repository = (ResourceAdapterRepository) controller.getValue();
+        assertNotNull(repository);
+        Set<String> ids = repository.getResourceAdapters();
 
         assertNotNull(ids);
         //On a running server it's 3 beacause HornetQResourceAdapter is always present  + ra itself and 1 actrivation from DMR
@@ -131,13 +143,14 @@ public class PureTestCase extends AbstractMgmtTestBase {
         }
 
     }
+
     @Test
     public void testMetadataConfiguration() throws Throwable {
-    	ServiceController<?> controller=serviceContainer.getService( ConnectorServices.IRONJACAMAR_MDR);
-    	assertNotNull(controller);
-    	MetadataRepository repository=(MetadataRepository)controller.getValue();
-    	assertNotNull(repository);
-    	Set<String> ids = repository.getResourceAdapters();
+        ServiceController<?> controller = serviceContainer.getService(ConnectorServices.IRONJACAMAR_MDR);
+        assertNotNull(controller);
+        MetadataRepository repository = (MetadataRepository) controller.getValue();
+        assertNotNull(repository);
+        Set<String> ids = repository.getResourceAdapters();
 
         assertNotNull(ids);
         //on a running server it's always 2 beacause HornetQResourceAdapter is always present

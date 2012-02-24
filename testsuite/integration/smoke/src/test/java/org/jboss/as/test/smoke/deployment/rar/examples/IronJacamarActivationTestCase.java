@@ -44,7 +44,7 @@ import static org.junit.Assert.assertNotNull;
 
 /**
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
- *        JBQA-5736 -IronJacamar deployment test
+ *         JBQA-5736 -IronJacamar deployment test
  */
 @RunWith(Arquillian.class)
 public class IronJacamarActivationTestCase extends AbstractMgmtTestBase {
@@ -55,32 +55,32 @@ public class IronJacamarActivationTestCase extends AbstractMgmtTestBase {
      *
      * @return The deployment archive
      */
-   @Deployment
-    public static ResourceAdapterArchive createDeployment()  throws Exception{
+    @Deployment
+    public static ResourceAdapterArchive createDeployment() throws Exception {
         String deploymentName = "archive_ij.rar";
 
         ResourceAdapterArchive raa =
                 ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName);
-         JavaArchive ja = ShrinkWrap.create(JavaArchive.class,  "multiple.jar");
+        JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "multiple.jar");
         ja.addPackage(MultipleConnectionFactory1.class.getPackage()).
-        addClasses(IronJacamarActivationTestCase.class,AbstractMgmtTestBase.class,MgmtOperationException.class,XMLElementReader.class,XMLElementWriter.class);
+                addClasses(IronJacamarActivationTestCase.class, AbstractMgmtTestBase.class, MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class);
         raa.addAsLibrary(ja);
 
         raa.addAsManifestResource("rar/" + deploymentName + "/META-INF/ra.xml", "ra.xml")
-        .addAsManifestResource("rar/" + deploymentName + "/META-INF/ironjacamar.xml", "ironjacamar.xml")
-        .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli\n"),"MANIFEST.MF");
+                .addAsManifestResource("rar/" + deploymentName + "/META-INF/ironjacamar.xml", "ironjacamar.xml")
+                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli\n"), "MANIFEST.MF");
 
         return raa;
     }
 
-   @Resource(mappedName = "java:jboss/name1")
-   private MultipleConnectionFactory1 connectionFactory1;
+    @Resource(mappedName = "java:jboss/name1")
+    private MultipleConnectionFactory1 connectionFactory1;
 
-   @Resource(mappedName="java:jboss/Name3")
-   private MultipleAdminObject1 adminObject1;
+    @Resource(mappedName = "java:jboss/Name3")
+    private MultipleAdminObject1 adminObject1;
 
-   @Resource(mappedName="java:jboss/Name4")
-   private MultipleAdminObject2 adminObject2;
+    @Resource(mappedName = "java:jboss/Name4")
+    private MultipleAdminObject2 adminObject2;
 
     /**
      * Test configuration
@@ -89,9 +89,9 @@ public class IronJacamarActivationTestCase extends AbstractMgmtTestBase {
      */
     @Test
     public void testConfiguration() throws Throwable {
-    	assertNotNull("CF1 not found",connectionFactory1);
-    	assertNotNull("AO1 not found",adminObject1);
-    	assertNotNull("AO2 not found",adminObject2);
+        assertNotNull("CF1 not found", connectionFactory1);
+        assertNotNull("AO1 not found", adminObject1);
+        assertNotNull("AO2 not found", adminObject2);
     }
 
 }

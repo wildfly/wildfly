@@ -48,7 +48,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,7 +57,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
- *
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
 @RunWith(Arquillian.class)
@@ -71,7 +69,7 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
     private boolean isNative = false;
 
     @ArquillianResource
-    URL url;
+    private URL url;
 
     /**
      * We use a different socket binding name for each test, as if the socket is still up the service
@@ -88,7 +86,6 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
 
     @Before
     public void before() throws IOException {
-        initModelControllerClient(url.getHost(), MGMT_PORT);
         try {
             addConnector(Connector.HTTPNATIVE);
             isNative = true;
@@ -103,11 +100,6 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
                 // hmmm
             }
         }
-    }
-
-    @AfterClass
-    public static void after() throws IOException {
-        closeModelControllerClient();
     }
 
     @Test

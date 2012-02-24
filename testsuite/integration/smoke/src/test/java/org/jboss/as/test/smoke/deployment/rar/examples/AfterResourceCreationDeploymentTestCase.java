@@ -66,7 +66,6 @@ public class AfterResourceCreationDeploymentTestCase extends AbstractMgmtTestBas
 
     public void setUp() throws Exception {
 
-        initModelControllerClient("localhost", 9999);
         String xml = readXmlResource(System.getProperty("jbossas.ts.submodule.dir") + "/src/test/resources/config/basic-after.xml");
         List<ModelNode> operations = XmlToModelOperations(xml, Namespace.CURRENT.getUriString(), new ResourceAdapterSubsystemParser());
         executeOperation(operationListToCompositeOperation(operations));
@@ -92,7 +91,7 @@ public class AfterResourceCreationDeploymentTestCase extends AbstractMgmtTestBas
     }
 
     @AfterClass
-    public static void tearDown() throws Exception {
+    public void tearDown() throws Exception {
 
         final ModelNode address = new ModelNode();
         address.add("subsystem", "resource-adapters");
@@ -100,7 +99,6 @@ public class AfterResourceCreationDeploymentTestCase extends AbstractMgmtTestBas
         address.protect();
 
         remove(address);
-        closeModelControllerClient();
         remoteContext.close();
     }
 
