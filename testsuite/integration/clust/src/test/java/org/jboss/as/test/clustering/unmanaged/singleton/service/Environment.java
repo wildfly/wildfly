@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,26 +19,25 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.test.clustering.unmanaged.singleton.service;
 
-import java.io.IOException;
+import java.io.Serializable;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+/**
+ * @author Paul Ferraro
+ *
+ */
+public class Environment implements Serializable {
+    private static final long serialVersionUID = -7845251073515304583L;
 
-import org.jboss.as.server.CurrentServiceContainer;
+    private final String nodeName;
 
-@WebServlet(urlPatterns = { "/service" })
-public class MyServiceServlet extends HttpServlet {
-    private static final long serialVersionUID = -592774116315946908L;
+    public Environment(String nodeName) {
+        this.nodeName = nodeName;
+    }
 
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        Environment env = (Environment) CurrentServiceContainer.getServiceContainer().getService(MyService.SERVICE_NAME).getValue();
-        resp.setHeader("node", env.getNodeName());
-        resp.getWriter().write("Success");
+    public String getNodeName() {
+        return this.nodeName;
     }
 }

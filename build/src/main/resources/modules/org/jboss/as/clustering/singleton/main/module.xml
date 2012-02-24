@@ -37,6 +37,7 @@
         <module name="org.jboss.as.clustering.impl"/>
         <module name="org.jboss.as.clustering.service"/>
         <module name="org.jboss.logging"/>
+        <module name="org.jboss.marshalling"/>
         <module name="org.jboss.msc"/>
         <module name="org.jgroups"/>
     </dependencies>
