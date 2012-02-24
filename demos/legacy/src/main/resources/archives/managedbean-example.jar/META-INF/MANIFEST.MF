@@ -1,2 +1,0 @@
-Manifest-Version: 1.0
-Dependencies: org.jboss.as.ee,org.jboss.as.naming,org.jboss.msc,org.jboss.logging,javax.api

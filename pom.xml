@@ -860,12 +860,6 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-demos</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-deployment-repository</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -5970,7 +5964,6 @@
                 <module>configadmin</module>
                 <module>config-assembly</module>
                 <module>connector</module>
-                <module>demos</module>
                 <module>deployment-scanner</module>
                 <module>dist</module>
                 <module>ee</module>

@@ -22,14 +22,13 @@
 
 package org.jboss.as.test.smoke.messaging.client.messaging;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
-
-import javax.resource.spi.IllegalStateException;
 import java.io.IOException;
-import java.net.InetAddress;
+import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.resource.spi.IllegalStateException;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -45,6 +44,8 @@ import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
@@ -63,6 +64,12 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class MessagingClientTestCase {
 
+    @ArquillianResource
+    private ManagementClient managementClient;
+
+    @ArquillianResource
+    private URL url;
+
     @Deployment(testable = false)
     public static Archive<?> getEmptyDeployment() {
         return ShrinkWrapUtils.createEmptyJavaArchive("messaging-client.jar");
@@ -73,64 +80,60 @@ public class MessagingClientTestCase {
 
         final String queueName = "queue.standalone";
 
-        final ClientSessionFactory sf = createClientSessionFactory("localhost", 5445);
-        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
+        final ClientSessionFactory sf = createClientSessionFactory(url.getHost(), 5445);
+        final ModelControllerClient client = managementClient.getControllerClient();
 
+        // Check that the queue does not exists
+        if (queueExists(queueName, sf)) {
+            throw new IllegalStateException();
+        }
+
+        // Create a new core queue using the standalone client
+        ModelNode op = new ModelNode();
+        op.get("operation").set("add");
+        op.get("address").add("subsystem", "messaging");
+        op.get("address").add("hornetq-server", "default");
+        op.get("address").add("queue", queueName);
+        op.get("queue-address").set(queueName);
+        applyUpdate(op, client);
+        // Check if the queue exists
+        if (!queueExists(queueName, sf)) {
+            throw new IllegalStateException();
+        }
+
+        ClientSession session = null;
         try {
-            // Check that the queue does not exists
-            if(queueExists(queueName, sf)) {
-                throw new IllegalStateException();
+            session = sf.createSession("guest", "guest", false, false, false, false, 1);
+            ClientProducer producer = session.createProducer(queueName);
+            ClientMessage message = session.createMessage(false);
+
+            final String propName = "myprop";
+            message.putStringProperty(propName, "Hello sent at " + new Date());
+
+            producer.send(message);
+
+            ClientConsumer messageConsumer = session.createConsumer(queueName);
+            session.start();
+
+            ClientMessage messageReceived = messageConsumer.receive(1000);
+        } finally {
+            if (session != null) {
+                session.close();
             }
+        }
 
-            // Create a new core queue using the standalone client
-            ModelNode op = new ModelNode();
-            op.get("operation").set("add");
-            op.get("address").add("subsystem", "messaging");
-            op.get("address").add("hornetq-server", "default");
-            op.get("address").add("queue", queueName);
-            op.get("queue-address").set(queueName);
-            applyUpdate(op, client);
-            // Check if the queue exists
-            if(! queueExists(queueName, sf)) {
-                throw new IllegalStateException();
-            }
+        op = new ModelNode();
+        op.get("operation").set("remove");
+        op.get("address").add("subsystem", "messaging");
+        op.get("address").add("hornetq-server", "default");
+        op.get("address").add("queue", queueName);
+        applyUpdate(op, client);
 
-            ClientSession session = null;
-            try {
-               session = sf.createSession("guest", "guest", false, false, false, false, 1);
-               ClientProducer producer = session.createProducer(queueName);
-               ClientMessage message = session.createMessage(false);
-
-               final String propName = "myprop";
-               message.putStringProperty(propName, "Hello sent at " + new Date());
-
-               producer.send(message);
-
-               ClientConsumer messageConsumer = session.createConsumer(queueName);
-               session.start();
-
-               ClientMessage messageReceived = messageConsumer.receive(1000);
-            } finally {
-               if (session != null) {
-                  session.close();
-               }
-            }
-
-            op = new ModelNode();
-            op.get("operation").set("remove");
-            op.get("address").add("subsystem", "messaging");
-            op.get("address").add("hornetq-server", "default");
-            op.get("address").add("queue", queueName);
-            applyUpdate(op, client);
-
-            // Check that the queue does not exists
+        // Check that the queue does not exists
 //  FIXME - JBAS-9360
 //            if(queueExists(queueName, sf)) {
 //                throw new IllegalStateException();
 //            }
-        } finally {
-            client.close();
-        }
     }
 
     static void applyUpdate(ModelNode update, final ModelControllerClient client) throws IOException {
@@ -139,11 +142,9 @@ public class MessagingClientTestCase {
             if (result.hasDefined("result")) {
                 System.out.println(result.get("result"));
             }
-        }
-        else if (result.hasDefined("failure-description")){
+        } else if (result.hasDefined("failure-description")) {
             throw new RuntimeException(result.get("failure-description").toString());
-        }
-        else {
+        } else {
             throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
         }
     }

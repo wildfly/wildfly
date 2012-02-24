@@ -1,3 +1,0 @@
-Manifest-Version: 1.0
-Dependencies: javax.api
-Class-Path: managedbean-example.jar

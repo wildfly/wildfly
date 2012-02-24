@@ -1,2 +1,0 @@
-Manifest-Version: 1.0
-Dependencies: javax.api,deployment.ejb3-example.jar,deployment.ejb3-mdb.jar

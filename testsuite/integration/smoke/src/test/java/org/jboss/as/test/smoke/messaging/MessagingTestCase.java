@@ -26,7 +26,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import junit.framework.Assert;
-
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -38,10 +37,11 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
 import org.junit.Before;
@@ -72,8 +72,12 @@ public class MessagingTestCase {
 
     @Deployment
     public static JavaArchive createDeployment() throws Exception {
-        JavaArchive archive = ShrinkWrapUtils.createJavaArchive("demos/messaging-example.jar", MessagingTestCase.class.getPackage());
-        return archive;
+
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "messaging-example.jar");
+        jar.addAsManifestResource(new StringAsset("Manifest-Version: 1.0\n" +
+                "Dependencies: org.hornetq\n"), "MANIFEST.MF");
+        jar.addClass(MessagingTestCase.class);
+        return jar;
     }
 
     @Before

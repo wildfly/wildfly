@@ -21,9 +21,6 @@
  */
 package org.jboss.as.test.smoke.sar;
 
-import java.io.IOException;
-import java.net.InetAddress;
-
 import javax.management.Attribute;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
@@ -33,17 +30,13 @@ import javax.management.remote.JMXServiceURL;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.smoke.modular.utils.PollingUtils;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
-
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
@@ -61,21 +54,11 @@ public class SarTestCase {
 
     @Test
     public void testMBean() throws Exception {
-        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("127.0.0.1"), 9999, getCallbackHandler());
-        try {
-            MBeanServerConnection mbeanServer = JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:remoting-jmx://127.0.0.1:9999")).getMBeanServerConnection();
-            ObjectName objectName = new ObjectName("jboss:name=test,type=config");
-            PollingUtils.retryWithTimeout(10000, new PollingUtils.WaitForMBeanTask(mbeanServer, objectName));
-            mbeanServer.getAttribute(objectName, "IntervalSeconds");
-            mbeanServer.setAttribute(objectName, new Attribute("IntervalSeconds", 2));
-        } finally {
-            if(client != null) try {
-                client.close();
-            } catch(IOException e) {
-                //
-            }
-        }
-
+        MBeanServerConnection mbeanServer = JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:remoting-jmx://127.0.0.1:9999")).getMBeanServerConnection();
+        ObjectName objectName = new ObjectName("jboss:name=test,type=config");
+        PollingUtils.retryWithTimeout(10000, new PollingUtils.WaitForMBeanTask(mbeanServer, objectName));
+        mbeanServer.getAttribute(objectName, "IntervalSeconds");
+        mbeanServer.setAttribute(objectName, new Attribute("IntervalSeconds", 2));
     }
 
 }
