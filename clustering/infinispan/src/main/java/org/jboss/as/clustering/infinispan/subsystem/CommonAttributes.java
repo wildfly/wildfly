@@ -361,8 +361,9 @@ public interface CommonAttributes {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(60000))
                     .build();
+    // if stack is null, use default stack
     SimpleAttributeDefinition STACK =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.STACK, ModelType.STRING, false)
+            new SimpleAttributeDefinitionBuilder(ModelKeys.STACK, ModelType.STRING, true)
                     .setXmlName(Attribute.STACK.getLocalName())
                     .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)

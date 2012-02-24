@@ -3,6 +3,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 
 import org.infinispan.configuration.cache.CacheMode;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 
@@ -14,7 +15,7 @@ public class InvalidationCacheAdd extends ClusteredCacheAdd {
     static final InvalidationCacheAdd INSTANCE = new InvalidationCacheAdd();
 
     // used to create subsystem description
-    static ModelNode createOperation(ModelNode address, ModelNode model) {
+    static ModelNode createOperation(ModelNode address, ModelNode model) throws OperationFailedException {
         ModelNode operation = Util.getEmptyOperation(ADD, address);
         INSTANCE.populateMode(model, operation);
         INSTANCE.populate(model, operation);
