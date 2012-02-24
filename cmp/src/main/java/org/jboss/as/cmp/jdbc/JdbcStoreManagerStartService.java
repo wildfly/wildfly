@@ -22,6 +22,7 @@
 
 package org.jboss.as.cmp.jdbc;
 
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -42,7 +43,7 @@ public class JdbcStoreManagerStartService implements Service<JDBCStoreManager> {
         try {
             storeManager.startStoreManager();
         } catch (Exception e) {
-            throw new StartException("Failed start store manager", e);
+            throw CmpMessages.MESSAGES.failedToStateStoreManager(e);
         }
     }
 

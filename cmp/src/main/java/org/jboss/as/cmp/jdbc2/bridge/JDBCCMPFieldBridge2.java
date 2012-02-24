@@ -25,7 +25,7 @@ import java.lang.reflect.Field;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import javax.ejb.EJBException;
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.bridge.CMPFieldBridge;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.as.cmp.jdbc.JDBCEntityPersistenceStore;
@@ -130,7 +130,7 @@ public class JDBCCMPFieldBridge2 implements CMPFieldBridge {
             }
         } catch (Exception e) {
             // Non recoverable internal exception
-            throw new EJBException("Internal error setting instance field " + getFieldName(), e);
+            throw CmpMessages.MESSAGES.errorSettingInstanceField(fieldName, e);
         }
     }
 
@@ -141,19 +141,7 @@ public class JDBCCMPFieldBridge2 implements CMPFieldBridge {
         if (cmpFieldIAmMappedTo != null && cmpFieldIAmMappedTo.isPrimaryKeyMember) {
             Object curValue = pctx.getFieldValue(rowIndex);
             if (value != null && !value.equals(curValue)) {
-                throw new IllegalStateException(
-                        "Attempt to modify a primary key field through a foreign key field mapped to it: "
-                                +
-                                entity.getEntityName()
-                                + "."
-                                + cmpFieldIAmMappedTo.getFieldName()
-                                +
-                                " -> "
-                                + entity.getQualifiedTableName()
-                                + "."
-                                + cmpFieldIAmMappedTo.getColumnName() +
-                                ", current value=" + curValue + ", new value=" + value
-                );
+                throw CmpMessages.MESSAGES.attemptToModifyPkThroughFk(entity.getEntityName(), cmpFieldIAmMappedTo.getFieldName(), entity.getQualifiedTableName(), cmpFieldIAmMappedTo.getColumnName(), curValue, value);
             }
 
             makeDirty = false;
@@ -177,7 +165,7 @@ public class JDBCCMPFieldBridge2 implements CMPFieldBridge {
             return parameterIndex;
         } catch (SQLException e) {
             // Non recoverable internal exception
-            throw new EJBException("Internal error setting parameters for field " + getFieldName(), e);
+            throw CmpMessages.MESSAGES.errorSettingParameterForField(fieldName, e);
         }
     }
 
@@ -187,7 +175,7 @@ public class JDBCCMPFieldBridge2 implements CMPFieldBridge {
             // update the value from the result set
             Class[] javaTypes = jdbcType.getJavaTypes();
             if (javaTypes.length > 1) {
-                throw new IllegalStateException("Complex types are not supported yet.");
+                throw CmpMessages.MESSAGES.complexTypesNotSupported();
             }
 
             JDBCResultSetReader[] rsReaders = jdbcType.getResultSetReaders();
@@ -202,7 +190,7 @@ public class JDBCCMPFieldBridge2 implements CMPFieldBridge {
             return columnValue;
         } catch (SQLException e) {
             // Non recoverable internal exception
-            throw new EJBException("Internal error getting results for field member " + getFieldName(), e);
+            throw CmpMessages.MESSAGES.errorGettingResultsForField(fieldName, e);
         }
     }
 
@@ -242,35 +230,35 @@ public class JDBCCMPFieldBridge2 implements CMPFieldBridge {
     }
 
     public void resetPersistenceContext(CmpEntityBeanContext ctx) {
-        throw new UnsupportedOperationException();
+        throw CmpMessages.MESSAGES.methodNotSupported();
     }
 
     public int setInstanceParameters(PreparedStatement ps, int parameterIndex, CmpEntityBeanContext ctx) {
-        throw new UnsupportedOperationException();
+        throw CmpMessages.MESSAGES.methodNotSupported();
     }
 
     public Object getInstanceValue(CmpEntityBeanContext ctx) {
-        throw new UnsupportedOperationException();
+        throw CmpMessages.MESSAGES.methodNotSupported();
     }
 
     public void setInstanceValue(CmpEntityBeanContext ctx, Object value) {
-        throw new UnsupportedOperationException();
+        throw CmpMessages.MESSAGES.methodNotSupported();
     }
 
     public int loadInstanceResults(ResultSet rs, int parameterIndex, CmpEntityBeanContext ctx) {
-        throw new UnsupportedOperationException();
+        throw CmpMessages.MESSAGES.methodNotSupported();
     }
 
     public int loadArgumentResults(ResultSet rs, int parameterIndex, Object[] argumentRef) {
-        throw new UnsupportedOperationException();
+        throw CmpMessages.MESSAGES.methodNotSupported();
     }
 
     public boolean isDirty(CmpEntityBeanContext ctx) {
-        throw new UnsupportedOperationException();
+        throw CmpMessages.MESSAGES.methodNotSupported();
     }
 
     public void setClean(CmpEntityBeanContext ctx) {
-        throw new UnsupportedOperationException();
+        throw CmpMessages.MESSAGES.methodNotSupported();
     }
 
     public boolean isCMPField() {
@@ -282,15 +270,15 @@ public class JDBCCMPFieldBridge2 implements CMPFieldBridge {
     }
 
     public boolean isReadOnly() {
-        throw new UnsupportedOperationException();
+        throw CmpMessages.MESSAGES.methodNotSupported();
     }
 
     public boolean isReadTimedOut(CmpEntityBeanContext ctx) {
-        throw new UnsupportedOperationException();
+        throw CmpMessages.MESSAGES.methodNotSupported();
     }
 
     public boolean isLoaded(CmpEntityBeanContext ctx) {
-        throw new UnsupportedOperationException();
+        throw CmpMessages.MESSAGES.methodNotSupported();
     }
 
     public JDBCType getJDBCType() {
@@ -310,7 +298,7 @@ public class JDBCCMPFieldBridge2 implements CMPFieldBridge {
                 return primaryKey;
             }
         } catch (Exception e) {
-            throw new EJBException("Internal error getting primary key field member " + getFieldName(), e);
+            throw CmpMessages.MESSAGES.errorGettingPk(fieldName, e);
         }
     }
 

@@ -41,6 +41,7 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import org.jboss.as.cmp.CmpConfig;
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.bridge.EntityBridgeInvocationHandler;
 import org.jboss.as.cmp.bridge.FieldBridge;
 import org.jboss.as.cmp.bridge.SelectorBridge;
@@ -195,8 +196,7 @@ public final class JDBCStoreManager implements JDBCEntityPersistenceStore {
                 try {
                     return transactionManager.getTransaction();
                 } catch (SystemException e) {
-                    throw new IllegalStateException("An error occurred while getting the " +
-                            "transaction associated with the current thread: " + e);
+                    throw CmpMessages.MESSAGES.errorGettingCurrentTransaction(e);
                 }
             }
         };
@@ -326,7 +326,7 @@ public final class JDBCStoreManager implements JDBCEntityPersistenceStore {
         } catch (EJBException e) {
             throw e;
         } catch (Exception e) {
-            throw new EJBException("Error getting application tx data map.", e);
+            throw CmpMessages.MESSAGES.errorGettingTxMap(e);
         }
     }
 
@@ -415,7 +415,7 @@ public final class JDBCStoreManager implements JDBCEntityPersistenceStore {
     public Object createEntity(Method createMethod, Object[] args, CmpEntityBeanContext ctx) throws CreateException {
         Object pk = createEntityCommand.execute(createMethod, args, ctx);
         if (pk == null)
-            throw new CreateException("Primary key for created instance is null.");
+            throw CmpMessages.MESSAGES.pkIsNullForCreatedInstance();
         return pk;
     }
 
@@ -535,11 +535,11 @@ public final class JDBCStoreManager implements JDBCEntityPersistenceStore {
     public DataSource getDataSource(final String name) {
         final Value<DataSource> value = dataSources.get(name);
         if (value == null) {
-            throw new IllegalArgumentException("Error: can't find data source: " + name);
+            throw CmpMessages.MESSAGES.canNotFindDataSource(name);
         }
         final DataSource dataSource = value.getValue();
         if (dataSource == null) {
-            throw new IllegalArgumentException("Error: can't find data source: " + name);
+            throw CmpMessages.MESSAGES.canNotFindDataSource(name);
         }
         return dataSource;
     }
@@ -613,9 +613,9 @@ public final class JDBCStoreManager implements JDBCEntityPersistenceStore {
 
             // getters and setters must come in pairs
             if (getterMethod != null && setterMethod == null) {
-                throw new RuntimeException("Getter was found but no setter was found for field " + fieldName + " in entity " + entityBridge.getEntityName());
+                throw CmpMessages.MESSAGES.getterNotFoundForField(fieldName, entityBridge.getEntityName());
             } else if (getterMethod == null && setterMethod != null) {
-                throw new RuntimeException("Setter was found but no getter was found for field " + fieldName + " in entity " + entityBridge.getEntityName());
+                throw CmpMessages.MESSAGES.setterNotFoundForField(fieldName, entityBridge.getEntityName());
             } else if (getterMethod != null && setterMethod != null) {
                 // add methods
                 map.put(getterMethod.getName(), new EntityBridgeInvocationHandler.FieldGetInvoker(field));

@@ -26,6 +26,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import javax.sql.DataSource;
 import javax.transaction.Transaction;
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.jdbc.JDBCUtil;
 import org.jboss.as.cmp.jdbc.SQLUtil;
 import org.jboss.as.cmp.jdbc.metadata.JDBCRelationMetaData;
@@ -188,15 +189,14 @@ public class RelationTable
             ps.executeBatch();
 
             if (view.deleted != null) {
-                throw new IllegalStateException("There are still rows to delete!");
+                throw CmpMessages.MESSAGES.stillRowsToDelete();
             }
 
             if (log.isTraceEnabled()) {
                 log.trace("deleted rows: " + batchCount);
             }
         } catch (SQLException e) {
-            log.error("Failed to delete view: " + e.getMessage(), e);
-            throw e;
+            throw CmpMessages.MESSAGES.failedToDeleteView(e);
         } finally {
             JDBCUtil.safeClose(ps);
             JDBCUtil.safeClose(con);
@@ -252,8 +252,7 @@ public class RelationTable
                 log.trace("inserted rows: " + batchCount);
             }
         } catch (SQLException e) {
-            log.error("Failed to insert new rows: " + e.getMessage(), e);
-            throw e;
+            throw CmpMessages.MESSAGES.failedToInsertNewRows(e);
         } finally {
             JDBCUtil.safeClose(ps);
             JDBCUtil.safeClose(con);

@@ -24,7 +24,7 @@ package org.jboss.as.cmp.jdbc.keygen;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import javax.ejb.EJBException;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.as.cmp.jdbc.JDBCIdentityColumnCreateCommand;
 import org.jboss.as.cmp.jdbc.JDBCUtil;
@@ -58,23 +58,22 @@ public class JDBCSQLServerCreateCommand extends JDBCIdentityColumnCreateCommand 
         try {
             int rows = ps.getUpdateCount();
             if (rows != 1) {
-                throw new EJBException("Expected updateCount of 1, got " + rows);
+                throw MESSAGES.expectedSingleRowButReceivedMore(rows);
             }
             if (ps.getMoreResults() == false) {
-                throw new EJBException("Expected ResultSet but got an updateCount. Is NOCOUNT set for all triggers?");
+                throw MESSAGES.expectedResultSetReceivedUpdateCount();
             }
 
             rs = ps.getResultSet();
             if (!rs.next()) {
-                throw new EJBException("ResultSet was empty");
+                throw MESSAGES.getGeneratedKeysEmptyResultSet();
             }
             pkField.loadInstanceResults(rs, 1, ctx);
             return rows;
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
-            // throw EJBException to force a rollback as the row has been inserted
-            throw new EJBException("Error extracting generated keys", e);
+            throw MESSAGES.errorExtractingGeneratedKey(e);
         } finally {
             JDBCUtil.safeClose(rs);
         }

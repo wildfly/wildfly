@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import javax.ejb.FinderException;
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.as.cmp.jdbc.metadata.JDBCReadAheadMetaData;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
@@ -121,21 +122,16 @@ public final class JDBCCustomFinderQuery implements JDBCQueryCommand {
                 return Collections.singleton(value != null ? factory.getEntityObject(value) : null);
             }
         } catch (IllegalAccessException e) {
-            log.error("Error invoking custom finder " + finderMethod.getName(), e);
-            throw new FinderException("Unable to access finder implementation: " +
-                    finderMethod.getName());
+            throw CmpMessages.MESSAGES.unableToAccessFinder(finderMethod.getName());
         } catch (IllegalArgumentException e) {
-            log.error("Error invoking custom finder " + finderMethod.getName(), e);
-            throw new FinderException("Illegal arguments for finder " +
-                    "implementation: " + finderMethod.getName());
+            throw CmpMessages.MESSAGES.illegalFinderArgument(finderMethod.getName());
         } catch (InvocationTargetException e) {
             // Throw the exception if its a FinderException
             Throwable ex = e.getTargetException();
             if (ex instanceof FinderException) {
                 throw (FinderException) ex;
             } else {
-                throw new FinderException("Error invoking custom finder " +
-                        finderMethod.getName() + ": " + ex);
+                throw CmpMessages.MESSAGES.errorInvokingFinder(finderMethod.getName(), e);
             }
         }
     }

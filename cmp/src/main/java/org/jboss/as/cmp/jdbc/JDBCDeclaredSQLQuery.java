@@ -22,6 +22,7 @@
 package org.jboss.as.cmp.jdbc;
 
 
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.ejbql.Catalog;
 import org.jboss.as.cmp.jdbc.bridge.JDBCCMPFieldBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCEntityBridge;
@@ -85,7 +86,7 @@ public final class JDBCDeclaredSQLQuery extends JDBCAbstractQueryCommand {
 
         JDBCEntityBridge entity = (JDBCEntityBridge) catalog.getEntityByEJBName(entityName);
         if (entity == null) {
-            throw new RuntimeException("Unknown entity: " + entityName);
+            throw MESSAGES.unknownEntity(entityName);
         }
 
         String fieldName = metadata.getFieldName();
@@ -94,7 +95,7 @@ public final class JDBCDeclaredSQLQuery extends JDBCAbstractQueryCommand {
         } else {
             JDBCCMPFieldBridge field = entity.getCMPFieldByName(fieldName);
             if (field == null) {
-                throw new RuntimeException("Unknown cmp field: " + fieldName);
+                throw MESSAGES.unknownCmpField(fieldName);
             }
             setSelectField(field);
         }

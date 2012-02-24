@@ -32,6 +32,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJBException;
+import org.jboss.as.cmp.CmpMessages;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.jdbc.bridge.JDBCCMPFieldBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCCMRFieldBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCEntityBridge;
@@ -202,7 +204,7 @@ public final class JDBCLoadRelationCommand {
         } catch (EJBException e) {
             throw e;
         } catch (Exception e) {
-            throw new EJBException("Load relation failed", e);
+            throw MESSAGES.loadRelationFailed(e);
         } finally {
             JDBCUtil.safeClose(rs);
             JDBCUtil.safeClose(ps);
@@ -333,8 +335,7 @@ public final class JDBCLoadRelationCommand {
                 selectTemplate =
                         cmrField.getRelationMetaData().getTypeMapping().getRowLockingTemplate();
                 if (selectTemplate == null) {
-                    throw new IllegalStateException(
-                            "row-locking is not allowed for this type of datastore");
+                    throw CmpMessages.MESSAGES.rowLockingNotAllowed();
                 }
             }
         } else if (cmrField.getRelatedCMRField().hasForeignKey()) {
@@ -343,8 +344,7 @@ public final class JDBCLoadRelationCommand {
                 selectTemplate =
                         cmrField.getRelatedJDBCEntity().getMetaData().getTypeMapping().getRowLockingTemplate();
                 if (selectTemplate == null) {
-                    throw new IllegalStateException(
-                            "row-locking is not allowed for this type of datastore");
+                    throw CmpMessages.MESSAGES.rowLockingNotAllowed();
                 }
             }
         } else {
@@ -352,8 +352,7 @@ public final class JDBCLoadRelationCommand {
             if (entity.getMetaData().hasRowLocking()) {
                 selectTemplate = entity.getMetaData().getTypeMapping().getRowLockingTemplate();
                 if (selectTemplate == null) {
-                    throw new IllegalStateException(
-                            "row-locking is not allowed for this type of datastore");
+                    throw CmpMessages.MESSAGES.rowLockingNotAllowed();
                 }
             }
         }

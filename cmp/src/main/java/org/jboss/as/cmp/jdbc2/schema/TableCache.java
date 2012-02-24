@@ -24,6 +24,7 @@ package org.jboss.as.cmp.jdbc2.schema;
 import javax.transaction.Transaction;
 import java.util.Map;
 import java.util.HashMap;
+import org.jboss.as.cmp.CmpMessages;
 
 
 /**
@@ -119,7 +120,7 @@ public class TableCache implements Cache {
 
     public synchronized void unlock() {
         if (!locked) {
-            throw new IllegalStateException("The instance is not locked!");
+            throw CmpMessages.MESSAGES.instanceIsLocked();
         }
         locked = false;
         notify();
@@ -223,13 +224,11 @@ public class TableCache implements Cache {
     public void remove(Transaction tx, Object pk) {
         CachedRow row = (CachedRow) rowsById.remove(pk);
         if (row == null || row.locker != null && !tx.equals(row.locker)) {
-            String msg = "removal of " +
-                    pk +
-                    " rejected for " +
-                    tx +
-                    ": " +
-                    (row == null ? "the entry could not be found" : "the entry is locked for update by " + row.locker);
-            throw new RemoveException(msg);
+            if(row == null) {
+                throw CmpMessages.MESSAGES.removeRejected(pk, tx);
+            } else {
+                throw CmpMessages.MESSAGES.removeRejected(pk, tx, row.locker);
+            }
         }
 
         dereference(row);
@@ -245,9 +244,7 @@ public class TableCache implements Cache {
         CachedRow row = (CachedRow) rowsById.get(pk);
         if (row != null) {
             if (row.locker != null && !tx.equals(row.locker)) {
-                throw new Exception("lock acquisition rejected for " +
-                        tx +
-                        ", the entry is locked for update by " + row.locker + ", id=" + pk);
+                throw CmpMessages.MESSAGES.lockAcquisitionRejected(tx, row.locker, pk);
             }
             row.locker = tx;
         }
@@ -258,9 +255,7 @@ public class TableCache implements Cache {
         CachedRow row = (CachedRow) rowsById.get(pk);
         if (row != null) {
             if (!tx.equals(row.locker)) {
-                throw new Exception("rejected to release lock for " +
-                        tx +
-                        ", the entry is locked for update by " + row.locker + ", id=" + pk);
+                throw CmpMessages.MESSAGES.lockReleaseRejected(tx, row.locker, pk);
             }
             row.locker = null;
         }

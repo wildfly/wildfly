@@ -28,6 +28,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.jboss.as.cmp.CmpMessages;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.jdbc.metadata.parser.ParsedCmpField;
 import org.jboss.as.cmp.jdbc.metadata.parser.ParsedEntity;
 import org.jboss.as.cmp.jdbc.metadata.parser.ParsedQuery;
@@ -293,12 +295,12 @@ public final class JDBCEntityMetaData {
         try {
             entityClass = classLoader.loadClass(entity.getEjbClass());
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Failed to load entity class", e);
+            throw MESSAGES.failedToLoadEntityClass(e);
         }
         try {
             primaryKeyClass = classLoader.loadClass(entity.getPrimKeyClass());
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Failed to load primary key class", e);
+            throw MESSAGES.failedToLoadPkClass(e);
         }
 
         isCMP1x = entity.isCMP1x();
@@ -315,12 +317,12 @@ public final class JDBCEntityMetaData {
             try {
                 homeClass = classLoader.loadClass(home);
             } catch (ClassNotFoundException e) {
-                throw new RuntimeException("Failed to load home class", e);
+                throw MESSAGES.failedToLoadHomeClass(e);
             }
             try {
                 remoteClass = classLoader.loadClass(entity.getRemote());
             } catch (ClassNotFoundException e) {
-                throw new RuntimeException("Failed to load remote class", e);
+                throw MESSAGES.failedToLoadRemoteClass(e);
             }
         } else {
             homeClass = null;
@@ -332,17 +334,17 @@ public final class JDBCEntityMetaData {
             try {
                 localHomeClass = classLoader.loadClass(localHome);
             } catch (ClassNotFoundException e) {
-                throw new RuntimeException("Failed to load local home class", e);
+                throw MESSAGES.failedToLoadLocalHomeClass(e);
             }
             try {
                 localClass = classLoader.loadClass(entity.getLocal());
             } catch (ClassNotFoundException e) {
-                throw new RuntimeException("Failed to load local class", e);
+                throw MESSAGES.failedToLoadLocalClass(e);
             }
         } else {
             // we must have a home or local home
             if (home == null) {
-                throw new RuntimeException("Entity must have atleast a home or local home: " + entityName);
+                throw MESSAGES.entityMustHaveHome(entityName);
             }
 
             localHomeClass = null;
@@ -552,7 +554,7 @@ public final class JDBCEntityMetaData {
         if (listCacheMaxInt != null) {
             listCacheMax = listCacheMaxInt;
             if (listCacheMax < 0) {
-                throw new RuntimeException("Negative value for read ahead " + "list-cache-max '" + listCacheMaxInt + "'.");
+                throw MESSAGES.negativeListCacheMax(listCacheMax);
             }
         } else {
             listCacheMax = defaultValues.getListCacheMax();
@@ -563,7 +565,7 @@ public final class JDBCEntityMetaData {
         if (fetchSizeInt != null) {
             fetchSize = fetchSizeInt;
             if (fetchSize < 0) {
-                throw new RuntimeException("Negative value for fetch size " + "fetch-size '" + fetchSizeInt + "'.");
+                throw MESSAGES.negativeFetchSize(fetchSize);
             }
         } else {
             fetchSize = defaultValues.getFetchSize();
@@ -598,7 +600,7 @@ public final class JDBCEntityMetaData {
             String fieldName = parsedField.getFieldName();
             JDBCCMPFieldMetaData oldCMPField = cmpFieldsByName.get(fieldName);
             if (oldCMPField == null) {
-                throw new RuntimeException("CMP field not found : fieldName=" + fieldName);
+                throw MESSAGES.cmpFieldNotFound(fieldName, entityName);
             }
             JDBCCMPFieldMetaData cmpFieldMetaData = new JDBCCMPFieldMetaData(this, parsedField, oldCMPField);
 
@@ -645,10 +647,7 @@ public final class JDBCEntityMetaData {
         // eager-load
         if (parsed.getEagerLoadGroup() != null) {
             if (!parsed.getEagerLoadGroup().equals("*") && !loadGroups.containsKey(parsed.getEagerLoadGroup())) {
-                throw new RuntimeException(
-                        "Eager load group not found: " +
-                                "eager-load-group=" + parsed.getEagerLoadGroup()
-                );
+                throw CmpMessages.MESSAGES.eagerLoadGroupNotFound(parsed.getEagerLoadGroup());
             }
             eagerLoadGroup = parsed.getEagerLoadGroup();
         } else {
@@ -750,8 +749,7 @@ public final class JDBCEntityMetaData {
         }
         final JDBCTypeMappingMetaData typeMapping = jdbcApplication.getTypeMappingByName(dataSourceMappingName);
         if (typeMapping == null) {
-            throw new RuntimeException("type-mapping is not initialized: " + dataSourceName
-                    + " was not deployed or type-mapping was not configured.");
+            throw MESSAGES.typeMappingNotInitialized(dataSourceName);
         }
 
         return typeMapping;
@@ -876,7 +874,7 @@ public final class JDBCEntityMetaData {
     public List<String> getLoadGroup(String name) {
         List<String> group = loadGroups.get(name);
         if (group == null) {
-            throw new RuntimeException("Unknown load group: name=" + name);
+            throw MESSAGES.unknownLoadGroup(name);
         }
         return group;
     }

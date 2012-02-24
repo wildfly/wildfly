@@ -23,6 +23,7 @@
 package org.jboss.as.cmp.jdbc.keygen;
 
 import javax.ejb.CreateException;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.as.cmp.jdbc.JDBCInsertPKCreateCommand;
 import org.jboss.as.cmp.jdbc.JDBCStoreManager;
@@ -48,16 +49,16 @@ public class JDBCKeyGeneratorCreateCommand extends JDBCInsertPKCreateCommand {
 
         String factoryName = entityCommand.getAttribute("key-generator-factory");
         if (factoryName == null) {
-            throw new RuntimeException("key-generator-factory attribute must be set for entity " + entity.getEntityName());
+            throw MESSAGES.entityMustHaveKeyFactory(factoryName);
         }
         try {
             KeyGeneratorFactory keyGeneratorFactory = entity.getManager().getKeyGeneratorFactory(factoryName);
             if(keyGeneratorFactory == null) {
-                throw new IllegalArgumentException("Invalid key generator name; not found: " + factoryName);
+                throw MESSAGES.invalidKeyFactory(factoryName);
             }
             keyGenerator = keyGeneratorFactory.getKeyGenerator();
         } catch (Exception e) {
-            throw new RuntimeException("Error: can't create key generator instance; key generator factory: " + factoryName, e);
+            throw MESSAGES.errorCreatingKeyFactory(factoryName, e);
         }
     }
 

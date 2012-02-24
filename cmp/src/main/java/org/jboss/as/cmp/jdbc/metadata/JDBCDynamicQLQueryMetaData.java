@@ -22,6 +22,7 @@
 package org.jboss.as.cmp.jdbc.metadata;
 
 import java.lang.reflect.Method;
+import org.jboss.as.cmp.CmpMessages;
 
 
 /**
@@ -84,10 +85,7 @@ public final class JDBCDynamicQLQueryMetaData implements JDBCQueryMetaData {
                 ||
                 !parameterTypes[0].equals(String.class) ||
                 !parameterTypes[1].equals(Object[].class)) {
-            throw new RuntimeException(
-                    "Dynamic-ql method must have two " +
-                            "parameters of type String and Object[]."
-            );
+            throw CmpMessages.MESSAGES.dynamicQlInvalidParameters();
         }
 
         this.compiler = compiler;

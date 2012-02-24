@@ -21,6 +21,7 @@
  */
 package org.jboss.as.cmp.jdbc;
 
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.jdbc.metadata.JDBCEntityCommandMetaData;
 import org.jboss.as.cmp.jdbc.metadata.JDBCQueryMetaData;
 import org.jboss.logging.Logger;
@@ -128,7 +129,7 @@ public class JDBCCommandFactory {
             cec = (JDBCCreateCommand) commandMetaData.getCommandClass().newInstance();
             cec.init(manager);
         } catch (Exception e) {
-            throw new RuntimeException("Couldn't create entity command: ", e);
+            throw CmpMessages.MESSAGES.couldNotCreateEntityCommand(e);
         }
 
         if (log.isDebugEnabled())

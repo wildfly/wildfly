@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.bridge.CMPFieldBridge;
 import org.jboss.as.cmp.ejbql.ASTAbs;
 import org.jboss.as.cmp.ejbql.ASTAbstractSchema;
@@ -279,8 +280,7 @@ public final class EJBQLToSQL92Compiler
     }
 
     public Object visit(SimpleNode node, Object data) {
-        throw new RuntimeException("Internal error: Found unknown node type in " +
-                "EJB-QL abstract syntax tree: node=" + node);
+        throw CmpMessages.MESSAGES.unknownNodeType(node);
     }
 
     public Object visit(ASTEJBQL node, Object data) {
@@ -332,7 +332,7 @@ public final class EJBQLToSQL92Compiler
         if (selectManager.getMetaData().hasRowLocking() && !(selectObject instanceof SelectFunction)) {
             JDBCFunctionMappingMetaData rowLockingTemplate = typeMapping.getRowLockingTemplate();
             if (rowLockingTemplate == null) {
-                throw new IllegalStateException("Row locking template is not defined for given mapping: " + typeMapping.getName());
+                throw CmpMessages.MESSAGES.rowLockingTemplateNotDefinedFor(typeMapping.getName());
             }
 
             boolean distinct = selectDistinct;
@@ -398,7 +398,7 @@ public final class EJBQLToSQL92Compiler
                 ASTParameter param = (ASTParameter) offsetNode;
                 Class parameterType = getParameterType(param.number);
                 if (int.class != parameterType && Integer.class != parameterType) {
-                    throw new IllegalStateException("OFFSET parameter must be an int");
+                    throw CmpMessages.MESSAGES.offsetParameterMustBeInt();
                 }
                 offsetParam = param.number;
             } else {
@@ -413,7 +413,7 @@ public final class EJBQLToSQL92Compiler
                 ASTParameter param = (ASTParameter) limitNode;
                 Class parameterType = getParameterType(param.number);
                 if (int.class != parameterType && Integer.class != parameterType) {
-                    throw new IllegalStateException("LIMIT parameter must be an int");
+                    throw CmpMessages.MESSAGES.limitParameterMustBeInt();
                 }
                 limitParam = param.number;
             } else {
@@ -479,7 +479,7 @@ public final class EJBQLToSQL92Compiler
             path = getPathFromChildren(child0);
 
             if (path == null) {
-                throw new IllegalStateException("The function in SELECT clause does not contain a path expression.");
+                throw CmpMessages.MESSAGES.noPathExpressionInSelect();
             }
 
             if (path.isCMPField()) {
@@ -644,7 +644,7 @@ public final class EJBQLToSQL92Compiler
             }
             sql.append(SQLUtil.NULL);
         } else {
-            throw new IllegalStateException("Unexpected node in IS NULL clause: " + node);
+            throw CmpMessages.MESSAGES.unexpectedNodeInNull(node);
         }
 
         return data;
@@ -653,7 +653,7 @@ public final class EJBQLToSQL92Compiler
     public Object visit(ASTIsEmpty node, Object data) {
         ASTPath path = (ASTPath) node.jjtGetChild(0);
         if (!path.isCMRField()) {
-            throw new IllegalStateException("IS EMPTY can be applied only to collection valued CMR field.");
+            throw CmpMessages.MESSAGES.isEmptyCanOnlyBeAppliedToCmr();
         }
 
         addLeftJoinPath(path);
@@ -706,10 +706,7 @@ public final class EJBQLToSQL92Compiler
             JDBCAbstractEntityBridge memberEntity = (JDBCAbstractEntityBridge) memberPath.getEntity();
 
             if (!memberEntity.equals(colEntity)) {
-                throw new IllegalStateException("Member must be if the same type as the collection, got: member="
-                        +
-                        memberEntity.getEntityName()
-                        + ", collection=" + colEntity.getEntityName());
+                throw CmpMessages.MESSAGES.memberMustBeOfCollectionType(memberEntity.getEntityName(), colEntity.getEntityName());
             }
 
             String memberAlias = aliasManager.getAlias(memberPath.getPath());
@@ -730,8 +727,7 @@ public final class EJBQLToSQL92Compiler
                         .append(parentEntity.getQualifiedTableName()).append(' ').append(parentAlias);
                 innerJoinPath(colPath, sql);
             } else {
-                throw new IllegalStateException(
-                        "There should be collection valued path expression, not identification variable.");
+                throw CmpMessages.MESSAGES.shouldBeCollectionValuedPathExpression();
             }
 
             sql.append(SQLUtil.WHERE);
@@ -869,10 +865,7 @@ public final class EJBQLToSQL92Compiler
             // can only compare like kind entities
             Class parameterType = getParameterType(toParam.number);
             if (!(fromCMPField.getFieldType().equals(parameterType))) {
-                throw new IllegalStateException("Only like types can be " +
-                        "compared: from CMP field=" +
-                        fromCMPField.getFieldType() +
-                        " to parameter=" + parameterType);
+                throw CmpMessages.MESSAGES.onlyLikeTypesCanBeCompared(fromCMPField.getFieldType().getName(), parameterType.getName());
             }
 
             inputParameters.addAll(QueryParameter.createParameters(toParam.number - 1, fromCMPField));
@@ -885,10 +878,7 @@ public final class EJBQLToSQL92Compiler
 
             // can only compare like kind entities
             if (!(fromCMPField.getFieldType().equals(toCMPField.getFieldType()))) {
-                throw new IllegalStateException("Only like types can be " +
-                        "compared: from CMP field=" +
-                        fromCMPField.getFieldType() +
-                        " to CMP field=" + toCMPField.getFieldType());
+                throw CmpMessages.MESSAGES.onlyLikeTypesCanBeCompared(fromCMPField.getFieldType().getName(), toCMPField.getFieldType().getName());
             }
 
             SQLUtil.getSelfCompareWhereClause(fromCMPField, toCMPField, fromAlias, toAlias, comparison, buf);
@@ -1137,8 +1127,7 @@ public final class EJBQLToSQL92Compiler
     public Object visit(ASTPath node, Object data) {
         StringBuffer buf = (StringBuffer) data;
         if (!node.isCMPField()) {
-            throw new IllegalStateException("Can only visit cmp valued path node. "
-                    + "Should have been handled at a higher level.");
+            throw CmpMessages.MESSAGES.canOnlyVisitCmpNodes();
         }
 
         JDBCFieldBridge cmpField = (JDBCFieldBridge) node.getCMPField();
@@ -1152,8 +1141,7 @@ public final class EJBQLToSQL92Compiler
                     break;
                 }
             case EJBQLTypes.UNKNOWN_TYPE:
-                throw new IllegalStateException("Can not visit multi-column path " +
-                        "node. Should have been handled at a higher level.");
+                throw CmpMessages.MESSAGES.canNotVisitMultiColumnPath();
         }
 
         addLeftJoinPath(node);
@@ -1163,12 +1151,11 @@ public final class EJBQLToSQL92Compiler
     }
 
     public Object visit(ASTAbstractSchema node, Object data) {
-        throw new IllegalStateException("Can not visit abstract schema node. "
-                + " Should have been handled at a higher level.");
+        throw CmpMessages.MESSAGES.canNotVisitAbstractNode();
     }
 
     public Object visit(ASTIdentifier node, Object data) {
-        throw new UnsupportedOperationException("Must not visit ASTIdentifier noe.");
+        throw CmpMessages.MESSAGES.mustNotVisitIdentifierNode();
     }
 
     public Object visit(ASTParameter node, Object data) {
@@ -1181,8 +1168,7 @@ public final class EJBQLToSQL92Compiler
                 ||
                 ejbqlType == EJBQLTypes.VALUE_CLASS_TYPE ||
                 ejbqlType == EJBQLTypes.UNKNOWN_TYPE) {
-            throw new IllegalStateException("Can not visit multi-column " +
-                    "parameter node. Should have been handled at a higher level.");
+            throw CmpMessages.MESSAGES.canNotVisitMultiColumnParameter();
         }
 
         QueryParameter param = new QueryParameter(node.number - 1, typeFactory.getJDBCType(type));
@@ -1281,12 +1267,7 @@ public final class EJBQLToSQL92Compiler
 
             // can only compare like kind entities
             if (!fromEntity.equals(toEntity)) {
-                throw new IllegalStateException("Only like types can be "
-                        +
-                        "compared: from entity="
-                        +
-                        fromEntity.getEntityName()
-                        + " to entity=" + toEntity.getEntityName());
+                throw CmpMessages.MESSAGES.onlyLikeTypesCanBeCompared(fromEntity.getEntityName(), toEntity.getEntityName());
             }
 
             SQLUtil.getSelfCompareWhereClause(fromEntity.getPrimaryKeyFields(), fromAlias, toAlias, buf);
@@ -1442,8 +1423,7 @@ public final class EJBQLToSQL92Compiler
         Class localClass = entity.getLocalInterface();
         if ((localClass == null || !localClass.isAssignableFrom(parameterType)) &&
                 (remoteClass == null || !remoteClass.isAssignableFrom(parameterType))) {
-            throw new IllegalStateException("Only like types can be compared: from entity=" +
-                    entity.getEntityName() + " to parameter type=" + parameterType);
+            throw CmpMessages.MESSAGES.onlyLikeTypesCanBeCompared(entity.getEntityName(), parameterType.getName());
         }
     }
 

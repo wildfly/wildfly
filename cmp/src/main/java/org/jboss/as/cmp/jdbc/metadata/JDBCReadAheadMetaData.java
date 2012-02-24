@@ -24,6 +24,7 @@ package org.jboss.as.cmp.jdbc.metadata;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.jdbc.metadata.parser.ParsedReadAhead;
 
 /**
@@ -85,14 +86,14 @@ public class JDBCReadAheadMetaData {
         // Strategy
         strategy = (byte) STRATEGIES.indexOf(parsed.getStrategy());
         if (strategy < 0) {
-            throw new RuntimeException("Unknown read ahead strategy '" + parsed.getStrategy() + "'.");
+            throw MESSAGES.unknownReadAheadStrategy(parsed.getStrategy());
         }
 
         // page-size
         if (parsed.getPageSize() != null) {
             pageSize = parsed.getPageSize();
             if (pageSize < 0) {
-                throw new RuntimeException("Negative value for read ahead page-size '" + parsed.getPageSize() + "'.");
+                throw MESSAGES.negativePageSize(pageSize);
             }
         } else {
             pageSize = defaultValue.getPageSize();

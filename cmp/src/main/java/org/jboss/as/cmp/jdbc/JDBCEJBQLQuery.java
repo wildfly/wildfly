@@ -21,6 +21,7 @@
  */
 package org.jboss.as.cmp.jdbc;
 
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.jdbc.bridge.JDBCCMPFieldBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCEntityBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCFieldBridge;
@@ -54,9 +55,7 @@ public final class JDBCEJBQLQuery extends JDBCAbstractQueryCommand {
                     metadata.getMethod().getParameterTypes(),
                     metadata);
         } catch (Throwable t) {
-            log.error(t.getMessage(), t);
-            throw new RuntimeException("Error compiling EJB-QL statement for EJB '" +
-                    manager.getComponent().getComponentName() + "': " + metadata.getEjbQl(), t);
+            throw CmpMessages.MESSAGES.errorCompilingEjbQl(manager.getComponent().getComponentName(), metadata.getEjbQl(), t);
         }
 
         setSQL(compiler.getSQL());

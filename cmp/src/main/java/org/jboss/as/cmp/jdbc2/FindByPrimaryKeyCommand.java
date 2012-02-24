@@ -22,7 +22,7 @@
 package org.jboss.as.cmp.jdbc2;
 
 import javax.ejb.FinderException;
-import javax.ejb.ObjectNotFoundException;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.jdbc.JDBCEntityPersistenceStore;
 import org.jboss.as.cmp.jdbc.JDBCQueryCommand;
 import org.jboss.as.cmp.jdbc.JDBCTypeFactory;
@@ -63,7 +63,7 @@ public class FindByPrimaryKeyCommand
             JDBCFunctionMappingMetaData rowLockingTemplate = typeMapping.getRowLockingTemplate();
 
             if (rowLockingTemplate == null) {
-                throw new RuntimeException("Row locking template is not defined for mapping: " + typeMapping.getName());
+                throw MESSAGES.noRowLockingTemplateForMapping(typeMapping.getName());
             }
 
             sql = rowLockingTemplate.getFunctionSql(
@@ -87,7 +87,7 @@ public class FindByPrimaryKeyCommand
     public Object fetchOne(Schema schema, Object[] args, JDBCQueryCommand.EntityProxyFactory factory) throws FinderException {
         Object pk = args[0];
         if (pk == null) {
-            throw new IllegalArgumentException("Null argument for findByPrimaryKey");
+            throw MESSAGES.nullArgumentForFindByPrimaryKey();
         }
 
         Object instance;
@@ -95,7 +95,7 @@ public class FindByPrimaryKeyCommand
         if (!cached) {
             instance = super.executeFetchOne(args, factory);
             if (instance == null) {
-                throw new ObjectNotFoundException("Instance not find: entity=" + entity.getEntityName() + ", pk=" + pk);
+                throw MESSAGES.instanceNotFound(entity.getEntityName(), pk);
             }
         } else {
             instance = pk;

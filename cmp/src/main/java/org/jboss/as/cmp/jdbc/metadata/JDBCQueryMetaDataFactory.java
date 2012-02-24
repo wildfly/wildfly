@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.jdbc.metadata.parser.ParsedQuery;
 import org.jboss.metadata.ejb.spec.QueryMetaData;
 import org.jboss.util.Classes;
@@ -94,10 +95,7 @@ public class JDBCQueryMetaDataFactory {
             );
         }
 
-        throw new RuntimeException(
-                "Error in query specification for method " +
-                        jdbcQueryMetaData.getMethod().getName()
-        );
+        throw MESSAGES.errorInQueryForMethod(jdbcQueryMetaData.getMethod().getName());
     }
 
     public List<JDBCQueryMetaData> createJDBCQueryMetaData(final ParsedQuery parsedQuery) {
@@ -105,7 +103,7 @@ public class JDBCQueryMetaDataFactory {
         try {
             parameters = Classes.convertToJavaClasses(parsedQuery.getMethodParams().iterator(), entity.getJDBCApplication().getClassLoader());
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Failed to convert method params to class instances: " + parsedQuery.getMethodParams());
+            throw MESSAGES.failedToConvertMethodParamsToClasses(parsedQuery.getMethodParams());
         }
         final List<Method> methods = getQueryMethods(parsedQuery.getMethodName(), parameters);
 
@@ -142,7 +140,7 @@ public class JDBCQueryMetaDataFactory {
                     if(defaultValue != null && defaultValue instanceof JDBCQlQueryMetaData) {
                         queryMetaData = new JDBCQlQueryMetaData((JDBCQlQueryMetaData) defaultValue, readAhead, qlCompiler, false);
                     } else {
-                        throw new RuntimeException("Error in query specification for method " + method.getName());
+                        throw MESSAGES.errorInQueryForMethod(method.getName());
                     }
 
                     break;
@@ -159,7 +157,7 @@ public class JDBCQueryMetaDataFactory {
             Class<?>[] parameters = Classes.convertToJavaClasses(queryData.getQueryMethod().getMethodParams().iterator(), entity.getJDBCApplication().getClassLoader());
             return getQueryMethods(methodName, parameters);
         } catch (ClassNotFoundException cnfe) {
-            throw new RuntimeException(cnfe.getMessage());
+            throw new RuntimeException(cnfe);
         }
     }
 
@@ -193,16 +191,13 @@ public class JDBCQueryMetaDataFactory {
 
         if (methods.size() == 0) {
             StringBuffer sb = new StringBuffer(300);
-            sb.append("Query method not found: ")
-                    .append(methodName).append('(');
             for (int i = 0; i < parameters.length; i++) {
                 if (i > 0) {
                     sb.append(',');
                 }
                 sb.append(parameters[i].getName());
             }
-            sb.append(')');
-            throw new RuntimeException(sb.toString());
+            throw MESSAGES.queryMethodNotFound(methodName, sb.toString());
         }
         return methods;
     }

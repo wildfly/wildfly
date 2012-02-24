@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
+import org.jboss.as.cmp.CmpMessages;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.jdbc.bridge.JDBCCMPFieldBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCCMRFieldBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCEntityBridge;
@@ -91,8 +93,7 @@ public final class ReadAheadCache {
                 try {
                     return transactionManager.getTransaction();
                 } catch (SystemException e) {
-                    throw new IllegalStateException("An error occurred while getting the " +
-                            "transaction associated with the current thread: " + e);
+                    throw CmpMessages.MESSAGES.errorGettingCurrentTransaction(e);
                 }
             }
         };
@@ -304,7 +305,7 @@ public final class ReadAheadCache {
 
             // if we didn't get a value something is seriously hosed
             if (value == null) {
-                throw new IllegalStateException("Preloaded value not found");
+                throw MESSAGES.preloadedValueNotFound();
             }
 
             if (cleanReadAhead) {
@@ -520,7 +521,6 @@ public final class ReadAheadCache {
         //
         // if we got a dead reference remove it
         if (ref != null) {
-            //log.info(manager.getMetaData().getName() + " was GC'd from read ahead");
             manager.removeEntityTxData(preloadKey);
         }
 
@@ -552,7 +552,7 @@ public final class ReadAheadCache {
 
         public ListCache(int max) {
             if (max < 0)
-                throw new IllegalArgumentException("list-cache-max is negative: " + max);
+                throw MESSAGES.listCacheMaxIsNegative(max);
             this.max = max;
         }
 
@@ -626,8 +626,7 @@ public final class ReadAheadCache {
                     try {
                         return transactionManager.getTransaction();
                     } catch (SystemException e) {
-                        throw new IllegalStateException("An error occurred while getting the " +
-                                "transaction associated with the current thread: " + e);
+                        throw CmpMessages.MESSAGES.errorGettingCurrentTransaction(e);
                     }
                 }
             };
@@ -643,7 +642,7 @@ public final class ReadAheadCache {
 
         public PreloadKey(Object entityPrimaryKey) {
             if (entityPrimaryKey == null) {
-                throw new IllegalArgumentException("Entity primary key is null");
+                throw MESSAGES.entityPrimaryKeyIsNull();
             }
             this.entityPrimaryKey = entityPrimaryKey;
         }
@@ -711,7 +710,7 @@ public final class ReadAheadCache {
 
         public IdentityObject(Object object) {
             if (object == null) {
-                throw new IllegalArgumentException("Object is null");
+                throw MESSAGES.objectIsNull();
             }
             this.object = object;
         }

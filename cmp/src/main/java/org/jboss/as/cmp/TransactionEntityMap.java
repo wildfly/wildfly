@@ -32,6 +32,7 @@ import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.component.CmpEntityBeanComponent;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.logging.Logger;
@@ -58,8 +59,7 @@ public class TransactionEntityMap implements Service<TransactionEntityMap> {
                 try {
                     return transactionManager.getTransaction();
                 } catch (SystemException e) {
-                    throw new IllegalStateException("An error occured while getting the " +
-                            "transaction associated with the current thread: " + e);
+                    throw MESSAGES.errorGettingCurrentTransaction(e);
                 }
             }
         };
@@ -71,7 +71,7 @@ public class TransactionEntityMap implements Service<TransactionEntityMap> {
 
     public synchronized TransactionEntityMap getValue() throws IllegalStateException, IllegalArgumentException {
         if (txSynch == null) {
-            throw new IllegalStateException("No transaction sync");
+            throw MESSAGES.noTransactionSync();
         }
         return this;
     }
@@ -127,11 +127,11 @@ public class TransactionEntityMap implements Service<TransactionEntityMap> {
         }
 
         public void synchronize(Thread thread, Transaction tx, CmpEntityBeanContext context) {
-            throw new UnsupportedOperationException();
+            throw MESSAGES.methodNotSupported();
         }
 
         public void invokeEjbStore(Thread thread, CmpEntityBeanContext context) {
-            throw new UnsupportedOperationException();
+            throw MESSAGES.methodNotSupported();
         }
     };
 
@@ -180,13 +180,7 @@ public class TransactionEntityMap implements Service<TransactionEntityMap> {
         public void synchronize(Thread thread, Transaction tx, CmpEntityBeanContext context) throws Exception {
             CmpEntityBeanComponent container = context.getComponent();
             if (container.getStoreManager().isStoreRequired(context)) {
-                throw new EJBException("The instance of " +
-                        container.getComponentName() +
-                        " with pk=" +
-                        context.getPrimaryKey() +
-                        " was not stored to prevent potential inconsistency of data in the database:" +
-                        " the instance was evicted from the cache during the transaction" +
-                        " and the database was possibly updated by another process.");
+                throw MESSAGES.instanceEvictedBeforeSync(container.getComponentName(), context.getPrimaryKey());
             }
         }
 
@@ -313,16 +307,14 @@ public class TransactionEntityMap implements Service<TransactionEntityMap> {
                 try {
                     tx.setRollbackOnly();
                 } catch (Exception e) {
-                    log.warn("Exception while trying to rollback tx: " + tx, e);
+                    CmpLogger.ROOT_LOGGER.exceptionRollingBackTx(tx, e);
                 }
 
                 // Rethrow cause by exception
                 if (causeByException instanceof EJBException) {
                     throw (EJBException) causeByException;
                 }
-                throw new EJBException("Exception in store of entity:" +
-                        ((context == null || context.getPrimaryKey() == null) ? "<null>" : context.getPrimaryKey().toString()),
-                        causeByException);
+                throw CmpMessages.MESSAGES.failedToStoreEntity(((context == null || context.getPrimaryKey() == null) ? "<null>" : context.getPrimaryKey().toString()), causeByException);
             } finally {
                 synchronizing = false;
             }

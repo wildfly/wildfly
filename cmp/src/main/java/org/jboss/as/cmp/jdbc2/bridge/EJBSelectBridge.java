@@ -26,6 +26,7 @@ import java.util.Collection;
 import javax.ejb.FinderException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.bridge.SelectorBridge;
 import org.jboss.as.cmp.component.CmpEntityBeanComponent;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
@@ -103,16 +104,14 @@ public class EJBSelectBridge implements SelectorBridge {
             case SINGLE:
                 result = command.fetchOne(schema, args, factory);
                 if (result == null && getMethod().getReturnType().isPrimitive()) {
-                    throw new FinderException(
-                            "Cannot return null as a value of primitive type " + getMethod().getReturnType().getName()
-                    );
+                    throw CmpMessages.MESSAGES.cannotReturnNullForPrimitive(getMethod().getReturnType().getName());
                 }
                 break;
             case COLLECTION:
                 result = command.fetchCollection(schema, args, factory);
                 break;
             default:
-                throw new IllegalStateException("Unexpected return type: " + returnType);
+                throw CmpMessages.MESSAGES.unexpectedReturnType(returnType);
         }
         return result;
     }

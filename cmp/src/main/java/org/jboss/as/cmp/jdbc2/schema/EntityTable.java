@@ -31,14 +31,13 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.DuplicateKeyException;
 import javax.ejb.EJBException;
-import javax.ejb.NoSuchEntityException;
-import javax.ejb.NoSuchObjectLocalException;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 import javax.transaction.Transaction;
 import org.jboss.as.cmp.CmpConfig;
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.jdbc.JDBCEntityPersistenceStore;
 import org.jboss.as.cmp.jdbc.JDBCTypeFactory;
 import org.jboss.as.cmp.jdbc.JDBCUtil;
@@ -104,7 +103,7 @@ public class EntityTable implements Table {
             InitialContext ic = new InitialContext();
             dataSource = (DataSource) ic.lookup(metadata.getDataSourceName());
         } catch (NamingException e) {
-            throw new RuntimeException("Filed to lookup: " + metadata.getDataSourceName(), e);
+            throw CmpMessages.MESSAGES.failedToLookupDatasource(metadata.getDataSourceName(), e);
         }
 
         this.entity = entity;
@@ -216,7 +215,7 @@ public class EntityTable implements Table {
             JDBCTypeMappingMetaData typeMapping = typeFactory.getTypeMapping();
             JDBCFunctionMappingMetaData rowLockingTemplate = typeMapping.getRowLockingTemplate();
             if (rowLockingTemplate == null) {
-                throw new RuntimeException("Row locking template is not defined for mapping: " + typeMapping.getName());
+                throw CmpMessages.MESSAGES.noRowLockingTemplateForMapping(typeMapping.getName());
             }
 
             selectSql = rowLockingTemplate.getFunctionSql(new Object[]{selectColumns, tableName, whereColumns, null},
@@ -343,13 +342,12 @@ public class EntityTable implements Table {
             rs = ps.executeQuery();
 
             if (!rs.next()) {
-                throw new NoSuchEntityException("Row not found: " + id);
+                throw CmpMessages.MESSAGES.rowNotFound(id);
             }
 
             return view.loadRow(rs, id, false);
         } catch (SQLException e) {
-            log.error("Failed to load row: table=" + tableName + ", pk=" + id);
-            throw e;
+            throw CmpMessages.MESSAGES.failedToLoadRow(tableName, id);
         } finally {
             JDBCUtil.safeClose(rs);
             JDBCUtil.safeClose(ps);
@@ -462,15 +460,14 @@ public class EntityTable implements Table {
             deleteStrategy.executeBatch(ps);
 
             if (view.deleted != null) {
-                throw new IllegalStateException("There are still rows to delete!");
+                throw CmpMessages.MESSAGES.stillRowsToDelete();
             }
 
             if (log.isTraceEnabled()) {
                 log.trace("deleted rows: " + batchCount);
             }
         } catch (SQLException e) {
-            log.error("Failed to delete view: " + e.getMessage(), e);
-            throw e;
+            throw CmpMessages.MESSAGES.failedToDeleteView(e);
         } finally {
             JDBCUtil.safeClose(ps);
             JDBCUtil.safeClose(con);
@@ -532,8 +529,7 @@ public class EntityTable implements Table {
                 log.trace("updated rows: " + batchCount);
             }
         } catch (SQLException e) {
-            log.error("Failed to update: table=" + tableName, e);
-            throw e;
+            throw CmpMessages.MESSAGES.failedToUpdateTable(tableName, e);
         } finally {
             JDBCUtil.safeClose(ps);
             JDBCUtil.safeClose(con);
@@ -575,8 +571,7 @@ public class EntityTable implements Table {
                 log.trace("inserted rows: " + batchCount);
             }
         } catch (SQLException e) {
-            log.error("Failed to insert new rows: " + e.getMessage(), e);
-            throw e;
+            throw CmpMessages.MESSAGES.failedToInsertNewRows(e);
         } finally {
             JDBCUtil.safeClose(ps);
             JDBCUtil.safeClose(con);
@@ -678,20 +673,13 @@ public class EntityTable implements Table {
             }
 
             if (row == null && required) {
-                throw new IllegalStateException("row not found: pk=" + pk);
+                throw CmpMessages.MESSAGES.rowNotFound(pk);
             }
 
             return row;
         }
 
         public void addClean(Row row) {
-            /*
-            if(getRowByPk(row.pk, false) != null)
-            {
-               throw new IllegalStateException("View already contains the row: key=" + row.pk);
-            }
-            */
-
             if (clean != null) {
                 row.next = clean;
                 clean.prev = row;
@@ -704,11 +692,6 @@ public class EntityTable implements Table {
         }
 
         public void addCreated(Row row) throws DuplicateKeyException {
-            //if(getRowByPk(row.pk, false) != null)
-            //{
-            //   throw new DuplicateKeyException("Table " + tableName + ", key=" + row.pk);
-            //}
-
             if (created != null) {
                 row.next = created;
                 created.prev = row;
@@ -910,32 +893,6 @@ public class EntityTable implements Table {
         }
 
         public void beforeCompletion() {
-            /* There is no sense in the current impl of lock-for-update.
-            if(cacheUpdates != null)
-            {
-               Row cursor = cacheUpdates;
-
-               while(cursor != null)
-               {
-                  cache.lock(cursor.pk);
-                  try
-                  {
-                     cache.lockForUpdate(tx, cursor.pk);
-                  }
-                  catch(Exception e)
-                  {
-                     throw new EJBException("Table " + entity.getQualifiedTableName() + ": " + e.getMessage());
-                  }
-                  finally
-                  {
-                     cache.unlock(cursor.pk);
-                  }
-
-                  cursor.lockedForUpdate = true;
-                  cursor = cursor.nextCacheUpdate;
-               }
-            }
-            */
         }
 
         public void committed() {
@@ -959,9 +916,7 @@ public class EntityTable implements Table {
                                 }
                                 break;
                             default:
-                                throw new IllegalStateException("Unexpected row state: table=" +
-                                        entity.getQualifiedTableName() +
-                                        ", pk=" + cursor.pk + ", state=" + cursor.state);
+                                throw CmpMessages.MESSAGES.unexpectedRowState(entity.getQualifiedTableName(), cursor.pk, cursor.state);
                         }
                     } finally {
                         cache.unlock(cursor.pk);
@@ -974,34 +929,6 @@ public class EntityTable implements Table {
         }
 
         public void rolledback() {
-            /* There is no sense in the current impl of lock-for-update.
-           if(cacheUpdates != null)
-           {
-              Row cursor = cacheUpdates;
-
-              while(cursor != null)
-              {
-                 if(cursor.lockedForUpdate)
-                 {
-                    cache.lock(cursor.pk);
-                    try
-                    {
-                       cache.releaseLock(tx, cursor.pk);
-                    }
-                    catch(Exception e)
-                    {
-                       log.warn("Table " + entity.getQualifiedTableName() + ": " + e.getMessage());
-                    }
-                    finally
-                    {
-                       cache.unlock(cursor.pk);
-                    }
-                    cursor.lockedForUpdate = false;
-                 }
-                 cursor = cursor.nextCacheUpdate;
-              }
-           }
-            */
         }
 
         private void nullifyForeignKeys()
@@ -1042,7 +969,7 @@ public class EntityTable implements Table {
 
                         final int affected = s.executeUpdate();
                         if (affected != 1) {
-                            throw new EJBException("Affected " + affected + " rows while expected just one");
+                            throw CmpMessages.MESSAGES.tooManyRowsAffected(affected);
                         }
                     }
                 }
@@ -1109,7 +1036,7 @@ public class EntityTable implements Table {
 
         public Object getFieldValue(int i) {
             if (state == DELETED) {
-                throw new NoSuchObjectLocalException("The instance was removed: " + pk);
+                throw CmpMessages.MESSAGES.instanceAlreadyRemoved(pk);
             }
 
             Object value = fields[i];
@@ -1148,7 +1075,7 @@ public class EntityTable implements Table {
                 state = DELETED;
                 view.rowByPk.remove(pk);
             } else if (state == DELETED) {
-                throw new IllegalStateException("The row is already deleted: pk=" + pk);
+                throw CmpMessages.MESSAGES.rowAlreadyRemoved(pk);
             }
         }
 
@@ -1227,7 +1154,7 @@ public class EntityTable implements Table {
                 }
                 view.dirtyRelations = this;
             } else {
-                throw new IllegalStateException("Can't update to state: " + state);
+                throw CmpMessages.MESSAGES.canNotUpdateState(state);
             }
 
             this.state = state;
@@ -1276,31 +1203,6 @@ public class EntityTable implements Table {
                 int paramInd;
                 con = dataSource.getConnection();
 
-                // check for duplicate key
-                /*
-                if(log.isDebugEnabled())
-                {
-                   log.debug("executing : " + duplicatePkSql);
-                }
-
-                duplicatePkPs = con.prepareStatement(duplicatePkSql);
-
-                paramInd = 1;
-                JDBCCMPFieldBridge2[] pkFields = (JDBCCMPFieldBridge2[]) entity.getPrimaryKeyFields();
-                for(int i = 0; i < pkFields.length; ++i)
-                {
-                   JDBCCMPFieldBridge2 pkField = pkFields[i];
-                   Object fieldValue = fields[pkField.getRowIndex()];
-                   paramInd = pkField.setArgumentParameters(duplicatePkPs, paramInd, fieldValue);
-                }
-
-                rs = duplicatePkPs.executeQuery();
-                if(rs.next())
-                {
-                   throw new DuplicateKeyException("Table " + tableName + ", pk=" + pk);
-                }
-                */
-
                 // insert
                 if (log.isDebugEnabled()) {
                     log.debug("executing : " + insertSql);
@@ -1320,8 +1222,7 @@ public class EntityTable implements Table {
 
                 flushStatus();
             } catch (SQLException e) {
-                log.error("Failed to insert new rows: " + e.getMessage(), e);
-                throw e;
+                throw CmpMessages.MESSAGES.failedToInsertNewRows(e);
             } finally {
                 JDBCUtil.safeClose(rs);
                 JDBCUtil.safeClose(duplicatePkPs);
@@ -1370,14 +1271,12 @@ public class EntityTable implements Table {
                 rs = ps.executeQuery();
 
                 if (!rs.next()) {
-                    throw new NoSuchEntityException("Row not found: " + pk);
+                    throw CmpMessages.MESSAGES.rowNotFound(pk);
                 }
 
                 value = field.loadArgumentResults(rs, 1);
             } catch (SQLException e) {
-                throw new EJBException("Failed to load field " +
-                        entity.getEntityName() + "." + field.getFieldName() +
-                        ": " + e.getMessage(), e);
+                throw CmpMessages.MESSAGES.failedToLoadField(entity.getEntityName(), field.getFieldName(), e);
             } finally {
                 JDBCUtil.safeClose(rs);
                 JDBCUtil.safeClose(ps);
@@ -1405,11 +1304,12 @@ public class EntityTable implements Table {
             for (int i = 0; i < updates.length; ++i) {
                 int status = updates[i];
                 if (status != 1 && status != -2 /* java.sql.Statement.SUCCESS_NO_INFO since jdk1.4*/) {
-                    String msg = (status == -3 /* java.sql.Statement.EXECUTE_FAILED since jdk1.4 */ ?
-                            "One of the commands in the batch failed to execute" :
-                            "Each command in the batch should update exactly 1 row but " +
-                                    "one of the commands updated " + updates[i] + " rows.");
-                    throw new EJBException(msg);
+                    if(status == -3) {
+                        throw CmpMessages.MESSAGES.batchCommandFailedExecute();
+                    } else {
+                        throw CmpMessages.MESSAGES.batchUpdatedTooManyRows(status);
+                    }
+
                 }
             }
         }
@@ -1419,7 +1319,7 @@ public class EntityTable implements Table {
         public void executeUpdate(PreparedStatement ps) throws SQLException {
             int rows = ps.executeUpdate();
             if (rows != 1) {
-                throw new EJBException("Expected one updated row but got: " + rows);
+                throw CmpMessages.MESSAGES.expectedOneRow(rows);
             }
         }
 

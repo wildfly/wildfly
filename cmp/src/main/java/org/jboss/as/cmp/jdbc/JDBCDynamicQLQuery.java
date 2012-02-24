@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.ejb.FinderException;
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.component.CmpEntityBeanComponent;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.as.cmp.ejbql.Catalog;
@@ -64,7 +65,7 @@ public final class JDBCDynamicQLQuery extends JDBCAbstractQueryCommand {
         try {
             compiler = JDBCQueryManager.getInstance(metadata.getQLCompilerClass(), catalog);
         } catch (Throwable e) {
-            throw new FinderException(e.getMessage());
+            throw CmpMessages.MESSAGES.failedToGetQueryCompiler(metadata.getQLCompilerClass(), e);
         }
 
         // get the parameters
@@ -78,7 +79,7 @@ public final class JDBCDynamicQLQuery extends JDBCAbstractQueryCommand {
             parameterTypes = new Class[parameters.length];
             for (int i = 0; i < parameters.length; i++) {
                 if (parameters[i] == null) {
-                    throw new FinderException("Parameter[" + i + "] is null");
+                    throw CmpMessages.MESSAGES.nullParameter(i);
                 }
                 parameterTypes[i] = parameters[i].getClass();
             }
@@ -92,8 +93,7 @@ public final class JDBCDynamicQLQuery extends JDBCAbstractQueryCommand {
                     parameterTypes,
                     metadata);
         } catch (Throwable t) {
-            t.printStackTrace();
-            throw new FinderException("Error compiling ejbql: " + t);
+            throw CmpMessages.MESSAGES.errorCompilingEjbQl(t);
         }
 
         int offset = toInt(parameters, compiler.getOffsetParam(), compiler.getOffsetValue());

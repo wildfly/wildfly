@@ -30,6 +30,7 @@ import java.security.PrivilegedExceptionAction;
 import javax.security.auth.Subject;
 import javax.security.jacc.PolicyContext;
 import javax.security.jacc.PolicyContextException;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.security.RunAs;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
@@ -53,7 +54,7 @@ class SecurityActions {
                     //return SecurityAssociation.peekRunAsIdentity();
                     SecurityContext sc = SecurityContextAssociation.getSecurityContext();
                     if (sc == null)
-                        throw new IllegalStateException("Security Context is null");
+                        throw MESSAGES.securityContextIsNull();
                     return sc.getOutgoingRunAs();
                 }
             };
@@ -63,7 +64,7 @@ class SecurityActions {
                     //return SecurityAssociation.popRunAsIdentity();
                     SecurityContext sc = SecurityContextAssociation.getSecurityContext();
                     if (sc == null)
-                        throw new IllegalStateException("Security Context is null");
+                        throw MESSAGES.securityContextIsNull();
                     RunAs ra = sc.getOutgoingRunAs();
                     sc.setOutgoingRunAs(null);
                     return ra;
@@ -81,7 +82,7 @@ class SecurityActions {
                                 //SecurityAssociation.pushRunAsIdentity((RunAsIdentity)id);
                                 SecurityContext sa = SecurityContextAssociation.getSecurityContext();
                                 if (sa == null)
-                                    throw new IllegalStateException("Security Context is null to push runas");
+                                    throw MESSAGES.securityContextIsNull();
                                 sa.setOutgoingRunAs(id);
                                 return null;
                             }
@@ -99,7 +100,7 @@ class SecurityActions {
                 //return SecurityAssociation.peekRunAsIdentity();
                 SecurityContext sc = SecurityContextAssociation.getSecurityContext();
                 if (sc == null)
-                    throw new IllegalStateException("Security Context is null");
+                    throw MESSAGES.securityContextIsNull();
                 return sc.getOutgoingRunAs();
             }
 
@@ -107,7 +108,7 @@ class SecurityActions {
                 //SecurityAssociation.pushRunAsIdentity(id);
                 SecurityContext sc = SecurityContextAssociation.getSecurityContext();
                 if (sc == null)
-                    throw new IllegalStateException("Security Context is null to push runas");
+                    throw MESSAGES.securityContextIsNull();
                 sc.setOutgoingRunAs(id);
             }
 
@@ -116,7 +117,7 @@ class SecurityActions {
                 // return SecurityAssociation.popRunAsIdentity();
                 SecurityContext sc = SecurityContextAssociation.getSecurityContext();
                 if (sc == null)
-                    throw new IllegalStateException("Security Context is null");
+                    throw MESSAGES.securityContextIsNull();
                 RunAs ra = null;
                 ra = sc.getOutgoingRunAs();
                 sc.setOutgoingRunAs(null);
@@ -153,7 +154,7 @@ class SecurityActions {
                     if (ex instanceof PolicyContextException)
                         throw (PolicyContextException) ex;
                     else
-                        throw new UndeclaredThrowableException(ex);
+                        throw new UndeclaredThrowableException(e);
                 }
             }
         };
@@ -365,7 +366,7 @@ class SecurityActions {
             public Object run() {
                 SecurityContext sc = getSecurityContext();
                 if (sc == null)
-                    throw new IllegalStateException("Security Context is null");
+                    throw MESSAGES.securityContextIsNull();
                 sc.getUtil().createSubjectInfo(p, cred, s);
                 return null;
             }
@@ -379,7 +380,7 @@ class SecurityActions {
             public Object run() {
                 SecurityContext sc = getSecurityContext();
                 if (sc == null)
-                    throw new IllegalStateException("Security Context is null");
+                    throw MESSAGES.securityContextIsNull();
                 Principal p = sc.getUtil().getUserPrincipal();
                 Object cred = sc.getUtil().getCredential();
                 sc.getUtil().createSubjectInfo(p, cred, null);
@@ -394,7 +395,7 @@ class SecurityActions {
             public Object run() {
                 SecurityContext sc = SecurityContextAssociation.getSecurityContext();
                 if (sc == null)
-                    throw new IllegalStateException("Security Context is null");
+                    throw MESSAGES.securityContextIsNull();
                 sc.setIncomingRunAs(ra);
                 return null;
             }
@@ -406,7 +407,7 @@ class SecurityActions {
             public Object run() {
                 SecurityContext sc = SecurityContextAssociation.getSecurityContext();
                 if (sc == null)
-                    throw new IllegalStateException("Security Context is null");
+                    throw MESSAGES.securityContextIsNull();
                 sc.setIncomingRunAs(null);
                 return null;
             }
