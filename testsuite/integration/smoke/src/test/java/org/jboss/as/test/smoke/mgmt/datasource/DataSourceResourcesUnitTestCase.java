@@ -22,9 +22,6 @@
 
 package org.jboss.as.test.smoke.mgmt.datasource;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -37,9 +34,11 @@ import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
-import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * Datasource resources unit test.
@@ -53,13 +52,7 @@ public class DataSourceResourcesUnitTestCase  extends DsMgmtTestBase{
 
     @Deployment
     public static Archive<?> getDeployment() {
-    	initModelControllerClient("localhost",9999);
         return ShrinkWrapUtils.createEmptyJavaArchive("dummy");
-    }
-
-    @AfterClass
-    public static void tearDown()  throws Exception {
-    	closeModelControllerClient();
     }
 
     @Test

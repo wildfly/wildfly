@@ -21,13 +21,9 @@
  */
 package org.jboss.as.test.integration.management.api.security;
 
-import org.junit.AfterClass;
-import org.junit.Ignore;
-import org.jboss.as.test.integration.management.cli.GlobalOpsTestCase;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
+
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -35,22 +31,23 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.cli.GlobalOpsTestCase;
 import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.as.test.integration.management.util.SecuredServlet;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import static org.junit.Assert.*;
+
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+import static org.junit.Assert.assertTrue;
 
 
 /**
- *
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
 @RunWith(Arquillian.class)
@@ -58,7 +55,7 @@ import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNo
 public class SecurityDomainTestCase extends AbstractMgmtTestBase {
 
     @ArquillianResource
-    URL url;
+    private URL url;
 
     @Deployment
     public static Archive<?> getDeployment() {
@@ -77,20 +74,10 @@ public class SecurityDomainTestCase extends AbstractMgmtTestBase {
         return war;
     }
 
-    @Before
-    public void before() throws IOException {
-        initModelControllerClient(url.getHost(), MGMT_PORT);
-    }
-
-    @AfterClass
-    public static void after() throws IOException {
-        closeModelControllerClient();
-    }
-
     @Test
     public void testAddRemoveSecurityDomain(@ArquillianResource Deployer deployer) throws Exception {
 
-        
+
         // add security domain
         ModelNode addOp = createOpNode("subsystem=security/security-domain=test", "add");
 
@@ -100,9 +87,9 @@ public class SecurityDomainTestCase extends AbstractMgmtTestBase {
         loginModule.get("code").set("Simple");
         loginModule.get("flag").set("required");
         addLoginModuleOp.get("login-modules").add(loginModule);
-        
-        executeOperation(ModelUtil.createCompositeNode(new ModelNode[] {addOp, addLoginModuleOp}));
-        
+
+        executeOperation(ModelUtil.createCompositeNode(new ModelNode[]{addOp, addLoginModuleOp}));
+
         // deploy secured servlet
         deployer.deploy("secured-servlet");
 

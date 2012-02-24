@@ -23,19 +23,16 @@
 package org.jboss.as.test.integration.jca.metrics;
 
 
-import static junit.framework.Assert.*;
-import org.junit.AfterClass;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-
 import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.shrinkwrap.api.Archive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static junit.framework.Assert.assertEquals;
 
 /**
  * XA datasource configuration and metrics unit test.
@@ -48,16 +45,9 @@ public class DriverCfgMetricUnitTestCase  extends DsMgmtTestBase{
 
 	@Deployment
     public static Archive<?> getDeployment() {
-    	initModelControllerClient("localhost",9999);
     	setBaseAddress("jdbc-driver", "name");
         return ShrinkWrapUtils.createEmptyJavaArchive("dummy");
     }
-
-    @AfterClass
-    public static void tearDown()  throws Exception {
-    	closeModelControllerClient();
-    }
-
 
     @Test
     public void testDriverAttributes()throws Exception {

@@ -71,7 +71,6 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
 
     @Deployment
     public static Archive<?> fakeDeployment() {
-        initModelControllerClient("localhost", 9999);
         return ShrinkWrap.create(JavaArchive.class);
     }
 

@@ -21,17 +21,6 @@
 */
 package org.jboss.as.test.integration.management.base;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.test.integration.management.util.ModelUtil.createCompositeNode;
-import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -39,8 +28,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -52,6 +39,8 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.stream.StreamSource;
 
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -73,6 +62,16 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.staxmapper.XMLMapper;
 import org.junit.Assert;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.test.integration.management.util.ModelUtil.createCompositeNode;
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+
 /**
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
@@ -81,35 +80,18 @@ public class AbstractMgmtTestBase {
     protected static final int MGMT_PORT = 9999;
     protected static final String tempDir = System.getProperty("java.io.tmpdir");
 
-    private static ModelControllerClient modelControllerClient;
+    @ArquillianResource
+    private static ManagementClient managementClient;
+
     private static File brokenWar = null;
 
-    protected static void initModelControllerClient(final String hostName, final int port) {
-        if (modelControllerClient == null) {
-            try {
-                modelControllerClient = ModelControllerClient.Factory.create(InetAddress.getByName(hostName), port, getCallbackHandler());
-            } catch (UnknownHostException e) {
-                throw new RuntimeException("Cannot create model controller client for host: " + hostName + " and port " + port, e);
-            }
-        }
-    }
 
-    protected ModelControllerClient getModelControllerClient() {
-        return modelControllerClient;
-    }
-
-    protected static void closeModelControllerClient() throws IOException {
-        if (modelControllerClient != null) {
-            try {
-                modelControllerClient.close();
-            } finally {
-                modelControllerClient = null;
-            }
-        }
+    protected static ModelControllerClient getModelControllerClient() {
+        return managementClient.getControllerClient();
     }
 
     protected static ModelNode executeOperation(final ModelNode op, boolean unwrapResult) throws IOException, MgmtOperationException {
-        ModelNode ret = modelControllerClient.execute(op);
+        ModelNode ret = getModelControllerClient().execute(op);
         if (!unwrapResult) return ret;
 
         if (!SUCCESS.equals(ret.get(OUTCOME).asString())) {
@@ -126,11 +108,10 @@ public class AbstractMgmtTestBase {
         return executeOperation(createOpNode(address, operation));
     }
 
-    protected ModelNode executeAndRollbackOperation(final ModelNode op) throws IOException, OperationFormatException {
+    protected static ModelNode executeAndRollbackOperation(final ModelNode op) throws IOException, OperationFormatException {
 
         ModelNode addDeploymentOp = createOpNode("deployment=malformedDeployment.war", "add");
         addDeploymentOp.get("content").get(0).get("input-stream-index").set(0);
-        ModelNode deploymentOp = new ModelNode();
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         builder.setOperationName("deploy");
@@ -146,7 +127,7 @@ public class AbstractMgmtTestBase {
         OperationBuilder ob = new OperationBuilder(compositeOp, true);
         ob.addInputStream(new FileInputStream(getBrokenWar()));
 
-        return modelControllerClient.execute(ob.build());
+        return getModelControllerClient().execute(ob.build());
     }
 
     protected static void remove(final ModelNode address) throws IOException, MgmtOperationException {
@@ -168,7 +149,7 @@ public class AbstractMgmtTestBase {
         return brokenWar;
     }
 
-    protected Map<String, ModelNode> getChildren(final ModelNode result) {
+    protected static Map<String, ModelNode> getChildren(final ModelNode result) {
         assert result.isDefined();
         final Map<String, ModelNode> steps = new HashMap<String, ModelNode>();
         for (final Property property : result.asPropertyList()) {
@@ -177,7 +158,7 @@ public class AbstractMgmtTestBase {
         return steps;
     }
 
-    protected ModelNode findNodeWithProperty(List<ModelNode> newList, String propertyName, String setTo) {
+    protected static ModelNode findNodeWithProperty(List<ModelNode> newList, String propertyName, String setTo) {
         ModelNode toReturn = null;
         for (ModelNode result : newList) {
             final Map<String, ModelNode> parseChildren = getChildren(result);
@@ -189,7 +170,7 @@ public class AbstractMgmtTestBase {
         return toReturn;
     }
 
-    public static String ModelToXml(String subsystemName, String childType, XMLElementWriter<SubsystemMarshallingContext> parser) throws Exception {
+    public static String modelToXml(String subsystemName, String childType, XMLElementWriter<SubsystemMarshallingContext> parser) throws Exception {
         final ModelNode address = new ModelNode();
         address.add("subsystem", subsystemName);
         address.protect();

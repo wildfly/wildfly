@@ -21,34 +21,32 @@
  */
 package org.jboss.as.test.integration.management.api.web;
 
-import org.jboss.as.test.integration.management.cli.GlobalOpsTestCase;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import java.util.concurrent.TimeUnit;
-import org.jboss.as.test.integration.common.HttpRequest;
-import org.jboss.arquillian.container.test.api.Deployer;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.as.test.integration.management.util.SimpleServlet;
-import java.util.logging.Logger;
-
-import org.junit.AfterClass;
-import org.junit.Before;
 import java.io.IOException;
 import java.net.URL;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
+
+import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.cli.GlobalOpsTestCase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
+import org.jboss.as.test.integration.management.util.SimpleServlet;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import static org.junit.Assert.*;
+
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -80,16 +78,6 @@ public class VirtualServerTestCase extends AbstractMgmtTestBase {
         war.addAsWebResource(new StringAsset("Rewrite Test"), "/rewritten/index.html");
         war.addAsWebInfResource(new StringAsset("<jboss-web><virtual-host>test</virtual-host></jboss-web>"), "jboss-web.xml");
         return war;
-    }
-
-    @Before
-    public void before() throws IOException {
-        initModelControllerClient(url.getHost(), MGMT_PORT);
-    }
-
-    @AfterClass
-    public static void after() throws IOException {
-        closeModelControllerClient();
     }
 
     @Test
