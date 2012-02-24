@@ -23,7 +23,7 @@ package org.jboss.as.cmp.jdbc;
 
 import java.util.HashSet;
 import java.util.Set;
-import javax.ejb.EJBException;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.jdbc.bridge.JDBCCMRFieldBridge;
 
 /**
@@ -127,7 +127,7 @@ public final class RelationData {
         if (this.leftCMRField == rightCMRField && this.rightCMRField == leftCMRField) {
             return new RelationPair(rightCMRField, rightId, leftCMRField, leftId);
         }
-        throw new EJBException("Error: cmrFields are of wrong type");
+        throw MESSAGES.cmrFieldsWrongType();
     }
 }
 

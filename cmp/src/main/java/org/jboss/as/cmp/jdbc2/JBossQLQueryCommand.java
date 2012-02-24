@@ -21,6 +21,7 @@
  */
 package org.jboss.as.cmp.jdbc2;
 
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.jdbc2.bridge.JDBCEntityBridge2;
 import org.jboss.as.cmp.jdbc2.bridge.JDBCCMPFieldBridge2;
 import org.jboss.as.cmp.jdbc.metadata.JDBCJBossQLQueryMetaData;
@@ -47,8 +48,7 @@ public class JBossQLQueryCommand
                     metadata.getMethod().getParameterTypes(),
                     metadata);
         } catch (Throwable t) {
-            t.printStackTrace();
-            throw new RuntimeException("Error compiling JBossQL statement '" + metadata.getJBossQL() + "'", t);
+            throw CmpMessages.MESSAGES.errorCompilingJbossQlStatementRuntime(metadata.getJBossQL(), t);
         }
 
         sql = compiler.getSQL();

@@ -26,7 +26,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.List;
 import javax.ejb.EJBException;
-import javax.ejb.NoSuchEntityException;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.jdbc.bridge.JDBCCMPFieldBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCEntityBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCFieldBridge;
@@ -213,7 +213,7 @@ public final class JDBCLoadEntityCommand {
             // did we load the main results
             if (!mainEntityLoaded) {
                 if (failIfNotFound)
-                    throw new NoSuchEntityException("Entity not found: primaryKey=" + ctx.getPrimaryKey());
+                    throw MESSAGES.entityNotFound(ctx.getPrimaryKey());
                 else
                     return false;
             } else
@@ -221,7 +221,7 @@ public final class JDBCLoadEntityCommand {
         } catch (EJBException e) {
             throw e;
         } catch (Exception e) {
-            throw new EJBException("Load failed", e);
+            throw MESSAGES.entityLoadFailed(e);
         } finally {
             JDBCUtil.safeClose(rs);
             JDBCUtil.safeClose(ps);

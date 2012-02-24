@@ -25,6 +25,7 @@ package org.jboss.as.cmp.context;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.TransactionEntityMap;
 import org.jboss.as.cmp.component.CmpEntityBeanComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
@@ -80,7 +81,7 @@ public class CmpEntityBeanContext extends EntityContextImpl {
         try {
             return getComponent().getTransactionManager().getTransaction();
         } catch (SystemException e) {
-            throw new RuntimeException("Failed to get current transaction", e);
+            throw CmpMessages.MESSAGES.failedToGetCurrentTransaction(e);
         }
     }
 

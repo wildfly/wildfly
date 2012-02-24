@@ -46,6 +46,7 @@ import javax.ejb.RemoveException;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.bridge.EntityBridge;
 import org.jboss.as.cmp.bridge.FieldBridge;
 import org.jboss.as.cmp.component.CmpEntityBeanComponent;
@@ -121,21 +122,7 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
         Catalog catalog = manager.getCatalog();
         relatedEntity = (JDBCEntityBridge2) catalog.getEntityByEJBName(relatedEntityName);
         if (relatedEntity == null) {
-            throw new RuntimeException("Related entity not found: "
-                    +
-                    "entity="
-                    +
-                    entity.getEntityName()
-                    +
-                    ", "
-                    +
-                    "cmrField="
-                    +
-                    getFieldName()
-                    +
-                    ", " +
-                    "relatedEntity=" + relatedEntityName
-            );
+            throw CmpMessages.MESSAGES.relatedEntityNotFound(entity.getEntityName(), getFieldName(), relatedEntityName);
         }
 
         // Related CMR Field
@@ -150,25 +137,8 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
 
         // if we didn't find the related CMR field throw an exception with a detailed message
         if (relatedCMRField == null) {
-            String message = "Related CMR field not found in " +
-                    relatedEntity.getEntityName() + " for relationship from ";
-
-            message += entity.getEntityName() + ".";
-            if (getFieldName() != null) {
-                message += getFieldName();
-            } else {
-                message += "<no-field>";
-            }
-
-            message += " to ";
-            message += relatedEntityName + ".";
-            if (metadata.getRelatedRole().getCMRFieldName() != null) {
-                message += metadata.getRelatedRole().getCMRFieldName();
-            } else {
-                message += "<no-field>";
-            }
-
-            throw new RuntimeException(message);
+            throw CmpMessages.MESSAGES.relatedCmrFieldNotFound(relatedEntityName, entity.getEntityName(), getFieldName() != null ? getFieldName() : "<no-field>",
+                    relatedEntityName, metadata.getRelatedRole().getCMRFieldName() != null ? metadata.getRelatedRole().getCMRFieldName() : "<no-field>");
         }
 
         // Related Container
@@ -188,7 +158,7 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
                 JDBCCMPFieldMetaData cmpFieldMetaData = (JDBCCMPFieldMetaData) i.next();
                 FieldBridge pkField = entity.getFieldByName(cmpFieldMetaData.getFieldName());
                 if (pkField == null) {
-                    throw new RuntimeException("Primary key not found for key-field " + cmpFieldMetaData.getFieldName());
+                    throw CmpMessages.MESSAGES.pkNotFoundForKeyField(cmpFieldMetaData.getFieldName());
                 }
                 pkFieldsToFKFields.put(pkField, new JDBCCMPFieldBridge2(manager, entity, cmpFieldMetaData, -1));
             }
@@ -198,7 +168,7 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
             for (int i = 0; i < pkFields.length; ++i) {
                 Object fkField = pkFieldsToFKFields.get(pkFields[i]);
                 if (fkField == null) {
-                    throw new RuntimeException("Primary key " + pkFields[i].getFieldName() + " is not mapped.");
+                    throw CmpMessages.MESSAGES.primaryKeyNotMapped(pkFields[i].getFieldName());
                 }
                 keyFieldsList.add(fkField);
             }
@@ -282,29 +252,29 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
     }
 
     public String getTableName() {
-        throw new UnsupportedOperationException();
+        throw CmpMessages.MESSAGES.methodNotSupported();
     }
 
     // JDBCFieldBridge implementation
 
     public JDBCType getJDBCType() {
-        throw new UnsupportedOperationException();
+        throw CmpMessages.MESSAGES.methodNotSupported();
     }
 
     public boolean isPrimaryKeyMember() {
-        throw new UnsupportedOperationException();
+        throw CmpMessages.MESSAGES.methodNotSupported();
     }
 
     public boolean isReadOnly() {
-        throw new UnsupportedOperationException();
+        throw CmpMessages.MESSAGES.methodNotSupported();
     }
 
     public boolean isReadTimedOut(CmpEntityBeanContext ctx) {
-        throw new UnsupportedOperationException();
+        throw CmpMessages.MESSAGES.methodNotSupported();
     }
 
     public boolean isLoaded(CmpEntityBeanContext ctx) {
-        throw new UnsupportedOperationException();
+        throw CmpMessages.MESSAGES.methodNotSupported();
     }
 
     public void initInstance(CmpEntityBeanContext ctx) {
@@ -312,27 +282,27 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
     }
 
     public void resetPersistenceContext(CmpEntityBeanContext ctx) {
-        throw new UnsupportedOperationException();
+        throw CmpMessages.MESSAGES.methodNotSupported();
     }
 
     public int setInstanceParameters(PreparedStatement ps, int parameterIndex, CmpEntityBeanContext ctx) {
-        throw new UnsupportedOperationException();
+        throw CmpMessages.MESSAGES.methodNotSupported();
     }
 
     public Object getInstanceValue(CmpEntityBeanContext ctx) {
-        throw new UnsupportedOperationException();
+        throw CmpMessages.MESSAGES.methodNotSupported();
     }
 
     public void setInstanceValue(CmpEntityBeanContext ctx, Object value) {
-        throw new UnsupportedOperationException();
+        throw CmpMessages.MESSAGES.methodNotSupported();
     }
 
     public int loadInstanceResults(ResultSet rs, int parameterIndex, CmpEntityBeanContext ctx) {
-        throw new UnsupportedOperationException();
+        throw CmpMessages.MESSAGES.methodNotSupported();
     }
 
     public int loadArgumentResults(ResultSet rs, int parameterIndex, Object[] argumentRef) {
-        throw new UnsupportedOperationException();
+        throw CmpMessages.MESSAGES.methodNotSupported();
     }
 
     public boolean isDirty(CmpEntityBeanContext ctx) {
@@ -340,7 +310,7 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
     }
 
     public void setClean(CmpEntityBeanContext ctx) {
-        throw new UnsupportedOperationException();
+        throw CmpMessages.MESSAGES.methodNotSupported();
     }
 
     public boolean isCMPField() {
@@ -490,18 +460,18 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
 
     private Object getPrimaryKey(Object o) {
         if (o == null) {
-            throw new IllegalArgumentException("This implementation does not support null members.");
+            throw CmpMessages.MESSAGES.nullNumbersNotSupported();
         }
 
         if (!relatedEntity.getLocalInterface().isInstance(o)) {
-            throw new IllegalArgumentException("Argument must be of type " + entity.getLocalInterface().getName());
+            throw CmpMessages.MESSAGES.invalidArgumentType(entity.getLocalInterface().getName());
         }
 
         EJBLocalObject local = (EJBLocalObject) o;
         try {
             return local.getPrimaryKey();
         } catch (NoSuchObjectLocalException e) {
-            throw new IllegalArgumentException(e.getMessage());
+            throw new IllegalStateException(e);
         }
     }
 
@@ -598,15 +568,7 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
 
         public void addLoadedPk(Object pk) {
             if (loaded) {
-                throw new IllegalStateException(entity.getEntityName()
-                        +
-                        "."
-                        +
-                        getFieldName()
-                        +
-                        " single-valued CMR field is already loaded. Check the database for consistency. "
-                        + " current value=" + value + ", loaded value=" + pk
-                );
+                throw CmpMessages.MESSAGES.singleValuedCmrFieldAlreadyLoaded(entity.getEntityName(), getFieldName(), value, pk);
             }
 
             changeValue(pk);
@@ -679,9 +641,7 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
 
         public void setValue(CmpEntityBeanContext ctx, Object value) {
             if (value == null) {
-                throw new IllegalArgumentException("Can't set collection-valued CMR field to null: " +
-                        entity.getEntityName() + "." + getFieldName()
-                );
+                throw CmpMessages.MESSAGES.cannotSetCmrCollectionToNull(entity.getEntityName(), getFieldName());
             }
 
             destroyExistingRelationships(ctx);
@@ -775,15 +735,7 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
 
         public void addLoadedPk(Object pk) {
             if (loaded) {
-                throw new IllegalStateException(entity.getEntityName()
-                        +
-                        "."
-                        +
-                        getFieldName()
-                        +
-                        " collection-valued CMR field is already loaded. Check the database for consistency. "
-                        + " current value=" + value + ", loaded value=" + pk
-                );
+                throw CmpMessages.MESSAGES.collectionValuedCmrFieldAlreadyLoaded(entity.getEntityName(), getFieldName(), value, pk);
             }
 
             if (pk != null) {
@@ -845,7 +797,7 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
         private void loadOnlyFromCache(CmpEntityBeanContext ctx) {
             PersistentContext pctx = (PersistentContext) ctx.getPersistenceContext();
             if (pctx == null) {
-                throw new EJBException("Persistence context is not available! Make sure the CMR collection is accessed in the transaction it was obtained.");
+                throw CmpMessages.MESSAGES.persistenceContextNotAvailable();
             }
             pctx.loadCachedRelations(cmrIndex, this);
         }
@@ -1018,16 +970,7 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
                     state.addLoadedPk(value);
                 }
             } catch (SQLException e) {
-                log.error("Failed to load related role: ejb-name="
-                        +
-                        entity.getEntityName() +
-                        ", cmr-field=" + getFieldName() + ": " + e.getMessage(), e
-                );
-                throw new EJBException("Failed to load related role: ejb-name="
-                        +
-                        entity.getEntityName() +
-                        ", cmr-field=" + getFieldName() + ": " + e.getMessage(), e
-                );
+                throw CmpMessages.MESSAGES.failedToLoadRelatedRole(entity.getEntityName(), getFieldName(), e);
             } finally {
                 JDBCUtil.safeClose(rs);
                 JDBCUtil.safeClose(ps);
@@ -1103,16 +1046,7 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
                     state.addLoadedPk(value);
                 }
             } catch (SQLException e) {
-                log.error("Failed to load related role: ejb-name="
-                        +
-                        entity.getEntityName() +
-                        ", cmr-field=" + getFieldName() + ": " + e.getMessage(), e
-                );
-                throw new EJBException("Failed to load related role: ejb-name="
-                        +
-                        entity.getEntityName() +
-                        ", cmr-field=" + getFieldName() + ": " + e.getMessage(), e
-                );
+                throw CmpMessages.MESSAGES.failedToLoadRelatedRole(entity.getEntityName(), getFieldName(), e);
             } finally {
                 JDBCUtil.safeClose(rs);
                 JDBCUtil.safeClose(ps);
@@ -1299,7 +1233,7 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
                     try {
                         idIter.remove();
                     } catch (ConcurrentModificationException e) {
-                        throw new IllegalStateException(e.getMessage());
+                        throw new IllegalStateException(e);
                     }
 
                     removeById(curId);
@@ -1309,7 +1243,7 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
                     try {
                         return idIter.hasNext();
                     } catch (ConcurrentModificationException e) {
-                        throw new IllegalStateException(e.getMessage());
+                        throw new IllegalStateException(e);
                     }
                 }
 
@@ -1317,7 +1251,7 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
                     try {
                         curId = idIter.next();
                     } catch (ConcurrentModificationException e) {
-                        throw new IllegalStateException(e.getMessage());
+                        throw new IllegalStateException(e);
                     }
 
                     return relatedComponent.getEJBLocalObject(curId);

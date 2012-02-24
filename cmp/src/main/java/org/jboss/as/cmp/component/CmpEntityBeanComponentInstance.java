@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.ejb.EJBException;
 import javax.ejb.EntityBean;
 
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.as.cmp.jdbc.JDBCEntityPersistenceStore;
 import org.jboss.as.cmp.jdbc.bridge.CMRMessage;
@@ -134,7 +135,7 @@ public class CmpEntityBeanComponentInstance extends EntityBeanComponentInstance 
         } catch (EJBException e) {
             throw e;
         } catch (Exception e) {
-            throw new EJBException("Failed to invoke relationship request", e);
+            throw CmpMessages.MESSAGES.failedToInvokeRelationshipRequest(e);
         }
     }
 }

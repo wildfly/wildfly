@@ -27,7 +27,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.ejb.CreateException;
-import javax.ejb.DuplicateKeyException;
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.as.cmp.jdbc.JDBCUtil;
 import org.jboss.as.cmp.jdbc.bridge.JDBCFieldBridge;
@@ -57,7 +57,7 @@ public abstract class AbstractCreateCommand
 
         final JDBCFieldBridge[] pkFields = entityBridge.getPrimaryKeyFields();
         if (pkFields.length > 1) {
-            throw new RuntimeException("This entity-command cannot be used with composite primary keys!");
+            throw CmpMessages.MESSAGES.entityCommandCanNotBeUsedWithCompositePk();
         }
 
         this.pkField = (JDBCCMPFieldBridge2) pkFields[0];
@@ -81,16 +81,14 @@ public abstract class AbstractCreateCommand
                 rs = ps.executeQuery();
 
                 if (!rs.next()) {
-                    throw new CreateException("pk-sql " + pkSql + " returned no results!");
+                    throw CmpMessages.MESSAGES.pkSqlReturnedNoResults(pkSql);
                 }
 
                 pk = pkField.loadArgumentResults(rs, 1);
                 pctx.setFieldValue(pkField.getRowIndex(), pk);
                 pk = entityBridge.extractPrimaryKeyFromInstance(ctx);
             } catch (SQLException e) {
-                log.error("Failed to execute pk sql. error code: " + e.getErrorCode() + ", sql state: " + e.getSQLState(), e);
-                throw new CreateException("Failed to execute pk sql: " + e.getMessage() +
-                        ", error code: " + e.getErrorCode() + ", sql state: " + e.getSQLState());
+                throw CmpMessages.MESSAGES.failedToExecutePkSql(e);
             } finally {
                 JDBCUtil.safeClose(rs);
                 JDBCUtil.safeClose(ps);
@@ -98,8 +96,7 @@ public abstract class AbstractCreateCommand
             }
 
             if (pk == null) {
-                log.error("Primary key for created instance is null.");
-                throw new CreateException("Primary key for created instance is null.");
+                throw CmpMessages.MESSAGES.pkIsNullForCreatedInstance();
             }
 
             pctx.setPk(pk);
@@ -109,13 +106,9 @@ public abstract class AbstractCreateCommand
                 pctx.flush();
             } catch (SQLException e) {
                 if ("23000".equals(e.getSQLState())) {
-                    throw new DuplicateKeyException("Unique key violation or invalid foreign key value: pk=" + ctx.getPrimaryKey());
+                    throw CmpMessages.MESSAGES.uniqueKeyViolation(ctx.getPrimaryKey());
                 } else {
-                    throw new CreateException("Failed to create instance: pk=" +
-                            ctx.getPrimaryKey() +
-                            ", state=" +
-                            e.getSQLState() +
-                            ", msg=" + e.getMessage());
+                    throw CmpMessages.MESSAGES.failedToCreateInstance(ctx.getPrimaryKey(), e);
                 }
             }
             pk = ctx.getPrimaryKey();

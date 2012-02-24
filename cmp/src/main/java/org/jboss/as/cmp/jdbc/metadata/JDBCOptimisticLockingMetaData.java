@@ -21,6 +21,8 @@
  */
 package org.jboss.as.cmp.jdbc.metadata;
 
+import java.util.Date;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.jdbc.metadata.parser.ParsedCmpField;
 import org.jboss.as.cmp.jdbc.metadata.parser.ParsedOptimisticLocking;
 
@@ -82,9 +84,7 @@ public final class JDBCOptimisticLockingMetaData {
             }
             case VERSION_COLUMN_STRATEGY: {
                 if (optimisticLocking.getLockingField().getFieldType() != null)
-                    throw new RuntimeException(
-                            "field-type is not allowed for version column. It is implicitly set to java.lang.Long."
-                    );
+                    throw MESSAGES.fieldTypeNotAllowedForColumn("version", Long.class.getName());
                 lockingField = constructLockingField(entity, optimisticLocking.getLockingField());
                 groupName = null;
                 keyGeneratorFactory = null;
@@ -92,9 +92,7 @@ public final class JDBCOptimisticLockingMetaData {
             }
             case TIMESTAMP_COLUMN_STRATEGY: {
                 if (optimisticLocking.getLockingField().getFieldType() != null)
-                    throw new RuntimeException(
-                            "field-type is not allowed for timestamp column. It is implicitly set to java.util.Date."
-                    );
+                    throw MESSAGES.fieldTypeNotAllowedForColumn("timestamp", Date.class.getName());
                 lockingField = constructLockingField(entity, optimisticLocking.getLockingField());
                 groupName = null;
                 keyGeneratorFactory = null;
@@ -107,7 +105,7 @@ public final class JDBCOptimisticLockingMetaData {
                 break;
             }
             default: {
-                throw new RuntimeException("Unexpected error: entity " + entity.getName() + " has unknown/incorrect optimistic locking configuration. -- " + lockingStrategy);
+                throw MESSAGES.unknownLockingStrategy(entity.getName(), entity.getName());
             }
         }
     }

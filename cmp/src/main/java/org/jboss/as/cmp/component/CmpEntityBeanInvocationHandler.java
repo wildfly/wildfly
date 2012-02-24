@@ -25,6 +25,7 @@ package org.jboss.as.cmp.component;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import javax.ejb.EJBException;
+import org.jboss.as.cmp.CmpMessages;
 
 /**
  * @author John Bailey
@@ -37,7 +38,7 @@ public class CmpEntityBeanInvocationHandler implements InvocationHandler {
         try {
             SET_COMPONENT_INSTANCE = CmpProxy.class.getMethod("setComponentInstance", CmpEntityBeanComponentInstance.class);
         } catch (NoSuchMethodException ignored) {
-            throw new RuntimeException("Missing method on CmpProxy");
+            throw CmpMessages.MESSAGES.missingSetComponentInstanceMethodOnCmpProxy();
         }
     }
 
@@ -55,7 +56,7 @@ public class CmpEntityBeanInvocationHandler implements InvocationHandler {
         }
 
         if (componentInstance == null) {
-            throw new EJBException("No component instance set");
+            throw CmpMessages.MESSAGES.noComponentInstanceSetOnProxy();
         }
         return component.getStoreManager().getInvocationHandler().invoke(componentInstance, object, method, objects);
     }

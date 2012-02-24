@@ -32,6 +32,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 import javax.ejb.Handle;
+import org.jboss.as.cmp.CmpMessages;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.logging.Logger;
 
 /**
@@ -82,7 +84,7 @@ public interface JDBCResultSetReader {
                             content = buf.toString();
                         }
                     } catch (IOException e) {
-                        throw new SQLException("Failed to read CLOB character stream: " + e.getMessage());
+                        throw MESSAGES.failedToReadClob(e);
                     } finally {
                         JDBCUtil.safeClose(reader);
                     }
@@ -439,15 +441,14 @@ public interface JDBCResultSetReader {
                     interfaces = Arrays.asList(valueClass.getInterfaces());
                     cl = valueClass.getClassLoader();
                 }
-                throw new SQLException("Got a " + className + "[cl=" + cl +
-                        " + interfaces=" + interfaces + ", value=" + value + "] while looking for a " +
-                        destination.getName() + "[cl=" + destination.getClassLoader() + "]");
+                throw CmpMessages.MESSAGES.foundWrongClass(className, cl, interfaces, value, destination.getName(), destination.getClassLoader());
+
             } catch (RemoteException e) {
-                throw new SQLException("Unable to load EJBObject back from Handle: " + e);
+                throw MESSAGES.unableToLoadFromHandle(e);
             } catch (IOException e) {
-                throw new SQLException("Unable to load to deserialize result: " + e);
+                throw MESSAGES.unableToDeserializeResult(e);
             } catch (ClassNotFoundException e) {
-                throw new SQLException("Unable to load to deserialize result: " + e);
+                throw MESSAGES.unableToDeserializeResult(e);
             }
         }
     }

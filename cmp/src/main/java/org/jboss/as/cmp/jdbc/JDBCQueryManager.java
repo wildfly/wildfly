@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import javax.ejb.FinderException;
+import org.jboss.as.cmp.CmpMessages;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.ejbql.Catalog;
 import org.jboss.as.cmp.jdbc.bridge.JDBCEntityBridge;
 import org.jboss.as.cmp.jdbc.metadata.JDBCAutomaticQueryMetaData;
@@ -62,22 +64,22 @@ public final class JDBCQueryManager {
         this.manager = manager;
     }
 
-    public static QLCompiler getInstance(Class impl, Catalog catalog) {
+    public static QLCompiler getInstance(Class impl, Catalog catalog) throws RuntimeException {
         if (impl == null) {
-            throw new RuntimeException("ql-compiler is not specified.");
+            throw MESSAGES.qlCompilerNotSpecified();
         }
 
         final Constructor constructor;
         try {
             constructor = impl.getConstructor(new Class[]{Catalog.class});
         } catch (NoSuchMethodException e) {
-            throw new RuntimeException("Compiler class does not have a constructor which takes " + Catalog.class.getName());
+            throw MESSAGES.compilerConstructorMissingArg(Catalog.class.getName());
         }
 
         try {
             return (QLCompiler) constructor.newInstance(new Object[]{catalog});
         } catch (Exception e) {
-            throw new RuntimeException("Failed to create an instance of " + impl.getName() + ": " + e.getMessage(), e);
+            throw MESSAGES.failedToCreateCompilerInstance(impl.getName(), e);
         }
     }
 
@@ -86,7 +88,7 @@ public final class JDBCQueryManager {
         JDBCQueryCommand queryCommand = (JDBCQueryCommand) knownQueries.get(queryMethod);
 
         if (queryCommand == null) {
-            throw new FinderException("Unknown query: " + queryMethod);
+            throw MESSAGES.unknownQueryMethod(queryMethod);
         }
         return queryCommand;
     }
@@ -127,7 +129,7 @@ public final class JDBCQueryManager {
                 if (log.isDebugEnabled())
                     log.debug("Added findByPrimaryKey query command for home interface");
             } catch (NoSuchMethodException e) {
-                throw new RuntimeException("Home interface does not have a findByPrimaryKey method");
+                throw MESSAGES.homeInterfaceNoPKMethod(homeClass);
             }
         }
 
@@ -138,9 +140,7 @@ public final class JDBCQueryManager {
                 // try to get the finder method on the local home interface
                 method = localHomeClass.getMethod(FIND_BY_PK, new Class[]{entity.getPrimaryKeyClass()});
             } catch (NoSuchMethodException e) {
-                throw new RuntimeException("Local home interface does " +
-                        "not have the method findByPrimaryKey(" +
-                        entity.getPrimaryKeyClass().getName() + ")");
+                throw CmpMessages.MESSAGES.localHomeMissingFindByPrimaryKey(entity.getPrimaryKeyClass().getName());
             }
 
             // got it add it to known finders

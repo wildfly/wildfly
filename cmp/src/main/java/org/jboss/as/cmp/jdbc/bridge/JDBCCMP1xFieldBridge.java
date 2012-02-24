@@ -25,6 +25,8 @@ import java.lang.reflect.Field;
 
 import javax.ejb.EJBException;
 
+import org.jboss.as.cmp.CmpMessages;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.as.cmp.jdbc.JDBCContext;
 import org.jboss.as.cmp.jdbc.JDBCStoreManager;
@@ -59,23 +61,21 @@ public class JDBCCMP1xFieldBridge extends JDBCAbstractCMPFieldBridge {
             field = manager.getMetaData().getEntityClass().getField(getFieldName());
         } catch (NoSuchFieldException e) {
             // Non recoverable internal exception
-            throw new RuntimeException("No field named '" + getFieldName() +
-                    "' found in entity class.");
+            throw CmpMessages.MESSAGES.fieldNotFound(getFieldName(), manager.getMetaData().getName());
         }
     }
 
     public Object getInstanceValue(CmpEntityBeanContext ctx) {
         FieldState fieldState = getFieldState(ctx);
         if (!fieldState.isLoaded()) {
-            throw new EJBException("CMP 1.1 field not loaded: " + getFieldName());
+            throw MESSAGES.cmpFieldNotLoaded(fieldName);
         }
 
         try {
             return field.get(ctx.getInstance());
         } catch (Exception e) {
             // Non recoverable internal exception
-            throw new EJBException("Internal error getting instance field " +
-                    getFieldName(), e);
+            throw CmpMessages.MESSAGES.errorGettingInstanceField(getFieldName(), e);
         }
     }
 
@@ -87,13 +87,12 @@ public class JDBCCMP1xFieldBridge extends JDBCAbstractCMPFieldBridge {
             fieldState.setCheckDirty();
         } catch (Exception e) {
             // Non recoverable internal exception
-            throw new EJBException("Internal error setting instance field " +
-                    getFieldName(), e);
+            throw CmpMessages.MESSAGES.errorSettingInstanceField(getFieldName(), e);
         }
     }
 
     public Object getLockedValue(CmpEntityBeanContext ctx) {
-        throw new UnsupportedOperationException("Optimistic locking is not supported in CMP1.1.");
+        throw MESSAGES.optimisticLockingNotSupported();
     }
 
     public void lockInstanceValue(CmpEntityBeanContext ctx) {

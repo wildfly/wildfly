@@ -31,6 +31,9 @@ import java.util.Vector;
 import java.util.zip.CRC32;
 import javax.sql.DataSource;
 
+import org.jboss.as.cmp.CmpLogger;
+import org.jboss.as.cmp.CmpMessages;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.jdbc.bridge.JDBCAbstractCMRFieldBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCAbstractEntityBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCEntityBridge;
@@ -182,7 +185,7 @@ public final class SQLUtil {
         } catch (SQLException e) {
             // This should not happen. A J2EE compatiable JDBC driver is
             // required fully support metadata.
-            throw new RuntimeException("Error while fixing table name", e);
+            throw MESSAGES.errorFixingTableName(e);
         } finally {
             JDBCUtil.safeClose(con);
         }
@@ -757,10 +760,7 @@ public final class SQLUtil {
                                              String child,
                                              StringBuffer buf) {
         if (pkFields.length != fkFields.length) {
-            throw new IllegalArgumentException(
-                    "Error createing theta join clause:" +
-                            " pkField.size()=" + pkFields.length +
-                            " fkField.size()=" + fkFields.length);
+            throw CmpMessages.MESSAGES.errorCreatingJoin(pkFields.length, fkFields.length);
         }
 
         boolean and = false;
@@ -797,7 +797,7 @@ public final class SQLUtil {
         String[] pkColumnNames = pkType.getColumnNames();
         String[] fkColumnNames = fkType.getColumnNames();
         if (pkColumnNames.length != fkColumnNames.length) {
-            throw new IllegalArgumentException("PK and FK have different number of columns");
+            throw MESSAGES.pkAndFkWrongNumberOfColumns();
         }
 
         buf.append(parent).append(pkColumnNames[0]).append('=').append(child).append(fkColumnNames[0]);
@@ -922,7 +922,7 @@ public final class SQLUtil {
             String quote = dmd.getIdentifierQuoteString();
             if (tableName.startsWith(quote)) {
                 if (tableName.endsWith(quote) == false) {
-                    throw new RuntimeException("Mismatched quote in table name: " + tableName);
+                    throw MESSAGES.mismatchedQuoteTableName(tableName);
                 }
                 int quoteLength = quote.length();
                 tableName = tableName.substring(quoteLength, tableName.length() - quoteLength);
@@ -950,7 +950,7 @@ public final class SQLUtil {
         } catch (SQLException e) {
             // This should not happen. A J2EE compatiable JDBC driver is
             // required fully support metadata.
-            throw new RuntimeException("Error while checking if table aleady exists " + tableName, e);
+            throw MESSAGES.errorCheckingIfTableExists(tableName, e);
         } finally {
             JDBCUtil.safeClose(rs);
             JDBCUtil.safeClose(con);
@@ -974,7 +974,7 @@ public final class SQLUtil {
             String quote = dmd.getIdentifierQuoteString();
             if (tableName.startsWith(quote)) {
                 if (tableName.endsWith(quote) == false) {
-                    throw new RuntimeException("Mismatched quote in table name: " + tableName);
+                    throw MESSAGES.mismatchedQuoteTableName(tableName);
                 }
                 int quoteLength = quote.length();
                 tableName = tableName.substring(quoteLength, tableName.length() - quoteLength);
@@ -1009,7 +1009,7 @@ public final class SQLUtil {
         } catch (SQLException e) {
             // This should not happen. A J2EE compatiable JDBC driver is
             // required fully support metadata.
-            throw new RuntimeException("Error while geting column names", e);
+            throw MESSAGES.errorGettingColumnNames(e);
         } finally {
             JDBCUtil.safeClose(rs);
             JDBCUtil.safeClose(con);
@@ -1056,7 +1056,7 @@ public final class SQLUtil {
         } catch (SQLException e) {
             // This should not happen. A J2EE compatiable JDBC driver is
             // required fully support metadata.
-            throw new RuntimeException("Error while geting column names", e);
+            throw MESSAGES.errorGettingColumnNames(e);
         } finally {
             JDBCUtil.safeClose(rs);
             JDBCUtil.safeClose(con);
@@ -1070,13 +1070,13 @@ public final class SQLUtil {
             String quote = con.getMetaData().getIdentifierQuoteString();
             if (tableName.startsWith(quote)) {
                 if (tableName.endsWith(quote) == false) {
-                    throw new RuntimeException("Mismatched quote in table name: " + tableName);
+                    throw MESSAGES.mismatchedQuoteTableName(tableName);
                 }
                 int quoteLength = quote.length();
                 tableName = tableName.substring(quoteLength, tableName.length() - quoteLength);
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Failed to get datasource connection");
+            throw MESSAGES.failedToGetDataSourceConnection(e);
         } finally {
             JDBCUtil.safeClose(con);
         }
@@ -1110,9 +1110,9 @@ public final class SQLUtil {
                 JDBCUtil.safeClose(con);
             }
         } catch (Exception e) {
-            throw new RuntimeException("Error while droping table " + tableName, e);
+            throw MESSAGES.errorDroppingTable(tableName, e);
         }
-        log.info("Dropped table " + tableName + " succesfuly");
+        CmpLogger.ROOT_LOGGER.droppedTable(tableName);
     }
 
     /**

@@ -23,6 +23,7 @@ package org.jboss.as.cmp.jdbc.metadata;
 
 import java.util.ArrayList;
 import java.util.List;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.jdbc.metadata.parser.ParsedEntity;
 import org.jboss.as.cmp.jdbc.metadata.parser.ParsedRelationship;
 import org.jboss.as.cmp.jdbc.metadata.parser.ParsedRelationshipRole;
@@ -211,15 +212,12 @@ public final class JDBCRelationMetaData {
 
         // at least one side of a fk relation must have keys
         if (isForeignKeyMappingStyle() && left.getKeyFields().isEmpty() && right.getKeyFields().isEmpty()) {
-            throw new RuntimeException("Atleast one role of a foreign-key "
-                    + "mapped relationship must have key fields " + "(or <primkey-field> is missing from ejb-jar.xml): "
-                    + "ejb-relation-name=" + relationName);
+            throw MESSAGES.atLeastOneRelationshipRoleMustHaveField(relationName);
         }
 
         // both sides of a table relation must have keys
         if (isTableMappingStyle() && (left.getKeyFields().isEmpty() || right.getKeyFields().isEmpty())) {
-            throw new RuntimeException("Both roles of a relation-table " + "mapped relationship must have key fields: "
-                    + "ejb-relation-name=" + relationName);
+            throw MESSAGES.bothRolesMustHaveFields(relationName);
         }
     }
 
@@ -255,7 +253,7 @@ public final class JDBCRelationMetaData {
         if (defaultEntity.getDataSourceMappingName() != null) {
             datasourceMapping = jdbcApplication.getTypeMappingByName(defaultEntity.getDataSourceMappingName());
             if (datasourceMapping == null) {
-                throw new RuntimeException("Error in jbosscmp-jdbc.xml : datasource-mapping " + defaultEntity.getDataSourceMappingName() + " not found");
+                throw MESSAGES.datasourceMappingNotFound(defaultEntity.getDataSourceMappingName());
             }
         } else if (defaultValues.getTypeMapping() != null) {
             datasourceMapping = defaultValues.getTypeMapping();
@@ -362,8 +360,7 @@ public final class JDBCRelationMetaData {
         if (parsedRelationship.getDatasourceMapping() != null) {
             datasourceMapping = jdbcApplication.getTypeMappingByName(parsedRelationship.getDatasourceMapping());
             if (datasourceMapping == null) {
-                throw new RuntimeException("Error in jbosscmp-jdbc.xml : " + "datasource-mapping "
-                        + parsedRelationship.getDatasourceMapping() + " not found");
+                throw MESSAGES.datasourceMappingNotFound(parsedRelationship.getDatasourceMapping());
             }
         } else if (defaultValues.getTypeMapping() != null) {
             datasourceMapping = defaultValues.getTypeMapping();
@@ -454,15 +451,12 @@ public final class JDBCRelationMetaData {
 
         // at least one side of a fk relation must have keys
         if (isForeignKeyMappingStyle() && left.getKeyFields().isEmpty() && right.getKeyFields().isEmpty()) {
-            throw new RuntimeException("Atleast one role of a foreign-key "
-                    + "mapped relationship must have key fields " + "(or <primkey-field> is missing from ejb-jar.xml): "
-                    + "ejb-relation-name=" + relationName);
+            throw MESSAGES.atLeastOneRelationshipRoleMustHaveField(relationName);
         }
 
         // both sides of a table relation must have keys
         if (isTableMappingStyle() && (left.getKeyFields().isEmpty() || right.getKeyFields().isEmpty())) {
-            throw new RuntimeException("Both roles of a relation-table " + "mapped relationship must have key fields: "
-                    + "ejb-relation-name=" + relationName);
+            throw MESSAGES.bothRolesMustHaveFields(relationName);
         }
     }
 
@@ -470,7 +464,7 @@ public final class JDBCRelationMetaData {
         final String roleName = defaultRole.getRelationshipRoleName();
 
         if (roleName == null) {
-            throw new IllegalArgumentException("No ejb-relationship-role-name element found");
+            throw MESSAGES.noEjbRelationRoleNameElement();
         }
 
         for (ParsedRelationshipRole role : roles) {
@@ -478,7 +472,7 @@ public final class JDBCRelationMetaData {
                 return role;
             }
         }
-        throw new IllegalArgumentException("An ejb-relationship-role element was " + "not found for role '" + roleName + "'");
+        throw MESSAGES.noEjbRelationshipRole(roleName);
     }
 
     /**
@@ -516,7 +510,7 @@ public final class JDBCRelationMetaData {
         } else if (right == role) {
             return left;
         } else {
-            throw new IllegalArgumentException("Specified role is not the left " + "or right role. role=" + role);
+            throw MESSAGES.roleNotLeftOrRightRole(role.getRelationshipRoleName());
         }
     }
 

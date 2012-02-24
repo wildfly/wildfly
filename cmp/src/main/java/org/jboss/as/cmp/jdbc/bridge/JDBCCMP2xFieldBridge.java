@@ -22,7 +22,8 @@
 package org.jboss.as.cmp.jdbc.bridge;
 
 import java.lang.reflect.Field;
-import javax.ejb.EJBException;
+import org.jboss.as.cmp.CmpMessages;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.jdbc.CMPFieldStateFactory;
 import org.jboss.as.cmp.jdbc.JDBCContext;
 import org.jboss.as.cmp.jdbc.JDBCStoreManager;
@@ -182,13 +183,8 @@ public class JDBCCMP2xFieldBridge extends JDBCAbstractCMPFieldBridge {
             // changes the primary key then we are in an illegal state.
             if (value != null) {
                 if (fieldState.isLoaded() && fieldState.isValueChanged(value)) {
-                    throw new IllegalStateException(
-                            "New value [" + value + "] of a foreign key field "
-                                    + getFieldName()
-                                    + " changed the value of a primary key field "
-                                    + cmpFieldIAmMappedTo.getFieldName()
-                                    + "[" + fieldState.value + "]"
-                    );
+                    throw CmpMessages.MESSAGES.foreignKeyChangedPrimaryKey(value, getFieldName(), cmpFieldIAmMappedTo.getFieldName(), fieldState.value);
+
                 } else {
                     fieldState.setValue(value);
                 }
@@ -279,7 +275,7 @@ public class JDBCCMP2xFieldBridge extends JDBCAbstractCMPFieldBridge {
         if (!fieldState.isLoaded()) {
             manager.loadField(this, ctx);
             if (!fieldState.isLoaded())
-                throw new EJBException("Could not load field value: " + getFieldName());
+                throw MESSAGES.couldNotLoadField(getFieldName());
         }
         return fieldState;
     }

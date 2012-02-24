@@ -21,6 +21,7 @@
  */
 package org.jboss.as.cmp.jdbc2;
 
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.jdbc2.bridge.JDBCEntityBridge2;
 import org.jboss.as.cmp.jdbc2.bridge.JDBCCMPFieldBridge2;
 import org.jboss.as.cmp.jdbc.metadata.JDBCDeclaredQueryMetaData;
@@ -58,7 +59,7 @@ public class DeclaredSQLQueryCommand extends AbstractQueryCommand {
             Catalog catalog = entity.getManager().getCatalog();
             JDBCEntityBridge2 otherEntity = (JDBCEntityBridge2) catalog.getEntityByEJBName(entityName);
             if (otherEntity == null) {
-                throw new RuntimeException("Unknown entity: " + entityName);
+                throw MESSAGES.unknownEntity(entityName);
             }
             this.entity = otherEntity;
         } else {
@@ -71,7 +72,7 @@ public class DeclaredSQLQueryCommand extends AbstractQueryCommand {
         } else {
             selectedField = (JDBCCMPFieldBridge2) entity.getFieldByName(fieldName);
             if (selectedField == null) {
-                throw new RuntimeException("Unknown cmp field: " + fieldName);
+                throw MESSAGES.unknownCmpField(fieldName);
             }
 
             setFieldReader(selectedField);
@@ -181,7 +182,7 @@ public class DeclaredSQLQueryCommand extends AbstractQueryCommand {
                         params.add(parameter);
 
                         if (!tokens.nextToken().equals("}")) {
-                            throw new RuntimeException("Invalid parameter - missing closing '}' : " + sql);
+                            throw MESSAGES.missingClosingCurlyBrace(sql);
                         }
                     } else {
                         // ok we don't have a parameter, we have a function

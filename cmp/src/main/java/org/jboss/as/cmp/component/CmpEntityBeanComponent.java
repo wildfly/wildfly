@@ -34,6 +34,7 @@ import javax.ejb.EJBException;
 import javax.ejb.EJBLocalHome;
 import javax.transaction.Transaction;
 
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.TransactionEntityMap;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.as.cmp.jdbc.JDBCEntityPersistenceStore;
@@ -84,12 +85,12 @@ public class CmpEntityBeanComponent extends EntityBeanComponent {
     public void start() {
         super.start();
         if (storeManager == null || storeManager.getValue() == null) {
-            throw new IllegalStateException("Store manager not set");
+            throw CmpMessages.MESSAGES.notStoreMangerForComponent(getComponentName());
         }
     }
 
     public Collection<Object> getEntityLocalCollection(List<Object> idList) {
-        return null;  // TODO: jeb - This should return proxy instances to local entities
+        return null;
     }
 
     public void synchronizeEntitiesWithinTransaction(Transaction transaction) {
@@ -166,7 +167,7 @@ public class CmpEntityBeanComponent extends EntityBeanComponent {
             throw (EJBException) e;
         } else {
             // Wrap runtime exceptions
-            throw new EJBException((Exception) e);
+            throw new EJBException(e);
         }
     }
 

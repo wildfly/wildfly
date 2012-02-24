@@ -22,6 +22,7 @@
 package org.jboss.as.cmp.jdbc;
 
 import java.sql.Types;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 
 
 /**
@@ -91,14 +92,14 @@ public final class JDBCTypeSimple implements JDBCType {
 
     public Object getColumnValue(int index, Object value) {
         if (index != 0) {
-            throw new IndexOutOfBoundsException("JDBCSimpleType does not support an index>0.");
+            throw MESSAGES.simpleTypeRequiresOneIndex();
         }
         return mapper == null ? value : mapper.toColumnValue(value);
     }
 
     public Object setColumnValue(int index, Object value, Object columnValue) {
         if (index != 0) {
-            throw new IndexOutOfBoundsException("JDBCSimpleType does not support an index>0.");
+            throw MESSAGES.simpleTypeRequiresOneIndex();
         }
         return mapper == null ? columnValue : mapper.toFieldValue(columnValue);
     }

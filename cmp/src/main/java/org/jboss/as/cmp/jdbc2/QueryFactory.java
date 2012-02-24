@@ -22,6 +22,7 @@
 package org.jboss.as.cmp.jdbc2;
 
 
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.jdbc2.bridge.JDBCEntityBridge2;
 import org.jboss.as.cmp.jdbc.metadata.JDBCQueryMetaData;
 import org.jboss.as.cmp.jdbc.metadata.JDBCJBossQLQueryMetaData;
@@ -50,7 +51,7 @@ public class QueryFactory {
     public QueryCommand getQueryCommand(Method queryMethod) throws FinderException {
         QueryCommand queryCommand = (QueryCommand) queriesByMethod.get(queryMethod);
         if (queryCommand == null) {
-            throw new FinderException("Unknown query method: " + queryMethod);
+            throw CmpMessages.MESSAGES.unknownQueryMethod(queryMethod);
         }
         return queryCommand;
     }
@@ -62,8 +63,7 @@ public class QueryFactory {
             try {
                 findByPkMethod = home.getMethod("findByPrimaryKey", new Class[]{entity.getPrimaryKeyClass()});
             } catch (NoSuchMethodException e) {
-                throw new RuntimeException("Home interface " + home.getClass().getName() +
-                        " does not contain findByPrimaryKey(" + entity.getPrimaryKeyClass().getName() + ")");
+                throw CmpMessages.MESSAGES.homeInterfaceNoPKMethod(home.getClass().getName(), entity.getPrimaryKeyClass().getName());
             }
 
             FindByPrimaryKeyCommand findByPk = new FindByPrimaryKeyCommand(entity);
@@ -75,8 +75,7 @@ public class QueryFactory {
             try {
                 findByPkMethod = local.getMethod("findByPrimaryKey", new Class[]{entity.getPrimaryKeyClass()});
             } catch (NoSuchMethodException e) {
-                throw new RuntimeException("Local home interface " + local.getClass().getName() +
-                        " does not contain findByPrimaryKey(" + entity.getPrimaryKeyClass().getName() + ")");
+                throw CmpMessages.MESSAGES.localHomeInterfaceNoPKMethod(local.getClass().getName(), entity.getPrimaryKeyClass().getName());
             }
 
             FindByPrimaryKeyCommand findByPk = new FindByPrimaryKeyCommand(entity);
@@ -104,8 +103,7 @@ public class QueryFactory {
                     QueryCommand queryCommand = new DynamicQueryCommand(entity, (JDBCDynamicQLQueryMetaData) q);
                     queriesByMethod.put(q.getMethod(), queryCommand);
                 } else {
-                    throw new RuntimeException("Unsupported query metadata: method=" + q.getMethod().getName() +
-                            ", metadata=" + q);
+                    throw CmpMessages.MESSAGES.unsupportedQueryMetadata(q.getMethod().getName(), q);
                 }
             }
         }

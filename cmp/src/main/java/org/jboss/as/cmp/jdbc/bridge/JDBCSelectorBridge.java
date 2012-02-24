@@ -27,9 +27,10 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
-import javax.ejb.ObjectNotFoundException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
+import org.jboss.as.cmp.CmpMessages;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.bridge.SelectorBridge;
 import org.jboss.as.cmp.component.CmpEntityBeanComponent;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
@@ -108,24 +109,21 @@ public class JDBCSelectorBridge implements SelectorBridge {
         } catch (EJBException e) {
             throw e;
         } catch (Exception e) {
-            throw new EJBException("Error in " + getSelectorName(), e);
+            throw MESSAGES.errorInSelector(getSelectorName(), e);
         }
 
         if (!Collection.class.isAssignableFrom(getReturnType())) {
             // single object
             if (retVal.size() == 0) {
-                throw new ObjectNotFoundException();
+                throw MESSAGES.noValueForSingleValuedSelector();
             }
             if (retVal.size() > 1) {
-                throw new FinderException(getSelectorName() +
-                        " returned " + retVal.size() + " objects");
+                throw MESSAGES.singleValuedSelectorMultipleValues(getSelectorName(), retVal.size());
             }
 
             Object o = retVal.iterator().next();
             if (o == null && method.getReturnType().isPrimitive()) {
-                throw new FinderException(
-                        "Cannot return null as a value of primitive type " + method.getReturnType().getName()
-                );
+                throw MESSAGES.returnedNullFromPrimitive(method.getReturnType().getName());
             }
 
             return o;

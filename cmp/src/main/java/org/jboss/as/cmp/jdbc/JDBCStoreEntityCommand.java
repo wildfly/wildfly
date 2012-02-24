@@ -24,6 +24,7 @@ package org.jboss.as.cmp.jdbc;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import javax.ejb.EJBException;
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.as.cmp.jdbc.bridge.JDBCCMPFieldBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCEntityBridge;
@@ -135,7 +136,7 @@ public final class JDBCStoreEntityCommand {
         } catch (EJBException e) {
             throw e;
         } catch (Exception e) {
-            throw new EJBException("Store failed", e);
+            throw CmpMessages.MESSAGES.storeFailed(e);
         } finally {
             JDBCUtil.safeClose(ps);
             JDBCUtil.safeClose(con);
@@ -143,8 +144,7 @@ public final class JDBCStoreEntityCommand {
 
         // check results
         if (rowsAffected != 1) {
-            throw new EJBException("Update failed. Expected one affected row: rowsAffected=" +
-                    rowsAffected + ", id=" + ctx.getPrimaryKey());
+            throw CmpMessages.MESSAGES.updateFailedTooManyRowsAffected(rowsAffected, ctx.getPrimaryKey());
         }
 
         // Mark the updated fields as clean.

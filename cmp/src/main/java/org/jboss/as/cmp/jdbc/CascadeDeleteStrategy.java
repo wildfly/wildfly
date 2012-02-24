@@ -34,6 +34,7 @@ import java.util.Map;
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 import javax.ejb.RemoveException;
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.component.CmpEntityBeanComponent;
 import org.jboss.as.cmp.jdbc.bridge.JDBCCMRFieldBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCEntityBridge;
@@ -120,12 +121,7 @@ public abstract class CascadeDeleteStrategy {
             super(cmrField);
 
             if (cmrField.hasForeignKey()) {
-                throw new RuntimeException(
-                        "Batch cascade-delete was setup for the role with a foreign key: relationship "
-                                + cmrField.getMetaData().getRelationMetaData().getRelationName()
-                                + ", role " + cmrField.getMetaData().getRelationshipRoleName()
-                                + ". Batch cascade-delete supported only for roles with no foreign keys."
-                );
+                throw CmpMessages.MESSAGES.batchCascadeDeleteForRoleWithFk(cmrField.getMetaData().getRelationMetaData().getRelationName(), cmrField.getMetaData().getRelationshipRoleName());
             }
 
             StringBuffer buf = new StringBuffer(100);
@@ -227,8 +223,7 @@ public abstract class CascadeDeleteStrategy {
             // execute statement
             rowsAffected = ps.executeUpdate();
         } catch (Exception e) {
-            log.error("Could not remove " + key, e);
-            throw new RemoveException("Could not remove " + key);
+            throw CmpMessages.MESSAGES.couldNotRemoveEntity(key, e);
         } finally {
             JDBCUtil.safeClose(ps);
             JDBCUtil.safeClose(con);
@@ -236,8 +231,7 @@ public abstract class CascadeDeleteStrategy {
 
         // check results
         if (rowsAffected == 0) {
-            log.error("Could not remove entity " + key);
-            throw new RemoveException("Could not remove entity");
+            throw CmpMessages.MESSAGES.couldNotRemoveEntityNoRows(key);
         }
 
         if (log.isDebugEnabled())
@@ -246,33 +240,6 @@ public abstract class CascadeDeleteStrategy {
 
     public void invokeRemoveRelated(Object relatedId) throws RemoveException, RemoteException {
         CmpEntityBeanComponent component = relatedManager.getComponent();
-
-        /*
-        try
-        {
-           EntityCache instanceCache = (EntityCache) container.getInstanceCache();
-           SecurityActions actions = SecurityActions.UTIL.getSecurityActions();
-
-           org.jboss.invocation.Invocation invocation = new org.jboss.invocation.Invocation();
-           invocation.setId(instanceCache.createCacheKey(relatedId));
-           invocation.setArguments(new Object[]{});
-           invocation.setTransaction(container.getTransactionManager().getTransaction());
-           invocation.setPrincipal(actions.getPrincipal());
-           invocation.setCredential(actions.getCredential());
-           invocation.setType(invocationType);
-           invocation.setMethod(removeMethod);
-
-           container.invoke(invocation);
-        }
-        catch(EJBException e)
-        {
-           throw e;
-        }
-        catch(Exception e)
-        {
-           throw new EJBException("Error in remove instance", e);
-        }
-        */
 
         /**
          * Have to remove through EJB[Local}Object interface since the proxy contains the 'removed' flag

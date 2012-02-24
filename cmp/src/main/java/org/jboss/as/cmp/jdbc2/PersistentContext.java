@@ -21,6 +21,7 @@
  */
 package org.jboss.as.cmp.jdbc2;
 
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.jdbc2.bridge.JDBCEntityBridge2;
 import org.jboss.as.cmp.jdbc2.bridge.JDBCCMRFieldBridge2;
 import org.jboss.as.cmp.jdbc2.schema.EntityTable;
@@ -59,7 +60,7 @@ public class PersistentContext {
 
     public void setPk(Object pk) throws DuplicateKeyException {
         if (pk == null) {
-            throw new IllegalArgumentException("Primary key is null!");
+            throw CmpMessages.MESSAGES.cannotSetNullPk();
         }
 
         row.insert(pk);

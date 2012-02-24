@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.StringTokenizer;
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
+import org.jboss.as.cmp.CmpMessages;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.ejbql.Catalog;
 import org.jboss.as.cmp.jdbc.bridge.JDBCAbstractEntityBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCFieldBridge;
@@ -146,7 +148,7 @@ public final class QueryParameter {
         this.parameterString = parameterString;
 
         if (parameterString == null || parameterString.length() == 0) {
-            throw new IllegalArgumentException("Parameter string is empty");
+            throw MESSAGES.parameterStringIsEmpty();
         }
 
         StringTokenizer tok = new StringTokenizer(parameterString, ".");
@@ -155,14 +157,12 @@ public final class QueryParameter {
         try {
             argNum = Integer.parseInt(tok.nextToken());
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("The parameter must begin with a number");
+            throw MESSAGES.parameterMustBeginWithNumber();
         }
 
         // get the argument type
         if (argNum > method.getParameterTypes().length) {
-            throw new IllegalArgumentException("The parameter index is " + argNum +
-                    " but the query method only has " +
-                    method.getParameterTypes().length + "parameter(s)");
+            throw CmpMessages.MESSAGES.invalidParameterInQueryMethod(argNum, method.getParameterTypes().length);
         }
         Class argType = method.getParameterTypes()[argNum];
 
@@ -175,14 +175,14 @@ public final class QueryParameter {
             // get the field name
             // check more tokens
             if (!tok.hasMoreTokens()) {
-                throw new IllegalArgumentException("When the parameter is an ejb a field name must be supplied.");
+                throw MESSAGES.fieldNameMustBeProvided();
             }
             String fieldName = tok.nextToken();
 
             // get the field from the entity
             field = getCMPField(manager, argType, fieldName);
             if (!field.isPrimaryKeyMember()) {
-                throw new IllegalArgumentException("The specified field must be a primary key field");
+                throw MESSAGES.fieldMustBePrimaryKey();
             }
 
             // get the jdbc type object
@@ -194,15 +194,13 @@ public final class QueryParameter {
 
         if (type instanceof JDBCTypeSimple) {
             if (tok.hasMoreTokens()) {
-                throw new IllegalArgumentException("Parameter is NOT a known " +
-                        "dependent value class, so a properties cannot supplied.");
+                throw CmpMessages.MESSAGES.typePropertiesNotAllowed();
             }
             jdbcType = type.getJDBCTypes()[0];
             this.type = type;
         } else {
             if (!tok.hasMoreTokens()) {
-                throw new IllegalArgumentException("Parameter is a known " +
-                        "dependent value class, so a property must be supplied");
+                throw CmpMessages.MESSAGES.typePropertyRequired();
             }
 
             // build the propertyName
@@ -263,9 +261,7 @@ public final class QueryParameter {
                 } else if (arg instanceof EJBLocalObject) {
                     arg = ((EJBLocalObject) arg).getPrimaryKey();
                 } else {
-                    throw new IllegalArgumentException("Expected an instance of " +
-                            "EJBObject or EJBLocalObject, but got an instance of " +
-                            arg.getClass().getName());
+                    throw CmpMessages.MESSAGES.expectedEjbObject(arg.getClass().getName());
                 }
             }
             arg = field.getPrimaryKeyValue(arg);
@@ -296,15 +292,12 @@ public final class QueryParameter {
         Catalog catalog = manager.getCatalog();
         JDBCAbstractEntityBridge entityBridge = (JDBCAbstractEntityBridge) catalog.getEntityByInterface(intf);
         if (entityBridge == null) {
-            throw new IllegalArgumentException("Entity not found in application " +
-                    "catalog with interface=" + intf.getName());
+            throw CmpMessages.MESSAGES.entityNotFoundInCatalog(intf.getName());
         }
 
         JDBCFieldBridge cmpField = (JDBCFieldBridge) entityBridge.getFieldByName(fieldName);
         if (cmpField == null) {
-            throw new IllegalArgumentException("cmpField not found:" +
-                    " cmpFieldName=" + fieldName +
-                    " entityName=" + entityBridge.getEntityName());
+            throw CmpMessages.MESSAGES.cmpFieldNotFound(fieldName, entityBridge.getEntityName());
         }
         return cmpField;
     }

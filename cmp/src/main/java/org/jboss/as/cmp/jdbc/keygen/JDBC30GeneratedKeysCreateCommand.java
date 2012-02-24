@@ -25,7 +25,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import javax.ejb.EJBException;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.as.cmp.jdbc.JDBCIdentityColumnCreateCommand;
 import org.jboss.as.cmp.jdbc.JDBCUtil;
@@ -54,14 +54,14 @@ public class JDBC30GeneratedKeysCreateCommand extends JDBCIdentityColumnCreateCo
             rs = ps.getGeneratedKeys();
             if (!rs.next()) {
                 // throw EJBException to force a rollback as the row has been inserted
-                throw new EJBException("getGeneratedKeys returned an empty ResultSet");
+                throw MESSAGES.getGeneratedKeysEmptyResultSet();
             }
             pkField.loadInstanceResults(rs, 1, ctx);
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
             // throw EJBException to force a rollback as the row has been inserted
-            throw new EJBException("Error extracting generated keys", e);
+            throw MESSAGES.errorExtractingGeneratedKey(e);
         } finally {
             JDBCUtil.safeClose(rs);
         }

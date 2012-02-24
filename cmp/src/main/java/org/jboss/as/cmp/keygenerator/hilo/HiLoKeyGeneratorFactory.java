@@ -27,6 +27,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.jdbc.JDBCUtil;
 import org.jboss.as.cmp.jdbc.SQLUtil;
 import org.jboss.as.cmp.keygenerator.KeyGenerator;
@@ -68,7 +69,7 @@ public class HiLoKeyGeneratorFactory implements KeyGeneratorFactory, Service<Key
         try {
             initSequence(tableName, sequenceColumn, sequenceName, idColumnName);
         } catch (SQLException e) {
-            throw new StartException("Failed to start HiLoKeyGeneratorFactory", e);
+            throw CmpMessages.MESSAGES.failedTOStartHiLoKeyGen(e);
         }
     }
 
@@ -77,7 +78,7 @@ public class HiLoKeyGeneratorFactory implements KeyGeneratorFactory, Service<Key
             try {
                 dropTableIfExists(tableName);
             } catch (SQLException e) {
-                throw new IllegalStateException("Failed to stop HiLoKeyGeneratorFactory", e);
+                throw CmpMessages.MESSAGES.failedTOStopHiLoKeyGen(e);
             }
         }
     }
@@ -119,7 +120,7 @@ public class HiLoKeyGeneratorFactory implements KeyGeneratorFactory, Service<Key
                 try {
                     final int i = insertSt.executeUpdate(sql);
                     if (i != 1) {
-                        throw new SQLException("Expected one updated row but got: " + i);
+                        throw CmpMessages.MESSAGES.expectedOneRow(i);
                     }
                 } finally {
                     JDBCUtil.safeClose(insertSt);

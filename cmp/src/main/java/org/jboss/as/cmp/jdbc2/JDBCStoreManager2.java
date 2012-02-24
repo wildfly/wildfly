@@ -35,6 +35,8 @@ import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 import javax.sql.DataSource;
 import org.jboss.as.cmp.CmpConfig;
+import org.jboss.as.cmp.CmpLogger;
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.bridge.EntityBridgeInvocationHandler;
 import org.jboss.as.cmp.bridge.FieldBridge;
 import org.jboss.as.cmp.component.CmpEntityBeanComponent;
@@ -148,13 +150,13 @@ public class JDBCStoreManager2 implements JDBCEntityPersistenceStore {
         try {
             initStoreManager();
         } catch (Exception e) {
-            throw new RuntimeException("Failed to init store manager", e);
+            throw CmpMessages.MESSAGES.failedToInitStoreManager(e);
         }
         entityBridge.resolveRelationships();
         try {
             startStoreManager();
         } catch (Exception e) {
-            throw new RuntimeException("Failed to start store manager", e);
+            throw CmpMessages.MESSAGES.failedToStartStoreManagerRuntime(e);
         }
         startCmd.addForeignKeyConstraints();
     }
@@ -171,7 +173,8 @@ public class JDBCStoreManager2 implements JDBCEntityPersistenceStore {
                         try {
                             manager.entityBridge.stop();
                         } catch (Exception e) {
-                            log.error("Failed to stop entity bridge.", e);
+                            CmpLogger.ROOT_LOGGER.failedToStopEntityBridge(e);
+
                         }
                         ++stoppedInIteration;
                     }
@@ -216,44 +219,6 @@ public class JDBCStoreManager2 implements JDBCEntityPersistenceStore {
 
     public Object createEntity(Method m, Object[] args, CmpEntityBeanContext ctx)
             throws CreateException {
-        /*
-        Object pk;
-        PersistentContext pctx = (PersistentContext) ctx.getPersistenceContext();
-        if(ctx.getId() == null)
-        {
-           pk = entityBridge.extractPrimaryKeyFromInstance(ctx);
-
-           if(pk == null)
-           {
-              throw new CreateException("Primary key for created instance is null.");
-           }
-
-           pctx.setPk(pk);
-        }
-        else
-        {
-           // insert-after-ejb-post-create
-           try
-           {
-              pctx.flush();
-           }
-           catch(SQLException e)
-           {
-              if("23000".equals(e.getSQLState()))
-              {
-                 throw new DuplicateKeyException("Unique key violation or invalid foreign key value: pk=" + ctx.getId());
-              }
-              else
-              {
-                 throw new CreateException("Failed to create instance: pk=" + ctx.getId() +
-                    ", state=" + e.getSQLState() +
-                    ", msg=" + e.getMessage());
-              }
-           }
-           pk = ctx.getId();
-        }
-        return pk;
-        */
         return createCmd.execute(m, args, ctx);
     }
 
@@ -287,12 +252,9 @@ public class JDBCStoreManager2 implements JDBCEntityPersistenceStore {
             PersistentContext pctx = new PersistentContext(entityBridge, row);
             ctx.setPersistenceContext(pctx);
         } catch (EJBException e) {
-            log.error("Failed to load instance of " + entityBridge.getEntityName() + " with pk=" + ctx.getPrimaryKey(), e);
             throw e;
         } catch (Exception e) {
-            throw new EJBException(
-                    "Failed to load instance of " + entityBridge.getEntityName() + " with pk=" + ctx.getPrimaryKey(), e
-            );
+            throw CmpMessages.MESSAGES.failedToLoadEntity(entityBridge.getEntityName(), ctx.getPrimaryKey(), e);
         }
     }
 
@@ -355,15 +317,13 @@ public class JDBCStoreManager2 implements JDBCEntityPersistenceStore {
         } else {
             final Class cmdClass = entityCommand.getCommandClass();
             if (cmdClass == null) {
-                throw new RuntimeException(
-                        "entity-command class name is not specified for entity " + entityBridge.getEntityName()
-                );
+                throw CmpMessages.MESSAGES.entityCommandClassNotSpecified(entityBridge.getEntityName());
             }
 
             try {
                 createCmd = (CreateCommand) cmdClass.newInstance();
             } catch (ClassCastException cce) {
-                throw new RuntimeException("Entity command " + cmdClass + " does not implement " + CreateCommand.class);
+                throw CmpMessages.MESSAGES.entityCommandNotValidClass(cmdClass.getName(), CreateCommand.class.getName());
             }
         }
 
@@ -429,9 +389,9 @@ public class JDBCStoreManager2 implements JDBCEntityPersistenceStore {
 
             // getters and setters must come in pairs
             if (getterMethod != null && setterMethod == null) {
-                throw new RuntimeException("Getter was found but, no setter was found for field: " + fieldName);
+                throw CmpMessages.MESSAGES.getterButNoSetterForField(fieldName);
             } else if (getterMethod == null && setterMethod != null) {
-                throw new RuntimeException("Setter was found but, no getter was found for field: " + fieldName);
+                throw CmpMessages.MESSAGES.setterButNoGetterForField(fieldName);
             } else if (getterMethod != null && setterMethod != null) {
                 // add methods
                 map.put(getterMethod.getName(), new EntityBridgeInvocationHandler.FieldGetInvoker(field));
@@ -456,7 +416,7 @@ public class JDBCStoreManager2 implements JDBCEntityPersistenceStore {
                     EJBSelectBridge ejbSelectBridge = new EJBSelectBridge((JDBCStoreManager2) entityBridge.getManager(), entityBridge.getComponent(), schema, metadata, queryCommand);
                     selectorsByMethod.put(metadata.getMethod(), ejbSelectBridge);
                 } catch (FinderException e) {
-                    throw new RuntimeException(e.getMessage());
+                    throw new RuntimeException(e);
                 }
             }
         }

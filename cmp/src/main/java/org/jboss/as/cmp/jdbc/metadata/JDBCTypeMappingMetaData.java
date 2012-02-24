@@ -23,6 +23,7 @@ package org.jboss.as.cmp.jdbc.metadata;
 
 import java.util.Collection;
 import java.util.HashMap;
+import org.jboss.as.cmp.CmpMessages;
 
 
 /**
@@ -69,7 +70,7 @@ public final class JDBCTypeMappingMetaData {
             AVG_FUNC = new JDBCFunctionMappingMetaData("avg", "avg(?1 ?2)");
             SUM_FUNC = new JDBCFunctionMappingMetaData("sum", "sum(?1 ?2)");
         } catch (Exception e) {
-            throw new IllegalStateException(e.getMessage());
+            throw new IllegalStateException(e);
         }
     }
 
@@ -197,7 +198,7 @@ public final class JDBCTypeMappingMetaData {
     public JDBCFunctionMappingMetaData getFunctionMapping(String name) {
         JDBCFunctionMappingMetaData funcMapping = (JDBCFunctionMappingMetaData) functionMappings.get(name.toLowerCase());
         if (funcMapping == null)
-            throw new IllegalStateException("Function " + name + " is not defined for " + this.name);
+            throw CmpMessages.MESSAGES.functionNotDefinedForType(name, this.name);
         return funcMapping;
     }
 

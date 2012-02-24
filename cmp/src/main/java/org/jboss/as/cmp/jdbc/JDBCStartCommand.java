@@ -30,6 +30,9 @@ import java.util.List;
 import javax.sql.DataSource;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
+import org.jboss.as.cmp.CmpLogger;
+import org.jboss.as.cmp.CmpMessages;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.bridge.EntityBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCAbstractCMRFieldBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCAbstractEntityBridge;
@@ -57,8 +60,6 @@ import org.jboss.logging.Logger;
  */
 public final class JDBCStartCommand {
     private static final String IDX_POSTFIX = "_idx";
-    private static final String COULDNT_SUSPEND = "Could not suspend current transaction before ";
-    private static final String COULDNT_REATTACH = "Could not reattach original transaction after ";
     private static final Object CREATED_TABLES_KEY = new Object();
     private final JDBCEntityPersistenceStore manager;
     private final JDBCAbstractEntityBridge entity;
@@ -134,7 +135,7 @@ public final class JDBCStartCommand {
                                             tableName, name, sqlTypes[j]);
                                 }
                             } catch (Exception e) {
-                                log.warn("EXCEPTION ALTER :" + e.toString());
+                                CmpLogger.ROOT_LOGGER.exceptionAlterTable(e);
                             }
                         }
                     }
@@ -246,7 +247,8 @@ public final class JDBCStartCommand {
 
                         if (different) {
                             // only log, don't drop table is this can cause data loss
-                            log.error("CMR table structure is incorrect for " + cmrField.getQualifiedTableName());
+                            CmpLogger.ROOT_LOGGER.incorrectCmrTableStructure(cmrField.getQualifiedTableName());
+
                             //SQLUtil.dropTable(entity.getDataSource(), cmrField.getQualifiedTableName());
                         }
 
@@ -371,7 +373,7 @@ public final class JDBCStartCommand {
         try {
             oldTransaction = tm.suspend();
         } catch (Exception e) {
-            throw new RuntimeException(COULDNT_SUSPEND + " alter table.", e);
+            throw MESSAGES.couldNotSuspendAfterAlterTable(e);
         }
 
         try {
@@ -388,8 +390,7 @@ public final class JDBCStartCommand {
                 JDBCUtil.safeClose(con);
             }
         } catch (Exception e) {
-            log.error("Could not alter table " + tableName + ": " + e.getMessage());
-            throw new RuntimeException("Error while alter table " + tableName + " " + sql, e);
+            throw MESSAGES.errorAlteringTable(tableName, sql, e);
         } finally {
             try {
                 // resume the old transaction
@@ -397,7 +398,7 @@ public final class JDBCStartCommand {
                     tm.resume(oldTransaction);
                 }
             } catch (Exception e) {
-                throw new RuntimeException(COULDNT_REATTACH + "alter table");
+                throw MESSAGES.couldNotReattachAfterAlterTable(e);
             }
         }
 
@@ -421,7 +422,7 @@ public final class JDBCStartCommand {
         try {
             oldTransaction = tm.suspend();
         } catch (Exception e) {
-            throw new RuntimeException(COULDNT_SUSPEND + "creating table.", e);
+            throw MESSAGES.couldNotSuspendBeforeCreateTable(e);
         }
 
         try {
@@ -443,8 +444,7 @@ public final class JDBCStartCommand {
                 JDBCUtil.safeClose(con);
             }
         } catch (Exception e) {
-            log.debug("Could not create table " + tableName);
-            throw new RuntimeException("Error while creating table " + tableName, e);
+            throw MESSAGES.errorCreatingTable(tableName, e);
         } finally {
             try {
                 // resume the old transaction
@@ -452,7 +452,7 @@ public final class JDBCStartCommand {
                     tm.resume(oldTransaction);
                 }
             } catch (Exception e) {
-                throw new RuntimeException(COULDNT_REATTACH + "create table");
+                throw MESSAGES.couldNotReattachAfterCreateTable();
             }
         }
 
@@ -478,7 +478,7 @@ public final class JDBCStartCommand {
         try {
             oldTransaction = tm.suspend();
         } catch (Exception e) {
-            throw new RuntimeException(COULDNT_SUSPEND + "creating index.", e);
+            throw MESSAGES.couldNotSuspendBeforeCreateIndex(e);
         }
 
         try {
@@ -499,8 +499,7 @@ public final class JDBCStartCommand {
                 JDBCUtil.safeClose(con);
             }
         } catch (Exception e) {
-            log.debug("Could not create index " + indexName + "on table" + tableName);
-            throw new RuntimeException("Error while creating table", e);
+            throw MESSAGES.couldNotCreateIndex(indexName, tableName, e);
         } finally {
             try {
                 // resume the old transaction
@@ -508,7 +507,7 @@ public final class JDBCStartCommand {
                     tm.resume(oldTransaction);
                 }
             } catch (Exception e) {
-                throw new RuntimeException(COULDNT_REATTACH + "create index");
+                throw MESSAGES.couldNotReattachAfterCreateIndex(e);
             }
         }
     }
@@ -535,7 +534,7 @@ public final class JDBCStartCommand {
         try {
             oldTransaction = tm.suspend();
         } catch (Exception e) {
-            throw new RuntimeException(COULDNT_SUSPEND + "sending sql command.", e);
+            throw MESSAGES.couldNotSuspendBeforeSendingSql(e);
         }
 
         String currentCmd = "";
@@ -565,8 +564,7 @@ public final class JDBCStartCommand {
                 JDBCUtil.safeClose(con);
             }
         } catch (Exception e) {
-            log.warn("Issuing sql " + currentCmd + " failed: " + e.toString());
-            throw new RuntimeException("Error while issuing sql in post-table-create", e);
+            throw MESSAGES.errorInPostTableCreate(e);
         } finally {
             try {
                 // resume the old transaction
@@ -574,7 +572,7 @@ public final class JDBCStartCommand {
                     tm.resume(oldTransaction);
                 }
             } catch (Exception e) {
-                throw new RuntimeException(COULDNT_REATTACH + "create index");
+                throw MESSAGES.couldNotReattachAfterPostTableCreate(e);
             }
         }
 
@@ -604,8 +602,7 @@ public final class JDBCStartCommand {
         if (entityMetaData.hasPrimaryKeyConstraint()) {
             JDBCFunctionMappingMetaData pkConstraint = manager.getMetaData().getTypeMapping().getPkConstraintTemplate();
             if (pkConstraint == null) {
-                throw new IllegalStateException("Primary key constraint is " +
-                        "not allowed for this type of data source");
+                throw CmpMessages.MESSAGES.pkNotAllowedForDatasource();
             }
 
             String defTableName = entity.getManager().getMetaData().getDefaultTableName();
@@ -738,7 +735,7 @@ public final class JDBCStartCommand {
             JDBCFunctionMappingMetaData autoIncrement =
                     manager.getMetaData().getTypeMapping().getAutoIncrementTemplate();
             if (autoIncrement == null) {
-                throw new IllegalStateException("auto-increment template not found");
+                throw MESSAGES.autoIncTemplateNotFound();
             }
             String[] args = new String[]{columnClause};
             autoIncrement.getFunctionSql(args, sqlBuffer);
@@ -767,7 +764,7 @@ public final class JDBCStartCommand {
             JDBCFunctionMappingMetaData pkConstraint =
                     manager.getMetaData().getTypeMapping().getPkConstraintTemplate();
             if (pkConstraint == null) {
-                throw new IllegalStateException("Primary key constraint is not allowed for this type of data store");
+                throw MESSAGES.pkConstraintNotAllowed();
             }
 
             String name = "pk_" + relationMetaData.getDefaultTableName();
@@ -821,7 +818,7 @@ public final class JDBCStartCommand {
 
         JDBCFunctionMappingMetaData fkConstraint = manager.getMetaData().getTypeMapping().getFkConstraintTemplate();
         if (fkConstraint == null) {
-            throw new IllegalStateException("Foreign key constraint is not allowed for this type of datastore");
+            throw MESSAGES.fkConstraintNotAllowed();
         }
         String a = SQLUtil.getColumnNamesClause(fields, new StringBuffer(50)).toString();
         String b = SQLUtil.getColumnNamesClause(referencesFields, new StringBuffer(50)).toString();
@@ -842,7 +839,7 @@ public final class JDBCStartCommand {
         try {
             oldTransaction = tm.suspend();
         } catch (Exception e) {
-            throw new RuntimeException(COULDNT_SUSPEND + "alter table create foreign key.", e);
+            throw MESSAGES.couldNotSuspendBeforeFk(e);
         }
 
         try {
@@ -862,8 +859,7 @@ public final class JDBCStartCommand {
                 JDBCUtil.safeClose(con);
             }
         } catch (Exception e) {
-            log.warn("Could not add foreign key constraint: table=" + tableName);
-            throw new RuntimeException("Error while adding foreign key constraint", e);
+            throw MESSAGES.errorAddingFk(tableName, e);
         } finally {
             try {
                 // resume the old transaction
@@ -871,7 +867,7 @@ public final class JDBCStartCommand {
                     tm.resume(oldTransaction);
                 }
             } catch (Exception e) {
-                throw new RuntimeException(COULDNT_REATTACH + "create table");
+                throw MESSAGES.couldNotReattachAfterCreateIndex(e);
             }
         }
     }

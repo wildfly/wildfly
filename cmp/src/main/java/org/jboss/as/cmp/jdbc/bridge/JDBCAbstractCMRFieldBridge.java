@@ -21,6 +21,8 @@
  */
 package org.jboss.as.cmp.jdbc.bridge;
 
+import org.jboss.as.cmp.CmpMessages;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.bridge.CMRFieldBridge;
 import org.jboss.as.cmp.jdbc.metadata.JDBCRelationshipRoleMetaData;
 
@@ -46,6 +48,6 @@ public abstract class JDBCAbstractCMRFieldBridge implements JDBCFieldBridge, CMR
     public abstract String getTableName();
 
     public Object getPrimaryKeyValue(Object o) {
-        throw new UnsupportedOperationException();
+        throw MESSAGES.getPrimaryKeyValueNotSupported();
     }
 }

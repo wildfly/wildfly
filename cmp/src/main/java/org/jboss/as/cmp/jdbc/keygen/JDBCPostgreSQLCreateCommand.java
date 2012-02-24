@@ -26,7 +26,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import javax.ejb.EJBException;
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.as.cmp.jdbc.JDBCIdentityColumnCreateCommand;
 import org.jboss.as.cmp.jdbc.JDBCStoreManager;
@@ -76,14 +76,14 @@ public class JDBCPostgreSQLCreateCommand extends JDBCIdentityColumnCreateCommand
             s = c.createStatement();
             rs = s.executeQuery(sequenceSQL);
             if (!rs.next()) {
-                throw new EJBException("sequence sql returned an empty ResultSet");
+                throw CmpMessages.MESSAGES.sequenceSqlReturnedEmptyResultSet();
             }
             pkField.loadInstanceResults(rs, 1, ctx);
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
             // throw EJBException to force a rollback as the row has been inserted
-            throw new EJBException("Error extracting generated keys", e);
+            throw CmpMessages.MESSAGES.errorExtractingGeneratedKey(e);
         } finally {
             JDBCUtil.safeClose(rs);
             JDBCUtil.safeClose(s);

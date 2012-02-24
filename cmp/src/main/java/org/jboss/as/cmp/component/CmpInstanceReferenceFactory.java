@@ -23,6 +23,7 @@
 package org.jboss.as.cmp.component;
 
 import javax.ejb.EntityBean;
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.invocation.proxy.ProxyFactory;
@@ -47,7 +48,7 @@ public class CmpInstanceReferenceFactory implements ManagedReferenceFactory {
         try {
             proxy = proxyFactory.newInstance(new CmpEntityBeanInvocationHandler(component.getValue()));
         } catch (Exception e) {
-            throw new RuntimeException("Failed to create proxy instance for: " + beanClass, e);
+            throw CmpMessages.MESSAGES.failedToCreateProxyInstance(beanClass, e);
         }
         return new ManagedReference() {
             public void release() {

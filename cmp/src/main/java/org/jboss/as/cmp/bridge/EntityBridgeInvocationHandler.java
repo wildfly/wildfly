@@ -25,6 +25,7 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.component.CmpEntityBeanComponentInstance;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 
@@ -61,7 +62,7 @@ public class EntityBridgeInvocationHandler {
         if (invoker == null) {
             invoker = selectorMap.get(method);
             if (invoker == null) {
-                throw new EJBException("Method is not a known CMP field accessor, CMR field accessor, or ejbSelect method: methodName=" + methodName);
+                throw CmpMessages.MESSAGES.methodNoCmpAccessor(methodName);
             }
         }
         try {
@@ -71,7 +72,7 @@ public class EntityBridgeInvocationHandler {
         } catch (FinderException e) {
             throw e;
         } catch (Exception e) {
-            throw new EJBException("Internal error", e);
+            throw CmpMessages.MESSAGES.internalInvocationBridgeError(e);
         }
     }
 
@@ -92,8 +93,7 @@ public class EntityBridgeInvocationHandler {
             // In the case of ejbHome methods there is no context, but ejb home
             // methods are only allowed to call selectors.
             if (ctx == null) {
-                throw new EJBException("EJB home methods are not allowed to " +
-                        "access CMP or CMR fields: methodName=" + method.getName());
+                throw CmpMessages.MESSAGES.homeMethodsCanNotAccessCmpFields(method.getName());
             }
 
             return field.getValue(ctx);
@@ -111,8 +111,7 @@ public class EntityBridgeInvocationHandler {
             // In the case of ejbHome methods there is no context, but ejb home
             // methods are only allowed to call selectors.
             if (ctx == null) {
-                throw new EJBException("EJB home methods are not allowed to " +
-                        "access CMP or CMR fields: methodName=" + method.getName());
+                throw CmpMessages.MESSAGES.homeMethodsCanNotAccessCmpFields(method.getName());
             }
             field.setValue(ctx, args[0]);
             return null;

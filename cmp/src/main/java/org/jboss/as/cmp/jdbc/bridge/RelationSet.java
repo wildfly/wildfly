@@ -22,6 +22,7 @@
 package org.jboss.as.cmp.jdbc.bridge;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.HashSet;
@@ -29,11 +30,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import javax.ejb.EJBException;
 import javax.ejb.EJBLocalObject;
 import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.TransactionRolledbackLocalException;
 
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 
 /**
@@ -75,8 +76,7 @@ public class RelationSet implements Set {
 
     private List getIdList() {
         if (setHandle[0] == null) {
-            throw new IllegalStateException("A CMR collection may only be used " +
-                    "within the transaction in which it was created");
+            throw MESSAGES.cmrFieldUsedOutSideOfCreatingTx();
         }
         return setHandle[0];
     }
@@ -93,32 +93,23 @@ public class RelationSet implements Set {
 
     public boolean add(Object o) {
         if (o == null) {
-            throw new IllegalArgumentException("Null cannot be added to a CMR " +
-                    "relationship collection");
+            throw MESSAGES.addedNullToCmrRelationship();
         }
 
         checkForPKChange();
 
         List idList = getIdList();
         if (readOnly) {
-            throw new EJBException("This collection is a read-only snapshot");
+            throw MESSAGES.collectionIsReadOnlySnapshot();
         }
 
         if (cmrField.isReadOnly()) {
-            throw new EJBException("Field is read-only: " +
-                    cmrField.getFieldName());
+            throw MESSAGES.fieldIsReadOnly(cmrField.getFieldName());
         }
 
         if (!relatedLocalInterface.isInstance(o)) {
-            String msg = "Object must be an instance of " +
-                    relatedLocalInterface.getName() + ", but is an isntance of [";
             Class[] classes = o.getClass().getInterfaces();
-            for (int i = 0; i < classes.length; i++) {
-                if (i > 0) msg += ", ";
-                msg += classes[i].getName();
-            }
-            msg += "]";
-            throw new IllegalArgumentException(msg);
+            throw MESSAGES.incorrectInterface( relatedLocalInterface.getName(), Arrays.toString(classes));
         }
         try {
             Object id = getPrimaryKey((EJBLocalObject) o);
@@ -130,17 +121,16 @@ public class RelationSet implements Set {
         } catch (TransactionRolledbackLocalException e) {
             //handle the case where the entity has already been removed
             //TODO: there is probably a better way to handle this
-            throw new IllegalArgumentException(e);
+            throw MESSAGES.instanceAlreadyRemoved(e);
         }
     }
 
     public boolean addAll(Collection c) {
         if (readOnly) {
-            throw new EJBException("This collection is a read-only snapshot");
+            throw MESSAGES.collectionIsReadOnlySnapshot();
         }
         if (cmrField.isReadOnly()) {
-            throw new EJBException("Field is read-only: " +
-                    cmrField.getFieldName());
+            throw MESSAGES.fieldIsReadOnly(cmrField.getFieldName());
         }
 
         if (c == null) {
@@ -159,18 +149,16 @@ public class RelationSet implements Set {
     public boolean remove(Object o) {
         List idList = getIdList();
         if (readOnly) {
-            throw new EJBException("This collection is a read-only snapshot");
+            throw MESSAGES.collectionIsReadOnlySnapshot();
         }
         if (cmrField.isReadOnly()) {
-            throw new EJBException("Field is read-only: " +
-                    cmrField.getFieldName());
+            throw MESSAGES.fieldIsReadOnly(cmrField.getFieldName());
         }
 
         checkForPKChange();
 
         if (!relatedLocalInterface.isInstance(o)) {
-            throw new IllegalArgumentException("Object must be an instance of " +
-                    relatedLocalInterface.getName());
+            throw MESSAGES.incorrectInterface(relatedLocalInterface.getName());
         }
 
         Object id = getPrimaryKey((EJBLocalObject) o);
@@ -183,11 +171,10 @@ public class RelationSet implements Set {
 
     public boolean removeAll(Collection c) {
         if (readOnly) {
-            throw new EJBException("This collection is a read-only snapshot");
+            throw MESSAGES.collectionIsReadOnlySnapshot();
         }
         if (cmrField.isReadOnly()) {
-            throw new EJBException("Field is read-only: " +
-                    cmrField.getFieldName());
+            throw MESSAGES.fieldIsReadOnly(cmrField.getFieldName());
         }
 
         if (c == null) {
@@ -208,11 +195,10 @@ public class RelationSet implements Set {
 
         List idList = getIdList();
         if (readOnly) {
-            throw new EJBException("This collection is a read-only snapshot");
+            throw MESSAGES.collectionIsReadOnlySnapshot();
         }
         if (cmrField.isReadOnly()) {
-            throw new EJBException("Field is read-only: " +
-                    cmrField.getFieldName());
+            throw MESSAGES.fieldIsReadOnly(cmrField.getFieldName());
         }
 
         Iterator iterator = (new ArrayList(idList)).iterator();
@@ -224,11 +210,10 @@ public class RelationSet implements Set {
     public boolean retainAll(Collection c) {
         List idList = getIdList();
         if (readOnly) {
-            throw new EJBException("This collection is a read-only snapshot");
+            throw MESSAGES.collectionIsReadOnlySnapshot();
         }
         if (cmrField.isReadOnly()) {
-            throw new EJBException("Field is read-only: " +
-                    cmrField.getFieldName());
+            throw MESSAGES.fieldIsReadOnly(cmrField.getFieldName());
         }
 
         checkForPKChange();
@@ -267,8 +252,7 @@ public class RelationSet implements Set {
         List idList = getIdList();
 
         if (!relatedLocalInterface.isInstance(o)) {
-            throw new IllegalArgumentException("Object must be an instance of " +
-                    relatedLocalInterface.getName());
+            throw MESSAGES.incorrectInterface(relatedLocalInterface.getName());
         }
 
         Object id = getPrimaryKey((EJBLocalObject) o);
@@ -310,17 +294,7 @@ public class RelationSet implements Set {
     // Private
 
     private static void checkForPKChange() {
-        /**
-         * Uncomment to disallow attempts to override PK value with equal FK value
-         *
-         if(cmrField.getRelatedCMRField().allFkFieldsMappedToPkFields()) {
-         throw new IllegalStateException(
-         "Can't modify relationship: CMR field "
-         + cmrField.getRelatedEntity().getEntityName() + "." + cmrField.getRelatedCMRField().getFieldName()
-         + " has _ALL_ foreign key fields mapped to the primary key columns."
-         + " Primary key may only be set once in ejbCreate [EJB 2.0 Spec. 10.3.5].");
-         }
-         */
+
     }
 
     // Inner
@@ -336,8 +310,7 @@ public class RelationSet implements Set {
                 try {
                     return idIterator.hasNext();
                 } catch (ConcurrentModificationException e) {
-                    throw new IllegalStateException("Underlying collection has " +
-                            "been modified");
+                    throw MESSAGES.underlyingCollectionModified();
                 }
             }
 
@@ -348,19 +321,17 @@ public class RelationSet implements Set {
                     currentId = idIterator.next();
                     return cmrField.getRelatedComponent().getEJBLocalObject(currentId);
                 } catch (ConcurrentModificationException e) {
-                    throw new IllegalStateException("Underlying collection has " +
-                            "been modified");
+                    throw MESSAGES.underlyingCollectionModified();
                 }
             }
 
             public void remove() {
                 verifyIteratorIsValid();
                 if (readOnly) {
-                    throw new EJBException("This collection is a read-only snapshot");
+                    throw MESSAGES.collectionIsReadOnlySnapshot();
                 }
                 if (cmrField.isReadOnly()) {
-                    throw new EJBException("Field is read-only: " +
-                            cmrField.getFieldName());
+                    throw MESSAGES.fieldIsReadOnly(cmrField.getFieldName());
                 }
 
                 checkForPKChange();
@@ -369,15 +340,13 @@ public class RelationSet implements Set {
                     idIterator.remove();
                     cmrField.destroyRelationLinks(ctx, currentId, false);
                 } catch (ConcurrentModificationException e) {
-                    throw new IllegalStateException("Underlying collection has been modified");
+                    throw MESSAGES.collectionHasBeenModified(e);
                 }
             }
 
             private void verifyIteratorIsValid() {
                 if (setHandle[0] == null) {
-                    throw new IllegalStateException("The iterator of a CMR " +
-                            "collection may only be used within the transction in " +
-                            "which it was created");
+                    throw MESSAGES.iteratorUsedOutsideOfTx();
                 }
             }
         };
@@ -398,7 +367,7 @@ public class RelationSet implements Set {
         try {
             return o.getPrimaryKey();
         } catch (NoSuchObjectLocalException e) {
-            throw new IllegalArgumentException(e.getMessage());
+            throw MESSAGES.noSuchLocalObject(e);
         }
     }
 }

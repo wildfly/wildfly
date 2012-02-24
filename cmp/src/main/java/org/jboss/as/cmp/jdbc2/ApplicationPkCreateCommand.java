@@ -24,7 +24,7 @@ package org.jboss.as.cmp.jdbc2;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
 import javax.ejb.CreateException;
-import javax.ejb.DuplicateKeyException;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.as.cmp.jdbc2.bridge.JDBCEntityBridge2;
 
@@ -46,7 +46,7 @@ public class ApplicationPkCreateCommand implements CreateCommand {
             pk = entityBridge.extractPrimaryKeyFromInstance(ctx);
 
             if (pk == null) {
-                throw new CreateException("Primary key for created instance is null.");
+                throw MESSAGES.pkIsNullForCreatedInstance();
             }
 
             pctx.setPk(pk);
@@ -56,11 +56,9 @@ public class ApplicationPkCreateCommand implements CreateCommand {
                 pctx.flush();
             } catch (SQLException e) {
                 if ("23000".equals(e.getSQLState())) {
-                    throw new DuplicateKeyException("Unique key violation or invalid foreign key value: pk=" + ctx.getPrimaryKey());
+                    throw MESSAGES.uniqueKeyViolation(ctx.getPrimaryKey());
                 } else {
-                    throw new CreateException("Failed to create instance: pk=" + ctx.getPrimaryKey() +
-                            ", state=" + e.getSQLState() +
-                            ", msg=" + e.getMessage());
+                    throw MESSAGES.failedToCreateInstance(ctx.getPrimaryKey(), e);
                 }
             }
             pk = ctx.getPrimaryKey();

@@ -27,7 +27,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import javax.ejb.EJBException;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.jdbc.bridge.JDBCCMPFieldBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCFieldBridge;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
@@ -63,14 +63,14 @@ public abstract class JDBCIdentityColumnCreateCommand extends JDBCAbstractCreate
             s = c.createStatement();
             rs = s.executeQuery(pkSQL);
             if (!rs.next()) {
-                throw new EJBException("ResultSet was empty");
+                throw MESSAGES.resultSetEmpty();
             }
             pkField.loadInstanceResults(rs, 1, ctx);
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
             // throw EJBException to force a rollback as the row has been inserted
-            throw new EJBException("Error extracting generated key", e);
+            throw MESSAGES.errorExtractingGeneratedKey(e);
         } finally {
             JDBCUtil.safeClose(rs);
             JDBCUtil.safeClose(s);
@@ -97,7 +97,6 @@ public abstract class JDBCIdentityColumnCreateCommand extends JDBCAbstractCreate
         if (t instanceof Error) {
             throw (Error) t;
         }
-        log.error(t);
-        throw new IllegalStateException();
+        throw new IllegalStateException(t);
     }
 }

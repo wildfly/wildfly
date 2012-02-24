@@ -22,10 +22,10 @@
 package org.jboss.as.cmp.jdbc2.schema;
 
 import java.sql.SQLException;
-import javax.ejb.EJBException;
 import javax.transaction.Status;
 import javax.transaction.Synchronization;
 import javax.transaction.Transaction;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.jdbc.metadata.JDBCEntityMetaData;
 import org.jboss.as.cmp.jdbc2.bridge.JDBCCMRFieldBridge2;
 import org.jboss.as.cmp.jdbc2.bridge.JDBCEntityBridge2;
@@ -106,7 +106,7 @@ public class Schema {
                     try {
                         view.flushDeleted(views);
                     } catch (SQLException e) {
-                        throw new EJBException("Failed to delete many-to-many relationships: " + e.getMessage(), e);
+                        throw MESSAGES.failedToDeleteManyToMany(e);
                     }
                 }
             }
@@ -119,7 +119,7 @@ public class Schema {
                 try {
                     view.flushDeleted(views);
                 } catch (SQLException e) {
-                    throw new EJBException("Failed to delete instances: " + e.getMessage(), e);
+                    throw MESSAGES.failedToDeleteInstance(e);
                 }
             }
         }
@@ -130,7 +130,7 @@ public class Schema {
                 try {
                     view.flushCreated(views);
                 } catch (SQLException e) {
-                    throw new EJBException("Failed to create instances: " + e.getMessage(), e);
+                    throw MESSAGES.failedToCreateInstance(e);
                 }
             }
         }
@@ -141,7 +141,7 @@ public class Schema {
                 try {
                     view.flushUpdated();
                 } catch (SQLException e) {
-                    throw new EJBException("Failed to update instances: " + e.getMessage(), e);
+                    throw MESSAGES.failedToUpdateInstance(e);
                 }
             }
         }
@@ -153,7 +153,7 @@ public class Schema {
                     try {
                         view.flushCreated(views);
                     } catch (SQLException e) {
-                        throw new EJBException("Failed to create many-to-many relationships: " + e.getMessage(), e);
+                        throw MESSAGES.failedToCreateManyToMany(e);
                     }
                 }
             }
@@ -161,26 +161,6 @@ public class Schema {
     }
 
     private Views getViews() {
-//        Transaction tx = txLocal.getTransaction();
-//        GlobalTxSynchronization globalSync;
-//        try {
-//            globalSync = txLocal.getGlobalSynchronization(tx);
-//        } catch (RollbackException e) {
-//            throw new EJBException("Transaction already marked to roll back: " + e.getMessage(), e);
-//        } catch (SystemException e) {
-//            throw new IllegalStateException("Failed to register transaction synchronization: " + e.getMessage());
-//        }
-//
-//        if (globalSync == null)
-//            throw new IllegalStateException("Global transaction synchronization is not available for transaction " + tx);
-//
-//        Views views = (Views) globalSync.getTxLocal(viewsTxLocalKey);
-//        if (views == null) {
-//            views = new Views(tx);
-//            globalSync.putTxLocal(viewsTxLocalKey, views);
-//            globalSync.addSynchronization(new SchemaSynchronization(views));
-//        }
-//        return views;
         return null;
     }
 

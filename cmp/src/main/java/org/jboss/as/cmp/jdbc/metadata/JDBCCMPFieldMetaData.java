@@ -27,8 +27,9 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.jboss.as.cmp.CmpLogger;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.jdbc.metadata.parser.ParsedCmpField;
-import org.jboss.logging.Logger;
 
 /**
  * Immutable class which holds all the information jbosscmp-jdbc needs to know
@@ -216,7 +217,7 @@ public final class JDBCCMPFieldMetaData {
             if (pkFieldName.equals(fieldName)) {
                 // verify field type
                 if (!entity.getPrimaryKeyClass().equals(fieldType)) {
-                    throw new RuntimeException("primkey-field must be the same type as prim-key-class");
+                    throw MESSAGES.pkFieldWrongType();
                 }
                 // we are the pk
                 primaryKeyMember = true;
@@ -235,7 +236,7 @@ public final class JDBCCMPFieldMetaData {
 
                     // verify field type
                     if (!field.getType().equals(fieldType)) {
-                        throw new RuntimeException("Field " + fieldName + " in prim-key-class must be of the same type.");
+                        throw MESSAGES.pkFieldWrongType(fieldName);
                     }
 
                     if (pkField != null) {
@@ -243,10 +244,7 @@ public final class JDBCCMPFieldMetaData {
                             pkField = field;
                         }
 
-                        Logger.getLogger(getClass().getName() + '.' + entity.getName()).warn(
-                                "PK field " + fieldName + " was found more than once in class hierarchy of " +
-                                        entity.getPrimaryKeyClass() + ". Will use the one from " + pkField.getDeclaringClass().getName()
-                        );
+                        CmpLogger.ROOT_LOGGER.pkFoundMoreThanOnceInHierarchy(fieldName, entity.getPrimaryKeyClass().getName(), pkField.getDeclaringClass().getName());
                     } else {
                         pkField = field;
                     }
@@ -727,60 +725,6 @@ public final class JDBCCMPFieldMetaData {
                 entity + "]";
     }
 
-//    /**
-//     * Loads the java type of this field from the entity bean class. If this
-//     * bean uses, cmp 1.x persistence, the field type is loaded from the field
-//     * in the bean class with the same name as this field. If this bean uses,
-//     * cmp 2.x persistence, the field type is loaded from the abstract getter
-//     * or setter method for field in the bean class.
-//     */
-//    private Class loadFieldType(JDBCEntityMetaData entity, String fieldName)
-//            throws Exception {
-//        if (entity.isCMP1x()) {
-//            // CMP 1.x field Style
-//            try {
-//                return entity.getEntityClassName().getField(fieldName).getType();
-//            } catch (NoSuchFieldException e) {
-//                throw new Exception("No field named '" + fieldName +
-//                        "' found in entity class." +
-//                        entity.getEntityClassName().getName());
-//            }
-//        } else {
-//            // CMP 2.x abstract accessor style
-//            String baseName = Character.toUpperCase(fieldName.charAt(0)) +
-//                    fieldName.substring(1);
-//            String getName = "get" + baseName;
-//            String setName = "set" + baseName;
-//
-//            Method[] methods = entity.getEntityClassName().getMethods();
-//            for (int i = 0; i < methods.length; i++) {
-//                // is this a public abstract method?
-//                if (Modifier.isPublic(methods[i].getModifiers()) &&
-//                        Modifier.isAbstract(methods[i].getModifiers())) {
-//
-//                    // get accessor
-//                    if (getName.equals(methods[i].getName()) &&
-//                            methods[i].getParameterTypes().length == 0 &&
-//                            !methods[i].getReturnType().equals(Void.TYPE)) {
-//                        return methods[i].getReturnType();
-//                    }
-//
-//                    // set accessor
-//                    if (setName.equals(methods[i].getName()) &&
-//                            methods[i].getParameterTypes().length == 1 &&
-//                            methods[i].getReturnType().equals(Void.TYPE)) {
-//
-//                        return methods[i].getParameterTypes()[0];
-//                    }
-//                }
-//            }
-//            throw new Exception("No abstract accessors for field " +
-//                    "named '" + fieldName + "' found in entity class " +
-//                    entity.getEntityClassName().getName());
-//        }
-//    }
-
-
     public void addProperty(final JDBCCMPFieldPropertyMetaData propertyMetaData) {
         propertyOverrides.add(propertyMetaData);
     }
@@ -802,9 +746,7 @@ public final class JDBCCMPFieldMetaData {
             try {
                 return entity.getEntityClass().getField(fieldName).getType();
             } catch (NoSuchFieldException e) {
-                throw new RuntimeException("No field named '" + fieldName +
-                        "' found in entity class." +
-                        entity.getEntityClass().getName());
+                throw MESSAGES.fieldNotFound(fieldName, entity.getEntityClass().getName());
             }
         } else {
             // CMP 2.x abstract accessor style
@@ -835,9 +777,7 @@ public final class JDBCCMPFieldMetaData {
                     }
                 }
             }
-            throw new RuntimeException("No abstract accessors for field " +
-                    "named '" + fieldName + "' found in entity class " +
-                    entity.getEntityClass().getName());
+            throw MESSAGES.noAbstractAccessor(fieldName, entity.getEntityClass().getName());
         }
     }
 

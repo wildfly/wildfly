@@ -23,6 +23,7 @@
 package org.jboss.as.cmp.component;
 
 import java.lang.reflect.Method;
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.component.interceptors.CmpEntityBeanEjbCreateMethodInterceptorFactory;
 import org.jboss.as.cmp.component.interceptors.CmpEntityBeanRemoveInterceptorFactory;
 import org.jboss.as.ee.component.ComponentConfiguration;
@@ -66,7 +67,7 @@ public class CmpEntityBeanObjectViewConfigurator extends EntityBeanObjectViewCon
         public Object processInvocation(final InterceptorContext context) throws Exception {
             final ComponentInstance componentInstance = context.getPrivateData(ComponentInstance.class);
             if (componentInstance == null) {
-                throw new IllegalStateException("No component instance associated");
+                throw CmpMessages.MESSAGES.noComponentInstanceAssociated();
             }
             //for CMP beans we invoke directly on the instance, bypassing the interceptor chain
             return componentMethod.invoke(componentInstance.getInstance(), context.getParameters());

@@ -22,6 +22,7 @@
 package org.jboss.as.cmp.jdbc.metadata;
 
 import java.lang.reflect.Method;
+import org.jboss.as.cmp.CmpMessages;
 
 /**
  * Class which contains information about a single dependent
@@ -139,9 +140,7 @@ public final class JDBCValuePropertyMetaData {
         try {
             getter = classType.getMethod(toGetterName(propertyName), new Class[0]);
         } catch (Exception e) {
-            throw new RuntimeException("Unable to find getter for property " +
-                    propertyName + " on dependent value class " +
-                    classType.getName());
+            throw CmpMessages.MESSAGES.getterNotFoundForValue(propertyName, classType.getName());
         }
 
         // get property type from getter return type
@@ -153,9 +152,7 @@ public final class JDBCValuePropertyMetaData {
                     toSetterName(propertyName),
                     new Class[]{propertyType});
         } catch (Exception e) {
-            throw new RuntimeException("Unable to find setter for property " +
-                    propertyName + " on dependent value class " +
-                    classType.getName());
+            throw CmpMessages.MESSAGES.setterNotFoundForValue(propertyName, classType.getName());
         }
 
     }

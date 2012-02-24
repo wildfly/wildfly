@@ -23,6 +23,8 @@ package org.jboss.as.cmp.jdbc;
 
 import java.util.HashMap;
 import javax.ejb.EJBException;
+import org.jboss.as.cmp.CmpMessages;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 
 /**
  * JDBCTypeComplex provides the mapping between a Java Bean (not an EJB)
@@ -135,8 +137,7 @@ public final class JDBCTypeComplex implements JDBCType {
     public JDBCTypeComplexProperty getProperty(String propertyName) {
         JDBCTypeComplexProperty prop = (JDBCTypeComplexProperty) propertiesByName.get(propertyName);
         if (prop == null) {
-            throw new EJBException(fieldType.getName() +
-                    " does not have a property named " + propertyName);
+            throw CmpMessages.MESSAGES.fieldDoesNotHaveProperty(fieldType.getName(), propertyName);
         }
         return prop;
     }
@@ -147,7 +148,7 @@ public final class JDBCTypeComplex implements JDBCType {
         } catch (EJBException e) {
             throw e;
         } catch (Exception e) {
-            throw new EJBException("Error getting column value", e);
+            throw MESSAGES.errorGettingColumnValue(e);
         }
     }
 
@@ -167,8 +168,7 @@ public final class JDBCTypeComplex implements JDBCType {
             }
             return property.setColumnValue(value, columnValue);
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new EJBException("Error setting column value", e);
+            throw MESSAGES.errorSettingColumnValue(e);
         }
     }
 }

@@ -24,6 +24,7 @@ package org.jboss.as.cmp.ejbql;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.bridge.CMRFieldBridge;
 import org.jboss.as.cmp.bridge.EntityBridge;
 
@@ -59,11 +60,11 @@ public final class IdentifierManager {
         List fieldList = (List) fieldLists.get(path);
         Object field = fieldList.get(fieldList.size() - 1);
         if (!(field instanceof CMRFieldBridge)) {
-            throw new IllegalArgumentException("Path is collection valued: " + path);
+            throw CmpMessages.MESSAGES.pathIsCollectionValued(path);
         }
         CMRFieldBridge cmrField = (CMRFieldBridge) field;
         if (cmrField.isSingleValued()) {
-            throw new IllegalArgumentException("Path is collection valued: " + path);
+            throw CmpMessages.MESSAGES.pathIsCollectionValued(path);
         }
         identifiers.put(identifier, cmrField.getRelatedEntity());
     }
@@ -78,9 +79,7 @@ public final class IdentifierManager {
             List fieldList) {
 
         if (pathList.size() != fieldList.size()) {
-            throw new IllegalArgumentException("Path list and field list must " +
-                    "have the same size: pathList.size=" + pathList.size() +
-                    " fieldList.size=" + fieldList.size());
+            throw CmpMessages.MESSAGES.pathAndFieldListMustBeSameSize(pathList.size(), fieldList.size());
         }
         pathLists.put(path, pathList);
         fieldLists.put(path, fieldList);

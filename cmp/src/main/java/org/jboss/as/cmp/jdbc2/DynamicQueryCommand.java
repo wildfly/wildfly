@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import javax.ejb.FinderException;
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.jdbc.EJBQLToSQL92Compiler;
 import org.jboss.as.cmp.jdbc.JDBCQueryCommand;
 import org.jboss.as.cmp.jdbc.QLCompiler;
@@ -80,8 +81,7 @@ public class DynamicQueryCommand implements QueryCommand {
                     metadata
             );
         } catch (Throwable t) {
-            log.error("Error compiling JBossQL statement '" + args[0] + "'", t);
-            throw new FinderException("Error compiling JBossQL statement '" + args[0] + "'");
+            throw CmpMessages.MESSAGES.errorCompilingJbossQlStatement(args[0], t);
         }
 
         String sql = compiler.getSQL();
@@ -123,8 +123,7 @@ public class DynamicQueryCommand implements QueryCommand {
                     metadata
             );
         } catch (Throwable t) {
-            log.error("Error compiling JBossQL statement '" + args[0] + "'", t);
-            throw new FinderException("Error compiling JBossQL statement '" + args[0] + "'");
+            throw CmpMessages.MESSAGES.errorCompilingJbossQlStatement(args[0], t);
         }
 
         String sql = compiler.getSQL();
@@ -156,7 +155,7 @@ public class DynamicQueryCommand implements QueryCommand {
             parameterTypes = new Class[parameters.length];
             for (int i = 0; i < parameters.length; i++) {
                 if (parameters[i] == null) {
-                    throw new FinderException("Parameter[" + i + "] is null");
+                    throw CmpMessages.MESSAGES.parameterIsNull(i);
                 }
                 parameterTypes[i] = parameters[i].getClass();
             }

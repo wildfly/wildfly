@@ -35,9 +35,10 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.StringTokenizer;
-import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.transaction.Synchronization;
+import org.jboss.as.cmp.CmpMessages;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.as.cmp.ejbql.SelectFunction;
 import org.jboss.as.cmp.jdbc.bridge.JDBCCMPFieldBridge;
@@ -223,10 +224,7 @@ public abstract class JDBCAbstractQueryCommand implements JDBCQueryCommand {
             JDBCUtil.safeClose(ps);
             JDBCUtil.safeClose(con);
 
-            log.error("Find failed", e);
-            FinderException fe = new FinderException("Find failed: " + e);
-            fe.initCause(e);
-            throw fe;
+            throw CmpMessages.MESSAGES.finderFailed(e);
         }
 
         return collectionFactory.createCollection(con,
@@ -257,11 +255,7 @@ public abstract class JDBCAbstractQueryCommand implements JDBCQueryCommand {
     protected void setParameterList(List p) {
         for (int i = 0; i < p.size(); i++) {
             if (!(p.get(i) instanceof QueryParameter)) {
-                throw new IllegalArgumentException("Element " +
-                        i +
-                        " of list " +
-                        "is not an instance of QueryParameter, but " +
-                        p.get(i).getClass().getName());
+                throw CmpMessages.MESSAGES.elementNotQueryParam(i, p.get(i).getClass().getName());
             }
         }
         parameters = new ArrayList(p);
@@ -274,10 +268,8 @@ public abstract class JDBCAbstractQueryCommand implements JDBCQueryCommand {
     protected void setSelectEntity(JDBCEntityBridge selectEntity) {
         if (queryMetaData.getMethod().getName().startsWith("find") &&
                 this.selectEntity != null && this.selectEntity != selectEntity) {
-            throw new RuntimeException("Finder " + queryMetaData.getMethod().getName() +
-                    " defined on " + this.selectEntity.getEntityName() +
-                    " should return only instances of " + this.selectEntity.getEntityName() +
-                    " but the query results in instances of " + selectEntity.getEntityName());
+            throw CmpMessages.MESSAGES.finderReturnedWrongInstance(queryMetaData.getMethod().getName(), this.selectEntity.getEntityName(), this.selectEntity.getEntityName(),selectEntity.getEntityName());
+
         }
 
         this.selectField = null;
@@ -350,7 +342,7 @@ public abstract class JDBCAbstractQueryCommand implements JDBCQueryCommand {
                         params.add(parameter);
 
                         if (!tokens.nextToken().equals("}")) {
-                            throw new RuntimeException("Invalid parameter - missing closing '}' : " + sql);
+                            throw MESSAGES.invalidParamMissingCloseParen(sql);
                         }
                     } else {
                         // ok we don't have a parameter, we have a function
@@ -380,8 +372,7 @@ public abstract class JDBCAbstractQueryCommand implements JDBCQueryCommand {
         for (JDBCLeftJoinMetaData leftJoin : leftJoins) {
             JDBCCMRFieldBridge cmrField = entity.getCMRFieldByName(leftJoin.getCmrField());
             if (cmrField == null) {
-                throw new RuntimeException("cmr-field in left-join was not found: cmr-field=" +
-                        leftJoin.getCmrField() + ", entity=" + entity.getEntityName());
+                throw CmpMessages.MESSAGES.cmrFieldInJoinNotFound(leftJoin.getCmrField(), entity.getEntityName());
             }
 
             List<LeftJoinCMRNode> subNodes;
@@ -676,8 +667,7 @@ public abstract class JDBCAbstractQueryCommand implements JDBCQueryCommand {
 
                 return results;
             } catch (Exception e) {
-                log.error("Find failed", e);
-                throw new FinderException("Find failed: " + e);
+                throw MESSAGES.findFailed(e);
             } finally {
                 JDBCUtil.safeClose(rs);
                 JDBCUtil.safeClose(ps);
@@ -768,7 +758,7 @@ public abstract class JDBCAbstractQueryCommand implements JDBCQueryCommand {
                     try {
                         size = rs.getInt(1);
                     } catch (SQLException e) {
-                        throw new EJBException("Failed to read ResultSet.", e);
+                        throw MESSAGES.failedToReadResultSet(e);
                     }
 
                     if (limit > 0 && size > limit) {
@@ -793,7 +783,7 @@ public abstract class JDBCAbstractQueryCommand implements JDBCQueryCommand {
                             }
                         });
                     } catch (Exception e) {
-                        throw new EJBException("Failed to obtain current transaction", e);
+                        throw MESSAGES.failedToObtainCurrentTx(e);
                     }
                 }
             }
@@ -819,14 +809,14 @@ public abstract class JDBCAbstractQueryCommand implements JDBCQueryCommand {
                 if (firstIterator == null) {
                     return results.add(o);
                 }
-                throw new IllegalStateException("Can't modify collection while the first iterator is not exhausted.");
+                throw MESSAGES.cannotModifyCollectionWhileIteratorNotExhausted();
             }
 
             public boolean remove(Object o) {
                 if (firstIterator == null) {
                     return results.remove(o);
                 }
-                throw new IllegalStateException("Can't modify collection while the first iterator is not exhausted.");
+                throw MESSAGES.cannotModifyCollectionWhileIteratorNotExhausted();
             }
 
             private boolean hasNextResult() {
@@ -841,8 +831,7 @@ public abstract class JDBCAbstractQueryCommand implements JDBCQueryCommand {
                     }
                     return has;
                 } catch (Exception e) {
-                    log.error("Failed to read ResultSet.", e);
-                    throw new EJBException("Failed to read ResultSet: " + e.getMessage());
+                    throw MESSAGES.failedToReadResultSet(e);
                 }
             }
 
@@ -899,8 +888,7 @@ public abstract class JDBCAbstractQueryCommand implements JDBCQueryCommand {
 
                     return currentResult;
                 } catch (Exception e) {
-                    log.error("Failed to read ResultSet", e);
-                    throw new EJBException("Failed to read ResultSet: " + e.getMessage());
+                    throw MESSAGES.failedToReadResultSet(e);
                 }
             }
 

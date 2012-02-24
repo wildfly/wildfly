@@ -29,6 +29,7 @@ import java.sql.Statement;
 import javax.sql.DataSource;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
+import org.jboss.as.cmp.CmpLogger;
 import org.jboss.as.cmp.jdbc.bridge.JDBCAbstractCMRFieldBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCAbstractEntityBridge;
 import org.jboss.as.cmp.jdbc.metadata.JDBCEntityMetaData;
@@ -126,8 +127,7 @@ public final class JDBCStopCommand {
         try {
             oldTransaction = tm.suspend();
         } catch (Exception e) {
-            log.error("Could not suspend current transaction before drop table. " +
-                    "'" + qualifiedTableName + "' will not be dropped.", e);
+            CmpLogger.ROOT_LOGGER.couldNotSuspendTxBeforeDrop(qualifiedTableName, e);
         }
 
         try {
@@ -155,7 +155,7 @@ public final class JDBCStopCommand {
                     tm.resume(oldTransaction);
                 }
             } catch (Exception e) {
-                log.error("Could not reattach original transaction after drop table");
+                CmpLogger.ROOT_LOGGER.couldNotReattachAfterDrop();
             }
         }
 

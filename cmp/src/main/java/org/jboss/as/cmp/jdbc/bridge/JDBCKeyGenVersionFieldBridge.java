@@ -21,6 +21,7 @@
  */
 package org.jboss.as.cmp.jdbc.bridge;
 
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.as.cmp.jdbc.JDBCStoreManager;
 import org.jboss.as.cmp.jdbc.metadata.JDBCCMPFieldMetaData;
@@ -49,7 +50,7 @@ public class JDBCKeyGenVersionFieldBridge extends JDBCCMP2xVersionFieldBridge {
             KeyGeneratorFactory keygenFactory = new UUIDKeyGeneratorFactory();
             return keygenFactory.getKeyGenerator();
         } catch (Exception e) {
-            throw new RuntimeException("Could not create KeyGenerator instance.", e);
+            throw CmpMessages.MESSAGES.failedToInitKeyGenerator(e);
         }
     }
 

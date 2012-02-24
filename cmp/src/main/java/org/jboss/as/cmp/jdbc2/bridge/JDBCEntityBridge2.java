@@ -27,6 +27,7 @@ import java.util.List;
 import javax.ejb.EJBException;
 import javax.ejb.RemoveException;
 import javax.sql.DataSource;
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.bridge.FieldBridge;
 import org.jboss.as.cmp.component.CmpEntityBeanComponent;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
@@ -84,7 +85,7 @@ public class JDBCEntityBridge2 implements JDBCAbstractEntityBridge {
         JDBCOptimisticLockingMetaData olMD = metadata.getOptimisticLocking();
         if (olMD != null) {
             if (olMD.getLockingStrategy() != JDBCOptimisticLockingMetaData.LockingStrategy.VERSION_COLUMN_STRATEGY) {
-                throw new RuntimeException("Only version-column optimistic locking strategy is supported at the moment.");
+                throw CmpMessages.MESSAGES.onlyVersionLockingSupported();
             }
 
             JDBCCMPFieldMetaData versionMD = olMD.getLockingField();
@@ -156,7 +157,7 @@ public class JDBCEntityBridge2 implements JDBCAbstractEntityBridge {
         } catch (EJBException e) {
             throw e;
         } catch (Exception e) {
-            throw new EJBException("Internal error extracting primary key from instance", e);
+            throw CmpMessages.MESSAGES.errorExtractingPk(e);
         }
     }
 
@@ -253,7 +254,7 @@ public class JDBCEntityBridge2 implements JDBCAbstractEntityBridge {
 
     public boolean[] getLoadGroupMask(String eagerLoadGroupName) {
         // todo
-        throw new UnsupportedOperationException();
+        throw CmpMessages.MESSAGES.methodNotSupported();
     }
 
     public int getNextCMRIndex() {
@@ -301,7 +302,7 @@ public class JDBCEntityBridge2 implements JDBCAbstractEntityBridge {
             }
         }
 
-        throw new IllegalStateException("Field " + fieldName + " not found in entity " + getEntityName());
+        throw CmpMessages.MESSAGES.fieldNotFound(fieldName, getEntityName());
     }
 
     public Class getRemoteInterface() {

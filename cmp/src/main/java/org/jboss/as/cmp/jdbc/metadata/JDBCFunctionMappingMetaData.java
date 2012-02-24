@@ -24,6 +24,7 @@ package org.jboss.as.cmp.jdbc.metadata;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 
 public final class JDBCFunctionMappingMetaData {
     private String functionName;
@@ -84,20 +85,20 @@ public final class JDBCFunctionMappingMetaData {
                         }
                     }
                     if (number.length() == 0) {
-                        throw new RuntimeException("Invalid parameter in function-sql: " + sql);
+                        throw MESSAGES.invalidParameterInFunction(sql);
                     }
                     Integer parameter;
                     try {
                         parameter = new Integer(number.toString());
                     } catch (NumberFormatException e) {
-                        throw new RuntimeException("Invalid parameter number in function-sql: number=" + number + " sql=" + sql);
+                        throw MESSAGES.invalidParameterNumberInFunction(number.toString(), sql);
                     }
                     parameterList.add(parameter);
                 }
             }
         } catch (IOException e) {
             // will never happen because io is in memory, but required by the interface
-            throw new RuntimeException("Error parsing function-sql: " + sql);
+            throw MESSAGES.errorParsingFunction(sql);
         }
         chunkList.add(chunk.toString());
 
