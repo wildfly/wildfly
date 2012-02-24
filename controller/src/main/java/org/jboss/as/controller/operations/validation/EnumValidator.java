@@ -40,6 +40,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Jason T. Greene
  * @author Brian Stansberry
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public class EnumValidator<E extends Enum<E>> extends ModelTypeValidator implements AllowedValuesValidator {
 
@@ -68,6 +69,49 @@ public class EnumValidator<E extends Enum<E>> extends ModelTypeValidator impleme
             allowedValues.add(value);
             toStringMap.put(value.toString(), value);
         }
+    }
+
+    /**
+     * Creates a new validator for the enum type with the allowed values defined in the {@code allowed} parameter.
+     *
+     * @param enumType the type of the enum.
+     * @param nullable {@code true} if the value is allowed to be {@code null}, otherwise {@code false}.
+     * @param allowed  the enum values that are allowed.
+     * @param <E>      the type of the enum.
+     *
+     * @return a new validator.
+     */
+    public static <E extends Enum<E>> EnumValidator<E> create(final Class<E> enumType, final boolean nullable, final E... allowed) {
+        return new EnumValidator<E>(enumType, nullable, allowed);
+    }
+
+    /**
+     * Creates a new validator for the enum type with all values of the enum allowed.
+     *
+     * @param enumType         the type of the enum.
+     * @param nullable         {@code true} if the value is allowed to be {@code null}, otherwise {@code false}.
+     * @param allowExpressions {@code true} if an expression is allowed to define the value, otherwise {@code false}.
+     * @param <E>              the type of the enum.
+     *
+     * @return a new validator.
+     */
+    public static <E extends Enum<E>> EnumValidator<E> create(final Class<E> enumType, final boolean nullable, final boolean allowExpressions) {
+        return new EnumValidator<E>(enumType, nullable, allowExpressions);
+    }
+
+    /**
+     * Creates a new validator for the enum type with the allowed values defined in the {@code allowed} parameter.
+     *
+     * @param enumType         the type of the enum.
+     * @param nullable         {@code true} if the value is allowed to be {@code null}, otherwise {@code false}.
+     * @param allowExpressions {@code true} if an expression is allowed to define the value, otherwise {@code false}.
+     * @param allowed          the enum values that are allowed.
+     * @param <E>              the type of the enum.
+     *
+     * @return a new validator.
+     */
+    public static <E extends Enum<E>> EnumValidator<E> create(final Class<E> enumType, final boolean nullable, final boolean allowExpressions, final E... allowed) {
+        return new EnumValidator<E>(enumType, nullable, allowExpressions, allowed);
     }
 
     @Override
