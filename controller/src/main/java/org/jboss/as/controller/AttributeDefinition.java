@@ -189,21 +189,7 @@ public abstract class AttributeDefinition {
      * @throws OperationFailedException if the value is not valid
      */
     public ModelNode validateOperation(final ModelNode operationObject) throws OperationFailedException {
-
-        ModelNode node = new ModelNode();
-        if(operationObject.has(name)) {
-            node.set(operationObject.get(name));
-        }
-        if (isAllowExpression() && node.getType() == ModelType.STRING) {
-            node = ParseUtils.parsePossibleExpression(node.asString());
-        }
-        if (!node.isDefined() && defaultValue.isDefined()) {
-            validator.validateParameter(name, defaultValue);
-        } else {
-            validator.validateParameter(name, node);
-        }
-
-        return node;
+        return validateOperation(operationObject, true);
     }
 
     /**
@@ -216,10 +202,11 @@ public abstract class AttributeDefinition {
      * @throws OperationFailedException if the value is not valid
      */
     public final void validateAndSet(ModelNode operationObject, final ModelNode model) throws OperationFailedException {
-        if(this.valueCorrector != null) {
-            valueCorrector.correct(operationObject.get(name), model.get(name));
+        final ModelNode newValue = correctValue(operationObject.get(name), model.get(name));
+        if (!newValue.equals(operationObject.get(name))) {
+            operationObject.get(name).set(newValue);
         }
-        ModelNode node = validateOperation(operationObject);
+        ModelNode node = validateOperation(operationObject, false);
         model.get(name).set(node);
     }
 
@@ -437,6 +424,43 @@ public abstract class AttributeDefinition {
             }
         }
         return result;
+    }
+
+    /**
+     * Corrects the value if the {@link ParameterCorrector value corrector} is not {@code null}. If the {@link
+     * ParameterCorrector value corrector} is {@code null}, the {@code newValue} parameter is returned.
+     *
+     * @param newValue the new value.
+     * @param oldValue the old value.
+     *
+     * @return the corrected value or the {@code newValue} if the {@link ParameterCorrector value corrector} is {@code
+     *         null}.
+     */
+    protected final ModelNode correctValue(final ModelNode newValue, final ModelNode oldValue) {
+        if (valueCorrector != null) {
+            return valueCorrector.correct(newValue, oldValue);
+        }
+        return newValue;
+    }
+
+    private ModelNode validateOperation(final ModelNode operationObject, final boolean correctValue) throws OperationFailedException {
+
+        ModelNode node = new ModelNode();
+        if(operationObject.has(name)) {
+            node.set(operationObject.get(name));
+        }
+        if (isAllowExpression() && node.getType() == ModelType.STRING) {
+            node = ParseUtils.parsePossibleExpression(node.asString());
+        }
+        if (!node.isDefined() && defaultValue.isDefined()) {
+            if (correctValue) correctValue(node, node);
+            validator.validateParameter(name, defaultValue);
+        } else {
+            if (correctValue) correctValue(node, node);
+            validator.validateParameter(name, node);
+        }
+
+        return node;
     }
 
     private final OperationContext NO_OPERATION_CONTEXT_FOR_RESOLVING_MODEL_PARAMETERS = new OperationContext() {
