@@ -35,5 +35,6 @@ public class CommonContainerExtension implements LoadableExtension {
         builder.service(DeploymentExceptionTransformer.class, ExceptionTransformer.class);
         builder.service(ResourceProvider.class, ManagementClientProvider.class);
         builder.observer(ServerSetupObserver.class);
+        builder.observer(InContainerExtensionSetup.class);
     }
 }
