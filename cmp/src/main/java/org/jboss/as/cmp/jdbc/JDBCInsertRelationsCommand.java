@@ -26,6 +26,7 @@ import java.sql.PreparedStatement;
 import java.util.Iterator;
 import javax.ejb.EJBException;
 import javax.sql.DataSource;
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.jdbc.bridge.JDBCCMPFieldBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCCMRFieldBridge;
 import org.jboss.logging.Logger;
@@ -80,8 +81,7 @@ public final class JDBCInsertRelationsCommand {
                 int rowsAffected = ps.executeUpdate();
             }
         } catch (Exception e) {
-            throw new EJBException("Could insert relations into " +
-                    cmrField.getQualifiedTableName(), e);
+            throw CmpMessages.MESSAGES.couldNotInsertRelations(cmrField.getQualifiedTableName(), e);
         } finally {
             JDBCUtil.safeClose(ps);
             JDBCUtil.safeClose(con);

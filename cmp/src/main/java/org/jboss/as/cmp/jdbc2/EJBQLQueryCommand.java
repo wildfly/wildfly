@@ -21,6 +21,7 @@
  */
 package org.jboss.as.cmp.jdbc2;
 
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.jdbc.EJBQLToSQL92Compiler;
 import org.jboss.as.cmp.jdbc.QLCompiler;
 import org.jboss.as.cmp.jdbc.metadata.JDBCQlQueryMetaData;
@@ -48,8 +49,7 @@ public class EJBQLQueryCommand
                     metadata.getMethod().getParameterTypes(),
                     metadata);
         } catch (Throwable t) {
-            t.printStackTrace();
-            throw new RuntimeException("Error compiling EJBQL statement '" + metadata.getEjbQl() + "'", t);
+            throw CmpMessages.MESSAGES.errorCompilingEjbQlStatement(metadata.getEjbQl(), t);
         }
 
         sql = compiler.getSQL();

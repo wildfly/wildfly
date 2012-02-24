@@ -22,6 +22,7 @@
 package org.jboss.as.cmp.jdbc;
 
 
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.jdbc.bridge.JDBCCMPFieldBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCEntityBridge;
 import org.jboss.as.cmp.jdbc.metadata.JDBCQueryMetaData;
@@ -58,8 +59,7 @@ public final class JDBCFindByQuery extends JDBCAbstractQueryCommand {
         // get the field
         cmpField = entity.getCMPFieldByName(cmpFieldName);
         if (cmpField == null) {
-            throw new IllegalArgumentException(
-                    "No finder for this method: " + finderName);
+            throw CmpMessages.MESSAGES.noFinderForMethod(finderName);
         }
 
         // set the preload fields

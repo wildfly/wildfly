@@ -25,6 +25,7 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.as.cmp.jdbc.JDBCIdentityColumnCreateCommand;
 import org.jboss.as.cmp.jdbc.JDBCStoreManager;
@@ -51,7 +52,7 @@ public class JDBCOracleCreateCommand extends JDBCIdentityColumnCreateCommand {
         super.initEntityCommand(entityCommand);
         sequence = entityCommand.getAttribute("sequence");
         if (sequence == null) {
-            throw new RuntimeException("Sequence must be specified");
+            throw CmpMessages.MESSAGES.sequenceMustBeSpecified();
         }
     }
 

@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.Blob;
 import java.sql.SQLException;
+import org.jboss.as.cmp.CmpMessages;
 
 /**
  * The representation (mapping) in the Java<sup><font size=-2>TM</font></sup>
@@ -138,27 +139,27 @@ public final class ByteArrayBlob implements Blob {
     }
 
     public InputStream getBinaryStream(long pos, long length) throws SQLException {
-        throw new UnsupportedOperationException("Unimplemented JDK6 method");
+        throw CmpMessages.MESSAGES.unimplementedMethod();
     }
 
     public OutputStream setBinaryStream(long pos)
             throws SQLException {
-        throw new UnsupportedOperationException("ByteArrayBlob is immutable");
+        throw CmpMessages.MESSAGES.byteArrayBlobIsImmutable();
     }
 
     public int setBytes(long pos, byte[] bytes)
             throws SQLException {
-        throw new UnsupportedOperationException("ByteArrayBlob is immutable");
+        throw CmpMessages.MESSAGES.byteArrayBlobIsImmutable();
     }
 
     public int setBytes(long pos, byte[] bytes, int offset, int length)
             throws SQLException {
-        throw new UnsupportedOperationException("ByteArrayBlob is immutable");
+        throw CmpMessages.MESSAGES.byteArrayBlobIsImmutable();
     }
 
     public void truncate(long length)
             throws SQLException {
-        throw new UnsupportedOperationException("ByteArrayBlob is immutable");
+        throw CmpMessages.MESSAGES.byteArrayBlobIsImmutable();
     }
 }
 

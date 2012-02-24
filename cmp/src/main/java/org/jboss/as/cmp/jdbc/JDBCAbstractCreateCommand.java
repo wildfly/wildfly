@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.CreateException;
+import org.jboss.as.cmp.CmpMessages;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.as.cmp.jdbc.bridge.JDBCCMPFieldBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCCMRFieldBridge;
@@ -86,7 +88,7 @@ public abstract class JDBCAbstractCreateCommand implements JDBCCreateCommand {
 
         JDBCEntityCommandMetaData entityCommand = manager.getMetaData().getEntityCommand();
         if (entityCommand == null) {
-            throw new RuntimeException("entity-command is null");
+            throw MESSAGES.entityCommandIsNull();
         }
         initEntityCommand(entityCommand);
 
@@ -124,7 +126,7 @@ public abstract class JDBCAbstractCreateCommand implements JDBCCreateCommand {
 
     protected void checkCreateAllowed() throws CreateException {
         if (!createAllowed) {
-            throw new CreateException("Creation is not allowed because a primary key field is read only.");
+            throw MESSAGES.creationNotAllowedPKReadOnly();
         }
     }
 
@@ -134,7 +136,7 @@ public abstract class JDBCAbstractCreateCommand implements JDBCCreateCommand {
         JDBCFieldBridge[] pkFields = entity.getPrimaryKeyFields();
         for (int i = 0; i < pkFields.length; ++i) {
             if (pkField != null)
-                throw new RuntimeException("Generation only supported with single PK field");
+                throw MESSAGES.generationOnlySupportedWithSinglePK();
             pkField = (JDBCCMPFieldBridge) pkFields[i];
         }
         return pkField;
@@ -143,11 +145,11 @@ public abstract class JDBCAbstractCreateCommand implements JDBCCreateCommand {
     protected void initGeneratedFields() {
         createdPrincipal = entity.getCreatedPrincipalField();
         if (securityManager == null && createdPrincipal != null) {
-            throw new RuntimeException("No security-domain configured but created-by specified");
+            throw MESSAGES.noSecurityDomainForCreatedBy();
         }
         updatedPrincipal = entity.getUpdatedPrincipalField();
         if (securityManager == null && updatedPrincipal != null) {
-            throw new RuntimeException("No security-domain configured but updated-by specified");
+            throw MESSAGES.noSecurityDomainForCreatedBy();
         }
         createdTime = entity.getCreatedTimeField();
         updatedTime = entity.getUpdatedTimeField();
@@ -265,20 +267,13 @@ public abstract class JDBCAbstractCreateCommand implements JDBCCreateCommand {
             // execute statement
             int rowsAffected = executeInsert(index, ps, ctx);
             if (rowsAffected != 1) {
-                throw new CreateException("Expected one affected row but update returned" + rowsAffected +
-                        " for id=" + ctx.getPrimaryKey());
+                throw CmpMessages.MESSAGES.expectedOneRow(rowsAffected, ctx.getPrimaryKey());
             }
         } catch (SQLException e) {
             if (exceptionProcessor != null && exceptionProcessor.isDuplicateKey(e)) {
-                log.error("Failed to create instance.", e);
-                throw new CreateException(
-                        "Integrity constraint violation. Possibly unique key violation or invalid foreign key value."
-                );
+                throw CmpMessages.MESSAGES.uniqueKeyViolationInvalidFk(ctx.getPrimaryKey());
             } else {
-                log.error("Could not create entity", e);
-                CreateException ce = new CreateException("Could not create entity: " + e);
-                ce.initCause(e);
-                throw ce;
+                throw CmpMessages.MESSAGES.couldNotCreateEntity(e);
             }
         } finally {
             JDBCUtil.safeClose(ps);

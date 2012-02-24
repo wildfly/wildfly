@@ -22,7 +22,7 @@
 
 package org.jboss.as.cmp.component.interceptors;
 
-import javax.ejb.EJBException;
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.component.CmpEntityBeanComponentInstance;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.as.cmp.jdbc.bridge.CMRMessage;
@@ -96,7 +96,7 @@ public class CmpEntityBeanJdbcRelationshipInterceptor implements Interceptor {
             return null;
         } else {
             // this should not be possible we are using a type safe enum
-            throw new EJBException("Unknown cmp2.0-relationship-message=" + relationshipMessage);
+            throw CmpMessages.MESSAGES.unknownCmpRelationshipMessage(relationshipMessage);
         }
     }
 

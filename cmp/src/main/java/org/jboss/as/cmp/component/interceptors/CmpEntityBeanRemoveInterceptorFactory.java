@@ -26,6 +26,7 @@ import java.lang.reflect.Method;
 
 import javax.ejb.NoSuchEJBException;
 
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.component.CmpEntityBeanComponent;
 import org.jboss.as.cmp.component.CmpEntityBeanComponentInstance;
 import org.jboss.as.ee.component.ComponentInstance;
@@ -56,7 +57,7 @@ public class CmpEntityBeanRemoveInterceptorFactory implements InterceptorFactory
 
                 final Object primaryKey = context.getPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY);
                 if (primaryKey == null) {
-                    throw new NoSuchEJBException("Invocation was not associated with an instance, primary key was null, instance may have been removed");
+                    throw CmpMessages.MESSAGES.primaryKeyNotAssociatedWithInvocation();
                 }
 
                 final CmpEntityBeanComponentInstance instance = (CmpEntityBeanComponentInstance) context.getPrivateData(ComponentInstance.class);

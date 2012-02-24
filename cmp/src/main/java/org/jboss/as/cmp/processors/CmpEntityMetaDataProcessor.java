@@ -22,6 +22,7 @@
 
 package org.jboss.as.cmp.processors;
 
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.component.CmpEntityBeanComponentDescription;
 import org.jboss.as.cmp.jdbc.metadata.JDBCApplicationMetaData;
 import org.jboss.as.cmp.jdbc.metadata.JDBCEntityMetaData;
@@ -52,7 +53,7 @@ public class CmpEntityMetaDataProcessor extends AbstractMergingProcessor<CmpEnti
 
         final JDBCEntityMetaData entityMetaData = applicationMetaData.getBeanByEjbName(description.getEJBName());
         if(entityMetaData == null) {
-            throw new DeploymentUnitProcessingException("No entity metadata for EntityBean: " + description.getEJBName());
+            throw CmpMessages.MESSAGES.noEntityMetaDataForEntity(description.getEJBName());
         }
         description.setEntityMetaData(entityMetaData);
     }

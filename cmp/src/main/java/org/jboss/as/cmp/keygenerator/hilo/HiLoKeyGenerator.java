@@ -29,6 +29,8 @@ import javax.sql.DataSource;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
+import org.jboss.as.cmp.CmpLogger;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.jdbc.JDBCUtil;
 import org.jboss.as.cmp.keygenerator.KeyGenerator;
 import org.jboss.logging.Logger;
@@ -93,36 +95,37 @@ public class HiLoKeyGenerator implements KeyGenerator {
             try {
                 curTx = tm.suspend();
             } catch (SystemException e) {
-                throw new IllegalStateException("Failed to suspend current transaction.");
+                throw MESSAGES.failedToSuspendTx(e);
             }
 
             try {
                 tm.begin();
             } catch (Exception e) {
-                throw new IllegalStateException("Failed to begin a new transaction.");
+                throw MESSAGES.failedToBeginTx(e);
             }
 
             try {
                 doGenerate();
                 tm.commit();
             } catch (SQLException e) {
-                log.error("Failed to update table: " + e.getMessage(), e);
+                CmpLogger.ROOT_LOGGER.failedToUpdateTable(e);
+
 
                 try {
                     tm.rollback();
                 } catch (SystemException e1) {
-                    log.error("Failed to rollback.", e1);
+                    CmpLogger.ROOT_LOGGER.failedToRollback(e1);
                 }
 
-                throw new IllegalStateException(e.getMessage());
+                throw new IllegalStateException(e);
             } catch (Exception e) {
-                log.error("Failed to commit.", e);
+                CmpLogger.ROOT_LOGGER.failedToCommit(e);
             } finally {
                 if (curTx != null) {
                     try {
                         tm.resume(curTx);
                     } catch (Exception e) {
-                        throw new IllegalStateException("Failed to resume transaction: " + e.getMessage());
+                        throw MESSAGES.failedToResumeTx(e);
                     }
                 }
             }
@@ -166,7 +169,7 @@ public class HiLoKeyGenerator implements KeyGenerator {
             selectHiSt = con.prepareStatement(selectHiSql);
             rs = selectHiSt.executeQuery();
             if (!rs.next()) {
-                throw new IllegalStateException("The sequence has not been initialized in the service start phase!");
+                throw MESSAGES.sequenceNotInitialized();
             }
             return rs.getLong(1);
         } finally {

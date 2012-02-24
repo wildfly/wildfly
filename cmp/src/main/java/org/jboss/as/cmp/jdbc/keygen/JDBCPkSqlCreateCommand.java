@@ -27,6 +27,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import javax.ejb.CreateException;
 import javax.sql.DataSource;
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.as.cmp.jdbc.JDBCInsertPKCreateCommand;
 import org.jboss.as.cmp.jdbc.JDBCStoreManager;
@@ -55,7 +56,7 @@ public class JDBCPkSqlCreateCommand extends JDBCInsertPKCreateCommand {
 
         pkSQL = entityCommand.getAttribute("pk-sql");
         if (pkSQL == null) {
-            throw new RuntimeException("pk-sql attribute must be set for entity " + entity.getEntityName());
+            throw CmpMessages.MESSAGES.pkSqlMustBeSet(entity.getEntityName());
         }
         if (debug) {
             log.debug("Generate PK sql is: " + pkSQL);
@@ -79,12 +80,11 @@ public class JDBCPkSqlCreateCommand extends JDBCInsertPKCreateCommand {
 
             rs = s.executeQuery(pkSQL);
             if (!rs.next()) {
-                throw new CreateException("Error fetching next primary key value: result set contains no rows");
+                throw CmpMessages.MESSAGES.errorFetchingNextPk();
             }
             pkField.loadInstanceResults(rs, 1, ctx);
         } catch (SQLException e) {
-            log.error("Error fetching the next primary key value", e);
-            throw new CreateException("Error fetching the next primary key value:" + e);
+            throw CmpMessages.MESSAGES.errorFetchingPkValue(e);
         } finally {
             JDBCUtil.safeClose(rs);
             JDBCUtil.safeClose(s);

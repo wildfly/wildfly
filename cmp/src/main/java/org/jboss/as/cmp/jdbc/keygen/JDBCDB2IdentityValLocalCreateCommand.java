@@ -25,7 +25,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import javax.ejb.EJBException;
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.as.cmp.jdbc.JDBCIdentityColumnCreateCommand;
 import org.jboss.as.cmp.jdbc.JDBCUtil;
@@ -48,14 +48,14 @@ public class JDBCDB2IdentityValLocalCreateCommand extends JDBCIdentityColumnCrea
             Connection conn = ps.getConnection();
             results = conn.prepareStatement(SQL).executeQuery();
             if (!results.next()) {
-                throw new EJBException("identity_val_local() returned an empty ResultSet");
+                throw CmpMessages.MESSAGES.identityValLocalReturnedEmptyResultsSet();
             }
             pkField.loadInstanceResults(results, 1, ctx);
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
             // throw EJBException to force a rollback as the row has been inserted
-            throw new EJBException("Error extracting identity_val_local()", e);
+            throw CmpMessages.MESSAGES.errorExtractingIdentityValLocal(e);
         } finally {
             JDBCUtil.safeClose(results);
         }

@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.ejb.EJBException;
+import org.jboss.as.cmp.CmpMessages;
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.jdbc.metadata.JDBCCMPFieldMetaData;
 import org.jboss.as.cmp.jdbc.metadata.JDBCCMPFieldPropertyMetaData;
 import org.jboss.as.cmp.jdbc.metadata.JDBCMappingMetaData;
@@ -189,10 +191,8 @@ public final class JDBCTypeFactory {
             try {
                 Class implClass = TCLAction.UTIL.getContextClassLoader().loadClass(implClassName);
                 stateFactory = (CMPFieldStateFactory) implClass.newInstance();
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException("Could not load state factory class: " + implClassName);
             } catch (Exception e) {
-                throw new RuntimeException("Failed instantiate state factory: " + implClassName);
+                throw MESSAGES.failedToCreateFieldStateFactory(implClassName, e);
             }
         } else if (Map.class.isAssignableFrom(clazz)) {
             stateFactory = MAP;
@@ -237,19 +237,13 @@ public final class JDBCTypeFactory {
         try {
             ctor = valueType.getConstructor(new Class[]{argType});
         } catch (NoSuchMethodException e) {
-            throw new IllegalStateException(
-                    "Failed to find a ctor in " + valueType +
-                            " that takes an instance of " + argType + " as an argument."
-            );
+            throw CmpMessages.MESSAGES.failedToFindConstructor(valueType, argType);
         }
 
         try {
             return ctor.newInstance(new Object[]{fieldValue});
         } catch (Exception e) {
-            throw new IllegalStateException(
-                    "Failed to create an instance of " + valueType +
-                            " with the " + fieldValue + " as a ctor argument"
-            );
+            throw CmpMessages.MESSAGES.failedToConstructWithArgument(valueType, fieldValue);
         }
     }
 
@@ -363,13 +357,13 @@ public final class JDBCTypeFactory {
                     try {
                         javaType = cl.loadClass(userTypeMapping.getMappedType());
                     } catch (ClassNotFoundException e) {
-                        throw new IllegalStateException("Failed to load mapped type: " + userTypeMapping.getMappedType());
+                        throw MESSAGES.failedToLoadMappedType(userTypeMapping.getMappedType(), e);
                     }
 
                     try {
                         mapper = (Mapper) newInstance(userTypeMapping.getMapper());
-                    } catch (Throwable e) {
-                        throw new IllegalStateException("Failed to create Mapper instance of " + userTypeMapping.getMapper());
+                    } catch (Throwable t) {
+                        throw MESSAGES.failedToLoadMapperInstance(userTypeMapping.getMapper(), t);
                     }
                 }
 
@@ -384,7 +378,7 @@ public final class JDBCTypeFactory {
                     try {
                         paramSetter = (JDBCParameterSetter) newInstance(typeMappingMD.getParamSetter());
                     } catch (Throwable e) {
-                        throw new IllegalStateException(e.getMessage());
+                        throw MESSAGES.failedToCreateParamSetter(typeMappingMD.getParamSetter(), e);
                     }
                 } else {
                     paramSetter = JDBCUtil.getParameterSetter(jdbcType, javaType);
@@ -395,7 +389,7 @@ public final class JDBCTypeFactory {
                     try {
                         resultReader = (JDBCResultSetReader) newInstance(typeMappingMD.getResultReader());
                     } catch (Throwable e) {
-                        throw new IllegalStateException(e.getMessage());
+                        throw MESSAGES.failedToCreateResultReader(typeMappingMD.getResultReader(), e);
                     }
                 } else {
                     resultReader = JDBCUtil.getResultSetReader(jdbcType, javaType);
@@ -479,9 +473,9 @@ public final class JDBCTypeFactory {
                     resultReader = mappingMD.getResultReader();
                 }
             } catch (ClassNotFoundException e) {
-                throw new RuntimeException("Class not found for mapper: " + userTypeMapping.getMapper(), e);
+                throw MESSAGES.couldNotCreateTypeMapper(userTypeMapping.getMapper(), e);
             } catch (Exception e) {
-                throw new RuntimeException("Could not instantiate mapper: " + userTypeMapping.getMapper(), e);
+                throw MESSAGES.couldNotCreateTypeMapper(userTypeMapping.getMapper(), e);
             }
         }
 
@@ -576,9 +570,7 @@ public final class JDBCTypeFactory {
         // did we find all overridden properties
         if (overrides.size() > 0) {
             String propertyName = (String) overrides.keySet().iterator().next();
-            throw new EJBException("Property " + propertyName + " in field " +
-                    cmpField.getFieldName() + " is not a property of value object " +
-                    cmpField.getFieldType().getName());
+            throw CmpMessages.MESSAGES.invalidPropertyValue(propertyName, cmpField.getFieldName(), cmpField.getFieldType().getName());
         }
 
         // return the new complex type
@@ -686,8 +678,7 @@ public final class JDBCTypeFactory {
             setters.add(propertyMetaData.getSetter());
 
             if (properties.contains(propertyMetaData)) {
-                throw new EJBException("Circular reference discovered at " +
-                        "property: " + getPropertyName());
+                throw CmpMessages.MESSAGES.circularReferenceForProperty(getPropertyName());
             }
             properties.add(propertyMetaData);
         }
@@ -748,7 +739,7 @@ public final class JDBCTypeFactory {
         try {
             return clazz.newInstance();
         } catch (Exception e) {
-            throw new RuntimeException("Failed to instantiate " + className, e);
+            throw MESSAGES.couldNotInstantiateClass(className, e);
         }
     }
 
@@ -757,7 +748,7 @@ public final class JDBCTypeFactory {
             final ClassLoader contextClassLoader = TCLAction.UTIL.getContextClassLoader();
             return contextClassLoader.loadClass(className);
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Failed to load class: " + className, e);
+            throw MESSAGES.couldNotLoadClass(className, e);
         }
     }
 }

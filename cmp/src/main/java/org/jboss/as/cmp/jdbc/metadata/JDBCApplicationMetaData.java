@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.jdbc.metadata.parser.ParsedApplication;
 import org.jboss.as.cmp.jdbc.metadata.parser.ParsedEntity;
 import org.jboss.as.cmp.jdbc.metadata.parser.ParsedRelationship;
@@ -235,10 +236,7 @@ public final class JDBCApplicationMetaData {
                 JDBCEntityMetaData entityMetaData = getBeanByEjbName(ejbName);
 
                 if (entityMetaData == null) {
-                    throw new RuntimeException("Configuration found in " +
-                            "jbosscmp-jdbc.xml for entity " + ejbName + " but bean " +
-                            "is not a jbosscmp-jdbc-managed cmp entity in " +
-                            "ejb-jar.xml");
+                    throw CmpMessages.MESSAGES.entityNotFoundInEjbJarXml(ejbName);
                 }
                 entityMetaData = new JDBCEntityMetaData(this, parsedEntity, entityMetaData);
                 entities.put(entityMetaData.getName(), entityMetaData);
@@ -302,10 +300,7 @@ public final class JDBCApplicationMetaData {
                 JDBCRelationMetaData oldRelation = relationships.get(relationName);
 
                 if (oldRelation == null) {
-                    throw new RuntimeException("Configuration found in " +
-                            "jbosscmp-jdbc.xml for relation " + relationName +
-                            " but relation is not a jbosscmp-jdbc-managed relation " +
-                            "in ejb-jar.xml");
+                    throw CmpMessages.MESSAGES.relationNotFoundInEjbJarXml(relationName);
                 }
                 // create new metadata with relation specific config applied
                 JDBCRelationMetaData newRelation = new JDBCRelationMetaData(this, parsedRelationship, oldRelation);
