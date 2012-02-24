@@ -168,9 +168,9 @@ public class SFSB2LC {
 	
 	
 	/**
-	 * Check if eviction of entity cache is working
+	 * Insert 2 entities and put them into the 2LC and then evicts entity cache.
 	 */
-	public String evict2LCCheck(String CACHE_REGION_NAME){
+	public String addEntitiesAndEvictAll(String CACHE_REGION_NAME){
 
 		EntityManager em = emf.createEntityManager();
 		Statistics stats = em.unwrap(Session.class).getSessionFactory().getStatistics();
@@ -184,18 +184,44 @@ public class SFSB2LC {
 			
 			assertTrue("Expected entities stored in the cache"+generateEntityCacheStats(emp2LCStats), emp2LCStats.getElementCountInMemory() > 0);
 			
-			// evict cache and check if is empty
+			// evict entity 2lc
 			emf.getCache().evictAll();
-			assertEquals("Expected no entities stored in the cache"+generateEntityCacheStats(emp2LCStats), 0, emp2LCStats.getElementCountInMemory());
-			
 			
 		}catch (AssertionError e) {
 			return e.getMessage();
 		}	finally{
 			em.close();
 		}
-		return "OK";
 		
+		return "OK";
+	}
+
+	
+	/**
+	 * Checks if entity 2LC is empty.
+	 */
+	public String evictedEntityCacheCheck(String CACHE_REGION_NAME){
+
+		EntityManager em = emf.createEntityManager();
+		Statistics stats = em.unwrap(Session.class).getSessionFactory().getStatistics();
+		stats.clear();
+		SecondLevelCacheStatistics emp2LCStats = stats.getSecondLevelCacheStatistics(CACHE_REGION_NAME+"Employee");
+			
+		try{	
+			assertEquals("Expected no entities stored in the cache"+emp2LCStats, 0, emp2LCStats.getElementCountInMemory());
+			
+			// loading entity stored in previous session, we are expecting miss in 2lc
+			Employee emp = getEmployee(em, 20);
+			assertNotNull("Employee returned", emp);
+			assertEquals("Expected 1 miss in 2LC"+generateEntityCacheStats(emp2LCStats), 1,  emp2LCStats.getMissCount());
+			
+		}catch (AssertionError e) {
+			return e.getMessage();
+		}	finally{
+			em.close();
+		}
+	
+		return "OK";	
 	}
 
 	
