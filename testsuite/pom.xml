@@ -136,6 +136,10 @@
         <version.arquillian_core>${version.org.jboss.arquillian.core}</version.arquillian_core>
         <version.arquillian_as7>${project.parent.version}</version.arquillian_as7>
         <version.saxon>8.7</version.saxon>
+
+        <!-- Don't try to deploy the testsuite modules because they don't build jars -->
+        <maven.deploy.skip>true</maven.deploy.skip>
+
     </properties>
 
     <dependencyManagement>
