@@ -51,16 +51,6 @@ public class ValidateOperationOperationTestCase extends AbstractMgmtTestBase {
     private static final String MASTER_SERVER = "main-one";
     private static final String SLAVE_SERVER = "main-three";
 
-    @BeforeClass
-    public static void initClient() throws Exception {
-        initModelControllerClient("127.0.0.1", 9999);
-    }
-
-    @AfterClass
-    public static void closeClient() throws Exception {
-        closeModelControllerClient();
-    }
-
     @Test
     public void testValidRootOperation() throws IOException, MgmtOperationException {
         ModelNode op = ModelUtil.createOpNode(null, READ_OPERATION_DESCRIPTION_OPERATION);

@@ -1,2 +1,0 @@
-Manifest-Version: 1.0
-Dependencies: javax.jms.api,org.hornetq,javax.api

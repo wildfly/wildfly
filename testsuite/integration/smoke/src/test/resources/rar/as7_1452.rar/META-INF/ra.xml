@@ -34,7 +34,7 @@
    <eis-type>Test RA</eis-type>
    <resourceadapter-version>0.1</resourceadapter-version>
    <resourceadapter>
-      <resourceadapter-class>org.jboss.as.test.smoke.embedded.deployment.rar.configproperty.ConfigPropertyResourceAdapter</resourceadapter-class>
+      <resourceadapter-class>org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyResourceAdapter</resourceadapter-class>
       <config-property>
          <config-property-name>Property</config-property-name>
          <config-property-type>java.lang.String</config-property-type>
@@ -43,24 +43,24 @@
 
       <outbound-resourceadapter>
          <connection-definition>
-            <managedconnectionfactory-class>org.jboss.as.test.smoke.embedded.deployment.rar.configproperty.ConfigPropertyManagedConnectionFactory</managedconnectionfactory-class>
+            <managedconnectionfactory-class>org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyManagedConnectionFactory</managedconnectionfactory-class>
             <config-property>
                <config-property-name>Property</config-property-name>
                <config-property-type>java.lang.String</config-property-type>
                <config-property-value>default</config-property-value>
             </config-property>
 
-            <connectionfactory-interface>org.jboss.as.test.smoke.embedded.deployment.rar.configproperty.ConfigPropertyConnectionFactory</connectionfactory-interface>
-            <connectionfactory-impl-class>org.jboss.as.test.smoke.embedded.deployment.rar.configproperty.ConfigPropertyConnectionFactoryImpl</connectionfactory-impl-class>
-            <connection-interface>org.jboss.as.test.smoke.embedded.deployment.rar.configproperty.ConfigPropertyConnection</connection-interface>
-            <connection-impl-class>org.jboss.as.test.smoke.embedded.deployment.rar.configproperty.ConfigPropertyConnectionImpl</connection-impl-class>
+            <connectionfactory-interface>org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyConnectionFactory</connectionfactory-interface>
+            <connectionfactory-impl-class>org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyConnectionFactoryImpl</connectionfactory-impl-class>
+            <connection-interface>org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyConnection</connection-interface>
+            <connection-impl-class>org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyConnectionImpl</connection-impl-class>
          </connection-definition>
          <transaction-support>NoTransaction</transaction-support>
          <reauthentication-support>false</reauthentication-support>
       </outbound-resourceadapter>
       <adminobject>
-         <adminobject-interface>org.jboss.as.test.smoke.embedded.deployment.rar.configproperty.ConfigPropertyAdminObjectInterface</adminobject-interface>
-         <adminobject-class>org.jboss.as.test.smoke.embedded.deployment.rar.configproperty.ConfigPropertyAdminObjectImpl</adminobject-class>
+         <adminobject-interface>org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyAdminObjectInterface</adminobject-interface>
+         <adminobject-class>org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyAdminObjectImpl</adminobject-class>
          <config-property>
             <config-property-name>Property</config-property-name>
             <config-property-type>java.lang.String</config-property-type>

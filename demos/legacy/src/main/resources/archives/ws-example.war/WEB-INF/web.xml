@@ -8,7 +8,7 @@
 
   <servlet>
     <servlet-name>TestService</servlet-name>
-    <servlet-class>org.jboss.as.demos.ws.archive.EndpointImpl</servlet-class>
+    <servlet-class>org.jboss.as.test.smoke.webservices.EndpointImpl</servlet-class>
   </servlet>
 
   <servlet-mapping>
@@ -18,7 +18,7 @@
 
   <servlet>
     <servlet-name>SimpleServlet</servlet-name>
-    <servlet-class>org.jboss.as.demos.ws.archive.SimpleServlet</servlet-class>
+    <servlet-class>org.jboss.as.test.smoke.webservices.SimpleServlet</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>SimpleServlet</servlet-name>
