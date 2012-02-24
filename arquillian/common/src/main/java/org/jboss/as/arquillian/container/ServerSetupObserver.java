@@ -16,6 +16,11 @@ import org.jboss.arquillian.test.spi.context.ClassContext;
 import org.jboss.arquillian.test.spi.event.suite.AfterClass;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.container.ClassContainer;
+import org.jboss.shrinkwrap.api.container.LibraryContainer;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
 /**
  * @author Stuart Douglas
@@ -57,6 +62,16 @@ public class ServerSetupObserver {
             current = ctor.newInstance();
         } else if (current.getClass() != setup.value()) {
             throw new RuntimeException("Mismatched ServerSetupTask current is " + current + " but " + currentClass + " is expecting " + setup.value());
+        }
+
+        final Archive<?> archive = event.getDeployment().getArchive();
+        //add the required classes
+        if(archive instanceof LibraryContainer) {
+            JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "jbossSetupObserverExtensionSupportClasses.jar");
+            jar.addClasses(ServerSetup.class, ServerSetupTask.class, ManagementClient.class);
+            ((LibraryContainer) archive).addAsLibrary(jar);
+        } else if(archive instanceof ClassContainer) {
+            ((ClassContainer) archive).addClasses(ServerSetup.class, ServerSetupTask.class, ManagementClient.class);
         }
 
         final ManagementClient client = managementClient.get();
