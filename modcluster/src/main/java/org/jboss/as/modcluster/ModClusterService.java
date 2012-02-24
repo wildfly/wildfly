@@ -132,7 +132,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
             if (ssl.has(CommonAttributes.CIPHER_SUITE))
                 config.setSslCiphers(ssl.get(CommonAttributes.CIPHER_SUITE).asString());
             if (ssl.has(CommonAttributes.PROTOCOL))
-                config.setSslKeyAlias(ssl.get(CommonAttributes.PROTOCOL).asString());
+                config.setSslProtocol(ssl.get(CommonAttributes.PROTOCOL).asString());
             if (ssl.has(CommonAttributes.CA_CERTIFICATE_FILE))
                 config.setSslTrustStore(ssl.get(CommonAttributes.CA_CERTIFICATE_FILE).asString());
             if (ssl.has(CommonAttributes.CA_REVOCATION_URL))
@@ -144,9 +144,9 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
             config.setProxyList(modelconf.get(CommonAttributes.PROXY_LIST).asString());
         }
         if (modelconf.hasDefined(CommonAttributes.PROXY_URL))
-            config.setProxyList(modelconf.get(CommonAttributes.PROXY_URL).asString());
+            config.setProxyURL(modelconf.get(CommonAttributes.PROXY_URL).asString());
         if (modelconf.has(CommonAttributes.ADVERTISE_SECURITY_KEY))
-            config.setProxyList(modelconf.get(CommonAttributes.ADVERTISE_SECURITY_KEY).asString());
+            config.setAdvertiseSecurityKey(modelconf.get(CommonAttributes.ADVERTISE_SECURITY_KEY).asString());
 
         if (modelconf.hasDefined(CommonAttributes.EXCLUDED_CONTEXTS)) {
             // read the default host.
