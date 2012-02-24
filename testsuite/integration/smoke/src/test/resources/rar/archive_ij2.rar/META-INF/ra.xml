@@ -10,33 +10,33 @@
    <resourceadapter-version>0.1</resourceadapter-version>
 
    <resourceadapter>
-      <resourceadapter-class>org.jboss.as.test.smoke.embedded.deployment.rar.MultipleResourceAdapter2</resourceadapter-class>
+      <resourceadapter-class>org.jboss.as.test.smoke.deployment.rar.MultipleResourceAdapter2</resourceadapter-class>
 
       <outbound-resourceadapter>
          <connection-definition>
-            <managedconnectionfactory-class>org.jboss.as.test.smoke.embedded.deployment.rar.MultipleManagedConnectionFactory2</managedconnectionfactory-class>
-            <connectionfactory-interface>org.jboss.as.test.smoke.embedded.deployment.rar.MultipleConnectionFactory2</connectionfactory-interface>
-            <connectionfactory-impl-class>org.jboss.as.test.smoke.embedded.deployment.rar.MultipleConnectionFactory2Impl</connectionfactory-impl-class>
-            <connection-interface>org.jboss.as.test.smoke.embedded.deployment.rar.MultipleConnection2</connection-interface>
-            <connection-impl-class>org.jboss.as.test.smoke.embedded.deployment.rar.MultipleConnection2Impl</connection-impl-class>
+            <managedconnectionfactory-class>org.jboss.as.test.smoke.deployment.rar.MultipleManagedConnectionFactory2</managedconnectionfactory-class>
+            <connectionfactory-interface>org.jboss.as.test.smoke.deployment.rar.MultipleConnectionFactory2</connectionfactory-interface>
+            <connectionfactory-impl-class>org.jboss.as.test.smoke.deployment.rar.MultipleConnectionFactory2Impl</connectionfactory-impl-class>
+            <connection-interface>org.jboss.as.test.smoke.deployment.rar.MultipleConnection2</connection-interface>
+            <connection-impl-class>org.jboss.as.test.smoke.deployment.rar.MultipleConnection2Impl</connection-impl-class>
          </connection-definition>
          <connection-definition>
-            <managedconnectionfactory-class>org.jboss.as.test.smoke.embedded.deployment.rar.MultipleManagedConnectionFactory1</managedconnectionfactory-class>
-            <connectionfactory-interface>org.jboss.as.test.smoke.embedded.deployment.rar.MultipleConnectionFactory1</connectionfactory-interface>
-            <connectionfactory-impl-class>org.jboss.as.test.smoke.embedded.deployment.rar.MultipleConnectionFactory1Impl</connectionfactory-impl-class>
-            <connection-interface>org.jboss.as.test.smoke.embedded.deployment.rar.MultipleConnection1</connection-interface>
-            <connection-impl-class>org.jboss.as.test.smoke.embedded.deployment.rar.MultipleConnection1Impl</connection-impl-class>
+            <managedconnectionfactory-class>org.jboss.as.test.smoke.deployment.rar.MultipleManagedConnectionFactory1</managedconnectionfactory-class>
+            <connectionfactory-interface>org.jboss.as.test.smoke.deployment.rar.MultipleConnectionFactory1</connectionfactory-interface>
+            <connectionfactory-impl-class>org.jboss.as.test.smoke.deployment.rar.MultipleConnectionFactory1Impl</connectionfactory-impl-class>
+            <connection-interface>org.jboss.as.test.smoke.deployment.rar.MultipleConnection1</connection-interface>
+            <connection-impl-class>org.jboss.as.test.smoke.deployment.rar.MultipleConnection1Impl</connection-impl-class>
          </connection-definition>
          <transaction-support>NoTransaction</transaction-support>
          <reauthentication-support>false</reauthentication-support>
       </outbound-resourceadapter>
       <adminobject>
-         <adminobject-interface>org.jboss.as.test.smoke.embedded.deployment.rar.MultipleAdminObject1</adminobject-interface>
-         <adminobject-class>org.jboss.as.test.smoke.embedded.deployment.rar.MultipleAdminObject1Impl</adminobject-class>
+         <adminobject-interface>org.jboss.as.test.smoke.deployment.rar.MultipleAdminObject1</adminobject-interface>
+         <adminobject-class>org.jboss.as.test.smoke.deployment.rar.MultipleAdminObject1Impl</adminobject-class>
       </adminobject>
       <adminobject>
-         <adminobject-interface>org.jboss.as.test.smoke.embedded.deployment.rar.MultipleAdminObject2</adminobject-interface>
-         <adminobject-class>org.jboss.as.test.smoke.embedded.deployment.rar.MultipleAdminObject2Impl</adminobject-class>
+         <adminobject-interface>org.jboss.as.test.smoke.deployment.rar.MultipleAdminObject2</adminobject-interface>
+         <adminobject-class>org.jboss.as.test.smoke.deployment.rar.MultipleAdminObject2Impl</adminobject-class>
       </adminobject>
    </resourceadapter>
 </connector>

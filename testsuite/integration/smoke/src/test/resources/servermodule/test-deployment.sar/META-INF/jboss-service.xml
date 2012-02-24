@@ -23,6 +23,6 @@
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="urn:jboss:service:7.0 jboss-service_7_0.xsd">
 
-    <mbean name="jboss.test:service=testdeployments" code="org.jboss.as.test.smoke.surefire.servermodule.archive.sar.Simple"/>
+    <mbean name="jboss.test:service=testdeployments" code="org.jboss.as.test.smoke.mgmt.servermodule.archive.sar.Simple"/>
 
 </server>

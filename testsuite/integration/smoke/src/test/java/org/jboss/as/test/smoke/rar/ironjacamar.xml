@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ironjacamar>
+
+   <connection-definitions>
+     <connection-definition class-name="org.jboss.as.test.smoke.rar.HelloWorldManagedConnectionFactory"
+                            jndi-name="java:/eis/HelloWorld"/>
+   </connection-definitions>
+
+</ironjacamar>

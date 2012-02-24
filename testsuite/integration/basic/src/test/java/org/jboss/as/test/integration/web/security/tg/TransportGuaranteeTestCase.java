@@ -39,10 +39,11 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.http.util.HttpClientUtils;
 import org.jboss.as.test.integration.management.Connector;
 import org.jboss.as.test.integration.management.ServerManager;
-import org.jboss.as.test.integration.web.security.SecurityTest;
+import org.jboss.as.test.integration.web.security.WebTestsSecurityDomainSetup;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -61,7 +62,8 @@ import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
 @RunAsClient
-public class TransportGuaranteeTestCase extends SecurityTest {
+@ServerSetup(WebTestsSecurityDomainSetup.class)
+public class TransportGuaranteeTestCase  {
 
 
     private static final Logger log = Logger.getLogger(TransportGuaranteeTestCase.class);
@@ -89,8 +91,6 @@ public class TransportGuaranteeTestCase extends SecurityTest {
     public static WebArchive deployAnnWar() throws Exception {
 
         log.info("starting deployAnnWar()");
-
-        SecurityTest.createSecurityDomain();
 
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         WebArchive war = ShrinkWrap.create(WebArchive.class, TG_ANN + WAR);

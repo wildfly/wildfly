@@ -1,2 +1,0 @@
-Manifest-Version: 1.0
-Dependencies: org.hornetq,org.jboss.jboss-transaction-spi,com.h2database.h2

@@ -32,8 +32,10 @@ import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.web.security.SecuredServlet;
 import org.jboss.as.test.integration.web.security.WebSecurityPasswordBasedBase;
+import org.jboss.as.test.integration.web.security.WebTestsSecurityDomainSetup;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.runner.RunWith;
@@ -47,14 +49,11 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@ServerSetup(WebTestsSecurityDomainSetup.class)
 public class WebSecurityBASICTestCase extends WebSecurityPasswordBasedBase {
 
     @Deployment
     public static WebArchive deployment() throws Exception {
-
-        // create required security domains
-        createSecurityDomain();
-
         WebArchive war = ShrinkWrap.create(WebArchive.class, "web-secure-basic.war");
         war.addClass(SecuredServlet.class);
 

@@ -4,10 +4,10 @@
    <archive>ear_packaged.ear#ear_packaged.rar</archive>
       <transaction-support>NoTransaction</transaction-support>
         <connection-definitions>
-        	<connection-definition  class-name="org.jboss.as.test.smoke.embedded.deployment.rar.MultipleManagedConnectionFactory1" jndi-name="java:jboss/name1"  pool-name="Pool1">    </connection-definition>
+        	<connection-definition  class-name="org.jboss.as.test.smoke.deployment.rar.MultipleManagedConnectionFactory1" jndi-name="java:jboss/name1"  pool-name="Pool1">    </connection-definition>
 		</connection-definitions>
         <admin-objects>
-          <admin-object class-name="org.jboss.as.test.smoke.embedded.deployment.rar.MultipleAdminObject1Impl"  jndi-name="java:jboss/Name3"	pool-name="Pool3">  </admin-object>
+          <admin-object class-name="org.jboss.as.test.smoke.deployment.rar.MultipleAdminObject1Impl"  jndi-name="java:jboss/Name3"	pool-name="Pool3">  </admin-object>
          </admin-objects>
     </resource-adapter>
   </resource-adapters>

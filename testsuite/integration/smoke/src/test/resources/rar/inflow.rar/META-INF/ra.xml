@@ -34,13 +34,13 @@
    <eis-type>Test RA</eis-type>
    <resourceadapter-version>0.1</resourceadapter-version>
    <resourceadapter>
-      <resourceadapter-class>org.jboss.as.test.smoke.embedded.deployment.rar.inflow.PureInflowResourceAdapter</resourceadapter-class>
+      <resourceadapter-class>org.jboss.as.test.smoke.deployment.rar.inflow.PureInflowResourceAdapter</resourceadapter-class>
       <inbound-resourceadapter>
          <messageadapter>
             <messagelistener>
                <messagelistener-type>javax.jms.MessageListener</messagelistener-type>
                <activationspec>
-                  <activationspec-class>org.jboss.as.test.smoke.embedded.deployment.rar.inflow.PureInflowActivationSpec</activationspec-class>
+                  <activationspec-class>org.jboss.as.test.smoke.deployment.rar.inflow.PureInflowActivationSpec</activationspec-class>
                </activationspec>
             </messagelistener>
          </messageadapter>

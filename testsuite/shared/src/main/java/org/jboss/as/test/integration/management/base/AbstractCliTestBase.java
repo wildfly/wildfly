@@ -34,7 +34,7 @@ import org.jboss.as.test.integration.management.util.CLIWrapper;
  */
 public class AbstractCliTestBase {
     public static final long WAIT_TIMEOUT = 30000;
-    public static final long WAIT_LINETIMEOUT = 10000;
+    public static final long WAIT_LINETIMEOUT = 1500;
     protected static CLIWrapper cli;
 
     public static void initCLI() throws Exception {
