@@ -44,4 +44,8 @@ public interface SingletonLogger {
     @LogMessage(level = INFO)
     @Message(id = 10341, value = "This node will no longer operate as the singleton provider of the %s service")
     void electedSlave(String service);
+
+    @LogMessage(level = INFO)
+    @Message(id = 10342, value = "%s elected as the singleton provider of the %s service")
+    void elected(String node, String service);
 }

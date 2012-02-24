@@ -35,6 +35,7 @@ import org.jboss.as.clustering.singleton.election.SimpleSingletonElectionPolicy;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
+import org.jboss.marshalling.SimpleClassResolver;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceListener;
@@ -48,9 +49,10 @@ public class MyServiceContextListener implements ServletContextListener {
     @Override
     public void contextInitialized(ServletContextEvent event) {
         MyService service = new MyService();
-        SingletonService<String> singleton = new SingletonService<String>(service, MyService.SERVICE_NAME);
+        SingletonService<Environment> singleton = new SingletonService<Environment>(service, MyService.SERVICE_NAME);
         singleton.setElectionPolicy(new PreferredSingletonElectionPolicy(new NamePreference(PREFERRED_NODE + "/" + SingletonService.DEFAULT_CONTAINER), new SimpleSingletonElectionPolicy()));
-        ServiceController<String> controller = singleton.build(CurrentServiceContainer.getServiceContainer())
+        singleton.setClassResolver(new SimpleClassResolver(this.getClass().getClassLoader()));
+        ServiceController<Environment> controller = singleton.build(CurrentServiceContainer.getServiceContainer())
             .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.getEnvInjector())
             .install()
         ;

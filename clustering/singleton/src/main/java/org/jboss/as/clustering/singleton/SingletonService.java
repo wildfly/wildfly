@@ -34,21 +34,24 @@ import org.jboss.as.clustering.GroupRpcDispatcher;
 import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.as.clustering.service.ServiceProviderRegistry;
 import org.jboss.as.clustering.service.ServiceProviderRegistryService;
+import org.jboss.marshalling.ClassResolver;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
+import org.jboss.msc.service.ValueService;
+import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 
 /**
  * Decorates an MSC service ensuring that it is only started on one node in the cluster at any given time.
  * @author Paul Ferraro
  */
-public class SingletonService<T extends Serializable> extends AsynchronousService<T> implements ServiceProviderRegistry.Listener, StopContext, SingletonRpcHandler<T> {
+public class SingletonService<T extends Serializable> extends AsynchronousService<T> implements ServiceProviderRegistry.Listener, SingletonRpcHandler<T>, Singleton {
 
     public static final String DEFAULT_CONTAINER = "cluster";
 
@@ -56,18 +59,21 @@ public class SingletonService<T extends Serializable> extends AsynchronousServic
     private final InjectedValue<GroupRpcDispatcher> dispatcherRef = new InjectedValue<GroupRpcDispatcher>();
     private final Service<T> service;
     private final ServiceName serviceName;
+    private final ServiceName singletonServiceName;
     private final AtomicBoolean master = new AtomicBoolean(false);
 
     volatile ServiceProviderRegistry registry;
     volatile GroupRpcDispatcher dispatcher;
+    private volatile ClassResolver resolver;
     private volatile SingletonElectionPolicy electionPolicy;
     private volatile SingletonRpcHandler<T> handler;
-    private volatile StartContext context;
+    private volatile ServiceRegistry container;
     private volatile boolean restartOnMerge = true;
 
     public SingletonService(Service<T> service, ServiceName serviceName) {
         this.service = service;
-        this.serviceName = serviceName;
+        this.serviceName = serviceName.append("service");
+        this.singletonServiceName = serviceName;
     }
 
     public ServiceBuilder<T> build(ServiceContainer target) {
@@ -81,7 +87,9 @@ public class SingletonService<T extends Serializable> extends AsynchronousServic
                 new ServiceProviderRegistryService().build(target, container).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
             }
         }
-        return target.addService(this.serviceName, this)
+        target.addService(this.serviceName, this.service).setInitialMode(ServiceController.Mode.NEVER).install();
+        target.addService(this.singletonServiceName.append("singleton"), new ValueService<Singleton>(new ImmediateValue<Singleton>(this))).addDependency(this.singletonServiceName).setInitialMode(ServiceController.Mode.PASSIVE).install();
+        return target.addService(this.singletonServiceName, this)
             .addDependency(ServiceProviderRegistryService.getServiceName(container), ServiceProviderRegistry.class, this.registryRef)
             .addDependency(ServiceName.JBOSS.append(DEFAULT_CONTAINER, container), GroupRpcDispatcher.class, this.dispatcherRef)
         ;
@@ -89,7 +97,7 @@ public class SingletonService<T extends Serializable> extends AsynchronousServic
 
     @Override
     public void start(final StartContext context) throws StartException {
-        this.context = context;
+        this.container = context.getController().getServiceContainer();
         super.start(context);
     }
 
@@ -97,17 +105,30 @@ public class SingletonService<T extends Serializable> extends AsynchronousServic
     protected void start() {
         this.dispatcher = this.dispatcherRef.getValue();
         this.registry = this.registryRef.getValue();
-        final String name = this.serviceName.getCanonicalName();
+        final String name = this.singletonServiceName.getCanonicalName();
         this.handler = new RpcHandler(this.dispatcher, name);
-        this.dispatcher.registerRPCHandler(name, this, SingletonService.class.getClassLoader());
+        if (this.resolver != null) {
+            this.dispatcher.registerRPCHandler(name, this, this.resolver);
+        } else {
+            this.dispatcher.registerRPCHandler(name, this);
+        }
         this.registry.register(name, this);
     }
 
     @Override
     protected void stop() {
-        String name = this.serviceName.getCanonicalName();
+        String name = this.singletonServiceName.getCanonicalName();
         this.registry.unregister(name);
         this.dispatcher.unregisterRPCHandler(name, this);
+    }
+
+    @Override
+    public boolean isMaster() {
+        return this.master.get();
+    }
+
+    public void setClassResolver(ClassResolver resolver) {
+        this.resolver = resolver;
     }
 
     public void setElectionPolicy(SingletonElectionPolicy electionPolicy) {
@@ -128,18 +149,19 @@ public class SingletonService<T extends Serializable> extends AsynchronousServic
                     this.startNewMaster();
                 }
             } else {
-                SingletonLogger.ROOT_LOGGER.electedMaster(this.serviceName.getCanonicalName());
+                SingletonLogger.ROOT_LOGGER.electedMaster(this.singletonServiceName.getCanonicalName());
                 this.handler.stopOldMaster();
                 this.startNewMaster();
             }
         } else if (this.master.get()) {
-            SingletonLogger.ROOT_LOGGER.electedSlave(this.serviceName.getCanonicalName());
+            SingletonLogger.ROOT_LOGGER.electedSlave(this.singletonServiceName.getCanonicalName());
             this.stopOldMaster();
         }
     }
 
     private boolean elected(Set<ClusterNode> candidates) {
         ClusterNode elected = this.election(candidates);
+        SingletonLogger.ROOT_LOGGER.elected(elected.getName(), this.singletonServiceName.getCanonicalName());
         return (elected != null) ? elected.equals(this.dispatcher.getClusterNode()) : false;
     }
 
@@ -155,12 +177,7 @@ public class SingletonService<T extends Serializable> extends AsynchronousServic
 
     private void startNewMaster() {
         this.master.set(true);
-        try {
-            this.service.start(this.context);
-        } catch (StartException e) {
-            this.master.set(false);
-            throw new RuntimeException(e);
-        }
+        this.container.getRequiredService(this.serviceName).setMode(ServiceController.Mode.ACTIVE);
     }
 
     @Override
@@ -177,33 +194,8 @@ public class SingletonService<T extends Serializable> extends AsynchronousServic
     @Override
     public void stopOldMaster() {
         if (this.master.compareAndSet(true, false)) {
-            this.service.stop(this);
+            this.container.getRequiredService(this.serviceName).setMode(ServiceController.Mode.NEVER);
         }
-    }
-
-    @Override
-    public void asynchronous() throws IllegalStateException {
-        this.context.asynchronous();
-    }
-
-    @Override
-    public void complete() throws IllegalStateException {
-        this.context.complete();
-    }
-
-    @Override
-    public long getElapsedTime() {
-        return this.context.getElapsedTime();
-    }
-
-    @Override
-    public ServiceController<?> getController() {
-        return this.context.getController();
-    }
-
-    @Override
-    public void execute(Runnable command) {
-        this.context.execute(command);
     }
 
     private class RpcHandler implements SingletonRpcHandler<T> {
