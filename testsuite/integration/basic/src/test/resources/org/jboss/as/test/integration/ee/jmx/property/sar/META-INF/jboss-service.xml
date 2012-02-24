@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<server
+	xmlns="urn:jboss:service:7.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="urn:jboss:service:7.0 jboss-service_7_0.xsd">
+
+	<mbean
+		code="org.jboss.as.test.integration.ee.jmx.property.WithProperties" name="test:service=WithProperties">
+		<attribute name="Boolean">true</attribute>
+		<attribute name="Char">R</attribute>
+		<attribute name="Byte">1</attribute>
+		<attribute name="Short">1</attribute>
+		<attribute name="Integer">1</attribute>
+		<attribute name="Long">1</attribute>
+		<attribute name="Float">1</attribute>
+		<attribute name="Double">1</attribute>
+		<attribute name="AtomicBoolean">true</attribute>
+		<attribute name="AtomicInteger">3</attribute>
+		<attribute name="AtomicLong">2</attribute>
+		<attribute name="BigDecimal">10000000</attribute>
+		<attribute name="File">test.x</attribute>
+		<attribute name="InetAddress">127.0.0.1</attribute>
+		<attribute name="Locale">en_CA</attribute>
+		<attribute name="Properties">prop=value</attribute>
+		<attribute name="URI">x</attribute>
+		<attribute name="URL">http://redhat.com</attribute>
+	</mbean>
+
+</server>
