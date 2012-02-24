@@ -28,8 +28,10 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.web.security.SecuredServlet;
 import org.jboss.as.test.integration.web.security.WebSecurityPasswordBasedBase;
+import org.jboss.as.test.integration.web.security.WebTestsSecurityDomainSetup;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Before;
@@ -43,6 +45,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@ServerSetup(WebTestsSecurityDomainSetup.class)
 public class WebSecurityJBossWebXmlSecurityRolesTestCase extends WebSecurityFORMTestCase {
 
     public static final String deploymentName = "web-secure.war";
@@ -61,9 +64,6 @@ public class WebSecurityJBossWebXmlSecurityRolesTestCase extends WebSecurityFORM
 
     @Deployment(name = deploymentName, order = 1, testable = false)
     public static WebArchive deployment() throws Exception {
-        // FIXME hack to get things prepared before the deployment happens
-        // create required security domains
-        createSecurityDomain();
 
         WebArchive war = ShrinkWrap.create(WebArchive.class, "web-secure.war");
         war.addClasses(SecuredServlet.class);

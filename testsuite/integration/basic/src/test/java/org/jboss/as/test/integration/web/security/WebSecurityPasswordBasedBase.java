@@ -29,7 +29,7 @@ import org.junit.Test;
  *
  * @author Anil Saldhana
  */
-public abstract class WebSecurityPasswordBasedBase extends SecurityTest {
+public abstract class WebSecurityPasswordBasedBase {
 
     private String hostname = "localhost";
     private int port = 8080;
