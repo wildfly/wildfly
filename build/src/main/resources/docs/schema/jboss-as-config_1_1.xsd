@@ -239,7 +239,7 @@
         <xs:sequence>
             <xs:element name="server-identities" type="server-identitiesType" minOccurs="0" />
             <xs:element name="authentication" type="authenticationType" minOccurs="0" />
-            <xs:element name="authorization" type="authorizationType" minOccurs="0" /> 
+            <xs:element name="authorization" type="authorizationType" minOccurs="0" />
         </xs:sequence>
         <xs:attribute name="name" type="xs:string" use="required">
             <xs:annotation>
@@ -249,21 +249,21 @@
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
-    
+
     <xs:complexType name="authorizationType">
         <xs:annotation>
             <xs:documentation>
                 Configuration defining how to load the authorization information for the authenticated user.
-                
-                After a user has been authenticated additional information such as roles can be loaded and 
-                associated with the user for subsequent authorization checks, this type is used to define 
-                how the roles are loaded.                
+
+                After a user has been authenticated additional information such as roles can be loaded and
+                associated with the user for subsequent authorization checks, this type is used to define
+                how the roles are loaded.
             </xs:documentation>
         </xs:annotation>
-        <xs:sequence>                                                        
+        <xs:sequence>
             <xs:element name="properties" type="propertiesFileType" minOccurs="1" />  <!-- minOccurs="1" while this is the only mech -->
         </xs:sequence>
-    </xs:complexType>    
+    </xs:complexType>
 
     <xs:complexType name="server-identitiesType">
         <xs:annotation>
@@ -481,7 +481,7 @@
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
-        
+
     <xs:complexType name="propertiesFileType">
         <xs:annotation>
             <xs:documentation>
@@ -506,7 +506,7 @@
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
-    
+
     <xs:complexType name="propertiesAuthenticationType">
         <xs:annotation>
             <xs:documentation>
@@ -528,7 +528,7 @@
                     </xs:annotation>
             </xs:attribute>
             </xs:extension>
-        </xs:complexContent>                                
+        </xs:complexContent>
     </xs:complexType>
 
     <xs:complexType name="host-management-interfacesType">
@@ -612,6 +612,7 @@
                 <xs:sequence>
                     <xs:element name="socket" type="http-management-socketType"/>
                 </xs:sequence>
+                <xs:attribute name="console-enabled" type="xs:boolean" use="optional" default="true"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
@@ -722,7 +723,7 @@
                     <xs:element name="socket" type="http-management-socketType"/>
                     <xs:element name="socket-binding" type="http-management-socket-binding-refType"/>
                 </xs:choice>
-                <xs:attribute name="console-enabled" type="xs:boolean" use="optional"/>
+                <xs:attribute name="console-enabled" type="xs:boolean" use="optional" default="true"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
