@@ -170,16 +170,21 @@ public class JPA2LCTestCase {
 
  	// Check if evicting entity second level cache is working as expected
 	@Test
-	@Ignore  //FIXME - disabled: AS7-3541
+	@Ignore  //FIXME AS7-3541, fixed in Hibernate 4.1.0
  	public void testEvictEntityCache() throws Exception {
 
  		SFSB2LC sfsb = lookup("SFSB2LC", SFSB2LC.class);
- 		String message = sfsb.evict2LCCheck(getCacheRegionName());
+ 		String message = sfsb.addEntitiesAndEvictAll(getCacheRegionName());
 
  		if (!message.equals("OK")){
  			fail(message);
  		}
+ 		
+ 		message = sfsb.evictedEntityCacheCheck(getCacheRegionName());
 
+ 		if (!message.equals("OK")){
+ 			fail(message);
+ 		}
  	}
 
  	// When query caching is enabled, running the same query twice 
@@ -225,7 +230,7 @@ public class JPA2LCTestCase {
  	
  	// Check if evicting query cache is working as expected
  	@Test
-	@Ignore  //FIXME - disabled: AS7-3541
+	@Ignore  //FIXME HHH-7127, fixed in Hibernate 4.1.1
  	public void testEvictQueryCache() throws Exception {
 
  		SFSB2LC sfsb = lookup("SFSB2LC", SFSB2LC.class);
