@@ -959,6 +959,7 @@
             <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-blobstore"/>
             <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-bytecode"/>
             <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-capabilities"/>
+            <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-cluster"/>
             <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-common"/>
             <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-datastore"/>
             <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-environment"/>
