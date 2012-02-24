@@ -22,22 +22,23 @@
 
 package org.jboss.as.ejb3.component.messagedriven;
 
-import java.util.Properties;
-
-import javax.resource.spi.ActivationSpec;
-import javax.resource.spi.ResourceAdapter;
-
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
+import org.jboss.as.ejb3.component.EJBUtilities;
 import org.jboss.as.ejb3.component.pool.PoolConfig;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.as.ejb3.inflow.EndpointDeployer;
+import org.jboss.jca.core.spi.rar.Endpoint;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.value.InjectedValue;
+
+import javax.resource.spi.ActivationSpec;
+import javax.resource.spi.ResourceAdapter;
+import java.util.Properties;
 
 /**
  * @author Stuart Douglas
@@ -50,6 +51,7 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
     private final InjectedValue<ResourceAdapter> resourceAdapterInjectedValue = new InjectedValue<ResourceAdapter>();
     private final InjectedValue<PoolConfig> poolConfig = new InjectedValue<PoolConfig>();
     private final InjectedValue<DefaultResourceAdapterService> defaultResourceAdapterServiceInjectedValue = new InjectedValue<DefaultResourceAdapterService>();
+    private final InjectedValue<EJBUtilities> ejbUtilitiesInjectedValue = new InjectedValue<EJBUtilities>();
 
     /**
      * Construct a new instance.
@@ -77,14 +79,21 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
     @Override
     protected BasicComponent createComponent() {
         final String activeResourceAdapterName;
-        if (resourceAdapterName == null)
+        if (resourceAdapterName == null) {
             activeResourceAdapterName = defaultResourceAdapterServiceInjectedValue.getValue().getDefaultResourceAdapterName();
-        else
+        } else {
             activeResourceAdapterName = resourceAdapterName;
+        }
         final ActivationSpec activationSpec = getEndpointDeployer().createActivationSpecs(activeResourceAdapterName, messageListenerInterface, activationProps, getDeploymentClassLoader());
         final MessageDrivenComponent component = new MessageDrivenComponent(this, messageListenerInterface, activationSpec);
+        // set the resource adapter
         final ResourceAdapter resourceAdapter = this.resourceAdapterInjectedValue.getValue();
         component.setResourceAdapter(resourceAdapter);
+        // set the endpoint
+        final EJBUtilities ejbUtilities = this.ejbUtilitiesInjectedValue.getValue();
+        final Endpoint endpoint = ejbUtilities.getEndpoint(activeResourceAdapterName);
+        component.setEndpoint(endpoint);
+
         return component;
     }
 
@@ -110,6 +119,10 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
 
     public InjectedValue<ResourceAdapter> getResourceAdapterInjector() {
         return this.resourceAdapterInjectedValue;
+    }
+
+    public Injector<EJBUtilities> getEJBUtilitiesInjector() {
+        return this.ejbUtilitiesInjectedValue;
     }
 
     private String stripDotRarSuffix(final String raName) {

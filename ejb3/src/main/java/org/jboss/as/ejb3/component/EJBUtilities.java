@@ -40,6 +40,7 @@ import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.ejb3.inflow.EndpointDeployer;
 import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.jca.core.spi.rar.Activation;
+import org.jboss.jca.core.spi.rar.Endpoint;
 import org.jboss.jca.core.spi.rar.MessageListener;
 import org.jboss.jca.core.spi.rar.NotFoundException;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
@@ -79,6 +80,9 @@ public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
                 throw MESSAGES.unknownResourceAdapter(resourceAdapterName);
             }
             final ResourceAdapterRepository resourceAdapterRepository = getResourceAdapterRepository();
+            if (resourceAdapterRepository == null) {
+                throw EJB3_LOGGER.resourceAdapterRepositoryUnAvailable();
+            }
             // now get the message listeners for this specific ra identifier
             final List<MessageListener> messageListeners = resourceAdapterRepository.getMessageListeners(raIdentifier);
             if (messageListeners == null || messageListeners.isEmpty()) {
@@ -169,6 +173,30 @@ public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
 
     public boolean hasSecurityManager() {
         return securityManagerValue.getOptionalValue() != null;
+    }
+
+    /**
+     * Returns the {@link Endpoint} corresponding to the passed <code>resourceAdapterName</code>
+     *
+     * @param resourceAdapterName The resource adapter name
+     * @return
+     */
+    public Endpoint getEndpoint(final String resourceAdapterName) {
+        // first get the ra "identifier" (with which it is registered in the resource adapter repository) for the
+        // ra name
+        final String raIdentifier = ConnectorServices.getRegisteredResourceAdapterIdentifier(resourceAdapterName);
+        if (raIdentifier == null) {
+            throw MESSAGES.unknownResourceAdapter(resourceAdapterName);
+        }
+        final ResourceAdapterRepository resourceAdapterRepository = getResourceAdapterRepository();
+        if (resourceAdapterRepository == null) {
+            throw EJB3_LOGGER.resourceAdapterRepositoryUnAvailable();
+        }
+        try {
+            return resourceAdapterRepository.getEndpoint(raIdentifier);
+        } catch (NotFoundException nfe) {
+            throw EJB3_LOGGER.noSuchEndpointException(resourceAdapterName, nfe);
+        }
     }
 
     @Override

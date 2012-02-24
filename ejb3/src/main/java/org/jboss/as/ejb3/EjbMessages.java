@@ -2030,7 +2030,7 @@ public interface EjbMessages {
     IllegalStateException noEjbContextAvailable();
 
 
-    // STOP!!! Don't not add message ids greater that 14599!!! If you need more first check what EjbLogger is
+    // STOP!!! Don't add message ids greater that 14599!!! If you need more first check what EjbLogger is
     // using and take more (lower) numbers from the available range for this module. If the range for the module is
     // all used, go to https://community.jboss.org/docs/DOC-16810 and allocate another block for this subsystem
 }

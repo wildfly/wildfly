@@ -24,21 +24,12 @@
 
 package org.jboss.as.ejb3;
 
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.INFO;
-import static org.jboss.logging.Logger.Level.WARN;
-
-import java.io.File;
-import java.lang.reflect.Method;
-import java.util.Date;
-
-import javax.ejb.Timer;
-
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
 import org.jboss.as.ejb3.timerservice.TimerImpl;
 import org.jboss.ejb.client.EJBLocator;
 import org.jboss.ejb.client.SessionID;
+import org.jboss.jca.core.spi.rar.NotFoundException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
@@ -46,6 +37,14 @@ import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 import org.jboss.remoting3.Channel;
+
+import javax.ejb.Timer;
+import javax.resource.ResourceException;
+import java.io.File;
+import java.lang.reflect.Method;
+import java.util.Date;
+
+import static org.jboss.logging.Logger.Level.*;
 
 /**
  * This module is using message IDs in the range 14100-14599. This file is using the subset 14100-14149 for
@@ -72,7 +71,7 @@ public interface EjbLogger extends BasicLogger {
     /**
      * Logs an error message indicating an exception occurred while removing the an inactive bean.
      *
-     * @param id    the session id that could not be removed
+     * @param id the session id that could not be removed
      */
     @LogMessage(level = ERROR)
     @Message(id = 14100, value = "Failed to remove %s from cache")
@@ -357,7 +356,7 @@ public interface EjbLogger extends BasicLogger {
      * Log message indicating that a unsupported client marshalling strategy was received from a remote client
      *
      * @param strategy The client marshalling strategy
-     * @param channel The channel on which the client marshalling strategy was received
+     * @param channel  The channel on which the client marshalling strategy was received
      */
     @LogMessage(level = INFO)
     @Message(id = 14139, value = "Unsupported client marshalling strategy %s received on channel %s ,no further communication will take place")
@@ -368,7 +367,7 @@ public interface EjbLogger extends BasicLogger {
      * Log message indicating that some error caused a channel to be closed
      *
      * @param channel The channel being closed
-     * @param t The cause
+     * @param t       The cause
      */
     @LogMessage(level = ERROR)
     @Message(id = 14140, value = "Closing channel %s due to an error")
@@ -389,8 +388,8 @@ public interface EjbLogger extends BasicLogger {
      * Logs a message which includes the resource adapter name and the destination on which a message driven bean
      * is listening
      *
-     * @param mdbName     The message driven bean name
-     * @param raName      The resource adapter name
+     * @param mdbName The message driven bean name
+     * @param raName  The resource adapter name
      */
     @LogMessage(level = INFO)
     @Message(id = 14142, value = "Started message driven bean '%s' with '%s' resource adapter")
@@ -402,4 +401,50 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 14143, value = "Timer %s is still active, skipping overlapping scheduled execution at: %s")
     void skipOverlappingInvokeTimeout(String id, Date scheduledTime);
+
+    /**
+     * Returns a {@link IllegalStateException} indicating that {@link org.jboss.jca.core.spi.rar.ResourceAdapterRepository}
+     * was unavailable
+     *
+     * @return
+     */
+    @Message(id = 14144, value = "Resource adapter repository is not available")
+    IllegalStateException resourceAdapterRepositoryUnAvailable();
+
+    /**
+     * Returns a {@link IllegalArgumentException} indicating that no {@link org.jboss.jca.core.spi.rar.Endpoint}
+     * could be found for a resource adapter named <code>resourceAdapterName</code>
+     *
+     * @param resourceAdapterName The name of the resource adapter
+     * @param notFoundException   The original exception cause
+     * @return
+     */
+    @Message(id = 14145, value = "Could not find an Endpoint for resource adapter %s")
+    IllegalArgumentException noSuchEndpointException(final String resourceAdapterName, @Cause NotFoundException notFoundException);
+
+    /**
+     * Returns a {@link IllegalStateException} indicating that the {@link org.jboss.jca.core.spi.rar.Endpoint}
+     * is not available
+     *
+     * @param componentName The MDB component name
+     * @return
+     */
+    @Message(id = 14146, value = "Endpoint is not available for message driven component %s")
+    IllegalStateException endpointUnAvailable(String componentName);
+
+    /**
+     * Returns a {@link RuntimeException} indicating that the {@link org.jboss.jca.core.spi.rar.Endpoint}
+     * for the message driven component, could not be deactivated
+     *
+     * @param componentName The message driven component name
+     * @param cause         Original cause
+     * @return
+     */
+    @Message(id = 14147, value = "Could not deactive endpoint for message driven component %s")
+    RuntimeException failureDuringEndpointDeactivation(final String componentName, @Cause ResourceException cause);
+
+    // Don't add message ids greater that 14299!!! If you need more first check what EjbMessages is
+    // using and take more (lower) numbers from the available range for this module. If the range for the module is
+    // all used, go to https://community.jboss.org/docs/DOC-16810 and allocate another block for this subsystem
+
 }
