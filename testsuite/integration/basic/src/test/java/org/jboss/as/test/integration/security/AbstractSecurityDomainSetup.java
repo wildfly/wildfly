@@ -32,19 +32,15 @@ public abstract class AbstractSecurityDomainSetup implements ServerSetupTask {
     }
 
     protected static void applyUpdate(final ModelControllerClient client, ModelNode update, boolean allowFailure) throws Exception {
-        try {
-            ModelNode result = client.execute(new OperationBuilder(update).build());
-            if (result.hasDefined("outcome") && (allowFailure || "success".equals(result.get("outcome").asString()))) {
-                if (result.hasDefined("result")) {
-                    System.out.println(result.get("result"));
-                }
-            } else if (result.hasDefined("failure-description")) {
-                throw new RuntimeException(result.get("failure-description").toString());
-            } else {
-                throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
+        ModelNode result = client.execute(new OperationBuilder(update).build());
+        if (result.hasDefined("outcome") && (allowFailure || "success".equals(result.get("outcome").asString()))) {
+            if (result.hasDefined("result")) {
+                System.out.println(result.get("result"));
             }
-        } finally {
-            client.close();
+        } else if (result.hasDefined("failure-description")) {
+            throw new RuntimeException(result.get("failure-description").toString());
+        } else {
+            throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
         }
     }
 
