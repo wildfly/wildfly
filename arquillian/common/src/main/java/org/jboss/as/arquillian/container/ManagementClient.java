@@ -59,7 +59,6 @@ public class ManagementClient {
 
     private static final String SUBDEPLOYMENT = "subdeployment";
     private static final String WEB = "web";
-    private static final String JMX = "jmx";
 
     private static final String NAME = "name";
     private static final String SERVLET = "servlet";
@@ -330,7 +329,7 @@ public class ManagementClient {
         return connection;
     }
 
-    private JMXServiceURL getRemoteJMXURL() {
+    public JMXServiceURL getRemoteJMXURL() {
         try {
             return new JMXServiceURL("service:jmx:remoting-jmx://" + NetworkUtils.formatPossibleIpv6Address(mgmtAddress) + ":" + mgmtPort);
         } catch (Exception e) {
@@ -338,4 +337,11 @@ public class ManagementClient {
         }
     }
 
+    public int getMgmtPort() {
+        return mgmtPort;
+    }
+
+    public String getMgmtAddress() {
+        return NetworkUtils.formatPossibleIpv6Address(mgmtAddress);
+    }
 }

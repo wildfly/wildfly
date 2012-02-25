@@ -45,6 +45,7 @@ import org.jboss.as.arquillian.container.Authentication;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.arquillian.protocol.jmx.JMXProtocolAS7.ServiceArchiveHolder;
 import org.jboss.as.arquillian.service.ArquillianService;
+import org.jboss.as.arquillian.service.InContainerExtension;
 import org.jboss.as.arquillian.service.JMXProtocolEndpointExtension;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceActivator;
@@ -133,6 +134,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
             archive.merge(aux);
         }
         loadableExtensions.add(JMXProtocolEndpointExtension.class.getName());
+        loadableExtensions.add(InContainerExtension.class.getName());
 
         // Generate the manifest with it's dependencies
         archive.setManifest(new Asset() {

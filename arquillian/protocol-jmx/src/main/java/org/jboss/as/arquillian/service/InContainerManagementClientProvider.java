@@ -53,28 +53,30 @@ public class InContainerManagementClientProvider implements ResourceProvider {
         if (current != null) {
             return current;
         }
-        final URL url = getClass().getClassLoader().getResource("META-INF/org.jboss.as.managementConnectionProps");
-        if (url != null) {
+        final URL resourceUrl = getClass().getClassLoader().getResource("META-INF/org.jboss.as.managementConnectionProps");
+        if (resourceUrl != null) {
             InputStream in = null;
             String managementPort;
             String address;
             try {
-                in = url.openStream();
+                in = resourceUrl.openStream();
                 ObjectInputStream inputStream = new ObjectInputStream(in);
-                managementPort = (String)inputStream.readObject();
+                managementPort = (String) inputStream.readObject();
                 address = (String) inputStream.readObject();
-                if(address == null) {
+                if (address == null) {
                     address = "127.0.0.1";
                 }
-                if(managementPort == null) {
+                if (managementPort == null) {
                     managementPort = "9999";
                 }
-                int realPort = Integer.parseInt(managementPort);
-                ModelControllerClient modelControllerClient = ModelControllerClient.Factory.create(
+                ModelControllerClient modelControllerClient = null;
+                final int port = Integer.parseInt(managementPort);
+                modelControllerClient = ModelControllerClient.Factory.create(
                         address,
-                        realPort,
+                        port,
                         getCallbackHandler());
-                current = new ManagementClient(modelControllerClient, address, realPort);
+                current = new ManagementClient(modelControllerClient, address, port);
+
             } catch (IOException e) {
                 throw new RuntimeException(e);
             } catch (ClassNotFoundException e) {
