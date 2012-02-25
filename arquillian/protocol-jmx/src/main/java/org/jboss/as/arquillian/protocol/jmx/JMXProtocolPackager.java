@@ -39,6 +39,10 @@ import org.jboss.arquillian.container.test.spi.TestDeployment;
 import org.jboss.arquillian.container.test.spi.client.deployment.DeploymentPackager;
 import org.jboss.arquillian.container.test.spi.client.deployment.ProtocolArchiveProcessor;
 import org.jboss.arquillian.protocol.jmx.AbstractJMXProtocol;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.Authentication;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.arquillian.protocol.jmx.JMXProtocolAS7.ServiceArchiveHolder;
 import org.jboss.as.arquillian.service.ArquillianService;
 import org.jboss.as.arquillian.service.JMXProtocolEndpointExtension;
@@ -105,6 +109,8 @@ public class JMXProtocolPackager implements DeploymentPackager {
 
         archive.addPackage(ArquillianService.class.getPackage());
         archive.addPackage(AbstractJMXProtocol.class.getPackage());
+        //add the classes required for server setup
+        archive.addClasses(ServerSetup.class, ServerSetupTask.class, ManagementClient.class, Authentication.class);
 
         // Merge the auxiliary archives and collect the loadable extensions
         final Set<String> loadableExtensions = new HashSet<String>();
@@ -135,6 +141,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
                 StringBuffer dependencies = new StringBuffer();
                 dependencies.append("org.jboss.as.jmx,");
                 dependencies.append("org.jboss.as.server,");
+                dependencies.append("org.jboss.as.controller-client,");
                 dependencies.append("org.jboss.as.osgi,");
                 dependencies.append("org.jboss.jandex,");
                 dependencies.append("org.jboss.logging,");
