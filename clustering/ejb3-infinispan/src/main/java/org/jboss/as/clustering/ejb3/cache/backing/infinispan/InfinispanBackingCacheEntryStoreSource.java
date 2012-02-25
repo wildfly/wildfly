@@ -88,11 +88,11 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
 
     @Override
     public void addDependencies(ServiceTarget target, ServiceBuilder<?> builder) {
-        // install the GroupCommunicationService
-        final CoreGroupCommunicationService groupCommunicationService = new CoreGroupCommunicationService(SCOPE_ID);
-        groupCommunicationService.build(target, this.cacheContainerName).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        ServiceName groupCacheServiceName = CacheService.getServiceName(this.cacheContainerName, this.beanCacheName);
+        // AS7-3906 Ensure that the cache manager's rpc dispatcher starts before GroupCommunicationService's
+        new CoreGroupCommunicationService(SCOPE_ID).build(target, this.cacheContainerName).addDependency(groupCacheServiceName).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
         new SharedLocalYieldingClusterLockManagerService(this.cacheContainerName).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
-        builder.addDependency(CacheService.getServiceName(this.cacheContainerName, this.beanCacheName), Cache.class, this.groupCache);
+        builder.addDependency(groupCacheServiceName, Cache.class, this.groupCache);
         builder.addDependency(SharedLocalYieldingClusterLockManagerService.getServiceName(this.cacheContainerName), SharedLocalYieldingClusterLockManager.class, this.lockManager);
 
         ServiceName registryServiceName = ClusteredBackingCacheEntryStoreSourceService.getClientMappingRegistryServiceName(this.cacheContainerName);

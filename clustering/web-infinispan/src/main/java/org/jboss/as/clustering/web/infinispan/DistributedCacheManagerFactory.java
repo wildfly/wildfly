@@ -115,7 +115,8 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
         ServiceName registryServiceName = cacheServiceName.append("registry");
         synchronized (this) {
             if (serviceContainer.getService(lockManagerServiceName) == null) {
-                new CoreGroupCommunicationService(SCOPE_ID).build(target, container).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+                // AS7-3906 Ensure that the cache manager's rpc dispatcher starts before GroupCommunicationService's
+                new CoreGroupCommunicationService(SCOPE_ID).build(target, container).addDependency(cacheServiceName).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
                 new SharedLocalYieldingClusterLockManagerService(container).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
             }
             if (serviceContainer.getService(registryServiceName) == null) {
