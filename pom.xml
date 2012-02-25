@@ -88,7 +88,6 @@
         <version.com.h2database>1.3.161</version.com.h2database>
         <version.dom4j>1.6.1</version.dom4j>
         <version.gnu.getopt>1.0.13</version.gnu.getopt>
-        <version.jacorb>2.3.1.jbossorg-1</version.jacorb>
         <version.javax.activation>1.1.1</version.javax.activation>
         <version.javax.enterprise>1.0-SP4</version.javax.enterprise>
         <version.javax.faces.jsf-api.1.2>1.2_15-jbossorg-2</version.javax.faces.jsf-api.1.2>
@@ -136,6 +135,7 @@
         <version.org.hibernate.validator>4.2.0.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.2.11.Final</version.org.hornetq>
         <version.org.infinispan>5.1.1.FINAL</version.org.infinispan>
+        <version.org.jacorb>2.3.1.jbossorg-1</version.org.jacorb>
         <version.org.javassist>3.15.0-GA</version.org.javassist>
         <version.org.jdom>1.1.2</version.org.jdom>
         <version.org.jboss.arquillian.core>1.0.0.CR7</version.org.jboss.arquillian.core>
@@ -1308,7 +1308,7 @@
             <dependency>
                 <groupId>org.jacorb</groupId>
                 <artifactId>jacorb</artifactId>
-                <version>${version.jacorb}</version>
+                <version>${version.org.jacorb}</version>
             </dependency>
 
             <dependency>
