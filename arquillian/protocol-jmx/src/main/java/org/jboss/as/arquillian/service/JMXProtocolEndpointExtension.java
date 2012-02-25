@@ -18,7 +18,6 @@
 package org.jboss.as.arquillian.service;
 
 import org.jboss.arquillian.protocol.jmx.JMXExtension;
-import org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider;
 
 /**
  * JMXProtocolEndpointExtension
@@ -31,7 +30,5 @@ public class JMXProtocolEndpointExtension extends JMXExtension {
     @Override
     public void register(ExtensionBuilder builder) {
         super.register(builder);
-        builder.observer(InContainerManagementClientProvider.class);
-        builder.service(ResourceProvider.class, InContainerManagementClientProvider.class);
     }
 }
