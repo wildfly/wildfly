@@ -17,7 +17,10 @@
  */
 package org.jboss.as.arquillian.protocol.jmx;
 
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectOutputStream;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.jboss.arquillian.container.spi.Container;
@@ -28,6 +31,8 @@ import org.jboss.arquillian.core.api.annotation.Observes;
 import org.jboss.as.arquillian.protocol.jmx.JMXProtocolAS7.ServiceArchiveHolder;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
 /**
  * A deployer for the Arquillian JMXProtocol endpoint.
@@ -52,9 +57,19 @@ public class ArquillianServiceDeployer {
 
         // only deploy the service if the deployment has been enriched by the jmx-as7 protocol
         if(archiveHolder.deploymentExistsAndRemove(event.getDeployment().getName())) {
-            Archive<?> serviceArchive = archiveHolder.getArchive();
+            JavaArchive serviceArchive = (JavaArchive) archiveHolder.getArchive();
             try {
                 log.infof("Deploy arquillian service: %s", serviceArchive);
+                final Map<String, String> props = container.getContainerConfiguration().getContainerProperties();
+                    //MASSIVE HACK
+                    //write the management connection props to the archive, so we can access them from the server
+                    final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+                    ObjectOutputStream out = new ObjectOutputStream(bytes);
+                    out.writeObject(props.get("managementPort"));
+                    out.writeObject(props.get("managementAddress"));
+                    out.close();
+                    serviceArchive.addAsManifestResource(new ByteArrayAsset(bytes.toByteArray()), "org.jboss.as.managementConnectionProps");
+
                 DeployableContainer<?> deployableContainer = container.getDeployableContainer();
                 deployableContainer.deploy(serviceArchive);
                 serviceArchiveDeployed.add(container.getName());

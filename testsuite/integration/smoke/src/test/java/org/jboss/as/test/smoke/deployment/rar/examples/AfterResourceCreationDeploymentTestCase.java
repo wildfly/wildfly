@@ -91,7 +91,7 @@ public class AfterResourceCreationDeploymentTestCase extends AbstractMgmtTestBas
     }
 
     @AfterClass
-    public void tearDown() throws Exception {
+    public static void tearDown() throws Exception {
 
         final ModelNode address = new ModelNode();
         address.add("subsystem", "resource-adapters");
