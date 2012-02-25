@@ -25,11 +25,12 @@ import javax.management.Attribute;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.smoke.modular.utils.PollingUtils;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -44,6 +45,9 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class SarTestCase {
 
+    @ArquillianResource
+    private ManagementClient managementClient;
+
     @Deployment(testable = false)
     public static JavaArchive createDeployment() throws Exception {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "sar-example.sar");
@@ -54,7 +58,7 @@ public class SarTestCase {
 
     @Test
     public void testMBean() throws Exception {
-        MBeanServerConnection mbeanServer = JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:remoting-jmx://127.0.0.1:9999")).getMBeanServerConnection();
+        MBeanServerConnection mbeanServer = JMXConnectorFactory.connect(managementClient.getRemoteJMXURL()).getMBeanServerConnection();
         ObjectName objectName = new ObjectName("jboss:name=test,type=config");
         PollingUtils.retryWithTimeout(10000, new PollingUtils.WaitForMBeanTask(mbeanServer, objectName));
         mbeanServer.getAttribute(objectName, "IntervalSeconds");

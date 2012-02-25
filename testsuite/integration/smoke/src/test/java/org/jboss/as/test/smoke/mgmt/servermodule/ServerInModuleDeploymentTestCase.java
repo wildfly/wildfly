@@ -30,30 +30,31 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import javax.management.MBeanServerConnection;
-import javax.management.MBeanServerNotification;
-import javax.management.Notification;
-import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
 
 import junit.framework.Assert;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.test.smoke.mgmt.servermodule.archive.sar.Simple;
 import org.jboss.as.test.smoke.modular.utils.PollingUtils;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
-import org.jboss.as.test.smoke.mgmt.servermodule.archive.sar.Simple;
 import org.jboss.dmr.ModelNode;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ExplodedExporter;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -69,111 +70,108 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 /**
  * Tests deployment to a standalone server, both via the client API and by the
  * filesystem scanner.
+ *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 @RunWith(Arquillian.class)
-public class ServerInModuleDeploymentTestCase  {
+@RunAsClient
+public class ServerInModuleDeploymentTestCase {
+
+    //need for ArquillianResource injection to work correctly
+    @Deployment
+    public static Archive<?> deploy() {
+        return ShrinkWrap.create(JavaArchive.class);
+    }
+
+    @ArquillianResource
+    private ManagementClient managementClient;
 
     @Test
     public void testDeploymentStreamApi() throws Exception {
         final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar",
                 Simple.class.getPackage());
         final ServerDeploymentManager manager = ServerDeploymentManager.Factory
-                .create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
-        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
-        try {
-            testDeployments(client, new DeploymentExecutor() {
+                .create(InetAddress.getByName(managementClient.getMgmtAddress()), managementClient.getMgmtPort(), getCallbackHandler());
+        final ModelControllerClient client = managementClient.getControllerClient();
+        testDeployments(client, new DeploymentExecutor() {
 
-                @Override
-                public void initialDeploy() {
-                    final InputStream is = archive.as(ZipExporter.class).exportAsInputStream();
-                    try {
-                        Future<?> future = manager.execute(manager.newDeploymentPlan()
-                                .add("test-deployment.sar", is).deploy("test-deployment.sar").build());
-                        awaitDeploymentExecution(future);
-                    } finally {
-                        if(is != null) try {
-                            is.close();
-                        } catch (IOException ignore) {
-                            //
-                        }
-                    }
-                }
-
-                @Override
-                public void fullReplace() {
-                    final InputStream is = archive.as(ZipExporter.class).exportAsInputStream();
-                    try {
-                        Future<?> future = manager.execute(manager.newDeploymentPlan()
-                                .replace("test-deployment.sar", is).build());
-                        awaitDeploymentExecution(future);
-                    } finally {
-                        if(is != null) try {
-                            is.close();
-                        } catch (IOException ignore) {
-                            //
-                        }
-                    }
-                }
-
-                @Override
-                public void undeploy() {
-                    Future<?> future = manager.execute(manager.newDeploymentPlan().undeploy("test-deployment.sar")
-                            .remove("test-deployment.sar").build());
+            @Override
+            public void initialDeploy() {
+                final InputStream is = archive.as(ZipExporter.class).exportAsInputStream();
+                try {
+                    Future<?> future = manager.execute(manager.newDeploymentPlan()
+                            .add("test-deployment.sar", is).deploy("test-deployment.sar").build());
                     awaitDeploymentExecution(future);
+                } finally {
+                    if (is != null) try {
+                        is.close();
+                    } catch (IOException ignore) {
+                        //
+                    }
                 }
-            });
-        } finally {
-            if(client != null) try {
-                client.close();
-            } catch (IOException ignore) {
-                //
             }
-        }
+
+            @Override
+            public void fullReplace() {
+                final InputStream is = archive.as(ZipExporter.class).exportAsInputStream();
+                try {
+                    Future<?> future = manager.execute(manager.newDeploymentPlan()
+                            .replace("test-deployment.sar", is).build());
+                    awaitDeploymentExecution(future);
+                } finally {
+                    if (is != null) try {
+                        is.close();
+                    } catch (IOException ignore) {
+                        //
+                    }
+                }
+            }
+
+            @Override
+            public void undeploy() {
+                Future<?> future = manager.execute(manager.newDeploymentPlan().undeploy("test-deployment.sar")
+                        .remove("test-deployment.sar").build());
+                awaitDeploymentExecution(future);
+            }
+        });
     }
 
     @Test
     public void testDeploymentFileApi() throws Exception {
         final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar",
                 Simple.class.getPackage());
+
         final ServerDeploymentManager manager = ServerDeploymentManager.Factory
-                .create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
+                .create(InetAddress.getByName(managementClient.getMgmtAddress()), managementClient.getMgmtPort(), getCallbackHandler());
+        final ModelControllerClient client = managementClient.getControllerClient();
         final File dir = new File("target/archives");
         dir.mkdirs();
         final File file = new File(dir, "test-deployment.sar");
         archive.as(ZipExporter.class).exportTo(file, true);
 
-        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
-        try {
-            testDeployments(client, new DeploymentExecutor() {
+        testDeployments(client, new DeploymentExecutor() {
 
-                @Override
-                public void initialDeploy() throws IOException {
-                    Future<?> future = manager.execute(manager.newDeploymentPlan().add("test-deployment.sar", file)
-                            .deploy("test-deployment.sar").build());
-                    awaitDeploymentExecution(future);
-                }
-
-                @Override
-                public void fullReplace() throws IOException {
-                    Future<?> future = manager.execute(manager.newDeploymentPlan().replace("test-deployment.sar", file).build());
-                    awaitDeploymentExecution(future);
-                }
-
-                @Override
-                public void undeploy() {
-                    Future<?> future = manager.execute(manager.newDeploymentPlan().undeploy("test-deployment.sar")
-                            .remove("test-deployment.sar").build());
-                    awaitDeploymentExecution(future);
-                }
-            });
-        } finally {
-            if(client != null) try {
-                client.close();
-            } catch (IOException ignore) {
-                //
+            @Override
+            public void initialDeploy() throws IOException {
+                Future<?> future = manager.execute(manager.newDeploymentPlan().add("test-deployment.sar", file)
+                        .deploy("test-deployment.sar").build());
+                awaitDeploymentExecution(future);
             }
-        }
+
+            @Override
+            public void fullReplace() throws IOException {
+                Future<?> future = manager.execute(manager.newDeploymentPlan().replace("test-deployment.sar", file).build());
+                awaitDeploymentExecution(future);
+            }
+
+            @Override
+            public void undeploy() {
+                Future<?> future = manager.execute(manager.newDeploymentPlan().undeploy("test-deployment.sar")
+                        .remove("test-deployment.sar").build());
+                awaitDeploymentExecution(future);
+            }
+        });
+
     }
 
     @Test
@@ -199,111 +197,101 @@ public class ServerInModuleDeploymentTestCase  {
 
         final File deployDir = createDeploymentDir("marker-deployments");
 
-        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
+        ModelControllerClient client = managementClient.getControllerClient();
         final String scannerName = "markerZips";
         addDeploymentScanner(deployDir, client, scannerName, false);
 
-        try {
-            final File target = new File(deployDir, "test-deployment.sar");
-            final File deployed = new File(deployDir, "test-deployment.sar.deployed");
-            Assert.assertFalse(target.exists());
+        final File target = new File(deployDir, "test-deployment.sar");
+        final File deployed = new File(deployDir, "test-deployment.sar.deployed");
+        Assert.assertFalse(target.exists());
 
-            testDeployments(client, new DeploymentExecutor() {
-                @Override
-                public void initialDeploy() throws IOException {
-                    // Copy file to deploy directory
-                    final InputStream in = new BufferedInputStream(new FileInputStream(file));
+        testDeployments(client, new DeploymentExecutor() {
+            @Override
+            public void initialDeploy() throws IOException {
+                // Copy file to deploy directory
+                final InputStream in = new BufferedInputStream(new FileInputStream(file));
+                try {
+                    final OutputStream out = new BufferedOutputStream(new FileOutputStream(target));
                     try {
-                        final OutputStream out = new BufferedOutputStream(new FileOutputStream(target));
-                        try {
-                            int i = in.read();
-                            while (i != -1) {
-                                out.write(i);
-                                i = in.read();
-                            }
-                        } finally {
-                            StreamUtils.safeClose(out);
+                        int i = in.read();
+                        while (i != -1) {
+                            out.write(i);
+                            i = in.read();
                         }
-                    } finally {
-                        StreamUtils.safeClose(in);
-                    }
-                    // Create the .dodeploy file
-                    final File dodeploy = new File(deployDir, "test-deployment.sar.dodeploy");
-                    final OutputStream out = new BufferedOutputStream(new FileOutputStream(dodeploy));
-                    try {
-                        out.write("test-deployment.sar".getBytes());
                     } finally {
                         StreamUtils.safeClose(out);
                     }
-                    Assert.assertTrue(dodeploy.exists());
+                } finally {
+                    StreamUtils.safeClose(in);
                 }
-
-                @Override
-                public void fullReplace() throws IOException {
-                    // The test is going to call this as soon as the deployment
-                    // sends a notification
-                    // but often before the scanner has completed the process
-                    // and deleted the
-                    // .dodpeloy put down by initialDeploy(). So pause a bit to
-                    // let that complete
-                    // so we don't end up having our own file deleted
-                    final File dodeploy = new File(deployDir, "test-deployment.sar.dodeploy");
-                    final File isdeploying = new File(deployDir, "test-deployment.sar.isdeploying");
-                    for (int i = 0; i < 500; i++) {
-                        if (!dodeploy.exists() && !isdeploying.exists()) {
-                            break;
-                        }
-                        // Wait for the last action to complete :(
-                        try {
-                            Thread.sleep(10);
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                            break;
-                        }
-                    }
-
-                    if (dodeploy.exists()) {
-                        Assert.fail("initialDeploy step did not complete in a reasonably timely fashion");
-                    }
-
-                    // Copy file to deploy directory again
-                    initialDeploy();
+                // Create the .dodeploy file
+                final File dodeploy = new File(deployDir, "test-deployment.sar.dodeploy");
+                final OutputStream out = new BufferedOutputStream(new FileOutputStream(dodeploy));
+                try {
+                    out.write("test-deployment.sar".getBytes());
+                } finally {
+                    StreamUtils.safeClose(out);
                 }
-
-                @Override
-                public void undeploy() {
-                    final File dodeploy = new File(deployDir, "test-deployment.sar.dodeploy");
-                    final File isdeploying = new File(deployDir, "test-deployment.sar.isdeploying");
-                    for (int i = 0; i < 500; i++) {
-                        if (!dodeploy.exists() && !isdeploying.exists() && deployed.exists()) {
-                            break;
-                        }
-                        // Wait for the last action to complete :(
-                        try {
-                            Thread.sleep(10);
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                            break;
-                        }
-                    }
-                    if (dodeploy.exists() || !deployed.exists()) {
-                        Assert.fail("fullReplace step did not complete in a reasonably timely fashion");
-                    }
-
-                    // Delete file from deploy directory
-                    deployed.delete();
-                }
-            });
-        } finally {
-            try {
-                removeDeploymentScanner(client, scannerName);
-            } catch (Exception e) {
+                Assert.assertTrue(dodeploy.exists());
             }
-            try {
-                client.close();
-            } catch (Exception e) {
+
+            @Override
+            public void fullReplace() throws IOException {
+                // The test is going to call this as soon as the deployment
+                // sends a notification
+                // but often before the scanner has completed the process
+                // and deleted the
+                // .dodpeloy put down by initialDeploy(). So pause a bit to
+                // let that complete
+                // so we don't end up having our own file deleted
+                final File dodeploy = new File(deployDir, "test-deployment.sar.dodeploy");
+                final File isdeploying = new File(deployDir, "test-deployment.sar.isdeploying");
+                for (int i = 0; i < 500; i++) {
+                    if (!dodeploy.exists() && !isdeploying.exists()) {
+                        break;
+                    }
+                    // Wait for the last action to complete :(
+                    try {
+                        Thread.sleep(10);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
+
+                if (dodeploy.exists()) {
+                    Assert.fail("initialDeploy step did not complete in a reasonably timely fashion");
+                }
+
+                // Copy file to deploy directory again
+                initialDeploy();
             }
-        }
+
+            @Override
+            public void undeploy() {
+                final File dodeploy = new File(deployDir, "test-deployment.sar.dodeploy");
+                final File isdeploying = new File(deployDir, "test-deployment.sar.isdeploying");
+                for (int i = 0; i < 500; i++) {
+                    if (!dodeploy.exists() && !isdeploying.exists() && deployed.exists()) {
+                        break;
+                    }
+                    // Wait for the last action to complete :(
+                    try {
+                        Thread.sleep(10);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
+                if (dodeploy.exists() || !deployed.exists()) {
+                    Assert.fail("fullReplace step did not complete in a reasonably timely fashion");
+                }
+
+                // Delete file from deploy directory
+                deployed.delete();
+            }
+        });
+
     }
 
     @Test
@@ -317,102 +305,91 @@ public class ServerInModuleDeploymentTestCase  {
 
         final File deployDir = createDeploymentDir("auto-deployments");
 
-        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
+        ModelControllerClient client = managementClient.getControllerClient();
         final String scannerName = "autoZips";
         addDeploymentScanner(deployDir, client, scannerName, true);
 
-        try {
-            final File target = new File(deployDir, "test-deployment.sar");
-            final File deployed = new File(deployDir, "test-deployment.sar.deployed");
-            Assert.assertFalse(target.exists());
+        final File target = new File(deployDir, "test-deployment.sar");
+        final File deployed = new File(deployDir, "test-deployment.sar.deployed");
+        Assert.assertFalse(target.exists());
 
-            testDeployments(client, new DeploymentExecutor() {
-                @Override
-                public void initialDeploy() throws IOException {
-                    // Copy file to deploy directory
-                    final InputStream in = new BufferedInputStream(new FileInputStream(file));
+        testDeployments(client, new DeploymentExecutor() {
+            @Override
+            public void initialDeploy() throws IOException {
+                // Copy file to deploy directory
+                final InputStream in = new BufferedInputStream(new FileInputStream(file));
+                try {
+                    final OutputStream out = new BufferedOutputStream(new FileOutputStream(target));
                     try {
-                        final OutputStream out = new BufferedOutputStream(new FileOutputStream(target));
-                        try {
-                            int i = in.read();
-                            while (i != -1) {
-                                out.write(i);
-                                i = in.read();
-                            }
-                        } finally {
-                            StreamUtils.safeClose(out);
+                        int i = in.read();
+                        while (i != -1) {
+                            out.write(i);
+                            i = in.read();
                         }
                     } finally {
-                        StreamUtils.safeClose(in);
+                        StreamUtils.safeClose(out);
                     }
-
-                    Assert.assertTrue(file.exists());
+                } finally {
+                    StreamUtils.safeClose(in);
                 }
 
-                @Override
-                public void fullReplace() throws IOException {
-                    // The test is going to call this as soon as the deployment
-                    // sends a notification
-                    // but often before the scanner has completed the process
-                    // and deleted the
-                    // .isdeploying put down by deployment scanner. So pause a bit to
-                    // let that complete
-                    // so we don't end up having our own file deleted
-                    final File isdeploying = new File(deployDir, "test-deployment.sar.isdeploying");
-                    for (int i = 0; i < 500; i++) {
-                        if (!isdeploying.exists()) {
-                            break;
-                        }
-                        // Wait for the last action to complete :(
-                        try {
-                            Thread.sleep(10);
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                            break;
-                        }
-                    }
-
-                    if (isdeploying.exists()) {
-                        Assert.fail("initialDeploy step did not complete in a reasonably timely fashion");
-                    }
-
-                    // Copy file to deploy directory again
-                    initialDeploy();
-                }
-
-                @Override
-                public void undeploy() {
-                   final File isdeploying = new File(deployDir, "test-deployment.sar.isdeploying");
-                    for (int i = 0; i < 500; i++) {
-                        if (!isdeploying.exists() && deployed.exists()) {
-                            break;
-                        }
-                        // Wait for the last action to complete :(
-                        try {
-                            Thread.sleep(10);
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                            break;
-                        }
-                    }
-                    if (!deployed.exists()) {
-                        Assert.fail("fullReplace step did not complete in a reasonably timely fashion");
-                    }
-
-                    // Delete file from deploy directory
-                    target.delete();
-                }
-            });
-        } finally {
-            try {
-                removeDeploymentScanner(client, scannerName);
-            } catch (Exception e) {
+                Assert.assertTrue(file.exists());
             }
-            try {
-                client.close();
-            } catch (Exception e) {
+
+            @Override
+            public void fullReplace() throws IOException {
+                // The test is going to call this as soon as the deployment
+                // sends a notification
+                // but often before the scanner has completed the process
+                // and deleted the
+                // .isdeploying put down by deployment scanner. So pause a bit to
+                // let that complete
+                // so we don't end up having our own file deleted
+                final File isdeploying = new File(deployDir, "test-deployment.sar.isdeploying");
+                for (int i = 0; i < 500; i++) {
+                    if (!isdeploying.exists()) {
+                        break;
+                    }
+                    // Wait for the last action to complete :(
+                    try {
+                        Thread.sleep(10);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
+
+                if (isdeploying.exists()) {
+                    Assert.fail("initialDeploy step did not complete in a reasonably timely fashion");
+                }
+
+                // Copy file to deploy directory again
+                initialDeploy();
             }
-        }
+
+            @Override
+            public void undeploy() {
+                final File isdeploying = new File(deployDir, "test-deployment.sar.isdeploying");
+                for (int i = 0; i < 500; i++) {
+                    if (!isdeploying.exists() && deployed.exists()) {
+                        break;
+                    }
+                    // Wait for the last action to complete :(
+                    try {
+                        Thread.sleep(10);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
+                if (!deployed.exists()) {
+                    Assert.fail("fullReplace step did not complete in a reasonably timely fashion");
+                }
+
+                // Delete file from deploy directory
+                target.delete();
+            }
+        });
     }
 
     @Test
@@ -420,7 +397,7 @@ public class ServerInModuleDeploymentTestCase  {
 
         final File deployDir = createDeploymentDir("exploded-deployments");
 
-        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
+        ModelControllerClient client = managementClient.getControllerClient();
         final String scannerName = "exploded";
         addDeploymentScanner(deployDir, client, scannerName, false);
 
@@ -430,91 +407,80 @@ public class ServerInModuleDeploymentTestCase  {
         dir.mkdirs();
         archive.as(ExplodedExporter.class).exportExploded(deployDir);
 
-        try {
-            final File deployed = new File(deployDir, "test-deployment.sar.deployed");
-            Assert.assertFalse(deployed.exists());
+        final File deployed = new File(deployDir, "test-deployment.sar.deployed");
+        Assert.assertFalse(deployed.exists());
 
-            testDeployments(client, new DeploymentExecutor() {
-                @Override
-                public void initialDeploy() throws IOException {
+        testDeployments(client, new DeploymentExecutor() {
+            @Override
+            public void initialDeploy() throws IOException {
 
-                    // Create the .dodeploy file
-                    final File dodeploy = new File(deployDir, "test-deployment.sar.dodeploy");
-                    final OutputStream out = new BufferedOutputStream(new FileOutputStream(dodeploy));
+                // Create the .dodeploy file
+                final File dodeploy = new File(deployDir, "test-deployment.sar.dodeploy");
+                final OutputStream out = new BufferedOutputStream(new FileOutputStream(dodeploy));
+                try {
+                    out.write("test-deployment.sar".getBytes());
+                } finally {
+                    StreamUtils.safeClose(out);
+                }
+                Assert.assertTrue(dodeploy.exists());
+            }
+
+            @Override
+            public void fullReplace() throws IOException {
+                // The test is going to call this as soon as the deployment
+                // sends a notification
+                // but often before the scanner has completed the process
+                // and deleted the
+                // .dodpeloy put down by initialDeploy(). So pause a bit to
+                // let that complete
+                // so we don't end up having our own file deleted
+                final File dodeploy = new File(deployDir, "test-deployment.sar.dodeploy");
+                final File isdeploying = new File(deployDir, "test-deployment.sar.isdeploying");
+                for (int i = 0; i < 500; i++) {
+                    if (!dodeploy.exists() && !isdeploying.exists()) {
+                        break;
+                    }
+                    // Wait for the last action to complete :(
                     try {
-                        out.write("test-deployment.sar".getBytes());
-                    } finally {
-                        StreamUtils.safeClose(out);
+                        Thread.sleep(10);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        break;
                     }
-                    Assert.assertTrue(dodeploy.exists());
                 }
 
-                @Override
-                public void fullReplace() throws IOException {
-                    // The test is going to call this as soon as the deployment
-                    // sends a notification
-                    // but often before the scanner has completed the process
-                    // and deleted the
-                    // .dodpeloy put down by initialDeploy(). So pause a bit to
-                    // let that complete
-                    // so we don't end up having our own file deleted
-                    final File dodeploy = new File(deployDir, "test-deployment.sar.dodeploy");
-                    final File isdeploying = new File(deployDir, "test-deployment.sar.isdeploying");
-                    for (int i = 0; i < 500; i++) {
-                        if (!dodeploy.exists() && !isdeploying.exists()) {
-                            break;
-                        }
-                        // Wait for the last action to complete :(
-                        try {
-                            Thread.sleep(10);
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                            break;
-                        }
-                    }
-
-                    if (dodeploy.exists()) {
-                        Assert.fail("initialDeploy step did not complete in a reasonably timely fashion");
-                    }
-
-                    // Copy file to deploy directory again
-                    initialDeploy();
+                if (dodeploy.exists()) {
+                    Assert.fail("initialDeploy step did not complete in a reasonably timely fashion");
                 }
 
-                @Override
-                public void undeploy() {
-                    final File dodeploy = new File(deployDir, "test-deployment.sar.dodeploy");
-                    final File isdeploying = new File(deployDir, "test-deployment.sar.isdeploying");
-                    for (int i = 0; i < 500; i++) {
-                        if (!dodeploy.exists() && !isdeploying.exists() && deployed.exists()) {
-                            break;
-                        }
-                        // Wait for the last action to complete :(
-                        try {
-                            Thread.sleep(10);
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                            break;
-                        }
-                    }
-                    if (dodeploy.exists() || !deployed.exists()) {
-                        Assert.fail("fullReplace step did not complete in a reasonably timely fashion");
-                    }
-
-                    // Delete file from deploy directory
-                    deployed.delete();
-                }
-            });
-        } finally {
-            try {
-                removeDeploymentScanner(client, scannerName);
-            } catch (Exception e) {
+                // Copy file to deploy directory again
+                initialDeploy();
             }
-            try {
-                client.close();
-            } catch (Exception e) {
+
+            @Override
+            public void undeploy() {
+                final File dodeploy = new File(deployDir, "test-deployment.sar.dodeploy");
+                final File isdeploying = new File(deployDir, "test-deployment.sar.isdeploying");
+                for (int i = 0; i < 500; i++) {
+                    if (!dodeploy.exists() && !isdeploying.exists() && deployed.exists()) {
+                        break;
+                    }
+                    // Wait for the last action to complete :(
+                    try {
+                        Thread.sleep(10);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
+                if (dodeploy.exists() || !deployed.exists()) {
+                    Assert.fail("fullReplace step did not complete in a reasonably timely fashion");
+                }
+
+                // Delete file from deploy directory
+                deployed.delete();
             }
-        }
+        });
     }
 
     private ModelNode addDeploymentScanner(final File deployDir, final ModelControllerClient client, final String scannerName, final boolean autoDeployZipped)
@@ -557,7 +523,7 @@ public class ServerInModuleDeploymentTestCase  {
     }
 
     private void testDeployments(ModelControllerClient client, DeploymentExecutor deploymentExecutor) throws Exception {
-        final MBeanServerConnection mbeanServer = JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:remoting-jmx://127.0.0.1:9999")).getMBeanServerConnection();
+        final MBeanServerConnection mbeanServer = JMXConnectorFactory.connect(managementClient.getRemoteJMXURL()).getMBeanServerConnection();
         final ObjectName name = new ObjectName("jboss.test:service=testdeployments");
 
         // NOTE: Use polling until we have jmx over remoting
@@ -626,45 +592,6 @@ public class ServerInModuleDeploymentTestCase  {
         void fullReplace() throws IOException;
 
         void undeploy() throws IOException;
-    }
-
-    private static class TestNotificationListener implements NotificationListener {
-        private final ObjectName name;
-        private volatile CountDownLatch latch = new CountDownLatch(1);
-
-        private TestNotificationListener(ObjectName name) {
-            this.name = name;
-        }
-
-        @Override
-        public void handleNotification(Notification notification, Object handback) {
-            if (!(notification instanceof MBeanServerNotification)) {
-                return;
-            }
-
-            MBeanServerNotification mBeanServerNotification = (MBeanServerNotification) notification;
-            if (!name.equals(mBeanServerNotification.getMBeanName())) {
-                return;
-            }
-
-            if (MBeanServerNotification.REGISTRATION_NOTIFICATION.equals(mBeanServerNotification.getType())) {
-                latch.countDown();
-            } else if (MBeanServerNotification.UNREGISTRATION_NOTIFICATION.equals(mBeanServerNotification.getType())) {
-                latch.countDown();
-            }
-        }
-
-        void reset(int i) {
-            latch = new CountDownLatch(i);
-        }
-
-        void await() throws Exception {
-            if (!latch.await(20, TimeUnit.SECONDS)) {
-                Assert.fail("Timed out waiting for registration/unregistration");
-            }
-            //there seems to be a race condition where
-            Thread.sleep(200);
-        }
     }
 
 }

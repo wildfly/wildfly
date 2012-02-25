@@ -22,12 +22,17 @@
 package org.jboss.as.test.integration.domain.suites;
 
 import java.io.IOException;
+import java.net.UnknownHostException;
 
 import junit.framework.Assert;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.dmr.ModelNode;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
@@ -49,6 +54,16 @@ public class ValidateOperationOperationTestCase extends AbstractMgmtTestBase {
     private static final String MASTER_SERVER = "main-one";
     private static final String SLAVE_SERVER = "main-three";
 
+    @BeforeClass
+    public static void setup() throws UnknownHostException {
+        managementClient = new ManagementClient(ModelControllerClient.Factory.create("localhost", 9999), "localhost", 9999);
+    }
+
+    @AfterClass
+    public static void afterClass() {
+        managementClient.close();
+        managementClient = null;
+    }
 
     @Test
     public void testValidRootOperation() throws IOException, MgmtOperationException {

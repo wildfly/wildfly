@@ -24,12 +24,16 @@ package org.jboss.as.test.integration.management.api;
 import java.io.IOException;
 
 import junit.framework.Assert;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.dmr.ModelNode;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -48,6 +52,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 @RunAsClient
 public class ValidateOperationOperationTestCase extends AbstractMgmtTestBase {
 
+    @Deployment
+    public static Archive<?> fakeDeployment() {
+        return ShrinkWrap.create(JavaArchive.class);
+    }
 
     @Test
     public void testValidRootOperation() throws IOException, MgmtOperationException {

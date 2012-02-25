@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.smoke.deployment.rar.examples;
 
+import java.net.URL;
 import java.util.List;
 import java.util.Properties;
 
@@ -30,6 +31,7 @@ import javax.naming.InitialContext;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension.ResourceAdapterSubsystemParser;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
@@ -61,6 +63,9 @@ public class AfterResourceCreationDeploymentTestCase extends AbstractMgmtTestBas
     static String deploymentName = "basic-after.rar";
     private static Context remoteContext;
 
+    @ArquillianResource
+    private URL url;
+
 
     //@BeforeClass - called from @Test to create resources after deploymnet
 
@@ -83,7 +88,7 @@ public class AfterResourceCreationDeploymentTestCase extends AbstractMgmtTestBas
 
         final Properties env = new Properties();
         env.put(Context.INITIAL_CONTEXT_FACTORY, org.jboss.naming.remote.client.InitialContextFactory.class.getName());
-        env.put(Context.PROVIDER_URL, "remote://localhost:4447");
+        env.put(Context.PROVIDER_URL, "remote://" + url.getHost() + ":4447");
         env.put("jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "false");
         env.put("jboss.naming.client.security.callback.handler.class", CallbackHandler.class.getName());
         remoteContext = new InitialContext(env);
