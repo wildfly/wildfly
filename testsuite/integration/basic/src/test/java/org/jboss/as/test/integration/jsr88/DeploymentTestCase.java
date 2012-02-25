@@ -46,8 +46,11 @@ import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.ee.deployment.spi.DeploymentManagerImpl;
 import org.jboss.as.ee.deployment.spi.DeploymentMetaData;
 import org.jboss.as.ee.deployment.spi.JarUtils;
@@ -81,6 +84,14 @@ public class DeploymentTestCase {
     private static final String JAR_JBOSS_FILE = "jboss.xml";
     private static final String EAR_JBOSS_FILE = "jboss-app.xml";
 
+    @ArquillianResource
+    private ManagementClient managementClient;
+
+    @Deployment
+    public static Archive<?> fakeDeployment() {
+        return ShrinkWrap.create(JavaArchive.class);
+    }
+
     @Test
     public void testDeployUndeployEAR() throws Exception {
 
@@ -108,7 +119,7 @@ public class DeploymentTestCase {
     }
 
     private DeploymentManager getDeploymentManager() throws Exception {
-        String uri = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7";
+        String uri = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7" + managementClient.getMgmtAddress() + "&serverPort=" + managementClient.getMgmtPort();
         DeploymentFactoryImpl.register();
         DeploymentFactoryManager dfManager = DeploymentFactoryManager.getInstance();
         DeploymentFactory[] factories = dfManager.getDeploymentFactories();

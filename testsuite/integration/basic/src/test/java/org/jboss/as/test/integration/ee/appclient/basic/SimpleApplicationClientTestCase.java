@@ -26,6 +26,8 @@ import java.net.URL;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.ee.appclient.util.AppClientWrapper;
 import org.jboss.as.test.shared.integration.ejb.security.CallbackHandler;
 import org.jboss.ejb.client.EJBClient;
@@ -57,6 +59,9 @@ public class SimpleApplicationClientTestCase {
     private static final String APP_NAME = "simple-app-client-test";
 
     private static final String MODULE_NAME = "ejb";
+
+    @ArquillianResource
+    private ManagementClient managementClient;
 
     @Deployment(testable = false)
     public static Archive<?> deploy() {
@@ -102,7 +107,7 @@ public class SimpleApplicationClientTestCase {
         final StatelessEJBLocator<AppClientSingletonRemote> locator = new StatelessEJBLocator(AppClientSingletonRemote.class, APP_NAME, MODULE_NAME, AppClientStateSingleton.class.getSimpleName(), "");
         final AppClientSingletonRemote remote = EJBClient.createProxy(locator);
         remote.reset();
-        final AppClientWrapper wrapper = new AppClientWrapper(archive,"--host=remote://localhost:4447", "client-annotation.jar", "cmdLineParam");
+        final AppClientWrapper wrapper = new AppClientWrapper(archive, "--host=remote://" + managementClient.getMgmtAddress() + ":4447", "client-annotation.jar", "cmdLineParam");
         try {
             final String result = remote.awaitAppClientCall();
             assertTrue("App client call failed. App client output: " + wrapper.readAllUnformated(1000), result != null);
@@ -114,6 +119,7 @@ public class SimpleApplicationClientTestCase {
 
     /**
      * Tests an app client with a deployment descriptor, that injects an env-entry and an EJB.
+     *
      * @throws Exception
      */
     @Test
@@ -121,7 +127,7 @@ public class SimpleApplicationClientTestCase {
         final StatelessEJBLocator<AppClientSingletonRemote> locator = new StatelessEJBLocator(AppClientSingletonRemote.class, APP_NAME, MODULE_NAME, AppClientStateSingleton.class.getSimpleName(), "");
         final AppClientSingletonRemote remote = EJBClient.createProxy(locator);
         remote.reset();
-        final AppClientWrapper wrapper = new AppClientWrapper(archive,"", "client-dd.jar", "");
+        final AppClientWrapper wrapper = new AppClientWrapper(archive, "--host=remote://" + managementClient.getMgmtAddress() + ":4447", "client-dd.jar", "");
         try {
             final String result = remote.awaitAppClientCall();
             assertTrue("App client call failed. App client output: " + wrapper.readAllUnformated(1000), result != null);
@@ -130,8 +136,10 @@ public class SimpleApplicationClientTestCase {
             wrapper.quit();
         }
     }
+
     /**
      * Tests an app client with a deployment descriptor, that injects an env-entry and an EJB.
+     *
      * @throws Exception
      */
     @Test
@@ -140,7 +148,7 @@ public class SimpleApplicationClientTestCase {
         final AppClientSingletonRemote remote = EJBClient.createProxy(locator);
         remote.reset();
         URL props = getClass().getClassLoader().getResource("jboss-ejb-client.properties");
-        final AppClientWrapper wrapper = new AppClientWrapper(archive,"--ejb-client-properties=" + props , "client-override.jar", "");
+        final AppClientWrapper wrapper = new AppClientWrapper(archive, "--ejb-client-properties=" + props, "client-override.jar", "");
         try {
             final String result = remote.awaitAppClientCall();
             assertTrue("App client call failed. App client output: " + wrapper.readAllUnformated(1000), result != null);
