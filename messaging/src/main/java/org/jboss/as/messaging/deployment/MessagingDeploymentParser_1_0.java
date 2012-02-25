@@ -43,6 +43,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.messaging.CommonAttributes.DURABLE;
 import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
 import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
+import org.jboss.as.server.parsing.PropertiesValueResolver;
 
 /**
  * The messaging subsystem domain parser
