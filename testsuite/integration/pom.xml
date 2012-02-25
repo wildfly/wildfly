@@ -221,7 +221,7 @@
                     <!-- Forked process timeout -->
                     <forkedProcessTimeoutInSeconds>${surefire.forked.process.timeout}</forkedProcessTimeoutInSeconds>
                     <!-- System properties to forked surefire JVM which runs clients. -->
-                    <argLine>${jvm.args.ip.client} ${jvm.args.timeouts}</argLine>
+                    <argLine>${jvm.args.debug.surefire} ${jvm.args.ip.client} ${jvm.args.timeouts}</argLine>
 
                     <!-- System properties passed to test cases -->
                     <systemPropertyVariables combine.children="append">
@@ -239,7 +239,7 @@
                             Used in arquillian.xml - arguments for all JBoss AS instances.
                             System properties are duplicated here until ARQ-647 is implemented.
                         -->
-                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.security} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -DudpGroup=${udpGroup} ${jvm.args.dirs}</server.jvm.args>
+                        <server.jvm.args>${jvm.args.as} ${jvm.args.ip.server} ${jvm.args.security} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -DudpGroup=${udpGroup} ${jvm.args.dirs}</server.jvm.args>
                     </systemPropertyVariables>
 
                 </configuration>

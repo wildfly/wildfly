@@ -73,7 +73,7 @@ public class MessagingClientTestCase {
 
         // Check that the queue does not exists
         if (queueExists(queueName, sf)) {
-            throw new IllegalStateException();
+            throw new IllegalStateException("Queue already exists: " + queueName);
         }
 
         // Create a new core queue using the standalone client
@@ -86,7 +86,7 @@ public class MessagingClientTestCase {
         applyUpdate(op, client);
         // Check if the queue exists
         if (!queueExists(queueName, sf)) {
-            throw new IllegalStateException();
+            throw new IllegalStateException("Queue doesn't exist: " + queueName);
         }
 
         ClientSession session = null;

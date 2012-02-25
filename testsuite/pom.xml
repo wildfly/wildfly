@@ -134,11 +134,18 @@
         <ds.jdbc.pass>test</ds.jdbc.pass>
         <ds.jdbc.driver.jar>${ds.db}-jdbc-driver.jar</ds.jdbc.driver.jar>
 
-        <!-- Common surefire properties. -->
-        <surefire.memory.args>-Xmx512m -XX:MaxPermSize=256m</surefire.memory.args>
-        <surefire.jpda.args></surefire.jpda.args>
-        <as.debug.port>8787</as.debug.port>
-        <surefire.system.args>${surefire.memory.args} ${surefire.jpda.args} -Djboss.dist=${jboss.dist}</surefire.system.args>
+        <!-- Debugging properties. -->
+        <debug.port.as>8787</debug.port.as>
+        <debug.port.surefire>5050</debug.port.surefire>
+        <debug.port.cli>5051</debug.port.cli>
+        <jvm.args.debug.as></jvm.args.debug.as>
+        <jvm.args.debug.surefire></jvm.args.debug.surefire>
+        
+        <!-- Common Surefire properties. -->
+
+        <jvm.args.mem.as>-Xmx512m -XX:MaxPermSize=256m</jvm.args.mem.as> <!-- Only used here; defined to allow overriding. -->
+        <!-- Goes to Surefire's config <systemArgs>. -->
+        <jvm.args.as>${jvm.args.mem.as} ${jvm.args.debug.as} -Djboss.dist=${jboss.dist}</jvm.args.as>
         <surefire.forked.process.timeout>900</surefire.forked.process.timeout>
 
         <!-- Arquillian dependency versions -->
@@ -393,7 +400,7 @@
                     <failIfNoTests>false</failIfNoTests>
                     <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                     <systemPropertyVariables>
-                        <jboss.options>${surefire.system.args}</jboss.options>
+                        <jboss.options>${jvm.args.as}</jboss.options>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                         <jboss.dist>${jboss.dist}</jboss.dist>
                         <jboss.home>${basedir}/target/jbossas</jboss.home>
@@ -591,14 +598,21 @@
             <id>jpda.profile</id>
             <activation><property><name>jpda</name></property></activation>
             <properties>
-                <surefire.jpda.args>-Xrunjdwp:transport=dt_socket,address=${as.debug.port},server=y,suspend=y</surefire.jpda.args>
+                <jvm.args.debug.as  >-Xrunjdwp:transport=dt_socket,address=${debug.port.as},server=y,suspend=y</jvm.args.debug.as>
             </properties>
         </profile>
         <profile>
             <id>debug.profile</id>
             <activation><property><name>debug</name></property></activation>
             <properties>
-                <surefire.jpda.args>-Xrunjdwp:transport=dt_socket,address=${as.debug.port},server=y,suspend=y</surefire.jpda.args>
+                <jvm.args.debug.as  >-Xrunjdwp:transport=dt_socket,address=${debug.port.as},server=y,suspend=y</jvm.args.debug.as>
+            </properties>
+        </profile>
+        <profile>
+            <id>debugClient.profile</id>
+            <activation><property><name>debugClient</name></property></activation>
+            <properties>
+                <jvm.args.debug.surefire>-Xrunjdwp:transport=dt_socket,address=${debug.port.surefire},server=y,suspend=y</jvm.args.debug.surefire>
             </properties>
         </profile>
 

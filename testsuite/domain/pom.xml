@@ -66,7 +66,7 @@
                     <!-- parallel>none</parallel -->
                     <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                     <systemPropertyVariables>
-                        <jboss.options>${surefire.system.args}</jboss.options>
+                        <jboss.options>${jvm.args.as}</jboss.options>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                         <jboss.home>${jboss.home}</jboss.home>
                         <module.path>${jboss.home}/modules</module.path>
