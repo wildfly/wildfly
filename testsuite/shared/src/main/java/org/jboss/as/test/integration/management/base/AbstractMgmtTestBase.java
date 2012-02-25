@@ -81,7 +81,7 @@ public class AbstractMgmtTestBase {
     protected static final String tempDir = System.getProperty("java.io.tmpdir");
 
     @ArquillianResource
-    private static ManagementClient managementClient;
+    protected static ManagementClient managementClient;
 
     private static File brokenWar = null;
 

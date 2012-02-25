@@ -61,6 +61,9 @@ public class EarDeploymentTestCase extends AbstractMgmtTestBase {
     @ArquillianResource
     private ManagementClient managementClient;
 
+    @ArquillianResource
+    private URL url;
+
     static String subdeploymentName = "complex_ij.rar";
     static String deploymentName = "new.ear";
 
@@ -98,7 +101,7 @@ public class EarDeploymentTestCase extends AbstractMgmtTestBase {
      */
     @Test
     public void testWebConfiguration() throws Throwable {
-        URL servletURL = new URL("http://localhost:8080/servlet" + RaServlet.URL_PATTERN);
+        URL servletURL = new URL("http://" + url.getHost() + ":8080/servlet" + RaServlet.URL_PATTERN);
         BufferedReader br = new BufferedReader(new InputStreamReader(servletURL.openStream()));
         String message = br.readLine();
         assertEquals(RaServlet.SUCCESS, message);

@@ -22,7 +22,24 @@
 
 package org.jboss.as.test.smoke.mgmt;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+
+import junit.framework.Assert;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+import org.jboss.shrinkwrap.api.Archive;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY_IPV4_ADDRESS;
@@ -51,28 +68,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Collection;
-import java.util.List;
-
-import junit.framework.Assert;
-
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-import org.jboss.shrinkwrap.api.Archive;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 /**
  * Basic management operation unit test.
  *
@@ -82,25 +77,14 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class BasicOperationsUnitTestCase {
 
-    private volatile ModelControllerClient client;
+    @ArquillianResource
+    private ManagementClient managementClient;
 
     @Deployment
     public static Archive<?> getDeployment() {
         return ShrinkWrapUtils.createEmptyJavaArchive("dummy");
     }
 
-    // [ARQ-458] @Before not called with @RunAsClient
-    private ModelControllerClient getModelControllerClient() throws UnknownHostException {
-        if(client == null) {
-            client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
-        }
-        return client;
-    }
-
-    @After
-    public void tearDown() {
-        StreamUtils.safeClose(client);
-    }
 
     @Test
     public void testSocketBindingsWildcards() throws IOException {
@@ -114,7 +98,7 @@ public class BasicOperationsUnitTestCase {
         operation.get(OP).set(READ_RESOURCE_OPERATION);
         operation.get(OP_ADDR).set(address);
 
-        final ModelNode result = getModelControllerClient().execute(operation);
+        final ModelNode result = managementClient.getControllerClient().execute(operation);
         Assert.assertTrue(result.hasDefined(RESULT));
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
         final Collection<ModelNode> steps = getSteps(result.get(RESULT));
@@ -133,7 +117,7 @@ public class BasicOperationsUnitTestCase {
         operation.get(OP_ADDR).setEmptyList();
         operation.get(RECURSIVE_DEPTH).set(1);
 
-        final ModelNode result = getModelControllerClient().execute(operation);
+        final ModelNode result = managementClient.getControllerClient().execute(operation);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
         Assert.assertTrue(result.hasDefined(RESULT));
 
@@ -156,7 +140,7 @@ public class BasicOperationsUnitTestCase {
         operation.get(OP_ADDR).set(address);
         operation.get(NAME).set(PORT);
 
-        final ModelNode result = getModelControllerClient().execute(operation);
+        final ModelNode result = managementClient.getControllerClient().execute(operation);
         Assert.assertTrue(result.hasDefined(RESULT));
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
         final Collection<ModelNode> steps = getSteps(result.get(RESULT));
@@ -181,7 +165,7 @@ public class BasicOperationsUnitTestCase {
         operation.get(OP).set(READ_RESOURCE_DESCRIPTION_OPERATION);
         operation.get(OP_ADDR).set(address);
 
-        final ModelNode result = getModelControllerClient().execute(operation);
+        final ModelNode result = managementClient.getControllerClient().execute(operation);
         Assert.assertTrue(result.hasDefined(RESULT));
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
         final Collection<ModelNode> steps = result.get(RESULT).asList();
@@ -208,7 +192,7 @@ public class BasicOperationsUnitTestCase {
         operation.get(RECURSIVE).set(true);
         operation.get(INCLUDE_RUNTIME).set(true);
 
-        final ModelNode result = getModelControllerClient().execute(operation);
+        final ModelNode result = managementClient.getControllerClient().execute(operation);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
         Assert.assertTrue(result.hasDefined(RESULT));
     }
@@ -224,7 +208,7 @@ public class BasicOperationsUnitTestCase {
         operation.get(OP).set(READ_RESOURCE_OPERATION);
         operation.get(OP_ADDR).set(address);
 
-        final ModelNode result = getModelControllerClient().execute(operation);
+        final ModelNode result = managementClient.getControllerClient().execute(operation);
         Assert.assertTrue(result.hasDefined(RESULT));
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
         final List<ModelNode> steps = getSteps(result.get(RESULT));
@@ -241,7 +225,7 @@ public class BasicOperationsUnitTestCase {
         address.add("scanner", "default");
 
         final ModelNode operation = createReadAttributeOperation(address, "path");
-        final ModelNode result = getModelControllerClient().execute(operation);
+        final ModelNode result = managementClient.getControllerClient().execute(operation);
         assertSuccessful(result);
 
         Assert.assertEquals("deployments", result.get(RESULT).asString());
@@ -254,7 +238,7 @@ public class BasicOperationsUnitTestCase {
         address.add("connector", "http");
 
         final ModelNode operation = createReadAttributeOperation(address, "bytesReceived");
-        final ModelNode result = getModelControllerClient().execute(operation);
+        final ModelNode result = managementClient.getControllerClient().execute(operation);
         assertSuccessful(result);
         Assert.assertTrue(result.asInt() >= 0);
     }
@@ -265,7 +249,7 @@ public class BasicOperationsUnitTestCase {
         address.add("subsystem", "deployment-scanner");
 
         final ModelNode operation = createReadAttributeOperation(address, "scanner");
-        final ModelNode result = getModelControllerClient().execute(operation);
+        final ModelNode result = managementClient.getControllerClient().execute(operation);
         Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
     }
 
@@ -312,7 +296,7 @@ public class BasicOperationsUnitTestCase {
     }
 
     protected ModelNode execute(final ModelNode operation) throws IOException {
-        final ModelNode result = getModelControllerClient().execute(operation);
+        final ModelNode result = managementClient.getControllerClient().execute(operation);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         return result;
     }

@@ -25,6 +25,8 @@ package org.jboss.as.test.integration.web.security.tg;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpResponse;
@@ -40,10 +42,13 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.http.util.HttpClientUtils;
 import org.jboss.as.test.integration.management.Connector;
-import org.jboss.as.test.integration.management.ServerManager;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
+import org.jboss.as.test.integration.management.util.WebUtil;
 import org.jboss.as.test.integration.web.security.WebTestsSecurityDomainSetup;
+import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -52,6 +57,14 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -77,7 +90,9 @@ public class TransportGuaranteeTestCase  {
     @OperateOnDeployment(TG_ANN + WAR)
     URL deploymentUrl;
 
-    private ServerManager serverManager = null;
+    @ArquillianResource
+    @OperateOnDeployment(TG_ANN + WAR)
+    ManagementClient managementClient;
 
     private final File keyStoreFile = new File(System.getProperty("java.io.tmpdir"), "tg-test.keystore");
 
@@ -151,11 +166,8 @@ public class TransportGuaranteeTestCase  {
 
         FileUtils.copyURLToFile(tccl.getResource("web/sec/tg/localhost.keystore"), keyStoreFile);
 
-        serverManager = new ServerManager(deploymentUrl.getHost());
-        serverManager.initModelControllerClient();
-
         try {
-            serverManager.addConnector(Connector.HTTPSJIO, httpsPort,
+            addConnector(Connector.HTTPSJIO, httpsPort,
                     null, null, keyStoreFile.getAbsolutePath(),
                     "password");
         } catch (Exception e) {
@@ -172,7 +184,7 @@ public class TransportGuaranteeTestCase  {
     @After
     public void tidyUpConfiguration() throws Exception {
         log.info("begin tidy up");
-        serverManager.removeConnector(Connector.HTTPSJIO, httpsTestURL);
+        removeConnector(Connector.HTTPSJIO, httpsTestURL);
     }
 
 
@@ -302,5 +314,91 @@ public class TransportGuaranteeTestCase  {
 
     }
 
+    public void addConnector(Connector conn, int port, String keyPEMFile, String certPEMFile, String keyStoreFile, String password) throws Exception {
+        // add socket binding
+        ModelNode op = getAddSocketBindingOp(conn, port);
+        executeOperation(op);
 
+        // add connector
+        op = getAddConnectorOp(conn, keyPEMFile, certPEMFile, keyStoreFile, password);
+        executeOperation(op);
+
+        // check it is listed
+        assertTrue(getConnectorList().contains("test-" + conn.getName() + "-connector"));
+    }
+
+    private ModelNode getAddSocketBindingOp(Connector conn, int port) {
+        ModelNode op = createOpNode("socket-binding-group=standard-sockets/socket-binding=test-" + conn.getName(), "add");
+        op.get("port").set(port);
+        return op;
+    }
+
+    private ModelNode getAddConnectorOp(Connector conn, String keyPEMFile, String certPEMFile, String keyStoreFile, String password) {
+        ModelNode op = createOpNode("subsystem=web/connector=test-" + conn.getName() + "-connector", "add");
+        op.get("socket-binding").set("test-" + conn.getName());
+        op.get("scheme").set(conn.getScheme());
+        op.get("protocol").set(conn.getProtocol());
+        op.get("secure").set(conn.isSecure());
+        op.get("enabled").set(true);
+        if (conn.isSecure()) {
+            ModelNode ssl = new ModelNode();
+            if (conn.equals(Connector.HTTPSNATIVE)) {
+                ssl.get("certificate-key-file").set(keyPEMFile);
+                ssl.get("certificate-file").set(certPEMFile);
+            } else {
+                ssl.get("certificate-key-file").set(keyStoreFile);
+            }
+            ssl.get("password").set(password);
+            op.get("ssl").set(ssl);
+        }
+        return op;
+    }
+
+    public void removeConnector(Connector conn, String checkURL) throws Exception {
+        // remove connector
+        ModelNode op = getRemoveConnectorOp(conn);
+        executeOperation(op);
+
+        Thread.sleep(5000);
+        // check that the connector is not live
+
+        if (checkURL != null)
+            assertFalse("Connector not removed.", WebUtil.testHttpURL(checkURL));
+
+        // remove socket binding
+        op = getRemoveSocketBindingOp(conn);
+        executeOperation(op);
+    }
+
+    private ModelNode getRemoveSocketBindingOp(Connector conn) {
+        ModelNode op = createOpNode("socket-binding-group=standard-sockets/socket-binding=test-" + conn.getName(), "remove");
+        return op;
+    }
+
+    private ModelNode getRemoveConnectorOp(Connector conn) {
+        ModelNode op = createOpNode("subsystem=web/connector=test-" + conn.getName() + "-connector", "remove");
+        return op;
+    }
+
+    public HashSet<String> getConnectorList() throws Exception {
+        ModelNode op = createOpNode("subsystem=web", "read-children-names");
+        op.get("child-type").set("connector");
+        ModelNode result = executeOperation(op);
+        List<ModelNode> connectors = result.asList();
+        HashSet<String> connNames = new HashSet<String>();
+        for (ModelNode n : connectors) {
+            connNames.add(n.asString());
+        }
+
+        return connNames;
+    }
+
+    protected ModelNode executeOperation(final ModelNode op) throws IOException, MgmtOperationException {
+        ModelNode ret = managementClient.getControllerClient().execute(op);
+
+        if (!SUCCESS.equals(ret.get(OUTCOME).asString())) {
+            throw new MgmtOperationException("Management operation failed: " + ret.get(FAILURE_DESCRIPTION), op, ret);
+        }
+        return ret.get(RESULT);
+    }
 }

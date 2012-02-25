@@ -21,8 +21,37 @@
  */
 package org.jboss.as.test.smoke.jsr88;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.jar.JarOutputStream;
+
+import javax.enterprise.deploy.shared.ModuleType;
+import javax.enterprise.deploy.shared.StateType;
+import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
+import javax.enterprise.deploy.spi.DeploymentManager;
+import javax.enterprise.deploy.spi.Target;
+import javax.enterprise.deploy.spi.TargetModuleID;
+import javax.enterprise.deploy.spi.exceptions.TargetException;
+import javax.enterprise.deploy.spi.factories.DeploymentFactory;
+import javax.enterprise.deploy.spi.status.DeploymentStatus;
+import javax.enterprise.deploy.spi.status.ProgressEvent;
+import javax.enterprise.deploy.spi.status.ProgressListener;
+import javax.enterprise.deploy.spi.status.ProgressObject;
+
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.ee.deployment.spi.DeploymentManagerImpl;
 import org.jboss.as.ee.deployment.spi.DeploymentMetaData;
 import org.jboss.as.ee.deployment.spi.JarUtils;
@@ -37,31 +66,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.enterprise.deploy.shared.ModuleType;
-import javax.enterprise.deploy.shared.StateType;
-import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
-import javax.enterprise.deploy.spi.DeploymentManager;
-import javax.enterprise.deploy.spi.Target;
-import javax.enterprise.deploy.spi.TargetModuleID;
-import javax.enterprise.deploy.spi.exceptions.TargetException;
-import javax.enterprise.deploy.spi.factories.DeploymentFactory;
-import javax.enterprise.deploy.spi.status.DeploymentStatus;
-import javax.enterprise.deploy.spi.status.ProgressEvent;
-import javax.enterprise.deploy.spi.status.ProgressListener;
-import javax.enterprise.deploy.spi.status.ProgressObject;
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.jar.JarOutputStream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -83,6 +87,17 @@ public class EnterpriseDeploymentTestCase {
     private static final String WAR_JBOSS_FILE = "WEB-INF/jboss-web.xml";
     private static final String JAR_JBOSS_FILE = "META-INF/jboss.xml";
     private static final String EAR_JBOSS_FILE = "META-INF/jboss-app.xml";
+
+    @ArquillianResource
+    private URL url;
+
+    @ArquillianResource
+    private ManagementClient managementClient;
+
+    @Deployment
+    public static Archive<?> fakeDeployment() {
+        return ShrinkWrap.create(JavaArchive.class);
+    }
 
     @Test
     public void testDeploymentManager() throws Exception {
@@ -160,7 +175,8 @@ public class EnterpriseDeploymentTestCase {
 
     @Test
     public void testListAvailableModules() throws Exception {
-        String uri = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7&serverHost=127.0.0.1&serverPort=9999";
+        String uri = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7&serverHost=" + managementClient.getMgmtAddress() + "&serverPort=" + managementClient.getMgmtPort();
+
         DeploymentManager manager = getDeploymentManager(uri, Authentication.USERNAME, Authentication.PASSWORD);
         Target[] targets = manager.getTargets();
         TargetModuleID[] modules = manager.getAvailableModules(ModuleType.EAR, targets);
@@ -199,18 +215,18 @@ public class EnterpriseDeploymentTestCase {
 
             // Test getNonRunningModules
             modules = manager.getNonRunningModules(ModuleType.EAR, targets);
-            assertEquals("after stopping deployment-app.ear, non-running EAR modules count expected to be one" + modules,1, modules.length);
+            assertEquals("after stopping deployment-app.ear, non-running EAR modules count expected to be one" + modules, 1, modules.length);
 
             operationProgress = manager.start(modules);
             awaitCompletion(operationProgress, TIMEOUT);
 
             // Test getNonRunningModules
             modules = manager.getNonRunningModules(ModuleType.EAR, targets);
-            assertEquals("after starting deployment-app.ear, non-running EAR modules count expected to be zero" + modules,0, modules.length);
+            assertEquals("after starting deployment-app.ear, non-running EAR modules count expected to be zero" + modules, 0, modules.length);
 
             // Test getRunningModules
             modules = manager.getRunningModules(ModuleType.EAR, targets);
-            assertEquals("after starting deployment-app.ear, running EAR modules count expected to be one" , 1, modules.length);
+            assertEquals("after starting deployment-app.ear, running EAR modules count expected to be one", 1, modules.length);
 
         } finally {
             jsr88Undeploy(manager, targetModules);
@@ -261,7 +277,7 @@ public class EnterpriseDeploymentTestCase {
     }
 
     private DeploymentManager getDeploymentManager(String username, String password) throws Exception {
-        String uri = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7";
+        String uri = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7&serverHost=" + managementClient.getMgmtAddress() + "&serverPort=" + managementClient.getMgmtPort();
         return getDeploymentManager(uri, username, password);
     }
 
@@ -328,7 +344,7 @@ public class EnterpriseDeploymentTestCase {
 
     private void assertServletAccess(String context) throws IOException {
         // Check that we can access the servlet
-        URL servletURL = new URL("http://localhost:8080/" + context);
+        URL servletURL = new URL("http://" + url.getHost() + ":" + url.getPort() + "/" + context);
         BufferedReader br = new BufferedReader(new InputStreamReader(servletURL.openStream()));
         String message = br.readLine();
         assertEquals("Hello World!", message);
