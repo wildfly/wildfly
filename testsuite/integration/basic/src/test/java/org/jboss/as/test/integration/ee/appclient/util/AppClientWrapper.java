@@ -32,6 +32,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 
@@ -201,6 +202,8 @@ public class AppClientWrapper implements Runnable {
         appClientCommand = "java" +
                 " -Djboss.modules.dir="+ asDist + "/modules" +
                 " -Djline.WindowsTerminal.directConsole=false" +
+                TestSuiteEnvironment.getIpv6Args() +
+                "-Djboss.bind.address=" + TestSuiteEnvironment.getServerAddress() +
                 " -jar "+ asDist + "/jboss-modules.jar" +
                 " -mp "+ asDist + "/modules" +
                 " org.jboss.as.appclient" +

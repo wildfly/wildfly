@@ -119,7 +119,7 @@ public class DeploymentTestCase {
     }
 
     private DeploymentManager getDeploymentManager() throws Exception {
-        String uri = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7" + managementClient.getMgmtAddress() + "&serverPort=" + managementClient.getMgmtPort();
+        String uri = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7&serverHost=" + managementClient.getMgmtAddress() + "&serverPort=" + managementClient.getMgmtPort();
         DeploymentFactoryImpl.register();
         DeploymentFactoryManager dfManager = DeploymentFactoryManager.getInstance();
         DeploymentFactory[] factories = dfManager.getDeploymentFactories();
