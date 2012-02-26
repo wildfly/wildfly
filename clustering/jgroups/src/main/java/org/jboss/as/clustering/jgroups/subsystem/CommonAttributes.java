@@ -18,7 +18,7 @@ public interface CommonAttributes {
     SimpleAttributeDefinition DEFAULT_STACK =
             new SimpleAttributeDefinitionBuilder(ModelKeys.DEFAULT_STACK, ModelType.STRING, false)
                     .setXmlName(Attribute.DEFAULT_STACK.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
