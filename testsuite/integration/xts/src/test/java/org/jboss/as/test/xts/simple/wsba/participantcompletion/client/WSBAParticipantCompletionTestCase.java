@@ -20,11 +20,14 @@
  */
 package org.jboss.as.test.xts.simple.wsba.participantcompletion.client;
 
+import javax.inject.Inject;
+
 import com.arjuna.mw.wst11.UserBusinessActivity;
 import com.arjuna.mw.wst11.UserBusinessActivityFactory;
 import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.xts.simple.wsba.participantcompletion.jaxws.SetServiceBA;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ArchivePaths;
@@ -35,7 +38,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import javax.inject.Inject;
 
 @RunWith(Arquillian.class)
 public class WSBAParticipantCompletionTestCase {
@@ -52,6 +54,7 @@ public class WSBAParticipantCompletionTestCase {
         return ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME + ".war")
                 .addPackages(false, "org.jboss.as.test.xts.simple.wsba")
                 .addPackages(true, "org.jboss.as.test.xts.simple.wsba.participantcompletion")
+                .addClass(TestSuiteEnvironment.class)
                 .addAsResource("context-handlers.xml")
                 .addAsWebInfResource(EmptyAsset.INSTANCE, ArchivePaths.create("beans.xml"))
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.xts,org.jboss.jts\n"),"MANIFEST.MF");
@@ -64,7 +67,7 @@ public class WSBAParticipantCompletionTestCase {
 
     /**
      * Test the simple scenario where an item is added to the set within a Business Activity which is closed successfully.
-     * 
+     *
      * @throws Exception if something goes wrong.
      */
     @Test
@@ -93,7 +96,7 @@ public class WSBAParticipantCompletionTestCase {
      * Tests the scenario where an item is added to the set with in a business activity that is later cancelled. The test checks
      * that the item is in the set after invoking addValueToSet on the Web service. After cancelling the Business Activity, the
      * work should be compensated and thus the item should no longer be in the set.
-     * 
+     *
      * @throws Exception if something goes wrong
      */
     @Test
@@ -123,7 +126,7 @@ public class WSBAParticipantCompletionTestCase {
 
     /**
      * Utility method for cancelling a Business Activity if it is currently active.
-     * 
+     *
      * @param uba The User Business Activity to cancel.
      */
     private void cancelIfActive(UserBusinessActivity uba) {
