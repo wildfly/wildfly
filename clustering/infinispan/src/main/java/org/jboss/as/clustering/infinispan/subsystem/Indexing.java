@@ -50,6 +50,7 @@ public enum Indexing {
 
     @Override
     public String toString() {
-        return this.name().toLowerCase();
+        // remove conversion to lower case AS7-3835
+        return this.name();
     }
 }
