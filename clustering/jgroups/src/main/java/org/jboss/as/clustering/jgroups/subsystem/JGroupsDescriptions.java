@@ -53,6 +53,8 @@ public class JGroupsDescriptions {
         subsystem.get(ModelDescriptionConstants.HEAD_COMMENT_ALLOWED).set(true);
         subsystem.get(ModelDescriptionConstants.TAIL_COMMENT_ALLOWED).set(true);
         subsystem.get(ModelDescriptionConstants.NAMESPACE).set(Namespace.CURRENT.getUri());
+        DEFAULT_STACK.addResourceAttributeDescription(resources, "jgroups", subsystem);
+
         // children of the root subsystem
         subsystem.get(CHILDREN, ModelKeys.STACK, DESCRIPTION).set(resources.getString("jgroups.stack"));
         subsystem.get(CHILDREN, ModelKeys.STACK, MIN_OCCURS).set(1);
