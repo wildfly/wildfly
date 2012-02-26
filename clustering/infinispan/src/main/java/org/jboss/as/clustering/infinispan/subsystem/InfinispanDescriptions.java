@@ -247,6 +247,9 @@ public class InfinispanDescriptions {
         for (AttributeDefinition attr : CommonAttributes.CLUSTERED_CACHE_ATTRIBUTES) {
             attr.addResourceAttributeDescription(resources, "infinispan.clustered-cache", cache);
         }
+        for (AttributeDefinition attr : CommonAttributes.DISTRIBUTED_CACHE_ATTRIBUTES) {
+            attr.addResourceAttributeDescription(resources, "infinispan.distributed-cache", cache);
+        }
         // children
         addCommonCacheChildren("infinispan.cache", cache, resources);
         addStateTransferCacheChildren("infinispan.replicated-cache", cache, resources);
