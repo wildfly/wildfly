@@ -20,24 +20,24 @@
  */
 package org.jboss.as.test.xts.simple.wsat.client;
 
-import com.arjuna.mw.wst11.client.JaxWSHeaderContextProcessor;
-
-import org.jboss.as.test.xts.simple.wsat.RestaurantException;
-import org.jboss.as.test.xts.simple.wsat.jaxws.RestaurantServiceAT;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Service;
 import javax.xml.ws.handler.Handler;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
+import com.arjuna.mw.wst11.client.JaxWSHeaderContextProcessor;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.xts.simple.wsat.RestaurantException;
+import org.jboss.as.test.xts.simple.wsat.jaxws.RestaurantServiceAT;
 
 /**
  * A Client stub to the restaurant service.
- * 
+ *
  * @author paul.robinson@redhat.com, 2012-01-04
  */
 @ClientStub
@@ -47,11 +47,11 @@ public class Client implements RestaurantServiceAT {
     /**
      * Default constructor with hard-coded values for the RestaurantServiceAT endpoint details (wsdl url, service name & port
      * name)
-     * 
+     *
      * @throws java.net.MalformedURLException if the WSDL url is malformed.
      */
     public Client() throws MalformedURLException {
-        String node0 = System.getProperty("node0", "127.0.0.1");
+        String node0 = TestSuiteEnvironment.getServerAddress();
 
         URL wsdlLocation = new URL("http://" + node0 + ":8080/" + WSATTestCase.DEPLOYMENT_NAME + "/RestaurantServiceAT?wsdl");
         QName serviceName = new QName("http://www.jboss.com/jbossas/test/xts/simple/wsat/Restaurant",
@@ -79,7 +79,7 @@ public class Client implements RestaurantServiceAT {
 
     /**
      * obtain the number of existing bookings
-     * 
+     *
      * @return the number of current bookings
      */
     public int getBookingCount() {

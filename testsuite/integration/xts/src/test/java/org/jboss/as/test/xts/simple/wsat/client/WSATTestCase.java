@@ -21,13 +21,16 @@
  */
 package org.jboss.as.test.xts.simple.wsat.client;
 
-import org.jboss.as.test.xts.simple.wsat.jaxws.RestaurantServiceAT;
+import java.net.MalformedURLException;
+
+import javax.inject.Inject;
 
 import com.arjuna.mw.wst11.UserTransaction;
 import com.arjuna.mw.wst11.UserTransactionFactory;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.xts.simple.wsat.jaxws.RestaurantServiceAT;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -39,12 +42,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.inject.Inject;
-import java.net.MalformedURLException;
-
 /**
  * Simple set of tests for the WSAT.
- * 
+ *
  * @author paul.robinson@redhat.com, 2012-01-04
  * @author istudens@redhat.com
  */
@@ -62,6 +62,7 @@ public class WSATTestCase {
     public static WebArchive createTestArchive() {
         return ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME + ".war")
                 .addPackages(true, "org.jboss.as.test.xts.simple.wsat")
+                .addClass(TestSuiteEnvironment.class)
                 .addAsResource("context-handlers.xml")
                 .addAsWebInfResource(EmptyAsset.INSTANCE, ArchivePaths.create("beans.xml"))
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.xts,org.jboss.jts\n"), "MANIFEST.MF");
@@ -74,7 +75,7 @@ public class WSATTestCase {
 
     /**
      * Test the simple scenario where a booking is made and then committed.
-     * 
+     *
      * @throws Exception if something goes wrong.
      */
     @Test
@@ -100,7 +101,7 @@ public class WSATTestCase {
 
     /**
      * Tests the scenario where a booking is made and the transaction is later rolledback.
-     * 
+     *
      * @throws Exception if something goes wrong
      */
     @Test
@@ -126,7 +127,7 @@ public class WSATTestCase {
 
     /**
      * Utility method for rolling back a transaction if it is currently active.
-     * 
+     *
      * @param ut The User Business Activity to cancel.
      */
     private void rollbackIfActive(UserTransaction ut) {

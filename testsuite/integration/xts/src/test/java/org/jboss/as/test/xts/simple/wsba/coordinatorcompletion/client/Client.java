@@ -20,23 +20,25 @@
  */
 package org.jboss.as.test.xts.simple.wsba.coordinatorcompletion.client;
 
-import com.arjuna.mw.wst11.client.JaxWSHeaderContextProcessor;
-import org.jboss.as.test.xts.simple.wsba.AlreadyInSetException;
-import org.jboss.as.test.xts.simple.wsba.SetServiceException;
-import org.jboss.as.test.xts.simple.wsba.coordinatorcompletion.jaxws.SetServiceBA;
-
-import javax.xml.namespace.QName;
-import javax.xml.ws.BindingProvider;
-import javax.xml.ws.Service;
-import javax.xml.ws.handler.Handler;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.namespace.QName;
+import javax.xml.ws.BindingProvider;
+import javax.xml.ws.Service;
+import javax.xml.ws.handler.Handler;
+
+import com.arjuna.mw.wst11.client.JaxWSHeaderContextProcessor;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.xts.simple.wsba.AlreadyInSetException;
+import org.jboss.as.test.xts.simple.wsba.SetServiceException;
+import org.jboss.as.test.xts.simple.wsba.coordinatorcompletion.jaxws.SetServiceBA;
+
 /**
  * A Client stub to the SetService.
- * 
+ *
  * @author paul.robinson@redhat.com, 2012-01-04
  */
 @ClientStub
@@ -45,11 +47,11 @@ public class Client implements SetServiceBA {
 
     /**
      * Default constructor with hard-coded values for the SetService endpoint details (wsdl url, service name & port name)
-     * 
+     *
      * @throws java.net.MalformedURLException if the WSDL url is malformed.
      */
     public Client() throws MalformedURLException {
-        String node0 = System.getProperty("node0", "127.0.0.1");
+        String node0 = TestSuiteEnvironment.getServerAddress();
 
         URL wsdlLocation = new URL("http://" + node0 + ":8080/" + WSBACoordinatorCompletionTestCase.DEPLOYMENT_NAME + "/SetServiceBA?wsdl");
         QName serviceName = new QName("http://www.jboss.com/jbossas/test/xts/simple/wsba/coordinatorcompletion",
@@ -71,7 +73,7 @@ public class Client implements SetServiceBA {
 
     /**
      * Add a value to the set
-     * 
+     *
      * @param value Value to add to the set.
      * @throws AlreadyInSetException if the item is already in the set.
      * @throws SetServiceException if an error occurred during the adding of the item to the set.
@@ -82,7 +84,7 @@ public class Client implements SetServiceBA {
 
     /**
      * Query the set to see if it contains a particular value.
-     * 
+     *
      * @param value the value to check for.
      * @return true if the value was present, false otherwise.
      */
