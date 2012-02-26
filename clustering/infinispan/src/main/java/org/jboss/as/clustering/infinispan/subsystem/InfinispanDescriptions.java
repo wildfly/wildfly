@@ -58,6 +58,9 @@ public class InfinispanDescriptions {
         subsystem.get(HEAD_COMMENT_ALLOWED).set(true);
         subsystem.get(TAIL_COMMENT_ALLOWED).set(true);
         subsystem.get(NAMESPACE).set(Namespace.CURRENT.getUri());
+
+        DEFAULT_CACHE_CONTAINER.addResourceAttributeDescription(resources, "infinispan", subsystem);
+
         subsystem.get(CHILDREN, ModelKeys.CACHE_CONTAINER, DESCRIPTION).set(resources.getString("infinispan.container"));
         subsystem.get(CHILDREN, ModelKeys.CACHE_CONTAINER, MIN_OCCURS).set(1);
         subsystem.get(CHILDREN, ModelKeys.CACHE_CONTAINER, MAX_OCCURS).set(Integer.MAX_VALUE);

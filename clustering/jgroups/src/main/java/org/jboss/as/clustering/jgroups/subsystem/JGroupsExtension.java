@@ -68,6 +68,7 @@ public class JGroupsExtension implements Extension {
         registration.registerOperationHandler(ModelDescriptionConstants.ADD, JGroupsSubsystemAdd.INSTANCE, JGroupsSubsystemProviders.SUBSYSTEM_ADD, false);
         registration.registerOperationHandler(ModelDescriptionConstants.REMOVE, JGroupsSubsystemRemove.INSTANCE, JGroupsSubsystemProviders.SUBSYSTEM_REMOVE, false);
         registration.registerOperationHandler(ModelDescriptionConstants.DESCRIBE, JGroupsSubsystemDescribe.INSTANCE, JGroupsSubsystemProviders.SUBSYSTEM_DESCRIBE, false, EntryType.PRIVATE);
+        SubsystemWriteAttributeHandler.INSTANCE.registerAttributes(registration);
 
         ManagementResourceRegistration stacks = registration.registerSubModel(stacksPath, JGroupsSubsystemProviders.STACK);
         stacks.registerOperationHandler(ModelDescriptionConstants.ADD, ProtocolStackAdd.INSTANCE, JGroupsSubsystemProviders.STACK_ADD, false);
