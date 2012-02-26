@@ -3704,6 +3704,10 @@
                         <artifactId>log4j</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>org.jboss.ironjacamar</groupId>
+                        <artifactId>ironjacamar-spec-api</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.jboss.jbossas</groupId>
                         <artifactId>jboss-server-manager</artifactId>
                     </exclusion>
@@ -3834,6 +3838,10 @@
                     <exclusion>
                         <groupId>log4j</groupId>
                         <artifactId>log4j</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.ironjacamar</groupId>
+                        <artifactId>ironjacamar-spec-api</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.jboss.jbossas</groupId>
@@ -4912,6 +4920,12 @@
                <groupId>org.jboss.metadata</groupId>
                <artifactId>jboss-metadata-ejb</artifactId>
                <version>${version.org.jboss.metadata}</version>
+               <exclusions>
+                   <exclusion>
+                       <groupId>org.jboss</groupId>
+                       <artifactId>jbossxb</artifactId>
+                   </exclusion>
+               </exclusions>
             </dependency>
 
             <dependency>

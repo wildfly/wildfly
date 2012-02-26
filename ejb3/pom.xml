@@ -64,12 +64,6 @@ vi:ts=4:sw=4:expandtab
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>jboss-as-connector</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.jboss.ironjacamar</groupId>
-                    <artifactId>ironjacamar-spec-api</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <!--
 <dependency>
@@ -108,12 +102,6 @@ vi:ts=4:sw=4:expandtab
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>jboss-as-transactions</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.jboss.spec.javax.resource</groupId>
-                    <artifactId>jboss-connector-api_1.5_spec</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -159,12 +147,6 @@ projects that depend on this project.-->
         <dependency>
             <groupId>org.jboss.metadata</groupId>
             <artifactId>jboss-metadata-ejb</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.jboss</groupId>
-                    <artifactId>jbossxb</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
