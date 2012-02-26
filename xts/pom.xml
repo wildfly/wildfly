@@ -75,12 +75,6 @@
         <dependency>
             <groupId>org.jboss.jbossts</groupId>
             <artifactId>jbossjts</artifactId>
-            <exclusions>
-              <exclusion>
-                 <groupId>org.jboss.ironjacamar</groupId>
-                 <artifactId>ironjacamar-spec-api</artifactId>
-              </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.jboss.jbossts</groupId>
