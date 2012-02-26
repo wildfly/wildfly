@@ -73,6 +73,12 @@ public interface CommonAttributes {
                     .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
+    SimpleAttributeDefinition CLUSTER =
+            new SimpleAttributeDefinitionBuilder(ModelKeys.CLUSTER, ModelType.STRING, true)
+                    .setXmlName(Attribute.CLUSTER.getLocalName())
+                    .setAllowExpression(false)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .build();
     SimpleAttributeDefinition CONCURRENCY_LEVEL =
             new SimpleAttributeDefinitionBuilder(ModelKeys.CONCURRENCY_LEVEL, ModelType.INT, true)
                     .setXmlName(Attribute.CONCURRENCY_LEVEL.getLocalName())
@@ -438,7 +444,7 @@ public interface CommonAttributes {
                     .build();
 
     AttributeDefinition[] CACHE_CONTAINER_ATTRIBUTES = {DEFAULT_CACHE, ALIASES, JNDI_NAME, START, LISTENER_EXECUTOR, EVICTION_EXECUTOR, REPLICATION_QUEUE_EXECUTOR};
-    AttributeDefinition[] TRANSPORT_ATTRIBUTES = {STACK, EXECUTOR, LOCK_TIMEOUT, SITE, RACK, MACHINE};
+    AttributeDefinition[] TRANSPORT_ATTRIBUTES = {STACK, CLUSTER, EXECUTOR, LOCK_TIMEOUT, SITE, RACK, MACHINE};
 
     AttributeDefinition[] CACHE_ATTRIBUTES = { START, BATCHING, INDEXING, JNDI_NAME};
     AttributeDefinition[] CLUSTERED_CACHE_ATTRIBUTES = {ClusteredCacheAdd.MODE, QUEUE_SIZE, QUEUE_FLUSH_INTERVAL, REMOTE_TIMEOUT};
