@@ -22,6 +22,9 @@
 
 package org.jboss.as.test.smoke.messaging.client.jms;
 
+import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
+import static org.jboss.as.protocol.StreamUtils.safeClose;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -45,6 +48,9 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import junit.framework.Assert;
+
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.test.shared.integration.ejb.security.CallbackHandler;
@@ -52,15 +58,15 @@ import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
-import static org.jboss.as.protocol.StreamUtils.safeClose;
+import org.junit.runner.RunWith;
 
 /**
  * Demo using the AS management API to create and destroy a JMS queue.
  *
  * @author Emanuel Muckenhuber
  */
+@RunWith(Arquillian.class)
+@RunAsClient
 public class JmsClientTestCase {
 
     private static final String QUEUE_NAME = "createdTestQueue";
