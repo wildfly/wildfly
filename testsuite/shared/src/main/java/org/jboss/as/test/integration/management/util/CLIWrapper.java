@@ -40,7 +40,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.test.http.Authentication;
-import org.jboss.as.test.shared.ServerAddress;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 
 /**
  *
@@ -101,7 +101,7 @@ public class CLIWrapper implements Runnable {
             line = readLine(10000);
         }
 
-        sendLine("connect " + ServerAddress.getServerAddress() + ":" + ServerAddress.getServerPort(), false);
+        sendLine("connect " + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getServerPort(), false);
         line = readLine(5000);
 
         if (!(line.indexOf("disconnected") >= 0)) {

@@ -21,20 +21,22 @@
  */
 package org.jboss.as.test.integration.management.cli;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.File;
-import java.io.IOException;
-
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 /**
- *
  * @author Alexey Loubyansky
  */
 @RunWith(Arquillian.class)
@@ -48,12 +50,13 @@ public class CommandsArgumentTestCase {
 
     /**
      * Tests that the exit code is 0 value after a successful operation
+     *
      * @throws Exception
      */
     @Test
     public void testSuccess() {
         int exitCode = execute(SET_PROP_COMMAND, true);
-        if(exitCode == 0) {
+        if (exitCode == 0) {
             execute(REMOVE_PROP_COMMAND, true);
         }
         assertEquals(0, exitCode);
@@ -61,6 +64,7 @@ public class CommandsArgumentTestCase {
 
     /**
      * Tests that the exit code is not 0 after a failed operation.
+     *
      * @throws Exception
      */
     @Test
@@ -70,12 +74,13 @@ public class CommandsArgumentTestCase {
 
     /**
      * Tests that commands following a failed command aren't executed.
+     *
      * @throws Exception
      */
     @Test
     public void testValidCommandAfterInvalidCommand() {
         int exitCode = execute('\"' + GET_PROP_COMMAND + ',' + SET_PROP_COMMAND + '\"', false);
-        if(exitCode == 0) {
+        if (exitCode == 0) {
             execute(REMOVE_PROP_COMMAND, true);
         } else {
             assertFailure(GET_PROP_COMMAND);
@@ -85,6 +90,7 @@ public class CommandsArgumentTestCase {
 
     /**
      * Tests that commands preceding a failed command are't affected by the failure.
+     *
      * @throws Exception
      */
     @Test
@@ -105,16 +111,26 @@ public class CommandsArgumentTestCase {
 
     protected int execute(String cmd, boolean logFailure) {
         final String jbossDist = System.getProperty("jboss.dist");
-        if(jbossDist == null) {
+        if (jbossDist == null) {
             fail("jboss.dist system property is not set");
         }
         final String modulePath = System.getProperty("module.path");
-        if(modulePath == null) {
+        if (modulePath == null) {
             fail("module.path system property is not set");
         }
 
         final ProcessBuilder builder = new ProcessBuilder();
-        builder.command("java" , "-jar" , jbossDist + File.separatorChar + "jboss-modules.jar", "-mp", modulePath, "org.jboss.as.cli", "-c", cmd);
+        final List<String> command = new ArrayList<String>();
+        command.add("java");
+        TestSuiteEnvironment.getIpv6Args(command);
+        command.add("-jar");
+        command.add(jbossDist + File.separatorChar + "jboss-modules.jar");
+        command.add("-mp");
+        command.add(modulePath);
+        command.add("org.jboss.as.cli");
+        command.add("-c");
+        command.add(cmd);
+        builder.command(command);
         Process cliProc = null;
         try {
             cliProc = builder.start();
@@ -136,7 +152,7 @@ public class CommandsArgumentTestCase {
                     cliProc.getInputStream().read(bytes);
                     System.out.println("Command's output: '" + new String(bytes) + "'");
                 }
-            } catch(IOException e) {
+            } catch (IOException e) {
                 fail("Failed to read command's output: " + e.getLocalizedMessage());
             }
 
@@ -149,7 +165,7 @@ public class CommandsArgumentTestCase {
                 } else {
                     System.out.println("No output data for the command.");
                 }
-            } catch(IOException e) {
+            } catch (IOException e) {
                 fail("Failed to read command's error output: " + e.getLocalizedMessage());
             }
         }

@@ -21,19 +21,22 @@
  */
 package org.jboss.as.test.integration.management.cli;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  *
@@ -160,7 +163,17 @@ public class FileArgumentTestCase {
         }
 
         final ProcessBuilder builder = new ProcessBuilder();
-        builder.command("java" , "-jar" , jbossDist + File.separatorChar + "jboss-modules.jar", "-mp", modulePath, "org.jboss.as.cli", "-c", "--file=" + f.getAbsolutePath());
+        final List<String> command = new ArrayList<String>();
+        command.add("java");
+        TestSuiteEnvironment.getIpv6Args(command);
+        command.add("-jar");
+        command.add(jbossDist + File.separatorChar + "jboss-modules.jar");
+        command.add("-mp");
+        command.add(modulePath);
+        command.add("org.jboss.as.cli");
+        command.add("-c");
+        command.add("--file=" + f.getAbsolutePath());
+        builder.command(command);
         Process cliProc = null;
         try {
             cliProc = builder.start();
