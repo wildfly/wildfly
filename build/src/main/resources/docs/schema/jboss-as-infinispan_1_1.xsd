@@ -160,6 +160,11 @@
                 <xs:documentation>Defines the jgroups stack used by the transport.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="cluster" type="xs:string" >
+            <xs:annotation>
+                <xs:documentation>Defines the name for the underlying group communication cluster.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
         <xs:attribute name="executor" type="xs:string" >
             <xs:annotation>
                 <xs:documentation>Defines the executor used for asynchronous transport communication.</xs:documentation>

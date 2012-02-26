@@ -188,6 +188,10 @@ public class InfinispanSubsystemXMLReader_1_1 implements XMLElementReader<List<M
                     CommonAttributes.STACK.parseAndSetParameter(value, transport, reader);
                     break;
                 }
+                case CLUSTER: {
+                    CommonAttributes.CLUSTER.parseAndSetParameter(value, transport, reader);
+                    break;
+                }
                 case EXECUTOR: {
                     CommonAttributes.EXECUTOR.parseAndSetParameter(value, transport, reader);
                     break;
