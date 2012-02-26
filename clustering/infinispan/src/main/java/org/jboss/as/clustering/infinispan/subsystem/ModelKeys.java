@@ -37,6 +37,7 @@ public class ModelKeys {
     static final String CACHE_CONTAINER = "cache-container";
     static final String CHUNK_SIZE = "chunk-size";
     static final String CLASS = "class";
+    static final String CLUSTER = "cluster";
     static final String CONCURRENCY_LEVEL = "concurrency-level";
     static final String DATA_COLUMN = "data-column";
     static final String DATASOURCE = "datasource";

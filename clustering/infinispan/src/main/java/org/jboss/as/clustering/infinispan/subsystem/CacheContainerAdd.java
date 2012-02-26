@@ -164,17 +164,20 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
             ModelNode transport = model.get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
 
             final String stack = ((resolvedValue = CommonAttributes.STACK.resolveModelAttribute(context, transport)).isDefined()) ? resolvedValue.asString() : null ;
+            // if cluster is not defined, use the cache container name as the default
+            final String cluster = ((resolvedValue = CommonAttributes.CLUSTER.resolveModelAttribute(context, transport)).isDefined()) ? resolvedValue.asString() : name ;
             final long lockTimeout = CommonAttributes.LOCK_TIMEOUT.resolveModelAttribute(context, transport).asLong();
             final String executor = ((resolvedValue = CommonAttributes.EXECUTOR.resolveModelAttribute(context, transport)).isDefined()) ? resolvedValue.asString() : null ;
 
             transportConfig.setLockTimeout(lockTimeout);
             addExecutorDependency(containerBuilder, executor, transportConfig.getExecutorInjector());
 
+            // AS7-1751 decouple channel service name (name) and name used to create channel id (cluster)
             ServiceName channelServiceName = ChannelService.getServiceName(name);
             configBuilder.addDependency(channelServiceName, Channel.class, transportConfig.getChannelInjector());
 
             InjectedValue<ChannelFactory> channelFactory = new InjectedValue<ChannelFactory>();
-            ServiceBuilder<Channel> channelBuilder = target.addService(channelServiceName, new ChannelService(name, channelFactory))
+            ServiceBuilder<Channel> channelBuilder = target.addService(channelServiceName, new ChannelService(cluster, channelFactory))
                     .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, channelFactory)
                     .setInitialMode(ServiceController.Mode.ON_DEMAND)
             ;

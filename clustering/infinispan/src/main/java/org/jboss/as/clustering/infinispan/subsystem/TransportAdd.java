@@ -21,7 +21,7 @@ public class TransportAdd extends AbstractAddStepHandler {
 
     public static final TransportAdd INSTANCE = new TransportAdd();
 
-    static ModelNode createOperation(ModelNode address, ModelNode existing) {
+    static ModelNode createOperation(ModelNode address, ModelNode existing) throws OperationFailedException {
         ModelNode operation = Util.getEmptyOperation(ADD, address);
         populate(existing, operation);
         return operation;
@@ -46,13 +46,15 @@ public class TransportAdd extends AbstractAddStepHandler {
         context.reloadRequired();
     }
 
-    private static void populate(ModelNode operation, ModelNode model) {
+    private static void populate(ModelNode operation, ModelNode model) throws OperationFailedException {
         // simply transfer the attributes from operation to model
         for (AttributeDefinition attr : CommonAttributes.TRANSPORT_ATTRIBUTES) {
 
-            if (operation.hasDefined(attr.getName())) {
-                model.get(attr.getName()).set(operation.get(attr.getName()));
-            }
+            // replace with AttributeDefinition.validateAndSet
+            attr.validateAndSet(operation, model);
+//            if (operation.hasDefined(attr.getName())) {
+//                model.get(attr.getName()).set(operation.get(attr.getName()));
+//            }
         }
     }
 }

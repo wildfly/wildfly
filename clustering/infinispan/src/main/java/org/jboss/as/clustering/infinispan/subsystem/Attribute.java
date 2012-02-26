@@ -22,10 +22,9 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import javax.xml.XMLConstants;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.xml.XMLConstants;
 
 import org.jboss.as.controller.AttributeDefinition;
 
@@ -44,6 +43,7 @@ public enum Attribute {
     CACHE(ModelKeys.CACHE),
     CHUNK_SIZE(ModelKeys.CHUNK_SIZE),
     CLASS(ModelKeys.CLASS),
+    CLUSTER(ModelKeys.CLUSTER),
     CONCURRENCY_LEVEL(ModelKeys.CONCURRENCY_LEVEL),
     DATASOURCE(ModelKeys.DATASOURCE),
     DEFAULT_CACHE(ModelKeys.DEFAULT_CACHE),
