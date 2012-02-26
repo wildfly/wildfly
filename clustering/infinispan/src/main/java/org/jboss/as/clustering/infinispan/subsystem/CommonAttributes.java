@@ -76,7 +76,7 @@ public interface CommonAttributes {
     SimpleAttributeDefinition CLUSTER =
             new SimpleAttributeDefinitionBuilder(ModelKeys.CLUSTER, ModelType.STRING, true)
                     .setXmlName(Attribute.CLUSTER.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
     SimpleAttributeDefinition CONCURRENCY_LEVEL =
@@ -96,13 +96,13 @@ public interface CommonAttributes {
     SimpleAttributeDefinition DEFAULT_CACHE =
             new SimpleAttributeDefinitionBuilder(ModelKeys.DEFAULT_CACHE, ModelType.STRING, true)
                     .setXmlName(Attribute.DEFAULT_CACHE.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
     SimpleAttributeDefinition DEFAULT_CACHE_CONTAINER =
             new SimpleAttributeDefinitionBuilder(ModelKeys.DEFAULT_CACHE_CONTAINER, ModelType.STRING, false)
                     .setXmlName(Attribute.DEFAULT_CACHE_CONTAINER.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
     // this was removed?
