@@ -942,10 +942,10 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
     @Override
     protected boolean isRuntimeSystemPropertyUpdateAllowed(String propertyName, String propertyValue, boolean bootTime) throws OperationFailedException {
         if (ILLEGAL_PROPERTIES.contains(propertyName)) {
-            throw ServerMessages.MESSAGES.systemPropertyNotManageable(propertyName);
+            throw MESSAGES.systemPropertyNotManageable(propertyName);
         }
         if (processNameSet && SERVER_NAME.equals(propertyName)) {
-            throw ServerMessages.MESSAGES.systemPropertyCannotOverrideServerName(SERVER_NAME);
+            throw MESSAGES.systemPropertyCannotOverrideServerName(SERVER_NAME);
         }
         return bootTime || !BOOT_PROPERTIES.contains(propertyName);
     }
