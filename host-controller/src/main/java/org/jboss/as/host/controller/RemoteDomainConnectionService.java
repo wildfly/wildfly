@@ -171,6 +171,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
                 connected = true;
             } catch (IOException e) {
                 Throwable cause = e;
+                HostControllerLogger.ROOT_LOGGER.debugf(e, "failed to connect to %s:%d", localHostInfo.getRemoteDomainControllerHost(), localHostInfo.getRemoteDomainControllerPort());
                 while ((cause = cause.getCause()) != null) {
                     if (cause instanceof SaslException) {
                         throw MESSAGES.authenticationFailureUnableToConnect(cause);
@@ -182,6 +183,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
                 try {
                     HostControllerLogger.ROOT_LOGGER.cannotConnect(localHostInfo.getRemoteDomainControllerHost(), localHostInfo.getRemoteDomainControllerPort());
                     ReconnectPolicy.CONNECT.wait(retries);
+                    retries++;
                 } catch (InterruptedException ie) {
                     throw MESSAGES.connectionToMasterInterrupted();
                 }

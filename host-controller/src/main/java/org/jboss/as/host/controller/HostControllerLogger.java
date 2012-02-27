@@ -346,4 +346,11 @@ public interface HostControllerLogger extends BasicLogger {
     @Message(id = 10929, value = "Connection to remote host \"%s\" closed unexpected")
     void lostConnectionToRemoteHost(String hostId);
 
+    @LogMessage(level = Level.WARN)
+    @Message(id = 10930, value = "Cannot load the domain model using using --backup")
+    void invalidRemoteBackupPersisterState();
+
+    @LogMessage(level = Level.WARN)
+    @Message(id = 10931, value = "Cannot store the domain model using using --cached-dc")
+    void invalidCachedPersisterState();
 }

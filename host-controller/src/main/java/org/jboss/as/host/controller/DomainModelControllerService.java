@@ -308,7 +308,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
         try {
-            super.boot(hostControllerConfigurationPersister.load()); // This parses the host.xml and invokes all ops
+            boot(hostControllerConfigurationPersister.load()); // This parses the host.xml and invokes all ops
 
             final RunningMode currentRunningMode = runningModeControl.getRunningMode();
 
@@ -356,7 +356,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
                 // TODO look at having LocalDomainControllerAdd do this, using Stage.IMMEDIATE for the steps
                 // parse the domain.xml and load the steps
                 ConfigurationPersister domainPersister = hostControllerConfigurationPersister.getDomainPersister();
-                super.boot(domainPersister.load());
+                boot(domainPersister.load());
 
                 ManagementRemotingServices.installManagementChannelServices(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
                         new MasterDomainControllerOperationHandlerService(this),
