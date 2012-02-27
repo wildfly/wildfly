@@ -76,7 +76,7 @@
 
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-server</artifactId>
+            <artifactId>jboss-as-controller</artifactId>
         </dependency>
 
         <dependency>

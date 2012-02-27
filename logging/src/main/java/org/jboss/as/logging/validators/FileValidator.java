@@ -28,7 +28,7 @@ import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.server.services.path.AbstractPathService;
+import org.jboss.as.controller.services.path.AbstractPathService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 

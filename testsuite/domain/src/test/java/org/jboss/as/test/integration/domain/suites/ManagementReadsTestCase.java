@@ -30,10 +30,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROXIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
@@ -200,7 +200,7 @@ public class ManagementReadsTestCase {
 
         final ModelNode result = response.get(RESULT);
         Assert.assertEquals("main-one", result.get(PATH).asString());
-        Assert.assertEquals("jboss.domain.temp.dir", result.get(RELATIVE_TO).asString());
+        Assert.assertEquals("jboss.server.temp.dir", result.get(RELATIVE_TO).asString());
     }
 
     @Test

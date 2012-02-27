@@ -26,7 +26,7 @@ import static org.jboss.as.logging.CommonAttributes.PATH;
 import static org.jboss.as.logging.CommonAttributes.RELATIVE_TO;
 
 import org.jboss.as.controller.ParameterCorrector;
-import org.jboss.as.server.services.path.AbstractPathService;
+import org.jboss.as.controller.services.path.AbstractPathService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 

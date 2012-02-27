@@ -37,9 +37,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 
 import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.services.path.AbsolutePathService;
 import org.jboss.as.server.BootstrapListener;
 import org.jboss.as.server.FutureServiceContainer;
-import org.jboss.as.server.services.path.AbsolutePathService;
 import org.jboss.as.threads.ThreadFactoryService;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;

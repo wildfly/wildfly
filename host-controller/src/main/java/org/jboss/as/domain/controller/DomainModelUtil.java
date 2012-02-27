@@ -259,7 +259,7 @@ public class DomainModelUtil {
 
         final ManagementResourceRegistration paths = root.registerSubModel(PathElement.pathElement(PATH), DomainDescriptionProviders.PATH_DESCRIPTION);
         paths.registerOperationHandler(ADD, PathAddHandler.NAMED_INSTANCE, PathAddHandler.NAMED_INSTANCE, false);
-        paths.registerOperationHandler(REMOVE, PathRemoveHandler.INSTANCE, PathRemoveHandler.INSTANCE, false);
+        paths.registerOperationHandler(REMOVE, PathRemoveHandler.NAMED_INSTANCE, PathRemoveHandler.NAMED_INSTANCE, false);
 
         final ManagementResourceRegistration socketBindingGroup = root.registerSubModel(new SocketBindingGroupResourceDefinition(SocketBindingGroupAddHandler.INSTANCE, SocketBindingGroupRemoveHandler.INSTANCE, true));
         socketBindingGroup.registerSubModel(SocketBindingResourceDefinition.INSTANCE);

@@ -32,12 +32,12 @@
     </resources>
 
     <dependencies>
+        <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.clustering.api"/>
         <module name="org.jboss.as.clustering.impl"/>
         <module name="org.jboss.as.clustering.infinispan"/>
         <module name="org.jboss.as.clustering.registry"/>
         <module name="org.jboss.as.ejb3"/>
-        <module name="org.jboss.as.server"/>
         <module name="org.jboss.ejb-client"/>
         <module name="javax.api"/>
         <module name="javax.transaction.api"/>
