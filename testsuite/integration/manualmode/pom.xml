@@ -45,6 +45,29 @@
             <build>
                 <plugins>
 
+                    <!-- Build the server configuration(s) -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions combine.children="append">
+                            <execution>
+                                <id>build-manual-mode-servers</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <ant antfile="${jbossas.ts.integ.dir}/src/test/scripts/manualmode-build.xml">
+                                            <target name="build-manual-mode"/>
+                                        </ant>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+
                     <!-- Surefire. -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
@@ -66,10 +89,12 @@
 
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
+                                        <arquillian.launch>manual-mode</arquillian.launch>
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
+
 
                         </executions>
 

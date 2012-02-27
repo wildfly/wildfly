@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2011, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<project>
+
+    <!-- import shared ant targets -->
+    <import file="common-targets.xml" as="common"/>
+
+    <target name="build-manual-mode" description="Builds server configurations for manual mode tests">
+
+        <echo message="Copying and configuring instance jbossas-with-remote-outbound-connection"/>
+        <copy todir="target/jbossas-with-remote-outbound-connection">
+            <fileset dir="target/jbossas"/>
+        </copy>
+        <ts.config-as.add-remote-outbound-connection name="jbossas-with-remote-outbound-connection" node="${node0}"
+                                                     remotePort="4447" securityRealm="PasswordRealm" userName="user1"/>
+        <ts.config-as.add-identity-realm name="jbossas-with-remote-outbound-connection" realmName="PasswordRealm"
+                                         secret="cGFzc3dvcmQx"/>
+
+        <ts.config-as.add-port-offset name="jbossas-with-remote-outbound-connection" offset="100" nativePort="9999" httpPort="9990"/>
+    </target>
+
+</project>
