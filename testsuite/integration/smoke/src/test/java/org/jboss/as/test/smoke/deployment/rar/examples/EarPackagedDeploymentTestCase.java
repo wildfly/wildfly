@@ -27,9 +27,13 @@ import javax.annotation.Resource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension.ResourceAdapterSubsystemParser;
+import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ArquillianResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.smoke.deployment.rar.MultipleAdminObject1;
 import org.jboss.as.test.smoke.deployment.rar.MultipleConnectionFactory1;
@@ -41,12 +45,10 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
-import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertNotNull;
-
 
 
 /**
@@ -54,63 +56,64 @@ import static org.junit.Assert.assertNotNull;
  *         Deployment of a RAR packaged inside an EAR.
  */
 @RunWith(Arquillian.class)
-public class EarPackagedDeploymentTestCase extends AbstractMgmtTestBase {
+@ServerSetup(EarPackagedDeploymentTestCase.EarPackagedDeploymentTestCaseSetup.class)
+public class EarPackagedDeploymentTestCase extends ArquillianResourceMgmtTestBase {
 
-	//@BeforeClass - called from @Deployment
-	public static void setUp() throws Exception{
-		initModelControllerClient("localhost",9999);
-	    String xml=readXmlResource(System.getProperty("jbossas.ts.submodule.dir")+"/src/test/resources/config/ear_packaged.xml");
-        List<ModelNode> operations=XmlToModelOperations(xml,Namespace.CURRENT.getUriString(),new ResourceAdapterSubsystemParser());
-        executeOperation(operationListToCompositeOperation(operations));
+    static class EarPackagedDeploymentTestCaseSetup extends AbstractMgmtServerSetupTask {
 
-	}
-	@AfterClass
-	public static void tearDown() throws Exception{
+        @Override
+        public void doSetup(final ManagementClient managementClient) throws Exception{
+                String xml = readXmlResource(System.getProperty("jbossas.ts.submodule.dir") + "/src/test/resources/config/ear_packaged.xml");
+                List<ModelNode> operations = xmlToModelOperations(xml, Namespace.CURRENT.getUriString(), new ResourceAdapterSubsystemParser());
+                executeOperation( operationListToCompositeOperation(operations));
+        }
 
-		final ModelNode address = new ModelNode();
-        address.add("subsystem", "resource-adapters");
-        address.add("resource-adapter","ear_packaged.ear#ear_packaged.rar");
-        address.protect();
+        @Override
+        public void tearDown(final ManagementClient managementClient) throws Exception{
 
-        remove(address);
-        closeModelControllerClient();
-
-	}
+            final ModelNode address = new ModelNode();
+            address.add("subsystem", "resource-adapters");
+            address.add("resource-adapter", "ear_packaged.ear#ear_packaged.rar");
+            address.protect();
+            remove(address);
+        }
+    }
 
     /**
      * Define the deployment
      *
      * @return The deployment archive
      */
-   @Deployment
-    public static EnterpriseArchive createDeployment()  throws Exception{
-    	setUp();
+    @Deployment
+    public static EnterpriseArchive createDeployment() throws Exception {
 
         String deploymentName = "ear_packaged.ear";
         String subDeploymentName = "ear_packaged.rar";
 
         ResourceAdapterArchive raa =
                 ShrinkWrap.create(ResourceAdapterArchive.class, subDeploymentName);
-         JavaArchive ja = ShrinkWrap.create(JavaArchive.class,  "multiple.jar");
+        JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "multiple.jar");
         ja.addPackage(MultipleConnectionFactory1.class.getPackage()).
-        addClasses(EarPackagedDeploymentTestCase.class,AbstractMgmtTestBase.class,MgmtOperationException.class,XMLElementReader.class,XMLElementWriter.class);
+                addClasses(EarPackagedDeploymentTestCase.class,  MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class);
+
+        ja.addPackage(AbstractMgmtTestBase.class.getPackage());
         raa.addAsLibrary(ja);
 
         raa.addAsManifestResource("rar/" + subDeploymentName + "/META-INF/ra.xml", "ra.xml")
-        .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli\n"),"MANIFEST.MF");
+                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli\n"), "MANIFEST.MF");
 
-	    final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, deploymentName);
-	    ear.addAsModule(raa);
-	    ear.addAsManifestResource("rar/" + deploymentName + "/META-INF/application.xml", "application.xml");
+        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, deploymentName);
+        ear.addAsModule(raa);
+        ear.addAsManifestResource("rar/" + deploymentName + "/META-INF/application.xml", "application.xml");
         return ear;
     }
 
-   @Resource(mappedName = "java:jboss/name1")
-   private MultipleConnectionFactory1 connectionFactory1;
+    @Resource(mappedName = "java:jboss/name1")
+    private MultipleConnectionFactory1 connectionFactory1;
 
 
-   @Resource(mappedName="java:jboss/Name3")
-   private MultipleAdminObject1 adminObject1;
+    @Resource(mappedName = "java:jboss/Name3")
+    private MultipleAdminObject1 adminObject1;
 
 
     /**
@@ -121,7 +124,7 @@ public class EarPackagedDeploymentTestCase extends AbstractMgmtTestBase {
     @Test
     public void testConfiguration() throws Throwable {
 
-    	assertNotNull("CF1 not found",connectionFactory1);
-    	assertNotNull("AO1 not found",adminObject1);
+        assertNotNull("CF1 not found", connectionFactory1);
+        assertNotNull("AO1 not found", adminObject1);
     }
 }

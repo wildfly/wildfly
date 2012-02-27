@@ -21,15 +21,20 @@
  */
 package org.jboss.as.test.smoke.deployment.rar.examples;
 
+import java.io.IOException;
 import java.util.List;
 
 import javax.annotation.Resource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension.ResourceAdapterSubsystemParser;
+import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ArquillianResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.smoke.deployment.rar.MultipleAdminObject1;
 import org.jboss.as.test.smoke.deployment.rar.MultipleConnectionFactory1;
@@ -40,7 +45,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
-import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -52,59 +56,60 @@ import static org.junit.Assert.assertNotNull;
  *         JBQA-5739 multiple object activation (partial)
  */
 @RunWith(Arquillian.class)
-public class MultipleObjectPartialActivationTestCase extends AbstractMgmtTestBase {
+@ServerSetup(MultipleObjectPartialActivationTestCase.MultipleObjectPartialActivationTestCaseSetup.class)
+public class MultipleObjectPartialActivationTestCase extends ArquillianResourceMgmtTestBase {
 
-	//@BeforeClass - called from @Deployment
-	public static void setUp() throws Exception{
-		initModelControllerClient("localhost",9999);
-	    String xml=readXmlResource(System.getProperty("jbossas.ts.submodule.dir")+"/src/test/resources/config/multiple_part.xml");
-        List<ModelNode> operations=XmlToModelOperations(xml,Namespace.CURRENT.getUriString(),new ResourceAdapterSubsystemParser());
-        executeOperation(operationListToCompositeOperation(operations));
+    static class MultipleObjectPartialActivationTestCaseSetup extends AbstractMgmtServerSetupTask {
 
+        @Override
+        public void doSetup(final ManagementClient managementClient) throws Exception{
+                String xml = readXmlResource(System.getProperty("jbossas.ts.submodule.dir") + "/src/test/resources/config/multiple_part.xml");
+                List<ModelNode> operations = xmlToModelOperations(xml, Namespace.CURRENT.getUriString(), new ResourceAdapterSubsystemParser());
+                executeOperation(operationListToCompositeOperation(operations));
+        }
 
-	}
-	@AfterClass
-	public static void tearDown() throws Exception{
+        @Override
+        public void tearDown(final ManagementClient managementClient) throws IOException, MgmtOperationException {
 
-		final ModelNode address = new ModelNode();
-        address.add("subsystem", "resource-adapters");
-        address.add("resource-adapter","archive_multi_partial.rar");
-        address.protect();
-        remove(address);
-        closeModelControllerClient();
-
-	}
+            final ModelNode address = new ModelNode();
+            address.add("subsystem", "resource-adapters");
+            address.add("resource-adapter", "archive_multi_partial.rar");
+            address.protect();
+            remove(address);
+        }
+    }
 
     /**
      * Define the deployment
      *
      * @return The deployment archive
      */
-   @Deployment
-    public static ResourceAdapterArchive createDeployment()  throws Exception{
-    	setUp();
-
+    @Deployment
+    public static ResourceAdapterArchive createDeployment() throws Exception {
         String deploymentName = "archive_multi_partial.rar";
 
         ResourceAdapterArchive raa =
                 ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName);
-         JavaArchive ja = ShrinkWrap.create(JavaArchive.class,  "multiple.jar");
+        JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "multiple.jar");
         ja.addPackage(MultipleConnectionFactory1.class.getPackage()).
-        addClasses(MultipleObjectPartialActivationTestCase.class,AbstractMgmtTestBase.class,MgmtOperationException.class,XMLElementReader.class,XMLElementWriter.class);
+                addClasses(MultipleObjectPartialActivationTestCase.class, AbstractMgmtTestBase.class, MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class, MultipleObjectPartialActivationTestCaseSetup.class, AbstractMgmtServerSetupTask.class );
+
+        ja.addPackage(AbstractMgmtTestBase.class.getPackage());
         raa.addAsLibrary(ja);
 
         raa.addAsManifestResource("rar/" + deploymentName + "/META-INF/ra.xml", "ra.xml")
-        .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli\n"),"MANIFEST.MF");;
+                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli\n"), "MANIFEST.MF");
+        ;
         //org.apache.httpcomponents,
         return raa;
     }
 
-   @Resource(mappedName = "java:jboss/name1")
-   private MultipleConnectionFactory1 connectionFactory1;
+    @Resource(mappedName = "java:jboss/name1")
+    private MultipleConnectionFactory1 connectionFactory1;
 
 
-   @Resource(mappedName="java:jboss/Name3")
-   private MultipleAdminObject1 adminObject1;
+    @Resource(mappedName = "java:jboss/Name3")
+    private MultipleAdminObject1 adminObject1;
 
 
     /**
@@ -114,7 +119,7 @@ public class MultipleObjectPartialActivationTestCase extends AbstractMgmtTestBas
      */
     @Test
     public void testConfiguration() throws Throwable {
-    	assertNotNull("CF1 not found",connectionFactory1);
-    	assertNotNull("AO1 not found",adminObject1);
+        assertNotNull("CF1 not found", connectionFactory1);
+        assertNotNull("AO1 not found", adminObject1);
     }
 }

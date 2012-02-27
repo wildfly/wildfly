@@ -22,13 +22,13 @@
 
 package org.jboss.as.test.integration.domain;
 
-import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
-import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
-import org.junit.Test;
-
 import java.io.File;
 import java.net.URL;
 import java.net.URLConnection;
+
+import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
+import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
+import org.junit.Test;
 
 /**
  * Test validating the configuration starts and can accept a simple web request.
@@ -37,7 +37,7 @@ import java.net.URLConnection;
  */
  public abstract class BuildConfigurationTestBase {
 
-    static final String masterAddress = System.getProperty("jboss.test.host.master.address", "127.0.0.1");
+    static final String masterAddress = System.getProperty("jboss.test.host.master.address", "localhost");
     static final File JBOSS_HOME = new File(System.getProperty("jboss.home"));
     static final File BUILD_DIR = new File(JBOSS_HOME, "domain/configuration/");
 

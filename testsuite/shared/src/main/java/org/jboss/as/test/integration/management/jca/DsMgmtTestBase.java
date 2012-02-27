@@ -22,21 +22,22 @@
 
 package org.jboss.as.test.integration.management.jca;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import java.util.List;
 
 import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension.DataSourceSubsystemParser;
-import java.util.List;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.connector.subsystems.datasources.Namespace;
+import org.jboss.as.test.integration.management.base.ArquillianResourceMgmtTestBase;
 import org.jboss.dmr.ModelNode;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * Extension of AbstractMgmtTestBase for data source testing.
  *
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
-public class DsMgmtTestBase extends AbstractMgmtTestBase {
+public class DsMgmtTestBase extends ArquillianResourceMgmtTestBase {
     public static ModelNode baseAddress;
 
     public static void setBaseAddress(String dsType, String dsName) {
@@ -57,7 +58,7 @@ public class DsMgmtTestBase extends AbstractMgmtTestBase {
      */
     protected void setModel(String filename) throws Exception {
         String xml = readXmlResource(System.getProperty("jbossas.ts.integ.dir") + "/basic/src/test/resources/jca/metrics/data-sources/" + filename);
-        List<ModelNode> operations = XmlToModelOperations(xml, Namespace.CURRENT.getUriString(), new DataSourceSubsystemParser());
+        List<ModelNode> operations = xmlToModelOperations(xml, Namespace.CURRENT.getUriString(), new DataSourceSubsystemParser());
         executeOperation(operationListToCompositeOperation(operations));
     }
 
@@ -78,12 +79,12 @@ public class DsMgmtTestBase extends AbstractMgmtTestBase {
         return executeOperation(operation);
     }
 
-    protected static List<ModelNode> marshalAndReparseDsResources(String childType) throws Exception {
+    protected List<ModelNode> marshalAndReparseDsResources(String childType) throws Exception {
         DataSourceSubsystemParser parser = new DataSourceSubsystemParser();
-        return XmlToModelOperations(ModelToXml("datasources", childType, parser), Namespace.CURRENT.getUriString(), parser);
+        return xmlToModelOperations(modelToXml("datasources", childType, parser), Namespace.CURRENT.getUriString(), parser);
     }
 
-    private static void testCon(final String dsName, String type) throws Exception {
+    private void testCon(final String dsName, String type) throws Exception {
         final ModelNode address = new ModelNode();
         address.add("subsystem", "datasources");
         address.add(type, dsName);
@@ -96,11 +97,11 @@ public class DsMgmtTestBase extends AbstractMgmtTestBase {
         executeOperation(operation);
     }
 
-    protected static void testConnection(final String dsName) throws Exception {
+    protected void testConnection(final String dsName) throws Exception {
         testCon(dsName, "data-source");
     }
 
-    protected static void testConnectionXA(final String dsName) throws Exception {
+    protected void testConnectionXA(final String dsName) throws Exception {
         testCon(dsName, "xa-data-source");
     }
 }

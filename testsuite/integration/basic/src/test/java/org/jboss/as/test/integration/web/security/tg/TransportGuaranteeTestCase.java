@@ -40,6 +40,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.http.util.HttpClientUtils;
 import org.jboss.as.test.integration.management.Connector;
 import org.jboss.as.test.integration.management.ServerManager;
@@ -77,13 +78,17 @@ public class TransportGuaranteeTestCase  {
     @OperateOnDeployment(TG_ANN + WAR)
     URL deploymentUrl;
 
-    private ServerManager serverManager = null;
+    @ArquillianResource
+    @OperateOnDeployment(TG_ANN + WAR)
+    ManagementClient managementClient;
 
     private final File keyStoreFile = new File(System.getProperty("java.io.tmpdir"), "tg-test.keystore");
 
     private static final int httpsPort = 8447;
     private String httpsTestURL = null;
     private String httpTestURL = null;
+
+    private ServerManager serverManager;
 
     private boolean beforeServerManagerInitialized = false;
 
@@ -146,13 +151,13 @@ public class TransportGuaranteeTestCase  {
 
         if (beforeServerManagerInitialized)
             return;
+        beforeServerManagerInitialized = true;
+
+        serverManager = new ServerManager(managementClient);
 
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
 
         FileUtils.copyURLToFile(tccl.getResource("web/sec/tg/localhost.keystore"), keyStoreFile);
-
-        serverManager = new ServerManager(deploymentUrl.getHost());
-        serverManager.initModelControllerClient();
 
         try {
             serverManager.addConnector(Connector.HTTPSJIO, httpsPort,
@@ -301,6 +306,5 @@ public class TransportGuaranteeTestCase  {
 
 
     }
-
 
 }

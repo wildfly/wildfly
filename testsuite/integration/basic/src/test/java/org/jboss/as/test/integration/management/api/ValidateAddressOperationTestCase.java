@@ -23,15 +23,17 @@ package org.jboss.as.test.integration.management.api;
 
 import java.io.IOException;
 
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.operations.common.ValidateAddressOperationHandler;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ArquillianResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.dmr.ModelNode;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -48,17 +50,11 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class ValidateAddressOperationTestCase extends AbstractMgmtTestBase {
+public class ValidateAddressOperationTestCase extends ArquillianResourceMgmtTestBase {
 
-
-    @BeforeClass
-    public static void initClient() throws Exception {
-        initModelControllerClient("127.0.0.1", 9999);
-    }
-
-    @AfterClass
-    public static void closeClient() throws Exception {
-        closeModelControllerClient();
+    @Deployment
+    public static Archive<?> fakeDeployment() {
+        return ShrinkWrap.create(JavaArchive.class);
     }
 
     @Test

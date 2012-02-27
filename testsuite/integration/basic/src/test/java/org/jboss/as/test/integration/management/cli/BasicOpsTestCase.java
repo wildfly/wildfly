@@ -21,12 +21,13 @@
  */
 package org.jboss.as.test.integration.management.cli;
 
-import static org.junit.Assert.assertTrue;
-
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -41,12 +42,12 @@ public class BasicOpsTestCase {
 
         // wait for cli welcome message
         String line = cli.readLine(10000);
-        
+
         while(! line.contains("You are disconnected")) {
             line = cli.readLine(10000);
         }
 
-        cli.sendLine("connect");
+        cli.sendLine("connect " + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getServerPort());
         cli.sendLine("version", false);
         line = cli.readLine(5000);
         assertTrue("Connect failed:" + line, line.indexOf("[standalone@") >= 0);

@@ -17,7 +17,10 @@
  */
 package org.jboss.as.arquillian.protocol.jmx;
 
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectOutputStream;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.jboss.arquillian.container.spi.Container;
@@ -26,15 +29,17 @@ import org.jboss.arquillian.container.spi.event.container.BeforeDeploy;
 import org.jboss.arquillian.container.spi.event.container.BeforeStop;
 import org.jboss.arquillian.core.api.annotation.Observes;
 import org.jboss.as.arquillian.protocol.jmx.JMXProtocolAS7.ServiceArchiveHolder;
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
 /**
  * A deployer for the Arquillian JMXProtocol endpoint.
  *
- * @see JMXProtocolPackager
- *
  * @author thomas.diesler@jboss.com
+ * @see JMXProtocolPackager
  * @since 31-May-2011
  */
 public class ArquillianServiceDeployer {
@@ -45,16 +50,26 @@ public class ArquillianServiceDeployer {
 
     public synchronized void doServiceDeploy(@Observes BeforeDeploy event, Container container, ServiceArchiveHolder archiveHolder) {
         // already deployed?
-        if(serviceArchiveDeployed.contains(container.getName())) {
-           archiveHolder.deploymentExistsAndRemove(event.getDeployment().getName()); // cleanup
-           return;
+        if (serviceArchiveDeployed.contains(container.getName())) {
+            archiveHolder.deploymentExistsAndRemove(event.getDeployment().getName()); // cleanup
+            return;
         }
 
         // only deploy the service if the deployment has been enriched by the jmx-as7 protocol
-        if(archiveHolder.deploymentExistsAndRemove(event.getDeployment().getName())) {
-            Archive<?> serviceArchive = archiveHolder.getArchive();
+        if (archiveHolder.deploymentExistsAndRemove(event.getDeployment().getName())) {
+            JavaArchive serviceArchive = (JavaArchive) archiveHolder.getArchive();
             try {
                 log.infof("Deploy arquillian service: %s", serviceArchive);
+                final Map<String, String> props = container.getContainerConfiguration().getContainerProperties();
+                //MASSIVE HACK
+                //write the management connection props to the archive, so we can access them from the server
+                final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+                ObjectOutputStream out = new ObjectOutputStream(bytes);
+                out.writeObject(props.get("managementPort"));
+                out.writeObject(NetworkUtils.formatPossibleIpv6Address(props.get("managementAddress")));
+                out.close();
+                serviceArchive.addAsManifestResource(new ByteArrayAsset(bytes.toByteArray()), "org.jboss.as.managementConnectionProps");
+
                 DeployableContainer<?> deployableContainer = container.getDeployableContainer();
                 deployableContainer.deploy(serviceArchive);
                 serviceArchiveDeployed.add(container.getName());
@@ -66,7 +81,7 @@ public class ArquillianServiceDeployer {
 
     public synchronized void undeploy(@Observes BeforeStop event, Container container, ServiceArchiveHolder archiveHolder) {
         // clean up if we deployed to this container?
-        if(serviceArchiveDeployed.contains(container.getName())) {
+        if (serviceArchiveDeployed.contains(container.getName())) {
             try {
                 Archive<?> serviceArchive = archiveHolder.getArchive();
                 log.infof("Undeploy arquillian service: %s", serviceArchive);

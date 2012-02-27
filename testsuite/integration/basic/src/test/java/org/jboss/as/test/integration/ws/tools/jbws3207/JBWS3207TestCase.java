@@ -31,6 +31,7 @@ import java.net.URLConnection;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.http.Authentication;
 import org.jboss.as.test.integration.ws.tools.jbws3207.service.EndpointImpl;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.webservices.deployer.RemoteDeployer;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -98,8 +99,7 @@ public class JBWS3207TestCase {
         URLConnection conn = null;
         InputStream in = null;
         try {
-            String node0 = System.getProperty("node0", "not-defined");
-            URL url = new URL("http://" + node0 + ":8080/jbws3207/?wsdl");
+            URL url = new URL("http://" + TestSuiteEnvironment.getServerAddress() + ":8080/jbws3207/?wsdl");
             System.out.println("Reading response from " + url + ":");
             conn = url.openConnection();
             conn.setDoInput(true);
@@ -126,8 +126,7 @@ public class JBWS3207TestCase {
                 + "      <arg0>Foo</arg0>"
                 + "    </arc:echoString>" + "  </soapenv:Body>" + "</soapenv:Envelope>";
         try {
-            String node0 = System.getProperty("node0", "not-defined");
-            URL url = new URL("http://" + node0 + ":8080/jbws3207");
+            URL url = new URL("http://" + TestSuiteEnvironment.getServerAddress() + ":8080/jbws3207");
             System.out.println("Reading response from " + url + ":");
             conn = url.openConnection();
             conn.setDoInput(true);

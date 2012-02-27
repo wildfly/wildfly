@@ -28,7 +28,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.shrinkwrap.api.Archive;
-import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -47,14 +46,8 @@ public class DataSourceCfgMetricUnitTestCase  extends DsMgmtTestBase{
 
 	@Deployment
     public static Archive<?> getDeployment() {
-    	initModelControllerClient("localhost",9999);
     	setBaseAddress("data-source", "DS");
         return ShrinkWrapUtils.createEmptyJavaArchive("dummy");
-    }
-
-    @AfterClass
-    public static void tearDown()  throws Exception {
-    	closeModelControllerClient();
     }
 
     @Test

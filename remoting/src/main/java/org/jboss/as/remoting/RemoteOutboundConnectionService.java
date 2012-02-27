@@ -22,8 +22,17 @@
 
 package org.jboss.as.remoting;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
+
+import javax.net.ssl.SSLContext;
+import javax.security.auth.callback.CallbackHandler;
+
 import org.jboss.as.domain.management.CallbackHandlerFactory;
 import org.jboss.as.domain.management.SecurityRealm;
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceName;
@@ -37,14 +46,6 @@ import org.xnio.IoFuture;
 import org.xnio.OptionMap;
 import org.xnio.Options;
 import org.xnio.Sequence;
-
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.URI;
-import java.net.URISyntaxException;
-
-import javax.net.ssl.SSLContext;
-import javax.security.auth.callback.CallbackHandler;
 
 import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
 import static org.xnio.Options.SASL_POLICY_NOANONYMOUS;
@@ -155,7 +156,7 @@ public class RemoteOutboundConnectionService extends AbstractOutboundConnectionS
         final InetAddress destinationAddress = destinationOutboundSocket.getDestinationAddress();
         final int port = destinationOutboundSocket.getDestinationPort();
 
-        this.connectionURI = new URI(REMOTE_URI_SCHEME + destinationAddress.getHostAddress() + ":" + port);
+        this.connectionURI = new URI(REMOTE_URI_SCHEME + NetworkUtils.formatPossibleIpv6Address( destinationAddress.getHostAddress()) + ":" + port);
         return this.connectionURI;
     }
 

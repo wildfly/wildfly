@@ -22,15 +22,18 @@
 
 package org.jboss.as.test.integration.management;
 
+import java.util.HashSet;
+import java.util.List;
+
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.util.WebUtil;
 import org.jboss.dmr.ModelNode;
-import java.util.HashSet;
-import java.util.List;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Shared class for all mamagement operations needed by tests.
@@ -39,38 +42,16 @@ import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNo
  * @author <a href="mailto:pskopek@redhat.com">Peter Skopek</a>
  */
 public class ServerManager extends AbstractMgmtTestBase {
-    private int mgmtPort;
-    private String mgmtHostName;
 
-    /**
-     * Constructor using default hostname and management port.
-     */
-    public ServerManager() {
-        this("localhost", MGMT_PORT);
+    private final ManagementClient managementClient;
+
+    public ServerManager(final ManagementClient managementClient) {
+        this.managementClient = managementClient;
     }
 
-    /**
-     * Constructor with specific hostname and management port.
-     * @param mgmtHostName
-     * @param mgmtPort
-     */
-    public ServerManager(String mgmtHostName, int mgmtPort) {
-        this.mgmtHostName = mgmtHostName;
-        this.mgmtPort = mgmtPort;
-    }
-
-    /**
-     * Constructor with specific hostname and default management port.
-     * @param mgmtHostName
-     */
-    public ServerManager(String mgmtHostName) {
-        this.mgmtHostName = mgmtHostName;
-        this.mgmtPort = MGMT_PORT;
-    }
-
-
-    public int getMgmtPort() {
-        return mgmtPort;
+    @Override
+    protected ModelControllerClient getModelControllerClient() {
+        return managementClient.getControllerClient();
     }
 
     public void addConnector(Connector conn, int port, String keyPEMFile, String certPEMFile, String keyStoreFile, String password) throws Exception {
@@ -153,7 +134,4 @@ public class ServerManager extends AbstractMgmtTestBase {
     }
 
 
-    public void initModelControllerClient() {
-        initModelControllerClient(mgmtHostName, getMgmtPort());
-    }
 }

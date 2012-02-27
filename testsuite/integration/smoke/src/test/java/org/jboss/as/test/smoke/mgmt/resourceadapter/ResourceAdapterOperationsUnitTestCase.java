@@ -23,34 +23,30 @@
 package org.jboss.as.test.smoke.mgmt.resourceadapter;
 
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.setOperationParams;
-import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.raCommonProperties;
-import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.raConnectionProperties;
-import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.raAdminProperties;
-import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.checkModelParams;
-
-import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
-import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension.ResourceAdapterSubsystemParser;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
-
-import java.io.IOException;
-import java.util.Properties;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
+import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension.ResourceAdapterSubsystemParser;
+import org.jboss.as.test.integration.management.base.ArquillianResourceMgmtTestBase;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
-import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.checkModelParams;
+import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.raAdminProperties;
+import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.raCommonProperties;
+import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.raConnectionProperties;
+import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.setOperationParams;
 
 
 /**
@@ -60,20 +56,12 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class ResourceAdapterOperationsUnitTestCase extends AbstractMgmtTestBase {
+public class ResourceAdapterOperationsUnitTestCase extends ArquillianResourceMgmtTestBase {
 
 
     @Deployment
     public static Archive<?> getDeployment() {
-    	initModelControllerClient("localhost",9999);
         return ShrinkWrapUtils.createEmptyJavaArchive("dummy");
-    }
-
-
-
-    @After
-    public void tearDown() throws IOException {
-    	closeModelControllerClient();
     }
 
     @Test
@@ -195,7 +183,7 @@ public class ResourceAdapterOperationsUnitTestCase extends AbstractMgmtTestBase 
 
     public List<ModelNode> marshalAndReparseRaResources(final String childType) throws Exception {
     	ResourceAdapterSubsystemParser parser=new ResourceAdapterSubsystemParser();
-    	return XmlToModelOperations(ModelToXml("resource-adapters",childType,parser),Namespace.CURRENT.getUriString(),parser);
+    	return xmlToModelOperations(modelToXml("resource-adapters", childType, parser), Namespace.CURRENT.getUriString(), parser);
     }
 
 }

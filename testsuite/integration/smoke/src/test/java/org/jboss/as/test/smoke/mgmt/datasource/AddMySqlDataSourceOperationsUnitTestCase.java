@@ -22,12 +22,9 @@
 
 package org.jboss.as.test.smoke.mgmt.datasource;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import java.io.IOException;
 import java.io.File;
 import java.util.List;
+
 import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -37,9 +34,11 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * Datasource operation unit test.
@@ -54,19 +53,12 @@ public class AddMySqlDataSourceOperationsUnitTestCase extends DsMgmtTestBase{
 
     @Deployment(testable = false)
     public static Archive<?> getDeployment() {
-    	initModelControllerClient("localhost",9999);
 				File jdbcJar = new File( System.getProperty("jbossas.ts.integ.dir", "."),
                                  "/smoke/src/test/resources/mysql-connector-java-5.1.15.jar");
         if( ! jdbcJar.exists() )
             throw new IllegalStateException("Can't find " + jdbcJar + " using ${jbossas.ts.integ.dir} == " + System.getProperty("jbossas.ts.integ.dir") );
         Archive<?> archive = ShrinkWrap.createFromZipFile(JavaArchive.class, jdbcJar);
         return archive;
-    }
-
-
-    @AfterClass
-    public static void tearDown()  throws IOException{
-    	closeModelControllerClient();
     }
 
     @Test

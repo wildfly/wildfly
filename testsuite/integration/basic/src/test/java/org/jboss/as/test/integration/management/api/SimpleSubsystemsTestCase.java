@@ -21,56 +21,39 @@
  */
 package org.jboss.as.test.integration.management.api;
 
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
-import java.net.URL;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ArquillianResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.cli.GlobalOpsTestCase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+import static org.junit.Assert.assertTrue;
 
 
 /**
- *
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class SimpleSubsystemsTestCase extends AbstractMgmtTestBase {
-    
-    @ArquillianResource
-    URL url;
-    
+public class SimpleSubsystemsTestCase extends ArquillianResourceMgmtTestBase {
+
     @Deployment
     public static Archive<?> getDeployment() {
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
         ja.addClass(GlobalOpsTestCase.class);
         return ja;
     }
-    
-    @Before
-    public void before() throws IOException {
-        initModelControllerClient(url.getHost(), MGMT_PORT);
-    }
 
-    @AfterClass
-    public static void after() throws IOException {
-        closeModelControllerClient();
-    }
-    
     @Test
     public void testJaxrs() throws Exception {
         testSimpleSubsystem("jaxrs");
@@ -95,13 +78,13 @@ public class SimpleSubsystemsTestCase extends AbstractMgmtTestBase {
     public void testJdr() throws Exception {
         testSimpleSubsystem("jdr");
     }
-    
-    private void testSimpleSubsystem(String subsystemName) throws IOException, MgmtOperationException {        
-        ModelNode op = createOpNode("subsystem=" + subsystemName, "read-resource");        
+
+    private void testSimpleSubsystem(String subsystemName) throws IOException, MgmtOperationException {
+        ModelNode op = createOpNode("subsystem=" + subsystemName, "read-resource");
         op.get("recursive").set(true);
-        
+
         ModelNode result = executeOperation(op);
         assertTrue("Subsystem not empty.", result.keys().size() == 0);
     }
-    
+
 }

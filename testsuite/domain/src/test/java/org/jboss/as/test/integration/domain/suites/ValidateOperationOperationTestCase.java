@@ -22,11 +22,14 @@
 package org.jboss.as.test.integration.domain.suites;
 
 import java.io.IOException;
+import java.net.UnknownHostException;
 
 import junit.framework.Assert;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.management.util.ModelUtil;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -51,14 +54,22 @@ public class ValidateOperationOperationTestCase extends AbstractMgmtTestBase {
     private static final String MASTER_SERVER = "main-one";
     private static final String SLAVE_SERVER = "main-three";
 
+    private static ModelControllerClient client;
+
     @BeforeClass
-    public static void initClient() throws Exception {
-        initModelControllerClient("127.0.0.1", 9999);
+    public static void setup() throws UnknownHostException {
+        client = ModelControllerClient.Factory.create(TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort());
     }
 
     @AfterClass
-    public static void closeClient() throws Exception {
-        closeModelControllerClient();
+    public static void afterClass() throws IOException {
+        client.close();
+        client = null;
+    }
+
+    @Override
+    protected ModelControllerClient getModelControllerClient() {
+        return client;
     }
 
     @Test
