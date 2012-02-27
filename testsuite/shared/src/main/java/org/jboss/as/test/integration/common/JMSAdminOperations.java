@@ -22,7 +22,6 @@
 
 package org.jboss.as.test.integration.common;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.ClientConstants;
@@ -30,8 +29,8 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
+import org.jboss.as.test.shared.TestUtils;
 
 /**
  * @author Jaikiran Pai
@@ -43,16 +42,12 @@ public class JMSAdminOperations {
 
     private static final Logger logger = Logger.getLogger(JMSAdminOperations.class);
 
+    
     public JMSAdminOperations() {
-        this("localhost", 9999);
-
-    }
-
-    public JMSAdminOperations(final String hostName, final int port) {
         try {
-            this.modelControllerClient = ModelControllerClient.Factory.create(InetAddress.getByName(hostName), port, getCallbackHandler());
+            this.modelControllerClient = TestUtils.getModelControllerClient();
         } catch (UnknownHostException e) {
-            throw new RuntimeException("Cannot create model controller client for host: " + hostName + " and port " + port, e);
+            throw new RuntimeException("Cannot create model controller: " + e.getMessage(), e);
         }
     }
 
