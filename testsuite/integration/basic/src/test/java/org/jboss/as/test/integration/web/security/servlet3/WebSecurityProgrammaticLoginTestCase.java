@@ -75,6 +75,7 @@ public class WebSecurityProgrammaticLoginTestCase {
         war.addAsWebInfResource(WebSecurityProgrammaticLoginTestCase.class.getPackage(), "web.xml", "web.xml");
         war.addClass(LoginServlet.class);
         war.addClass(SecuredServlet.class);
+        war.addClass(AbstractSecurityDomainSetup.class);
 
         return war;
     }
