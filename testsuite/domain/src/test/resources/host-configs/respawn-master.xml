@@ -66,7 +66,7 @@
     <servers>
         <server name="respawn-one" group="main-server-group">
             <paths>
-                <path name="domainTestPath" path="main-one" relative-to="jboss.domain.temp.dir" />
+                <path name="domainTestPath" path="main-one" relative-to="jboss.server.temp.dir" />
             </paths>
             <!-- server-one inherits the default socket-group declared in the server-group -->
             <jvm name="default"/>

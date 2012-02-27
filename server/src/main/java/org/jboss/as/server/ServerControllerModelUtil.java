@@ -68,6 +68,8 @@ import org.jboss.as.controller.extension.ExtensionResourceDefinition;
 import org.jboss.as.controller.operations.common.InterfaceCriteriaWriteHandler;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.NamespaceRemoveHandler;
+import org.jboss.as.controller.operations.common.PathAddHandler;
+import org.jboss.as.controller.operations.common.PathRemoveHandler;
 import org.jboss.as.controller.operations.common.ProcessReloadHandler;
 import org.jboss.as.controller.operations.common.ProcessStateAttributeHandler;
 import org.jboss.as.controller.operations.common.ResolveExpressionHandler;
@@ -124,8 +126,6 @@ import org.jboss.as.server.operations.RootResourceHack;
 import org.jboss.as.server.operations.RunningModeReadHandler;
 import org.jboss.as.server.operations.ServerRestartRequiredHandler;
 import org.jboss.as.server.operations.ServerShutdownHandler;
-import org.jboss.as.server.operations.SpecifiedPathAddHandler;
-import org.jboss.as.server.operations.SpecifiedPathRemoveHandler;
 import org.jboss.as.server.services.net.BindingGroupAddHandler;
 import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingResourceDefinition;
 import org.jboss.as.server.services.net.NetworkInterfaceRuntimeHandler;
@@ -326,8 +326,8 @@ public class ServerControllerModelUtil {
 
         // Paths
         ManagementResourceRegistration paths = root.registerSubModel(PathElement.pathElement(PATH), CommonProviders.SPECIFIED_PATH_PROVIDER);
-        paths.registerOperationHandler(SpecifiedPathAddHandler.OPERATION_NAME, SpecifiedPathAddHandler.INSTANCE, SpecifiedPathAddHandler.INSTANCE, false);
-        paths.registerOperationHandler(SpecifiedPathRemoveHandler.OPERATION_NAME, SpecifiedPathRemoveHandler.INSTANCE, SpecifiedPathRemoveHandler.INSTANCE, false);
+        paths.registerOperationHandler(PathAddHandler.OPERATION_NAME, PathAddHandler.SPECIFIED_INSTANCE, PathAddHandler.SPECIFIED_INSTANCE, false);
+        paths.registerOperationHandler(PathRemoveHandler.OPERATION_NAME, PathRemoveHandler.SPECIFIED_INSTANCE, PathRemoveHandler.SPECIFIED_INSTANCE, false);
 
         // Interfaces
         ManagementResourceRegistration interfaces = root.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);

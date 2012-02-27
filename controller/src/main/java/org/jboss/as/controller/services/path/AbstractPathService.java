@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server.services.path;
+package org.jboss.as.controller.services.path;
 
 import java.io.File;
 

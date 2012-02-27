@@ -19,13 +19,18 @@
 package org.jboss.as.controller.operations.common;
 
 
-import java.util.Locale;
-import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+
+import java.util.Locale;
+
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.PathDescription;
+import org.jboss.as.controller.services.path.AbstractPathService;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -37,6 +42,8 @@ public class PathRemoveHandler extends AbstractRemoveStepHandler implements Desc
 
     public static final String OPERATION_NAME = REMOVE;
 
+    private final boolean services;
+
     public static ModelNode getRemovePathOperation(ModelNode address) {
         ModelNode op = new ModelNode();
         op.get(OP).set(OPERATION_NAME);
@@ -44,16 +51,32 @@ public class PathRemoveHandler extends AbstractRemoveStepHandler implements Desc
         return op;
     }
 
-    public static final PathRemoveHandler INSTANCE = new PathRemoveHandler();
+    public static final PathRemoveHandler NAMED_INSTANCE = new PathRemoveHandler(false);
+    public static PathRemoveHandler SPECIFIED_INSTANCE = new PathRemoveHandler(true);
+    public static PathRemoveHandler SPECIFIED_NO_SERVICES_INSTANCE = new PathRemoveHandler(false);
 
     /**
      * Create the PathRemoveHandler
      */
-    protected PathRemoveHandler() {
+    protected PathRemoveHandler(final boolean services) {
+        this.services = services;
     }
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
         return PathDescription.getPathRemoveOperation(locale);
     }
+
+    @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return services;
+    }
+
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
+        //This will only get called for the specified variety
+        PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        String name = address.getLastElement().getValue();
+        context.removeService(AbstractPathService.pathNameOf(name));
+    }
+
 }

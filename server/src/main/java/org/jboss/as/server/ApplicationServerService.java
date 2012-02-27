@@ -36,13 +36,13 @@ import java.util.TreeSet;
 
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.RunningModeControl;
+import org.jboss.as.controller.services.path.AbsolutePathService;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.deployment.DeploymentMountProvider;
 import org.jboss.as.server.mgmt.domain.RemoteFileRepository;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
 import org.jboss.as.server.moduleservice.ModuleIndexService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
-import org.jboss.as.server.services.path.AbsolutePathService;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceActivator;

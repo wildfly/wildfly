@@ -22,17 +22,18 @@
 
 package org.jboss.as.txn.subsystem;
 
+import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
+import static org.jboss.as.txn.subsystem.CommonAttributes.JTS;
+
 import java.util.List;
 
 import javax.transaction.TransactionSynchronizationRegistry;
 
-import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
-import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
-import com.arjuna.ats.jts.common.jtsPropertyManager;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.services.path.RelativePathService;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
@@ -42,7 +43,6 @@ import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
-import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.as.txn.deployment.TransactionJndiBindingProcessor;
 import org.jboss.as.txn.deployment.TransactionLeakRollbackProcessor;
 import org.jboss.as.txn.service.ArjunaObjectStoreEnvironmentService;
@@ -68,8 +68,9 @@ import org.jboss.tm.JBossXATerminator;
 import org.jboss.tm.usertx.UserTransactionRegistry;
 import org.omg.CORBA.ORB;
 
-import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
-import static org.jboss.as.txn.subsystem.CommonAttributes.JTS;
+import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
+import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
+import com.arjuna.ats.jts.common.jtsPropertyManager;
 
 
 /**
