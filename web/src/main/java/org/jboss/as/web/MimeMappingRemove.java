@@ -37,14 +37,11 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 
 // implements ModelQueryOperationHandler, DescriptionProvider
-public class MimeMappingRemove implements OperationStepHandler, DescriptionProvider{
+public class MimeMappingRemove implements OperationStepHandler{
 
     static final MimeMappingRemove INSTANCE = new MimeMappingRemove();
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return WebSubsystemDescriptions.getMimeMappingRemoveDescription(locale);
-    }
+
 
     @Override
     public void execute(OperationContext context, ModelNode operation)

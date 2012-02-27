@@ -21,30 +21,25 @@
 */
 package org.jboss.as.web.test;
 
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.web.WebExtension;
+
+import java.io.IOException;
 
 /**
  *
  * @author Jean-Frederic Clere
  */
-public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
+public class WebSubsystemBareTestCase extends AbstractSubsystemBaseTest {
 
-    public WebSubsystemTestCase() {
+    public WebSubsystemBareTestCase() {
         super(WebExtension.SUBSYSTEM_NAME, new WebExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem.xml");
+        return readResource("subsystem-bare.xml");
 
     }
     @Override

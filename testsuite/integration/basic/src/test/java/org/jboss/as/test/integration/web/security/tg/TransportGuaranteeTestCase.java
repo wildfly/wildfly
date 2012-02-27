@@ -164,7 +164,8 @@ public class TransportGuaranteeTestCase  {
                     null, null, keyStoreFile.getAbsolutePath(),
                     "password");
         } catch (Exception e) {
-            Assert.fail("Cannot create https connector - HTTPSJIO");
+            log.error("Cannot create https connector - HTTPSJIO",e);
+            Assert.fail("Cannot create https connector - HTTPSJIO, cause "+e.getMessage());
         }
 
         // set test URL

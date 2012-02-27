@@ -22,25 +22,32 @@
 
 package org.jboss.as.web;
 
-import java.util.Locale;
-
-import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.dmr.ModelNode;
 
+import static org.jboss.as.web.WebStaticResources.STATIC_ATTRIBUTES;
+
 /**
- * @author Jean-Frederic Clere
+ * {@code OperationHandler} responsible for defining the static configuration
+ *
+ * @author Tomaz Cerar
  */
-class WebReWriteConditionRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
+class WebStaticResourcesAdd extends AbstractAddStepHandler {
 
-    static final WebReWriteConditionRemove INSTANCE = new WebReWriteConditionRemove();
+    static final WebStaticResourcesAdd INSTANCE = new WebStaticResourcesAdd();
 
-    private WebReWriteConditionRemove() {
+    private WebStaticResourcesAdd() {
         //
     }
 
+
     @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return WebSubsystemDescriptions.getReWriteConditionRemove(locale);
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        for (SimpleAttributeDefinition def : STATIC_ATTRIBUTES) {
+            def.validateAndSet(operation, model);
+        }
+
     }
 }

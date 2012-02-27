@@ -22,20 +22,19 @@
 
 package org.jboss.as.web;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.dmr.ModelNode;
+
+import static org.jboss.as.web.WebAccessLogDefinition.ACCESS_LOG_ATTRIBUTES;
 
 /**
  * {@code OperationHandler} responsible for defining the accesslog entry.
  *
  * @author Jean-Frederic Clere
  */
-class WebAccessLogAdd extends AbstractAddStepHandler implements DescriptionProvider {
+class WebAccessLogAdd extends AbstractAddStepHandler {
 
     static final WebAccessLogAdd INSTANCE = new WebAccessLogAdd();
 
@@ -43,20 +42,17 @@ class WebAccessLogAdd extends AbstractAddStepHandler implements DescriptionProvi
         //
     }
 
-    @Override
+    /* @Override
     protected void populateModel(final ModelNode operation, final Resource resource) {
         final ModelNode model = resource.getModel();
        WebConfigurationHandlerUtils.populateAccessLog(model, operation, resource);
-    }
+    }*/
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return WebSubsystemDescriptions.getAccessLogAdd(locale);
-    }
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        // TODO Auto-generated method stub
-
+        for (SimpleAttributeDefinition def : ACCESS_LOG_ATTRIBUTES) {
+            def.validateAndSet(operation, model);
+        }
     }
 }

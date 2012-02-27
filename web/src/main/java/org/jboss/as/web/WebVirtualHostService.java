@@ -176,9 +176,11 @@ public class WebVirtualHostService implements Service<VirtualHost> {
         final RewriteValve rewriteValve = new RewriteValve();
         rewriteValve.setContainer(container);
         StringBuffer configuration = new StringBuffer();
-        for (final ModelNode rewrite : element.asList()) {
+        for (final ModelNode rewriteElement : element.asList()) {
+            final ModelNode rewrite = rewriteElement.asProperty().getValue();
             if (rewrite.has(Constants.CONDITION)) {
-                for (final ModelNode condition : rewrite.get(Constants.CONDITION).asList()) {
+                for (final ModelNode conditionElement : rewrite.get(Constants.CONDITION).asList()) {
+                    final ModelNode condition = conditionElement.asProperty().getValue();
                     configuration.append("RewriteCond ")
                     .append(condition.get(Constants.TEST).asString())
                     .append(" ").append(condition.get(Constants.PATTERN).asString());

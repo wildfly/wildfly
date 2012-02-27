@@ -22,15 +22,18 @@
 
 package org.jboss.as.test.integration.management;
 
-import java.util.HashSet;
-import java.util.List;
-
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.util.WebUtil;
 import org.jboss.dmr.ModelNode;
 
+import java.util.HashSet;
+import java.util.List;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -74,24 +77,28 @@ public class ServerManager extends AbstractMgmtTestBase {
     }
 
     private ModelNode getAddConnectorOp(Connector conn, String keyPEMFile, String certPEMFile, String keyStoreFile, String password) {
+        final ModelNode composite = Util.getEmptyOperation(COMPOSITE, new ModelNode());
+        final ModelNode steps = composite.get(STEPS);
+
         ModelNode op = createOpNode("subsystem=web/connector=test-" + conn.getName() + "-connector", "add");
         op.get("socket-binding").set("test-" + conn.getName());
         op.get("scheme").set(conn.getScheme());
         op.get("protocol").set(conn.getProtocol());
         op.get("secure").set(conn.isSecure());
         op.get("enabled").set(true);
+        steps.add(op);
         if (conn.isSecure()) {
-            ModelNode ssl = new ModelNode();
+            ModelNode ssl = createOpNode("subsystem=web/connector=test-" + conn.getName() + "-connector/configuration=ssl", "add");
             if (conn.equals(Connector.HTTPSNATIVE)) {
                 ssl.get("certificate-key-file").set(keyPEMFile);
-                    ssl.get("certificate-file").set(certPEMFile);
+                ssl.get("certificate-file").set(certPEMFile);
             } else {
                 ssl.get("certificate-key-file").set(keyStoreFile);
             }
             ssl.get("password").set(password);
-            op.get("ssl").set(ssl);
+            steps.add(ssl);
         }
-        return op;
+        return composite;
     }
 
     public void removeConnector(Connector conn, String checkURL) throws Exception {
@@ -102,8 +109,7 @@ public class ServerManager extends AbstractMgmtTestBase {
         Thread.sleep(5000);
         // check that the connector is not live
 
-        if (checkURL != null)
-            assertFalse("Connector not removed.", WebUtil.testHttpURL(checkURL));
+        if (checkURL != null) { assertFalse("Connector not removed.", WebUtil.testHttpURL(checkURL)); }
 
         // remove socket binding
         op = getRemoveSocketBindingOp(conn);
