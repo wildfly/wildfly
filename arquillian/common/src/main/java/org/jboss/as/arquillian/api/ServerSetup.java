@@ -17,6 +17,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface ServerSetup {
 
-    Class<? extends ServerSetupTask> value();
+    Class<? extends ServerSetupTask>[] value();
 
 }

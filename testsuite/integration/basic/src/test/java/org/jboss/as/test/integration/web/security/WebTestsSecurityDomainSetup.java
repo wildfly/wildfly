@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.security.Constants;
-import org.jboss.as.test.integration.security.AbstractSecurityDomainSetup;
+import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 

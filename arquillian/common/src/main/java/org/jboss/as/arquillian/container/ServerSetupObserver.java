@@ -2,6 +2,7 @@ package org.jboss.as.arquillian.container;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,7 +32,7 @@ public class ServerSetupObserver {
     private Set<ContainerClassHolder> alreadyRun = new HashSet<ContainerClassHolder>();
 
     private final List<ManagementClient> active = new ArrayList<ManagementClient>();
-    private ServerSetupTask current;
+    private final List<ServerSetupTask> current = new ArrayList<ServerSetupTask>();
 
     public synchronized void handleBeforeDeployment(@Observes BeforeDeploy event, Container container) throws Exception {
 
@@ -50,26 +51,38 @@ public class ServerSetupObserver {
         if (setup == null) {
             return;
         }
-        if (current == null) {
-            Constructor<? extends ServerSetupTask> ctor = setup.value().getDeclaredConstructor();
-            ctor.setAccessible(true);
-            current = ctor.newInstance();
-        } else if (current.getClass() != setup.value()) {
-            throw new RuntimeException("Mismatched ServerSetupTask current is " + current + " but " + currentClass + " is expecting " + setup.value());
+        final Class<? extends ServerSetupTask>[] classes = setup.value();
+        if (current.isEmpty()) {
+            for(Class<? extends ServerSetupTask> clazz : classes) {
+                Constructor<? extends ServerSetupTask> ctor = clazz.getDeclaredConstructor();
+                ctor.setAccessible(true);
+                current.add(ctor.newInstance());
+            }
+        } else {
+            //this should never happen
+            for(int i = 0; i < current.size(); ++ i) {
+                if(classes[i] != current.get(i).getClass()) {
+                    throw new RuntimeException("Mismatched ServerSetupTask current is " + current + " but " + currentClass + " is expecting " + Arrays.asList(classes));
+                }
+            }
         }
 
         final ManagementClient client = managementClient.get();
-        current.setup(client);
+        for(ServerSetupTask instance : current) {
+            instance.setup(client);
+        }
         active.add(client);
     }
 
     public synchronized void handleAfterClass(@Observes AfterClass event) throws Exception {
         if (current != null) {
             for(final ManagementClient client : active) {
-                current.tearDown(client);
+                for(final ServerSetupTask instance : current) {
+                    instance.tearDown(client);
+                }
             }
             active.clear();
-            current = null;
+            current.clear();
         }
     }
 
