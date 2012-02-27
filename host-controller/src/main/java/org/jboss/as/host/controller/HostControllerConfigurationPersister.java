@@ -74,7 +74,11 @@ public class HostControllerConfigurationPersister implements ExtensibleConfigura
 
         final File configDir = environment.getDomainConfigurationDir();
         if (slave) {
-            if (environment.isBackupDomainFiles() || environment.isUseCachedDc()) {
+            if (environment.isBackupDomainFiles()) {
+                // --backup
+                domainPersister = ConfigurationPersisterFactory.createRemoteBackupDomainXmlConfigurationPersister(configDir, executorService, extensionRegistry);
+            } else if(environment.isUseCachedDc()) {
+                // --cached-dc
                 domainPersister = ConfigurationPersisterFactory.createCachedRemoteDomainXmlConfigurationPersister(configDir, executorService, extensionRegistry);
             } else {
                 domainPersister = ConfigurationPersisterFactory.createTransientDomainXmlConfigurationPersister(executorService, extensionRegistry);
@@ -83,7 +87,6 @@ public class HostControllerConfigurationPersister implements ExtensibleConfigura
             final ConfigurationFile configurationFile = environment.getDomainConfigurationFile();
             domainPersister = ConfigurationPersisterFactory.createDomainXmlConfigurationPersister(configurationFile, executorService, extensionRegistry);
         }
-
         this.slave = Boolean.valueOf(slave);
     }
 
