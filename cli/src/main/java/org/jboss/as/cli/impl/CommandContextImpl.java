@@ -488,6 +488,7 @@ class CommandContextImpl implements CommandContext {
     @Override
     public void terminateSession() {
         terminate = true;
+        disconnectController();
     }
 
     @Override
@@ -599,12 +600,12 @@ class CommandContextImpl implements CommandContext {
     }
 
     @Override
-    public void connectController() {
+    public void connectController() throws CommandLineException {
         connectController(null, -1);
     }
 
     @Override
-    public void connectController(String host, int port) {
+    public void connectController(String host, int port) throws CommandLineException {
         if (host == null) {
             host = defaultControllerHost;
         }
@@ -626,18 +627,16 @@ class CommandContextImpl implements CommandContext {
                         newClient = tempClient;
                         break;
                     case CONNECTION_FAILURE:
-                        error("The controller is not available at " + host + ":" + port);
-                        break;
+                        throw new CommandLineException("The controller is not available at " + host + ":" + port);
                     case AUTHENTICATION_FAILURE:
-                        error("Unable to authenticate against controller at " + host + ":" + port);
-                        break;
+                        throw new CommandLineException("Unable to authenticate against controller at " + host + ":" + port);
                     case SSL_FAILURE:
                         try {
                             retry = handleSSLFailure();
                         } catch (IOException ignored) {
                         }
                         if (retry == false) {
-                            error("Unable to negotiate SSL connection with controller at " + host + ":" + port);
+                            throw new CommandLineException("Unable to negotiate SSL connection with controller at " + host + ":" + port);
                         }
                         break;
                 }
@@ -655,7 +654,7 @@ class CommandContextImpl implements CommandContext {
                     domainMode = nodeTypes.contains(Util.SERVER_GROUP);
                 }
             } catch (UnknownHostException e) {
-                error("Failed to resolve host '" + host + "': " + e.getLocalizedMessage());
+                throw new CommandLineException("Failed to resolve host '" + host + "': " + e.getLocalizedMessage());
             }
         } while (retry);
     }
@@ -1026,8 +1025,6 @@ class CommandContextImpl implements CommandContext {
             printLine("");
         } catch (Throwable t) {
             t.printStackTrace();
-        } finally {
-            disconnectController();
         }
     }
 
