@@ -22,8 +22,11 @@
 
 package org.jboss.as.test.integration.security.loginmodules;
 
-import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.integration.security.loginmodules.common.servlets.PrincipalPrintingServlet;
+import java.io.IOException;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -31,18 +34,18 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.integration.security.common.Utils;
+import org.jboss.as.test.integration.security.loginmodules.common.servlets.PrincipalPrintingServlet;
 import org.jboss.logging.Logger;
 import org.jboss.security.auth.spi.IdentityLoginModule;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.io.IOException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.junit.Assert.assertTrue;
 
@@ -53,11 +56,53 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@ServerSetup({IdentityLoginModuleTestCase.SecurityDomain1Setup.class, IdentityLoginModuleTestCase.SecurityDomain2Setup.class})
 public class IdentityLoginModuleTestCase {
 
    private static Logger log = Logger.getLogger(IdentityLoginModuleTestCase.class);
 
    private static final String DEP1 = "IdentityLoginModule-defaultPrincipal";
+
+    static class SecurityDomain1Setup extends AbstractSecurityDomainSetup {
+
+        @Override
+        protected String getSecurityDomainName() {
+            return "TestIdentityLoginDomain";
+        }
+
+        @Override
+        public void setup(final ManagementClient managementClient) throws Exception {
+            log.debug("adding module options");
+            Map<String,String> moduleOptionsMap = new HashMap<String,String>();
+            moduleOptionsMap.put("roles", "role1,role2");
+
+            log.info("creating security domain: TestIdentityLoginDomain");
+            createSecurityDomain(IdentityLoginModule.class, moduleOptionsMap, managementClient.getControllerClient());
+            log.info("security domain created");
+        }
+    }
+    static class SecurityDomain2Setup extends AbstractSecurityDomainSetup {
+
+        @Override
+        protected String getSecurityDomainName() {
+            return "TestIdentityLoginDomain2";
+        }
+
+        @Override
+        public void setup(final ManagementClient managementClient) throws Exception {
+
+            log.debug("adding module options");
+            Map<String,String> moduleOptionsMap = new HashMap<String,String>();
+            moduleOptionsMap.put("roles", "role1,role2");
+            moduleOptionsMap.put("principal", "SomeName");
+
+            log.info("creating security domain: TestIdentityLoginDomain");
+            createSecurityDomain(IdentityLoginModule.class, moduleOptionsMap, managementClient.getControllerClient());
+            log.info("security domain created");
+
+        }
+    }
+
 
    /**
     * Test deployment with
@@ -72,15 +117,6 @@ public class IdentityLoginModuleTestCase {
       war.setWebXML(Utils.getResource("loginmodules/deployments/IdentityLoginModule/web.xml"));
       war.addAsWebInfResource(Utils.getResource("loginmodules/deployments/IdentityLoginModule/dep1/jboss-web.xml"),"jboss-web.xml");
       log.debug(war.toString(true));
-
-      log.debug("adding module options");
-      Map<String,String> moduleOptionsMap = new HashMap<String,String>();
-      moduleOptionsMap.put("roles", "role1,role2");
-
-      log.info("creating security domain: TestIdentityLoginDomain");
-      Utils.createSecurityDomain("TestIdentityLoginDomain", "localhost", 9999, IdentityLoginModule.class, moduleOptionsMap);
-      log.info("security domain created");
-
       return war;
    }
 
@@ -98,17 +134,8 @@ public class IdentityLoginModuleTestCase {
       WebArchive war = ShrinkWrap.create(WebArchive.class, DEP2 + ".war");
       war.addClass(PrincipalPrintingServlet.class);
       war.setWebXML(Utils.getResource("loginmodules/deployments/IdentityLoginModule/web.xml"));
-      war.addAsWebInfResource(Utils.getResource("loginmodules/deployments/IdentityLoginModule/dep2/jboss-web.xml"),"jboss-web.xml");
+      war.addAsWebInfResource(Utils.getResource("loginmodules/deployments/IdentityLoginModule/dep2/jboss-web.xml"), "jboss-web.xml");
       log.debug(war.toString(true));
-
-      log.debug("adding module options");
-      Map<String,String> moduleOptionsMap = new HashMap<String,String>();
-      moduleOptionsMap.put("roles", "role1,role2");
-      moduleOptionsMap.put("principal","SomeName");
-
-      log.info("creating security domain: TestIdentityLoginDomain");
-      Utils.createSecurityDomain("TestIdentityLoginDomain2","localhost", 9999, IdentityLoginModule.class, moduleOptionsMap);
-      log.info("security domain created");
 
       return war;
    }
@@ -134,7 +161,7 @@ public class IdentityLoginModuleTestCase {
          response = httpclient.execute(httpget);
          text = Utils.getContent(response);
       } catch (IOException e) {
-         throw new RuntimeException("Servlet response IO exception", e);         
+         throw new RuntimeException("Servlet response IO exception", e);
       }
 
       assertTrue("default principal ('guest') not assigned to the request by IdentityLoinModule: returned text = " +

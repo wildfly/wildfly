@@ -35,7 +35,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.security.Constants;
-import org.jboss.as.test.integration.security.AbstractSecurityDomainSetup;
+import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
