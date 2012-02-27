@@ -24,8 +24,10 @@ package org.jboss.as.ejb3.remote;
 
 import org.jboss.as.remoting.AbstractOutboundConnectionService;
 import org.jboss.ejb.client.EJBClientContext;
+import org.jboss.ejb.client.EJBReceiver;
 import org.jboss.ejb.client.remoting.IoFutureHelper;
 import org.jboss.ejb.client.remoting.ReconnectHandler;
+import org.jboss.ejb.client.remoting.RemotingConnectionEJBReceiver;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -39,6 +41,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.Connection;
 import org.xnio.IoFuture;
+import org.xnio.OptionMap;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -179,7 +182,8 @@ public class DescriptorBasedEJBClientContextService implements Service<EJBClient
                 // successfully reconnected so unregister this reconnect handler
                 this.clientContext.unregisterReconnectHandler(this);
                 // register the newly reconnected connection
-                this.clientContext.registerConnection(connection);
+                final EJBReceiver receiver = new RemotingConnectionEJBReceiver(connection, this, OptionMap.EMPTY);
+                this.clientContext.registerEJBReceiver(receiver);
             } catch (Exception e) {
                 logger.debug("Reconnect attempt#" + this.reconnectAttemptCount + " failed for outbound connection " + this.outboundConnectionServiceName, e);
             }
