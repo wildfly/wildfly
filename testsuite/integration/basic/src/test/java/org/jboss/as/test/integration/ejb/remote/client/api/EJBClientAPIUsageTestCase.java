@@ -202,7 +202,8 @@ public class EJBClientAPIUsageTestCase {
     }
 
     /**
-     * Tests that invoking a non-existent EJB leads to a {@link NoSuchEJBException}
+     * Tests that invoking a non-existent EJB leads to a {@link IllegalStateException} as a result of
+     * no EJB receivers able to handle the invocation
      *
      * @throws Exception
      */
@@ -214,10 +215,10 @@ public class EJBClientAPIUsageTestCase {
         // invoke on the (non-existent) bean
         try {
             nonExistentBean.echo("Hello world to a non-existent bean");
-            Assert.fail("Expected a NoSuchEJBException");
-        } catch (NoSuchEJBException nsee) {
+            Assert.fail("Expected a IllegalStateException");
+        } catch (IllegalStateException ise) {
             // expected
-            logger.info("Received the expected exception", nsee);
+            logger.info("Received the expected exception", ise);
         }
     }
 
