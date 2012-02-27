@@ -104,12 +104,7 @@ public class InfinispanSubsystemXMLReader_1_1 implements XMLElementReader<List<M
                     break;
                 }
                 case START: {
-                    try {
-                        StartMode mode = StartMode.valueOf(value);
-                        CommonAttributes.START.parseAndSetParameter(mode.name(), container, reader);
-                    } catch (IllegalArgumentException e) {
-                        throw ParseUtils.invalidAttributeValue(reader, i);
-                    }
+                    CommonAttributes.START.parseAndSetParameter(value, container, reader);
                     break;
                 }
                 case LISTENER_EXECUTOR: {
@@ -188,10 +183,6 @@ public class InfinispanSubsystemXMLReader_1_1 implements XMLElementReader<List<M
                     CommonAttributes.STACK.parseAndSetParameter(value, transport, reader);
                     break;
                 }
-                case CLUSTER: {
-                    CommonAttributes.CLUSTER.parseAndSetParameter(value, transport, reader);
-                    break;
-                }
                 case EXECUTOR: {
                     CommonAttributes.EXECUTOR.parseAndSetParameter(value, transport, reader);
                     break;
@@ -223,12 +214,7 @@ public class InfinispanSubsystemXMLReader_1_1 implements XMLElementReader<List<M
                 break;
             }
             case START: {
-                try {
-                    StartMode mode = StartMode.valueOf(value);
-                    CommonAttributes.START.parseAndSetParameter(mode.name(), cache, reader);
-                } catch (IllegalArgumentException e) {
-                    throw ParseUtils.invalidAttributeValue(reader, index);
-                }
+                CommonAttributes.START.parseAndSetParameter(value, cache, reader);
                 break;
             }
             case JNDI_NAME: {
@@ -240,12 +226,7 @@ public class InfinispanSubsystemXMLReader_1_1 implements XMLElementReader<List<M
                 break;
             }
             case INDEXING: {
-                try {
-                    Indexing indexing = Indexing.valueOf(value);
-                    CommonAttributes.INDEXING.parseAndSetParameter(indexing.name(), cache, reader);
-                } catch (IllegalArgumentException e) {
-                    throw ParseUtils.invalidAttributeValue(reader, index);
-                }
+                CommonAttributes.INDEXING.parseAndSetParameter(value, cache, reader);
                 break;
             }
             default: {
@@ -551,12 +532,7 @@ public class InfinispanSubsystemXMLReader_1_1 implements XMLElementReader<List<M
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case ISOLATION: {
-                    try {
-                        IsolationLevel level = IsolationLevel.valueOf(value);
-                        CommonAttributes.ISOLATION.parseAndSetParameter(level.name(), locking, reader);
-                    } catch (IllegalArgumentException e) {
-                        throw ParseUtils.invalidAttributeValue(reader, i);
-                    }
+                    CommonAttributes.ISOLATION.parseAndSetParameter(value, locking, reader);
                     break;
                 }
                 case STRIPING: {
@@ -597,21 +573,11 @@ public class InfinispanSubsystemXMLReader_1_1 implements XMLElementReader<List<M
                     break;
                 }
                 case MODE: {
-                    try {
-                        TransactionMode txnMode = TransactionMode.valueOf(value);
-                        CommonAttributes.MODE.parseAndSetParameter(txnMode.name(), transaction, reader);
-                    } catch (IllegalArgumentException e) {
-                        throw ParseUtils.invalidAttributeValue(reader, i);
-                    }
+                    CommonAttributes.MODE.parseAndSetParameter(value, transaction, reader);
                     break;
                 }
                 case LOCKING: {
-                    try {
-                        LockingMode lockingMode = LockingMode.valueOf(value) ;
-                        CommonAttributes.LOCKING.parseAndSetParameter(lockingMode.name(), transaction, reader);
-                    } catch (IllegalArgumentException e) {
-                        throw ParseUtils.invalidAttributeValue(reader, i);
-                    }
+                    CommonAttributes.LOCKING.parseAndSetParameter(value, transaction, reader);
                     break;
                 }
                 default: {
@@ -635,12 +601,7 @@ public class InfinispanSubsystemXMLReader_1_1 implements XMLElementReader<List<M
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case STRATEGY: {
-                    try {
-                        EvictionStrategy strategy = EvictionStrategy.valueOf(value);
-                        CommonAttributes.STRATEGY.parseAndSetParameter(strategy.name(), eviction, reader);
-                    } catch (IllegalArgumentException e) {
-                        throw ParseUtils.invalidAttributeValue(reader, i);
-                    }
+                    CommonAttributes.STRATEGY.parseAndSetParameter(value, eviction, reader);
                     break;
                 }
                 case MAX_ENTRIES: {
