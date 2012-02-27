@@ -22,11 +22,7 @@
 
 package org.jboss.as.test.smoke.messaging.client.jms;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
-import static org.jboss.as.protocol.StreamUtils.safeClose;
-
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -48,13 +44,18 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import junit.framework.Assert;
-
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.test.shared.integration.ejb.security.CallbackHandler;
 import org.jboss.dmr.ModelNode;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -73,6 +74,14 @@ public class JmsClientTestCase {
     private static final String EXPORTED_QUEUE_NAME = "java:jboss/exported/createdTestQueue";
 
     private static Context remoteContext;
+
+    @ArquillianResource
+    private ManagementClient managementClient;
+
+    @Deployment
+    public static Archive<?> fakeDeployment() {
+        return ShrinkWrap.create(JavaArchive.class);
+    }
 
     @BeforeClass
     public static void setupRemoteContext() throws Exception {
@@ -94,7 +103,7 @@ public class JmsClientTestCase {
     public void testMessagingClient() throws Exception {
         QueueConnection conn = null;
         QueueSession session = null;
-        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("127.0.0.1"), 9999, getCallbackHandler());
+        ModelControllerClient client = managementClient.getControllerClient();
 
         boolean actionsApplied = false;
         try {
@@ -171,7 +180,6 @@ public class JmsClientTestCase {
                 op.get("address").add("jms-queue", QUEUE_NAME);
                 applyUpdate(op, client);
             }
-            safeClose(client);
         }
     }
 
