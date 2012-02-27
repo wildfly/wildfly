@@ -32,6 +32,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.test.shared.TestUtils;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
@@ -58,7 +59,7 @@ public class RootContextEarUnitTestCase {
     public static EnterpriseArchive earDeployment() {
 
         try {
-            ModelControllerClient mcc = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+            ModelControllerClient mcc = TestUtils.getModelControllerClient();
             RootContextUtil.createVirtualServer(mcc, HOST);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -85,7 +86,7 @@ public class RootContextEarUnitTestCase {
     @AfterClass
     public static void undeployment() {
         try {
-            ModelControllerClient mcc = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+            ModelControllerClient mcc = TestUtils.getModelControllerClient();
             RootContextUtil.undeploy(mcc, "root-web.ear");
             RootContextUtil.removeVirtualServer(mcc, HOST);
         } catch (Exception e) {

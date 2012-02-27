@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.integration.security.auditing;
 
+import org.jboss.as.test.shared.TestUtils;
 import static junit.framework.Assert.assertTrue;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -42,14 +43,12 @@ import org.junit.runner.RunWith;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -68,7 +67,7 @@ import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
 public class SecurityAuditingTestCase {
 
    private static void prepareConfig() throws UnknownHostException, Exception {
-      final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
+      final ModelControllerClient client = TestUtils.getModelControllerClient();
       final List<ModelNode> updates = new ArrayList<ModelNode>();
 
       ModelNode op;

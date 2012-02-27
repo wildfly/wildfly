@@ -22,11 +22,11 @@
 
 package org.jboss.as.test.integration.ejb.security;
 
+import org.jboss.as.test.shared.TestUtils;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.openjpa.lib.log.Log;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.security.Constants;
@@ -73,7 +73,7 @@ public class SecurityTest {
     }
 
     public static void createSecurityDomain(final String securityDomainName, boolean usersRolesRequired) throws Exception {
-        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
+        final ModelControllerClient client = TestUtils.getModelControllerClient();
         try {
             final List<ModelNode> updates = new ArrayList<ModelNode>();
             ModelNode op = new ModelNode();
@@ -122,7 +122,7 @@ public class SecurityTest {
     }
 
     public static void removeSecurityDomain(final String securityDomainName) throws Exception {
-        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
+        final ModelControllerClient client = TestUtils.getModelControllerClient();
         try {
             final List<ModelNode> updates = new ArrayList<ModelNode>();
             ModelNode op = new ModelNode();
