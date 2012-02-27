@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.mdb.containerstart;
 
+import org.jboss.as.test.shared.TestUtils;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
@@ -29,7 +30,6 @@ import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.jms.client.HornetQQueue;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -52,13 +52,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.jms.*;
-import javax.management.MBeanServerConnection;
-import javax.management.ObjectName;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
@@ -67,7 +64,6 @@ import java.util.TreeSet;
 import java.util.concurrent.*;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 
 /**
  * Part of migration EJB testsuite (JBAS-7922) to AS7 [JIRA JBQA-5483]. This test covers jira AS7-687 which aims to migrate this
@@ -83,7 +79,7 @@ public class SendMessagesTestCase {
     private static final String MBEAN = "mbean-containerstart";
     private static final String SINGLETON = "single-containerstart";
 
-    public static ModelControllerClient modelControllerClient;
+    private static ModelControllerClient mcClient;
     private ExecutorService executor = Executors.newSingleThreadExecutor();
     
     private static String QUEUE_SEND = "queue/sendMessage";
@@ -124,16 +120,16 @@ public class SendMessagesTestCase {
     
     @BeforeClass
     public static void init() throws Exception {
-        modelControllerClient = ModelControllerClient.Factory.create(InetAddress.getByName("127.0.0.1"), 9999, getCallbackHandler());
-        createQueue(modelControllerClient, QUEUE_SEND);
-        createQueue(modelControllerClient, QUEUE_REPLY);
+        mcClient = TestUtils.getModelControllerClient();
+        createQueue(mcClient, QUEUE_SEND);
+        createQueue(mcClient, QUEUE_REPLY);
     }
     
     @AfterClass 
     public static void clearUp() throws Exception {
-        destroyQueue(modelControllerClient, QUEUE_SEND);
-        destroyQueue(modelControllerClient, QUEUE_REPLY);
-        modelControllerClient.close();
+        destroyQueue(mcClient, QUEUE_SEND);
+        destroyQueue(mcClient, QUEUE_REPLY);
+        mcClient.close();
     }
     
     private InitialContext getInitialContext() throws NamingException {
@@ -241,7 +237,7 @@ public class SendMessagesTestCase {
             final ModelNode deployAddr = new ModelNode();
             deployAddr.get(ClientConstants.OP_ADDR).add("deployment", MBEAN + ".jar");
             deployAddr.get(ClientConstants.OP).set("deploy");
-            applyUpdate(deployAddr, modelControllerClient);
+            applyUpdate(deployAddr, mcClient);
 
             for (int i = 0; i < 10; i++) {
                 String msg = "Some more (" + i + ")";
@@ -290,7 +286,7 @@ public class SendMessagesTestCase {
                 final ModelNode undeployAddr = new ModelNode();
                 undeployAddr.get(ClientConstants.OP_ADDR).add("deployment", MBEAN + ".jar");
                 undeployAddr.get(ClientConstants.OP).set("undeploy");
-                SendMessagesTestCase.applyUpdate(undeployAddr, SendMessagesTestCase.modelControllerClient);
+                SendMessagesTestCase.applyUpdate(undeployAddr, SendMessagesTestCase.mcClient);
                 return null;
             }
         };

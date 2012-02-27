@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.web.formauth;
 
+import org.jboss.as.test.shared.TestUtils;
 import java.net.HttpURLConnection;
-import java.net.InetAddress;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -91,7 +91,7 @@ public class FormAuthUnitTestCase {
         String resourcesLocation = "org/jboss/as/test/integration/web/formauth/resources/";
 
         try {
-            ModelControllerClient mcc = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+            ModelControllerClient mcc = TestUtils.getModelControllerClient();
             createSecurityDomains(mcc);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -118,7 +118,7 @@ public class FormAuthUnitTestCase {
     @AfterClass
     public static void undeployment() {
         try {
-            ModelControllerClient mcc = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+            ModelControllerClient mcc = TestUtils.getModelControllerClient();
             removeSecurityDomains(mcc);
         } catch (Exception e) {
             log.error(e.getMessage(), e);

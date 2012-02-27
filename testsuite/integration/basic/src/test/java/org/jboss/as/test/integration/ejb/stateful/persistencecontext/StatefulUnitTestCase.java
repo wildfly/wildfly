@@ -27,15 +27,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import javax.naming.InitialContext;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.container.Authentication;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.test.shared.TestUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -57,8 +56,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class StatefulUnitTestCase {
     private static final Logger log = Logger.getLogger(StatefulUnitTestCase.class);
-    private static String HOSTNAME = "localhost";
-    private static int PORT = 9999;
     private static int TIME_TO_WAIT_FOR_PASSIVATION_MS = 2000;
 
     @ArquillianResource
@@ -91,7 +88,7 @@ public class StatefulUnitTestCase {
     
     private static ModelControllerClient getModelControllerClient() throws UnknownHostException {
         if (client == null) {
-            client = ModelControllerClient.Factory.create(InetAddress.getByName(HOSTNAME), PORT, Authentication.getCallbackHandler());
+            client = TestUtils.getModelControllerClient();
         }
         return client;
     }

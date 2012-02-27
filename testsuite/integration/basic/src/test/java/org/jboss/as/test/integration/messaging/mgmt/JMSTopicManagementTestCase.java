@@ -43,6 +43,7 @@ import org.jboss.as.arquillian.container.Authentication;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.test.integration.common.JMSAdminOperations;
+import org.jboss.as.test.shared.TestUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.junit.After;
@@ -110,7 +111,7 @@ public class JMSTopicManagementTestCase {
     @Before
     public void addSecuritySettings() throws Exception
     {
-        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, Authentication.getCallbackHandler());
+        final ModelControllerClient client = TestUtils.getModelControllerClient();
         //subsystem=messaging/hornetq-server=default/security-setting=#/role=guest:write-attribute(name=create-durable-queue, value=TRUE)
         ModelNode op = new ModelNode();
         op.get("operation").set("write-attribute");
@@ -162,7 +163,7 @@ public class JMSTopicManagementTestCase {
     @After
     public void removeSecuritySetting() throws Exception
     {
-        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, Authentication.getCallbackHandler());
+        final ModelControllerClient client = TestUtils.getModelControllerClient();
         //subsystem=messaging/hornetq-server=default/security-setting=#/role=guest:write-attribute(name=create-durable-queue, value=FALSE)
         ModelNode op = new ModelNode();
         op.get("operation").set("write-attribute");

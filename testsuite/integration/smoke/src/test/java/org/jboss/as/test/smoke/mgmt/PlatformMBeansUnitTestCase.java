@@ -22,7 +22,6 @@
 
 package org.jboss.as.test.smoke.mgmt;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -35,7 +34,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Set;
@@ -46,6 +44,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.test.shared.TestUtils;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -80,7 +79,7 @@ public class PlatformMBeansUnitTestCase {
     // [ARQ-458] @Before not called with @RunAsClient
     private ModelControllerClient getModelControllerClient() throws UnknownHostException {
         StreamUtils.safeClose(client);
-        client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
+        client = TestUtils.getModelControllerClient();
         return client;
     }
 

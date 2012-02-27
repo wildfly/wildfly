@@ -23,7 +23,6 @@
 package org.jboss.as.test.integration.messaging.xmldeployment;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -40,6 +39,7 @@ import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentActionR
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
 import org.jboss.as.test.integration.deployment.xml.datasource.DeployedXmlDataSourceTestCase;
+import org.jboss.as.test.shared.TestUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -49,7 +49,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 
 /**
  * Test deployment of -jms.xml files
@@ -78,7 +77,7 @@ public class DeployedXmlJMSTestCase {
     @BeforeClass
     public static void deployJms() throws Throwable {
         try {
-            client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
+            client = TestUtils.getModelControllerClient();
             manager = ServerDeploymentManager.Factory.create(client);
             final String packageName = DeployedXmlJMSTestCase.class.getPackage().getName().replace(".", "/");
             final DeploymentPlan plan = manager.newDeploymentPlan().add(DeployedXmlJMSTestCase.class.getResource("/" + packageName + "/" + TEST_JMS_XML)).andDeploy().build();

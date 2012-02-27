@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.messaging.xmldeployment;
 
+import org.jboss.as.test.shared.TestUtils;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -45,7 +45,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -75,7 +74,7 @@ public class DeployedXmlJMSManagementTestCase {
     @BeforeClass
     public static void deployDatasource() throws Throwable {
         try {
-            client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
+            client = TestUtils.getModelControllerClient();
             manager = ServerDeploymentManager.Factory.create(client);
             final String packageName = DeployedXmlJMSManagementTestCase.class.getPackage().getName().replace(".", "/");
             final DeploymentPlan plan = manager.newDeploymentPlan().add(DeployedXmlJMSManagementTestCase.class.getResource("/" + packageName + "/" + TEST_JMS_XML)).andDeploy().build();

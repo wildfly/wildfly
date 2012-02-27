@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.integration.deployment.xml.datasource;
 
+import org.jboss.as.test.shared.TestUtils;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.concurrent.Future;
@@ -76,7 +77,7 @@ public class DeployedXmlDataSourceManagementTestCase {
     @BeforeClass
     public static void deployDatasource() throws Throwable {
         try {
-            client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
+            client = TestUtils.getModelControllerClient();
             manager = ServerDeploymentManager.Factory.create(client);
             final String packageName = DeployedXmlDataSourceManagementTestCase.class.getPackage().getName().replace(".", "/");
             final DeploymentPlan plan = manager.newDeploymentPlan().add(DeployedXmlDataSourceManagementTestCase.class.getResource("/" + packageName + "/" + TEST_DS_XML)).andDeploy().build();

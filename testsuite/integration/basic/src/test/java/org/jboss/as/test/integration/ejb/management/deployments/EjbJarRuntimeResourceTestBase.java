@@ -22,14 +22,12 @@
 
 package org.jboss.as.test.integration.ejb.management.deployments;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 import static org.junit.Assert.*;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.*;
 import static org.jboss.as.ejb3.subsystem.deployment.TimerAttributeDefinition.*;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -39,6 +37,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.ejb3.subsystem.deployment.EJBComponentType;
 import org.jboss.as.ejb3.subsystem.deployment.TimerAttributeDefinition;
+import org.jboss.as.test.shared.TestUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.shrinkwrap.api.Archive;
@@ -78,7 +77,7 @@ public class EjbJarRuntimeResourceTestBase {
 
     @Before
     public void setup() throws Exception {
-        client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
+        client = TestUtils.getModelControllerClient();
     }
 
     @After

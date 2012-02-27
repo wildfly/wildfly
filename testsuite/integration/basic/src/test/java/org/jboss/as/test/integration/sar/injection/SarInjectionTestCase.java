@@ -23,7 +23,6 @@
 package org.jboss.as.test.integration.sar.injection;
 
 import java.io.IOException;
-import java.net.InetAddress;
 
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
@@ -36,12 +35,12 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.sar.injection.pojos.A;
+import org.jboss.as.test.shared.TestUtils;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 
 /**
  * [AS7-2574] setter declared in a superclass prevents SAR deployments from being deployed
@@ -62,7 +61,7 @@ public final class SarInjectionTestCase {
 
     @Test
     public void testMBean() throws Exception {
-        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("127.0.0.1"), 9999, getCallbackHandler());
+        final ModelControllerClient client = TestUtils.getModelControllerClient();
         try {
             final MBeanServerConnection mbeanServer = JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:remoting-jmx://localhost:9999")).getMBeanServerConnection();
             final ObjectName objectName = new ObjectName("jboss:name=POJOService");

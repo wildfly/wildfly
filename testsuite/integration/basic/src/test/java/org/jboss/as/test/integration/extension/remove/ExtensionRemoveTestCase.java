@@ -21,7 +21,6 @@
 */
 package org.jboss.as.test.integration.extension.remove;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
@@ -41,7 +40,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetAddress;
 import java.net.URL;
 
 import junit.framework.Assert;
@@ -52,6 +50,7 @@ import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.test.shared.TestUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ArchivePath;
@@ -91,7 +90,7 @@ public class ExtensionRemoveTestCase {
         createTestModule(testModuleRoot);
 
         try {
-            ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
+            ModelControllerClient client = TestUtils.getModelControllerClient();
             try {
                 //Check extension and subsystem is not there
                 Assert.assertFalse(readResource(client).get(EXTENSION, MODULE_NAME).isDefined());

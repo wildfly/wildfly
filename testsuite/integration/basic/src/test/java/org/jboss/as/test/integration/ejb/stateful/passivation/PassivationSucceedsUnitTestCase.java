@@ -22,7 +22,6 @@
 
 package org.jboss.as.test.integration.ejb.stateful.passivation;
 
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import javax.naming.InitialContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -32,9 +31,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.container.Authentication;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.test.integration.ejb.HostnameResolver;
+import org.jboss.as.test.shared.TestUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -75,8 +73,7 @@ public class PassivationSucceedsUnitTestCase {
 
     private static ModelControllerClient getModelControllerClient() throws UnknownHostException {
         if (client == null) {
-            client = ModelControllerClient.Factory.create(InetAddress.getByName(HostnameResolver.getHostname()),
-                    HostnameResolver.getManagementPort(), Authentication.getCallbackHandler());
+            client = TestUtils.getModelControllerClient();
         }
         return client;
     }

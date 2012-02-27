@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.integration.security.loginmodules;
 
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URL;
@@ -51,6 +52,7 @@ import org.jboss.as.security.Constants;
 import org.jboss.as.test.integration.security.loginmodules.common.CustomTestLoginModule;
 import org.jboss.as.test.integration.web.security.SecuredServlet;
 import org.jboss.as.test.integration.web.security.WebSecurityPasswordBasedBase;
+import org.jboss.as.test.shared.TestUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -114,7 +116,7 @@ public class CustomLoginModuleTestCase {
     @Deployment
     public static WebArchive deployment() throws IOException {
         // FIXME hack to get things prepared before the deployment happens
-        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
+        ModelControllerClient client = TestUtils.getModelControllerClient();
         try {
             // create required security domains
             createSecurityDomains(client);
@@ -132,7 +134,7 @@ public class CustomLoginModuleTestCase {
 
     @AfterClass
     public static void after() throws Exception {
-        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
+        ModelControllerClient client = TestUtils.getModelControllerClient();
         // remove test security domains
         removeSecurityDomains(client);
     }

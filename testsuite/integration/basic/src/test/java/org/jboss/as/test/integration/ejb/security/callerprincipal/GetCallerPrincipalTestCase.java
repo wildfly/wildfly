@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.security.callerprincipal;
 
-import java.net.InetAddress;
+import org.jboss.as.test.shared.TestUtils;
 import java.security.Principal;
 import java.util.Hashtable;
 
@@ -70,7 +70,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -192,7 +191,7 @@ public class GetCallerPrincipalTestCase extends SecurityTest {
 
     @BeforeClass
     public static void init() throws Exception {
-        modelControllerClient = ModelControllerClient.Factory.create(InetAddress.getByName("127.0.0.1"), 9999, getCallbackHandler());
+        modelControllerClient = TestUtils.getModelControllerClient();
         createQueue(modelControllerClient, "queue/callerPrincipal");
     }
 
