@@ -23,15 +23,13 @@ package org.jboss.as.test.integration.management.api;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ArquillianResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.cli.GlobalOpsTestCase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.management.util.ModelUtil;
@@ -55,7 +53,7 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class ModelPersistenceTestCase extends AbstractMgmtTestBase {
+public class ModelPersistenceTestCase extends ArquillianResourceMgmtTestBase {
 
     private class CfgFileDescription {
 
@@ -79,8 +77,6 @@ public class ModelPersistenceTestCase extends AbstractMgmtTestBase {
     private static File currentCfgDir;
     private static File lastCfgFile;
 
-    @ArquillianResource
-    URL url;
 
     @Deployment
     public static Archive<?> getDeployment() {

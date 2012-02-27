@@ -30,7 +30,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ArquillianResourceMgmtTestBase;
 import org.jboss.as.test.smoke.deployment.RaServlet;
 import org.jboss.as.test.smoke.deployment.rar.MultipleConnectionFactory1;
 import org.jboss.dmr.ModelNode;
@@ -56,7 +56,7 @@ import static org.junit.Assert.assertNotNull;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class EarDeploymentTestCase extends AbstractMgmtTestBase {
+public class EarDeploymentTestCase extends ArquillianResourceMgmtTestBase {
 
     @ArquillianResource
     private ManagementClient managementClient;

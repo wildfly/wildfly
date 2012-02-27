@@ -1,7 +1,6 @@
 package org.jboss.as.arquillian.container;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -34,7 +33,7 @@ public class ServerSetupObserver {
     private final List<ManagementClient> active = new ArrayList<ManagementClient>();
     private ServerSetupTask current;
 
-    public synchronized void handleBeforeDeployment(@Observes BeforeDeploy event, Container container) throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+    public synchronized void handleBeforeDeployment(@Observes BeforeDeploy event, Container container) throws Exception {
 
         final ClassContext classContext = classContextInstance.get();
         if (classContext == null) {
@@ -64,7 +63,7 @@ public class ServerSetupObserver {
         active.add(client);
     }
 
-    public synchronized void handleAfterClass(@Observes AfterClass event) {
+    public synchronized void handleAfterClass(@Observes AfterClass event) throws Exception {
         if (current != null) {
             for(final ManagementClient client : active) {
                 current.tearDown(client);

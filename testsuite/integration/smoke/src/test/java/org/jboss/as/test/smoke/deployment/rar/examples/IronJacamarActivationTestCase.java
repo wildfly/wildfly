@@ -26,6 +26,7 @@ import javax.annotation.Resource;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ArquillianResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.smoke.deployment.rar.MultipleAdminObject1;
 import org.jboss.as.test.smoke.deployment.rar.MultipleAdminObject2;
@@ -47,7 +48,7 @@ import static org.junit.Assert.assertNotNull;
  *         JBQA-5736 -IronJacamar deployment test
  */
 @RunWith(Arquillian.class)
-public class IronJacamarActivationTestCase extends AbstractMgmtTestBase {
+public class IronJacamarActivationTestCase extends ArquillianResourceMgmtTestBase {
 
 
     /**
@@ -63,7 +64,9 @@ public class IronJacamarActivationTestCase extends AbstractMgmtTestBase {
                 ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName);
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "multiple.jar");
         ja.addPackage(MultipleConnectionFactory1.class.getPackage()).
-                addClasses(IronJacamarActivationTestCase.class, AbstractMgmtTestBase.class, MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class);
+                addClasses(IronJacamarActivationTestCase.class, MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class);
+
+        ja.addPackage(AbstractMgmtTestBase.class.getPackage());
         raa.addAsLibrary(ja);
 
         raa.addAsManifestResource("rar/" + deploymentName + "/META-INF/ra.xml", "ra.xml")

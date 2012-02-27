@@ -33,7 +33,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension.ResourceAdapterSubsystemParser;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ArquillianResourceMgmtTestBase;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
@@ -56,7 +56,7 @@ import static org.jboss.as.test.integration.management.util.ComplexPropertiesPar
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class ResourceAdapterOperationsUnitTestCase extends AbstractMgmtTestBase {
+public class ResourceAdapterOperationsUnitTestCase extends ArquillianResourceMgmtTestBase {
 
 
     @Deployment
@@ -183,7 +183,7 @@ public class ResourceAdapterOperationsUnitTestCase extends AbstractMgmtTestBase 
 
     public List<ModelNode> marshalAndReparseRaResources(final String childType) throws Exception {
     	ResourceAdapterSubsystemParser parser=new ResourceAdapterSubsystemParser();
-    	return XmlToModelOperations(modelToXml("resource-adapters", childType, parser),Namespace.CURRENT.getUriString(),parser);
+    	return xmlToModelOperations(modelToXml("resource-adapters", childType, parser), Namespace.CURRENT.getUriString(), parser);
     }
 
 }

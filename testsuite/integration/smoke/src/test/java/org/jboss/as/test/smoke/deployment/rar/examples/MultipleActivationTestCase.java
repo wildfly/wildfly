@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.smoke.deployment.rar.examples;
 
+import java.io.IOException;
 import java.util.List;
 
 import javax.annotation.Resource;
@@ -31,8 +32,9 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension.ResourceAdapterSubsystemParser;
-import org.jboss.as.test.integration.management.AbstractServerSetupTask;
+import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ArquillianResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.smoke.deployment.rar.MultipleAdminObject1;
 import org.jboss.as.test.smoke.deployment.rar.MultipleConnectionFactory1;
@@ -46,8 +48,6 @@ import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -58,33 +58,25 @@ import static org.junit.Assert.assertNotNull;
  */
 @RunWith(Arquillian.class)
 @ServerSetup(MultipleActivationTestCase.MultipleActivationTestCaseSetup.class)
-public class MultipleActivationTestCase extends AbstractMgmtTestBase {
+public class MultipleActivationTestCase extends ArquillianResourceMgmtTestBase {
 
-    static class MultipleActivationTestCaseSetup extends AbstractServerSetupTask {
+    static class MultipleActivationTestCaseSetup extends AbstractMgmtServerSetupTask {
 
         @Override
-        public void setup(final ManagementClient managementClient) {
-            try {
+        public void doSetup(final ManagementClient managementClient) throws Exception {
                 String xml = readXmlResource(System.getProperty("jbossas.ts.submodule.dir") + "/src/test/resources/config/simple.xml");
-                List<ModelNode> operations = XmlToModelOperations(xml, Namespace.CURRENT.getUriString(), new ResourceAdapterSubsystemParser());
-                applyUpdate(managementClient.getControllerClient(), operationListToCompositeOperation(operations));
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+                List<ModelNode> operations = xmlToModelOperations(xml, Namespace.CURRENT.getUriString(), new ResourceAdapterSubsystemParser());
+                executeOperation(operationListToCompositeOperation(operations));
         }
 
         @Override
-        public void tearDown(final ManagementClient managementClient) {
+        public void tearDown(final ManagementClient managementClient) throws IOException, MgmtOperationException {
 
             final ModelNode address = new ModelNode();
             address.add("subsystem", "resource-adapters");
             address.add("resource-adapter", "archive.rar");
             address.protect();
-
-            final ModelNode operation = new ModelNode();
-            operation.get(OP).set("remove");
-            operation.get(OP_ADDR).set(address);
-            applyUpdate(managementClient.getControllerClient(), operation);
+            remove(address);
         }
     }
 
@@ -102,7 +94,9 @@ public class MultipleActivationTestCase extends AbstractMgmtTestBase {
                 ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName);
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "multiple.jar");
         ja.addPackage(MultipleConnectionFactory1.class.getPackage()).
-                addClasses(MultipleActivationTestCase.class, AbstractMgmtTestBase.class, MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class);
+                addClasses(MultipleActivationTestCase.class, MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class);
+
+        ja.addPackage(AbstractMgmtTestBase.class.getPackage());
         raa.addAsLibrary(ja);
 
         raa.addAsManifestResource("rar/" + deploymentName + "/META-INF/ra.xml", "ra.xml")

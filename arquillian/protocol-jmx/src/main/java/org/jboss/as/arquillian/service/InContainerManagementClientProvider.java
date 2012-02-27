@@ -32,7 +32,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 
 /**
- *
+ * resource provider that allows the ManagementClient to be injected inside the container.
  */
 public class InContainerManagementClientProvider implements ResourceProvider {
 
@@ -64,7 +64,7 @@ public class InContainerManagementClientProvider implements ResourceProvider {
                 managementPort = (String) inputStream.readObject();
                 address = (String) inputStream.readObject();
                 if (address == null) {
-                    address = "127.0.0.1";
+                    address = "localhost";
                 }
                 if (managementPort == null) {
                     managementPort = "9999";

@@ -31,6 +31,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ArquillianResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.smoke.deployment.rar.inflow.PureInflowResourceAdapter;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
@@ -57,7 +58,7 @@ import static org.junit.Assert.assertNotNull;
  *         JBQA-5741 -Inflow RA deployment test
  */
 @RunWith(Arquillian.class)
-public class InflowTestCase extends AbstractMgmtTestBase {
+public class InflowTestCase extends ArquillianResourceMgmtTestBase {
 
 
     /**
@@ -73,7 +74,8 @@ public class InflowTestCase extends AbstractMgmtTestBase {
                 ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName);
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "multiple.jar");
         ja.addPackage(PureInflowResourceAdapter.class.getPackage()).
-                addClasses(InflowTestCase.class, AbstractMgmtTestBase.class, MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class);
+                addClasses(InflowTestCase.class, MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class);
+        ja.addPackage(AbstractMgmtTestBase.class.getPackage());
         raa.addAsLibrary(ja);
 
         raa.addAsManifestResource("rar/" + deploymentName + "/META-INF/ra.xml", "ra.xml")

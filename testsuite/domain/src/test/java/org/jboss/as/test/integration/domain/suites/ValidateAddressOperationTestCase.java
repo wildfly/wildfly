@@ -26,7 +26,7 @@ import java.io.IOException;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.operations.common.ValidateAddressOperationHandler;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ArquillianResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.dmr.ModelNode;
@@ -46,7 +46,7 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class ValidateAddressOperationTestCase extends AbstractMgmtTestBase {
+public class ValidateAddressOperationTestCase extends ArquillianResourceMgmtTestBase {
 
     @Test
     public void testValidRootAddress() throws IOException, MgmtOperationException {

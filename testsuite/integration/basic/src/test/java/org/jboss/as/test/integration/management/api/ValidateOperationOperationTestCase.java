@@ -27,7 +27,7 @@ import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ArquillianResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.dmr.ModelNode;
@@ -50,7 +50,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class ValidateOperationOperationTestCase extends AbstractMgmtTestBase {
+public class ValidateOperationOperationTestCase extends ArquillianResourceMgmtTestBase {
 
     @Deployment
     public static Archive<?> fakeDeployment() {

@@ -29,7 +29,7 @@
 
     <target name="build-multinode" description="Builds server configurations for Multi-node tests">
 
-        <echo message="Copying and configuring instance jbossas-multinode-client ${node0}"/>
+        <echo message="Copying and configuring instance jbossas-multinode-client"/>
         <copy todir="target/jbossas-multinode-client">
             <fileset dir="target/jbossas"/>
         </copy>

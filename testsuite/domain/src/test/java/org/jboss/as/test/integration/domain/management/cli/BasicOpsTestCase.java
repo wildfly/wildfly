@@ -25,7 +25,6 @@ import java.util.List;
 
 import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
-import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.junit.Test;
 
 import static org.jboss.as.test.integration.management.base.AbstractCliTestBase.WAIT_LINETIMEOUT;
@@ -48,7 +47,7 @@ public class BasicOpsTestCase {
             line = cli.readLine(WAIT_TIMEOUT);
         }
 
-        cli.sendLine("connect " + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getServerPort(), false);
+        cli.sendLine("connect", false);
         line = cli.readLine(WAIT_TIMEOUT);
 
         assertTrue("Check we are disconnected:" + line, line.indexOf("disconnected") >= 0);
