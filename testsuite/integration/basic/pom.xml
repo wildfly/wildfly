@@ -90,6 +90,7 @@
                                         <include>org/jboss/as/test/integration/ejb/management/deployments/EjbJarRuntimeResourcesTestCase.java</include>
                                         <include>org/jboss/as/test/integration/ejb/transaction/bmt/lazyenlist</include>
                                         <include>org/jboss/as/test/integration/jaxr/**/*TestCase*.java</include>
+                                        <include>org/jboss/as/test/integration/jsf/jta/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/messaging/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/management/cli/HelpTestCase.java</include>
                                         <include>org/jboss/as/test/integration/management/cli/JmsTestCase.java</include>
@@ -135,6 +136,7 @@
                                         <exclude>org/jboss/as/test/integration/ejb/management/deployments/EjbJarRuntimeResourcesTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/transaction/bmt/lazyenlist</exclude>
                                         <exclude>org/jboss/as/test/integration/jaxr/**/*TestCase*.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jsf/jta/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/messaging/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/management/cli/HelpTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/management/cli/JmsTestCase.java</exclude>
