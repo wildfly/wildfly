@@ -52,7 +52,12 @@ import java.util.Hashtable;
 import java.util.Properties;
 
 /**
+ * Tests that if a deployment contains a jboss-ejb-client.xml pointing to a outbound connection to a server
+ * which isn't yet up, then it doesn't fail the deployment. Instead it (re)connects whenever the server is ready and
+ * available.
+ *
  * @author Jaikiran Pai
+ * @see https://issues.jboss.org/browse/AS7-3820 for details
  */
 @RunWith(Arquillian.class)
 @RunAsClient
@@ -83,6 +88,7 @@ public class LazyOutboundConnectionReconnectTestCase {
         final Hashtable props = new Hashtable();
         props.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
         context = new InitialContext(props);
+        // setup the client context selector
         previousClientContextSelector = setupEJBClientContextSelector();
 
     }
@@ -111,6 +117,15 @@ public class LazyOutboundConnectionReconnectTestCase {
         return ejbJar;
     }
 
+    /**
+     * Start a server (A) which has a remote outbound connection to another server (B). Server (B) is down.
+     * Deploy (X) to server A. X contains a jboss-ejb-client.xml pointing to server B (which is down). The deployment
+     * must succeed. However invocations on beans which depend on server B should fail.
+     * Then start server B and deploy Y to it. Invoke again on server A beans which depend on server B and this time
+     * they should pass
+     *
+     * @throws Exception
+     */
     @Test
     public void testRemoteServerStartsLate() throws Exception {
         // First start the server which has a remote-outbound-connection
