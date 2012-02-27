@@ -32,9 +32,12 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
-import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension.ResourceAdapterSubsystemParser;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension;
+import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
+import org.jboss.as.test.integration.management.base.ArquillianResourceMgmtTestBase;
 import org.jboss.as.test.shared.integration.ejb.security.CallbackHandler;
 import org.jboss.as.test.smoke.deployment.rar.MultipleAdminObject1;
 import org.jboss.as.test.smoke.deployment.rar.MultipleConnectionFactory1;
@@ -43,7 +46,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -58,7 +60,8 @@ import static org.junit.Assert.assertNotNull;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class AfterResourceCreationDeploymentTestCase extends AbstractMgmtTestBase {
+@ServerSetup(AfterResourceCreationDeploymentTestCase.AfterResourceCreationDeploymentTestCaseSetup.class)
+public class AfterResourceCreationDeploymentTestCase extends ArquillianResourceMgmtTestBase {
 
     static String deploymentName = "basic-after.rar";
     private static Context remoteContext;
@@ -66,13 +69,28 @@ public class AfterResourceCreationDeploymentTestCase extends AbstractMgmtTestBas
     @ArquillianResource
     private URL url;
 
+    static class AfterResourceCreationDeploymentTestCaseSetup extends AbstractMgmtServerSetupTask {
 
-    //@BeforeClass - called from @Test to create resources after deploymnet
+        @Override
+        public void tearDown(final ManagementClient managementClient) throws Exception{
+            final ModelNode address = new ModelNode();
+            address.add("subsystem", "resource-adapters");
+            address.add("resource-adapter", deploymentName);
+            address.protect();
 
-    public void setUp() throws Exception {
+            remove(address);
+            remoteContext.close();
+        }
 
+        @Override
+        protected void doSetup(final ManagementClient managementClient) throws Exception {
+
+        }
+    }
+
+    private void setup() throws Exception {
         String xml = readXmlResource(System.getProperty("jbossas.ts.submodule.dir") + "/src/test/resources/config/basic-after.xml");
-        List<ModelNode> operations = XmlToModelOperations(xml, Namespace.CURRENT.getUriString(), new ResourceAdapterSubsystemParser());
+        List<ModelNode> operations = xmlToModelOperations(xml, Namespace.CURRENT.getUriString(), new ResourceAdaptersExtension.ResourceAdapterSubsystemParser());
         executeOperation(operationListToCompositeOperation(operations));
 
         //since it is created after deployment it needs activation
@@ -92,19 +110,6 @@ public class AfterResourceCreationDeploymentTestCase extends AbstractMgmtTestBas
         env.put("jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "false");
         env.put("jboss.naming.client.security.callback.handler.class", CallbackHandler.class.getName());
         remoteContext = new InitialContext(env);
-
-    }
-
-    @AfterClass
-    public static void tearDown() throws Exception {
-
-        final ModelNode address = new ModelNode();
-        address.add("subsystem", "resource-adapters");
-        address.add("resource-adapter", deploymentName);
-        address.protect();
-
-        remove(address);
-        remoteContext.close();
     }
 
     /**
@@ -135,11 +140,8 @@ public class AfterResourceCreationDeploymentTestCase extends AbstractMgmtTestBas
      */
     @Test
     public void testConfiguration() throws Throwable {
-
-        setUp();
-
+        setup();
         MultipleAdminObject1 adminObject1 = (MultipleAdminObject1) remoteContext.lookup("after/Name3");
-
         assertNotNull("AO1 not found", adminObject1);
     }
 

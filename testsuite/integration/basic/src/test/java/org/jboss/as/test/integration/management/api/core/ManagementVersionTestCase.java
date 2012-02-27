@@ -28,7 +28,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ArquillianResourceMgmtTestBase;
 import org.jboss.as.version.Version;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -49,7 +49,7 @@ import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNo
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class ManagementVersionTestCase extends AbstractMgmtTestBase {
+public class ManagementVersionTestCase extends ArquillianResourceMgmtTestBase {
 
 
     @ArquillianResource

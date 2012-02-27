@@ -32,7 +32,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ArquillianResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
 import org.jboss.as.test.integration.management.util.WebUtil;
 import org.jboss.dmr.ModelNode;
@@ -55,7 +55,7 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class DeploymentScannerTestCase extends AbstractMgmtTestBase {
+public class DeploymentScannerTestCase extends ArquillianResourceMgmtTestBase {
 
     private static final String tempDir = System.getProperty("java.io.tmpdir");
     private static WebArchive war;

@@ -28,8 +28,9 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.integration.management.AbstractServerSetupTask;
+import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ArquillianResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyAdminObjectInterface;
 import org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyConnection;
@@ -57,15 +58,15 @@ import static org.junit.Assert.assertNotNull;
  */
 @RunWith(Arquillian.class)
 @ServerSetup(ConfigPropertyTestCase.ConfigPropertyTestClassSetup.class)
-public class ConfigPropertyTestCase extends AbstractMgmtTestBase {
+public class ConfigPropertyTestCase extends ArquillianResourceMgmtTestBase {
 
     /**
      * Class that performs setup before the deployment is deployed
      */
-    static class ConfigPropertyTestClassSetup extends AbstractServerSetupTask {
+    static class ConfigPropertyTestClassSetup extends AbstractMgmtServerSetupTask {
 
         @Override
-        public void setup(final ManagementClient managementClient) {
+        public void doSetup(final ManagementClient managementClient) throws Exception {
             final ModelNode address = new ModelNode();
             address.add("subsystem", "resource-adapters");
             address.add("resource-adapter", "as7_1452.rar");
@@ -76,7 +77,7 @@ public class ConfigPropertyTestCase extends AbstractMgmtTestBase {
             operation.get(OP_ADDR).set(address);
             operation.get("archive").set("as7_1452.rar");
             operation.get("transaction-support").set("NoTransaction");
-            applyUpdate(managementClient.getControllerClient(), operation);
+            executeOperation(operation);
 
             final ModelNode addressConfigRes = address.clone();
             addressConfigRes.add("config-properties", "Property");
@@ -86,7 +87,7 @@ public class ConfigPropertyTestCase extends AbstractMgmtTestBase {
             operationConfigRes.get(OP).set("add");
             operationConfigRes.get(OP_ADDR).set(addressConfigRes);
             operationConfigRes.get("value").set("A");
-            applyUpdate(managementClient.getControllerClient(), operationConfigRes);
+            executeOperation(operationConfigRes);
 
             final ModelNode addressAdmin = address.clone();
             addressAdmin.add("admin-objects", "java:jboss/ConfigPropertyAdminObjectInterface1");
@@ -97,7 +98,7 @@ public class ConfigPropertyTestCase extends AbstractMgmtTestBase {
             operationAdmin.get(OP_ADDR).set(addressAdmin);
             operationAdmin.get("class-name").set("org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyAdminObjectImpl");
             operationAdmin.get("jndi-name").set(AO_JNDI_NAME);
-            applyUpdate(managementClient.getControllerClient(), operationAdmin);
+            executeOperation(operationAdmin);
 
             final ModelNode addressConfigAdm = addressAdmin.clone();
             addressConfigAdm.add("config-properties", "Property");
@@ -107,7 +108,7 @@ public class ConfigPropertyTestCase extends AbstractMgmtTestBase {
             operationConfigAdm.get(OP).set("add");
             operationConfigAdm.get(OP_ADDR).set(addressConfigAdm);
             operationConfigAdm.get("value").set("C");
-            applyUpdate(managementClient.getControllerClient(), operationConfigAdm);
+            executeOperation(operationConfigAdm);
 
             final ModelNode addressConn = address.clone();
             addressConn.add("connection-definitions", "java:jboss/ConfigPropertyConnectionFactory1");
@@ -119,7 +120,7 @@ public class ConfigPropertyTestCase extends AbstractMgmtTestBase {
             operationConn.get("class-name").set("org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyManagedConnectionFactory");
             operationConn.get("jndi-name").set(CF_JNDI_NAME);
             operationConn.get("pool-name").set("ConfigPropertyConnectionFactory");
-            applyUpdate(managementClient.getControllerClient(), operationConn);
+            executeOperation(operationConn);
 
             final ModelNode addressConfigConn = addressConn.clone();
             addressConfigConn.add("config-properties", "Property");
@@ -129,21 +130,16 @@ public class ConfigPropertyTestCase extends AbstractMgmtTestBase {
             operationConfigConn.get(OP).set("add");
             operationConfigConn.get(OP_ADDR).set(addressConfigConn);
             operationConfigConn.get("value").set("B");
-            applyUpdate(managementClient.getControllerClient(), operationConfigConn);
+            executeOperation(operationConfigConn);
         }
 
         @Override
-        public void tearDown(final ManagementClient managementClient) {
+        public void tearDown(final ManagementClient managementClient) throws Exception {
             final ModelNode address = new ModelNode();
             address.add("subsystem", "resource-adapters");
             address.add("resource-adapter", "as7_1452.rar");
             address.protect();
-
-            final ModelNode operation = new ModelNode();
-            operation.get(OP).set("remove");
-            operation.get(OP_ADDR).set(address);
-
-            applyUpdate(managementClient.getControllerClient(), operation);
+            remove(address);
         }
     }
 
@@ -162,7 +158,9 @@ public class ConfigPropertyTestCase extends AbstractMgmtTestBase {
                 ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName);
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "as7_1452.jar");
         ja.addPackage("org.jboss.as.test.smoke.deployment.rar.configproperty")
-                .addClasses(ConfigPropertyTestCase.class, AbstractMgmtTestBase.class, MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class);
+                .addClasses(ConfigPropertyTestCase.class, MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class);
+
+        ja.addPackage(AbstractMgmtTestBase.class.getPackage());
         raa.addAsLibrary(ja);
 
         raa.addAsManifestResource("rar/" + deploymentName + "/META-INF/ra.xml", "ra.xml")

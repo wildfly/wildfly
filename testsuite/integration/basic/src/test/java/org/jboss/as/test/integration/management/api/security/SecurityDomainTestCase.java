@@ -30,7 +30,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ArquillianResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.cli.GlobalOpsTestCase;
 import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.as.test.integration.management.util.SecuredServlet;
@@ -52,7 +52,7 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class SecurityDomainTestCase extends AbstractMgmtTestBase {
+public class SecurityDomainTestCase extends ArquillianResourceMgmtTestBase {
 
     @ArquillianResource
     private URL url;

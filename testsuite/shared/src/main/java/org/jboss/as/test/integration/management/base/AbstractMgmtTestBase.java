@@ -39,8 +39,6 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.stream.StreamSource;
 
-import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -75,22 +73,13 @@ import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNo
 /**
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
-public class AbstractMgmtTestBase {
-
-    protected static final int MGMT_PORT = 9999;
-    protected static final String tempDir = System.getProperty("java.io.tmpdir");
-
-    @ArquillianResource
-    protected static ManagementClient managementClient;
+public abstract class AbstractMgmtTestBase {
 
     private static File brokenWar = null;
 
+    protected abstract ModelControllerClient getModelControllerClient();
 
-    protected static ModelControllerClient getModelControllerClient() {
-        return managementClient.getControllerClient();
-    }
-
-    protected static ModelNode executeOperation(final ModelNode op, boolean unwrapResult) throws IOException, MgmtOperationException {
+    protected ModelNode executeOperation(final ModelNode op, boolean unwrapResult) throws IOException, MgmtOperationException {
         ModelNode ret = getModelControllerClient().execute(op);
         if (!unwrapResult) return ret;
 
@@ -100,15 +89,15 @@ public class AbstractMgmtTestBase {
         return ret.get(RESULT);
     }
 
-    protected static ModelNode executeOperation(final ModelNode op) throws IOException, MgmtOperationException {
+    protected ModelNode executeOperation(final ModelNode op) throws IOException, MgmtOperationException {
         return executeOperation(op, true);
     }
 
-    protected static ModelNode executeOperation(final String address, final String operation) throws IOException, MgmtOperationException {
+    protected ModelNode executeOperation(final String address, final String operation) throws IOException, MgmtOperationException {
         return executeOperation(createOpNode(address, operation));
     }
 
-    protected static ModelNode executeAndRollbackOperation(final ModelNode op) throws IOException, OperationFormatException {
+    protected ModelNode executeAndRollbackOperation(final ModelNode op) throws IOException, OperationFormatException {
 
         ModelNode addDeploymentOp = createOpNode("deployment=malformedDeployment.war", "add");
         addDeploymentOp.get("content").get(0).get("input-stream-index").set(0);
@@ -130,14 +119,14 @@ public class AbstractMgmtTestBase {
         return getModelControllerClient().execute(ob.build());
     }
 
-    protected static void remove(final ModelNode address) throws IOException, MgmtOperationException {
+    protected void remove(final ModelNode address) throws IOException, MgmtOperationException {
         final ModelNode operation = new ModelNode();
         operation.get(OP).set("remove");
         operation.get(OP_ADDR).set(address);
         executeOperation(operation);
     }
 
-    private static File getBrokenWar() {
+    private File getBrokenWar() {
         if (brokenWar != null) return brokenWar;
 
         WebArchive war = ShrinkWrap.create(WebArchive.class, "deployment2.war");
@@ -149,7 +138,7 @@ public class AbstractMgmtTestBase {
         return brokenWar;
     }
 
-    protected static Map<String, ModelNode> getChildren(final ModelNode result) {
+    protected Map<String, ModelNode> getChildren(final ModelNode result) {
         assert result.isDefined();
         final Map<String, ModelNode> steps = new HashMap<String, ModelNode>();
         for (final Property property : result.asPropertyList()) {
@@ -158,7 +147,7 @@ public class AbstractMgmtTestBase {
         return steps;
     }
 
-    protected static ModelNode findNodeWithProperty(List<ModelNode> newList, String propertyName, String setTo) {
+    protected ModelNode findNodeWithProperty(List<ModelNode> newList, String propertyName, String setTo) {
         ModelNode toReturn = null;
         for (ModelNode result : newList) {
             final Map<String, ModelNode> parseChildren = getChildren(result);
@@ -170,7 +159,7 @@ public class AbstractMgmtTestBase {
         return toReturn;
     }
 
-    public static String modelToXml(String subsystemName, String childType, XMLElementWriter<SubsystemMarshallingContext> parser) throws Exception {
+    public String modelToXml(String subsystemName, String childType, XMLElementWriter<SubsystemMarshallingContext> parser) throws Exception {
         final ModelNode address = new ModelNode();
         address.add("subsystem", subsystemName);
         address.protect();
@@ -195,7 +184,7 @@ public class AbstractMgmtTestBase {
         return strWriter.toString();
     }
 
-    public static List<ModelNode> XmlToModelOperations(String xml, String nameSpaceUriString, XMLElementReader<List<ModelNode>> parser) throws Exception {
+    public static List<ModelNode> xmlToModelOperations(String xml, String nameSpaceUriString, XMLElementReader<List<ModelNode>> parser) throws Exception {
         XMLMapper mapper = XMLMapper.Factory.create();
         mapper.registerRootElement(new QName(nameSpaceUriString, "subsystem"), parser);
 

@@ -39,7 +39,7 @@ public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
 
     private boolean outputToConsole = true;
 
-    private String hostControllerManagementAddress = System.getProperty("jboss.test.domain.management.address", "127.0.0.1");
+    private String hostControllerManagementAddress = System.getProperty("jboss.test.domain.management.address", "localhost");
 
     private int hostControllerManagementPort = 9999;
 

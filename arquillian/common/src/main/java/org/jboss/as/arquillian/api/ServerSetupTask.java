@@ -10,7 +10,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
  */
 public interface ServerSetupTask {
 
-    void setup(final ManagementClient managementClient);
+    void setup(final ManagementClient managementClient) throws Exception;
 
-    void tearDown(final ManagementClient managementClient);
+    void tearDown(final ManagementClient managementClient) throws Exception;
 }
