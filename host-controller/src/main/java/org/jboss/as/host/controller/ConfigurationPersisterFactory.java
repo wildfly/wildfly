@@ -22,11 +22,18 @@
 package org.jboss.as.host.controller;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 import javax.xml.namespace.QName;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
+import org.jboss.as.controller.persistence.ConfigurationPersister;
+import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.host.controller.parsing.DomainXml;
 import org.jboss.as.host.controller.parsing.HostXml;
 import org.jboss.as.controller.parsing.Namespace;
@@ -35,7 +42,10 @@ import org.jboss.as.controller.persistence.ConfigurationFile;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.as.controller.persistence.XmlConfigurationPersister;
+import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
 
 /**
  * Factory methods to produce an {@link ExtensibleConfigurationPersister} for different Host Controller use cases.
@@ -44,6 +54,9 @@ import org.jboss.modules.Module;
  */
 public class ConfigurationPersisterFactory {
 
+    static final String CACHED_DOMAIN_XML = "domain.cached-remote.xml";
+
+    // host.xml
     public static ExtensibleConfigurationPersister createHostXmlConfigurationPersister(final ConfigurationFile file, String defaultHostControllerName) {
         HostXml hostXml = new HostXml(defaultHostControllerName);
         BackupXmlConfigurationPersister persister =  new BackupXmlConfigurationPersister(file, new QName(Namespace.CURRENT.getUriString(), "host"), hostXml, hostXml);
@@ -51,6 +64,7 @@ public class ConfigurationPersisterFactory {
         return persister;
     }
 
+    // domain.xml
     public static ExtensibleConfigurationPersister createDomainXmlConfigurationPersister(final ConfigurationFile file, ExecutorService executorService, ExtensionRegistry extensionRegistry) {
         DomainXml domainXml = new DomainXml(Module.getBootModuleLoader(), executorService, extensionRegistry);
         BackupXmlConfigurationPersister persister = new BackupXmlConfigurationPersister(file, new QName(Namespace.CURRENT.getUriString(), "domain"), domainXml, domainXml);
@@ -59,18 +73,86 @@ public class ConfigurationPersisterFactory {
         return persister;
     }
 
-    public static ExtensibleConfigurationPersister createCachedRemoteDomainXmlConfigurationPersister(final File configDir, ExecutorService executorService, ExtensionRegistry extensionRegistry) {
+    // --backup
+    public static ExtensibleConfigurationPersister createRemoteBackupDomainXmlConfigurationPersister(final File configDir, ExecutorService executorService, ExtensionRegistry extensionRegistry) {
         DomainXml domainXml = new DomainXml(Module.getBootModuleLoader(), executorService, extensionRegistry);
-        File file = new File(configDir, "domain.cached-remote.xml");
-        ExtensibleConfigurationPersister persister = new XmlConfigurationPersister(file, new QName(Namespace.CURRENT.getUriString(), "domain"), domainXml, domainXml);
+        File file = new File(configDir, CACHED_DOMAIN_XML);
+        ExtensibleConfigurationPersister persister = new BackupRemoteDomainXmlPersister(file, new QName(Namespace.CURRENT.getUriString(), "domain"), domainXml, domainXml);
         extensionRegistry.setWriterRegistry(persister);
         return persister;
     }
 
+    // --cached-dc
+    public static ExtensibleConfigurationPersister createCachedRemoteDomainXmlConfigurationPersister(final File configDir, ExecutorService executorService, ExtensionRegistry extensionRegistry) {
+        DomainXml domainXml = new DomainXml(Module.getBootModuleLoader(), executorService, extensionRegistry);
+        File file = new File(configDir, CACHED_DOMAIN_XML);
+        ExtensibleConfigurationPersister persister = new CachedRemoteDomainXmlPersister(file, new QName(Namespace.CURRENT.getUriString(), "domain"), domainXml, domainXml);
+        extensionRegistry.setWriterRegistry(persister);
+        return persister;
+    }
+
+    // slave=true
     public static ExtensibleConfigurationPersister createTransientDomainXmlConfigurationPersister(ExecutorService executorService, ExtensionRegistry extensionRegistry) {
         DomainXml domainXml = new DomainXml(Module.getBootModuleLoader(), executorService, extensionRegistry);
         ExtensibleConfigurationPersister persister =  new NullConfigurationPersister(domainXml);
         extensionRegistry.setWriterRegistry(persister);
         return persister;
     }
+
+    /**
+     * --backup
+     */
+    static class BackupRemoteDomainXmlPersister extends XmlConfigurationPersister {
+
+        BackupRemoteDomainXmlPersister(File fileName, QName rootElement, XMLElementReader<List<ModelNode>> rootParser, XMLElementWriter<ModelMarshallingContext> rootDeparser) {
+            super(fileName, rootElement, rootParser, rootDeparser);
+        }
+
+        @Override
+        public List<ModelNode> load() throws ConfigurationPersistenceException {
+            // TODO throw an exception
+            HostControllerLogger.ROOT_LOGGER.invalidRemoteBackupPersisterState();
+            return Collections.emptyList();
+        }
+
+    }
+
+    /**
+     * --cached-dc
+     */
+    static class CachedRemoteDomainXmlPersister extends XmlConfigurationPersister {
+
+        volatile boolean started = false;
+        CachedRemoteDomainXmlPersister(File fileName, QName rootElement, XMLElementReader<List<ModelNode>> rootParser, XMLElementWriter<ModelMarshallingContext> rootDeparser) {
+            super(fileName, rootElement, rootParser, rootDeparser);
+        }
+
+        @Override
+        public PersistenceResource store(ModelNode model, Set<PathAddress> affectedAddresses) throws ConfigurationPersistenceException {
+            if(started) {
+                // TODO throw an exception
+                HostControllerLogger.ROOT_LOGGER.invalidRemoteBackupPersisterState();
+            }
+            return NULL_PERSISTENCE_RESOURCE;
+        }
+
+        @Override
+        public void successfulBoot() throws ConfigurationPersistenceException {
+            started = true;
+        }
+    }
+
+    static ConfigurationPersister.PersistenceResource NULL_PERSISTENCE_RESOURCE = new ConfigurationPersister.PersistenceResource() {
+
+        @Override
+        public void commit() {
+            //
+        }
+
+        @Override
+        public void rollback() {
+            //
+        }
+    };
+
 }
