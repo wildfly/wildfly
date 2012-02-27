@@ -23,7 +23,6 @@ package org.jboss.as.test.integration.web.rootcontext;
 
 import static org.junit.Assert.assertTrue;
 
-import java.net.InetAddress;
 import java.net.URL;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -32,6 +31,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.test.shared.TestUtils;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -57,7 +57,7 @@ public class RootContextWarUnitTestCase {
     public static WebArchive warDeployment() {
 
         try {
-            ModelControllerClient mcc = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+            ModelControllerClient mcc = TestUtils.getModelControllerClient();
             RootContextUtil.createVirtualServer(mcc, HOST);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -79,7 +79,7 @@ public class RootContextWarUnitTestCase {
     @AfterClass
     public static void undeployment() {
         try {
-            ModelControllerClient mcc = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+            ModelControllerClient mcc = TestUtils.getModelControllerClient();
             RootContextUtil.undeploy(mcc, "root-context.war");
             RootContextUtil.removeVirtualServer(mcc, HOST);
         } catch (Exception e) {
