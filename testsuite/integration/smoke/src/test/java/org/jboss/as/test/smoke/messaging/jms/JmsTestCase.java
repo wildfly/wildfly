@@ -39,6 +39,8 @@ import junit.framework.Assert;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.shared.setup.TestQueueSetupTask;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleIdentifier;
@@ -55,6 +57,7 @@ import org.junit.runner.RunWith;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 @RunWith(Arquillian.class)
+@ServerSetup(TestQueueSetupTask.class)
 public class JmsTestCase {
     static final Logger log = Logger.getLogger(JmsTestCase.class);
 
@@ -69,7 +72,8 @@ public class JmsTestCase {
     @Deployment
     public static JavaArchive createDeployment() throws Exception {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "jms-example.jar")
-        .addPackage(JmsTestCase.class.getPackage());
+        .addPackage(JmsTestCase.class.getPackage())
+        .addPackage(TestQueueSetupTask.class.getPackage());
         return archive;
     }
 

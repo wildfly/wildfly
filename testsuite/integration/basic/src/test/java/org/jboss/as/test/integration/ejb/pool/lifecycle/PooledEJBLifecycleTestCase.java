@@ -39,6 +39,8 @@ import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.shared.setup.TestQueueSetupTask;
 import org.jboss.osgi.testing.ManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -48,11 +50,12 @@ import org.junit.runner.RunWith;
 
 /**
  * Tests if pooled EJBs have proper lifecycle.
- * 
+ *
  * @author baranowb
- * 
+ *
  */
 @RunWith(Arquillian.class)
+@ServerSetup(TestQueueSetupTask.class)
 public class PooledEJBLifecycleTestCase {
 
     private static final String MDB_DEPLOYMENT_NAME = "mdb-pool-ejb-callbacks"; // module
@@ -81,6 +84,7 @@ public class PooledEJBLifecycleTestCase {
         archive.addClass(LifecycleCounter.class);
         archive.addClass(LifecycleCounterBean.class);
         archive.addClass(PointlesMathInterface.class);
+        archive.addPackage(TestQueueSetupTask.class.getPackage());
         log.info(archive.toString(true));
         return archive;
     }
