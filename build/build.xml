@@ -247,7 +247,7 @@
         </module-def>
 
         <module-def name="org.jboss.remoting3.remoting-jmx">
-            <maven-resource group="org.jboss.remoting3" artifact="remoting-jmx"/>
+            <maven-resource group="org.jboss.remotingjmx" artifact="remoting-jmx"/>
         </module-def>
 
         <module-def name="org.jboss.sasl">

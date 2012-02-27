@@ -88,7 +88,7 @@
             <artifactId>org.osgi.core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.remoting3</groupId>
+            <groupId>org.jboss.remotingjmx</groupId>
             <artifactId>remoting-jmx</artifactId>
         </dependency>
         <dependency>

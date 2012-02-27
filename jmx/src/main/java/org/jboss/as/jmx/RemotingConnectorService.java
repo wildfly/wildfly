@@ -17,7 +17,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.Endpoint;
-import org.jboss.remoting3.jmx.RemotingConnectorServer;
+import org.jboss.remotingjmx.RemotingConnectorServer;
 
 /**
  * The remote connector services
