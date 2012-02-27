@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright (c) 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,11 +19,20 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.manualmode.ejbclientreconnectiontest;
+
+package org.jboss.as.test.manualmode.ejb.client.outbound.connection;
 
 import javax.ejb.Remote;
+import javax.ejb.Stateless;
 
-@Remote
-public interface SimpleCrashBeanRemote {
-    String echo(String message);
+/**
+ * @author Jaikiran Pai
+ */
+@Stateless
+@Remote(RemoteEcho.class)
+public class IndependentBean implements RemoteEcho {
+    @Override
+    public String echo(String msg) {
+        return msg;
+    }
 }
