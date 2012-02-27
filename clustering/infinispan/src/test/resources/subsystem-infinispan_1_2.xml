@@ -1,9 +1,9 @@
-<subsystem xmlns="urn:jboss:domain:infinispan:1.1" default-cache-container="minimal">
+<subsystem xmlns="urn:jboss:domain:infinispan:1.2" default-cache-container="minimal">
     <cache-container name="minimal">
         <local-cache name="local"></local-cache>
     </cache-container>
     <cache-container name="maximal" aliases="alias1 alias2" default-cache="local" eviction-executor="infinispan-eviction" jndi-name="java:global/infinispan/maximal" listener-executor="infinispan-listener" replication-queue-executor="infinispan-repl-queue">
-        <transport executor="transport-executor" lock-timeout="120000" stack="tcp"/>
+        <transport cluster="maximal-cluster" executor="transport-executor" lock-timeout="120000" stack="tcp"/>
         <local-cache name="local" batching="true" indexing="LOCAL" start="EAGER">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="NONE" striping="true"/>
             <transaction mode="FULL_XA" stop-timeout="60000"  locking="OPTIMISTIC"/>

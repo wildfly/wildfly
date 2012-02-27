@@ -38,14 +38,15 @@ public enum Namespace {
     UNKNOWN(0, 0, null),
 
     INFINISPAN_1_0(1, 0, new InfinispanSubsystemXMLReader_1_0()),
-    INFINISPAN_1_1(1, 1, new InfinispanSubsystemXMLReader_1_1());
+    INFINISPAN_1_1(1, 1, new InfinispanSubsystemXMLReader_1_1()),
+    INFINISPAN_1_2(1, 2, new InfinispanSubsystemXMLReader_1_2());
 
     private static final String BASE_URN = "urn:jboss:domain:infinispan:";
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = INFINISPAN_1_1;
+    public static final Namespace CURRENT = INFINISPAN_1_2;
 
     private final int major;
     private final int minor;
