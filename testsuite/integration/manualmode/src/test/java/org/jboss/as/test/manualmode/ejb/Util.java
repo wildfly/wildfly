@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.manualmode.ejbclientreconnectiontest;
+package org.jboss.as.test.manualmode.ejb;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
