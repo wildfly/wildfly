@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.operation.ParsedCommandLine;
 
 /**
@@ -49,7 +50,7 @@ public class ConnectHandler extends CommandHandlerWithHelp {
     }
 
     @Override
-    protected void doHandle(CommandContext ctx) throws CommandFormatException {
+    protected void doHandle(CommandContext ctx) throws CommandLineException {
 
         int port = -1;
         String host = null;

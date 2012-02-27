@@ -69,10 +69,7 @@ public class CommandContextFactoryImpl extends CommandContextFactory {
         SecurityActions.addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
-                if (!cmdCtx.isTerminated()) {
-                    cmdCtx.terminateSession();
-                }
-                cmdCtx.disconnectController();
+                cmdCtx.terminateSession();
             }
         }));
     }
