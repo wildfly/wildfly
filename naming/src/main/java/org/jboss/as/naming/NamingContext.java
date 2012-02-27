@@ -41,6 +41,7 @@ import javax.naming.event.NamingListener;
 import javax.naming.spi.NamingManager;
 import javax.naming.spi.ObjectFactory;
 import javax.naming.spi.ResolveResult;
+import java.util.Arrays;
 import java.util.Hashtable;
 
 import static org.jboss.as.naming.NamingLogger.ROOT_LOGGER;
@@ -90,7 +91,7 @@ public class NamingContext implements EventContext {
         final String property = SecurityActions.getSystemProperty(Context.URL_PKG_PREFIXES);
         if(property == null || property.isEmpty()) {
             SecurityActions.setSystemProperty(Context.URL_PKG_PREFIXES, PACKAGE_PREFIXES);
-        } else {
+        } else if(!Arrays.asList(property.split(":")).contains(PACKAGE_PREFIXES)) {
             SecurityActions.setSystemProperty(Context.URL_PKG_PREFIXES, PACKAGE_PREFIXES + ":" + property);
         }
         try {
