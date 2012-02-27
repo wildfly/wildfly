@@ -29,27 +29,26 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 
+import static org.jboss.as.web.WebReWriteConditionDefinition.FLAGS;
+import static org.jboss.as.web.WebReWriteConditionDefinition.PATTERN;
+import static org.jboss.as.web.WebReWriteConditionDefinition.TEST;
+
 /**
  * {@code OperationHandler} responsible for defining the accesslog entry.
  *
  * @author Jean-Frederic Clere
  */
-class WebReWriteConditionAdd extends AbstractAddStepHandler implements DescriptionProvider {
+class WebReWriteConditionAdd extends AbstractAddStepHandler {
 
     static final WebReWriteConditionAdd INSTANCE = new WebReWriteConditionAdd();
 
     private WebReWriteConditionAdd() {
-        //
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return WebSubsystemDescriptions.getReWriteConditionAdd(locale);
     }
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        // TODO Auto-generated method stub
-
+        FLAGS.validateAndSet(operation,model);
+        TEST.validateAndSet(operation,model);
+        PATTERN.validateAndSet(operation, model);
     }
 }

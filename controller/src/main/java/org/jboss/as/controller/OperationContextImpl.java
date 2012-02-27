@@ -24,7 +24,11 @@ package org.jboss.as.controller;
 
 import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CALLER_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
 
 import java.io.InputStream;
 import java.util.Collection;
@@ -188,7 +192,7 @@ final class OperationContextImpl extends AbstractOperationContext {
 
     }
 
-
+    @Override
     public ImmutableManagementResourceRegistration getResourceRegistration() {
         final PathAddress address = activeStep.address;
         assert isControllingThread();
@@ -197,6 +201,12 @@ final class OperationContextImpl extends AbstractOperationContext {
             throw MESSAGES.operationAlreadyComplete();
         }
         ImmutableManagementResourceRegistration delegate = modelController.getRootRegistration().getSubModel(address);
+        return delegate == null ? null : new DelegatingImmutableManagementResourceRegistration(delegate);
+    }
+
+    @Override
+    public ImmutableManagementResourceRegistration getRootResourceRegistration() {
+        ImmutableManagementResourceRegistration delegate = modelController.getRootRegistration();
         return delegate == null ? null : new DelegatingImmutableManagementResourceRegistration(delegate);
     }
 

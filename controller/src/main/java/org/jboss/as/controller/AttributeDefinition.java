@@ -645,6 +645,11 @@ public abstract class AttributeDefinition {
         }
 
         @Override
+        public ImmutableManagementResourceRegistration getRootResourceRegistration() {
+            return null;
+        }
+
+        @Override
         public ModelNode getFailureDescription() {
             return null;
         }

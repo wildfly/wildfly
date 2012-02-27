@@ -22,19 +22,19 @@
 
 package org.jboss.as.web;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.dmr.ModelNode;
+
+import static org.jboss.as.web.WebSSODefinition.SSO_ATTRIBUTES;
 
 /**
  * {@code OperationHandler} responsible for defining the accesslog entry.
  *
  * @author Jean-Frederic Clere
  */
-class WebSSOAdd extends AbstractAddStepHandler implements DescriptionProvider {
+class WebSSOAdd extends AbstractAddStepHandler {
 
     static final WebSSOAdd INSTANCE = new WebSSOAdd();
 
@@ -42,14 +42,11 @@ class WebSSOAdd extends AbstractAddStepHandler implements DescriptionProvider {
         //
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return WebSubsystemDescriptions.getSSOAdd(locale);
-    }
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        // TODO Auto-generated method stub
-
+        for (SimpleAttributeDefinition def : SSO_ATTRIBUTES) {
+            def.validateAndSet(operation, model);
+        }
     }
 }

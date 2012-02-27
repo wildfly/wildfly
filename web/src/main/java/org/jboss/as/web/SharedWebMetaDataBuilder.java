@@ -21,12 +21,6 @@
  */
 package org.jboss.as.web;
 
-import static org.jboss.as.web.Constants.*;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
@@ -37,6 +31,13 @@ import org.jboss.metadata.web.spec.ServletsMetaData;
 import org.jboss.metadata.web.spec.SessionConfigMetaData;
 import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.metadata.web.spec.WelcomeFileListMetaData;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import static org.jboss.as.web.Constants.*;
 
 /**
  * Internal helper creating a shared web.xml based on the domain configuration.
@@ -56,22 +57,25 @@ class SharedWebMetaDataBuilder {
         welcomeFiles.add("index.jsp");
     }
 
-    /** The common container config. */
-    private final ModelNode containerConfig;
+    /**
+     * The common container config.
+     */
+    private final ModelNode config;
 
     SharedWebMetaDataBuilder(final ModelNode containerConfig) {
-        this.containerConfig = containerConfig;
+        this.config = containerConfig;
         init();
     }
 
     private void init() {
-        if(containerConfig.has(Constants.MIME_MAPPING)) {
-            for(final Property mapping : containerConfig.get(Constants.MIME_MAPPING).asPropertyList()) {
+        ModelNode containerConfig = config.get(Constants.CONTAINER);
+        if (containerConfig.hasDefined(Constants.MIME_MAPPING)) {
+            for (final Property mapping : config.get(Constants.MIME_MAPPING).asPropertyList()) {
                 mimeMappings.add(createMimeMapping(mapping.getName(), mapping.getValue().asString()));
             }
         }
-        if(containerConfig.has(Constants.WELCOME_FILE)) {
-            for(final ModelNode file : containerConfig.get(Constants.WELCOME_FILE).asList()) {
+        if (containerConfig.hasDefined(Constants.WELCOME_FILE)) {
+            for (final ModelNode file : config.get(Constants.WELCOME_FILE).asList()) {
                 welcomeFiles.add(file.asString());
             }
         }
@@ -106,50 +110,35 @@ class SharedWebMetaDataBuilder {
      * domain resource serving configuration.
      *
      * @param metadata the shared jboss web metadata
-     *
      */
     void enableStaticResouces(final WebMetaData metadata) {
-        final ModelNode resourcesConfig = containerConfig.get(STATIC_RESOURCES);
+        final ModelNode resourcesConfig = config.get(STATIC_RESOURCES);
         // Check disabled
-        if (resourcesConfig.has(DISABLED) && resourcesConfig.get(DISABLED).asBoolean()) {
+        if (resourcesConfig.require(DISABLED).asBoolean()) {
             return;
         }
         final ServletMetaData servlet = new ServletMetaData();
         servlet.setName("default");
         servlet.setLoadOnStartup("" + 1);
-        if (resourcesConfig.has(WEBDAV) && resourcesConfig.get(WEBDAV).asBoolean()) {
+        if (resourcesConfig.require(WEBDAV).asBoolean()) {
             servlet.setServletClass("org.apache.catalina.servlets.WebdavServlet");
         } else {
             servlet.setServletClass("org.apache.catalina.servlets.DefaultServlet");
         }
 
         final List<ParamValueMetaData> initParams = new ArrayList<ParamValueMetaData>();
-        if (resourcesConfig.has(LISTINGS)) {
-            initParams.add(createParameter("listings", resourcesConfig.get(LISTINGS).asString()));
-        } else {
-            initParams.add(createParameter("listings", "false"));
-        }
-        if (resourcesConfig.has(READ_ONLY)) {
-            initParams.add(createParameter("readonly", resourcesConfig.get(READ_ONLY).asString()));
-        } else {
-            initParams.add(createParameter("readonly", "true"));
-        }
-        if (resourcesConfig.has(SENDFILE)) {
-            initParams.add(createParameter("sendfile", resourcesConfig.get(SENDFILE).asString()));
-        } else {
-            initParams.add(createParameter("sendfile", "49152"));
-        }
-        if (resourcesConfig.has(FILE_ENCODING)) {
+        initParams.add(createParameter("listings", resourcesConfig.require(LISTINGS).asString()));
+        initParams.add(createParameter("readonly", resourcesConfig.require(READ_ONLY).asString()));
+        initParams.add(createParameter("sendfile", resourcesConfig.require(SENDFILE).asString()));
+
+        if (resourcesConfig.hasDefined(FILE_ENCODING)) {
             initParams.add(createParameter("file-encoding", resourcesConfig.get(FILE_ENCODING).asString()));
         }
-        if (resourcesConfig.has(SECRET)) {
+        if (resourcesConfig.hasDefined(SECRET)) {
             initParams.add(createParameter("secret", resourcesConfig.get(SECRET).asString()));
         }
-        if (resourcesConfig.has(MAX_DEPTH)) {
-            initParams.add(createParameter("max-depth", resourcesConfig.get(MAX_DEPTH).asString()));
-        } else {
-            initParams.add(createParameter("max-depth", "3"));
-        }
+        initParams.add(createParameter("max-depth", resourcesConfig.require(MAX_DEPTH).asString()));
+
         servlet.setInitParam(initParams);
         metadata.getServlets().add(servlet);
         addServletMapping("default", metadata, "/");
@@ -162,7 +151,7 @@ class SharedWebMetaDataBuilder {
      * @param metadata the shared jboss.web metadata
      */
     void enableJsp(final WebMetaData metadata) {
-        final ModelNode config = containerConfig.get(JSP_CONFIGURATION);
+        final ModelNode config = this.config.get(JSP_CONFIGURATION);
         if (config.get(DISABLED).asBoolean(false)) {
             return;
         }
@@ -173,95 +162,29 @@ class SharedWebMetaDataBuilder {
 
         final List<ParamValueMetaData> initParams = new ArrayList<ParamValueMetaData>();
 
-        if (config.has(DEVELOPMENT)) {
-            initParams.add(createParameter("development", config.get(DEVELOPMENT).asString()));
-        } else {
-            initParams.add(createParameter("development", "false"));
-        }
-        if (config.has(KEEP_GENERATED)) {
-            initParams.add(createParameter("keepgenerated", config.get(KEEP_GENERATED).asString()));
-        } else {
-            initParams.add(createParameter("keepgenerated", "true"));
-        }
-        if (config.has(TRIM_SPACES)) {
-            initParams.add(createParameter("trimSpaces", config.get(TRIM_SPACES).asString()));
-        } else {
-            initParams.add(createParameter("trimSpaces", "false"));
-        }
-        if (config.has(TAG_POOLING)) {
-            initParams.add(createParameter("enablePooling", config.get(TAG_POOLING).asString()));
-        } else {
-            initParams.add(createParameter("enablePooling", "true"));
-        }
-        if (config.has(MAPPED_FILE)) {
-            initParams.add(createParameter("mappedfile", config.get(MAPPED_FILE).asString()));
-        } else {
-            initParams.add(createParameter("mappedfile", "true"));
-        }
-        if (config.has(CHECK_INTERVAL)) {
-            initParams.add(createParameter("checkInterval", config.get(CHECK_INTERVAL).asString()));
-        } else {
-            initParams.add(createParameter("checkInterval", "0"));
-        }
-        if (config.has(MODIFICATION_TEST_INTERVAL)) {
-            initParams.add(createParameter("modificationTestInterval", config.get(MODIFICATION_TEST_INTERVAL).asString()));
-        } else {
-            initParams.add(createParameter("modificationTestInterval", "4"));
-        }
-        if (config.has(RECOMPILE_ON_FAIL)) {
-            initParams.add(createParameter("recompileOnFail", config.get(RECOMPILE_ON_FAIL).asString()));
-        } else {
-            initParams.add(createParameter("recompileOnFail", "false"));
-        }
-        if (config.has(SMAP)) {
-            initParams.add(createParameter("suppressSmap", config.get(SMAP).asString()));
-        } else {
-            initParams.add(createParameter("suppressSmap", "false"));
-        }
-        if (config.has(DUMP_SMAP)) {
-            initParams.add(createParameter("dumpSmap", config.get(DUMP_SMAP).asString()));
-        } else {
-            initParams.add(createParameter("dumpSmap", "false"));
-        }
-        if (config.has(GENERATE_STRINGS_AS_CHAR_ARRAYS)) {
-            initParams.add(createParameter("genStringAsCharArray", config.get(GENERATE_STRINGS_AS_CHAR_ARRAYS).asString()));
-        } else {
-            initParams.add(createParameter("genStringAsCharArray", "false"));
-        }
-        if (config.has(ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUTE)) {
-            initParams.add(createParameter("errorOnUseBeanInvalidClassAttribute", config.get(ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUTE).asString()));
-        } else {
-            initParams.add(createParameter("errorOnUseBeanInvalidClassAttribute", "false"));
-        }
-        if (config.has(SCRATCH_DIR)) {
-            initParams.add(createParameter("scratchdir", config.get(SCRATCH_DIR).asString()));
+        initParams.add(createParameter("development", config.require(DEVELOPMENT).asString()));
+        initParams.add(createParameter("keepgenerated", config.require(KEEP_GENERATED).asString()));
+        initParams.add(createParameter("trimSpaces", config.require(TRIM_SPACES).asString()));
+        initParams.add(createParameter("enablePooling", config.require(TAG_POOLING).asString()));
+        initParams.add(createParameter("mappedfile", config.require(MAPPED_FILE).asString()));
+        initParams.add(createParameter("checkInterval", config.require(CHECK_INTERVAL).asString()));
+        initParams.add(createParameter("modificationTestInterval", config.require(MODIFICATION_TEST_INTERVAL).asString()));
+        initParams.add(createParameter("recompileOnFail", config.require(RECOMPILE_ON_FAIL).asString()));
+        initParams.add(createParameter("suppressSmap", config.require(SMAP).asString()));
+        initParams.add(createParameter("dumpSmap", config.require(DUMP_SMAP).asString()));
+        initParams.add(createParameter("genStringAsCharArray", config.require(GENERATE_STRINGS_AS_CHAR_ARRAYS).asString()));
+        initParams.add(createParameter("errorOnUseBeanInvalidClassAttribute", config.require(ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUTE).asString()));
+
+        if (config.hasDefined(SCRATCH_DIR)) {
+            initParams.add(createParameter("scratchdir", config.require(SCRATCH_DIR).asString()));
         }
         // jasper will find the right defaults.
-        if (config.has(SOURCE_VM)) {
-            initParams.add(createParameter("compilerSourceVM", config.get(SOURCE_VM).asString()));
-        } else {
-            initParams.add(createParameter("compilerSourceVM", "1.5"));
-        }
-        if (config.has(TARGET_VM)) {
-            initParams.add(createParameter("compilerTargetVM", config.get(TARGET_VM).asString()));
-        } else {
-            initParams.add(createParameter("compilerTargetVM", "1.5"));
-        }
-        if (config.has(JAVA_ENCODING)) {
-            initParams.add(createParameter("javaEncoding", config.get(JAVA_ENCODING).asString()));
-        } else
-            initParams.add(createParameter("javaEncoding", "UTF8"));
+        initParams.add(createParameter("compilerSourceVM", config.require(SOURCE_VM).asString()));
+        initParams.add(createParameter("compilerTargetVM", config.require(TARGET_VM).asString()));
+        initParams.add(createParameter("javaEncoding", config.require(JAVA_ENCODING).asString()));
+        initParams.add(createParameter("xpoweredBy", config.require(X_POWERED_BY).asString()));
+        initParams.add(createParameter("displaySourceFragment", config.require(DISPLAY_SOURCE_FRAGMENT).asString()));
 
-        if (config.has(X_POWERED_BY)) {
-            initParams.add(createParameter("xpoweredBy", config.get(X_POWERED_BY).asString()));
-        } else {
-            initParams.add(createParameter("xpoweredBy", "true"));
-        }
-        if (config.has(DISPLAY_SOURCE_FRAGMENT)) {
-            initParams.add(createParameter("displaySourceFragment", config.get(DISPLAY_SOURCE_FRAGMENT).asString()));
-        } else {
-            initParams.add(createParameter("displaySourceFragment", "true"));
-        }
         servlet.setInitParam(initParams);
         metadata.getServlets().add(servlet);
         addServletMapping("jsp", metadata, "*.jsp", "*.jspx");
@@ -276,7 +199,7 @@ class SharedWebMetaDataBuilder {
 
     static void addServletMapping(final String servlet, final WebMetaData metadata, String... names) {
         List<ServletMappingMetaData> mappings = metadata.getServletMappings();
-        if(mappings == null) {
+        if (mappings == null) {
             mappings = new ArrayList<ServletMappingMetaData>();
             metadata.setServletMappings(mappings);
         }

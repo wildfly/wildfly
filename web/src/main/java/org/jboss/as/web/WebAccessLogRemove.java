@@ -31,7 +31,7 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Jean-Frederic Clere
  */
-class WebAccessLogRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
+class WebAccessLogRemove extends AbstractRemoveStepHandler{
 
     static final WebAccessLogRemove INSTANCE = new WebAccessLogRemove();
 
@@ -39,8 +39,5 @@ class WebAccessLogRemove extends AbstractRemoveStepHandler implements Descriptio
         //
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return WebSubsystemDescriptions.getAccessLogRemove(locale);
-    }
+
 }

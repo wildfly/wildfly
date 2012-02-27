@@ -301,6 +301,11 @@ public abstract class AbstractOperationTestCase {
             return RESOURCE_REGISTRATION;
         }
 
+        @Override
+        public ImmutableManagementResourceRegistration getRootResourceRegistration() {
+            return null;
+        }
+
         public ServiceRegistry getServiceRegistry(boolean modify) throws UnsupportedOperationException {
             return null;
         }

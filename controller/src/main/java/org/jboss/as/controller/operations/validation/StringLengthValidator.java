@@ -47,6 +47,10 @@ public class StringLengthValidator extends ModelTypeValidator implements MinMaxV
         this.max = max;
     }
 
+    public StringLengthValidator(final int min, final boolean nullable, final boolean allowExpressions) {
+        this(min,Integer.MAX_VALUE,nullable,allowExpressions);
+    }
+
     /**
      * {@inheritDoc}
      */

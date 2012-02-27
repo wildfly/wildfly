@@ -35,7 +35,7 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Emanuel Muckenhuber
  */
-class WebVirtualHostRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
+class WebVirtualHostRemove extends AbstractRemoveStepHandler{
 
     static final WebVirtualHostRemove INSTANCE = new WebVirtualHostRemove();
 
@@ -55,8 +55,5 @@ class WebVirtualHostRemove extends AbstractRemoveStepHandler implements Descript
         // TODO:  RE-ADD SERVICES
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return WebSubsystemDescriptions.getVirtualServerRemove(locale);
-    }
+
 }
