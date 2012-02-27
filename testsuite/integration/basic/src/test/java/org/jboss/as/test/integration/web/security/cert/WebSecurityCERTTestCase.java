@@ -44,6 +44,8 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.test.integration.management.Connector;
 import org.jboss.as.test.integration.web.security.SecuredServlet;
 import org.jboss.as.test.integration.web.security.WebSecurityPasswordBasedBase;
 import org.jboss.dmr.ModelNode;
@@ -56,9 +58,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.security.Constants.AUTHENTICATION;
 import static org.jboss.as.security.Constants.CODE;
@@ -68,6 +72,7 @@ import static org.jboss.as.security.Constants.MODULE_OPTIONS;
 import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.security.Constants.TRUSTSTORE_PASSWORD;
 import static org.jboss.as.security.Constants.TRUSTSTORE_URL;
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -158,7 +163,8 @@ public class WebSecurityCERTTestCase {
         op.get("port").set(8380);
 
         updates.add(op);
-
+        final ModelNode composite = Util.getEmptyOperation(COMPOSITE, new ModelNode());
+                    final ModelNode steps = composite.get(STEPS);
         op = new ModelNode();
         op.get(OP).set(ADD);
         op.get(OP_ADDR).add(SUBSYSTEM, "web");
@@ -168,8 +174,8 @@ public class WebSecurityCERTTestCase {
         op.get("protocol").set("HTTP/1.1");
         op.get("scheme").set("https");
         op.get("secure").set(true);
-        ModelNode ssl = new ModelNode();
-        ssl.setEmptyObject();
+        steps.add(op);
+        ModelNode ssl = createOpNode("subsystem=web/connector=testConnector/configuration=ssl", "add");
         ssl.get("name").set("https-test");
         ssl.get("key-alias").set("test");
         ssl.get("password").set("changeit");
@@ -178,9 +184,8 @@ public class WebSecurityCERTTestCase {
         ssl.get("certificate-key-file").set(keystore.getPath());
         ssl.get("protocol").set("TLS");
         ssl.get("verify-client").set(true);
-        op.get("ssl").set(ssl);
-
-        updates.add(op);
+        steps.add(ssl);
+        updates.add(composite);
         applyUpdates(updates, client);
     }
 

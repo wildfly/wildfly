@@ -22,19 +22,19 @@
 
 package org.jboss.as.web;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
+
+import static org.jboss.as.web.WebSSLDefinition.SSL_ATTRIBUTES;
 
 /**
  * {@code OperationHandler} responsible for defining the accesslog entry.
  *
  * @author Jean-Frederic Clere
  */
-class WebSSLAdd extends AbstractAddStepHandler implements DescriptionProvider {
+class WebSSLAdd extends AbstractAddStepHandler {
 
     static final WebSSLAdd INSTANCE = new WebSSLAdd();
 
@@ -42,14 +42,12 @@ class WebSSLAdd extends AbstractAddStepHandler implements DescriptionProvider {
         //
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return WebSubsystemDescriptions.getSSLAdd(locale);
-    }
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        // TODO Auto-generated method stub
+        for (AttributeDefinition def : SSL_ATTRIBUTES){
+            def.validateAndSet(operation,model);
+        }
 
     }
 }

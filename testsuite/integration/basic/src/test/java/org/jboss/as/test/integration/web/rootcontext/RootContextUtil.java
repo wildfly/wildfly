@@ -28,7 +28,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.junit.Assert.assertTrue;
 
 import java.net.HttpURLConnection;
@@ -56,7 +55,7 @@ public class RootContextUtil {
 
     // FIXME Duplicated from org.jboss.as.web.Constants.Constants
     private static String VIRTUAL_SERVER = "virtual-server";
-    private static String ROOT_CONTEXT = "enable-welcome-root";
+    private static String ENABLE_WELCOME_ROOT = "enable-welcome-root";
 
     public static void createVirtualServer(ModelControllerClient client, String serverName) throws Exception {
         final List<ModelNode> updates = new ArrayList<ModelNode>();
@@ -66,8 +65,8 @@ public class RootContextUtil {
         op.get(OP_ADDR).add(SUBSYSTEM, "web");
         op.get(OP_ADDR).add(VIRTUAL_SERVER, serverName);
 
-        op.get(NAME).set(ROOT_CONTEXT);
-        op.get(VALUE).set(false);
+        op.get(NAME).set(ENABLE_WELCOME_ROOT);
+        op.get(ENABLE_WELCOME_ROOT).set(false);
 
         updates.add(op);
 

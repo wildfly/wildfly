@@ -131,6 +131,11 @@ class ParallelBootOperationContext extends AbstractOperationContext {
     }
 
     @Override
+    public ImmutableManagementResourceRegistration getRootResourceRegistration() {
+        return primaryContext.getRootResourceRegistration();
+    }
+
+    @Override
     public ServiceRegistry getServiceRegistry(boolean modify) throws UnsupportedOperationException {
         return primaryContext.getServiceRegistry(modify);
     }

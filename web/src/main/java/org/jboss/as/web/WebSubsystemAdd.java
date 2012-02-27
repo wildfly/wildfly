@@ -22,16 +22,13 @@
 
 package org.jboss.as.web;
 
-import java.util.List;
-import java.util.Locale;
-
-import javax.management.MBeanServer;
-
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.AbstractPathService;
 import org.jboss.as.server.AbstractDeploymentChainStep;
@@ -60,46 +57,47 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 
+import javax.management.MBeanServer;
+import java.util.List;
+
 /**
  * Adds the web subsystem.
  *
  * @author Emanuel Muckenhuber
+ * @author Tomaz Cerar
  */
-class WebSubsystemAdd extends AbstractBoottimeAddStepHandler implements DescriptionProvider {
+class WebSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     static final WebSubsystemAdd INSTANCE = new WebSubsystemAdd();
-    private static final String DEFAULT_VIRTUAL_SERVER = "default-host";
-    private static final boolean DEFAULT_NATIVE = true;
     private static final String TEMP_DIR = "jboss.server.temp.dir";
 
     private WebSubsystemAdd() {
         //
     }
 
+
     @Override
-    protected void populateModel(ModelNode operation, final Resource resource) {
-        WebConfigurationHandlerUtils.initializeConfiguration(resource, operation);
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        WebDefinition.DEFAULT_VIRTUAL_SERVER.validateAndSet(operation, model);
+        WebDefinition.NATIVE.validateAndSet(operation, model);
+        WebDefinition.INSTANCE_ID.validateAndSet(operation, model);
     }
 
     @Override
-    protected void populateModel(ModelNode operation, ModelNode model) {
-    }
-
-    @Override
-    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model,
+    protected void performBoottime(OperationContext context, ModelNode baseOperation, ModelNode model,
                                    ServiceVerificationHandler verificationHandler,
                                    List<ServiceController<?>> newControllers) throws OperationFailedException {
-        final ModelNode config = operation.get(Constants.CONTAINER_CONFIG);
-        final String defaultVirtualServer = operation.hasDefined(Constants.DEFAULT_VIRTUAL_SERVER) ?
-                operation.get(Constants.DEFAULT_VIRTUAL_SERVER).asString() : DEFAULT_VIRTUAL_SERVER;
-        final boolean useNative = operation.hasDefined(Constants.NATIVE) ?
-                operation.get(Constants.NATIVE).asBoolean() : DEFAULT_NATIVE;
-        final String instanceId = operation.hasDefined(Constants.INSTANCE_ID) ? operation.get(
-                Constants.INSTANCE_ID).asString() : null;
+        ModelNode operation = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
+        final ModelNode config = resolveConfiguration(context, operation.get(Constants.CONFIGURATION));
+        final String defaultVirtualServer = WebDefinition.DEFAULT_VIRTUAL_SERVER.resolveModelAttribute(context, operation).asString();
+
+        final boolean useNative = WebDefinition.NATIVE.resolveModelAttribute(context, operation).asBoolean();
+        final String instanceId = WebDefinition.INSTANCE_ID.resolveModelAttribute(context, operation).asString();
 
         context.addStep(new AbstractDeploymentChainStep() {
             @Override
             protected void execute(DeploymentProcessorTarget processorTarget) {
+
                 final SharedWebMetaDataBuilder sharedWebBuilder = new SharedWebMetaDataBuilder(config.clone());
                 final SharedTldsMetaDataBuilder sharedTldsBuilder = new SharedTldsMetaDataBuilder(config.clone());
 
@@ -140,8 +138,19 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler implements Descript
         return false;
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return WebSubsystemDescriptions.getSubsystemAddDescription(locale);
+    private ModelNode resolveConfiguration(OperationContext context, ModelNode model) throws OperationFailedException {
+        ModelNode res = new ModelNode();
+        for (AttributeDefinition attr : WebContainerDefinition.CONTAINER_ATTRIBUTES) {
+            res.get(Constants.CONTAINER).get(attr.getName()).set(attr.resolveModelAttribute(context, model));
+        }
+        for (SimpleAttributeDefinition attr : WebStaticResources.STATIC_ATTRIBUTES) {
+            res.get(Constants.STATIC_RESOURCES).get(attr.getName()).set(attr.resolveModelAttribute(context, model));
+        }
+        for (SimpleAttributeDefinition attr : WebJSPDefinition.JSP_ATTRIBUTES) {
+            res.get(Constants.JSP_CONFIGURATION).get(attr.getName()).set(attr.resolveModelAttribute(context, model));
+        }
+
+        return res;
     }
+
 }

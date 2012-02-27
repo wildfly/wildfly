@@ -29,27 +29,26 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 
+import static org.jboss.as.web.WebReWriteDefinition.FLAGS;
+import static org.jboss.as.web.WebReWriteDefinition.PATTERN;
+import static org.jboss.as.web.WebReWriteDefinition.SUBSTITUTION;
+
 /**
  * {@code OperationHandler} responsible for defining the accesslog entry.
  *
  * @author Jean-Frederic Clere
  */
-class WebReWriteAdd extends AbstractAddStepHandler implements DescriptionProvider {
+class WebReWriteAdd extends AbstractAddStepHandler {
 
     static final WebReWriteAdd INSTANCE = new WebReWriteAdd();
 
     private WebReWriteAdd() {
-        //
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return WebSubsystemDescriptions.getReWriteAdd(locale);
     }
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        // TODO Auto-generated method stub
-
+        PATTERN.validateAndSet(operation,model);
+        FLAGS.validateAndSet(operation, model);
+        SUBSTITUTION.validateAndSet(operation, model);
     }
 }
