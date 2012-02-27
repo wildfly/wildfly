@@ -146,7 +146,7 @@
         <version.arquillian_as7>${project.parent.version}</version.arquillian_as7>
         <version.saxon>8.7</version.saxon>
 
-        <!-- JSF Unit -->
+	<!-- JSF Unit -->
         <version.jsfunit>2.0.0.Beta2</version.jsfunit>
 
         <!-- Don't try to deploy the testsuite modules because they don't build jars -->
