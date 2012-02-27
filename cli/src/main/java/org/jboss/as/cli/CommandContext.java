@@ -78,6 +78,7 @@ public interface CommandContext {
 
     /**
      * Terminates the command line session.
+     * Also closes the connection to the controller if it's still open.
      */
     void terminateSession();
 
@@ -117,14 +118,17 @@ public interface CommandContext {
      *
      * @param host the host to connect with
      * @param port the port to connect on
+     * @throws CommandLineException  in case the attempt to connect failed
      */
-    void connectController(String host, int port);
+    void connectController(String host, int port) throws CommandLineException;
 
     /**
      * Connects the controller client using the default host and the port.
      * It simply calls connectController(null, -1).
+     *
+     * @throws CommandLineException  in case the attempt to connect failed
      */
-    void connectController();
+    void connectController() throws CommandLineException;
 
     /**
      * Closes the previously established connection with the controller client.

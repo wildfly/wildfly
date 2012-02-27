@@ -28,6 +28,7 @@ import java.io.FileReader;
 import org.jboss.as.cli.CliInitializationException;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandContextFactory;
+import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.gui.GuiMain;
 import org.jboss.as.cli.handlers.VersionHandler;
 import org.jboss.as.protocol.StreamUtils;
@@ -204,7 +205,11 @@ public class CliLauncher {
     private static CommandContext initCommandContext(String defaultHost, int defaultPort, String username, char[] password, boolean initConsole, boolean connect) throws CliInitializationException {
         final CommandContext cmdCtx = CommandContextFactory.getInstance().newCommandContext(defaultHost, defaultPort, username, password, initConsole);
         if(connect) {
-            cmdCtx.connectController(null, -1);
+            try {
+                cmdCtx.connectController();
+            } catch (CommandLineException e) {
+                throw new CliInitializationException("Failed to connect to the controller", e);
+            }
         }
         return cmdCtx;
     }
@@ -225,10 +230,7 @@ public class CliLauncher {
                 ++i;
             }
         } finally {
-            if (!cmdCtx.isTerminated()) {
-                cmdCtx.terminateSession();
-            }
-            cmdCtx.disconnectController();
+            cmdCtx.terminateSession();
         }
     }
 
@@ -246,10 +248,7 @@ public class CliLauncher {
             throw new IllegalStateException("Failed to process file '" + file.getAbsolutePath() + "'", e);
         } finally {
             StreamUtils.safeClose(reader);
-            if (!cmdCtx.isTerminated()) {
-                cmdCtx.terminateSession();
-            }
-            cmdCtx.disconnectController();
+            cmdCtx.terminateSession();
         }
     }
 }
