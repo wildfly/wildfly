@@ -22,32 +22,23 @@
 
 package org.jboss.as.test.integration.ejb.async;
 
+import javax.ejb.AsyncResult;
+import javax.ejb.Asynchronous;
+import javax.ejb.Stateful;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Resource;
-import javax.ejb.AsyncResult;
-import javax.ejb.Asynchronous;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.inject.Inject;
-
 /**
- * stateful session bean
+ * Stateful bean
  */
-@Stateless
+@Stateful
 @Asynchronous
-public class AsyncBean {
+public class AsyncStateful {
 
     public static volatile boolean voidMethodCalled = false;
     public static volatile boolean futureMethodCalled = false;
-
-    @Inject
-    private RequestScopedBean requestScopedBean;
-    
-    @Resource
-    SessionContext ctx;
 
     public void asyncMethod(CountDownLatch latch, CountDownLatch latch2) throws InterruptedException {
         latch.await(5, TimeUnit.SECONDS);
@@ -61,28 +52,4 @@ public class AsyncBean {
         return new AsyncResult<Boolean>(true);
     }
 
-    public Future<Integer> testRequestScopeActive(CountDownLatch latch) throws InterruptedException {
-        latch.await(5, TimeUnit.SECONDS);
-        requestScopedBean.setState(20);
-        return new AsyncResult<Integer>(requestScopedBean.getState());
-    }
-
-    public Future<String> asyncCancelMethod(CountDownLatch latch, CountDownLatch latch2) throws InterruptedException {
-        String result;
-        result = ctx.wasCancelCalled() ? "true" : "false";
-        
-        latch.countDown();
-        latch2.await(5, TimeUnit.SECONDS);
-        
-        result += ";";
-        result = ctx.wasCancelCalled() ? "true" : "false";
-        return new AsyncResult<String>(result);
-    }   
-    
-    public Future<String> asyncMethodWithException(boolean isException) {
-        if(isException) {
-            throw new IllegalArgumentException(); //some exception is thrown
-        }
-        return new AsyncResult<String>("Hi");
-    }
 }
