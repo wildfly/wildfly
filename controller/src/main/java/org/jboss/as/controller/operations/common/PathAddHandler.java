@@ -104,9 +104,6 @@ public class PathAddHandler extends AbstractAddStepHandler implements Descriptio
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
                                   ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
         //This will only get called for the services case
-
-        System.out.println("----> Performing runtime for " + operation);
-
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         String name = address.getLastElement().getValue();
         ModelNode pathNode = operation.get(PATH);
