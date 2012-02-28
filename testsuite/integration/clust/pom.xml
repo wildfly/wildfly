@@ -122,7 +122,6 @@
                                 <configuration>
                                     <!-- Tests to execute. -->
                                     <includes>
-                                        <include>org/jboss/as/test/clustering/unmanaged/**/*TestCase.java</include>
                                         <include>org/jboss/as/test/clustering/cluster/**/*TestCase.java</include>
                                     </includes>
 
