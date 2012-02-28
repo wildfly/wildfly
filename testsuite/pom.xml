@@ -130,7 +130,6 @@
         <as.debug.port>8787</as.debug.port>
         <surefire.system.args>${surefire.memory.args} ${surefire.jpda.args} -Djboss.dist=${jboss.dist}</surefire.system.args>
         <surefire.forked.process.timeout>900</surefire.forked.process.timeout>
-        <surefire.test.failure.ignore>false</surefire.test.failure.ignore>
 
         <!-- Arquillian dependency versions -->
         <version.arquillian_core>${version.org.jboss.arquillian.core}</version.arquillian_core>
@@ -378,8 +377,6 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <failIfNoTests>false</failIfNoTests>
-                    <!-- don't halt the all test executions if a test fails -->
-                    <testFailureIgnore>${surefire.test.failure.ignore}</testFailureIgnore>
                     <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                     <systemPropertyVariables>
                         <jboss.options>${surefire.system.args}</jboss.options>
