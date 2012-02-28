@@ -157,7 +157,6 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
         }
 
         try {
-            objStoreBrowser.setTypes(objStoreBrowserTypes);
             objStoreBrowser.start();
         } catch (Exception e) {
             throw MESSAGES.objectStoreStartFailure(e);

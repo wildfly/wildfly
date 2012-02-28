@@ -1,3 +1,24 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.as.txn.subsystem;
 
 import java.util.EnumSet;
@@ -56,6 +77,15 @@ class TransactionSubsystem11Parser implements XMLStreamConstants, XMLElementRead
         subsystem.get(OP_ADDR).set(address);
 
         list.add(subsystem);
+        final ModelNode logStoreAddress = address.clone();
+        final ModelNode logStoreOperation = new ModelNode();
+        logStoreOperation.get(OP).set(ADD);
+        logStoreAddress.add(LogStoreConstants.LOG_STORE, LogStoreConstants.LOG_STORE);
+
+        logStoreAddress.protect();
+
+        logStoreOperation.get(OP_ADDR).set(logStoreAddress);
+        list.add(logStoreOperation);
 
         // elements
         final EnumSet<Element> required = EnumSet.of(Element.RECOVERY_ENVIRONMENT, Element.CORE_ENVIRONMENT);
@@ -89,6 +119,11 @@ class TransactionSubsystem11Parser implements XMLStreamConstants, XMLElementRead
                             parseJts(reader, subsystem);
                             break;
                         }
+                        case USEHORNETQSTORE: {
+                            parseUsehornetqstore(reader, logStoreOperation);
+                            subsystem.get(CommonAttributes.USEHORNETQSTORE).set(true);
+                            break;
+                        }
                         default: {
                             throw unexpectedElement(reader);
                         }
@@ -103,19 +138,15 @@ class TransactionSubsystem11Parser implements XMLStreamConstants, XMLElementRead
         if (!required.isEmpty()) {
             throw missingRequiredElement(reader, required);
         }
-        final ModelNode logStoreAddress = address.clone();
-        final ModelNode operation = new ModelNode();
-        operation.get(OP).set(ADD);
-        logStoreAddress.add(LogStoreConstans.LOG_STORE, LogStoreConstans.LOG_STORE);
-
-        logStoreAddress.protect();
-
-        operation.get(OP_ADDR).set(logStoreAddress);
-        list.add(operation);
     }
 
     private void parseJts(final XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException {
         operation.get(CommonAttributes.JTS).set(true);
+        requireNoContent(reader);
+    }
+
+    private void parseUsehornetqstore(final XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException {
+        operation.get(LogStoreConstants.LOG_STORE_TYPE.getName()).set("hornetq");
         requireNoContent(reader);
     }
 
@@ -380,6 +411,10 @@ class TransactionSubsystem11Parser implements XMLStreamConstants, XMLElementRead
             writer.writeEndElement();
         }
 
+        if(node.hasDefined(CommonAttributes.USEHORNETQSTORE) && node.get(CommonAttributes.USEHORNETQSTORE).asBoolean()) {
+            writer.writeStartElement(Element.USEHORNETQSTORE.getLocalName());
+            writer.writeEndElement();
+        }
         writer.writeEndElement();
     }
 
