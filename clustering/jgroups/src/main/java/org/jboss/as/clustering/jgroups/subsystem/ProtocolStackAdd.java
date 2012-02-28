@@ -21,9 +21,11 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,6 +45,7 @@ import org.jboss.as.clustering.jgroups.TransportConfiguration;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -76,12 +79,61 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
     }
 
     private static void populate(ModelNode source, ModelNode target) {
-        // nothing to do
+        // nothing to do for a basic add
     }
 
     @Override
-    protected void populateModel(ModelNode operation, ModelNode model) {
+    protected void populateModel(final ModelNode operation, final ModelNode model) {
+        // this method is abstract in AbstractAddStepHandler
+        // we want to use its more explicit version below, but have to override it anyway
+    }
+
+    @Override
+    protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) {
+        final ModelNode model = resource.getModel();
+
+        // handle the basic add() operation parameters
         populate(operation, model);
+
+        // add a step to initialize an *optional* TRANSPORT parameter
+        if (operation.hasDefined(ModelKeys.TRANSPORT)) {
+            // create an ADD operation to add the transport=TRANSPORT child
+            ModelNode addTransport = operation.get(ModelKeys.TRANSPORT).clone() ;
+
+            addTransport.get(OPERATION_NAME).set(ModelDescriptionConstants.ADD);
+            ModelNode transportAddress = operation.get(OP_ADDR).clone();
+            transportAddress.add(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
+            transportAddress.protect();
+            addTransport.get(OP_ADDR).set(transportAddress);
+
+            // execute the operation using the transport handler
+            context.addStep(addTransport, StackConfigOperationHandlers.TRANSPORT_ADD, OperationContext.Stage.IMMEDIATE);
+        }
+
+        // add steps to initialize *optional* PROTOCOL parameters
+        if (operation.hasDefined(ModelKeys.PROTOCOLS)) {
+
+            ModelNode protocolsNode = operation.get(ModelKeys.PROTOCOLS);
+            List<ModelNode> protocols = operation.get(ModelKeys.PROTOCOLS).asList();
+            // because we use stage IMMEDIATE when creating protocols, unless we reverse the order
+            // of the elements in the LIST, they will get applied in reverse order - the last step
+            // added gets executed first
+
+            for (int i = protocols.size()-1; i >= 0; i--) {
+                ModelNode protocol = protocols.get(i);
+
+                // create an ADD operation to add the protocol=* child
+                ModelNode addProtocol = protocol.clone() ;
+                addProtocol.get(OPERATION_NAME).set(ModelKeys.ADD_PROTOCOL);
+                // add-protocol is a stack operation
+                ModelNode protocolAddress = operation.get(OP_ADDR).clone();
+                protocolAddress.protect();
+                addProtocol.get(OP_ADDR).set(protocolAddress);
+
+                // execute the operation using the transport handler
+                context.addStep(addProtocol, StackConfigOperationHandlers.PROTOCOL_ADD, OperationContext.Stage.IMMEDIATE);
+            }
+        }
     }
 
     @Override
@@ -160,7 +212,15 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
 
     public static List<Property> getOrderedProtocolPropertyList(ModelNode stack) {
         ModelNode orderedProtocols = new ModelNode();
+
+        // check for the empty ordering list
+        if  (!stack.hasDefined(ModelKeys.PROTOCOLS)) {
+            return null ;
+        }
+        // PROTOCOLS is a list of protocol names only, reflecting the order in which protocols were added to the stack
         List<ModelNode> protocolOrdering = stack.get(ModelKeys.PROTOCOLS).asList();
+
+        // npow construct an ordered list of the full protocol model nodes
         ModelNode unorderedProtocols = stack.get(ModelKeys.PROTOCOL) ;
         for (ModelNode protocolName : protocolOrdering) {
             ModelNode protocolModel = unorderedProtocols.get(protocolName.asString());

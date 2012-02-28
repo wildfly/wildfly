@@ -94,8 +94,14 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
             // set it as one of our value types, and return the value
             final ModelNode childType = node.get(ModelDescriptionConstants.VALUE_TYPE, valueType.getName()).set(valueTypeDesc);
             // if it is of type OBJECT itself (add its nested descriptions)
+            // seeing that OBJECT represents a grouping, use prefix+"."+suffix for naming the entries
             if (valueType instanceof ObjectTypeAttributeDefinition) {
-                ObjectTypeAttributeDefinition.class.cast(valueType).addValueTypeDescription(childType, prefix, bundle);
+               ObjectTypeAttributeDefinition.class.cast(valueType).addValueTypeDescription(childType, p, bundle);
+            }
+            // if it is of type LIST, and its value type
+            // seeing that LIST represents a grouping, use prefix+"."+suffix for naming the entries
+            if (valueType instanceof SimpleListAttributeDefinition) {
+                SimpleListAttributeDefinition.class.cast(valueType).addValueTypeDescription(childType, p, bundle);
             }
         }
     }

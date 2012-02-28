@@ -111,6 +111,9 @@ public class JGroupsDescriptions {
         ResourceBundle resources = getResources(locale);
 
         final ModelNode op = createOperationDescription(ADD, resources, "jgroups.stack.add");
+        // optional TRANSPORT and PROTOCOLS parameters (to permit configuring a stack from add())
+        CommonAttributes.TRANSPORT.addOperationParameterDescription(resources, "jgroups.stack" , op);
+        CommonAttributes.PROTOCOLS.addOperationParameterDescription(resources, "jgroups.stack" , op);
         return op;
     }
 
