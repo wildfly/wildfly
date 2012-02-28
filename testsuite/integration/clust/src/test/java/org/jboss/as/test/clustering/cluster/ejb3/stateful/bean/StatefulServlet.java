@@ -47,7 +47,7 @@ public class StatefulServlet extends HttpServlet {
         Stateful bean = (Stateful) session.getAttribute("bean");
         if (bean == null) {
             try {
-                bean = (Stateful) new InitialContext().lookup("java:app/stateful/StatefulBean!org.jboss.as.test.clustering.unmanaged.ejb3.stateful.bean.Stateful");
+                bean = (Stateful) new InitialContext().lookup("java:app/stateful/StatefulBean!" + Stateful.class.getCanonicalName());
             } catch (NamingException e) {
                 throw new ServletException(e);
             }
