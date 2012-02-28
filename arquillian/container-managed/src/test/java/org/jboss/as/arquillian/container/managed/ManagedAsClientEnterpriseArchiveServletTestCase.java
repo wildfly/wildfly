@@ -47,7 +47,7 @@ public class ManagedAsClientEnterpriseArchiveServletTestCase {
     }
 
     @ArquillianResource
-    URL deploymentUrl;
+    private URL deploymentUrl;
 
     @Test
     public void shouldBeAbleToInvokeServlet() throws Exception {
