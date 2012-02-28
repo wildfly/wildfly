@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.test.clustering.cluster.ejb3.deployment;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -33,10 +32,15 @@ import org.junit.runner.RunWith;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import org.jboss.arquillian.container.test.api.*;
+import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
+import org.jboss.as.test.clustering.NodeUtil;
 
 /**
- * The purpose of this testcase is to ensure that a EJB marked as clustered, either via annotation or deployment
- * descriptor, deploys successfully. This test does <b>not</b> check any clustering semantics (like failover, replication etc...)
+ * The purpose of this testcase is to ensure that a EJB marked as clustered, either via annotation or deployment descriptor,
+ * deploys successfully. This test does <b>not</b> check any clustering semantics (like failover, replication etc...)
  *
  * @author Jaikiran Pai
  */
@@ -44,8 +48,13 @@ import javax.naming.InitialContext;
 public class ClusteredBeanDeploymentTestCase {
 
     private static final String DD_BASED_MODULE_NAME = "clustered-ejb-deployment";
+    @ArquillianResource
+    private ContainerController controller;
+    @ArquillianResource
+    private Deployer deployer;
 
-    @Deployment
+    @Deployment(name = DEPLOYMENT_1, managed = false)
+    @TargetsContainer(CONTAINER_1)
     public static Archive createDDBasedDeployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, DD_BASED_MODULE_NAME + ".jar");
         ejbJar.addClasses(DDBasedClusteredBean.class, ClusteredBean.class);
@@ -53,9 +62,25 @@ public class ClusteredBeanDeploymentTestCase {
         return ejbJar;
     }
 
+    @Test
+    @InSequence(-1)
+    @RunAsClient
+    public void testStartContainers() {
+        NodeUtil.start(controller, deployer, CONTAINER_1, DEPLOYMENT_1);
+        NodeUtil.start(controller, CONTAINER_2);
+    }
+
+    @Test
+    @InSequence(1)
+    @RunAsClient
+    public void testStopContainers() {
+        NodeUtil.stop(controller, deployer, CONTAINER_1, DEPLOYMENT_1);
+        NodeUtil.stop(controller, CONTAINER_2);
+    }
+
     /**
-     * Test that a bean marked as clustered via deployment descriptor, deploys fine and is invokable.
-     * This test does <b>not</b> test any clustering semantics (like failover etc...)
+     * Test that a bean marked as clustered via deployment descriptor, deploys fine and is invokable. This test does <b>not</b>
+     * test any clustering semantics (like failover etc...)
      *
      * @throws Exception
      */
@@ -71,8 +96,8 @@ public class ClusteredBeanDeploymentTestCase {
     }
 
     /**
-     * Test that a bean marked as clustered via annotation, deploys fine and is invokable. This test does <b>not</b>
-     * test any clustering semantics (like failover etc...)
+     * Test that a bean marked as clustered via annotation, deploys fine and is invokable. This test does <b>not</b> test any
+     * clustering semantics (like failover etc...)
      *
      * @throws Exception
      */
@@ -86,5 +111,4 @@ public class ClusteredBeanDeploymentTestCase {
         }
         Assert.assertEquals("Unexpected count on stateful bean", clusteredBean.getCount(), NUM_TIMES);
     }
-
 }
