@@ -367,7 +367,7 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
             tmp = new File(serverBaseDir, "configuration");
         }
         serverConfigurationDir = tmp;
-        if (standalone && !serverConfigurationDir.exists() && !serverConfigurationDir.isDirectory()) {
+        if (standalone && (!serverConfigurationDir.exists() || !serverConfigurationDir.isDirectory())) {
             throw MESSAGES.configDirectoryDoesNotExist(serverConfigurationDir);
         }
 
