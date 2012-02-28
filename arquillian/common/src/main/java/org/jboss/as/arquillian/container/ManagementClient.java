@@ -172,7 +172,7 @@ public class ManagementClient {
 
         if ("web".equals(subsystem)) {
             String socketBinding = rootNode.get("subsystem").get("web").get("connector").get("http").get("socket-binding").asString();
-            return getBinding(socketBinding);
+            return getBinding("http", socketBinding);
         }
         throw new IllegalArgumentException("No handler for subsystem " + subsystem);
     }
@@ -187,7 +187,7 @@ public class ManagementClient {
         return node;
     }
 
-    private URI getBinding(final String socketBinding) {
+    private URI getBinding(final String protocol, final String socketBinding) {
         try {
             //TODO: resolve socket binding group correctly
             final String socketBindingGroupName = rootNode.get("socket-binding-group").keys().iterator().next();
@@ -206,7 +206,7 @@ public class ManagementClient {
             portOp.get(NAME).set("bound-port");
             final int port = defined(executeForResult(portOp), socketBindingGroupName + " -> " + socketBinding + " -> bound-port is undefined").asInt();
 
-            return URI.create(socketBinding + "://" + NetworkUtils.formatPossibleIpv6Address(ip) + ":" + port);
+            return URI.create(protocol + "://" + NetworkUtils.formatPossibleIpv6Address(ip) + ":" + port);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -343,5 +343,11 @@ public class ManagementClient {
 
     public String getMgmtAddress() {
         return NetworkUtils.formatPossibleIpv6Address(mgmtAddress);
+    }
+
+    public URI getRemoteEjbURL() {
+        String socketBinding = rootNode.get("subsystem").get("remoting").get("connector").get("remoting-connector").get("socket-binding").asString();
+        return getBinding("remote", socketBinding);
+
     }
 }
