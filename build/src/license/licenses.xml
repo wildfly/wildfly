@@ -2589,8 +2589,8 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.osgi.resolver</groupId>
-      <artifactId>jbosgi-resolver-metadata</artifactId>
+      <groupId>org.jboss.osgi.metadata</groupId>
+      <artifactId>jbosgi-metadata</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License, Version 2.1</name>
