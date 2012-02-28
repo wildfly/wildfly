@@ -51,6 +51,11 @@
     <xs:attribute name="advertise-socket" type="xs:string" use="optional"/>
     <xs:attribute name="proxy-list" type="xs:string" use="optional"/>
     <xs:attribute name="proxy-url" type="xs:string" use="optional"/>
+    <xs:attribute name="balancer" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>The balancer name. All nodes of a cluster have to use the same value.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="advertise" type="xs:boolean" use="optional" default="true"/>
     <xs:attribute name="advertise-security-key" type="xs:string" use="optional"/>
     <xs:attribute name="sticky-session-force" type="xs:boolean" use="optional" default="true"/>
