@@ -141,6 +141,13 @@ class RemoteDomainConnection extends ManagementClientChannelStrategy {
         }
     }
 
+    protected boolean isConnected() {
+        if(reconnect.get()) {
+            return channel != null;
+        }
+        return false;
+    }
+
     /**
      * Connect and register at the remote domain controller.
      *

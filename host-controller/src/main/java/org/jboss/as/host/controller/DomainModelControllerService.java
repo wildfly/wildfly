@@ -36,6 +36,7 @@ import static org.jboss.as.host.controller.HostControllerLogger.DOMAIN_LOGGER;
 import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
+import java.io.File;
 import java.io.IOException;
 import java.security.AccessController;
 import java.util.Iterator;
@@ -353,6 +354,15 @@ public class DomainModelControllerService extends AbstractControllerService impl
                 }
 
             } else {
+
+                if(environment.isUseCachedDc()) {
+                    remoteFileRepository.setRemoteFileRepositoryExecutor(new RemoteDomainConnectionService.RemoteFileRepositoryExecutor() {
+                        @Override
+                        public File getFile(String relativePath, byte repoId, HostFileRepository localFileRepository) {
+                            return localFileRepository.getFile(relativePath);
+                        }
+                    });
+                }
                 // TODO look at having LocalDomainControllerAdd do this, using Stage.IMMEDIATE for the steps
                 // parse the domain.xml and load the steps
                 ConfigurationPersister domainPersister = hostControllerConfigurationPersister.getDomainPersister();

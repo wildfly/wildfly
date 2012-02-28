@@ -413,7 +413,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             return remoteFileRepositoryExecutor.getFile(relativePath, repoId, localFileRepository);
         }
 
-        private void setRemoteFileRepositoryExecutor(RemoteFileRepositoryExecutor remoteFileRepositoryExecutor) {
+        void setRemoteFileRepositoryExecutor(RemoteFileRepositoryExecutor remoteFileRepositoryExecutor) {
             this.remoteFileRepositoryExecutor = remoteFileRepositoryExecutor;
         }
 
@@ -423,16 +423,20 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         }
     }
 
-    private static interface RemoteFileRepositoryExecutor {
+    static interface RemoteFileRepositoryExecutor {
         File getFile(final String relativePath, final byte repoId, HostFileRepository localFileRepository);
     }
 
-    private RemoteFileRepositoryExecutor remoteFileRepositoryExecutor = new RemoteFileRepositoryExecutor() {
+    private final RemoteFileRepositoryExecutor remoteFileRepositoryExecutor = new RemoteFileRepositoryExecutor() {
         public File getFile(final String relativePath, final byte repoId, HostFileRepository localFileRepository) {
-            try {
-                return handler.executeRequest(new GetFileRequest(repoId, relativePath, localFileRepository), null).getResult().get();
-            } catch (Exception e) {
-                throw MESSAGES.failedToGetFileFromRemoteRepository(e);
+            if(connection.isConnected()) {
+                try {
+                    return handler.executeRequest(new GetFileRequest(repoId, relativePath, localFileRepository), null).getResult().get();
+                } catch (Exception e) {
+                    throw MESSAGES.failedToGetFileFromRemoteRepository(e);
+                }
+            } else {
+                return localFileRepository.getFile(relativePath);
             }
         }
     };
