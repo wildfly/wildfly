@@ -22,6 +22,8 @@
 
 package org.jboss.as.txn.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -29,32 +31,47 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.dmr.ModelNode;
 
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 
-public class PartecipantWriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {
 
-    public PartecipantWriteAttributeHandler() {
+public class ParticipantWriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {
+
+    public ParticipantWriteAttributeHandler() {
         super();
     }
 
-    public PartecipantWriteAttributeHandler(final ParameterValidator validator) {
+    public ParticipantWriteAttributeHandler(final ParameterValidator validator) {
         super(validator);
     }
 
-    public PartecipantWriteAttributeHandler(final AttributeDefinition... definitions) {
+    public ParticipantWriteAttributeHandler(final AttributeDefinition... definitions) {
         super(definitions);
     }
 
-    public PartecipantWriteAttributeHandler(final ParameterValidator unresolvedValidator, final ParameterValidator resolvedValidator) {
+    public ParticipantWriteAttributeHandler(final ParameterValidator unresolvedValidator, final ParameterValidator resolvedValidator) {
         super(unresolvedValidator, resolvedValidator);
     }
 
     @Override
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> voidHandback) {
-        ModelNode submodel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+        ModelNode subModel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+        ModelNode onAttribute = subModel.get(LogStoreConstants.JMX_ON_ATTRIBUTE);
+        String jmxName = onAttribute.asString();
+        PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        String name = address.getLastElement().getValue();
+        MBeanServer mbs = TransactionExtension.getMBeanServer(context);
 
-        //TODO: Do the job
+        try {
+            ObjectName on = new ObjectName(jmxName);
 
-        return false;
+            //  Invoke operation
+            mbs.invoke(on, "clearHeuristic", null, null);
+
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     @Override

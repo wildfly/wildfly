@@ -1,3 +1,24 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.as.txn.subsystem;
 
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -24,18 +45,25 @@ class LogStoreProviders {
 
     static final String RESOURCE_NAME = LogStoreProviders.class.getPackage().getName() + ".LocalDescriptions";
 
-    static final SimpleAttributeDefinition[] LOG_STORE_ATTRIBUTE = new SimpleAttributeDefinition[] { LogStoreConstans.LOG_STORE_TYPE };
-    static final SimpleAttributeDefinition[] TRANSACTION_ATTRIBUTE = new SimpleAttributeDefinition[] { LogStoreConstans.TRANSACTION_ID, LogStoreConstans.TRANSACTION_AGE };
-    static final SimpleAttributeDefinition[] PARTECIPANT_RW_ATTRIBUTE = new SimpleAttributeDefinition[] { LogStoreConstans.PARTECIPANT_STATUS };
-    static final SimpleAttributeDefinition[] PARTECIPANT_ATTRIBUTE = new SimpleAttributeDefinition[] { LogStoreConstans.PARTECIPANT_JNDI_NAME };
-
+    static final SimpleAttributeDefinition[] LOG_STORE_ATTRIBUTE = new SimpleAttributeDefinition[] {
+            LogStoreConstants.LOG_STORE_TYPE };
+    static final SimpleAttributeDefinition[] TRANSACTION_ATTRIBUTE = new SimpleAttributeDefinition[] {
+            LogStoreConstants.JMX_NAME, LogStoreConstants.TRANSACTION_ID,
+            LogStoreConstants.TRANSACTION_AGE,
+            LogStoreConstants.RECORD_TYPE};
+    static final SimpleAttributeDefinition[] PARTECIPANT_RW_ATTRIBUTE = new SimpleAttributeDefinition[] {
+            };
+    static final SimpleAttributeDefinition[] PARTECIPANT_ATTRIBUTE = new SimpleAttributeDefinition[] {
+            LogStoreConstants.JMX_NAME, LogStoreConstants.PARTECIPANT_JNDI_NAME,
+            LogStoreConstants.PARTECIPANT_STATUS, LogStoreConstants.RECORD_TYPE,
+            LogStoreConstants.EIS_NAME, LogStoreConstants.EIS_VERSION };
 
     public static DescriptionProvider LOG_STORE_MODEL_CHILD = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
             ModelNode node = new ModelNode();
-            node.get(DESCRIPTION).set(bundle.getString("logstore"));
+            node.get(DESCRIPTION).set(bundle.getString("log-store"));
 
             for (SimpleAttributeDefinition propertyType : LOG_STORE_ATTRIBUTE) {
                 node.get(ATTRIBUTES, propertyType.getName(), DESCRIPTION).set(bundle.getString("log-store." + propertyType.getName()));
@@ -43,7 +71,7 @@ class LogStoreProviders {
                 node.get(ATTRIBUTES, propertyType.getName(), ACCESS_TYPE, READ_ONLY).set(true);
             }
 
-            node.get(CHILDREN, LogStoreConstans.TRANSACTIONS, DESCRIPTION).set(bundle.getString("log-store.transaction"));
+            node.get(CHILDREN, LogStoreConstants.TRANSACTIONS, DESCRIPTION).set(bundle.getString("log-store.transaction"));
 
             return node;
         }
@@ -54,9 +82,11 @@ class LogStoreProviders {
                 @Override
                 public ModelNode getModelDescription(final Locale locale) {
                     final ResourceBundle bundle = getResourceBundle(locale);
+
                     final ModelNode operation = new ModelNode();
                     operation.get(OPERATION_NAME).set(ADD);
-                    operation.get(DESCRIPTION).set(bundle.getString("log_store.add"));
+                    operation.get(DESCRIPTION).set(bundle.getString("log-store.add"));
+ //             operation.get(LogStoreConstants.LOG_STORE_TYPE.getName());
 
                     for (SimpleAttributeDefinition propertyType : LOG_STORE_ATTRIBUTE) {
                         operation.get(REQUEST_PROPERTIES, propertyType.getName(), DESCRIPTION).set(
@@ -66,6 +96,7 @@ class LogStoreProviders {
                         if (propertyType.getDefaultValue() != null)
                             operation.get(REQUEST_PROPERTIES, propertyType.getName(), DEFAULT).set(propertyType.getDefaultValue().toString());
                     }
+
                     return operation;
                 }
         };
@@ -77,7 +108,7 @@ class LogStoreProviders {
                 final ResourceBundle bundle = getResourceBundle(locale);
                 final ModelNode operation = new ModelNode();
                 operation.get(OPERATION_NAME).set(REMOVE);
-                operation.get(DESCRIPTION).set(bundle.getString("log_store.remove"));
+                operation.get(DESCRIPTION).set(bundle.getString("log-store.remove"));
                 return operation;
             }
     };
@@ -88,8 +119,44 @@ class LogStoreProviders {
         public ModelNode getModelDescription(final Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
             final ModelNode operation = new ModelNode();
-            operation.get(OPERATION_NAME).set(LogStoreConstans.PROBE);
-            operation.get(DESCRIPTION).set(bundle.getString("log_store.probe"));
+            operation.get(OPERATION_NAME).set(LogStoreConstants.PROBE);
+            operation.get(DESCRIPTION).set(bundle.getString("log-store.probe"));
+            return operation;
+        }
+    };
+
+    static DescriptionProvider RECOVER_OPERATION = new DescriptionProvider() {
+
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode operation = new ModelNode();
+            operation.get(OPERATION_NAME).set(LogStoreConstants.RECOVER);
+            operation.get(DESCRIPTION).set(bundle.getString("log-store.participant.recover"));
+            return operation;
+        }
+    };
+
+    static DescriptionProvider REFRESH_OPERATION = new DescriptionProvider() {
+
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode operation = new ModelNode();
+            operation.get(OPERATION_NAME).set(LogStoreConstants.REFRESH);
+            operation.get(DESCRIPTION).set(bundle.getString("log-store.participant.refresh"));
+            return operation;
+        }
+    };
+
+    static DescriptionProvider DELETE_OPERATION = new DescriptionProvider() {
+
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode operation = new ModelNode();
+            operation.get(OPERATION_NAME).set(LogStoreConstants.DELETE);
+            operation.get(DESCRIPTION).set(bundle.getString("log-store.transaction.delete"));
             return operation;
         }
     };
@@ -105,7 +172,7 @@ class LogStoreProviders {
                 node.get(ATTRIBUTES, propertyType.getName(), TYPE).set(propertyType.getType());
                 node.get(ATTRIBUTES, propertyType.getName(), ACCESS_TYPE, READ_ONLY).set(true);
             }
-            node.get(CHILDREN, LogStoreConstans.PARTECIPANTS, DESCRIPTION).set(bundle.getString("log-store.partecipant"));
+            node.get(CHILDREN, LogStoreConstants.PARTICIPANTS, DESCRIPTION).set(bundle.getString("log-store.participant"));
 
             return node;
         }
@@ -149,14 +216,14 @@ class LogStoreProviders {
             public ModelNode getModelDescription(Locale locale) {
                 final ResourceBundle bundle = getResourceBundle(locale);
                 ModelNode node = new ModelNode();
-                node.get(DESCRIPTION).set(bundle.getString("log-store.partecipant"));
+                node.get(DESCRIPTION).set(bundle.getString("log-store.participant"));
                 for (SimpleAttributeDefinition propertyType : PARTECIPANT_ATTRIBUTE) {
-                    node.get(ATTRIBUTES, propertyType.getName(), DESCRIPTION).set(bundle.getString("log-store.partecipant." + propertyType.getName()));
+                    node.get(ATTRIBUTES, propertyType.getName(), DESCRIPTION).set(bundle.getString("log-store.participant." + propertyType.getName()));
                     node.get(ATTRIBUTES, propertyType.getName(), TYPE).set(propertyType.getType());
                     node.get(ATTRIBUTES, propertyType.getName(), ACCESS_TYPE, READ_ONLY).set(true);
                 }
                 for (SimpleAttributeDefinition propertyType : PARTECIPANT_RW_ATTRIBUTE) {
-                    node.get(ATTRIBUTES, propertyType.getName(), DESCRIPTION).set(bundle.getString("log-store.partecipant." + propertyType.getName()));
+                    node.get(ATTRIBUTES, propertyType.getName(), DESCRIPTION).set(bundle.getString("log-store.participant." + propertyType.getName()));
                     node.get(ATTRIBUTES, propertyType.getName(), TYPE).set(propertyType.getType());
                     node.get(ATTRIBUTES, propertyType.getName(), REQUIRED).set(!propertyType.isAllowNull());
                 }
@@ -171,10 +238,10 @@ class LogStoreProviders {
                 final ResourceBundle bundle = getResourceBundle(locale);
                 final ModelNode operation = new ModelNode();
                 operation.get(OPERATION_NAME).set(ADD);
-                operation.get(DESCRIPTION).set(bundle.getString("log-store.partecipant.add"));
+                operation.get(DESCRIPTION).set(bundle.getString("log-store.participant.add"));
                 for (SimpleAttributeDefinition propertyType : PARTECIPANT_ATTRIBUTE) {
                     operation.get(REQUEST_PROPERTIES, propertyType.getName(), DESCRIPTION).set(
-                            bundle.getString("log-store.partecipant." + propertyType.getName()));
+                            bundle.getString("log-store.participant." + propertyType.getName()));
                     operation.get(REQUEST_PROPERTIES, propertyType.getName(), TYPE).set(propertyType.getType());
                     operation.get(REQUEST_PROPERTIES, propertyType.getName(), REQUIRED).set(!propertyType.isAllowNull());
                     if (propertyType.getDefaultValue() != null)
@@ -182,7 +249,7 @@ class LogStoreProviders {
                 }
                 for (SimpleAttributeDefinition propertyType : PARTECIPANT_RW_ATTRIBUTE) {
                     operation.get(REQUEST_PROPERTIES, propertyType.getName(), DESCRIPTION).set(
-                            bundle.getString("log-store.partecipant." + propertyType.getName()));
+                            bundle.getString("log-store.participant." + propertyType.getName()));
                     operation.get(REQUEST_PROPERTIES, propertyType.getName(), TYPE).set(propertyType.getType());
                     operation.get(REQUEST_PROPERTIES, propertyType.getName(), REQUIRED).set(!propertyType.isAllowNull());
                     if (propertyType.getDefaultValue() != null)
@@ -199,7 +266,7 @@ class LogStoreProviders {
                 final ResourceBundle bundle = getResourceBundle(locale);
                 final ModelNode operation = new ModelNode();
                 operation.get(OPERATION_NAME).set(REMOVE);
-                operation.get(DESCRIPTION).set(bundle.getString("log-store.partecipant.remove"));
+                operation.get(DESCRIPTION).set(bundle.getString("log-store.participant.remove"));
                 return operation;
             }
         };
