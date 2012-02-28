@@ -101,6 +101,7 @@
                                     <!-- Tests to execute. -->
                                     <includes>
                                         <include>org/jboss/as/test/clustering/single/web/*TestCase.java</include>
+                                        <include>org/jboss/as/test/clustering/single/ejb/*TestCase.java</include>
                                     </includes>
 
                                     <!-- Parameters to test cases. -->
