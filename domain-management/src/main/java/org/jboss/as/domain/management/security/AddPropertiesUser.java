@@ -22,11 +22,14 @@
 
 package org.jboss.as.domain.management.security;
 
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+
 import java.io.BufferedWriter;
 import java.io.Closeable;
 import java.io.Console;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
@@ -40,8 +43,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.jboss.sasl.util.UsernamePasswordHashUtil;
-
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 /**
  * A command line utility to add new users to the mgmt-users.properties files.
@@ -58,6 +59,9 @@ public class AddPropertiesUser {
     public static final String APPLICATION_USERS_PROPERTIES = "application-users.properties";
     public static final String APPLICATION_ROLES_PROPERTIES = "application-roles.properties";
     public static final String APPLICATION_USERS_SWITCH = "-a";
+
+    private static final char NEW_LINE_CHAR = '\n';
+    private static final char CARRIAGE_RETURN_CHAR = '\r';
 
     private static final String NEW_LINE = "\n";
     private static final String SPACE = " ";
@@ -576,13 +580,45 @@ public class AddPropertiesUser {
             return null;
         }
 
+        private boolean additionalNewLineNeeded(final File file) throws IOException {
+            FileReader fr = null;
+
+            try {
+                fr = new FileReader(file);
+                char lastChar = 0x00;
+                char[] temp = new char[1024];
+
+                int read = -1;
+                while ((read = fr.read(temp)) > 0) {
+                    lastChar = temp[read - 1];
+                }
+                /*
+                 * It is possible that the final line will also have some whitespace - in that case we want
+                 * a new line otherwise the line we add could become indented.
+                 *
+                 * Depending on where the file was last written the character sequence for a new line can vary,
+                 * if we see either of the characters used for a new line as the last character of the last line
+                 * we assume a new line is already present in the file.
+                 */
+                return lastChar != NEW_LINE_CHAR && lastChar != CARRIAGE_RETURN_CHAR;
+            } finally {
+                safeClose(fr);
+            }
+        }
+
         private void append(final String entry, final File toFile) throws IOException {
             FileWriter fw = null;
             BufferedWriter bw = null;
 
+            boolean additionalNewLineNeeded = additionalNewLineNeeded(toFile);
+
             try {
                 fw = new FileWriter(toFile, true);
                 bw = new BufferedWriter(fw);
+
+                if (additionalNewLineNeeded) {
+                    bw.newLine();
+                }
 
                 bw.append(entry);
                 bw.newLine();
@@ -590,7 +626,6 @@ public class AddPropertiesUser {
                 safeClose(bw);
                 safeClose(fw);
             }
-
         }
     }
 
