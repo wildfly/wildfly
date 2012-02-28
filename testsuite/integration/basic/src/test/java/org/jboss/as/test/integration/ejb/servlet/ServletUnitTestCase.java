@@ -22,12 +22,15 @@
 
 package org.jboss.as.test.integration.ejb.servlet;
 
+import java.net.URL;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -65,6 +68,10 @@ public class ServletUnitTestCase {
         return jar;
     }
 
+    @ArquillianResource
+    @OperateOnDeployment("servlet")
+    private URL ejbServletUrl;
+
     @Deployment(name = "servlet", order = 3)
     public static Archive<?> deployServlet() {
         WebArchive war = getServlet("ejb3-servlet.war");
@@ -75,6 +82,10 @@ public class ServletUnitTestCase {
         log.info(war.toString(true));
         return war;
     }
+
+    @ArquillianResource
+    @OperateOnDeployment("ear")
+    private URL servletUrl;
 
     @Deployment(name = "ear", order = 4)
     public static Archive<?> deployEar() {
@@ -128,13 +139,13 @@ public class ServletUnitTestCase {
 
     @Test
     public void testEJBServletEar() throws Exception {
-        String res = HttpRequest.get("http://localhost:8080/servlet/EJBServlet", 2, TimeUnit.SECONDS);
+        String res = HttpRequest.get( servletUrl.toExternalForm() + "servlet/EJBServlet", 2, TimeUnit.SECONDS);
         Assert.assertEquals("EJBServlet OK", res);
     }
 
     @Test
     public void testEJBServlet() throws Exception {
-        String res = HttpRequest.get("http://localhost:8080/ejb3-servlet/EJBServlet", 2, TimeUnit.SECONDS);
+        String res = HttpRequest.get( ejbServletUrl.toExternalForm() + "/EJBServlet", 2, TimeUnit.SECONDS);
         Assert.assertEquals("EJBServlet OK", res);
     }
 }

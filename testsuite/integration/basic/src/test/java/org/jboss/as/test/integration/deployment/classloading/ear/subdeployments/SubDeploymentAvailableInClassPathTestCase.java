@@ -32,6 +32,8 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ContainerResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.deployment.classloading.ear.subdeployments.ejb.EJBBusinessInterface;
 import org.jboss.as.test.integration.deployment.classloading.ear.subdeployments.ejb.SimpleSLSB;
 import org.jboss.as.test.integration.deployment.classloading.ear.subdeployments.servlet.EjbInvokingServlet;
@@ -58,13 +60,15 @@ public class SubDeploymentAvailableInClassPathTestCase {
 
     private static final Logger logger = Logger.getLogger(SubDeploymentAvailableInClassPathTestCase.class);
 
-    private static final String BASE_URL = "http://localhost:8080/";
-
     private static final String WEB_APP_CONTEXT_ONE = "war-access-to-ejb";
 
     private static final String WEB_APP_CONTEXT_TWO = "war-access-to-war";
 
     private static final String OTHER_WEB_APP_CONTEXT = "other-war";
+    public static final String PORT = ":8080/";
+
+    @ContainerResource
+    private ManagementClient managementClient;
 
     @Deployment(name = "ear-with-single-war", testable = false)
     public static EnterpriseArchive createEar() {
@@ -130,7 +134,7 @@ public class SubDeploymentAvailableInClassPathTestCase {
         final HttpClient httpClient = new DefaultHttpClient();
         final String message = "JBossAS7";
 
-        final String requestURL = BASE_URL + WEB_APP_CONTEXT_ONE + HelloWorldServlet.URL_PATTERN + "?" + HelloWorldServlet.PARAMETER_NAME + "=" + message;
+        final String requestURL = "http://" + managementClient.getMgmtAddress() + PORT + WEB_APP_CONTEXT_ONE + HelloWorldServlet.URL_PATTERN + "?" + HelloWorldServlet.PARAMETER_NAME + "=" + message;
         final HttpGet request = new HttpGet(requestURL);
         final HttpResponse response = httpClient.execute(request);
         final HttpEntity entity = response.getEntity();
@@ -158,7 +162,7 @@ public class SubDeploymentAvailableInClassPathTestCase {
     public void testServletClassNotAvailableToEjbInEar() throws Exception {
         final HttpClient httpClient = new DefaultHttpClient();
         final String classInWar = HelloWorldServlet.class.getName();
-        final String requestURL = BASE_URL + WEB_APP_CONTEXT_ONE + EjbInvokingServlet.URL_PATTERN + "?" + EjbInvokingServlet.CLASS_IN_WAR_PARAMETER + "=" + classInWar;
+        final String requestURL = "http://" + managementClient.getMgmtAddress() + PORT  + WEB_APP_CONTEXT_ONE + EjbInvokingServlet.URL_PATTERN + "?" + EjbInvokingServlet.CLASS_IN_WAR_PARAMETER + "=" + classInWar;
         final HttpGet request = new HttpGet(requestURL);
         final HttpResponse response = httpClient.execute(request);
         final HttpEntity entity = response.getEntity();
@@ -186,7 +190,7 @@ public class SubDeploymentAvailableInClassPathTestCase {
     public void testWarsDontSeeEachOtherInEar() throws Exception {
         final HttpClient httpClient = new DefaultHttpClient();
         final String classInOtherWar = HelloWorldServlet.class.getName();
-        final String requestURL = BASE_URL + OTHER_WEB_APP_CONTEXT + ServletInOtherWar.URL_PATTERN +
+        final String requestURL = "http://" + managementClient.getMgmtAddress() + PORT  + OTHER_WEB_APP_CONTEXT + ServletInOtherWar.URL_PATTERN +
                 "?" + ServletInOtherWar.CLASS_IN_OTHER_WAR_PARAMETER + "=" + classInOtherWar;
         final HttpGet request = new HttpGet(requestURL);
         final HttpResponse response = httpClient.execute(request);

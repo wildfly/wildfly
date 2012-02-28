@@ -336,7 +336,7 @@ public class AuthenticationTestCase {
 
     @Test
     public void testICIR_TwoBeans_ViaServlet() throws Exception {
-        String result = HttpRequest.get("http://" + managementClient.getMgmtAddress() + ":8080/ejb3security/whoAmI?method=doubleDoIHaveRole&role= Users",
+        String result = HttpRequest.get("http://" + managementClient.getMgmtAddress() + ":8080/ejb3security/whoAmI?method=doubleDoIHaveRole&role=Users",
                 "user1", "password1", 10, SECONDS);
         assertEquals("true,true", result);
         result = HttpRequest.get("http://" + managementClient.getMgmtAddress() + ":8080/ejb3security/whoAmI?method=doubleDoIHaveRole&role=Role1", "user1",

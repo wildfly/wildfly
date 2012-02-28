@@ -21,17 +21,20 @@
  */
 package org.jboss.as.test.integration.ee.injection.resource.ejblocalref;
 
+import java.net.URL;
+import java.util.concurrent.TimeUnit;
+
+import javax.naming.InitialContext;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.InitialContext;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 
@@ -42,6 +45,10 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Arquillian.class)
 public class EjbLocalRefInjectionTestCase {
+
+    @ArquillianResource
+    private URL url;
+
     @Deployment
     public static WebArchive deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "war-example.war");
@@ -51,8 +58,8 @@ public class EjbLocalRefInjectionTestCase {
         return war;
     }
 
-    private static String performCall(String urlPattern) throws Exception {
-        return HttpRequest.get("http://localhost:8080/war-example/" + urlPattern, 5, TimeUnit.SECONDS);
+    private String performCall(String urlPattern) throws Exception {
+        return HttpRequest.get(url.toExternalForm() + urlPattern, 5, TimeUnit.SECONDS);
     }
 
     @Test
@@ -69,7 +76,7 @@ public class EjbLocalRefInjectionTestCase {
 
     @Test
     public void testNoInjectionPoint() throws Exception {
-        Hello bean = (Hello)new InitialContext().lookup("java:comp/env/noInjection");
+        Hello bean = (Hello) new InitialContext().lookup("java:comp/env/noInjection");
         assertEquals("Simple Hello", bean.sayHello());
     }
 
@@ -87,7 +94,7 @@ public class EjbLocalRefInjectionTestCase {
                 "        <ejb-ref-name>simple</ejb-ref-name>\n" +
                 "        <lookup-name>java:module/SimpleSLSB</lookup-name>\n" +
                 "        <injection-target>" +
-                "           <injection-target-class>"+EjbLocalRefInjectionServlet.class.getName()+"</injection-target-class>"+
+                "           <injection-target-class>" + EjbLocalRefInjectionServlet.class.getName() + "</injection-target-class>" +
                 "           <injection-target-name>simple</injection-target-name>" +
                 "        </injection-target>\n" +
                 "    </ejb-local-ref>\n" +
@@ -100,7 +107,7 @@ public class EjbLocalRefInjectionTestCase {
                 "        <ejb-ref-name>named</ejb-ref-name>\n" +
                 "        <ejb-link>namedBean</ejb-link>\n" +
                 "        <injection-target>" +
-                "           <injection-target-class>"+EjbLocalRefInjectionServlet.class.getName()+"</injection-target-class>"+
+                "           <injection-target-class>" + EjbLocalRefInjectionServlet.class.getName() + "</injection-target-class>" +
                 "           <injection-target-name>named</injection-target-name>" +
                 "        </injection-target>\n" +
                 "    </ejb-local-ref>\n" +

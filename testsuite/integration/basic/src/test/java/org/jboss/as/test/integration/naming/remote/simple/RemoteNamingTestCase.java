@@ -30,11 +30,12 @@ import javax.naming.InitialContext;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ContainerResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.shared.integration.ejb.security.CallbackHandler;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -46,6 +47,10 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class RemoteNamingTestCase {
+
+    @ContainerResource
+    private ManagementClient managementClient;
+
     @Deployment
     public static Archive<?> deploy() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "test.jar");
@@ -55,30 +60,27 @@ public class RemoteNamingTestCase {
         return jar;
     }
 
-    private static Context remoteContext;
-
-    @BeforeClass
-    public static void setupRemoteContext() throws Exception {
+    public  Context getRemoteContext() throws Exception {
         final Properties env = new Properties();
         env.put(Context.INITIAL_CONTEXT_FACTORY, org.jboss.naming.remote.client.InitialContextFactory.class.getName());
-        env.put(Context.PROVIDER_URL, "remote://localhost:4447");
+        env.put(Context.PROVIDER_URL, managementClient.getRemoteEjbURL().toString());
         env.put("jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "false");
         env.put("jboss.naming.client.security.callback.handler.class", CallbackHandler.class.getName());
-        remoteContext = new InitialContext(env);
+        return new InitialContext(env);
     }
 
     @Test
     public void testRemoteLookup() throws Exception {
-        assertEquals("TestValue", remoteContext.lookup("test"));
+        assertEquals("TestValue", getRemoteContext().lookup("test"));
     }
 
     @Test
     public void testRemoteContextLookup() throws Exception {
-        assertEquals("TestValue", ((Context) remoteContext.lookup("")).lookup("test"));
+        assertEquals("TestValue", ((Context) getRemoteContext().lookup("")).lookup("test"));
     }
 
     @Test
     public void testNestedLookup() throws Exception {
-        assertEquals("TestValue", ((Context)remoteContext.lookup("context")).lookup("test"));
+        assertEquals("TestValue", ((Context)getRemoteContext().lookup("context")).lookup("test"));
     }
 }

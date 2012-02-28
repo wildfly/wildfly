@@ -309,8 +309,10 @@ public class CoreQueueManagementTestCase {
     @Test
     public void testListConsumers() throws Exception {
 
+        HashMap<String, Object> map = new HashMap<String, Object>();
+        map.put("host", TestSuiteEnvironment.getServerAddress());
         TransportConfiguration transportConfiguration =
-                new TransportConfiguration(NettyConnectorFactory.class.getName());
+                new TransportConfiguration(NettyConnectorFactory.class.getName(), map);
         ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(transportConfiguration);
         ClientSessionFactory factory = locator.createSessionFactory();
         consumerSession = factory.createSession("guest", "guest", false, false, false, false, 1);

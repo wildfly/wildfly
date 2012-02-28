@@ -21,11 +21,13 @@
  */
 package org.jboss.as.test.integration.jaxrs.packaging.ear;
 
+import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -71,9 +73,11 @@ public class EarApplicationPathIntegrationTestCase {
         return ear;
     }
 
+    @ArquillianResource
+    private URL url;
 
-    private static String performCall(String urlPattern) throws Exception {
-        return HttpRequest.get("http://localhost:8080/jaxrsapp/" + urlPattern, 5, TimeUnit.SECONDS);
+    private String performCall(String urlPattern) throws Exception {
+        return HttpRequest.get(url + urlPattern, 10, TimeUnit.SECONDS);
     }
 
     @Test

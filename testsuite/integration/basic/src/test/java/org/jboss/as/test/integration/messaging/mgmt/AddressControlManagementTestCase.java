@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.messaging.mgmt;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 import junit.framework.Assert;
 import org.hornetq.api.core.TransportConfiguration;
@@ -34,6 +35,7 @@ import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.common.JMSAdminOperations;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -61,8 +63,10 @@ public class AddressControlManagementTestCase {
 
         count++;
 
+        HashMap<String, Object> map = new HashMap<String, Object>();
+        map.put("host", TestSuiteEnvironment.getServerAddress());
         TransportConfiguration transportConfiguration =
-                     new TransportConfiguration(NettyConnectorFactory.class.getName());
+                new TransportConfiguration(NettyConnectorFactory.class.getName(), map);
         ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(transportConfiguration);
         ClientSessionFactory factory =  locator.createSessionFactory();
         session = factory.createSession("guest", "guest", false, true, true, false, 1);
