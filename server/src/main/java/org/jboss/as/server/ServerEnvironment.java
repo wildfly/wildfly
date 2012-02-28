@@ -373,7 +373,7 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
 
         tmp = getFileFromProperty(CONTROLLER_TEMP_DIR, props);
         if (tmp == null) {
-            tmp = serverTempDir;
+            tmp = new File(serverBaseDir, "tmp");
         }
         controllerTempDir = tmp;
 
