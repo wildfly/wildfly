@@ -21,6 +21,8 @@
  */
 package org.jboss.as.domain.http.server;
 
+import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
@@ -148,27 +150,30 @@ public class ManagementHttpServer {
         if (secureBindAddress != null) {
             secureHttpServer = HttpsServer.create(secureBindAddress, backlog, configuration);
             final SSLContext context = securityRealm.getSSLContext();
-            secureHttpServer.setHttpsConfigurator(new HttpsConfigurator(context) {
+            if (context != null) {
+                secureHttpServer.setHttpsConfigurator(new HttpsConfigurator(context) {
 
-                @Override
-                public void configure(HttpsParameters params) {
-                    SSLParameters sslparams = context.getDefaultSSLParameters();
+                    @Override
+                    public void configure(HttpsParameters params) {
+                        SSLParameters sslparams = context.getDefaultSSLParameters();
 
-                    switch (certAuthMode) {
-                        case NEED:
-                            sslparams.setNeedClientAuth(true);
-                            break;
-                        case WANT:
-                            sslparams.setWantClientAuth(true);
-                            break;
+                        switch (certAuthMode) {
+                            case NEED:
+                                sslparams.setNeedClientAuth(true);
+                                break;
+                            case WANT:
+                                sslparams.setWantClientAuth(true);
+                                break;
+                        }
+
+                        params.setSSLParameters(sslparams);
+
                     }
-
-                    params.setSSLParameters(sslparams);
-
-                }
-            });
-
-            secureHttpServer.setExecutor(executor);
+                });
+                secureHttpServer.setExecutor(executor);
+            } else {
+                ROOT_LOGGER.sslConfigurationNotFound();
+            }
         }
 
         ManagementHttpServer managementHttpServer = new ManagementHttpServer(httpServer, secureHttpServer, securityRealm);
