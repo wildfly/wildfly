@@ -112,7 +112,7 @@ public class RaServicesFactory {
                                         subRegistration = overrideRegistration.registerSubModel(pe, new SubSystemExtensionDescriptionProvider(ResourceAdaptersSubsystemProviders.RESOURCE_NAME, "statistics"));
                                     }
                                     if (subRegistration.getSubModel(PathAddress.pathAddress(peCD)) == null) {
-                                        ManagementResourceRegistration cdSubRegistration = subRegistration.registerSubModel(pe, statsResourceDescriptionProvider);
+                                        ManagementResourceRegistration cdSubRegistration = subRegistration.registerSubModel(peCD, statsResourceDescriptionProvider);
                                         for (String statName : poolStats.getNames()) {
                                             cdSubRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
                                         }
