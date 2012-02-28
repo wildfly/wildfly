@@ -21,7 +21,6 @@
  */
 package org.jboss.as.test.smoke.mgmt.servermodule;
 
-import org.jboss.as.test.shared.TestUtils;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -41,10 +40,9 @@ import javax.management.ObjectName;
 import javax.management.remote.JMXConnectorFactory;
 
 import junit.framework.Assert;
-import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
@@ -54,8 +52,6 @@ import org.jboss.as.test.smoke.mgmt.servermodule.archive.sar.Simple;
 import org.jboss.as.test.smoke.modular.utils.PollingUtils;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ExplodedExporter;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -78,13 +74,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 @RunAsClient
 public class ServerInModuleDeploymentTestCase {
 
-    //need for ArquillianResource injection to work correctly
-    @Deployment
-    public static Archive<?> deploy() {
-        return ShrinkWrap.create(JavaArchive.class);
-    }
-
-    @ArquillianResource
+    @ContainerResource
     private ManagementClient managementClient;
 
     @Test
@@ -178,8 +168,7 @@ public class ServerInModuleDeploymentTestCase {
     @Test
     public void testFilesystemScannerRegistration() throws Exception {
         final File deployDir = createDeploymentDir("dummy");
-
-        ModelControllerClient client = TestUtils.getModelControllerClient();
+        final ModelControllerClient client = managementClient.getControllerClient();
         final String scannerName = "dummy";
         addDeploymentScanner(deployDir, client, scannerName, false);
         removeDeploymentScanner(client, scannerName);

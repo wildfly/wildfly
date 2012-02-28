@@ -22,7 +22,6 @@
 
 package org.jboss.as.test.integration.web.security.cert;
 
-import org.jboss.as.test.shared.TestUtils;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -88,7 +87,8 @@ public class WebSecurityCERTTestCase {
     public static WebArchive deployment() {
         // FIXME hack to get things prepared before the deployment happens
         try {
-            final ModelControllerClient client = TestUtils.getModelControllerClient();
+            //TODO: convert this to a ServerSetupTask when fixing the test
+            final ModelControllerClient client = null;
             // create required security domains
             createSecurityDomains(client);
             // create the test connector
@@ -112,7 +112,7 @@ public class WebSecurityCERTTestCase {
 
     @AfterClass
     public static void after() throws Exception {
-        final ModelControllerClient client = TestUtils.getModelControllerClient();
+        final ModelControllerClient client = null;
         // and remove the connector again
         removeTestConnector(client);
         // remove test security domains

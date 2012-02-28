@@ -27,6 +27,7 @@ import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.smoke.modular.utils.PollingUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -42,6 +43,9 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class WarTestCase {
+
+    @ArquillianResource
+    private URL url;
 
     @Deployment(testable = false)
     public static Archive<?> getDeployment() {
@@ -63,8 +67,8 @@ public class WarTestCase {
         Assert.assertEquals("Simple Legacy Servlet called with input=Hello", s);
     }
 
-    private static String performCall(String urlPattern, String param) throws Exception {
-        URL url = new URL("http://localhost:8080/war-example/" + urlPattern + "?input=" + param);
+    private String performCall(String urlPattern, String param) throws Exception {
+        URL url = new URL(this.url.toExternalForm() + urlPattern + "?input=" + param);
         PollingUtils.UrlConnectionTask task = new PollingUtils.UrlConnectionTask(url);
         PollingUtils.retryWithTimeout(10000, task);
         return task.getResponse();

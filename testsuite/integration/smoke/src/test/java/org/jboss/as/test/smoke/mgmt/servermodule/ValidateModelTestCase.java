@@ -28,6 +28,8 @@ import java.util.Set;
 import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ContainerResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.operations.common.ValidateAddressOperationHandler;
 import org.jboss.as.platform.mbean.PlatformMBeanConstants;
@@ -72,9 +74,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 @RunAsClient
 public class ValidateModelTestCase {
 
-    private static String HOST = "localhost";
-    private static int PORT = 9999;
-
+    @ContainerResource
+    private ManagementClient managementClient;
 
     @Test
     public void testValidateModel() throws Exception {
@@ -149,8 +150,8 @@ public class ValidateModelTestCase {
         }
     }
 
-    protected static ModelNode getDescription() throws Exception {
-        ModelControllerClient client = ModelControllerClient.Factory.create(HOST, PORT, getCallbackHandler());
+    protected ModelNode getDescription() throws Exception {
+        ModelControllerClient client = ModelControllerClient.Factory.create(managementClient.getMgmtAddress(), managementClient.getMgmtPort(), getCallbackHandler());
         try {
             ModelNode op = new ModelNode();
             op.get(OP).set(READ_RESOURCE_DESCRIPTION_OPERATION);
