@@ -144,19 +144,29 @@ public class Utils {
       }
    }
 
-   // TODO: remove
-   public static void quicklog(String message) {
-      logToFile(message, "/tmp/as7demo/log");
-   }
+   private static final long STOP_DELAY_DEFAULT = 0;
 
-   // TODO: remove
-   public static void stop() {
-      long delay = 1000000;
-      long time = System.currentTimeMillis();
-      while (System.currentTimeMillis() < time + delay) {
+   /**
+    *  stops execution of the program indefinitely
+    *  useful in testsuite debugging
+    */
+   public static void stop(){
+      stop(STOP_DELAY_DEFAULT);
+   }
+   
+   /**
+   stop test execution for a given time interval
+   useful for debugging  
+   @param delay interval (milliseconds), if delay<=0, interval is considered to be infinite (Long.MAX_VALUE)
+    */
+   public static void stop(long delay) {
+      long currentTime = System.currentTimeMillis();
+      long remainingTime = 0<delay ? currentTime + delay - System.currentTimeMillis() : Long.MAX_VALUE;
+      while (remainingTime > 0) {
          try {
-            Thread.sleep(time + delay - System.currentTimeMillis());
+            Thread.sleep(remainingTime);
          } catch (InterruptedException ex) {
+            remainingTime = currentTime + delay - System.currentTimeMillis();
             continue;
          }
       }
