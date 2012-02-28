@@ -19,6 +19,7 @@ package org.jboss.as.arquillian.container;
 import org.jboss.arquillian.container.spi.client.container.DeploymentExceptionTransformer;
 import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
 import org.jboss.arquillian.core.spi.LoadableExtension;
+import org.jboss.arquillian.test.spi.TestEnricher;
 import org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider;
 
 /**
@@ -31,9 +32,12 @@ public class CommonContainerExtension implements LoadableExtension {
 
     @Override
     public void register(final ExtensionBuilder builder) {
+
         builder.service(ApplicationArchiveProcessor.class, OSGiApplicationArchiveProcessor.class);
         builder.service(DeploymentExceptionTransformer.class, ExceptionTransformer.class);
         builder.service(ResourceProvider.class, ManagementClientProvider.class);
+        builder.service(TestEnricher.class, ContainerResourceTestEnricher.class);
+
         builder.observer(ServerSetupObserver.class);
     }
 }
