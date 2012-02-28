@@ -82,7 +82,14 @@ public class HttpManagementService implements Service<HttpManagement> {
 
         @Override
         public int getHttpPort() {
-            return basicManagedBinding == null ? -1 : basicManagedBinding.getBindAddress().getPort();
+            if (basicManagedBinding != null) {
+                return basicManagedBinding.getBindAddress().getPort();
+            }
+            Integer port = portValue.getOptionalValue();
+            if (port != null) {
+                return port;
+            }
+            return -1;
         }
 
         @Override
@@ -99,7 +106,14 @@ public class HttpManagementService implements Service<HttpManagement> {
 
         @Override
         public int getHttpsPort() {
-            return secureManagedBinding == null ? -1 : secureManagedBinding.getBindAddress().getPort();
+            if (secureManagedBinding != null) {
+                return secureManagedBinding.getBindAddress().getPort();
+            }
+            Integer securePort = securePortValue.getOptionalValue();
+            if (securePort != null) {
+                return securePort;
+            }
+            return -1;
         }
 
         @Override
