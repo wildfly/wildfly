@@ -258,11 +258,15 @@
                         <include>target/surefire-reports/**/*-output.txt</include>
                         <include>target/surefire-reports/**/*.txt</include>
                     </includes>
-                    <token>^(.)\n(?=.\n)</token>
-                    <value>$1</value>
+                    <replacements>
+                        <!-- Fix one-letter-per-line. -->
+                        <replacement> <token>^(.)\n(?!..+\n)</token> <value>$1</value> </replacement>
+                        <!-- Fix double newlines. -->
+                        <replacement> <token>\n(?=\n)</token> <value></value> </replacement>
+                    </replacements>
+                   
                     <regexFlags>
                         <regexFlag>MULTILINE</regexFlag>
-                        <regexFlag>UNIX_LINES</regexFlag>
                     </regexFlags>
                     <encoding>UTF-8</encoding>
                 </configuration>
