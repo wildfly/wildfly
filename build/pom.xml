@@ -1209,26 +1209,6 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.osgi.resolver</groupId>
-                    <artifactId>jbosgi-resolver-api</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.jboss.osgi.resolver</groupId>
-                    <artifactId>jbosgi-resolver-felix</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.jboss.osgi.resolver</groupId>
-                    <artifactId>jbosgi-resolver-metadata</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.jboss.osgi.resolver</groupId>
-                    <artifactId>jbosgi-resolver-spi</artifactId>
-                </dependency>
-
-                <dependency>
                     <groupId>org.jboss.osgi.spi</groupId>
                     <artifactId>jbosgi-spi</artifactId>
                 </dependency>
