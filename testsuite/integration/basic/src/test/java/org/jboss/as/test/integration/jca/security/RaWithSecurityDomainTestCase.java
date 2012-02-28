@@ -25,6 +25,9 @@ package org.jboss.as.test.integration.jca.security;
 import static org.jboss.as.test.integration.ejb.security.SecurityTest.*;
 import static org.junit.Assert.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1;
 import javax.annotation.Resource;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -34,7 +37,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.junit.AfterClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -45,13 +47,16 @@ import org.junit.runner.RunWith;
  * 
  */
 @RunWith(Arquillian.class)
-@Ignore("AS7-3824")
 public class RaWithSecurityDomainTestCase {
 
     @Deployment
     public static Archive<?> deploymentSingleton() {
         try {
-            createSecurityDomain("RaRealm");
+            Map<String,String> moduleOptions = new HashMap<String,String>();
+            moduleOptions.put("userName", "sa");
+            moduleOptions.put("password", "sa");
+            moduleOptions.put("principal", "sa");
+            createSecurityDomain("RaRealm","ConfiguredIdentity",true,moduleOptions);
         } catch (Exception e) {
             e.printStackTrace();
         }
