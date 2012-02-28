@@ -407,7 +407,6 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
      * @throws Exception
      */
     @Test
-    @Ignore("AS7-3173")
     public void disableAndReEnableXaDs() throws Exception {
         final String dsName = "XaDsNameDisEn";
         final String jndiDsName = "XaJndiDsNameDisEn";
