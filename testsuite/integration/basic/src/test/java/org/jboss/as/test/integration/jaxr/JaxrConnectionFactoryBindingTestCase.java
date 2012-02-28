@@ -59,15 +59,15 @@ public class JaxrConnectionFactoryBindingTestCase {
 
     @Test
     public void testConnectionFactoryLookup() throws Exception {
-        String reqpath =  url.toExternalForm() + "?method=lookup";
-        String response =HttpRequest.get(reqpath, 10, TimeUnit.SECONDS);
-        Assert.assertEquals("org.apache.ws.scout.registry.ConnectionFactoryImpl", response);
+        String reqpath = url.toExternalForm() + "?method=lookup";
+        String response = HttpRequest.get(reqpath, 10, TimeUnit.SECONDS);
+        Assert.assertEquals("org.apache.ws.scout.registry.ConnectionFactoryImpl", response.trim());
     }
 
     @Test
     public void testConnectionFactoryNewInstance() throws Exception {
         String reqpath = url.toExternalForm() + "?method=new";
         String response = HttpRequest.get(reqpath, 10, TimeUnit.SECONDS);
-        Assert.assertEquals("org.apache.ws.scout.registry.ConnectionFactoryImpl", response);
+        Assert.assertEquals("org.apache.ws.scout.registry.ConnectionFactoryImpl", response.trim());
     }
 }

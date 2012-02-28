@@ -21,9 +21,13 @@
  */
 package org.jboss.as.test.integration.jaxrs.subresource;
 
+import java.net.URL;
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.jaxrs.packaging.war.WebXml;
 import org.jboss.shrinkwrap.api.Archive;
@@ -32,8 +36,6 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 
@@ -62,10 +64,17 @@ public class SubResourceTestCase {
         return war;
     }
 
+    @ArquillianResource
+    private URL url;
+
+    private String performCall(String urlPattern) throws Exception {
+        return HttpRequest.get(url + urlPattern, 10, TimeUnit.SECONDS);
+    }
+
     @Test
     public void testSubResource() throws Exception {
-        assertEquals("Jozef", HttpRequest.get("http://localhost:8080/subresource/api/person/Jozef", 10, TimeUnit.SECONDS));
-        assertEquals("Jozef's address is unknown.", HttpRequest.get("http://localhost:8080/subresource/api/person/Jozef/address", 10, TimeUnit.SECONDS));
+        assertEquals("Jozef", performCall("api/person/Jozef"));
+        assertEquals("Jozef's address is unknown.", performCall("subresource/api/person/Jozef/address"));
     }
 
 

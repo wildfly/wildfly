@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.jaxb.unit;
 
+import java.net.URL;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -32,6 +34,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.jaxb.JAXBUsageServlet;
 import org.jboss.as.test.integration.jaxb.bindings.Items;
 import org.jboss.as.test.integration.jaxb.bindings.ObjectFactory;
@@ -55,9 +58,10 @@ public class JAXBUsageTestCase {
 
     private static final String WEB_APP_CONTEXT = "jaxb-webapp";
 
-    private static final String BASE_URL = "http://localhost:8080/";
-
     private static final Logger logger = Logger.getLogger(JAXBUsageTestCase.class);
+
+    @ArquillianResource
+    private URL url;
 
     /**
      * Create a .ear, containing a web application (without any JSF constructs) and also the xerces jar in the .ear/lib
@@ -72,13 +76,14 @@ public class JAXBUsageTestCase {
         return war;
     }
 
+
     @OperateOnDeployment("app")
     @Test
     public void testJAXBServlet() throws Exception {
         final HttpClient httpClient = new DefaultHttpClient();
         final String xml = "dummy.xml";
 
-        final String requestURL = BASE_URL + WEB_APP_CONTEXT + JAXBUsageServlet.URL_PATTERN;
+        final String requestURL = url.toExternalForm() + JAXBUsageServlet.URL_PATTERN;
         final HttpGet request = new HttpGet(requestURL);
         final HttpResponse response = httpClient.execute(request);
         int statusCode = response.getStatusLine().getStatusCode();

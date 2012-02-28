@@ -110,7 +110,7 @@ public class WebSecurityFORMTestCase extends WebSecurityPasswordBasedBase {
                     System.out.println("- " + cookies.get(i).toString());
                 }
             }
-            req = url.toExternalForm() + "secured/j_security_check/";
+            req = url.toExternalForm() + "secured/j_security_check";
             // We should now login with the user name and password
             HttpPost httpPost = new HttpPost(req);
 

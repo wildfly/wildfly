@@ -22,60 +22,95 @@
 
 package org.jboss.as.test.integration.jca.security;
 
-import static org.jboss.as.test.integration.ejb.security.SecurityTest.*;
-import static junit.framework.Assert.*;
-
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.test.integration.ejb.security.EjbSecurityDomainSetup;
+import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
+import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-/** Data source with security domain test JBQA-5952
- * 
- * @author <a href="mailto:vrastsel@redhat.com"> Vladimir Rastseluev</a>
+import static junit.framework.Assert.assertNotNull;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CODE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.security.Constants.CLASSIC;
+import static org.jboss.as.security.Constants.FLAG;
+import static org.jboss.as.security.Constants.LOGIN_MODULES;
+import static org.jboss.as.security.Constants.MODULE_OPTIONS;
+import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
+
+/**
+ * Data source with security domain test JBQA-5952
  *
+ * @author <a href="mailto:vrastsel@redhat.com"> Vladimir Rastseluev</a>
  */
 @RunWith(Arquillian.class)
-//@Ignore("AS7-3923")
+@ServerSetup(DsWithSecurityDomainTestCase.DsWithSecurityDomainTestCaseSetup.class)
 public class DsWithSecurityDomainTestCase {
 
-    @Deployment
-    public static Archive<?> deployment() {
-        try {
-            Map<String,String> moduleOptions = new HashMap<String,String>();
+    static class DsWithSecurityDomainTestCaseSetup extends AbstractLoginModuleSecurityDomainTestCaseSetup {
+
+        @Override
+        protected String getSecurityDomainName() {
+            return "DsRealm";
+        }
+
+        @Override
+        protected String getLoginModuleName() {
+            return "ConfiguredIdentity";
+        }
+
+        @Override
+        protected boolean isRequired() {
+            return true;
+        }
+
+        @Override
+        protected Map<String, String> getModuleOptions() {
+            Map<String, String> moduleOptions = new HashMap<String, String>();
             moduleOptions.put("userName", "sa");
             moduleOptions.put("password", "sa");
             moduleOptions.put("principal", "sa");
-            createSecurityDomain("DsRealm","ConfiguredIdentity",true,moduleOptions);
-        } catch (Exception e) {
-            e.printStackTrace();
+            return moduleOptions;
         }
+    }
 
+
+    @Deployment
+    public static Archive<?> deployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "single.jar").addClasses(
                 DsWithSecurityDomainTestCase.class);
+        jar.addClasses(AbstractLoginModuleSecurityDomainTestCaseSetup.class, AbstractSecurityDomainSetup.class);
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "test.ear").addAsLibrary(jar)
                 .addAsResource(DsWithSecurityDomainTestCase.class.getPackage(), "users.properties", "users.properties")
                 .addAsResource(DsWithSecurityDomainTestCase.class.getPackage(), "roles.properties", "roles.properties")
                 .addAsManifestResource("jca/security/data-sources/security-ds.xml", "security-ds.xml");
 
         return ear;
-    }
-
-    @AfterClass
-    public static void tearDown() throws Exception {
-        removeSecurityDomain("DsRealm");
     }
 
     @ArquillianResource

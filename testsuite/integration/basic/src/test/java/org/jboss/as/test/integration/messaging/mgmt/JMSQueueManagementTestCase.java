@@ -329,8 +329,11 @@ public class JMSQueueManagementTestCase {
     @Test
     public void testListConsumers() throws Exception {
 
+
+        HashMap<String, Object> map = new HashMap<String, Object>();
+        map.put("host", TestSuiteEnvironment.getServerAddress());
         TransportConfiguration transportConfiguration =
-                     new TransportConfiguration(NettyConnectorFactory.class.getName());
+                new TransportConfiguration(NettyConnectorFactory.class.getName(), map);
         HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, transportConfiguration);
         cf.setClientID("consumer");
         consumerConn = cf.createQueueConnection("guest", "guest");

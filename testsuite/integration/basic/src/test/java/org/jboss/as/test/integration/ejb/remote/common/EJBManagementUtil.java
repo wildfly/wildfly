@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.security.auth.callback.CallbackHandler;
 
-import org.jboss.as.arquillian.container.Authentication;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -350,16 +350,16 @@ public class EJBManagementUtil {
         }
     }
 
-    public static void enablePassByValueForRemoteInterfaceInvocations(final String managementHost, final int managementPort) {
-        editPassByValueForRemoteInterfaceInvocations(managementHost, managementPort, true);
+    public static void enablePassByValueForRemoteInterfaceInvocations(ManagementClient managementClient) {
+        editPassByValueForRemoteInterfaceInvocations(managementClient, true);
     }
 
-    public static void disablePassByValueForRemoteInterfaceInvocations(final String managementHost, final int managementPort) {
-        editPassByValueForRemoteInterfaceInvocations(managementHost, managementPort, false);
+    public static void disablePassByValueForRemoteInterfaceInvocations(ManagementClient managementClient) {
+        editPassByValueForRemoteInterfaceInvocations(managementClient, false);
     }
 
-    private static void editPassByValueForRemoteInterfaceInvocations(final String managementHost, final int managementPort, final boolean passByValue) {
-        final ModelControllerClient modelControllerClient = getModelControllerClient(managementHost, managementPort, Authentication.getCallbackHandler());
+    private static void editPassByValueForRemoteInterfaceInvocations(ManagementClient managementClient, final boolean passByValue) {
+        final ModelControllerClient modelControllerClient = managementClient.getControllerClient();
         try {
             // /subsystem=ejb3:write-attribute(name="in-vm-remote-interface-invocation-pass-by-value", value=<passByValue>)
             final ModelNode passByValueWriteAttributeOperation = new ModelNode();
@@ -378,13 +378,6 @@ public class EJBManagementUtil {
 
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
-        } finally {
-            // close the controller client connection
-            try {
-                modelControllerClient.close();
-            } catch (IOException e) {
-                logger.warn("Error closing model controller client", e);
-            }
         }
     }
 
