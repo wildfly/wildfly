@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.1" name="org.jboss.osgi.framework">
+<module xmlns="urn:jboss:module:1.1" name="org.jboss.osgi.metadata">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -33,17 +33,6 @@
 
     <dependencies>
         <module name="org.jboss.logging"/>
-        <module name="org.jboss.modules"/>
-        <module name="org.jboss.msc" export="true"/>
-        <module name="org.jboss.osgi.metadata" export="true"/>
-        <module name="org.jboss.osgi.spi" export="true"/>
-        <module name="org.jboss.osgi.vfs" export="true"/>
-        <module name="org.jboss.vfs"/>
         <module name="org.osgi.core" export="true"/>
-        <module name="javax.api">
-            <exports>
-                <include path="javax/management"/>
-            </exports>
-        </module>
     </dependencies>
 </module>
