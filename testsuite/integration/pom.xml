@@ -244,6 +244,29 @@
 
                 </configuration>
             </plugin>
+            
+            <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>maven-replacer-plugin</artifactId>
+                <version>1.4.1</version>
+                <executions>
+                    <!--<execution> <id>ts.config-client.replace-localhost-properties</id> <phase>verify</phase> <goals><goal>replace</goal></goals> </execution>-->
+                    <execution> <id>ts.fix-logs.ARQ-775</id> <phase>verify</phase> <goals><goal>replace</goal></goals> </execution>
+                </executions>
+                <configuration>
+                    <includes>
+                        <include>target/surefire-reports/**/*-output.txt</include>
+                        <include>target/surefire-reports/**/*.txt</include>
+                    </includes>
+                    <token>^(.)\n(?=.\n)</token>
+                    <value>$1</value>
+                    <regexFlags>
+                        <regexFlag>MULTILINE</regexFlag>
+                        <regexFlag>UNIX_LINES</regexFlag>
+                    </regexFlags>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
 
         </plugins>
     </build>
