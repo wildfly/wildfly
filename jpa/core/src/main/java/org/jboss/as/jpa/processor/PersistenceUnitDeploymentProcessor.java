@@ -309,7 +309,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
 
             deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, puServiceName);
 
-                        ServiceBuilder<PersistenceUnitServiceImpl> builder = serviceTarget.addService(puServiceName, service);
+            ServiceBuilder<PersistenceUnitServiceImpl> builder = serviceTarget.addService(puServiceName, service);
             boolean useDefaultDataSource = true;
             final String jtaDataSource = adjustJndi(pu.getJtaDataSourceName());
             final String nonJtaDataSource = adjustJndi(pu.getNonJtaDataSourceName());
@@ -342,7 +342,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                 }
             }
 
-                        adaptor.addProviderDependencies(phaseContext.getServiceRegistry(), serviceTarget, builder, pu);
+            adaptor.addProviderDependencies(phaseContext.getServiceRegistry(), serviceTarget, builder, pu);
 
             if (pu.getProperties().containsKey(JNDI_PROPERTY)) {
                 String jndiName = pu.getProperties().get(JNDI_PROPERTY).toString();
