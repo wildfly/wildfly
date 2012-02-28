@@ -165,4 +165,14 @@ public interface DomainControllerLogger extends BasicLogger {
     @Message(id = 10809, value = "%s caught %s waiting for task %s; returning")
     void caughtExceptionWaitingForTaskReturning(String className, String exceptionName, String task);
 
+    /**
+     * Logs an error message indicating the content for a configured deployment was unavailable at boot but boot
+     * was allowed to proceed because the HC is in admin-only mode.
+     *
+     * @param contentHash    the content hash that could not be found.
+     * @param deploymentName the deployment name.
+     */
+    @LogMessage(level = Level.ERROR)
+    @Message(id = 10810, value = "No deployment content with hash %s is available in the deployment content repository for deployment %s. Because this Host Controller is booting in ADMIN-ONLY mode, boot will be allowed to proceed to provide administrators an opportunity to correct this problem. If this Host Controller were not in ADMIN-ONLY mode this would be a fatal boot failure.")
+    void reportAdminOnlyMissingDeploymentContent(String contentHash, String deploymentName);
 }

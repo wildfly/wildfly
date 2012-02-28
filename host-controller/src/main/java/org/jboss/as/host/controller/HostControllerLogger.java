@@ -353,4 +353,16 @@ public interface HostControllerLogger extends BasicLogger {
     @LogMessage(level = Level.WARN)
     @Message(id = 10931, value = "Cannot store the domain model using using --cached-dc")
     void invalidCachedPersisterState();
+
+    @LogMessage(level = Level.ERROR)
+    @Message(id = 10932, value = "Caught exception during boot")
+    void caughtExceptionDuringBoot(@Cause Exception e);
+
+    @LogMessage(level = Level.FATAL)
+    @Message(id = 10933, value = "Host Controller boot has failed in an unrecoverable manner; exiting. See previous messages for details.")
+    void unsuccessfulBoot();
+
+    @LogMessage(level = Level.ERROR)
+    @Message(id = 10934, value = "Installation of the domain-wide configuration has failed. Because the running mode of this Host Controller is ADMIN_ONLY boot has been allowed to proceed. If ADMIN_ONLY mode were not in effect the process would be terminated due to a critical boot failure.")
+    void reportAdminOnlyDomainXmlFailure();
 }

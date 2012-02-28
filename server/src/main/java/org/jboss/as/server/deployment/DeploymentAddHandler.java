@@ -18,7 +18,6 @@
  */
 package org.jboss.as.server.deployment;
 
-import static org.jboss.as.server.ServerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
@@ -34,6 +33,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
 import static org.jboss.as.controller.operations.validation.ChainedParameterValidator.chain;
+import static org.jboss.as.server.ServerMessages.MESSAGES;
 import static org.jboss.as.server.deployment.AbstractDeploymentHandler.asString;
 import static org.jboss.as.server.deployment.AbstractDeploymentHandler.createFailureException;
 import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getInputStream;
@@ -49,9 +49,9 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.AbstractParameterValidator;
 import org.jboss.as.controller.operations.validation.ListValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
@@ -62,6 +62,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.DeploymentFileRepository;
+import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerMessages;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -74,16 +75,6 @@ import org.jboss.dmr.ModelType;
 public class DeploymentAddHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = ADD;
-
-    static ModelNode getOperation(ModelNode address, ModelNode state) {
-        ModelNode op = Util.getEmptyOperation(OPERATION_NAME, address);
-        op.get(RUNTIME_NAME).set(state.get(RUNTIME_NAME));
-        op.get(CONTENT).set(state.get(CONTENT));
-        if (state.hasDefined(ENABLED)) {
-            op.get(ENABLED).set(state.get(ENABLED));
-        }
-        return op;
-    }
 
     protected final ContentRepository contentRepository;
 
@@ -151,7 +142,7 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
         if (contentItemNode.hasDefined(HASH)) {
             managedContentValidator.validate(contentItemNode);
             byte[] hash = contentItemNode.require(HASH).asBytes();
-            contentItem = addFromHash(hash, contentItemNode);
+            contentItem = addFromHash(hash, name, context);
         } else if (hasValidContentAdditionParameterDefined(contentItemNode)) {
             contentItem = addFromContentAdditionParameter(context, contentItemNode);
         } else {
@@ -174,9 +165,20 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
         context.completeStep();
     }
 
-    DeploymentHandlerUtil.ContentItem addFromHash(byte[] hash, ModelNode contentItemNode) throws OperationFailedException {
+    DeploymentHandlerUtil.ContentItem addFromHash(byte[] hash, String deploymentName, OperationContext context) throws OperationFailedException {
         if (!contentRepository.hasContent(hash)) {
-            throw ServerMessages.MESSAGES.noSuchDeploymentContent(HashUtil.bytesToHexString(hash));
+            if (context.isBooting()) {
+                if (context.getRunningMode() == RunningMode.ADMIN_ONLY) {
+                    // The deployment content is missing, which would be a fatal boot error if we were going to actually
+                    // install services. In ADMIN-ONLY mode we allow it to give the admin a chance to correct the problem
+                    ServerLogger.DEPLOYMENT_LOGGER.reportAdminOnlyMissingDeploymentContent(HashUtil.bytesToHexString(hash), deploymentName);
+
+                } else {
+                    throw ServerMessages.MESSAGES.noSuchDeploymentContentAtBoot(HashUtil.bytesToHexString(hash), deploymentName);
+                }
+            } else {
+                throw ServerMessages.MESSAGES.noSuchDeploymentContent(HashUtil.bytesToHexString(hash));
+            }
         }
         return new DeploymentHandlerUtil.ContentItem(hash);
     }
@@ -218,9 +220,9 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
         }
 
         @Override
-        DeploymentHandlerUtil.ContentItem addFromHash(byte[] hash, ModelNode contentItemNode) throws OperationFailedException {
+        DeploymentHandlerUtil.ContentItem addFromHash(byte[] hash, String deploymentName, OperationContext context) throws OperationFailedException {
             remoteFileRepository.getDeploymentFiles(hash);
-            return super.addFromHash(hash, contentItemNode);
+            return super.addFromHash(hash, deploymentName, context);
         }
 
         @Override

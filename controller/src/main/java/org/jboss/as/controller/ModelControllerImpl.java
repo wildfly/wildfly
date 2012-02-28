@@ -132,23 +132,26 @@ class ModelControllerImpl implements ModelController {
         return response;
     }
 
-    void boot(final List<ModelNode> bootList, final OperationMessageHandler handler, final OperationTransactionControl control) {
+    boolean boot(final List<ModelNode> bootList, final OperationMessageHandler handler, final OperationTransactionControl control,
+              final boolean rollbackOnRuntimeFailure) {
 
+        EnumSet<OperationContextImpl.ContextFlag> contextFlags = rollbackOnRuntimeFailure
+                ? EnumSet.of(OperationContextImpl.ContextFlag.ROLLBACK_ON_FAIL)
+                : EnumSet.noneOf(OperationContextImpl.ContextFlag.class);
         final OperationContextImpl context = new OperationContextImpl(this, processType, runningModeControl.getRunningMode(),
-                EnumSet.noneOf(OperationContextImpl.ContextFlag.class),
-                handler, null, model, control, processState, bootingFlag.get());
+                contextFlags, handler, null, model, control, processState, bootingFlag.get());
 
         // Add to the context all ops prior to the first ExtensionAddHandler as well as all ExtensionAddHandlers; save the rest.
         // This gets extensions registered before proceeding to other ops that count on these registrations
         List<ParsedBootOp> postExtensionOps = organizeBootOperations(bootList, context);
 
         // Run the steps up to the last ExtensionAddHandler
-        if (context.completeStep() == OperationContext.ResultAction.KEEP && postExtensionOps != null) {
+        OperationContext.ResultAction resultAction = context.completeStep();
+        if (resultAction == OperationContext.ResultAction.KEEP && postExtensionOps != null) {
 
             // Success. Now any extension handlers are registered. Continue with remaining ops
             final OperationContextImpl postExtContext = new OperationContextImpl(this, processType, runningModeControl.getRunningMode(),
-                    EnumSet.noneOf(OperationContextImpl.ContextFlag.class),
-                    handler, null, model, control, processState, bootingFlag.get());
+                    contextFlags, handler, null, model, control, processState, bootingFlag.get());
 
             for (ParsedBootOp parsedOp : postExtensionOps) {
                 final OperationStepHandler stepHandler = parsedOp.handler == null ? rootRegistration.getOperationHandler(parsedOp.address, parsedOp.operationName) : parsedOp.handler;
@@ -162,8 +165,10 @@ class ModelControllerImpl implements ModelController {
                 }
             }
 
-            postExtContext.completeStep();
+            resultAction = postExtContext.completeStep();
         }
+
+        return  resultAction == OperationContext.ResultAction.KEEP;
     }
 
     /**

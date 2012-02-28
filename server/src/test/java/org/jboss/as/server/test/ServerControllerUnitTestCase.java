@@ -259,9 +259,9 @@ public class ServerControllerUnitTestCase {
         }
 
         @Override
-        protected void boot(List<ModelNode> bootOperations) throws ConfigurationPersistenceException {
+        protected boolean boot(List<ModelNode> bootOperations, boolean rollbackOnRuntimeFailure) throws ConfigurationPersistenceException {
             try {
-                super.boot(persister.bootOperations);
+                return super.boot(persister.bootOperations, rollbackOnRuntimeFailure);
             } catch (Exception e) {
                 error = e;
             } catch (Throwable t) {
@@ -269,6 +269,7 @@ public class ServerControllerUnitTestCase {
             } finally {
                 latch.countDown();
             }
+            return false;
         }
 
         @Override
