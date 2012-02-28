@@ -323,11 +323,14 @@ public interface ServerLogger extends BasicLogger {
     void logHttpConsole(InetAddress httpAddr, int httpPort);
 
     @LogMessage(level = INFO)
-    @Message(id = 15952, value= "Admin console listening on http://%s:%d")
+    @Message(id = 15952, value= "Admin console listening on https://%s:%d")
     void logHttpsConsole(InetAddress httpsAddr, int httpsPort);
 
     @LogMessage(level = INFO)
     @Message(id = 15953, value= "Admin console listening on http://%s:%d and https://%s:%d")
     void logHttpAndHttpsConsole(InetAddress httpAddr, int httpPort, InetAddress httpsAddr, int httpsPort);
 
+    @LogMessage(level = INFO)
+    @Message(id = 15954, value= "Admin console is not enabled")
+    void logNoConsole();
 }
