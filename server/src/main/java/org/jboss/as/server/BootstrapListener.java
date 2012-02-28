@@ -172,6 +172,8 @@ public class BootstrapListener extends AbstractServiceListener<Object> {
                 ServerLogger.AS_ROOT_LOGGER.logHttpConsole(mgmt.getHttpNetworkInterfaceBinding().getAddress(), mgmt.getHttpPort());
             } else if (hasHttps) {
                 ServerLogger.AS_ROOT_LOGGER.logHttpsConsole(mgmt.getHttpsNetworkInterfaceBinding().getAddress(), mgmt.getHttpsPort());
+            } else {
+                ServerLogger.AS_ROOT_LOGGER.logNoConsole();
             }
         }
     }
