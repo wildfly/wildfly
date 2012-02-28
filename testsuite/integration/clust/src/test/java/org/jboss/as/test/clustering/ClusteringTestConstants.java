@@ -30,23 +30,19 @@ package org.jboss.as.test.clustering;
 public class ClusteringTestConstants {
 
     /**
-     * ARQ automatically managed container names.
-     */
-    public static final String MANAGED_CONTAINER_1 = "clustering-udp-0";
-    public static final String MANAGED_CONTAINER_2 = "clustering-udp-1";
-    /**
      * Unmanaged (manually managed) container names.
      */
-    public static final String CONTAINER_1 = "clustering-udp-0-unmanaged";
-    public static final String CONTAINER_2 = "clustering-udp-1-unmanaged";
+    public static final String CONTAINER_1 = "clustering-udp-0";
+    public static final String CONTAINER_2 = "clustering-udp-1";
     /**
      * Deployment names.
      */
-    public static final String DEPLOYMENT_1 = "deployment-0-unmanaged";
-    public static final String DEPLOYMENT_2 = "deployment-1-unmanaged";
+    public static final String DEPLOYMENT_1 = "deployment-0";
+    public static final String DEPLOYMENT_2 = "deployment-1";
     /**
      * Timeouts.
      */
     public static final long GRACE_TIME_TO_MEMBERSHIP_CHANGE = 5000;
     public static final int GRACE_TIME = 20000;
+    public static final int GRACE_TIME_TO_REPLICATE = 3000;
 }

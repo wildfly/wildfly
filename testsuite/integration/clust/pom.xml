@@ -54,7 +54,9 @@
                             <execution>
                                 <id>build-clustering.server</id>
                                 <phase>process-test-resources</phase>
-                                <goals><goal>run</goal></goals>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
                                 <configuration>
                                     <target>
                                         <echo>In Maven: node0: ${node0}</echo>
@@ -82,38 +84,19 @@
                             <!-- Disable default-test execution. -->
                             <execution>
                                 <id>default-test</id>
-                                <goals><goal>test</goal></goals>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
                                 <phase>none</phase>
                             </execution>
 
-
-                            <!-- Multi node clustering tests with UNMANAGED containers. -->
+                            <!-- Single node clustering tests. TODO: move from clustering TS. -->
                             <execution>
-                                <id>tests-clustering-multi-node-unmanaged.surefire</id>
+                                <id>tests-clustering-single-node.surefire</id>
                                 <phase>test</phase>
                                 <goals>
                                     <goal>test</goal>
                                 </goals>
-                                <configuration>
-                                    <!-- Tests to execute. -->
-                                    <includes>
-                                        <include>org/jboss/as/test/clustering/unmanaged/**/*TestCase.java</include>
-                                    </includes>
-
-                                    <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables>
-                                        <arquillian.launch>clustering-udp-unmanaged</arquillian.launch>
-                                        <!-- Use combine.children="append" to pick up parent properties automatically. -->
-                                        <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
-                                    </systemPropertyVariables>
-                                </configuration>
-                            </execution>
-
-                            <!-- Single node clustering tests. -->
-                            <execution>
-                                <id>tests-clustering-single-node.surefire</id>
-                                <phase>test</phase>
-                                <goals><goal>test</goal></goals>
                                 <configuration>
                                     <!-- Tests to execute. -->
                                     <includes>
@@ -128,14 +111,17 @@
                                 </configuration>
                             </execution>
 
-                            <!-- Multi node clustering tests. -->
+                            <!-- Multi node clustering tests with manual containers with unmanaged deployment. -->
                             <execution>
-                                <id>tests-clustering-multi-node.surefire</id>
+                                <id>tests-clustering-multi-node-unmanaged.surefire</id>
                                 <phase>test</phase>
-                                <goals><goal>test</goal></goals>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
                                 <configuration>
                                     <!-- Tests to execute. -->
                                     <includes>
+                                        <include>org/jboss/as/test/clustering/unmanaged/**/*TestCase.java</include>
                                         <include>org/jboss/as/test/clustering/cluster/**/*TestCase.java</include>
                                     </includes>
 
@@ -147,7 +133,7 @@
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
-
+                            
                         </executions>
                     </plugin>
                 </plugins>
@@ -174,7 +160,9 @@
                             <execution>
                                 <id>build-clustering.server.jdbc.store.enabled</id>
                                 <phase>process-test-resources</phase>
-                                <goals><goal>run</goal></goals>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
                                 <configuration>
                                     <target>
                                         <echo>In Maven: node0: ${node0}</echo>
@@ -201,7 +189,9 @@
                             <!-- Disable default-test execution. -->
                             <execution>
                                 <id>default-test</id>
-                                <goals><goal>test</goal></goals>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
                                 <phase>none</phase>
                             </execution>
 
@@ -209,7 +199,9 @@
                             <execution>
                                 <id>tests-clustering-single-node-jdbc-store.surefire</id>
                                 <phase>test</phase>
-                                <goals><goal>test</goal></goals>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
                                 <configuration>
                                     <!-- Tests to execute. -->
                                     <includes>

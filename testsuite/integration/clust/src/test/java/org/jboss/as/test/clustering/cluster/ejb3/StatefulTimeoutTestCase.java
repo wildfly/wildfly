@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.test.clustering.cluster.ejb3;
 
 import javax.ejb.NoSuchEJBException;
@@ -28,10 +27,9 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.transaction.UserTransaction;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.container.test.api.TargetsContainer;
+import org.jboss.arquillian.container.test.api.*;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -43,6 +41,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
+import org.jboss.as.test.clustering.NodeUtil;
 
 /**
  * Tests that the stateful timeout annotation works
@@ -51,27 +50,28 @@ import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
  */
 @RunWith(Arquillian.class)
 public class StatefulTimeoutTestCase {
+
     private static final String ARCHIVE_NAME = "StatefulTimeoutTestCase";
+    @ArquillianResource
+    private ContainerController controller;
+    @ArquillianResource
+    private Deployer deployer;
+    @Inject
+    private UserTransaction userTransaction;
 
     @BeforeClass
     public static void printSysProps() {
         System.out.println("System properties:\n" + System.getProperties());
     }
 
-    @ArquillianResource
-    private InitialContext iniCtx;
-
-    @Inject
-    private UserTransaction userTransaction;
-
-    @Deployment(name = DEPLOYMENT_1)
-    @TargetsContainer(MANAGED_CONTAINER_1)
+    @Deployment(name = DEPLOYMENT_1, managed = false)
+    @TargetsContainer(CONTAINER_1)
     public static Archive<?> deployment0() {
         return createJar();
     }
 
-    @Deployment(name = DEPLOYMENT_2)
-    @TargetsContainer(MANAGED_CONTAINER_2)
+    @Deployment(name = DEPLOYMENT_2, managed = false)
+    @TargetsContainer(CONTAINER_2)
     public static Archive<?> deployment1() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addPackage(StatefulTimeoutTestCase.class.getPackage());
@@ -86,16 +86,31 @@ public class StatefulTimeoutTestCase {
         return jar;
     }
 
-    protected <T> T lookup(Class<T> beanType) throws NamingException {
+    protected <T> T lookup(InitialContext iniCtx, Class<T> beanType) throws NamingException {
         return beanType.cast(iniCtx.lookup("java:global/" + ARCHIVE_NAME + "/" + beanType.getSimpleName() + "!" + beanType.getName()));
     }
 
+    @Test
+    @InSequence(-1)
+    public void testStartContainers() {
+        NodeUtil.start(controller, deployer, CONTAINER_1, DEPLOYMENT_1);
+        NodeUtil.start(controller, deployer, CONTAINER_2, DEPLOYMENT_2);
+    }
+
+    @Test
+    @InSequence(1)
+    public void testStopContainers() {
+        NodeUtil.stop(controller, deployer, CONTAINER_1, DEPLOYMENT_1);
+        NodeUtil.stop(controller, deployer, CONTAINER_2, DEPLOYMENT_2);
+    }
+
+    @Test
     @OperateOnDeployment(DEPLOYMENT_1)
-    public void testStatefulTimeout() throws Exception {
+    public void testStatefulTimeout(@ArquillianResource InitialContext iniCtx) throws Exception {
 
         ClusteredCacheBean.preDestroy = false;
         ClusteredCacheBean.prePassivate = false;
-        ClusteredCacheBean sfsb1 = lookup(ClusteredCacheBean.class);
+        ClusteredCacheBean sfsb1 = lookup(iniCtx, ClusteredCacheBean.class);
         Assert.assertFalse(ClusteredCacheBean.preDestroy);
         Assert.assertFalse(ClusteredCacheBean.prePassivate);
         sfsb1.increment();
@@ -113,11 +128,11 @@ public class StatefulTimeoutTestCase {
 
     @Test
     @OperateOnDeployment(DEPLOYMENT_1)
-    public void testClusteredStatefulTimeout() throws Exception {
+    public void testClusteredStatefulTimeout(@ArquillianResource InitialContext iniCtx) throws Exception {
 
         ClusteredBean.preDestroy = false;
         ClusteredBean.prePassivate = false;
-        ClusteredBean sfsb1 = lookup(ClusteredBean.class);
+        ClusteredBean sfsb1 = lookup(iniCtx, ClusteredBean.class);
         Assert.assertFalse(ClusteredBean.preDestroy);
         Assert.assertFalse(ClusteredBean.prePassivate);
         sfsb1.increment();
@@ -135,12 +150,12 @@ public class StatefulTimeoutTestCase {
 
     @Test
     @OperateOnDeployment(DEPLOYMENT_1)
-    public void testStatefulBeanNotDiscardedWhileInTransaction() throws Exception {
+    public void testStatefulBeanNotDiscardedWhileInTransaction(@ArquillianResource InitialContext iniCtx) throws Exception {
         ClusteredBean.preDestroy = false;
         ClusteredBean.prePassivate = false;
         try {
             userTransaction.begin();
-            ClusteredBean sfsb1 = lookup(ClusteredBean.class);
+            ClusteredBean sfsb1 = lookup(iniCtx, ClusteredBean.class);
             Assert.assertFalse(ClusteredBean.preDestroy);
             Assert.assertFalse(ClusteredBean.prePassivate);
             sfsb1.increment();
@@ -159,10 +174,10 @@ public class StatefulTimeoutTestCase {
 
     @Test
     @OperateOnDeployment(DEPLOYMENT_1)
-    public void testNested() throws Exception {
+    public void testNested(@ArquillianResource InitialContext iniCtx) throws Exception {
 
         NestedBean.preDestroy = false;
-        NestedBean sfsb1 = lookup(NestedBean.class);
+        NestedBean sfsb1 = lookup(iniCtx, NestedBean.class);
         Assert.assertFalse(NestedBean.preDestroy);
         sfsb1.increment();
         Thread.sleep(1500);

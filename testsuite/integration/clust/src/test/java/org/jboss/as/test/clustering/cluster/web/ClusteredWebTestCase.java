@@ -31,11 +31,9 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.container.test.api.TargetsContainer;
+import org.jboss.arquillian.container.test.api.*;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.shrinkwrap.api.Archive;
@@ -47,6 +45,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
+import org.jboss.as.test.clustering.NodeUtil;
 
 /**
  * Validate the <distributable/> works for a two-node cluster.
@@ -58,7 +57,10 @@ import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
 @RunAsClient
 public class ClusteredWebTestCase {
 
-    public static final long GRACE_TIME_TO_REPLICATE = 3000; // 3 seconds should be more then enough
+    @ArquillianResource
+    private ContainerController controller;
+    @ArquillianResource
+    private Deployer deployer;
 
     @BeforeClass
     public static void printSysProps() {
@@ -66,8 +68,8 @@ public class ClusteredWebTestCase {
         System.out.println("System properties:\n" + sysprops);
     }
 
-    @Deployment(name = DEPLOYMENT_1)
-    @TargetsContainer(MANAGED_CONTAINER_1)
+    @Deployment(name = DEPLOYMENT_1, managed = false)
+    @TargetsContainer(CONTAINER_1)
     public static Archive<?> deployment0() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
         war.addClass(SimpleServlet.class);
@@ -76,14 +78,28 @@ public class ClusteredWebTestCase {
         return war;
     }
 
-    @Deployment(name = DEPLOYMENT_2)
-    @TargetsContainer(MANAGED_CONTAINER_2)
+    @Deployment(name = DEPLOYMENT_2, managed = false)
+    @TargetsContainer(CONTAINER_2)
     public static Archive<?> deployment1() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
         war.addClass(SimpleServlet.class);
         war.setWebXML(ClusteredWebTestCase.class.getPackage(), "web.xml");
         System.out.println(war.toString(true));
         return war;
+    }
+
+    @Test
+    @InSequence(-1)
+    public void testStartContainers() {
+        NodeUtil.start(controller, deployer, CONTAINER_1, DEPLOYMENT_1);
+        NodeUtil.start(controller, deployer, CONTAINER_2, DEPLOYMENT_2);
+    }
+
+    @Test
+    @InSequence(1)
+    public void testStopContainers() {
+        NodeUtil.stop(controller, deployer, CONTAINER_1, DEPLOYMENT_1);
+        NodeUtil.stop(controller, deployer, CONTAINER_2, DEPLOYMENT_2);
     }
 
     @Test
