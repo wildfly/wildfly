@@ -31,11 +31,6 @@ import org.junit.Test;
  */
 public abstract class WebSecurityPasswordBasedBase {
 
-    private String hostname = "localhost";
-    private int port = 8080;
-
-    protected final String URL = "http://" + getHostname() + ":" + String.valueOf(getPort()) + "/" + getContextPath() + "/secured/";
-
     /**
      * Obtain the context path of the {@link WebArchive}
      *
@@ -86,22 +81,5 @@ public abstract class WebSecurityPasswordBasedBase {
      * @throws Exception
      */
     protected abstract void makeCall(String user, String pass, int expectedCode) throws Exception;
-
-    public String getHostname() {
-        return hostname;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public void setHostname(String hostname) {
-        this.hostname = hostname;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
-
 
 }

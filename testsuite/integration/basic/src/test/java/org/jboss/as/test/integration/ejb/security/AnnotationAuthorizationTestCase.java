@@ -29,9 +29,11 @@ import javax.security.auth.login.LoginContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.ejb.security.authorization.DenyAllOverrideBean;
 import org.jboss.as.test.integration.ejb.security.authorization.PermitAllOverrideBean;
 import org.jboss.as.test.integration.ejb.security.authorization.RolesAllowedOverrideBean;
+import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -52,24 +54,18 @@ import static org.junit.Assert.fail;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 @RunWith(Arquillian.class)
-public class AnnotationAuthorizationTestCase extends SecurityTest {
+@ServerSetup({EjbSecurityDomainSetup.class})
+public class AnnotationAuthorizationTestCase {
 
     private static final Logger log = Logger.getLogger(AnnotationAuthorizationTestCase.class.getName());
 
     @Deployment
     public static Archive<?> runAsDeployment() {
-        // FIXME hack to get things prepared before the deployment happens
-        try {
-            // create required security domains
-            createSecurityDomain();
-        } catch (Exception e) {
-            // ignore
-        }
-
         // using JavaArchive doesn't work, because of a bug in Arquillian, it only deploys wars properly
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "ejb3security.war")
                 .addPackage(RolesAllowedOverrideBean.class.getPackage()).addClass(Util.class)
-                .addClass(AnnotationAuthorizationTestCase.class).addClass(SecurityTest.class)
+                .addClasses(AnnotationAuthorizationTestCase.class)
+                .addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class)
                 .addAsResource("ejb3/security/users.properties", "users.properties")
                 .addAsResource("ejb3/security/roles.properties", "roles.properties")
                 .addAsWebInfResource("ejb3/security/jboss-web.xml", "jboss-web.xml")

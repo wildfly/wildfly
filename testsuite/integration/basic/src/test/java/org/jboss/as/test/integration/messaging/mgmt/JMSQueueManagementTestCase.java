@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.messaging.mgmt;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -42,6 +43,7 @@ import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.common.JMSAdminOperations;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.junit.After;
@@ -89,9 +91,10 @@ public class JMSQueueManagementTestCase {
         count++;
         adminSupport.createJmsQueue(getQueueName(), getQueueJndiName());
         adminSupport.createJmsQueue(getOtherQueueName(), getOtherQueueJndiName());
-
+        HashMap<String, Object> map = new HashMap<String, Object>();
+        map.put("host", TestSuiteEnvironment.getServerAddress());
         TransportConfiguration transportConfiguration =
-                     new TransportConfiguration(NettyConnectorFactory.class.getName());
+                     new TransportConfiguration(NettyConnectorFactory.class.getName(), map);
         HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, transportConfiguration);
         cf.setClientID("sender");
         conn = cf.createQueueConnection("guest", "guest");

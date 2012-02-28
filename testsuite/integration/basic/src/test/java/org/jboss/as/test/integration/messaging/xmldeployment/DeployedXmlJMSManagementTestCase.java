@@ -22,7 +22,6 @@
 
 package org.jboss.as.test.integration.messaging.xmldeployment;
 
-import org.jboss.as.test.shared.TestUtils;
 import java.io.IOException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -30,18 +29,19 @@ import java.util.concurrent.TimeUnit;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.arquillian.api.ContainerResource;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentActionResult;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
+import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -57,25 +57,16 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@ServerSetup(DeployedXmlJMSManagementTestCase.DeployedXmlJMSManagementTestCaseSetup.class)
 public class DeployedXmlJMSManagementTestCase {
 
-
-    private static ModelControllerClient client;
-    private static ServerDeploymentManager manager;
     public static final String TEST_JMS_XML = "test-jms.xml";
 
-    @Deployment
-    public static Archive<?> deploy() {
-        return ShrinkWrap.create(JavaArchive.class, "testJMSXmlDeployment.jar")
-                .addClass(DeployedXmlJMSManagementTestCase.class)
-                .addAsManifestResource(DeployedXmlJMSManagementTestCase.class.getPackage(), "MANIFEST.MF", "MANIFEST.MF");
-    }
+    static class DeployedXmlJMSManagementTestCaseSetup extends AbstractMgmtServerSetupTask {
 
-    @BeforeClass
-    public static void deployDatasource() throws Throwable {
-        try {
-            client = TestUtils.getModelControllerClient();
-            manager = ServerDeploymentManager.Factory.create(client);
+        @Override
+        protected void doSetup(final ManagementClient managementClient) throws Exception {
+            final ServerDeploymentManager manager = ServerDeploymentManager.Factory.create(managementClient.getControllerClient());
             final String packageName = DeployedXmlJMSManagementTestCase.class.getPackage().getName().replace(".", "/");
             final DeploymentPlan plan = manager.newDeploymentPlan().add(DeployedXmlJMSManagementTestCase.class.getResource("/" + packageName + "/" + TEST_JMS_XML)).andDeploy().build();
             final Future<ServerDeploymentPlanResult> future = manager.execute(plan);
@@ -83,25 +74,27 @@ public class DeployedXmlJMSManagementTestCase {
             final ServerDeploymentActionResult actionResult = result.getDeploymentActionResult(plan.getId());
             if (actionResult != null) {
                 if (actionResult.getDeploymentException() != null) {
-                    throw actionResult.getDeploymentException();
+                    throw new RuntimeException(actionResult.getDeploymentException());
                 }
             }
-        } catch (Throwable e) {
-            if (client != null) {
-                client.close();
-            }
+        }
+
+        @Override
+        public void tearDown(final ManagementClient managementClient) throws Exception {
+            final ServerDeploymentManager manager = ServerDeploymentManager.Factory.create(managementClient.getControllerClient());
+            final DeploymentPlan undeployPlan = manager.newDeploymentPlan().undeploy(TEST_JMS_XML).andRemoveUndeployed().build();
+            manager.execute(undeployPlan);
         }
     }
 
-    @AfterClass
-    public static void undeployDatasource() throws IOException {
-        if (client != null) {
-            final DeploymentPlan undeployPlan = manager.newDeploymentPlan().undeploy(TEST_JMS_XML).andRemoveUndeployed().build();
-            manager.execute(undeployPlan);
-            client.close();
-            client = null;
-            manager = null;
-        }
+    @ContainerResource
+    private ManagementClient managementClient;
+
+    @Deployment
+    public static Archive<?> deploy() {
+        return ShrinkWrap.create(JavaArchive.class, "testJMSXmlDeployment.jar")
+                .addClass(DeployedXmlJMSManagementTestCase.class)
+                .addAsManifestResource(DeployedXmlJMSManagementTestCase.class.getPackage(), "MANIFEST.MF", "MANIFEST.MF");
     }
 
     @Test
@@ -117,7 +110,7 @@ public class DeployedXmlJMSManagementTestCase {
         operation.get(OP).set("read-attribute");
         operation.get(OP_ADDR).set(address);
         operation.get(NAME).set("durable");
-        ModelNode result = client.execute(operation);
+        ModelNode result = managementClient.getControllerClient().execute(operation);
         Assert.assertEquals(true, result.get(RESULT).asBoolean());
     }
 
@@ -134,7 +127,7 @@ public class DeployedXmlJMSManagementTestCase {
         operation.get(OP).set("read-attribute");
         operation.get(OP_ADDR).set(address);
         operation.get(NAME).set("entries");
-        ModelNode result = client.execute(operation);
+        ModelNode result = managementClient.getControllerClient().execute(operation);
         Assert.assertEquals("java:/topic1", result.get(RESULT).asList().get(0).asString());
     }
 }

@@ -29,7 +29,9 @@ import javax.security.auth.login.LoginContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.ejb.security.dd.override.PartialDDBean;
+import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -46,24 +48,17 @@ import org.junit.runner.RunWith;
  * User: Jaikiran Pai
  */
 @RunWith(Arquillian.class)
-public class SecurityDDOverrideTestCase extends SecurityTest {
+@ServerSetup({EjbSecurityDomainSetup.class})
+public class SecurityDDOverrideTestCase {
 
     private static final Logger logger = Logger.getLogger(SecurityDDOverrideTestCase.class);
 
     @Deployment
     public static Archive<?> runAsDeployment() {
-        // FIXME hack to get things prepared before the deployment happens
-        try {
-            // create required security domains
-            createSecurityDomain();
-        } catch (Exception e) {
-            // ignore
-        }
-
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ejb3-security-partial-dd-test.jar");
         jar.addPackage(PartialDDBean.class.getPackage());
         jar.addClass(Util.class);
-        jar.addClass(SecurityTest.class);
+        jar.addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class);
         jar.addAsResource("ejb3/security/users.properties", "users.properties");
         jar.addAsResource("ejb3/security/roles.properties", "roles.properties");
         jar.addAsManifestResource("ejb3/security/ejb-jar.xml", "ejb-jar.xml");

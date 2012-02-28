@@ -21,21 +21,19 @@
  */
 package org.jboss.as.test.integration.ejb.security.jbossappxml;
 
-import java.util.Hashtable;
-
 import javax.naming.Context;
-import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.ejb.security.SecurityTest;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.integration.ejb.security.EjbSecurityDomainSetup;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -50,45 +48,44 @@ import static org.junit.Assert.assertTrue;
 @RunWith(Arquillian.class)
 @RunAsClient
 @SuppressWarnings({"rawtypes","unchecked"})
+@ServerSetup(JBossAppXMLSecurityTestCase.JBossAppXMLSecurityTestCaseSetup.class)
 public class JBossAppXMLSecurityTestCase {
     private static final String APP_NAME = "myapp";
     private static final String DISTINCT_NAME = "";
     private static final String MODULE_NAME = "jboss-app-xml-sec";
     private static final Logger logger = Logger.getLogger(JBossAppXMLSecurityTestCase.class);
 
-    private static Context context;
+    @ArquillianResource
+    private Context context;
+
+    static class JBossAppXMLSecurityTestCaseSetup extends EjbSecurityDomainSetup {
+        @Override
+        public boolean isUsersRolesRequired() {
+            return false;
+        }
+
+        @Override
+        protected String getSecurityDomainName() {
+            return "mydomain";
+        }
+    }
 
     @Deployment(testable = false) // the incorrectly named "testable" attribute tells Arquillian whether or not
     // it should add Arquillian specific metadata to the archive (which ultimately transforms it to a WebArchive).
     // We don't want that, so set that flag to false
     public static Archive createDeployment() {
-
-        // FIXME hack to get things prepared before the deployment happens
-        try {
-            // create required security domains
-            SecurityTest.createSecurityDomain("mydomain", false);
-        } catch (Exception e) {
-            // ignore
-        }
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, APP_NAME + ".ear");
-        ear.addAsManifestResource(JBossAppXMLSecurityTestCase.class.getPackage(), 
+        ear.addAsManifestResource(JBossAppXMLSecurityTestCase.class.getPackage(),
                 "jboss-app.xml", "jboss-app.xml");
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         jar.addClasses(BeanInterface.class,FirstBean.class, SecondBean.class);
 
         logger.info(jar.toString(true));
-        
+
         ear.addAsModule(jar);
         logger.info(ear.toString(true));
         return ear;
-    }
-
-    @BeforeClass
-    public static void beforeClass() throws Exception {
-        final Hashtable props = new Hashtable();
-        props.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
-        context = new InitialContext(props);
     }
 
     @Test

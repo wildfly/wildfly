@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.messaging.mgmt;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -38,6 +39,7 @@ import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.common.JMSAdminOperations;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.junit.After;
@@ -79,10 +81,12 @@ public class CoreQueueManagementTestCase {
 
         count++;
 
+        HashMap<String, Object> map = new HashMap<String, Object>();
+        map.put("host", TestSuiteEnvironment.getServerAddress());
         TransportConfiguration transportConfiguration =
-                     new TransportConfiguration(NettyConnectorFactory.class.getName());
+                new TransportConfiguration(NettyConnectorFactory.class.getName(), map);
         ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(transportConfiguration);
-        ClientSessionFactory factory =  locator.createSessionFactory();
+        ClientSessionFactory factory = locator.createSessionFactory();
         session = factory.createSession("guest", "guest", false, true, true, false, 1);
         session.createQueue(getQueueName(), getQueueName(), false);
         session.createQueue(getOtherQueueName(), getOtherQueueName(), false);
@@ -306,9 +310,9 @@ public class CoreQueueManagementTestCase {
     public void testListConsumers() throws Exception {
 
         TransportConfiguration transportConfiguration =
-                     new TransportConfiguration(NettyConnectorFactory.class.getName());
+                new TransportConfiguration(NettyConnectorFactory.class.getName());
         ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(transportConfiguration);
-        ClientSessionFactory factory =  locator.createSessionFactory();
+        ClientSessionFactory factory = locator.createSessionFactory();
         consumerSession = factory.createSession("guest", "guest", false, false, false, false, 1);
         session.createConsumer(getQueueName());
 

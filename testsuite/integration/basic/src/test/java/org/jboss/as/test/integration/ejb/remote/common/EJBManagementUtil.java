@@ -23,6 +23,28 @@
 package org.jboss.as.test.integration.ejb.remote.common;
 
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
+import javax.security.auth.callback.CallbackHandler;
+
+import org.jboss.as.arquillian.container.Authentication;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.helpers.ClientConstants;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.ejb3.subsystem.EJB3Extension;
+import org.jboss.as.ejb3.subsystem.EJB3SubsystemModel;
+import org.jboss.as.remoting.RemotingExtension;
+import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
@@ -45,27 +67,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-
-import javax.security.auth.callback.CallbackHandler;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
-import org.jboss.as.arquillian.container.Authentication;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.helpers.ClientConstants;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.ejb3.subsystem.EJB3Extension;
-import org.jboss.as.ejb3.subsystem.EJB3SubsystemModel;
-import org.jboss.as.remoting.RemotingExtension;
-import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 
 
 /**
@@ -169,11 +170,10 @@ public class EJBManagementUtil {
         }
     }
 
-    public static void createLocalOutboundSocket(final String managementServerHostName, final int managementPort,
+    public static void createLocalOutboundSocket(final ModelControllerClient modelControllerClient,
                                                  final String socketGroupName, final String outboundSocketName,
                                                  final String socketBindingRef,
                                                  final CallbackHandler callbackHandler) {
-        final ModelControllerClient modelControllerClient = getModelControllerClient(managementServerHostName, managementPort, callbackHandler);
         try {
             // /socket-binding-group=<group-name>/local-destination-outbound-socket-binding=<name>:add(socket-binding-ref=<ref>)
             final ModelNode outboundSocketAddOperation = new ModelNode();
@@ -189,20 +189,12 @@ public class EJBManagementUtil {
 
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
-        } finally {
-            // close the controller client connection
-            try {
-                modelControllerClient.close();
-            } catch (IOException e) {
-                logger.warn("Error closing model controller client", e);
-            }
         }
     }
 
-    public static void removeLocalOutboundSocket(final String managementServerHostName, final int managementPort,
+    public static void removeLocalOutboundSocket(final ModelControllerClient modelControllerClient,
                                                  final String socketGroupName, final String outboundSocketName,
                                                  final CallbackHandler callbackHandler) {
-        final ModelControllerClient modelControllerClient = getModelControllerClient(managementServerHostName, managementPort, callbackHandler);
         try {
             // /socket-binding-group=<group-name>/local-destination-outbound-socket-binding=<name>:remove()
             final ModelNode outboundSocketRemoveOperation = new ModelNode();
@@ -216,20 +208,12 @@ public class EJBManagementUtil {
 
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
-        } finally {
-            // close the controller client connection
-            try {
-                modelControllerClient.close();
-            } catch (IOException e) {
-                logger.warn("Error closing model controller client", e);
-            }
         }
     }
 
-    public static void createRemoteOutboundConnection(final String managementServerHostName, final int managementPort,
+    public static void createRemoteOutboundConnection(final ModelControllerClient modelControllerClient,
                                                       final String connectionName, final String outboundSocketRef,
                                                       final Map<String, String> connectionCreationOptions, final CallbackHandler callbackHandler) {
-        final ModelControllerClient modelControllerClient = getModelControllerClient(managementServerHostName, managementPort, callbackHandler);
         try {
             // /subsystem=remoting/remote-outbound-connection=<name>:add(outbound-socket-ref=<ref>)
             final ModelNode addRemoteOutboundConnection = new ModelNode();
@@ -237,32 +221,32 @@ public class EJBManagementUtil {
             final PathAddress address = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME),
                     PathElement.pathElement("remote-outbound-connection", connectionName));
             addRemoteOutboundConnection.get(OP_ADDR).set(address.toModelNode());
-            
-            
+
+
             final ModelNode addPasswordRealm = new ModelNode();
             addPasswordRealm.get(OP).set(ADD);
             ModelNode realmAddress = new ModelNode();
             realmAddress.add(CORE_SERVICE, MANAGEMENT);
             realmAddress.add(SECURITY_REALM, "PasswordRealm");
             addPasswordRealm.get(OP_ADDR).set(realmAddress);
-            
+
             final ModelNode addServerIdentity = new ModelNode();
             addServerIdentity.get(OP).set(ADD);
             ModelNode secretAddress = realmAddress.clone().add(SERVER_IDENTITY, SECRET);
             addServerIdentity.get(OP_ADDR).set(secretAddress);
-            addServerIdentity.get(VALUE).set("cGFzc3dvcmQx");                                    
+            addServerIdentity.get(VALUE).set("cGFzc3dvcmQx");
 
             // set the other properties
             addRemoteOutboundConnection.get("outbound-socket-binding-ref").set(outboundSocketRef);
             addRemoteOutboundConnection.get(SECURITY_REALM).set("PasswordRealm");
-            addRemoteOutboundConnection.get("username").set("user1");            
-            
+            addRemoteOutboundConnection.get("username").set("user1");
+
             final ModelNode op = Util.getEmptyOperation(COMPOSITE, new ModelNode());
             final ModelNode steps = op.get(STEPS);
             steps.add(addPasswordRealm);
             steps.add(addServerIdentity);
             steps.add(addRemoteOutboundConnection);
-            
+
 
             // execute the add operation
             if (!connectionCreationOptions.isEmpty()) {
@@ -278,19 +262,11 @@ public class EJBManagementUtil {
 
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
-        } finally {
-            // close the controller client connection
-            try {
-                modelControllerClient.close();
-            } catch (IOException e) {
-                logger.warn("Error closing model controller client", e);
-            }
         }
     }
 
-    public static void removeRemoteOutboundConnection(final String managementServerHostName, final int managementPort,
+    public static void removeRemoteOutboundConnection(final ModelControllerClient modelControllerClient,
                                                       final String connectionName, final CallbackHandler callbackHandler) {
-        final ModelControllerClient modelControllerClient = getModelControllerClient(managementServerHostName, managementPort, callbackHandler);
         try {
             // /subsystem=remoting/remote-outbound-connection=<name>:remove()
             final ModelNode removeRemoteOutboundConnection = new ModelNode();
@@ -304,55 +280,33 @@ public class EJBManagementUtil {
             ModelNode realmAddress = new ModelNode();
             realmAddress.add(CORE_SERVICE, MANAGEMENT);
             realmAddress.add(SECURITY_REALM, "PasswordRealm");
-            removeRealm.get(OP_ADDR).set(realmAddress);            
-            
+            removeRealm.get(OP_ADDR).set(realmAddress);
+
             final ModelNode op = Util.getEmptyOperation(COMPOSITE, new ModelNode());
             final ModelNode steps = op.get(STEPS);
             steps.add(removeRemoteOutboundConnection);
             steps.add(removeRealm);
-            
+
             // execute the remove operation
             execute(modelControllerClient, op);
 
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
-        } finally {
-            // close the controller client connection
-            try {
-                modelControllerClient.close();
-            } catch (IOException e) {
-                logger.warn("Error closing model controller client", e);
-            }
         }
-    }
-
-    public static String getNodeName(final String managementServerHostName, final int managementPort) {
-        // TODO: FIXME: Right now, we just return the "hostname" of the client as the node name of the server.
-        // This works only when both the client (test) and server are on the same system.
-        // We need to fix this once I know if there's any management operation exposed for retrieving the
-        // jboss.node.name system property http://lists.jboss.org/pipermail/jboss-as7-dev/2011-November/004434.html
-        final String nodeName = getNodeName();
-        if (nodeName == null) {
-            throw new IllegalStateException("jboss.node.name could not be determined");
-        }
-        return nodeName;
     }
 
     /**
      * Creates a strict max pool in the EJB3 subsystem, with the passed <code>poolName</code> and pool attributes
      *
-     * @param managementHost The management server host
-     * @param managementPort The management port
      * @param poolName       Pool name
      * @param maxPoolSize    Max pool size
      * @param timeout        Instance acquisition timeout for the pool
      * @param unit           Instance acquisition timeout unit for the pool
      */
-    public static void createStrictMaxPool(final String managementHost, final int managementPort,
+    public static void createStrictMaxPool(final ModelControllerClient modelControllerClient,
                                            final String poolName, final int maxPoolSize,
                                            final long timeout, final TimeUnit unit) {
 
-        final ModelControllerClient modelControllerClient = getModelControllerClient(managementHost, managementPort, Authentication.getCallbackHandler());
         try {
             // first get the remote-connector from the EJB3 subsystem to find the remote connector ref
             // /subsystem=ejb3/strict-max-bean-instance-pool=<name>:add(....)
@@ -371,26 +325,15 @@ public class EJBManagementUtil {
             execute(modelControllerClient, addStrictMaxPool);
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
-        } finally {
-            // close the controller client connection
-            try {
-                modelControllerClient.close();
-            } catch (IOException e) {
-                logger.warn("Error closing model controller client", e);
-            }
         }
-
     }
 
     /**
      * Removes an already created strict max pool from the EJB3 subsystem
      *
-     * @param managementHost The management host
-     * @param managementPort The management port
      * @param poolName       The name of the pool to be removed
      */
-    public static void removeStrictMaxPool(final String managementHost, final int managementPort, final String poolName) {
-        final ModelControllerClient modelControllerClient = getModelControllerClient(managementHost, managementPort, Authentication.getCallbackHandler());
+    public static void removeStrictMaxPool(final ModelControllerClient controllerClient, final String poolName) {
         try {
             // /subsystem=ejb3/strict-max-bean-instance-pool=<name>:remove()
             final ModelNode removeStrictMaxPool = new ModelNode();
@@ -400,17 +343,10 @@ public class EJBManagementUtil {
             removeStrictMaxPool.get(OP_ADDR).set(strictMaxPoolAddress.toModelNode());
 
             // execute the remove operation
-            execute(modelControllerClient, removeStrictMaxPool);
+            execute(controllerClient, removeStrictMaxPool);
 
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
-        } finally {
-            // close the controller client connection
-            try {
-                modelControllerClient.close();
-            } catch (IOException e) {
-                logger.warn("Error closing model controller client", e);
-            }
         }
     }
 
@@ -484,7 +420,7 @@ public class EJBManagementUtil {
 
     // TODO: This method is temporary hack till we figure out the management operation to get the
     // jboss.node.name system property from the server http://lists.jboss.org/pipermail/jboss-as7-dev/2011-November/004434.html
-    private static String getNodeName() {
+    public static String getNodeName() {
         // Logic copied from org.jboss.as.server.ServerEnvironment constructor
         final Properties props = System.getProperties();
         final Map<String, String> env = System.getenv();

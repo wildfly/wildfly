@@ -43,6 +43,7 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.Authentication;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.arquillian.container.NetworkUtils;
 import org.jboss.as.arquillian.protocol.jmx.JMXProtocolAS7.ServiceArchiveHolder;
 import org.jboss.as.arquillian.service.ArquillianService;
 import org.jboss.as.arquillian.service.InContainerManagementClientExtension;
@@ -111,7 +112,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
         archive.addPackage(ArquillianService.class.getPackage());
         archive.addPackage(AbstractJMXProtocol.class.getPackage());
         //add the classes required for server setup
-        archive.addClasses(ServerSetup.class, ServerSetupTask.class, ManagementClient.class, Authentication.class);
+        archive.addClasses(ServerSetup.class, ServerSetupTask.class, ManagementClient.class, Authentication.class, NetworkUtils.class);
 
         // Merge the auxiliary archives and collect the loadable extensions
         final Set<String> loadableExtensions = new HashSet<String>();
