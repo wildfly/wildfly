@@ -160,7 +160,7 @@
             </thread-pools>
             <iiop enable-by-default="false" use-qualified-name="false"/>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:infinispan:1.1" default-cache-container="cluster">
+        <subsystem xmlns="urn:jboss:domain:infinispan:1.2" default-cache-container="cluster">
             <cache-container name="cluster" aliases="ha-partition" default-cache="default">
                 <transport lock-timeout="60000"/>
                 <replicated-cache name="default" mode="SYNC" batching="true">
