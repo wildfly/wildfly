@@ -28,6 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 
+import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.util.concurrent.CountDownLatch;
@@ -42,7 +43,6 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.Authentication;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil;
-import org.jboss.as.test.shared.TestUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -111,7 +111,7 @@ public class EjbRemoveUnitTestCase {
 
     private static ModelControllerClient getModelControllerClient() throws UnknownHostException {
         if (client == null) {
-            client = TestUtils.getModelControllerClient();
+            client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, Authentication.getCallbackHandler());
         }
         return client;
     }    
