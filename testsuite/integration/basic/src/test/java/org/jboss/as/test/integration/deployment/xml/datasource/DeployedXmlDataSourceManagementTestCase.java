@@ -22,16 +22,17 @@
 
 package org.jboss.as.test.integration.deployment.xml.datasource;
 
-import org.jboss.as.test.shared.TestUtils;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.arquillian.api.ContainerResource;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentActionResult;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
@@ -40,13 +41,10 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -60,25 +58,16 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@ServerSetup(DeployedXmlDataSourceManagementTestCase.DeployedXmlDataSourceManagementTestCaseSetup.class)
 public class DeployedXmlDataSourceManagementTestCase {
 
-
-    private static ModelControllerClient client;
-    private static ServerDeploymentManager manager;
     public static final String TEST_DS_XML = "test-ds.xml";
 
-    @Deployment
-    public static Archive<?> deploy() {
-        return ShrinkWrap.create(JavaArchive.class, "testDsXmlDeployment.jar")
-                .addClass(DeployedXmlDataSourceManagementTestCase.class)
-                .addAsManifestResource(DeployedXmlDataSourceManagementTestCase.class.getPackage(), "MANIFEST.MF", "MANIFEST.MF");
-    }
+    static class DeployedXmlDataSourceManagementTestCaseSetup implements ServerSetupTask {
 
-    @BeforeClass
-    public static void deployDatasource() throws Throwable {
-        try {
-            client = TestUtils.getModelControllerClient();
-            manager = ServerDeploymentManager.Factory.create(client);
+        @Override
+        public void setup(final ManagementClient managementClient) throws Exception {
+            ServerDeploymentManager manager = ServerDeploymentManager.Factory.create(managementClient.getControllerClient());
             final String packageName = DeployedXmlDataSourceManagementTestCase.class.getPackage().getName().replace(".", "/");
             final DeploymentPlan plan = manager.newDeploymentPlan().add(DeployedXmlDataSourceManagementTestCase.class.getResource("/" + packageName + "/" + TEST_DS_XML)).andDeploy().build();
             final Future<ServerDeploymentPlanResult> future = manager.execute(plan);
@@ -86,25 +75,27 @@ public class DeployedXmlDataSourceManagementTestCase {
             final ServerDeploymentActionResult actionResult = result.getDeploymentActionResult(plan.getId());
             if (actionResult != null) {
                 if (actionResult.getDeploymentException() != null) {
-                    throw actionResult.getDeploymentException();
+                    throw new RuntimeException(actionResult.getDeploymentException());
                 }
             }
-        } catch (Throwable e) {
-            if (client != null) {
-                client.close();
-            }
+        }
+
+        @Override
+        public void tearDown(final ManagementClient managementClient) throws Exception {
+            ServerDeploymentManager manager = ServerDeploymentManager.Factory.create(managementClient.getControllerClient());
+            final DeploymentPlan undeployPlan = manager.newDeploymentPlan().undeploy(TEST_DS_XML).andRemoveUndeployed().build();
+            manager.execute(undeployPlan);
         }
     }
 
-    @AfterClass
-    public static void undeployDatasource() throws IOException {
-        if (client != null) {
-            final DeploymentPlan undeployPlan = manager.newDeploymentPlan().undeploy(TEST_DS_XML).andRemoveUndeployed().build();
-            manager.execute(undeployPlan);
-            client.close();
-            client = null;
-            manager = null;
-        }
+    @ContainerResource
+    private ManagementClient managementClient;
+
+    @Deployment
+    public static Archive<?> deploy() {
+        return ShrinkWrap.create(JavaArchive.class, "testDsXmlDeployment.jar")
+                .addClass(DeployedXmlDataSourceManagementTestCase.class)
+                .addAsManifestResource(DeployedXmlDataSourceManagementTestCase.class.getPackage(), "MANIFEST.MF", "MANIFEST.MF");
     }
 
     @Test
@@ -119,7 +110,7 @@ public class DeployedXmlDataSourceManagementTestCase {
         operation.get(OP).set("read-attribute");
         operation.get(OP_ADDR).set(address);
         operation.get(NAME).set("connection-url");
-        ModelNode result = client.execute(operation);
+        ModelNode result = managementClient.getControllerClient().execute(operation);
         Assert.assertEquals("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", result.get(RESULT).asString());
     }
 
@@ -135,9 +126,10 @@ public class DeployedXmlDataSourceManagementTestCase {
         operation.get(OP).set("read-attribute");
         operation.get(OP_ADDR).set(address);
         operation.get(NAME).set("driver-name");
-        ModelNode result = client.execute(operation);
+        ModelNode result = managementClient.getControllerClient().execute(operation);
         Assert.assertEquals("h2", result.get(RESULT).asString());
     }
+
     @Test
     public void testDeployedXaDatasourcePropertiesInManagementModel() throws IOException {
         final ModelNode address = new ModelNode();
@@ -151,7 +143,7 @@ public class DeployedXmlDataSourceManagementTestCase {
         operation.get(OP).set("read-attribute");
         operation.get(OP_ADDR).set(address);
         operation.get(NAME).set(VALUE);
-        ModelNode result = client.execute(operation);
+        ModelNode result = managementClient.getControllerClient().execute(operation);
         Assert.assertEquals("jdbc:h2:mem:test", result.get(RESULT).asString());
     }
 }

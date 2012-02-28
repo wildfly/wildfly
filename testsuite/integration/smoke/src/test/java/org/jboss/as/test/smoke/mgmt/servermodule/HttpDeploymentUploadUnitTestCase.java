@@ -31,14 +31,14 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.NoSuchElementException;
 
-import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ContainerResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.http.Authentication;
-import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.as.test.smoke.mgmt.servermodule.archive.sar.Simple;
+import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
-import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
@@ -68,14 +68,12 @@ public class HttpDeploymentUploadUnitTestCase {
 
     private static final String POST_REQUEST_METHOD = "POST";
 
-    private static final String BASIC_URL = "http://localhost:9990/management/";
+    public static final String MANAGEMENT_URL_PART = "management";
 
-    private static final String UPLOAD_URL = BASIC_URL + "add-content";
+    private static final String UPLOAD_URL_PART = "add-content";
 
-    @Deployment(testable = false)
-    public static Archive<?> getDeployment() {
-        return ShrinkWrapUtils.createEmptyJavaArchive("please-the-arquillian-gods.jar");
-    }
+    @ContainerResource
+    private ManagementClient managementClient;
 
     @Test
     public void testHttpDeploymentUpload() throws Exception {
@@ -84,10 +82,13 @@ public class HttpDeploymentUploadUnitTestCase {
         HttpURLConnection connection = null;
         BufferedOutputStream os = null;
         BufferedInputStream is = null;
+        //TODO: hard coded port
+        final String basicUrl = "http://" + managementClient.getMgmtAddress() + ":9990/" + MANAGEMENT_URL_PART;
+        String uploadUrl = basicUrl + "/" + UPLOAD_URL_PART;
 
         try {
             // Create the HTTP connection to the upload URL
-            connection =getHttpURLConnection(UPLOAD_URL, "multipart/form-data; boundary=" + BOUNDARY_PARAM);
+            connection =getHttpURLConnection(uploadUrl, "multipart/form-data; boundary=" + BOUNDARY_PARAM);
 
             // Grab the test WAR file and get a stream to its contents to be included in the POST.
             final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-http-deployment.sar", Simple.class.getPackage());
@@ -107,7 +108,7 @@ public class HttpDeploymentUploadUnitTestCase {
 
             connection.disconnect();
 
-            connection = getHttpURLConnection(BASIC_URL, "application/json");
+            connection = getHttpURLConnection(basicUrl, "application/json");
             os = new BufferedOutputStream(connection.getOutputStream());
 
             writeAddRequest(os, hash);
@@ -123,7 +124,7 @@ public class HttpDeploymentUploadUnitTestCase {
             closeQuietly(is);
             closeQuietly(os);
             try {
-                connection = getHttpURLConnection(BASIC_URL, "application/json");
+                connection = getHttpURLConnection(basicUrl, "application/json");
                 os = new BufferedOutputStream(connection.getOutputStream());
                 writeRemoveRequest(os);
                 ModelNode node = readResult(connection.getInputStream());

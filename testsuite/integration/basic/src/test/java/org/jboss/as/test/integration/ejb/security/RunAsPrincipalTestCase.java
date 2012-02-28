@@ -26,9 +26,11 @@ import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.ejb.security.runasprincipal.Caller;
 import org.jboss.as.test.integration.ejb.security.runasprincipal.CallerWithIdentity;
 import org.jboss.as.test.integration.ejb.security.runasprincipal.WhoAmI;
+import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.logging.Logger;
 import org.jboss.security.client.SecurityClient;
@@ -49,20 +51,13 @@ import org.junit.runner.RunWith;
  * @author Carlo de Wolf, Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
-public class RunAsPrincipalTestCase extends SecurityTest {
+@ServerSetup({EjbSecurityDomainSetup.class})
+public class RunAsPrincipalTestCase  {
 
     private static final Logger log = Logger.getLogger(RunAsPrincipalTestCase.class);
 
     @Deployment
     public static Archive<?> runAsDeployment() {
-        // FIXME hack to get things prepared before the deployment happens
-        try {
-            // create required security domains
-            createSecurityDomain();
-        } catch (Exception e) {
-            // ignore
-        }
-
         // using JavaArchive doesn't work, because of a bug in Arquillian, it only deploys wars properly
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "runasprincipal-test.war")
                 .addPackage(WhoAmI.class.getPackage())
@@ -70,7 +65,7 @@ public class RunAsPrincipalTestCase extends SecurityTest {
                 .addClass(Entry.class)
                 .addClass(RunAsPrincipalTestCase.class)
                 .addClass(Base64.class)
-                .addClass(SecurityTest.class)
+                .addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class)
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr\n"),"MANIFEST.MF");
         log.info(war.toString(true));
         return war;

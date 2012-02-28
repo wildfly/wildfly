@@ -25,7 +25,6 @@ package org.jboss.as.test.smoke.messaging.client.jms;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -40,24 +39,15 @@ import javax.jms.QueueSender;
 import javax.jms.QueueSession;
 import javax.jms.TextMessage;
 import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 import junit.framework.Assert;
-import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.test.shared.integration.ejb.security.CallbackHandler;
 import org.jboss.dmr.ModelNode;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -73,31 +63,11 @@ public class JmsClientTestCase {
     private static final String QUEUE_NAME = "createdTestQueue";
     private static final String EXPORTED_QUEUE_NAME = "java:jboss/exported/createdTestQueue";
 
-    private static Context remoteContext;
+    @ContainerResource
+    private Context remoteContext;
 
-    @ArquillianResource
+    @ContainerResource
     private ManagementClient managementClient;
-
-    @Deployment
-    public static Archive<?> fakeDeployment() {
-        return ShrinkWrap.create(JavaArchive.class);
-    }
-
-    @BeforeClass
-    public static void setupRemoteContext() throws Exception {
-        final Properties env = new Properties();
-        env.put(Context.INITIAL_CONTEXT_FACTORY, org.jboss.naming.remote.client.InitialContextFactory.class.getName());
-        env.put(Context.PROVIDER_URL, "remote://localhost:4447");
-        env.put("jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "false");
-        env.put("jboss.naming.client.security.callback.handler.class", CallbackHandler.class.getName());
-        remoteContext = new InitialContext(env);
-    }
-
-    @AfterClass
-    public static void close() throws NamingException {
-        remoteContext.close();
-    }
-
 
     @Test
     public void testMessagingClient() throws Exception {

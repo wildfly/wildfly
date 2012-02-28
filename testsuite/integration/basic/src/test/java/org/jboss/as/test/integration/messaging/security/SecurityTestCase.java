@@ -22,50 +22,43 @@
 
 package org.jboss.as.test.integration.messaging.security;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 import junit.framework.Assert;
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSession.QueueQuery;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ContainerResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.dmr.ModelNode;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Tests the security integration for HornetQ
  *
  * @author Justin Bertram (c) 2011 Red Hat Inc.
  */
-@RunAsClient()
+@RunAsClient
 @RunWith(Arquillian.class)
 public class SecurityTestCase {
-    @BeforeClass
-    public static void setup() throws Exception {
-    }
 
-    @AfterClass
-    public static void cleanup() throws Exception {
-    }
+    @ContainerResource
+    private ManagementClient managementClient;
 
     @Test
     public void testFailedAuthenticationBadUserPass() throws Exception {
-        final ClientSessionFactory sf = createClientSessionFactory("localhost", 5445);
+        final ClientSessionFactory sf = createClientSessionFactory(managementClient.getMgmtAddress(), 5445);
         ClientSession session = null;
         boolean success = false;
         try {
@@ -85,7 +78,7 @@ public class SecurityTestCase {
 
     @Test
     public void testFailedAuthenticationBlankUserPass() throws Exception {
-        final ClientSessionFactory sf = createClientSessionFactory("localhost", 5445);
+        final ClientSessionFactory sf = createClientSessionFactory(managementClient.getMgmtAddress(), 5445);
         ClientSession session = null;
         boolean success = false;
         try {
@@ -105,7 +98,7 @@ public class SecurityTestCase {
 
     @Test
     public void testDefaultClusterUser() throws Exception {
-        final ClientSessionFactory sf = createClientSessionFactory("localhost", 5445);
+        final ClientSessionFactory sf = createClientSessionFactory(managementClient.getMgmtAddress(), 5445);
         ClientSession session = null;
         boolean success = false;
         try {
@@ -125,7 +118,7 @@ public class SecurityTestCase {
 
     @Test
     public void testSuccessfulAuthentication() throws Exception {
-        final ClientSessionFactory sf = createClientSessionFactory("localhost", 5445);
+        final ClientSessionFactory sf = createClientSessionFactory(managementClient.getMgmtAddress(), 5445);
         ClientSession session = null;
         boolean success = false;
         try {
@@ -145,7 +138,7 @@ public class SecurityTestCase {
         boolean success = false;
         final String queueName = "queue.testSuccessfulAuthorization";
 
-        final ClientSessionFactory sf = createClientSessionFactory("localhost", 5445);
+        final ClientSessionFactory sf = createClientSessionFactory(managementClient.getMgmtAddress(), 5445);
 
         ClientSession session = null;
         try {
@@ -172,7 +165,7 @@ public class SecurityTestCase {
         boolean success = false;
         final String queueName = "queue.testUnsuccessfulAuthorization";
 
-        final ClientSessionFactory sf = createClientSessionFactory("localhost", 5445);
+        final ClientSessionFactory sf = createClientSessionFactory(managementClient.getMgmtAddress(), 5445);
 
         ClientSession session = null;
         try {

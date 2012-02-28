@@ -34,7 +34,6 @@ import org.jboss.as.test.integration.web.security.WebSecurityPasswordBasedBase;
 import org.jboss.as.test.integration.web.security.WebSimpleRoleMappingSecurityDomainSetup;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -53,14 +52,6 @@ public class WebSecurityJBossSimpleRoleMappingTestCase extends WebSecurityFORMTe
     @ArquillianResource
     @OperateOnDeployment(deploymentName)
     URL deploymentUrl;
-
-    @Before
-    public void init() {
-        // make URL params flexible in case we are running tests against something different than localhost:8080
-        setHostname(deploymentUrl.getHost());
-        setPort(deploymentUrl.getPort());
-    }
-
 
     @Deployment(name = deploymentName, order = 1, testable = false)
     public static WebArchive deployment() throws Exception {

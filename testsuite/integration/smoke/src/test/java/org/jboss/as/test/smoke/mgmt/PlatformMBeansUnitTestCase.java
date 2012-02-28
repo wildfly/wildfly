@@ -22,6 +22,19 @@
 
 package org.jboss.as.test.smoke.mgmt;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import junit.framework.Assert;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ContainerResource;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -33,25 +46,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
-
-import java.net.UnknownHostException;
-import java.util.HashSet;
-import java.util.Set;
-
-import junit.framework.Assert;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.test.shared.TestUtils;
-import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-import org.jboss.shrinkwrap.api.Archive;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Test validating that the platform mbean resources exist and are reachable.
@@ -69,24 +63,8 @@ public class PlatformMBeansUnitTestCase {
         ignored.add("deployment-scanner");
     }
 
-    private ModelControllerClient client;
-
-    @Deployment
-    public static Archive<?> getDeployment() {
-        return ShrinkWrapUtils.createEmptyJavaArchive("dummy");
-    }
-
-    // [ARQ-458] @Before not called with @RunAsClient
-    private ModelControllerClient getModelControllerClient() throws UnknownHostException {
-        StreamUtils.safeClose(client);
-        client = TestUtils.getModelControllerClient();
-        return client;
-    }
-
-    @After
-    public void tearDown() {
-        StreamUtils.safeClose(client);
-    }
+    @ContainerResource
+    private ManagementClient managementClient;
 
     @Test
     public void testReadClassLoadingMXBean() throws Exception {
@@ -104,7 +82,7 @@ public class PlatformMBeansUnitTestCase {
     }
 
     private ModelNode executeForResult(final ModelNode operation) throws Exception {
-        final ModelNode result = getModelControllerClient().execute(operation);
+        final ModelNode result = managementClient.getControllerClient().execute(operation);
         checkSuccessful(result, operation);
         return result.get(RESULT);
     }

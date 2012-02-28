@@ -21,9 +21,6 @@
  */
 package org.jboss.as.test.integration.web.rootcontext;
 
-import static org.junit.Assert.assertTrue;
-
-import java.net.InetAddress;
 import java.net.URL;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -31,40 +28,50 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.test.shared.TestUtils;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.junit.Assert.assertTrue;
+
 /**
  * This class tests a root context deployed as an EAR or a WAR.
- * 
+ *
  * @author Stan.Silvert@jboss.org
  * @author lbarreiro@redhat.com
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@ServerSetup(RootContextEarUnitTestCase.RootContextEarUnitTestCaseSetup.class)
 public class RootContextEarUnitTestCase {
 
     private static Logger log = Logger.getLogger(RootContextEarUnitTestCase.class);
-    
+
+    static class RootContextEarUnitTestCaseSetup extends AbstractMgmtServerSetupTask {
+
+        @Override
+        protected void doSetup(final ManagementClient managementClient) throws Exception {
+            RootContextUtil.createVirtualServer(managementClient.getControllerClient(), HOST);
+        }
+
+        @Override
+        public void tearDown(final ManagementClient managementClient) throws Exception {
+            RootContextUtil.removeVirtualServer(managementClient.getControllerClient(), HOST);
+        }
+    }
+
+
     private static String HOST = "context-host";
 
     @Deployment(name = "root-web.ear", testable = false)
     public static EnterpriseArchive earDeployment() {
 
-        try {
-            ModelControllerClient mcc = TestUtils.getModelControllerClient();
-            RootContextUtil.createVirtualServer(mcc, HOST);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
-    
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         String resourcesLocation = "org/jboss/as/test/integration/web/rootcontext/resources/";
 
@@ -73,7 +80,7 @@ public class RootContextEarUnitTestCase {
         war.setWebXML(tccl.getResource(resourcesLocation + "root-web.xml"));
         war.addAsWebInfResource(tccl.getResource(resourcesLocation + "jboss-web.xml"), "jboss-web.xml");
         war.addAsWebResource(tccl.getResource(resourcesLocation + "index.html"), "index.html");
-        
+
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "root-web.ear");
         ear.setApplicationXML(tccl.getResource(resourcesLocation + "application-root.xml"));
         ear.addAsModule(war);
@@ -82,18 +89,7 @@ public class RootContextEarUnitTestCase {
         log.info(war.toString(true));
         return ear;
     }
-    
-    @AfterClass
-    public static void undeployment() {
-        try {
-            ModelControllerClient mcc = TestUtils.getModelControllerClient();
-            RootContextUtil.undeploy(mcc, "root-web.ear");
-            RootContextUtil.removeVirtualServer(mcc, HOST);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
-    }
-  
+
     @Test
     @OperateOnDeployment("root-web.ear")
     public void testRootContextEAR(@ArquillianResource URL url) throws Exception {

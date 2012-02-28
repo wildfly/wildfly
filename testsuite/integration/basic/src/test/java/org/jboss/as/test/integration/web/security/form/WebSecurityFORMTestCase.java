@@ -22,6 +22,7 @@
 package org.jboss.as.test.integration.web.security.form;
 
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,6 +42,7 @@ import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.web.security.SecuredServlet;
 import org.jboss.as.test.integration.web.security.WebSecurityPasswordBasedBase;
@@ -79,10 +81,14 @@ public class WebSecurityFORMTestCase extends WebSecurityPasswordBasedBase {
         return war;
     }
 
+    @ArquillianResource
+    private URL url;
+
     protected void makeCall(String user, String pass, int expectedStatusCode) throws Exception {
         DefaultHttpClient httpclient = new DefaultHttpClient();
         try {
-            HttpGet httpget = new HttpGet(URL);
+            String req = url.toExternalForm() + "secured/";
+            HttpGet httpget = new HttpGet(req);
 
             HttpResponse response = httpclient.execute(httpget);
 
@@ -104,9 +110,9 @@ public class WebSecurityFORMTestCase extends WebSecurityPasswordBasedBase {
                     System.out.println("- " + cookies.get(i).toString());
                 }
             }
-
+            req = url.toExternalForm() + "secured/j_security_check/";
             // We should now login with the user name and password
-            HttpPost httpPost = new HttpPost(URL + "/j_security_check");
+            HttpPost httpPost = new HttpPost(req);
 
             List<NameValuePair> nvps = new ArrayList<NameValuePair>();
             nvps.add(new BasicNameValuePair("j_username", user));

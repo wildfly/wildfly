@@ -23,22 +23,20 @@ package org.jboss.as.test.smoke.deployment.rar.examples;
 
 import java.net.URL;
 import java.util.List;
-import java.util.Properties;
 
 import javax.naming.Context;
-import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.as.test.integration.management.base.ArquillianResourceMgmtTestBase;
-import org.jboss.as.test.shared.integration.ejb.security.CallbackHandler;
 import org.jboss.as.test.smoke.deployment.rar.MultipleAdminObject1;
 import org.jboss.as.test.smoke.deployment.rar.MultipleConnectionFactory1;
 import org.jboss.dmr.ModelNode;
@@ -64,7 +62,9 @@ import static org.junit.Assert.assertNotNull;
 public class AfterResourceCreationDeploymentTestCase extends ArquillianResourceMgmtTestBase {
 
     static String deploymentName = "basic-after.rar";
-    private static Context remoteContext;
+
+    @ContainerResource
+    private Context context;
 
     @ArquillianResource
     private URL url;
@@ -77,9 +77,7 @@ public class AfterResourceCreationDeploymentTestCase extends ArquillianResourceM
             address.add("subsystem", "resource-adapters");
             address.add("resource-adapter", deploymentName);
             address.protect();
-
             remove(address);
-            remoteContext.close();
         }
 
         @Override
@@ -103,13 +101,6 @@ public class AfterResourceCreationDeploymentTestCase extends ArquillianResourceM
         operation.get(OP_ADDR).set(address);
         executeOperation(operation);
 
-
-        final Properties env = new Properties();
-        env.put(Context.INITIAL_CONTEXT_FACTORY, org.jboss.naming.remote.client.InitialContextFactory.class.getName());
-        env.put(Context.PROVIDER_URL, "remote://" + url.getHost() + ":4447");
-        env.put("jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "false");
-        env.put("jboss.naming.client.security.callback.handler.class", CallbackHandler.class.getName());
-        remoteContext = new InitialContext(env);
     }
 
     /**
@@ -141,7 +132,7 @@ public class AfterResourceCreationDeploymentTestCase extends ArquillianResourceM
     @Test
     public void testConfiguration() throws Throwable {
         setup();
-        MultipleAdminObject1 adminObject1 = (MultipleAdminObject1) remoteContext.lookup("after/Name3");
+        MultipleAdminObject1 adminObject1 = (MultipleAdminObject1) context.lookup("after/Name3");
         assertNotNull("AO1 not found", adminObject1);
     }
 

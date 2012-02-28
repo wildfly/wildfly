@@ -22,7 +22,6 @@
 
 package org.jboss.as.test.integration.ejb.security.callerprincipal;
 
-import org.jboss.as.test.shared.TestUtils;
 import java.security.Principal;
 import java.util.Hashtable;
 
@@ -49,10 +48,13 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.test.integration.common.JMSAdminOperations;
-import org.jboss.as.test.integration.ejb.security.SecurityTest;
+import org.jboss.as.test.integration.ejb.security.EjbSecurityDomainSetup;
+import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
+import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.smoke.modular.utils.PollingUtils;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
@@ -65,8 +67,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.util.Base64;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -89,7 +89,8 @@ import static org.junit.Assert.fail;
  * @author Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
-public class GetCallerPrincipalTestCase extends SecurityTest {
+@ServerSetup({EjbSecurityDomainSetup.class, GetCallerPrincipalTestCase.JmsQueueSetup.class})
+public class GetCallerPrincipalTestCase  {
 
     private static final String QUEUE_NAME = "queue/callerPrincipal";
 
@@ -98,22 +99,45 @@ public class GetCallerPrincipalTestCase extends SecurityTest {
     private static final String ANONYMOUS = "anonymous"; //TODO: is this constant configured somewhere?
     private static final String OK = "OK";
 
-    private static ModelControllerClient modelControllerClient;
     public static final String LOCAL_USER = "$local";
 
     @ArquillianResource
     Deployer deployer;
 
+    static class JmsQueueSetup extends AbstractMgmtServerSetupTask {
+
+        @Override
+        protected void doSetup(final ManagementClient managementClient) throws Exception {
+            createQueue("queue/callerPrincipal");
+        }
+
+        @Override
+        public void tearDown(final ManagementClient managementClient) throws Exception {
+            destroyQueue("queue/callerPrincipal");
+        }
+        private void createQueue(String queueName) throws Exception {
+            ModelNode addJmsQueue = getQueueAddr(queueName);
+            addJmsQueue.get(ClientConstants.OP).set("add");
+            addJmsQueue.get("entries").add("java:jboss/" + queueName);
+            executeOperation(addJmsQueue);
+        }
+
+        private void destroyQueue(String queueName) throws Exception {
+            ModelNode removeJmsQueue = getQueueAddr(queueName);
+            removeJmsQueue.get(ClientConstants.OP).set("remove");
+            executeOperation(removeJmsQueue);
+        }
+    }
+
+    private InitialContext getInitialContext() throws NamingException {
+        final Hashtable<String,String> jndiProperties = new Hashtable<String,String>();
+        jndiProperties.put(Context.INITIAL_CONTEXT_FACTORY,"org.jboss.as.naming.InitialContextFactory");
+        jndiProperties.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
+        return new InitialContext(jndiProperties);
+    }
 
     @Deployment(managed=true, testable = false, name = "single", order = 0)
     public static Archive<?> deploymentSingleton()  {
-        // to get things prepared before the deployment happens (@see  org.jboss.as.test.integration.ejb.security.AuthenticationTestCase)
-        // and be sure that this will be called on first deployment (order=0) (btw. deployment without order has order == 0)
-        try {
-            createSecurityDomain();
-        } catch (Exception e) {
-            // ignore
-        }
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "single.jar")
                 .addClass(TestResultsSingleton.class)
@@ -175,51 +199,18 @@ public class GetCallerPrincipalTestCase extends SecurityTest {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "callerprincipal-test.jar")
                 .addClass(GetCallerPrincipalTestCase.class)
                 .addClass(Base64.class)
-                .addClass(SecurityTest.class)
                 .addClass(JMSAdminOperations.class)
                 .addClass(SLSBWithoutSecurityDomain.class)
                 .addClass(ISLSBWithoutSecurityDomain.class)
                 .addClass(ShrinkWrapUtils.class)
                 .addClass(PollingUtils.class)
                 .addClass(EntityBean.class)
+                .addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class)
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "users.properties", "users.properties")
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "roles.properties", "roles.properties")
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-test", "MANIFEST.MF");
         log.info(jar.toString(true));
         return jar;
-    }
-
-    @BeforeClass
-    public static void init() throws Exception {
-        modelControllerClient = TestUtils.getModelControllerClient();
-        createQueue(modelControllerClient, "queue/callerPrincipal");
-    }
-
-    @AfterClass
-    public static void clearUp() throws Exception {
-        destroyQueue(modelControllerClient, "queue/callerPrincipal");
-        modelControllerClient.close();
-        removeSecurityDomain();
-    }
-
-    private InitialContext getInitialContext() throws NamingException {
-        final Hashtable<String,String> jndiProperties = new Hashtable<String,String>();
-        jndiProperties.put(Context.INITIAL_CONTEXT_FACTORY,"org.jboss.as.naming.InitialContextFactory");
-        jndiProperties.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
-        return new InitialContext(jndiProperties);
-    }
-
-    private static void createQueue(ModelControllerClient modelClient, String queueName) throws Exception {
-        ModelNode addJmsQueue = getQueueAddr(queueName);
-        addJmsQueue.get(ClientConstants.OP).set("add");
-        addJmsQueue.get("entries").add("java:jboss/" + queueName);
-        applyUpdate(addJmsQueue, modelClient);
-    }
-
-    private static void destroyQueue(ModelControllerClient modelClient, String queueName) throws Exception {
-        ModelNode removeJmsQueue = getQueueAddr(queueName);
-        removeJmsQueue.get(ClientConstants.OP).set("remove");
-        applyUpdate(removeJmsQueue, modelClient);
     }
 
     private static ModelNode getQueueAddr(String name) {

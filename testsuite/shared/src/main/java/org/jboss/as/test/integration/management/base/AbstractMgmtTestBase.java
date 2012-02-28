@@ -89,6 +89,11 @@ public abstract class AbstractMgmtTestBase {
         return ret.get(RESULT);
     }
 
+    protected void executeOperations(final List<ModelNode> operations) throws IOException, MgmtOperationException {
+        for(ModelNode op : operations) {
+            executeOperation(op);
+        }
+    }
     protected ModelNode executeOperation(final ModelNode op) throws IOException, MgmtOperationException {
         return executeOperation(op, true);
     }

@@ -33,11 +33,13 @@ import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.as.test.integration.ejb.security.EjbSecurityDomainSetup;
 import org.jboss.as.test.integration.ejb.security.Entry;
-import org.jboss.as.test.integration.ejb.security.SecurityTest;
 import org.jboss.as.test.integration.ejb.security.WhoAmI;
 import org.jboss.as.test.integration.ejb.security.base.WhoAmIBean;
+import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -59,7 +61,8 @@ import static org.junit.Assert.fail;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 @RunWith(Arquillian.class)
-public class RunAsTestCase extends SecurityTest {
+@ServerSetup({EjbSecurityDomainSetup.class})
+public class RunAsTestCase {
 
     private static final Logger log = Logger.getLogger(RunAsTestCase.class.getName());
 
@@ -80,19 +83,12 @@ public class RunAsTestCase extends SecurityTest {
      */
     @Deployment
     public static Archive<?> runAsDeployment() {
-        // FIXME hack to get things prepared before the deployment happens
-        try {
-            // create required security domains
-            createSecurityDomain();
-        } catch (Exception e) {
-            // ignore
-        }
-
         // using JavaArchive doesn't work, because of a bug in Arquillian, it only deploys wars properly
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "ejb3security.war")
                 .addPackage(WhoAmIBean.class.getPackage()).addPackage(EntryBean.class.getPackage())
                 .addPackage(HttpRequest.class.getPackage()).addClass(WhoAmI.class).addClass(Util.class).addClass(Entry.class)
-                .addClass(RunAsTestCase.class).addClass(Base64.class).addClass(SecurityTest.class)
+                .addClasses(RunAsTestCase.class, Base64.class)
+                .addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class)
                 .addAsResource("ejb3/security/users.properties", "users.properties")
                 .addAsResource("ejb3/security/roles.properties", "roles.properties")
                 .addAsWebInfResource("ejb3/security/web.xml", "web.xml")

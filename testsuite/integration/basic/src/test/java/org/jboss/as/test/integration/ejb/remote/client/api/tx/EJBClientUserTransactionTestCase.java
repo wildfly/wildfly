@@ -83,7 +83,7 @@ public class EJBClientUserTransactionTestCase {
     @BeforeClass
     public static void beforeTestClass() throws Exception {
         // the node name that the test methods can use
-        nodeName = EJBManagementUtil.getNodeName("localhost", 9999);
+        nodeName = EJBManagementUtil.getNodeName();
         logger.info("Using node name " + nodeName);
 
     }

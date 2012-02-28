@@ -21,18 +21,16 @@
  */
 package org.jboss.as.test.smoke.mgmt.servermodule;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-
-
 import junit.framework.Assert;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.test.shared.TestUtils;
+import org.jboss.as.arquillian.api.ContainerResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 /**
  * Here to prove the forked surefire plugin is capable of running
@@ -42,7 +40,11 @@ import org.junit.runner.RunWith;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 @RunWith(Arquillian.class)
-public class ServerInModuleStartupTestCase  {
+public class ServerInModuleStartupTestCase {
+
+
+    @ContainerResource
+    private ManagementClient managementClient;
 
     /**
      * Validates that the model can be read in xml form.
@@ -51,17 +53,12 @@ public class ServerInModuleStartupTestCase  {
      */
     @Test
     public void testReadConfigAsXml() throws Exception {
-        ModelControllerClient client = TestUtils.getModelControllerClient();
-        try {
-            ModelNode request = new ModelNode();
-            request.get("operation").set("read-config-as-xml");
-            request.get("address").setEmptyList();
-            ModelNode r = client.execute(request);
+        ModelNode request = new ModelNode();
+        request.get("operation").set("read-config-as-xml");
+        request.get("address").setEmptyList();
+        ModelNode r = managementClient.getControllerClient().execute(request);
 
-            Assert.assertEquals(SUCCESS, r.require(OUTCOME).asString());
-        } finally {
-            StreamUtils.safeClose(client);
-        }
+        Assert.assertEquals(SUCCESS, r.require(OUTCOME).asString());
     }
 
     /**
@@ -71,40 +68,35 @@ public class ServerInModuleStartupTestCase  {
      */
     @Test
     public void testReadResourceDescription() throws Exception {
-        ModelControllerClient client = TestUtils.getModelControllerClient();
-        try {
-            ModelNode request = new ModelNode();
-            request.get("operation").set("read-resource");
-            request.get("address").setEmptyList();
-            request.get("recursive").set(true);
-            ModelNode r = client.execute(request);
+        ModelNode request = new ModelNode();
+        request.get("operation").set("read-resource");
+        request.get("address").setEmptyList();
+        request.get("recursive").set(true);
+        ModelNode r = managementClient.getControllerClient().execute(request);
 
-            Assert.assertEquals("response with failure details:"+r.toString(), SUCCESS, r.require(OUTCOME).asString());
+        Assert.assertEquals("response with failure details:" + r.toString(), SUCCESS, r.require(OUTCOME).asString());
 
-            request = new ModelNode();
-            request.get("operation").set("read-resource-description");
-            request.get("address").setEmptyList();
-            request.get("recursive").set(true);
-            request.get("operations").set(true);
-            request.get("inherited").set(false);
-            r = client.execute(request);
+        request = new ModelNode();
+        request.get("operation").set("read-resource-description");
+        request.get("address").setEmptyList();
+        request.get("recursive").set(true);
+        request.get("operations").set(true);
+        request.get("inherited").set(false);
+        r = managementClient.getControllerClient().execute(request);
 
-            Assert.assertEquals("response with failure details:"+r.toString(), SUCCESS, r.require(OUTCOME).asString());
+        Assert.assertEquals("response with failure details:" + r.toString(), SUCCESS, r.require(OUTCOME).asString());
 
-            // Make sure the inherited op descriptions work as well
+        // Make sure the inherited op descriptions work as well
 
-            request = new ModelNode();
-            request.get("operation").set("read-resource-description");
-            request.get("address").setEmptyList();
-            request.get("recursive").set(false); // NOT recursive; we just need them once
-            request.get("operations").set(true);
-            request.get("inherited").set(true);
-            r = client.execute(request);
+        request = new ModelNode();
+        request.get("operation").set("read-resource-description");
+        request.get("address").setEmptyList();
+        request.get("recursive").set(false); // NOT recursive; we just need them once
+        request.get("operations").set(true);
+        request.get("inherited").set(true);
+        r = managementClient.getControllerClient().execute(request);
 
-            Assert.assertEquals("response with failure details:"+r.toString(), SUCCESS, r.require(OUTCOME).asString());
-        } finally {
-            StreamUtils.safeClose(client);
-        }
+        Assert.assertEquals("response with failure details:" + r.toString(), SUCCESS, r.require(OUTCOME).asString());
     }
 
 }

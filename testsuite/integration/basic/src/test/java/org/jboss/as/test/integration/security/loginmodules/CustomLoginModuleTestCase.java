@@ -22,9 +22,7 @@
 
 package org.jboss.as.test.integration.security.loginmodules;
 
-import org.jboss.as.test.shared.TestSuiteEnvironment;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,29 +44,24 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.security.Constants;
+import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.integration.security.loginmodules.common.CustomTestLoginModule;
 import org.jboss.as.test.integration.web.security.SecuredServlet;
 import org.jboss.as.test.integration.web.security.WebSecurityPasswordBasedBase;
-import org.jboss.as.test.shared.TestUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.security.Constants.AUTHENTICATION;
@@ -84,6 +77,7 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@ServerSetup(CustomLoginModuleTestCase.CustomLoginModuleSecurityDomainSetup.class)
 public class CustomLoginModuleTestCase {
 
 
@@ -92,6 +86,41 @@ public class CustomLoginModuleTestCase {
 
     private String getURL(){
        return deploymentURL.toString() + "secured/";
+    }
+
+    static class CustomLoginModuleSecurityDomainSetup extends AbstractSecurityDomainSetup {
+
+        @Override
+        protected String getSecurityDomainName() {
+            return "custom-login-module";
+        }
+
+        @Override
+        public void setup(final ManagementClient managementClient) throws Exception {
+            final List<ModelNode> updates = new ArrayList<ModelNode>();
+            ModelNode op = new ModelNode();
+
+            op.get(OP).set(COMPOSITE);
+            op.get(OP_ADDR).setEmptyList();
+            ModelNode add1 = op.get(STEPS).add();
+
+            add1.get(OP).set(ADD);
+            add1.get(OP_ADDR).add(SUBSYSTEM, "security");
+            add1.get(OP_ADDR).add(SECURITY_DOMAIN, getSecurityDomainName());
+
+            ModelNode add2 =  op.get(STEPS).add();
+            add2.get(OP).set(ADD);
+            add2.get(OP_ADDR).add(SUBSYSTEM, "security");
+            add2.get(OP_ADDR).add(SECURITY_DOMAIN, getSecurityDomainName());
+            add2.get(OP_ADDR).add(AUTHENTICATION, Constants.CLASSIC);
+
+            ModelNode loginModule = add2.get(Constants.LOGIN_MODULES).add();
+            loginModule.get(CODE).set(CustomTestLoginModule.class.getName());
+            loginModule.get(FLAG).set("required");
+
+            updates.add(op);
+            applyUpdates(managementClient.getControllerClient(), updates);
+        }
     }
 
     /**
@@ -115,28 +144,10 @@ public class CustomLoginModuleTestCase {
 
     @Deployment
     public static WebArchive deployment() throws IOException {
-        // FIXME hack to get things prepared before the deployment happens
-        ModelControllerClient client = TestUtils.getModelControllerClient();
-        try {
-            // create required security domains
-            createSecurityDomains(client);
-        } catch (Exception e) {
-            // ignore
-        } finally {
-            client.close();
-        }
-
         WebArchive war = create("custom-login-module.war", SecuredServlet.class);
         WebSecurityPasswordBasedBase.printWar(war);
         Logger.getLogger(CustomLoginModuleTestCase.class).debug(war.toString(true));
         return war;
-    }
-
-    @AfterClass
-    public static void after() throws Exception {
-        ModelControllerClient client = TestUtils.getModelControllerClient();
-        // remove test security domains
-        removeSecurityDomains(client);
     }
 
     @Test
@@ -221,63 +232,6 @@ public class CustomLoginModuleTestCase {
             // shut down the connection manager to ensure
             // immediate deallocation of all system resources
             httpclient.getConnectionManager().shutdown();
-        }
-    }
-
-    public static void createSecurityDomains(final ModelControllerClient client) throws Exception {
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
-        ModelNode op = new ModelNode();
-        String securityDomain = "custom-login-module";
-
-        op.get(OP).set(COMPOSITE);
-        op.get(OP_ADDR).setEmptyList();
-        ModelNode add1 = op.get(STEPS).add();
-
-        add1.get(OP).set(ADD);
-        add1.get(OP_ADDR).add(SUBSYSTEM, "security");
-        add1.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
-
-        ModelNode add2 =  op.get(STEPS).add();
-        add2.get(OP).set(ADD);
-        add2.get(OP_ADDR).add(SUBSYSTEM, "security");
-        add2.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
-        add2.get(OP_ADDR).add(AUTHENTICATION, Constants.CLASSIC);
-
-        ModelNode loginModule = add2.get(Constants.LOGIN_MODULES).add();
-        loginModule.get(CODE).set(CustomTestLoginModule.class.getName());
-        loginModule.get(FLAG).set("required");
-
-        updates.add(op);
-        applyUpdates(updates, client);
-    }
-
-    public static void removeSecurityDomains(final ModelControllerClient client) throws Exception {
-        ModelNode op = new ModelNode();
-        op.get(OP).set(REMOVE);
-        op.get(OP_ADDR).add(SUBSYSTEM, "security");
-        op.get(OP_ADDR).add(SECURITY_DOMAIN, "custom-login-module");
-        // Don't rollback when the AS detects the war needs the module
-        op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
-
-        applyUpdate(op, client, true);
-    }
-
-    public static void applyUpdates(final List<ModelNode> updates, final ModelControllerClient client) throws Exception {
-        for (ModelNode update : updates) {
-            applyUpdate(update, client, false);
-        }
-    }
-
-    public static void applyUpdate(ModelNode update, final ModelControllerClient client, boolean allowFailure) throws Exception {
-        ModelNode result = client.execute(new OperationBuilder(update).build());
-        if (result.hasDefined("outcome") && (allowFailure || "success".equals(result.get("outcome").asString()))) {
-            if (result.hasDefined("result")) {
-                System.out.println(result.get("result"));
-            }
-        } else if (result.hasDefined("failure-description")) {
-            throw new RuntimeException(result.get("failure-description").toString());
-        } else {
-            throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
         }
     }
 

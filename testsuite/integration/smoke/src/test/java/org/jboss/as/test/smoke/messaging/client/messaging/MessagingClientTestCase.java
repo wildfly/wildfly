@@ -23,7 +23,6 @@
 package org.jboss.as.test.smoke.messaging.client.messaging;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,16 +40,13 @@ import org.hornetq.api.core.client.ClientSession.QueueQuery;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
-import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
-import org.jboss.shrinkwrap.api.Archive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -64,23 +60,15 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class MessagingClientTestCase {
 
-    @ArquillianResource
+    @ContainerResource
     private ManagementClient managementClient;
-
-    @ArquillianResource
-    private URL url;
-
-    @Deployment(testable = false)
-    public static Archive<?> getEmptyDeployment() {
-        return ShrinkWrapUtils.createEmptyJavaArchive("messaging-client.jar");
-    }
 
     @Test
     public void testMessagingClient() throws Exception {
 
         final String queueName = "queue.standalone";
 
-        final ClientSessionFactory sf = createClientSessionFactory(url.getHost(), 5445);
+        final ClientSessionFactory sf = createClientSessionFactory(managementClient.getMgmtAddress(), 5445);
         final ModelControllerClient client = managementClient.getControllerClient();
 
         // Check that the queue does not exists

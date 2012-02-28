@@ -22,6 +22,18 @@
 
 package org.jboss.as.test.smoke.mgmt;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import junit.framework.Assert;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ContainerResource;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.dmr.ModelNode;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
@@ -33,24 +45,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-
-import java.net.UnknownHostException;
-import java.util.HashSet;
-import java.util.Set;
-
-import junit.framework.Assert;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.test.shared.TestUtils;
-import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
-import org.jboss.shrinkwrap.api.Archive;
-import org.junit.After;
-import org.jboss.dmr.ModelNode;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Test validating that subsystems register a "describe" operation in order to be able
@@ -64,28 +58,12 @@ public class DescribeOperationUnitTestCase {
 
     private static final Set<String> ignored = new HashSet<String>();
 
+    @ContainerResource
+    private ManagementClient managementClient;
+
     static {
         // Only a few subsystems are NOT supposed to work in the domain mode
         ignored.add("deployment-scanner");
-    }
-
-    private ModelControllerClient client;
-
-    @Deployment
-    public static Archive<?> getDeployment() {
-        return ShrinkWrapUtils.createEmptyJavaArchive("dummy");
-    }
-
-    // [ARQ-458] @Before not called with @RunAsClient
-    private ModelControllerClient getModelControllerClient() throws UnknownHostException {
-        StreamUtils.safeClose(client);
-        client = TestUtils.getModelControllerClient();
-        return client;
-    }
-
-    @After
-    public void tearDown() {
-        StreamUtils.safeClose(client);
     }
 
     @Test
@@ -130,7 +108,7 @@ public class DescribeOperationUnitTestCase {
     }
 
     private ModelNode executeForResult(final ModelNode operation) throws Exception {
-        final ModelNode result = getModelControllerClient().execute(operation);
+        final ModelNode result = managementClient.getControllerClient().execute(operation);
         checkSuccessful(result, operation);
         return result.get(RESULT);
     }
