@@ -58,6 +58,7 @@ public final class DriverProcessor implements DeploymentUnitProcessor {
         if (module != null && servicesAttachment != null) {
             final ModuleClassLoader classLoader = module.getClassLoader();
             final List<String> driverNames = servicesAttachment.getServiceImplementations(Driver.class.getName());
+            int i = 0;
             for (String driverClassName : driverNames) {
                 try {
                     final Class<? extends Driver> driverClass = classLoader.loadClass(driverClassName).asSubclass(Driver.class);
@@ -73,7 +74,7 @@ public final class DriverProcessor implements DeploymentUnitProcessor {
                         DEPLOYER_JDBC_LOGGER.deployingNonCompliantJdbcDriver(driverClass, Integer.valueOf(majorVersion),
                                 Integer.valueOf(minorVersion));
                     }
-                    String driverName = deploymentUnit.getName();
+                    String driverName = i == 0 ? deploymentUnit.getName() : deploymentUnit.getName() + "_" + i ;
                     InstalledDriver driverMetadata = new InstalledDriver(driverName, driverClass.getName(), null, null, majorVersion,
                             minorVersion, compliant);
                     DriverService driverService = new DriverService(driverMetadata, driver);
@@ -86,6 +87,7 @@ public final class DriverProcessor implements DeploymentUnitProcessor {
                 } catch (Exception e) {
                     DEPLOYER_JDBC_LOGGER.cannotInstantiateDriverClass(driverClassName, e);
                 }
+                i++;
             }
         }
     }
