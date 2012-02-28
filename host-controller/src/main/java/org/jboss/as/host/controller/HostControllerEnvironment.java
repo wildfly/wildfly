@@ -319,7 +319,7 @@ public class HostControllerEnvironment extends ProcessEnvironment {
         if (tmp == null) {
             tmp = new File(this.domainBaseDir, "configuration");
         }
-        if (!tmp.exists() && !tmp.isDirectory()) {
+        if (!tmp.exists() || !tmp.isDirectory()) {
             throw MESSAGES.configDirectoryDoesNotExist(tmp);
         }
         this.domainConfigurationDir = tmp;
