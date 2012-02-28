@@ -71,4 +71,17 @@ public interface HttpServerLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 15102, value = "Unable to load console module for slot %s, disabling console")
     void consoleModuleNotFound(String slot);
+
+    /**
+     * A message indicating that SSL has been requested but not properly configured.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 15103, value = "A secure port has been specified for the HTTP interface but no SSL configuration in the realm.")
+    void sslConfigurationNotFound();
+
+    /*
+     * Message IDs 15100 to 15199 Reserved for the HTTP management interface, HTTPServerMessages also contains messages in this
+     * range commencing at 15120.
+     */
+
 }
