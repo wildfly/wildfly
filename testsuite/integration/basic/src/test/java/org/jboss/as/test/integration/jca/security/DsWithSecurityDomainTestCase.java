@@ -26,6 +26,9 @@ import static org.jboss.as.test.integration.ejb.security.SecurityTest.*;
 import static junit.framework.Assert.*;
 
 import java.sql.Connection;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -36,7 +39,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -46,13 +48,17 @@ import org.junit.runner.RunWith;
  *
  */
 @RunWith(Arquillian.class)
-@Ignore("AS7-3923")
+//@Ignore("AS7-3923")
 public class DsWithSecurityDomainTestCase {
 
     @Deployment
     public static Archive<?> deployment() {
         try {
-            createSecurityDomain("DsRealm");
+            Map<String,String> moduleOptions = new HashMap<String,String>();
+            moduleOptions.put("userName", "sa");
+            moduleOptions.put("password", "sa");
+            moduleOptions.put("principal", "sa");
+            createSecurityDomain("DsRealm","ConfiguredIdentity",true,moduleOptions);
         } catch (Exception e) {
             e.printStackTrace();
         }
