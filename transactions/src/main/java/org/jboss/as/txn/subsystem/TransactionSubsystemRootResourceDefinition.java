@@ -138,6 +138,11 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setFlags(AttributeAccess.Flag.RESTART_JVM)  //I think the use of statics in arjunta will require a JVM restart
             .build();
 
+    public static final SimpleAttributeDefinition USEHORNETQSTORE = new SimpleAttributeDefinitionBuilder(CommonAttributes.USEHORNETQSTORE, ModelType.BOOLEAN, true)
+            .setDefaultValue(new ModelNode().set(false))
+            .setFlags(AttributeAccess.Flag.RESTART_JVM)
+            .build();
+
     private final boolean registerRuntimeOnly;
 
     TransactionSubsystemRootResourceDefinition(boolean registerRuntimeOnly) {
@@ -167,6 +172,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         resourceRegistration.registerReadWriteAttribute(OBJECT_STORE_RELATIVE_TO, null, new ReloadRequiredWriteAttributeHandler(OBJECT_STORE_RELATIVE_TO));
         resourceRegistration.registerReadWriteAttribute(OBJECT_STORE_PATH, null, new ReloadRequiredWriteAttributeHandler(OBJECT_STORE_PATH));
         resourceRegistration.registerReadWriteAttribute(JTS, null, new ReloadRequiredWriteAttributeHandler(JTS));
+        resourceRegistration.registerReadWriteAttribute(USEHORNETQSTORE, null, new ReloadRequiredWriteAttributeHandler(USEHORNETQSTORE));
 
         if (registerRuntimeOnly) {
             TxStatsHandler.INSTANCE.registerMetrics(resourceRegistration);

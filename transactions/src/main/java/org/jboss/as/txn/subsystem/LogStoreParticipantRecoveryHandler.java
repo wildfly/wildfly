@@ -21,39 +21,35 @@
  */
 package org.jboss.as.txn.subsystem;
 
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 
-import java.util.List;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 
-/**
- *
- * @author <a href="stefano.maestri@redhat.com">Stefano Maestri</a>
- */
-class LogStoreTransactionAddHandler extends AbstractAddStepHandler {
+public class LogStoreParticipantRecoveryHandler  implements OperationStepHandler {
 
-    public static final LogStoreTransactionAddHandler INSTANCE = new LogStoreTransactionAddHandler();
+    static final LogStoreParticipantRecoveryHandler INSTANCE = new LogStoreParticipantRecoveryHandler();
 
-    private LogStoreTransactionAddHandler() {
-    }
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        MBeanServer mbs = TransactionExtension.getMBeanServer(context);
+        ModelNode subModel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+        ModelNode onAttribute = subModel.get(LogStoreConstants.JMX_ON_ATTRIBUTE);
+        String jmxName = onAttribute.asString();
 
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        for (final SimpleAttributeDefinition attribute : LogStoreProviders.TRANSACTION_ATTRIBUTE) {
-            attribute.validateAndSet(operation, model);
+        try {
+            ObjectName on = new ObjectName(jmxName);
+
+            //  Invoke operation
+            mbs.invoke(on, "clearHeuristic", null, null);
+
+        } catch (Exception e) {
+            throw new OperationFailedException("JMX error: ", e);
         }
 
-    }
-
-    @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
-            ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
-            throws OperationFailedException {
-
+        context.completeStep();
     }
 }

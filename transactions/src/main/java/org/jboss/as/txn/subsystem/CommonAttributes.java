@@ -41,6 +41,7 @@ interface CommonAttributes {
     String OBJECT_STORE_RELATIVE_TO = "object-store-relative-to";
 
     String JTS = "jts";
+    String USEHORNETQSTORE = "use-hornetq-store";
 
     /** The com.arjuna.ats.arjuna.utils.Process implementation type */
     String PROCESS_ID = "process-id";

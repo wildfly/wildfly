@@ -43,6 +43,7 @@ enum Element {
     SOCKET("socket"),
     UUID("uuid"),
     JTS("jts"),
+    USEHORNETQSTORE("use-hornetq-store")
     ;
 
     private final String name;

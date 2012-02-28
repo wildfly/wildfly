@@ -46,5 +46,6 @@
         <module name="org.jboss.jts"/>
         <module name="org.jboss.jts.integration"/>
         <module name="org.omg.api"/>
+	<module name="org.jboss.as.jmx"/>
     </dependencies>
 </module>
