@@ -83,6 +83,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.XA_RESOURC
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import org.jboss.as.controller.OperationContext;
@@ -155,7 +156,7 @@ class DataSourceModelNodeUtil {
         final boolean sharePreparedStatements = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, SHAREPREPAREDSTATEMENTS, Defaults.SHARE_PREPARED_STATEMENTS);
         final Long preparedStatementsCacheSize = getLongIfSetOrGetDefault(operationContext, dataSourceNode, PREPAREDSTATEMENTSCACHESIZE, null);
         final Statement.TrackStatementsEnum trackStatements = dataSourceNode.hasDefined(TRACKSTATEMENTS.getName()) ? Statement.TrackStatementsEnum
-                .valueOf(dataSourceNode.get(TRACKSTATEMENTS.getName()).asString()) : Defaults.TRACK_STATEMENTS;
+                .valueOf(dataSourceNode.get(TRACKSTATEMENTS.getName()).asString().toUpperCase(Locale.ENGLISH)) : Defaults.TRACK_STATEMENTS;
         final Statement statement = new StatementImpl(sharePreparedStatements, preparedStatementsCacheSize, trackStatements);
 
         final Integer allocationRetry = getIntIfSetOrGetDefault(operationContext, dataSourceNode, ALLOCATION_RETRY, null);
@@ -234,7 +235,7 @@ class DataSourceModelNodeUtil {
                 SHAREPREPAREDSTATEMENTS.getName()).asBoolean() : Defaults.SHARE_PREPARED_STATEMENTS;
         final Long preparedStatementsCacheSize = getLongIfSetOrGetDefault(operationContext, dataSourceNode, PREPAREDSTATEMENTSCACHESIZE, null);
         final Statement.TrackStatementsEnum trackStatements = dataSourceNode.hasDefined(TRACKSTATEMENTS.getName()) ? Statement.TrackStatementsEnum
-                .valueOf(dataSourceNode.get(TRACKSTATEMENTS.getName()).asString()) : Defaults.TRACK_STATEMENTS;
+                .valueOf(dataSourceNode.get(TRACKSTATEMENTS.getName()).asString().toUpperCase(Locale.ENGLISH)) : Defaults.TRACK_STATEMENTS;
         final Statement statement = new StatementImpl(sharePreparedStatements, preparedStatementsCacheSize, trackStatements);
 
         final Integer allocationRetry = getIntIfSetOrGetDefault(operationContext, dataSourceNode, ALLOCATION_RETRY, null);
