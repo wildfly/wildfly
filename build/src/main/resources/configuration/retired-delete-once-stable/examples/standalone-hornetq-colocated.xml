@@ -149,7 +149,7 @@
             </thread-pools>
             <iiop enable-by-default="false" use-qualified-name="false"/>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:infinispan:1.1" default-cache-container="hibernate">
+        <subsystem xmlns="urn:jboss:domain:infinispan:1.2" default-cache-container="hibernate">
             <cache-container name="hibernate" default-cache="local-query">
                 <local-cache name="entity">
                     <transaction mode="NON_XA"/>
