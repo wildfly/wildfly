@@ -478,4 +478,19 @@ public interface DomainManagementMessages {
     @Message(value = "Added user '%s' with roles %s to file '%s'")
     String addedRoles(String username, String roles, String fileName);
 
+    /**
+     * The error message if the choice response is invalid.
+     *
+     * TODO - On translation we will need support for checking the possible responses.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(id = 15251, value = "Invalid response. (Valid responses are A, a, B, or b)")
+    String invalidChoiceResponse();
+
+    /*
+     * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementLogger also contains messages in
+     * this range commencing 15200.
+     */
+
 }
